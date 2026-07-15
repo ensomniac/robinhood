@@ -2,6 +2,8 @@
 
 Reviewed: 2026-07-15 (ET)
 
+Active strategy: `2026-07-15-orb-v3`
+
 This document records the evidence and engineering rationale behind the active
 rules in `AGENTS.md`. It is not a promise of profit. The goal is rapid compounded
 growth, but growth is only durable when the strategy preserves capital, measures
@@ -31,8 +33,9 @@ Change these parts:
    strong trend at exactly +2%.
 4. Use the paper's time-matched opening relative volume definition, a volatility
    stop anchored to 10% of daily ATR, and an explicit slippage reserve.
-5. Add stale-data checks, order timeouts, duplicate-order controls, drawdown
-   circuit breakers, and an evidence-based strategy maturity state.
+5. Add executable stale-data checks, order timeouts, duplicate-order controls,
+   drawdown circuit breakers, deterministic sizing, an append-only signal ledger,
+   and an evidence-based strategy maturity state.
 6. Obey the current MCP tool contract. Repository authorization cannot replace
    an explicit confirmation that a broker tool or platform requires.
 
@@ -44,17 +47,22 @@ rejected wide spreads and unprotectable stops, preferred marketable limits, and
 required detailed journaling. Those controls should remain.
 
 Its principal weakness was not a bad indicator. It was a lack of a measured,
-reproducible edge. As of this review, `TRADES.md` has no completed trades and
-`trades/` has no completed session contexts. The strategy therefore has no local
-win rate, expectancy, drawdown, slippage distribution, or setup-specific sample.
+reproducible edge and any executable control that could reproduce the prose. As
+of this review, `TRADES.md` has no completed trades and `trades/` has no completed
+session contexts. The strategy therefore has no local win rate, expectancy,
+drawdown, slippage distribution, or setup-specific sample. Version v3 adds
+deterministic evaluation, structured signal data, computed maturity, and a live
+session interlock; those controls make future evidence measurable but do not
+manufacture an edge from an empty sample.
 
 ## Evidence And Its Limits
 
 ### Five-minute ORB evidence
 
-The 2025 revision of *A Profitable Day Trading Strategy for the U.S. Equity
-Market* studied more than 7,000 U.S. stocks from 2016-2023 without survivorship
-bias. Its base five-minute ORB returned only 29% in total, with a 41.4% hit rate.
+*A Profitable Day Trading Strategy for the U.S. Equity Market* was written in
+February 2024 and last revised on SSRN in April 2025. It studied more than 7,000
+U.S. stocks from 2016-2023 without survivorship bias. Its base five-minute ORB
+returned only 29% in total, with a 41.4% hit rate.
 Filtering for the top 20 opening-relative-volume Stocks in Play raised the
 reported total return to 1,637%, annualized return to 41.6%, and Sharpe ratio to
 2.81, net of the modeled per-share commission. The study's qualifying universe
@@ -72,6 +80,21 @@ OR_RVOL = today's 9:30-9:35 volume
 
 This is not ordinary full-day relative volume and it is not the current
 one-minute volume divided by the previous 14 one-minute bars.
+
+The evidence implementation differs materially from this project:
+
+| Dimension | Paper portfolio | Project v3 |
+| --- | --- | --- |
+| Selection | Top 20 OR_RVOL names | At most one scored name |
+| Direction | Long bullish ranges and short bearish ranges | Long only |
+| Entry | Range trigger after the first five minutes | Trigger only through 10:30 ET |
+| Exit | Stop or end of day | Structural failure or +2% runner overlay; flat by 3:50 |
+| Filters | Price, volume, ATR, OR_RVOL rank | Adds catalyst, VWAP, market, resistance, spread, and depth gates |
+| Modeled costs | Per-share commission | Spread, slippage reserve, liquidity cap, and observed execution |
+
+These differences can help or hurt. They mean the paper does not validate the
+project's single-name selection or exit overlay. Every closed project trigger
+must therefore retain a paired paper-aligned end-of-day shadow result.
 
 The result does not validate this repository's implementation. The paper traded
 a diversified long-short portfolio, while this project trades one concentrated,
@@ -130,14 +153,18 @@ The current state is `UNVALIDATED` because there are no completed local trades.
 
 | State | Minimum evidence | Permitted live exposure |
 | --- | --- | --- |
-| `UNVALIDATED` | Fewer than 20 frozen-rule closed signals | 70-80% notional, at most 0.50% equity planned risk |
-| `PROVISIONAL` | At least 20 closed signals, net expectancy above 0R, profit factor above 1.20, execution within budget | 70-85% notional, at most 0.50% equity planned risk |
-| `VALIDATED` | At least 50 closed signals, positive out-of-sample expectancy, profit factor above 1.30, max drawdown at or below 6R, acceptable stop slippage | A+ trades may use 90-100% notional and at most 0.65% equity planned risk |
+| `UNVALIDATED` | Fewer than 20 frozen-rule closed signals | A+ only; at most 0.25% equity planned risk and 80% allocation cap |
+| `PROVISIONAL` | At least 20 closed signals, five live executions, complete capture, expectancy above 0R, profit factor at least 1.20, max drawdown at most 6R, zero violations | At most 0.50% equity planned risk and 85% allocation cap |
+| `VALIDATED` | At least 50 closed signals including 20 confirmation signals, ten live and five stop executions, positive overall/confirmation expectancy and 90% bootstrap lower bound, profit factor at least 1.30, max drawdown at most 6R, zero violations, execution in budget | At most 0.65% equity planned risk and 100% allocation cap |
 
-`Closed signals` includes live and properly recorded shadow trades. Do not mix
-rules within a sample. A material rule change starts a new strategy version and
-new sample. Fifty observations are still a small sample; promotion allows the
-aggressive tier but does not establish certainty.
+`Closed signals` includes live and properly recorded shadow trades. Five live
+executions are required before provisional status because a shadow fill cannot
+validate the broker path. The last 20 or more preregistered confirmation signals
+support the out-of-sample gate. Do not mix rule hashes within a sample. A
+material rule change starts a new strategy version and new sample. Fifty
+observations are still small; promotion allows the aggressive tier but does not
+establish certainty. `strategy_ledger.py report` is the authority for earned
+maturity.
 
 ### 2. Candidate universe at 9:35 ET
 
@@ -216,11 +243,16 @@ Reject the trade when:
 - the stop is inside the spread or ordinary opening noise;
 - expected loss including the stop-slippage reserve exceeds the maturity-state
   risk cap;
-- the resulting notional is below 70% of buying power; or
+- all risk, allocation, or liquidity caps produce a zero-share order; or
 - buying-power, margin, tradability, review, or liquidity checks fail.
 
-This makes 70-100% allocation conditional on risk. It never permits increasing
-loss risk merely to reach an allocation band.
+Seventy percent remains the aggressive allocation target, but not a hard gate.
+The target is mathematically incompatible with part of the allowed stop range:
+at 0.50% account risk, a 0.70% stop plus a 0.10% reserve can deploy only about
+62.5% of buying power. Rejecting that trade solely for safe sizing discards the
+same planned R economics. Version v3 accepts an otherwise qualified trade at the
+risk- and liquidity-capped size and records the binding cap and shortfall. It
+never increases loss risk merely to reach the target.
 
 #### Worked sizing example
 
@@ -294,8 +326,9 @@ must follow stop risk rather than precede it.
 
 - At most one filled entry per trading day.
 - Stop for the day after any stopped-out or thesis-invalidated trade.
-- Hard planned-risk cap: 0.50% of equity until validated; 0.65% for validated A+
-  setups; 0.75% is an absolute realized planning ceiling, never a target.
+- Hard planned-risk cap: 0.25% while unvalidated, 0.50% while provisional, and
+  0.65% when validated; 0.75% is an absolute realized planning ceiling, never a
+  target.
 - Pause new live entries after three consecutive losing trades, a 2% rolling
   five-session equity drawdown, or a 4% strategy peak-to-trough drawdown.
 - Resume only after a written audit of signal quality, spread, slippage, tool
@@ -320,6 +353,9 @@ Every eligible signal, including rejected and shadow signals, must record:
 - Maximum favorable excursion (MFE), maximum adverse excursion (MAE), realized
   P/L after fees in dollars, percent, and R.
 - Rule adherence and reason for every override or rejection.
+- Current rules hash, public session/signal aliases, sample phase, complete
+  scanner-capture status, engine decision, guard decision, and sizing binding cap.
+- Project-exit R and the paired paper-aligned end-of-day shadow R.
 
 Core metrics by strategy version and setup:
 
@@ -335,6 +371,13 @@ Also report median and 95th-percentile entry slippage, stop slippage, maximum
 drawdown in R and dollars, rule-violation count, and no-trade frequency. Compare
 results with a shadow version that exits at the close so the +2% milestone and
 trailing overlay can be evaluated rather than assumed.
+
+`strategy_ledger.py record` creates the append-only public observations;
+`strategy_ledger.py audit` checks schema, uniqueness, privacy, and required
+paired outcomes; and `strategy_ledger.py report` calculates these metrics and
+the promotion result. `strategy_engine.py` is the canonical candidate math and
+`session_guard.py` is the pre-entry/open-position interlock. The scripts do not
+replace authoritative broker or market data; they prevent inconsistent use of it.
 
 Do not optimize thresholds after every loss. Review on a fixed cadence of 20
 closed signals or monthly, whichever is later. Preserve the old version's sample

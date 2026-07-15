@@ -28,7 +28,8 @@ automated trading experiment.
 
 | Version | Maturity | Closed Frozen-Rule Signals | Live Allocation | Planned Risk Cap | Last Review |
 | --- | --- | ---: | --- | --- | --- |
-| `2026-07-15-orb-v2` | UNVALIDATED | 0 | 70-80% of buying power | 0.50% of equity including stop-slippage reserve | 2026-07-15 |
+| `2026-07-15-orb-v3` | UNVALIDATED | 0 | 70% target; 80% cap; safely sized shortfall allowed | 0.25% of equity including stop-slippage reserve | 2026-07-15 |
+| `2026-07-15-orb-v2` | RETIRED before use | 0 | 70-80% of buying power | 0.50% of equity including stop-slippage reserve | 2026-07-15 |
 
 ## Account Balance Timeline
 

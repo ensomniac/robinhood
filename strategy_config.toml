@@ -1,0 +1,77 @@
+[strategy]
+version = "2026-07-15-orb-v3"
+engine_schema = 1
+ledger_schema = 1
+promotion_schema = 1
+setup = "five-minute-stock-in-play-orb"
+timezone = "America/New_York"
+entry_start_et = "09:35:00"
+entry_cutoff_et = "10:30:00"
+force_flat_et = "15:50:00"
+
+[universe]
+minimum_open_price = 5.0
+minimum_average_daily_volume_14 = 1000000
+minimum_daily_atr_14 = 0.50
+minimum_opening_relative_volume = 1.0
+opening_relative_volume_lookback = 14
+
+[execution]
+quote_snapshot_count = 3
+maximum_quote_age_seconds = 5.0
+maximum_median_spread_fraction = 0.0010
+maximum_single_spread_fraction = 0.0015
+maximum_a_plus_median_spread_fraction = 0.0008
+maximum_entry_chase_fraction = 0.0015
+maximum_depth_participation_fraction = 0.05
+maximum_recent_volume_participation_fraction = 0.05
+entry_timeout_seconds = 10.0
+monitoring_heartbeat_seconds = 15.0
+
+[risk]
+atr_stop_fraction = 0.10
+maximum_stop_fraction = 0.0080
+minimum_stop_slippage_reserve_fraction = 0.0010
+minimum_resistance_room_fraction = 0.0220
+minimum_reward_risk = 2.50
+allocation_target_floor_fraction = 0.70
+
+[maturity.UNVALIDATED]
+live_allowed = true
+risk_fraction = 0.0025
+allocation_cap_fraction = 0.80
+minimum_score = 90
+
+[maturity.PROVISIONAL]
+live_allowed = true
+risk_fraction = 0.0050
+allocation_cap_fraction = 0.85
+minimum_score = 85
+
+[maturity.VALIDATED]
+live_allowed = true
+risk_fraction = 0.0065
+allocation_cap_fraction = 1.00
+minimum_score = 85
+
+[promotion.provisional]
+minimum_closed_signals = 20
+minimum_live_signals = 5
+minimum_expectancy_r = 0.0
+minimum_profit_factor = 1.20
+maximum_drawdown_r = 6.0
+maximum_rule_violations = 0
+
+[promotion.validated]
+minimum_closed_signals = 50
+minimum_confirmation_signals = 20
+minimum_live_signals = 10
+minimum_stop_execution_signals = 5
+minimum_expectancy_r = 0.0
+minimum_confirmation_expectancy_r = 0.0
+minimum_profit_factor = 1.30
+minimum_bootstrap_confidence = 0.90
+maximum_drawdown_r = 6.0
+maximum_rule_violations = 0
+maximum_entry_slippage_p95_bps = 15.0
+maximum_unprotected_p95_seconds = 10.0

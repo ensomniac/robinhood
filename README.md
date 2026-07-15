@@ -24,8 +24,9 @@ losses, and automated execution can fail in ways that matter financially.
 
 The active operating contract is defined in [AGENTS.md](AGENTS.md), with the
 evidence, limitations, and worked risk example in
-[STRATEGY_REVIEW.md](STRATEGY_REVIEW.md). Strategy version
-`2026-07-15-orb-v2` is currently `UNVALIDATED` because this repository has no
+[STRATEGY_REVIEW.md](STRATEGY_REVIEW.md). The v3 failure analysis and repair map
+is in [STRATEGY_AUDIT_2026-07-15.md](STRATEGY_AUDIT_2026-07-15.md). Strategy version
+`2026-07-15-orb-v3` is currently `UNVALIDATED` because this repository has no
 completed local trade sample.
 
 At a high level:
@@ -39,8 +40,10 @@ At a high level:
 - Compute opening relative volume from the current 9:30-9:35 bar versus the same
   interval over the prior 14 sessions.
 - Size from account risk, stop distance, a stop-slippage reserve, buying power,
-  and executable liquidity. The resulting notional must still be 70-100% to
-  qualify.
+  and executable liquidity. Seventy percent is an aggressive allocation target,
+  not a reason to exceed risk or discard a safely sized positive-expectancy setup.
+- Start live pilots at a 0.25% planned-risk cap and a 90-point minimum score;
+  evidence can promote the cap to 0.50% and then 0.65%.
 - Use +2% as a milestone with a structural runner rule, not a daily quota or an
   unconditional fixed take-profit.
 - Pause or demote the strategy when local expectancy, drawdown, slippage, data,
@@ -50,6 +53,12 @@ VWAP pullback and high-of-day continuation setups are research-only until they
 earn separate positive out-of-sample evidence. The cited ORB research studied a
 diversified long-short portfolio; its reported returns are not expected returns
 for this concentrated, long-only implementation.
+
+The numeric rules live in [strategy_config.toml](strategy_config.toml).
+`strategy_engine.py` computes every score, hard gate, and sizing result;
+`session_guard.py` enforces the live entry/protection interlock; and
+`strategy_ledger.py` provides append-only signal records, reproducible metrics,
+paired exit comparison, and evidence-earned maturity.
 
 ## Public Trade Ledger
 
@@ -67,6 +76,10 @@ Detailed per-session and per-trade context lives under:
 
 - `trades/active/` for active research, open trades, and in-progress sessions.
 - `trades/archived/` for completed sessions and closed trades.
+
+After the first recorded session, `SIGNALS.jsonl` is the machine-readable
+companion. See [SIGNAL_LEDGER.md](SIGNAL_LEDGER.md) for its privacy-safe schema
+and append/audit/report commands.
 
 ## Email Notifications
 
@@ -134,16 +147,40 @@ again or replace `.env`; losing that key makes historical ciphertext
 unrecoverable. See [IDENTIFIER_ENCRYPTION.md](IDENTIFIER_ENCRYPTION.md) for
 encryption, decryption, rotation, auditing, recovery, and performance instructions.
 
+## Executable Strategy Controls
+
+The active workflow uses three local decision surfaces around authoritative
+broker and market tool responses:
+
+```sh
+# Evaluate a fully populated candidate payload.
+python3 strategy_engine.py /path/to/candidate.json
+
+# Confirm that structured history is valid and compute earned maturity.
+python3 strategy_ledger.py audit
+python3 strategy_ledger.py report
+
+# Interlock the final broker/session snapshot before entry and after state changes.
+python3 session_guard.py /path/to/broker-snapshot.json
+```
+
+Only `strategy_engine.py` output with `eligible=true` under the current rules
+hash can proceed to broker review. Only `session_guard.py` status `ENTRY_READY`
+can proceed to a new live entry. The scripts calculate and guard decisions; they
+do not fetch broker data or place orders themselves.
+
 ## Publishing Discipline
 
 This project is intended to be auditable. When a trade decision is made, the
-agent updates both:
+agent updates all applicable public surfaces:
 
 - [TRADES.md](TRADES.md), for the public running ledger.
 - A matching context file under `trades/`, for detailed reasoning and state.
+- `SIGNALS.jsonl`, through `strategy_ledger.py record`, for append-only metrics.
 
-Whenever any file under `trades/` changes, the full root project must be
-committed and pushed back to GitHub with a meaningful commit message.
+Whenever `TRADES.md`, `SIGNALS.jsonl`, or any file under `trades/` changes, the
+full root project must be committed and pushed back to GitHub with a meaningful
+commit message.
 
 Canonical workflow:
 
@@ -171,10 +208,17 @@ Commit messages should describe what changed, for example:
 ├── IDENTIFIER_ENCRYPTION.md # Inline identifier encryption and recovery guide
 ├── README.md          # Public project overview
 ├── requirements.txt  # Python runtime dependency declaration
+├── session_guard.py  # Entry, protection, heartbeat, and flatten interlock
+├── SIGNAL_LEDGER.md  # Structured public signal-record schema and workflow
 ├── sensitive_data.py # Fast encrypt/decrypt/audit/benchmark CLI
 ├── settings.toml      # Human-editable operational settings
+├── strategy_config.toml # Numeric rules, maturity risk, and promotion gates
+├── strategy_engine.py # Deterministic OR_RVOL, gate, score, and sizing engine
+├── strategy_ledger.py # Append/audit/report CLI for session and signal data
+├── strategy_maturity.py # Reproducible metrics and evidence-earned maturity
+├── STRATEGY_AUDIT_2026-07-15.md # Ranked failure analysis and v3 repairs
 ├── STRATEGY_REVIEW.md # Evidence, limitations, sizing example, and rationale
-├── tests/             # Isolated notification and encryption unit tests
+├── tests/             # Strategy, safety, notification, and encryption tests
 ├── TRADES.md          # Running public trade ledger and balance timeline
 ├── trades/
 │   ├── CONTEXT_TEMPLATE.md # Required live/shadow session record

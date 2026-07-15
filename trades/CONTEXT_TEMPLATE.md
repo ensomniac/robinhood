@@ -18,6 +18,9 @@ below as `enc:fernet:vN:...` tokens.
 - Mode: live / shadow
 - Strategy version:
 - Maturity: UNVALIDATED / PROVISIONAL / VALIDATED
+- Rules hash:
+- Sample phase: pilot / confirmation
+- Public session ID:
 - Account: Agentic account (identifier omitted)
 - Starting equity:
 - Available buying power:
@@ -30,6 +33,8 @@ below as `enc:fernet:vN:...` tokens.
 - Tool and monitoring health:
 - Identifier encryption check: passed / failed, with reason
 - Context identifier audit: passed / failed, with reason
+- Structured signal ledger audit: passed / failed, with reason
+- Evidence-earned maturity report:
 - Email verbosity snapshot:
 - Email sender configuration check: passed / failed, with reason
 
@@ -88,7 +93,8 @@ material risks. Do not silently omit a candidate after research begins.
 - [ ] Quantity at or below liquidity cap
 - [ ] At least 2.2% room and at least 2.5R before resistance
 - [ ] Stop outside normal noise and no wider than 0.8%
-- [ ] Position notional at least 70% after risk sizing
+- [ ] Allocation target result and binding cap recorded; any sub-70% shortfall is
+      accepted only because risk or executable liquidity bound the safe quantity
 - [ ] No position, unresolved order, circuit breaker, margin issue, or halt risk
 - [ ] Entry time between 9:35 and 10:30 ET
 - [ ] Monitoring and prompt protective-stop workflow available
@@ -114,9 +120,19 @@ material risks. Do not silently omit a candidate after research begins.
 - Liquidity cap and `q_liquidity`:
 - Final quantity:
 - Planned notional and buying-power percentage:
+- Allocation target met: yes / no
+- Binding cap: risk / allocation / liquidity
 - +2% milestone:
 - Resistance distance and reward/risk:
 - Planned force-flat time:
+
+### Deterministic Evaluation
+
+- Evaluator command completed:
+- Evaluator strategy version and rules hash match session:
+- Evaluator eligible:
+- Evaluator warnings and hard rejects:
+- Evaluator output retained in public context without private broker data:
 
 ## Broker Review And Confirmation
 
@@ -127,6 +143,8 @@ material risks. Do not silently omit a candidate after research begins.
 - User confirmation required by tool: yes / no
 - Confirmation received (ET):
 - Protective-stop confirmation path verified before entry:
+- Final session-guard status: must be `ENTRY_READY` for a new live entry
+- Final session-guard rules hash and earned maturity:
 
 ## Encrypted Identifier Records
 
@@ -158,6 +176,7 @@ Do not place plaintext or decrypted identifiers in this table.
 - Protective stop quantity and trigger:
 - Stop accepted at (ET):
 - Unprotected exposure duration:
+- Session-guard result after each state change:
 
 ## Monitoring
 
@@ -186,6 +205,8 @@ the event; `failed` is a delivery problem and must not interrupt order safety.
 - Net P/L:
 - Net return on notional:
 - Net R:
+- Paper-aligned end-of-day shadow net R:
+- Project exit minus paper EOD exit in R:
 - MFE in R / percent:
 - MAE in R / percent:
 - Entry slippage:
@@ -207,6 +228,10 @@ context, execution quality, risk limits, or tool health.
 - Any override and who requested it:
 - What the data supports changing:
 - What must not be changed from one observation:
+- Structured session and signal records appended:
+- Session capture complete:
+- `strategy_ledger.py audit` completed:
+- `strategy_ledger.py report` maturity result:
 - Ledger entry added:
 - Context moved to `trades/archived/`:
 - Identifier audit completed:

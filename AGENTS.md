@@ -2,7 +2,7 @@
 
 Research refreshed: 2026-07-15
 
-Strategy version: `2026-07-15-orb-v2`
+Strategy version: `2026-07-15-orb-v3`
 
 Strategy maturity: `UNVALIDATED` until the promotion rules below are met.
 
@@ -28,8 +28,9 @@ Update this file with ongoing changes to the strategy
 
 - The user's (Ryan) trading preference is aggressive day trading: seek explosive
   intraday growth, target a 2% gross gain, exit all trades before the end of the
-  same trading day, use 70-100% of available buying power when a trade qualifies,
-  based on the trade's conviction, and never hold more than one open trade at a time.
+  same trading day, target 70-100% of available buying power when risk and
+  executable liquidity support it, and never hold more than one open trade at a
+  time. The allocation target never overrides the loss-risk cap.
 - This file is a standing authorization for Codex to place or cancel real-money
   trades without explicit user approval in the active trading workflow.
 - Once Ryan starts a live trading workflow, do not pause for Ryan's approval
@@ -67,6 +68,15 @@ important tool families are:
   explicitly requests options in a separate active workflow.
 
 Operational MCP rules:
+
+- `strategy_config.toml` is the numeric rule source of truth. Use
+  `strategy_engine.py` for every candidate calculation and retain its strategy
+  version and rules hash in the session context. Do not substitute hand math for
+  a successful evaluator result.
+- Before submitting a reviewed entry and after every order-state change, run the
+  current broker/account facts through `session_guard.py`. A new live entry is
+  allowed only from `ENTRY_READY`. Exposure statuses take priority over research,
+  journaling, email, encryption, and Git work.
 
 - Never guess an account number. Ryan only has 1 Agentic trading account with
   Robinhood and that is the account that is to be used.
@@ -274,18 +284,28 @@ Hard constraints:
   range and liquidity.
 - No new production entry after 10:30 AM ET. If no ORB qualifies, log no trade.
 - Force flat by 3:50 PM ET, or earlier if liquidity deteriorates.
-- The strategy starts `UNVALIDATED`: 70-80% notional and at most 0.50% of account
-  equity in planned loss including a stop-slippage reserve. After at least 20
-  frozen-rule signals with positive net expectancy, profit factor above 1.20,
-  and acceptable execution, it may become `PROVISIONAL`: 70-85% notional and the
-  same 0.50% risk cap.
-- Only a `VALIDATED` strategy with at least 50 closed signals, positive
-  out-of-sample expectancy, profit factor above 1.30, maximum drawdown at or
-  below 6R, and acceptable stop slippage may use 90-100% notional on an A+ setup,
-  with at most 0.65% of equity in planned loss. Material rule changes reset the
-  sample under a new version.
-- Notional is a consequence of risk sizing. Never increase quantity merely to
-  reach 70%; reject when the risk- and liquidity-capped notional is below 70%.
+- The strategy starts `UNVALIDATED`: live pilots require an A+ score of at least
+  90, use at most 0.25% of equity in planned loss including the stop-slippage
+  reserve, and have an 80% allocation cap.
+- `PROVISIONAL` requires at least 20 frozen-rule closed signals, at least five
+  live executions, complete scanner-universe capture, positive net expectancy,
+  profit factor at least 1.20, maximum drawdown at or below 6R, and zero rule
+  violations. It permits at most 0.50% planned risk and an 85% allocation cap.
+- `VALIDATED` requires at least 50 closed signals including at least 20 explicitly
+  designated confirmation signals, at least ten live executions and five stop
+  executions, positive overall and confirmation expectancy, profit factor at
+  least 1.30, a positive 90% bootstrap lower bound for mean R, maximum drawdown
+  at or below 6R, zero rule violations, and execution within the configured
+  slippage/protection budgets. It permits at most 0.65% planned risk and a 100%
+  allocation cap.
+- `strategy_ledger.py report` computes the earned maturity. A narrative label
+  never overrides the report, and a material rule change starts a new version
+  and sample.
+- Notional is a consequence of risk and executable-liquidity sizing. Seventy
+  percent is an aggressive target, not a hard gate. Never increase quantity to
+  reach it and never discard an otherwise qualified positive-expectancy setup
+  solely because a risk or liquidity cap produces less notional. Record the
+  binding cap and allocation shortfall.
 - The candidate must have at least 2.2% defensible room before resistance and at
   least 2.5:1 reward/risk after expected spread and slippage.
 - Set stop distance to the greater of 10% of daily ATR(14) and the distance to
@@ -316,6 +336,8 @@ valid trade setup appears, the user stops the session, or the entry cutoff passe
      before considering a new entry.
    - Reconcile the current maturity state, rolling five-session drawdown,
      consecutive losses, and whether today's one-entry limit is still available.
+   - Run `python3 strategy_ledger.py audit` and
+     `python3 strategy_ledger.py report`; use the reported earned maturity.
    - Stop before discovery if any account, order, data, monitoring, or drawdown
      circuit breaker is active.
 
@@ -386,7 +408,8 @@ valid trade setup appears, the user stops the session, or the entry cutoff passe
      sector/candidate relative strength.
    - Exit-plan quality, 5 points: valid ATR/technical stop, slippage reserve,
      2.5R minimum, and a credible +2% path.
-   - Minimum score: 85/100, with no hard reject conditions.
+   - Minimum score: 90/100 while `UNVALIDATED`; 85/100 after promotion, with no
+     hard reject conditions.
    - Minimum score: 90/100 for A+ classification. A+ notional of 90-100% is
      forbidden until the strategy is `VALIDATED` even when the score is 90+.
    - A score never overrides a hard gate and is not a calibrated probability of
@@ -404,7 +427,7 @@ valid trade setup appears, the user stops the session, or the entry cutoff passe
 
 ## Qualified Long Setups
 
-The only production setup in strategy version `2026-07-15-orb-v2` is the long
+The only production setup in strategy version `2026-07-15-orb-v3` is the long
 five-minute Stock-in-Play opening range breakout.
 
 1. Wait until the complete 9:30-9:35 ET candle is available. Require `close >
@@ -454,8 +477,12 @@ Before any live order:
   - `milestone_price = entry_limit * 1.02` and reward/risk to resistance after
     spread and slippage.
 - Reject rather than alter the stop when stop distance exceeds 0.8%, calculated
-  risk exceeds the maturity cap, notional is below 70%, or reward/risk is below
-  2.5:1.
+  risk exceeds the maturity cap, quantity is zero after all caps, or reward/risk
+  is below 2.5:1. Treat allocation below 70% as a measured warning with a binding
+  cap, not a hard reject.
+- Serialize the collected session, candidate, and three-snapshot facts for
+  `strategy_engine.py`. The engine must return `eligible=true` under the current
+  rules hash before order review.
 - Call `review_equity_order`, evaluate and log the trade ticket, thesis, target,
   stop, invalidation, allocation, expected account risk, and all alerts.
 - Present the tool's required market-data disclosure verbatim and obtain any
@@ -470,6 +497,8 @@ Before any live order:
 - After confirmation, repeat the freshness, price, stop, risk, and liquidity
   checks. If the ticket materially changed, recompute and re-review rather than
   placing an obsolete review. Place the logical entry once with a fresh UUID.
+- Run `session_guard.py` on the final broker snapshot. Submit only when it returns
+  `ENTRY_READY` using the same current rules hash and evidence-earned maturity.
 
 After a reviewed and filled entry:
 
@@ -485,6 +514,10 @@ After a reviewed and filled entry:
   important than a stop-limit that may not fill.
 - Record unprotected exposure duration. If stop placement or confirmation cannot
   be completed promptly, flatten the position with a reviewed marketable limit.
+- Re-run `session_guard.py` after each fill, partial, cancellation, stop, exit,
+  timeout, or unknown outcome. `PROTECT_NOW` permits only the configured short
+  transition window; `KILL_SWITCH_FLATTEN` requires immediate flattening and
+  reconciliation.
 - Robinhood does not currently provide equity bracket orders, and the MCP exposes
   no OCO operation. Do not place an independent target sell while the full-size
   protective stop remains live.
@@ -501,6 +534,9 @@ Polling loop while position is open:
 - Check quote and price book about every 5-10 seconds while an active trigger or
   open position needs attention. If the tool surface cannot sustain timely
   monitoring, do not enter or flatten an existing position safely.
+- Keep the session-guard monitoring heartbeat no older than 15 seconds while
+  exposed. A stale heartbeat or market-data snapshot is a flatten trigger even
+  when a broker-held stop exists.
 - Check order state after every order action.
 - Keep a running log of thesis, price, spread, volume behavior, stop, target,
   and any catalyst updates.
@@ -552,7 +588,9 @@ Circuit breakers:
 ## Trade Journal And Continuous Improvement
 
 Record every researched candidate and every trade decision in `TRADES.md` and
-in a matching detailed context file under `trades/`. Use `trades/active/` while
+in a matching detailed context file under `trades/`. Also append every session
+and candidate to the privacy-safe structured ledger through
+`strategy_ledger.py record`. Use `trades/active/` while
 the session or trade is in progress, then move completed trade/session context
 to `trades/archived/`. Minimum fields:
 
@@ -575,12 +613,20 @@ to `trades/archived/`. Minimum fields:
 - P/L after fees in dollars, percent, and R; MFE and MAE in percent and R
 - Whether the original thesis held
 - What to change next time
+- Public session/signal aliases, sample phase, session-capture completeness,
+  rules hash, evaluator outcome, guard outcome, and binding sizing cap
+- Paired project-exit net R and paper-aligned end-of-day shadow net R for every
+  closed triggered signal
 
 Maintain results by strategy version. At minimum calculate net expectancy in R,
 profit factor, win rate, average win/loss R, maximum drawdown, median and
 95th-percentile entry/stop slippage, no-trade frequency, and rule-violation count.
 Compare the live exit with a shadow end-of-day exit so the +2% milestone/trailing
 overlay is tested rather than assumed.
+
+Use `python3 strategy_ledger.py audit` to validate structured history and
+`python3 strategy_ledger.py report` for the canonical metrics, exit-overlay
+comparison, and earned maturity. Do not promote from hand-calculated summaries.
 
 Revise the plan only on a fixed cadence of 20 closed signals or monthly,
 whichever is later. Preserve the prior version's sample. Do not optimize from one
@@ -602,15 +648,19 @@ entry should include the ET timestamp, symbol if applicable, decision/action,
 setup family, strategy version, net R or current status, account balance snapshot
 when available, and a link or path to the detailed context file.
 
+`SIGNALS.jsonl` is the append-only machine-readable companion once the first
+record is written. It must contain every evaluated candidate, not only selected
+trades, and it must remain free of account and broker identifiers.
+
 Every visible trading decision must also update a detailed context file under
 `trades/active/` or `trades/archived/`. If a decision is session-level rather
 than symbol-specific, create or update a session context file under
 `trades/active/` for that trading day. Keep context files plain text or Markdown
 so they are easy to review publicly.
 
-Whenever any file under `trades/` is changed, the root project must be committed
-and pushed back to GitHub immediately after the ledger/context update. Run the
-workflow from the repo root:
+Whenever `SIGNALS.jsonl`, `TRADES.md`, or any file under `trades/` is changed,
+the root project must be committed and pushed back to GitHub immediately after
+the ledger/context update. Run the workflow from the repo root:
 
 ```sh
 git status --short
@@ -646,7 +696,7 @@ Reject a trade immediately if any of these are true:
 - There is less than 2.2% defensible room or less than 2.5R before resistance
   after expected spread and slippage.
 - Stop distance is more than 0.8%, planned loss including stop-slippage reserve
-  exceeds the maturity risk cap, or risk-sized notional is below 70%.
+  exceeds the maturity risk cap, or all caps produce a zero-share order.
 - Stop is so tight that it sits inside the spread or ordinary setup noise rather
   than at real technical invalidation.
 - Any of the three pre-review snapshots is stale, zero, or crossed; median spread
@@ -674,7 +724,8 @@ Reject a trade immediately if any of these are true:
 - FINRA order types: https://www.finra.org/investors/investing/investment-products/stocks/order-types
 - FINRA stop-order risks: https://www.finra.org/investors/insights/stop-orders-factors-consider-during-volatile-markets
 - Investor.gov order types: https://www.investor.gov/introduction-investing/investing-basics/how-stock-markets-work/types-orders
-- 2025 ORB paper (University of St. Gallen copy): https://www.alexandria.unisg.ch/server/api/core/bitstreams/3c2989c4-688d-4d78-8a71-f02690990d51/content
+- ORB paper (written 2024; SSRN revision posted 2025): https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4729284
+- University of St. Gallen paper copy: https://www.alexandria.unisg.ch/server/api/core/bitstreams/3c2989c4-688d-4d78-8a71-f02690990d51/content
 - Day-trader skill evidence: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=529063
 - Deflated Sharpe Ratio: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2460551
 - Backtest versus out-of-sample evidence: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2745220
