@@ -6,9 +6,13 @@ This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
 equity trading research and automated execution on Ryan Martin's behalf.
 
+This repository is a public experiment in agentic stock trading. The README is
+the public entrypoint, `TRADES.md` is the running public trade ledger, and the
+`trades/` directory holds detailed per-session and per-trade context.
+
 The repo this file exists in is meant to store any information codex deems
 important, along with individual per-trade context files (for research and state),
-stored in /trades/active/ & /trades/archived
+stored in `trades/active/` and `trades/archived/`.
 
 Update this file with ongoing changes to the strategy
 
@@ -68,7 +72,7 @@ Operational MCP rules:
   execute there.
 - Use a fresh UUID `ref_id` for each logical order and reuse it only for retries
   of the same order after transient transport failure. Store each trade's research,
-  plan, state, etc. in individual context files in the /trades/ folder.
+  plan, state, etc. in individual context files under `trades/`.
 
 ## Regulatory And Broker Context
 
@@ -292,9 +296,10 @@ explicitly starts a new live workflow after that loss.
 
 ## Trade Journal And Continuous Improvement
 
-Record every researched candidate and every trade decision in a local journal
-file if one exists, or create `trading-journal.md` when the user asks to track
-results. Minimum fields:
+Record every researched candidate and every trade decision in `TRADES.md` and
+in a matching detailed context file under `trades/`. Use `trades/active/` while
+the session or trade is in progress, then move completed trade/session context
+to `trades/archived/`. Minimum fields:
 
 - Date and ET timestamps
 - Account used, without exposing secrets
@@ -314,6 +319,44 @@ Revise the plan only from evidence. Prefer tightening filters that reduce false
 positives: better catalyst quality, tighter spread limits, higher relative
 volume, stronger VWAP behavior, cleaner 2:1+ reward/risk, and more reliable
 market alignment.
+
+## Public Ledger And GitHub Publishing
+
+This repo is public. Do not commit secrets, access tokens, MFA material, full
+account numbers, private personal data, or broker credentials. Account balances
+may be published as part of the experiment, but account identifiers must remain
+redacted or omitted.
+
+`TRADES.md` is the public running ledger and must be updated for every visible
+trading decision, including entries, exits, stop changes, rejected setups,
+no-trade decisions, daily stop decisions, and force-flat actions. Each `TRADES.md`
+entry should include the ET timestamp, symbol if applicable, decision/action,
+setup family, result or current status, account balance snapshot when available,
+and a link or path to the detailed context file.
+
+Every visible trading decision must also update a detailed context file under
+`trades/active/` or `trades/archived/`. If a decision is session-level rather
+than symbol-specific, create or update a session context file under
+`trades/active/` for that trading day. Keep context files plain text or Markdown
+so they are easy to review publicly.
+
+Whenever any file under `trades/` is changed, the root project must be committed
+and pushed back to GitHub immediately after the ledger/context update. Run the
+workflow from the repo root:
+
+```sh
+git status --short
+git add .
+git commit -m "Updated trades: <plain-English summary>"
+git push
+```
+
+Always use a meaningful commit message that describes the actual change, such
+as `Updated trades: logged no-trade decision for weak VWAP setup`,
+`Updated trades: opened AAPL VWAP continuation context`, or
+`Updated trades: closed TSLA breakout trade with final balance`. If the change
+is a strategy-only update and no `trades/` file changed, use an `Updated strategy:
+...` message instead. Do not make empty commits.
 
 ## Hard Reject Conditions
 
