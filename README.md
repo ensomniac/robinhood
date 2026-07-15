@@ -68,6 +68,51 @@ Detailed per-session and per-trade context lives under:
 - `trades/active/` for active research, open trades, and in-progress sessions.
 - `trades/archived/` for completed sessions and closed trades.
 
+## Email Notifications
+
+The project can send operational notifications through the existing server mail
+sender. Delivery is routed to `ryan@ensomniac.com`. The human-editable policy is
+in [settings.toml](settings.toml):
+
+- `off` sends no operational email.
+- `trades` sends only placed, materially modified, and completed trade events.
+- `verbose` also sends likely-setup, critical safety, and session-summary events.
+
+`trades` is the default. The sender reads the settings file on every CLI call, so
+editing the value affects the next notification without a restart.
+
+The CLI requires Python 3.11 or newer and `requests`:
+
+```sh
+python3 -m pip install -r requirements.txt
+```
+
+Validate configuration without sending:
+
+```sh
+python3 email_sender.py check
+```
+
+Send a policy-filtered notification:
+
+```sh
+python3 email_sender.py notify trade_completed \
+  --subject "AAPL trade completed" \
+  --body "Position confirmed flat" \
+  --data-json '{"net_r":1.4,"exit_reason":"structural target"}'
+```
+
+Run an explicit delivery test:
+
+```sh
+python3 email_sender.py test
+```
+
+The test command deliberately bypasses verbosity and is only for diagnostics.
+Operational mail is best effort and never takes priority over protective orders,
+position reconciliation, or ledger updates. The broker and repository remain the
+authoritative state if email is delayed or fails.
+
 ## Publishing Discipline
 
 This project is intended to be auditable. When a trade decision is made, the
@@ -100,8 +145,12 @@ Commit messages should describe what changed, for example:
 ```text
 .
 ├── AGENTS.md          # Operating contract for Codex and the trading strategy
+├── email_sender.py    # Settings-aware notification CLI and server client
 ├── README.md          # Public project overview
+├── requirements.txt  # Python runtime dependency declaration
+├── settings.toml      # Human-editable operational settings
 ├── STRATEGY_REVIEW.md # Evidence, limitations, sizing example, and rationale
+├── tests/             # Isolated notification unit tests
 ├── TRADES.md          # Running public trade ledger and balance timeline
 ├── trades/
 │   ├── CONTEXT_TEMPLATE.md # Required live/shadow session record

@@ -26,6 +26,8 @@ or MFA details.
 - Circuit breaker state: clear / paused, with reason
 - Existing positions and orders reconciled:
 - Tool and monitoring health:
+- Email verbosity snapshot:
+- Email sender configuration check: passed / failed, with reason
 
 ## Market Context
 
@@ -145,6 +147,15 @@ Do not record full order IDs or ref UUIDs in this public file.
 
 Record every stop replacement and confirm the previous stop is canceled or
 replaced without leaving duplicate sell quantity.
+
+## Notifications
+
+Record operational notification attempts without publishing opaque server
+response details. `Skipped` means the current settings intentionally suppressed
+the event; `failed` is a delivery problem and must not interrupt order safety.
+
+| Time ET | Event | Subject summary | State: sent / skipped / failed | Reason or server `sent` confirmation |
+| --- | --- | --- | --- | --- |
 
 ## Exit And Reconciliation
 

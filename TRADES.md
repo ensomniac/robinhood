@@ -18,6 +18,8 @@ automated trading experiment.
 - Record account balance snapshots when available.
 - Record strategy version, maturity, live/shadow mode, net P/L after fees, and
   net R when applicable.
+- Treat this ledger and confirmed broker state as authoritative. Email is a
+  secondary notification channel and never replaces a ledger entry.
 - After any `trades/` file changes, commit and push the root project.
 
 ## Strategy State

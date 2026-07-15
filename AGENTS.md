@@ -91,6 +91,80 @@ Operational MCP rules:
 - Treat quote and book timestamps as part of the signal. Do not call data live or
   current without checking its timestamp and session.
 
+## Email Notifications
+
+`settings.toml` is the human-editable notification source of truth. Read it
+immediately before each notification by invoking `email_sender.py`; do not cache
+its verbosity across a trading session. The server mail endpoint routes messages
+to Ryan at `ryan@ensomniac.com` and does not accept a recipient argument.
+
+Supported verbosity levels are:
+
+- `off`: send no operational email.
+- `trades`: send only `trade_placed`, `trade_modified`, and `trade_completed`
+  events. This is the default.
+- `verbose`: send every trade event plus `setup`, `critical`, and
+  `session_summary` events.
+
+Use the settings-aware CLI from the repository root:
+
+```sh
+python3 email_sender.py notify trade_placed \
+  --subject "AAPL entry accepted" \
+  --body "Broker state: filled; protective stop accepted" \
+  --data-json '{"symbol":"AAPL","status":"filled"}'
+```
+
+Notification event rules:
+
+- `setup`: at `verbose` only, send once per symbol per session when a candidate
+  is plausibly approaching an order but has not been placed. Require a verified
+  catalyst, bullish opening candle, exact OR_RVOL of at least 1.0, price above
+  flat-to-rising VWAP, a preliminary score of at least 75, and no known hard
+  reject. Send another setup message only after a material change such as a
+  newly satisfied trigger or a newly discovered disqualifier.
+- `trade_placed`: send for every definitively accepted live entry order, with its
+  current broker state. Reconcile an unknown transport outcome before emailing.
+  If the entry filled immediately, secure or safely resolve protective-stop
+  coverage before sending the email.
+- `trade_modified`: send after a material, confirmed lifecycle change such as a
+  partial or final fill, remainder cancellation, protective-stop acceptance or
+  replacement, quantity change, or material exit-plan change. Do not email
+  unchanged polling states.
+- `trade_completed`: send after the position is confirmed flat and any remaining
+  protective order is canceled or otherwise reconciled. Include realized net
+  P/L, net R, exit reason, and ending balance when available.
+- `critical`: at `verbose` only, send for missing protection, unknown or duplicate
+  order state, monitoring/data failure during exposure, a broker/connector
+  blocker, or circuit-breaker activation.
+- `session_summary`: at `verbose` only, send a no-trade/cutoff or end-of-session
+  summary.
+
+Order safety always has priority over email. Never delay a protective stop,
+flattening action, broker reconciliation, or required journal update to send a
+message. Email is a best-effort secondary notification channel; broker state and
+the public ledger remain authoritative. On delivery failure, record `failed` in
+the session context and continue safety-critical work. Do not retry an ambiguous
+mail timeout automatically because the first request may have delivered.
+
+Keep public-repository privacy rules in email bodies: omit full account numbers,
+order IDs, ref UUIDs, credentials, MFA material, and private tool payloads. Record
+each attempted operational notification in the session context as `sent`,
+`skipped`, or `failed`, but do not commit opaque server response details.
+
+`python3 email_sender.py test` sends a clearly labeled diagnostic message even
+when verbosity is `off`. This bypass is manual diagnostics only; never use it for
+an operational event.
+
+The 2026-07-15 live test established the server's success response shape:
+`sent` is `true`, `error` is `null`, and `email_result` is a diagnostic string
+summarizing recipients, subject, HTML-normalized body, attachments, and sender.
+The server converts plain-text newlines to `<br>` in that summary. Treat only the
+top-level `sent` value as the programmatic success contract; do not parse
+`email_result`, and do not store it in public trade context.
+The same test message was visually confirmed in the target Gmail inbox with the
+subject prefix, body line breaks, and structured details rendered as intended.
+
 ## Regulatory And Broker Context
 
 - FINRA's intraday margin standards became effective 2026-06-04, with member
