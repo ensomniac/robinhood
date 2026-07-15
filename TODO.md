@@ -1,9 +1,96 @@
-# This file contains a set of features that we would like to implement in the future. These are written in sparse prose and should be considered starting points. Carefully evaluate each item and revise the prose so it's thorough and clear. Do not implement anything you feel is risky without confirming with the user first.
+# Feature Backlog And Implementation Record
 
-1. Implement agent rules that specify records in /trades/active/ are all live research ideas or active trades for the current day. Once a trade idea fails or becomes stale, or once a trade finishes, those records are moved to a named daily folder in archived: /trades/archived/<year_month_day>/. This will keep all trade ideas clean for the day and in archives.
+Sparse feature ideas are expanded here into explicit acceptance criteria before
+implementation. Risk-bearing behavior must remain inside `AGENTS.md`; a backlog
+item never grants live-trading authority or permission to weaken safety gates.
 
-2. Add a system that states any time a trade, or trade idea that fails or completes (and is subsequently moved to /trades/archived/<year_month_day>/), a summary of why the trade failed or succeeded is added to that trade's dataset. This will allow us to learn from mistakes as the system grows.
+## Completed 2026-07-15
 
-3. Build a system that uses learning of past trades and revises the strategy accordingly to maximize growth and reduce failures
+### 1. Daily Active Context And Date-Partitioned Archives
 
-4. Build a historical learning system. Create a detailed system that will, when instructed, switch into a sort of learning mode that works something like this: A random day is selected (any day that doesn't already exist in the archive). A bunch of market data is pulled for that random day across a bunch of different stocks - similar to what would happen in live trading. The simulator steps through the day, starting at 9:30, and monitors for potential trades, exactly as it would normally. Context files are written to /trades/active/ for that day, and if trades meet criteria, they are soft executed in the simulation and played out through the day. The real world market data for that day is respected, and the trade will either succeed or fail. As with real data, trades are moved to archive with a summary of what worked and what didn't. When in training mode, you should select a random day and "trade" until the day is over, then ask the user if they would like to simulate another day. In fact, when the user puts the system into learning mode, ask how many days the user would like to simulate. Once that number is reached, ask the user if they want to continue with X number of days more.
+Status: implemented by `trade_lifecycle.py` and the lifecycle rules in
+`AGENTS.md`.
+
+- `trades/active/` contains only visible Markdown context for in-progress work on
+  the current ET day. Historical mode may temporarily use a past date only while
+  its validated replay is running and must leave no active files afterward.
+- Rejected/stale ideas, flat trades, no-trade sessions, and completed sessions
+  are terminal and move immediately to `trades/archived/YYYY_MM_DD/`.
+- The lifecycle audit rejects stale or misnamed active context, terminal context
+  left active, malformed archive folders, date mismatches, duplicate public
+  context IDs, and archives without valid outcomes.
+- Archive collisions fail closed; an existing day is never overwritten or used
+  for a second historical simulation.
+
+### 2. Terminal Outcome Dataset
+
+Status: implemented by the embedded outcome schema in `trade_lifecycle.py`.
+
+- Closing requires a concise result, primary reason, thesis result, what worked,
+  what failed, at least one lesson, next-time actions, and relevant public
+  metrics.
+- The close operation adds both a readable Markdown review and the canonical JSON
+  outcome to the same context before moving it. This keeps narrative and learning
+  data together instead of maintaining a drift-prone side index.
+- New outcomes must match the current strategy version/rules hash and cannot
+  contain UUIDs, plaintext broker/account identifiers, secrets, or non-finite
+  values. Historical outcomes remain auditable after later strategy versions.
+- `STRATEGY_LEARNING.md` documents the schema, close command, audit, correction,
+  and publishing workflow.
+
+### 3. Evidence-Based Strategy Learning
+
+Status: implemented safely by `strategy_learning.py`.
+
+- Reports combine canonical ledger/maturity metrics, paired project-versus-EOD
+  exits, archived outcome reasons, and bounded feature-cohort diagnostics.
+- A review proposal is allowed only after both 20 new closed frozen-rule signals
+  and 30 calendar days since version start or the last review.
+- Generated changes are hypotheses for explicit human review. The tool has no
+  apply command and never edits `strategy_config.toml` or `AGENTS.md`.
+- Any accepted change requires Ryan's explicit approval, a new strategy version
+  and rules hash, preserved prior sample, and preregistered confirmation evidence.
+  This resolves the risk in automatic self-modification without discarding the
+  requested continuous-learning capability.
+
+### 4. Historical Learning Mode
+
+Status: implemented by `historical_learning.py` and documented in
+`HISTORICAL_LEARNING.md`.
+
+- The workflow asks for a day count, randomly selects completed exchange trading
+  days not already represented by an archive folder, retains the seed, and asks
+  for an additional count after the requested batch.
+- Each point-in-time replay bundle requires at least ten candidates; complete,
+  non-interpolated regular-session minute bars; split adjustment; time-valid
+  catalysts; full-universe capture; and historical quote/depth snapshots. Missing
+  fidelity is a blocker rather than permission to invent data.
+- Every candidate is evaluated with the frozen production engine. At most one
+  trade is soft-executed, using earliest trigger and deterministic tie breaks.
+  Later eligible signals are retained as daily-limit misses and excluded from
+  return metrics.
+- Replay is conservative and no-lookahead: same-bar stop/target ambiguity resolves
+  stop-first, +2% runner and 3:50 force-flat rules are respected, and paired EOD
+  shadow results are recorded.
+- Candidate/session context is created in `trades/active/` during replay, then all
+  records are outcome-completed, archived, and atomically appended to the signal
+  ledger as a validated batch. Historical mode never calls broker order tools.
+
+### 5. Agentic Session Mode Selector
+
+Status: implemented by `session_mode.py` and the startup rules in `AGENTS.md`.
+
+- Every new agentic trading workflow presents four explicit choices: live,
+  current-day shadow, historical learning, or strategy review.
+- The numbered CLI also accepts stable named modes for automation and returns a
+  machine-readable selection plus the next required safety step.
+- Selection is declarative. Only live mode permits broker actions; no mode choice
+  bypasses account, review, confirmation, evaluator, guard, lifecycle, or privacy
+  rules. Historical and review modes cannot place/cancel orders or silently apply
+  strategy changes.
+
+## Outstanding
+
+No feature from the current backlog remains unimplemented. New ideas should be
+added here with scope, safety boundaries, data contract, acceptance tests, and
+publishing behavior before implementation.

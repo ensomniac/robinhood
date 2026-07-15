@@ -3,7 +3,9 @@
 Use this structure in `trades/active/YYYY-MM-DD-session.md` when a live or shadow
 workflow starts. Keep one canonical session file and link symbol-specific
 files only when the session becomes too large. Move completed context to
-`trades/archived/`.
+`trades/archived/YYYY_MM_DD/` with `trade_lifecycle.py close`. The close command
+requires a public outcome JSON object and appends the canonical readable plus
+machine-readable terminal summary. Do not copy or hand-move terminal context.
 
 Do not publish plaintext account numbers, broker identifiers, UUIDs,
 authentication material, or MFA details. Exact order, ref, confirmation,
@@ -233,6 +235,9 @@ context, execution quality, risk limits, or tool health.
 - `strategy_ledger.py audit` completed:
 - `strategy_ledger.py report` maturity result:
 - Ledger entry added:
-- Context moved to `trades/archived/`:
+- Terminal outcome JSON prepared with result, reason, thesis result, what
+  worked/failed, lessons, next-time actions, and public metrics:
+- `trade_lifecycle.py close` moved context to `trades/archived/YYYY_MM_DD/`:
+- `trade_lifecycle.py audit` completed:
 - Identifier audit completed:
 - Commit and push completed:

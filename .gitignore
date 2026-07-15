@@ -221,3 +221,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Raw replay inputs can be large and provider-specific. Public replay evidence
+# is retained in SIGNALS.jsonl and archived context instead.
+historical_data/

@@ -9,9 +9,11 @@ Two record types are supported:
 
 - `session` proves that a trading day was closed and whether scanner capture was
   complete, a trade was taken, and a no-trade outcome occurred.
-- `signal` records every evaluated candidate. Every eligible triggered signal
-  must be closed in either live or shadow mode; selected winners must not be the
-  only observations retained.
+- `signal` records every evaluated candidate. A selected eligible trigger must
+  be closed in live or shadow mode. An otherwise eligible later trigger blocked
+  by the one-entry daily limit uses `decision=missed`, `closed=false`, and a
+  `missed_reason`; it remains selection evidence but is not a strategy return.
+  Selected winners must not be the only observations retained.
 
 The CLI adds the current strategy version, rules fingerprint, and schema version
 to new records. Public aliases use `YYYY-MM-DD-session[-N]` and
@@ -65,6 +67,12 @@ Closed triggered signals require `net_r`, `net_pnl_dollars`, the actual project
 exit in R, and the paper-aligned end-of-day shadow exit in R. Closed live signals
 also require entry slippage and unprotected-exposure time. A stop execution
 requires actual stop slippage and its planned reserve.
+
+Signals may also include a numeric `features` object for the bounded learning
+fields `opening_relative_volume`, `score`, `median_spread_bps`, `stop_fraction`,
+`resistance_room_fraction`, and `reward_risk`. Unknown or non-finite features are
+rejected. `strategy_learning.py` uses these fields for cohort diagnostics; it
+does not mutate the strategy.
 
 ```json
 {

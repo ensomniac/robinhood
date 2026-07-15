@@ -24,6 +24,24 @@ stored in `trades/active/` and `trades/archived/`.
 
 Update this file with ongoing changes to the strategy
 
+## Session Mode Selection
+
+At the start of every new agentic trading workflow, present the numbered mode
+selector below and wait for Ryan's selection before starting market discovery,
+historical collection, or strategy analysis. Run `python3 session_mode.py` for
+the canonical CLI picker. A direct numeric or named choice maps to:
+
+1. `live`: current-day research and authorized real-money execution.
+2. `shadow`: current-day research and simulated decisions; no live orders.
+3. `historical`: random unarchived-day replay; no broker actions.
+4. `review`: read-only learning report and, when earned, a strategy proposal.
+
+Mode selection is declarative and does not bypass any other rule. Only `live`
+permits live order tools, and it still requires every account, encryption,
+ledger, evaluator, review, confirmation, and session-guard check. `historical`
+must ask how many days Ryan wants to simulate before selecting dates. `review`
+may write a cadence-qualified proposal but may not edit or activate live rules.
+
 ## Authority Boundary
 
 - The user's (Ryan) trading preference is aggressive day trading: seek explosive
@@ -590,9 +608,25 @@ Circuit breakers:
 Record every researched candidate and every trade decision in `TRADES.md` and
 in a matching detailed context file under `trades/`. Also append every session
 and candidate to the privacy-safe structured ledger through
-`strategy_ledger.py record`. Use `trades/active/` while
-the session or trade is in progress, then move completed trade/session context
-to `trades/archived/`. Minimum fields:
+`strategy_ledger.py record`.
+
+`trades/active/` is a strict working set. Outside an active historical replay,
+every visible Markdown file there must belong to the current ET trading day and
+must represent research or a trade/session that is still in progress. When an
+idea is rejected or stale, a trade becomes flat, or a session reaches a terminal
+no-trade/completed state, close it immediately with `trade_lifecycle.py close`.
+The command requires a public outcome JSON object, embeds both a readable review
+and its validated machine record in the context, and moves it to
+`trades/archived/YYYY_MM_DD/`. Never move a terminal file without an outcome and
+never leave yesterday's context active. Run `python3 trade_lifecycle.py audit`
+at session start, session end, and before a repository commit.
+
+Every outcome must state the result, primary reason, whether the thesis held,
+what worked, what failed, at least one lesson, next-time actions, and relevant
+public metrics. It must not contain plaintext broker/account identifiers or
+UUIDs. The embedded outcome is the context's durable learning dataset; do not
+hand-edit its marker block after archival. Corrections require a documented,
+versioned follow-up rather than silent history changes. Minimum context fields:
 
 - Date and ET timestamps
 - Account used, without exposing secrets
@@ -628,9 +662,61 @@ Use `python3 strategy_ledger.py audit` to validate structured history and
 `python3 strategy_ledger.py report` for the canonical metrics, exit-overlay
 comparison, and earned maturity. Do not promote from hand-calculated summaries.
 
-Revise the plan only on a fixed cadence of 20 closed signals or monthly,
-whichever is later. Preserve the prior version's sample. Do not optimize from one
-trade or mix VWAP/HOD research signals into the production ORB results.
+Run `python3 strategy_learning.py report` for evidence-based diagnostics. A
+strategy review is allowed only after both 20 additional closed frozen-rule
+signals and 30 calendar days since the version start or last written review.
+`python3 strategy_learning.py propose` may then write a public proposal under
+`strategy_proposals/`; it never changes `strategy_config.toml` or `AGENTS.md`.
+Treat all generated threshold/exit observations as hypotheses. Applying any
+change requires Ryan's explicit approval, a new strategy version and rules hash,
+preservation of the prior sample, and a preregistered confirmation sample. Never
+optimize from one trade or mix VWAP/HOD research signals into production ORB
+results.
+
+## Historical Learning Mode
+
+Historical mode is offline shadow research. It never calls `review_equity_order`,
+`place_equity_order`, or `cancel_equity_order`, never uses live buying power, and
+never changes production rules. Live exposure, unresolved orders, or a current
+active trading context take priority and block starting a replay.
+
+When Ryan selects historical mode:
+
+1. Ask how many days to simulate.
+2. Select that many completed trading dates randomly from an authoritative
+   exchange calendar with `historical_learning.py select`. Exclude every date
+   whose `trades/archived/YYYY_MM_DD/` folder already exists. Retain the random
+   seed and selection JSON; replay that exact manifest after collection rather
+   than randomizing the collected pool again.
+3. Collect a point-in-time replay bundle for each date. Require at least ten
+   candidates, complete regular-session non-interpolated minute bars, split
+   adjustment, time-valid catalysts, the exact opening-volume lookback, and
+   historical quote/depth snapshots sufficient for the normal execution gates.
+   If those facts cannot be obtained, report a data-fidelity blocker; do not
+   manufacture quotes, depth, catalysts, bars, or validation-grade results. Use
+   explicit synthetic replay equity/buying power; never copy the live balance
+   into a historical bundle.
+4. Validate the bundle before creating context. Confirmation-phase bundles need
+   a preregistration timestamp and manifest hash created before data collection.
+5. Run the frozen `strategy_engine.py` at each recorded trigger. Select at most
+   one simulated trade: the earliest qualified trigger, breaking simultaneous
+   ties by score, OR_RVOL, then symbol. Record later eligible triggers as
+   `missed` because the daily entry limit is exhausted; do not count them as
+   closed returns.
+6. Replay the selected trade conservatively. A minute containing both stop and
+   target resolves stop-first. Respect the broker strategy's stop, +2% runner
+   gates, 3:50 PM force-flat, and paired stop/EOD baseline. Never use future data
+   in an earlier decision.
+7. Write session/candidate context temporarily to `trades/active/`, append the
+   validated ledger batch, and archive every context with its terminal outcome.
+   Run both lifecycle and signal-ledger audits, then update `TRADES.md` and
+   commit/push the public artifacts as required below.
+8. After the requested batch completes, ask how many additional days Ryan wants
+   to simulate. Zero ends historical mode.
+
+See `HISTORICAL_LEARNING.md` for the bundle contract and CLI workflow. Raw replay
+bundles under `historical_data/` are local inputs and are Git-ignored; archived
+context and `SIGNALS.jsonl` are the durable public evidence.
 
 ## Public Ledger And GitHub Publishing
 

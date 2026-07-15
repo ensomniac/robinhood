@@ -40,6 +40,14 @@ FORBIDDEN_KEY_PARTS = (
     "token",
     "mfa",
 )
+LEARNING_FEATURES = (
+    "opening_relative_volume",
+    "score",
+    "median_spread_bps",
+    "stop_fraction",
+    "resistance_room_fraction",
+    "reward_risk",
+)
 
 
 class LedgerError(ValueError):
@@ -189,8 +197,28 @@ def validate_record(
     _boolean(record, "paper_baseline_eligible")
     _boolean(record, "stop_executed")
 
-    if triggered and eligible and decision in ("rejected", "missed"):
-        raise LedgerError("an eligible triggered signal must be live or shadow logged")
+    if triggered and eligible and decision == "rejected":
+        raise LedgerError("an eligible triggered signal cannot be rejected")
+    if decision == "missed":
+        if not triggered or not eligible or closed:
+            raise LedgerError(
+                "a missed signal must be eligible, triggered, and outcome-open"
+            )
+        _string(record, "missed_reason")
+    elif record.get("missed_reason") is not None:
+        raise LedgerError("missed_reason is allowed only for a missed signal")
+
+    features = record.get("features")
+    if features is not None:
+        if not isinstance(features, Mapping):
+            raise LedgerError("features must be an object")
+        unknown = set(features) - set(LEARNING_FEATURES)
+        if unknown:
+            raise LedgerError(
+                f"features contains unsupported fields: {sorted(unknown)}"
+            )
+        for field, value in features.items():
+            _finite(value, f"features.{field}", minimum=0)
     if closed and triggered:
         net_r = _finite(record.get("net_r"), "net_r")
         project_r = _finite(record.get("project_exit_net_r"), "project_exit_net_r")
@@ -272,8 +300,22 @@ def append_record(
     path: Path = DEFAULT_LEDGER_PATH,
     config: StrategyConfig | None = None,
 ) -> dict[str, Any]:
+    return append_records([payload], path, config)[0]
+
+
+def append_records(
+    payloads: Sequence[Mapping[str, Any]],
+    path: Path = DEFAULT_LEDGER_PATH,
+    config: StrategyConfig | None = None,
+) -> list[dict[str, Any]]:
+    """Atomically append a validated batch under one ledger lock."""
     config = config or load_config()
-    record = prepare_record(payload, config)
+    if not payloads:
+        raise LedgerError("at least one ledger record is required")
+    records = [prepare_record(payload, config) for payload in payloads]
+    new_ids = [_public_id(record) for record in records]
+    if len(new_ids) != len(set(new_ids)):
+        raise LedgerError("duplicate public record id within append batch")
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a+", encoding="utf-8") as handle:
         fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
@@ -289,15 +331,20 @@ def append_record(
                     f"existing ledger line {line_number} is invalid JSON"
                 ) from exc
             existing_ids.add(_public_id(existing))
-        record_id = _public_id(record)
-        if record_id in existing_ids:
-            raise LedgerError(f"duplicate public record id: {record_id}")
+        duplicates = sorted(set(new_ids) & existing_ids)
+        if duplicates:
+            raise LedgerError(f"duplicate public record id: {duplicates[0]}")
         handle.seek(0, os.SEEK_END)
-        handle.write(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n")
+        handle.write(
+            "".join(
+                json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n"
+                for record in records
+            )
+        )
         handle.flush()
         os.fsync(handle.fileno())
         fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-    return record
+    return records
 
 
 def audit_ledger(

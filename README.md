@@ -75,7 +75,9 @@ That file is the first place to look for:
 Detailed per-session and per-trade context lives under:
 
 - `trades/active/` for active research, open trades, and in-progress sessions.
-- `trades/archived/` for completed sessions and closed trades.
+- `trades/archived/YYYY_MM_DD/` for terminal ideas, sessions, and trades. Every
+  archived context contains a readable outcome review and embedded JSON learning
+  record.
 
 After the first recorded session, `SIGNALS.jsonl` is the machine-readable
 companion. See [SIGNAL_LEDGER.md](SIGNAL_LEDGER.md) for its privacy-safe schema
@@ -147,9 +149,19 @@ again or replace `.env`; losing that key makes historical ciphertext
 unrecoverable. See [IDENTIFIER_ENCRYPTION.md](IDENTIFIER_ENCRYPTION.md) for
 encryption, decryption, rotation, auditing, recovery, and performance instructions.
 
-## Executable Strategy Controls
+## Session Modes And Executable Controls
 
-The active workflow uses three local decision surfaces around authoritative
+Start a new agentic workflow with the numbered mode picker:
+
+```sh
+python3 session_mode.py
+```
+
+The modes are live trading, current-day shadow trading, historical learning, and
+strategy review. Selection itself is non-mutating. Only live mode permits broker
+actions, and every normal safety gate still applies.
+
+The active workflow uses local decision surfaces around authoritative
 broker and market tool responses:
 
 ```sh
@@ -160,6 +172,9 @@ python3 strategy_engine.py /path/to/candidate.json
 python3 strategy_ledger.py audit
 python3 strategy_ledger.py report
 
+# Confirm active context is current and every archive has an outcome.
+python3 trade_lifecycle.py audit
+
 # Interlock the final broker/session snapshot before entry and after state changes.
 python3 session_guard.py /path/to/broker-snapshot.json
 ```
@@ -168,6 +183,24 @@ Only `strategy_engine.py` output with `eligible=true` under the current rules
 hash can proceed to broker review. Only `session_guard.py` status `ENTRY_READY`
 can proceed to a new live entry. The scripts calculate and guard decisions; they
 do not fetch broker data or place orders themselves.
+
+Historical learning uses point-in-time replay bundles and never touches broker
+orders:
+
+```sh
+python3 historical_learning.py validate /path/to/YYYY-MM-DD.json
+python3 historical_learning.py run --selection selection.json
+```
+
+See [HISTORICAL_LEARNING.md](HISTORICAL_LEARNING.md) for the strict data-fidelity
+contract. Evidence review is similarly non-executing:
+
+```sh
+python3 strategy_learning.py report
+python3 strategy_learning.py propose  # only after both cadence gates pass
+```
+
+Proposals never apply themselves. See [STRATEGY_LEARNING.md](STRATEGY_LEARNING.md).
 
 ## Publishing Discipline
 
@@ -205,25 +238,31 @@ Commit messages should describe what changed, for example:
 ├── .env.example       # Key variable names only; the real .env is ignored
 ├── AGENTS.md          # Operating contract for Codex and the trading strategy
 ├── email_sender.py    # Settings-aware notification CLI and server client
+├── historical_learning.py # Point-in-time, no-broker replay engine
+├── HISTORICAL_LEARNING.md # Replay data and operator contract
 ├── IDENTIFIER_ENCRYPTION.md # Inline identifier encryption and recovery guide
 ├── README.md          # Public project overview
 ├── requirements.txt  # Python runtime dependency declaration
 ├── session_guard.py  # Entry, protection, heartbeat, and flatten interlock
+├── session_mode.py   # Explicit live/shadow/historical/review selector
 ├── SIGNAL_LEDGER.md  # Structured public signal-record schema and workflow
 ├── sensitive_data.py # Fast encrypt/decrypt/audit/benchmark CLI
 ├── settings.toml      # Human-editable operational settings
 ├── strategy_config.toml # Numeric rules, maturity risk, and promotion gates
 ├── strategy_engine.py # Deterministic OR_RVOL, gate, score, and sizing engine
 ├── strategy_ledger.py # Append/audit/report CLI for session and signal data
+├── strategy_learning.py # Evidence report and non-applying proposals
 ├── strategy_maturity.py # Reproducible metrics and evidence-earned maturity
+├── STRATEGY_LEARNING.md # Outcome and review-cadence workflow
 ├── STRATEGY_AUDIT_2026-07-15.md # Ranked failure analysis and v3 repairs
 ├── STRATEGY_REVIEW.md # Evidence, limitations, sizing example, and rationale
 ├── tests/             # Strategy, safety, notification, and encryption tests
 ├── TRADES.md          # Running public trade ledger and balance timeline
+├── trade_lifecycle.py # Terminal outcome embedding and daily archiving
 ├── trades/
 │   ├── CONTEXT_TEMPLATE.md # Required live/shadow session record
 │   ├── active/        # Active trade/session context
-│   └── archived/      # Completed trade/session context
+│   └── archived/      # YYYY_MM_DD terminal context and outcome data
 └── LICENSE
 ```
 
