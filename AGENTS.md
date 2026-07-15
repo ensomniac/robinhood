@@ -14,8 +14,9 @@ This repository is a public experiment in agentic stock trading. The README is
 the public entrypoint, `TRADES.md` is the running public trade ledger, and the
 `trades/` directory holds detailed per-session and per-trade context.
 
-Read `STRATEGY_REVIEW.md` for the source-backed rationale and limitations. Start
-new session context from `trades/CONTEXT_TEMPLATE.md`.
+Read `STRATEGY_REVIEW.md` for the source-backed rationale and limitations. Read
+`IDENTIFIER_ENCRYPTION.md` before handling broker identifiers. Start new session
+context from `trades/CONTEXT_TEMPLATE.md`.
 
 The repo this file exists in is meant to store any information codex deems
 important, along with individual per-trade context files (for research and state),
@@ -91,6 +92,81 @@ Operational MCP rules:
 - Treat quote and book timestamps as part of the signal. Do not call data live or
   current without checking its timestamp and session.
 
+## Encrypted Identifier Storage
+
+Exact broker order IDs, client `ref_id` UUIDs, confirmation IDs, cancellation
+IDs, and replacement IDs must be retained in the existing trade context, but
+never as plaintext. Encrypt them inline with `sensitive_data.py` and the ignored
+mode-0600 `.env` key ring. The only permitted public form is an explicitly marked
+token such as `enc:fernet:v1:...`; never use reversible custom encoding, digit
+masking, or format-preserving output.
+
+Do not persist passwords, authentication tokens, MFA material, session cookies,
+or broker credentials even in encrypted context. Continue omitting the account
+number unless an exact persisted value becomes operationally necessary; discover
+the authorized Agentic account from `get_accounts` at the start of every session.
+
+Before a live workflow, run:
+
+```sh
+python3 sensitive_data.py check
+python3 sensitive_data.py audit
+```
+
+Both must pass before a new entry. If encryption becomes unavailable while a
+position is open, broker reconciliation, protection, and flattening still take
+priority; repair and complete the context afterward. Never delay an entry stop,
+stop replacement, cancellation, or exit to perform encryption, Markdown edits,
+Git operations, email, or benchmarking.
+
+Encrypt an identifier interactively so plaintext does not enter shell history:
+
+```sh
+python3 sensitive_data.py encrypt --field broker_order_id
+python3 sensitive_data.py encrypt --field client_ref_id
+```
+
+The command reads the private value from a hidden prompt when used in a terminal
+and prints only ciphertext. Codex should open the command in a PTY and write the
+value to stdin rather than placing plaintext on the command line. Decrypt a
+public token only when exact historical correlation is needed:
+
+```sh
+python3 sensitive_data.py decrypt --expect-field broker_order_id \
+  'enc:fernet:v1:...'
+```
+
+Never paste decrypted output into email, command arguments, public context, the
+ledger, commit messages, or logs. Use a public order alias in narrative and
+lifecycle tables; keep encrypted exact values in the context's identifier record.
+
+Identifier timing rules:
+
+- After an entry order has a definitive broker state, retain the exact broker ID
+  and client `ref_id`. If it filled immediately, establish or safely resolve stop
+  protection first, then encrypt and journal the identifiers.
+- After every stop, exit, cancellation, or replacement action, first confirm and
+  reconcile broker state, then encrypt every returned exact identifier.
+- On an unknown submission outcome, query current broker orders before retrying.
+  Decrypt context only as supporting correlation; the live broker response is
+  authoritative.
+- At session end and before every commit, run `python3 sensitive_data.py audit`.
+  A plaintext identifier or unauthenticated token is a publishing blocker.
+
+The cipher and parsed keys are cached inside a process. On this machine on
+2026-07-15, 10,000 warmed short-ID round trips measured 16.500 microseconds median
+encryption, 14.834 microseconds median decryption, and 36.667 microseconds p95 for
+the complete round trip. A cold CLI configuration check took 0.08 seconds. These
+operations are outside the order-safety critical path; do not run the benchmark
+during a live setup or open position.
+
+`.env` is the only private artifact for this design and contains keys, not trade
+state. It must remain Git-ignored and mode `0600`. The user must retain a secure
+backup of the key ring; losing it makes existing ciphertext unrecoverable. Rotate
+keys only outside a live workflow with `python3 sensitive_data.py rotate-key`.
+Old keys remain available locally so historical tokens still decrypt. A leaked
+old key can decrypt old Git history even after rotation.
+
 ## Email Notifications
 
 `settings.toml` is the human-editable notification source of truth. Read it
@@ -147,9 +223,10 @@ the public ledger remain authoritative. On delivery failure, record `failed` in
 the session context and continue safety-critical work. Do not retry an ambiguous
 mail timeout automatically because the first request may have delivered.
 
-Keep public-repository privacy rules in email bodies: omit full account numbers,
-order IDs, ref UUIDs, credentials, MFA material, and private tool payloads. Record
-each attempted operational notification in the session context as `sent`,
+Keep public-repository privacy rules in email bodies: omit account numbers,
+decrypted order IDs, ref UUIDs, credentials, MFA material, and private tool
+payloads. Record each attempted operational notification in the session context
+as `sent`,
 `skipped`, or `failed`, but do not commit opaque server response details.
 
 `python3 email_sender.py test` sends a clearly labeled diagnostic message even
@@ -511,10 +588,12 @@ trade or mix VWAP/HOD research signals into the production ORB results.
 
 ## Public Ledger And GitHub Publishing
 
-This repo is public. Do not commit secrets, access tokens, MFA material, full
-account numbers, private personal data, or broker credentials. Account balances
-may be published as part of the experiment, but account identifiers must remain
-redacted or omitted.
+This repo is public. Do not commit secrets, access tokens, MFA material, plaintext
+account numbers, private personal data, broker credentials, or plaintext broker
+identifiers. Account balances may be published as part of the experiment, but
+account identifiers must remain redacted or omitted. Authenticated
+`enc:fernet:vN:...` order/ref/confirmation tokens are allowed only in detailed
+trade context, never in `TRADES.md`.
 
 `TRADES.md` is the public running ledger and must be updated for every visible
 trading decision, including entries, exits, stop changes, rejected setups,
@@ -557,6 +636,8 @@ Reject a trade immediately if any of these are true:
 - A filled entry already occurred that trading day.
 - A drawdown, stale-data, unknown-order, tool-health, or monitoring circuit
   breaker is active.
+- Identifier encryption configuration or the context audit is unavailable before
+  entry.
 - The signal is not the production five-minute Stock-in-Play ORB, or the signal
   occurs outside 9:35-10:30 ET.
 - The first-five-minute candle is not bullish, exact opening relative volume is

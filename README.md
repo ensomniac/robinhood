@@ -81,7 +81,7 @@ in [settings.toml](settings.toml):
 `trades` is the default. The sender reads the settings file on every CLI call, so
 editing the value affects the next notification without a restart.
 
-The CLI requires Python 3.11 or newer and `requests`:
+The project CLIs require Python 3.11 or newer and the declared dependencies:
 
 ```sh
 python3 -m pip install -r requirements.txt
@@ -112,6 +112,27 @@ The test command deliberately bypasses verbosity and is only for diagnostics.
 Operational mail is best effort and never takes priority over protective orders,
 position reconciliation, or ledger updates. The broker and repository remain the
 authoritative state if email is delayed or fails.
+
+## Encrypted Trade Identifiers
+
+Exact order IDs, client reference UUIDs, and confirmation/cancellation/replacement
+IDs are stored directly in detailed trade context as authenticated
+`enc:fernet:vN:...` ciphertext. There is no separate private trade-state store.
+The only private file is the ignored `.env` key ring.
+
+Setup and verify:
+
+```sh
+python3 -m pip install -r requirements.txt
+python3 sensitive_data.py init-key  # first setup only
+python3 sensitive_data.py check
+python3 sensitive_data.py audit
+```
+
+The current machine already has its initial mode-0600 key. Do not run `init-key`
+again or replace `.env`; losing that key makes historical ciphertext
+unrecoverable. See [IDENTIFIER_ENCRYPTION.md](IDENTIFIER_ENCRYPTION.md) for
+encryption, decryption, rotation, auditing, recovery, and performance instructions.
 
 ## Publishing Discipline
 
@@ -144,13 +165,16 @@ Commit messages should describe what changed, for example:
 
 ```text
 .
+├── .env.example       # Key variable names only; the real .env is ignored
 ├── AGENTS.md          # Operating contract for Codex and the trading strategy
 ├── email_sender.py    # Settings-aware notification CLI and server client
+├── IDENTIFIER_ENCRYPTION.md # Inline identifier encryption and recovery guide
 ├── README.md          # Public project overview
 ├── requirements.txt  # Python runtime dependency declaration
+├── sensitive_data.py # Fast encrypt/decrypt/audit/benchmark CLI
 ├── settings.toml      # Human-editable operational settings
 ├── STRATEGY_REVIEW.md # Evidence, limitations, sizing example, and rationale
-├── tests/             # Isolated notification unit tests
+├── tests/             # Isolated notification and encryption unit tests
 ├── TRADES.md          # Running public trade ledger and balance timeline
 ├── trades/
 │   ├── CONTEXT_TEMPLATE.md # Required live/shadow session record
@@ -162,9 +186,10 @@ Commit messages should describe what changed, for example:
 ## Safety And Privacy
 
 This repository is public. Do not commit secrets, access tokens, MFA material,
-full account numbers, private personal data, or broker credentials. Account
-balances may be published as part of the experiment, but account identifiers
-should remain redacted or omitted.
+plaintext account numbers, private personal data, broker credentials, or
+plaintext broker identifiers. Account balances may be published as part of the
+experiment, but account identifiers should remain redacted or omitted. Encrypted
+order/ref/confirmation tokens are permitted only in detailed trade context.
 
 Broker review alerts, margin warnings, halts, liquidity failures, connector
 errors, and unresolved login/MFA requirements are treated as blockers unless

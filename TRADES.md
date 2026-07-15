@@ -20,6 +20,8 @@ automated trading experiment.
   net R when applicable.
 - Treat this ledger and confirmed broker state as authoritative. Email is a
   secondary notification channel and never replaces a ledger entry.
+- Keep all exact broker identifiers out of this ledger. Encrypted exact values
+  belong only in the matching detailed context under `trades/`.
 - After any `trades/` file changes, commit and push the root project.
 
 ## Strategy State

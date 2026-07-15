@@ -5,8 +5,10 @@ workflow starts. Keep one canonical session file and link symbol-specific
 files only when the session becomes too large. Move completed context to
 `trades/archived/`.
 
-Do not publish full account numbers, order IDs, UUIDs, authentication material,
-or MFA details.
+Do not publish plaintext account numbers, broker identifiers, UUIDs,
+authentication material, or MFA details. Exact order, ref, confirmation,
+cancellation, and replacement IDs belong in the encrypted identifier records
+below as `enc:fernet:vN:...` tokens.
 
 ## Session
 
@@ -26,6 +28,8 @@ or MFA details.
 - Circuit breaker state: clear / paused, with reason
 - Existing positions and orders reconciled:
 - Tool and monitoring health:
+- Identifier encryption check: passed / failed, with reason
+- Context identifier audit: passed / failed, with reason
 - Email verbosity snapshot:
 - Email sender configuration check: passed / failed, with reason
 
@@ -124,12 +128,27 @@ material risks. Do not silently omit a candidate after research begins.
 - Confirmation received (ET):
 - Protective-stop confirmation path verified before entry:
 
+## Encrypted Identifier Records
+
+Repeat this block for every entry, protective stop, replacement, cancellation,
+and exit order. Run `python3 sensitive_data.py encrypt` only after urgent broker
+protection/reconciliation work. Never put exact identifiers elsewhere in this
+file; use the public alias in tables and narrative.
+
+- Order role:
+- Public order alias:
+- Broker order ID:
+- Client ref ID:
+- Confirmation ID:
+- Cancellation ID:
+- Replacement ID:
+
 ## Order Lifecycle
 
-Do not record full order IDs or ref UUIDs in this public file.
+Do not place plaintext or decrypted identifiers in this table.
 
-| Time ET | Event | State | Quantity | Price | Fees | Data/order latency | Action |
-| --- | --- | --- | ---: | ---: | ---: | --- | --- |
+| Time ET | Public order alias | Event | State | Quantity | Price | Fees | Data/order latency | Action |
+| --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
 
 - Unknown transport outcome reconciled before retry:
 - Partial-fill remainder canceled:
@@ -190,4 +209,5 @@ context, execution quality, risk limits, or tool health.
 - What must not be changed from one observation:
 - Ledger entry added:
 - Context moved to `trades/archived/`:
+- Identifier audit completed:
 - Commit and push completed:
