@@ -22,24 +22,34 @@ losses, and automated execution can fail in ways that matter financially.
 
 ## Current Strategy
 
-The active strategy is defined in [AGENTS.md](AGENTS.md). At a high level:
+The active operating contract is defined in [AGENTS.md](AGENTS.md), with the
+evidence, limitations, and worked risk example in
+[STRATEGY_REVIEW.md](STRATEGY_REVIEW.md). Strategy version
+`2026-07-15-orb-v2` is currently `UNVALIDATED` because this repository has no
+completed local trade sample.
+
+At a high level:
 
 - Long equities only.
-- One open trade maximum.
+- One filled trade per day and one open trade maximum.
 - Regular market hours only.
-- No new entries before 9:35 AM ET or after 3:15 PM ET.
-- Flat by 3:55 PM ET.
-- Target a 2% gross gain on qualified setups.
-- Cap planned loss at 0.8% from average fill.
-- Use 70-100% of available buying power only when the setup qualifies.
-- Prefer catalyst-backed stocks with strong relative volume, tight spreads,
-  enough book depth, and clear technical structure.
+- Production entries only from 9:35-10:30 AM ET; flat by 3:50 PM ET.
+- One production setup: a long five-minute opening range breakout in a
+  catalyst-backed Stock in Play.
+- Compute opening relative volume from the current 9:30-9:35 bar versus the same
+  interval over the prior 14 sessions.
+- Size from account risk, stop distance, a stop-slippage reserve, buying power,
+  and executable liquidity. The resulting notional must still be 70-100% to
+  qualify.
+- Use +2% as a milestone with a structural runner rule, not a daily quota or an
+  unconditional fixed take-profit.
+- Pause or demote the strategy when local expectancy, drawdown, slippage, data,
+  or broker-tool health fails the documented gates.
 
-The current playbook focuses on:
-
-- Five-minute opening range breakouts.
-- VWAP pullback continuations.
-- High-of-day continuations.
+VWAP pullback and high-of-day continuation setups are research-only until they
+earn separate positive out-of-sample evidence. The cited ORB research studied a
+diversified long-short portfolio; its reported returns are not expected returns
+for this concentrated, long-only implementation.
 
 ## Public Trade Ledger
 
@@ -80,9 +90,9 @@ git push
 
 Commit messages should describe what changed, for example:
 
-- `Updated trades: logged no-trade decision for weak VWAP setup`
-- `Updated trades: opened AAPL VWAP continuation context`
-- `Updated trades: closed TSLA breakout trade with final balance`
+- `Updated trades: logged no-trade decision for weak ORB setup`
+- `Updated trades: opened AAPL Stock-in-Play ORB context`
+- `Updated trades: closed TSLA ORB trade with final balance`
 - `Updated strategy: tightened liquidity gates`
 
 ## Repository Map
@@ -91,8 +101,10 @@ Commit messages should describe what changed, for example:
 .
 ├── AGENTS.md          # Operating contract for Codex and the trading strategy
 ├── README.md          # Public project overview
+├── STRATEGY_REVIEW.md # Evidence, limitations, sizing example, and rationale
 ├── TRADES.md          # Running public trade ledger and balance timeline
 ├── trades/
+│   ├── CONTEXT_TEMPLATE.md # Required live/shadow session record
 │   ├── active/        # Active trade/session context
 │   └── archived/      # Completed trade/session context
 └── LICENSE

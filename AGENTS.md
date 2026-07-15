@@ -2,6 +2,10 @@
 
 Research refreshed: 2026-07-15
 
+Strategy version: `2026-07-15-orb-v2`
+
+Strategy maturity: `UNVALIDATED` until the promotion rules below are met.
+
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
 equity trading research and automated execution on Ryan Martin's behalf.
@@ -9,6 +13,9 @@ equity trading research and automated execution on Ryan Martin's behalf.
 This repository is a public experiment in agentic stock trading. The README is
 the public entrypoint, `TRADES.md` is the running public trade ledger, and the
 `trades/` directory holds detailed per-session and per-trade context.
+
+Read `STRATEGY_REVIEW.md` for the source-backed rationale and limitations. Start
+new session context from `trades/CONTEXT_TEMPLATE.md`.
 
 The repo this file exists in is meant to store any information codex deems
 important, along with individual per-trade context files (for research and state),
@@ -28,9 +35,11 @@ Update this file with ongoing changes to the strategy
   before scanner changes, order reviews, entries, protective stops, stop
   replacements, target exits, flattening actions, canceling stale or redundant
   orders, or journal updates, provided the action stays within this file.
-- If Robinhood MCP tool instructions include an order-review or approval step
-  that Codex can complete, complete that step and execute on Ryan's behalf. Treat
-  this file plus Ryan's live-session start command as the standing authorization.
+- Tool and platform instructions override this repository authorization. If an
+  order tool requires the review to be shown to Ryan or requires explicit user
+  confirmation, show it exactly as required and obtain that confirmation. Never
+  self-confirm a broker-required approval. Before entry, verify that the workflow
+  can also satisfy any confirmation needed to place the protective stop promptly.
 - Ask Ryan only when blocked by login, MFA, connector outage, a broker/tool
   requirement that cannot be completed by Codex, or a requested action outside
   this file's strategy such as options, short sales, overnight holds, multiple
@@ -43,11 +52,14 @@ market actions as typed tools that Codex can call. In this environment, the
 important tool families are:
 
 - Account state: `get_accounts`, `get_portfolio`
-- Market discovery: `get_scans`, `create_scan`, `update_scan_filters`,
-  `update_scan_config`, `run_scan`
+- Market discovery: `get_scans`, `get_scanner_filter_specs`, `create_scan`,
+  `update_scan_filters`, `update_scan_config`, `run_scan`,
+  `get_earnings_calendar`, `get_earnings_results`
 - Market data: `get_equity_quotes`, `get_equity_price_book`,
-  `get_equity_fundamentals`, `search`
+  `get_equity_fundamentals`, `get_equity_historicals`,
+  `get_equity_technical_indicators`, `search`
 - Positions and orders: `get_equity_positions`, `get_equity_orders`
+- Results and calibration: `get_pnl_trade_history`, `get_realized_pnl`
 - Equity trade readiness: `get_equity_tradability`, `review_equity_order`
 - Live equity actions: `place_equity_order`, `cancel_equity_order`
 - Options tooling also exists, but this strategy is equity-only unless the user
@@ -59,8 +71,8 @@ Operational MCP rules:
   Robinhood and that is the account that is to be used.
 - Only call live order tools for accounts where `agentic_allowed=true`.
 - Before a live equity order, call `review_equity_order` by default, evaluate
-  buying-power, tradability, halt, margin, and order-check alerts, and proceed
-  automatically when no blocking alert exists.
+  buying-power, tradability, halt, margin, and order-check alerts, and follow the
+  tool's current confirmation requirements even when no blocking alert exists.
 - `place_equity_order` places real-money orders. In this Codex environment, remember
   that speed is critical and you have Ryan's permission to execute as quickly as possible.
 - `cancel_equity_order` cancels a real order.
@@ -73,15 +85,19 @@ Operational MCP rules:
 - Use a fresh UUID `ref_id` for each logical order and reuse it only for retries
   of the same order after transient transport failure. Store each trade's research,
   plan, state, etc. in individual context files under `trades/`.
+- A timeout or transport error after submission has an unknown outcome. Query
+  current orders before retrying; never create a second UUID until the first
+  logical order is confirmed absent, rejected, cancelled, or otherwise terminal.
+- Treat quote and book timestamps as part of the signal. Do not call data live or
+  current without checking its timestamp and session.
 
 ## Regulatory And Broker Context
 
-- FINRA replaced the old Pattern Day Trader framework with intraday margin
-  standards effective 2026-06-04, with broker implementation phase-in allowed
-  through 2027-10-20.
-- Robinhood says margin accounts are monitored in real time for intraday margin
-  deficits under the new standards. Always let the live account and review tools
-  determine current buying power, restrictions, and margin alerts.
+- FINRA's intraday margin standards became effective 2026-06-04, with member
+  implementation phase-in allowed through 2027-10-20. Robinhood says its margin
+  accounts transitioned on June 4 and are monitored in real time for intraday
+  margin deficits. Always let the live account and review tools determine current
+  buying power, restrictions, and margin alerts.
 - Margin day trading can still lose some or all capital, and margin can create
   losses beyond the original investment. Treat every trade idea as unproven
   until the live order review and exit plan are validated.
@@ -91,33 +107,46 @@ Operational MCP rules:
 
 ## Strategy Objective
 
-Primary objective: find one high-conviction long equity day trade with a clean
-technical and catalyst-based path to a 2% gross gain before the close.
+Primary objective: compound account equity by taking at most one high-conviction,
+long five-minute Stock-in-Play ORB per day with positive expected value after
+spread, fees, slippage, and failed-signal losses. A +2% move from fill remains the
+primary milestone, but it is neither a daily quota nor an excuse to hold a failed
+trend. No trade is a successful outcome when the edge is absent.
 
 Hard constraints:
 
-- One open trade maximum across all equity positions and open equity orders.
+- One open trade maximum across all equity positions and open equity orders, and
+  at most one filled entry per trading day.
 - Long equities only. No short sales or futures.
 - Regular market hours only: 9:30 AM-4:00 PM ET.
 - No new entries before 9:35 AM ET; use the first 5 minutes to establish opening
   range and liquidity.
-- No new entries after 3:15 PM ET.
-- Force flat by 3:55 PM ET, or earlier if liquidity deteriorates.
-- Default allocation is 80% of available buying power, bounded by 70-100%, only
-  when risk controls are satisfied. Use 90-100% only for A+ setups with unusually
-  strong catalyst quality, spread at or below 0.10%, deep book support, clean
-  market alignment, and no broker review concerns. Use 75-85% for normal A
-  setups. Reject anything below A quality instead of reducing below 70%.
-- Gross profit target is +2.0% from average fill, but with high conviction, closely
-  monitor a trade if higher gains might be possible. Move the stop as needed.
-- Maximum planned loss is 40% of the gain target. For a 2.0% target, the stop
-  must be no worse than -0.8% from average fill, before expected slippage.
-- If the technically valid stop is wider than 0.8%, reject the trade rather than
-  widening the stop or reducing discipline.
+- No new production entry after 10:30 AM ET. If no ORB qualifies, log no trade.
+- Force flat by 3:50 PM ET, or earlier if liquidity deteriorates.
+- The strategy starts `UNVALIDATED`: 70-80% notional and at most 0.50% of account
+  equity in planned loss including a stop-slippage reserve. After at least 20
+  frozen-rule signals with positive net expectancy, profit factor above 1.20,
+  and acceptable execution, it may become `PROVISIONAL`: 70-85% notional and the
+  same 0.50% risk cap.
+- Only a `VALIDATED` strategy with at least 50 closed signals, positive
+  out-of-sample expectancy, profit factor above 1.30, maximum drawdown at or
+  below 6R, and acceptable stop slippage may use 90-100% notional on an A+ setup,
+  with at most 0.65% of equity in planned loss. Material rule changes reset the
+  sample under a new version.
+- Notional is a consequence of risk sizing. Never increase quantity merely to
+  reach 70%; reject when the risk- and liquidity-capped notional is below 70%.
+- The candidate must have at least 2.2% defensible room before resistance and at
+  least 2.5:1 reward/risk after expected spread and slippage.
+- Set stop distance to the greater of 10% of daily ATR(14) and the distance to
+  real technical invalidation. Reject if that stop is wider than 0.8% from entry.
 - If the stop would sit inside normal noise, reject the trade rather than using
   an arbitrary tight stop. The planned stop must be outside the current spread,
   outside ordinary candle noise for the setup, and far enough from the trigger to
-  represent real technical invalidation while still staying within the 0.8% cap.
+  represent real invalidation.
+- At +2.0%, exit unless price remains above rising VWAP, the spread is at or below
+  0.10%, the market and catalyst remain supportive, and a structural stop can
+  lock at least +1R outside normal noise. A qualifying runner is trailed rather
+  than capped mechanically at +2%.
 - Use whole-share sizing unless fractional shares can be protected by a valid
   stop order in the current account and session.
 
@@ -134,51 +163,83 @@ valid trade setup appears, the user stops the session, or the entry cutoff passe
      there is no open position, open stop, open target, queued order, partial
      fill, or unresolved rejection. If anything is open, manage or resolve it
      before considering a new entry.
+   - Reconcile the current maturity state, rolling five-session drawdown,
+     consecutive losses, and whether today's one-entry limit is still available.
+   - Stop before discovery if any account, order, data, monitoring, or drawdown
+     circuit breaker is active.
 
 2. Build the live candidate universe.
    - Start with saved scanners from `get_scans` and run relevant gainers,
      movers, volume, or catalyst scans with `run_scan`.
    - If a purpose-built scan is missing and scanner writes are appropriate in
-     the active workflow, create or update scans for high-volume daily gainers,
-     unusual volume, and earnings/news movers.
-   - Prefer candidates with price above $10, hard minimum price above $5,
-     regular-session volume above 1,000,000 shares, regular-session dollar
-     volume above $25,000,000, relative volume above 3x and preferably above 5x,
-     clear positive catalyst, and tradability allowed by Robinhood.
+     the active workflow, first call `get_scanner_filter_specs`, then create or
+     update a scan for common stocks above $5, abnormal volume, and positive
+     movement. Do not guess filter enum names or supported intervals.
+   - Treat scanner relative volume as a coarse shortlist only. At or just after
+     9:35 ET, use `get_equity_historicals` with split adjustment and regular
+     bounds to compute each candidate's exact first-five-minute opening relative
+     volume: today's 9:30-9:35 volume divided by the mean 9:30-9:35 volume over
+     the prior 14 sessions.
+   - Require opening price above $5, prefer above $10, prior 14-session average
+     daily volume at least 1,000,000 shares, prior-completed-session daily ATR(14)
+     above $0.50, exact
+     opening relative volume at least 1.0 and preferably at least 3.0, a bullish
+     first-five-minute candle, a verified catalyst, and allowed tradability.
+   - Rank exact opening relative volume within the available scanner universe.
+     Record whether the rank is exact for the full universe or approximate within
+     returned results. Never call an approximate shortlist the paper's top 20.
    - Exclude securities with halts, pending halt risk, broken quotes, spreads
-     above 0.20%, inadequate book depth, recent reverse splits without stable
-     liquidity, or social-media-only catalysts.
+     above 0.15%, inadequate book depth, recent reverse splits without stable
+     liquidity, social-media-only catalysts, or a conflicting dilution/financing
+     event that undermines the long thesis.
 
 3. Validate each candidate.
    - Use `get_equity_quotes` for real-time bid, ask, last, and prior close.
    - Use `get_equity_price_book` to verify spread and visible depth.
-   - Use `get_equity_fundamentals` for current OHLCV, average volume, market cap,
-     float, and profile context.
+   - Use `get_equity_fundamentals`, daily historicals, and technical indicators
+     for volume, ATR, market cap, float, session VWAP, and profile context. Ignore
+     interpolated bars in volume or execution calculations.
    - Use live web/news research when the catalyst is not already clear. Prefer
-     issuer releases, SEC filings, exchange notices, and reputable market news.
-   - Compare the candidate against SPY and QQQ as market context. Avoid long
-     entries when the broad market is sharply reversing unless the candidate has
-     independent relative strength.
+     issuer releases, SEC filings, and exchange notices as primary evidence. For
+     an analyst action or other event without a public issuer source, require a
+     reputable, directly attributed report and independent corroboration.
+   - Compare the candidate against fresh SPY and QQQ quotes, opening bars, and
+     VWAP. Reject when both benchmarks are below falling VWAP and making new
+     five-minute lows unless the candidate has exceptional independent relative
+     strength that is documented in the score.
+   - Immediately before review, take three quote/book snapshots over roughly 10
+     seconds. Each timestamp must be no more than five seconds old when read; bid
+     and ask must be positive and uncrossed; median spread must be at or below
+     0.10%; no snapshot may exceed 0.15%. A+ requires median spread at or below
+     0.08%.
    - Reject candidates when the planned order would be too large for displayed
-     depth or recent tape volume. As a default, require the planned quantity to
-     be no more than 5% of visible near-book depth or recent one-minute volume
-     unless book refreshes and prints clearly show enough executable liquidity.
+     depth or recent tape volume. Planned quantity must be no more than 5% of
+     visible ask depth executable at the entry limit and no more than 5% of
+     recent real one-minute volume.
 
 4. Score the setup before preparing an order.
-   - Catalyst quality: 25 points
-   - Relative volume and abnormal participation: 20 points
-   - Technical structure and timing: 25 points
-   - Liquidity, spread, depth, and tradability: 15 points
-   - Market/sector alignment: 10 points
-   - Exit-plan quality: 5 points
+   - Catalyst quality, 25 points: 25 for a direct and material issuer/SEC/exchange
+     event; 20 for a directly attributed analyst action or reputable wire report
+     with independent corroboration. Any contradiction/dilution conflict or score
+     below 20 is a reject.
+   - Opening relative volume, 20 points: 20 for at least 5x and top-five rank, 17
+     for at least 3x and top-10 rank, 14 for at least 1x and top-20 rank. Below
+     1x is a reject. State the ranking scope.
+   - ORB structure and timing, 25 points: bullish opening candle, clean break of
+     its high, entry no more than 0.15% above the trigger, above flat-to-rising
+     VWAP, and sufficient resistance room, five points each.
+   - Liquidity, spread, depth, and tradability, 15 points: five each for clean
+     three-snapshot spread, sufficient executable depth/volume, and clean
+     tradability/data freshness.
+   - Market/sector alignment, 10 points: five for SPY/QQQ context and five for
+     sector/candidate relative strength.
+   - Exit-plan quality, 5 points: valid ATR/technical stop, slippage reserve,
+     2.5R minimum, and a credible +2% path.
    - Minimum score: 85/100, with no hard reject conditions.
-   - Minimum score: 90/100 for 90-100% allocation. Scores from 85-89 may still
-     qualify only for 75-85% allocation and only if every hard gate is clean.
-   - Hard gates before any order ticket: verified non-rumor catalyst, price
-     above VWAP for long setups, spread at or below 0.20% and preferably 0.10%,
-     visible room of at least 2.2% before obvious resistance, reward/risk at or
-     above 2.5:1 after spread and expected slippage, and a stop that is both
-     technically valid and no wider than 0.8%.
+   - Minimum score: 90/100 for A+ classification. A+ notional of 90-100% is
+     forbidden until the strategy is `VALIDATED` even when the score is 90+.
+   - A score never overrides a hard gate and is not a calibrated probability of
+     profit. Preserve the component evidence in the session context.
 
 5. Build a premarket shortlist when the workflow starts before the open.
    - From 9:00-9:30 AM ET, prepare but do not enter. Use earnings, issuer press
@@ -187,73 +248,98 @@ valid trade setup appears, the user stops the session, or the entry cutoff passe
    - At 9:30-9:35 AM ET, observe the opening range, spread, book behavior, and
      whether the catalyst names hold relative strength. Do not enter before
      9:35 AM ET.
+   - At 9:35, recompute exact opening relative volume, rank the long-eligible
+     bullish opening candles, and monitor only the best few names until 10:30.
 
 ## Qualified Long Setups
 
-Use only one of these setup families unless Ryan explicitly instructs a new
-playbook.
+The only production setup in strategy version `2026-07-15-orb-v2` is the long
+five-minute Stock-in-Play opening range breakout.
 
-1. Five-minute opening range breakout.
-   - Wait until the first 5-minute candle closes.
-   - Candidate must be a stock in play: unusually high opening volume and a real
-     catalyst.
-   - Opening candle should show directional strength, ideally close above open.
-   - Entry trigger is a break above the 5-minute opening range high with volume
-     expansion, price above VWAP, and marketable liquidity.
-   - Stop goes below the breakout failure level, VWAP, or nearest clean swing
-     low, but never more than 0.8% below entry.
+1. Wait until the complete 9:30-9:35 ET candle is available. Require `close >
+   open`; a doji or red candle is ineligible for this long-only strategy.
+2. Require a verified catalyst and exact opening relative volume of at least 1.0,
+   ranked among the highest available candidates.
+3. The entry trigger is the first clean trade through the opening-range high
+   between 9:35 and 10:30, while price is above flat-to-rising session VWAP and
+   quotes/books remain fresh and liquid.
+4. Do not chase an ask more than 0.15% above the opening-range high. A delayed
+   observation is a missed trade, not permission to weaken the entry.
+5. Set the stop distance to `max(0.10 * daily ATR(14), entry - technical
+   invalidation)`. The stop must be outside normal noise and no wider than 0.8%.
+6. Require a credible +2% path and at least 2.5R before resistance after costs.
 
-2. VWAP pullback continuation.
-   - Candidate is already trending above VWAP with rising or stable VWAP.
-   - Pullback into VWAP or a short moving average holds on reduced selling
-     pressure.
-   - Entry trigger is reclaim/continuation with bid support and tightening
-     spread.
-   - Stop goes below VWAP/swing invalidation, capped at 0.8%.
-
-3. High-of-day continuation.
-   - Candidate consolidates tightly below high of day after a catalyst move.
-   - Breakout must have enough room to reach +2% before major visible resistance.
-   - Avoid if the stock is already extended far above VWAP and the stop would be
-     arbitrary or wider than 0.8%.
+VWAP pullback continuation and high-of-day continuation are research-only. They
+may be shadow-logged under separate strategy versions, but may not trigger a
+real-money order until separately promoted from at least 50 frozen-rule signals
+with positive out-of-sample expectancy and acceptable execution.
 
 ## Order Construction
 
 Before any live order:
 
 - Verify no existing equity position or unresolved equity order.
-- Verify current account buying power supports a 70-100% allocation without
+- Verify today's filled-entry limit remains unused and no drawdown, data, tool,
+  or monitoring circuit breaker is active.
+- Verify current account buying power supports the calculated allocation without
   creating a margin or intraday margin deficit alert.
 - Verify `get_equity_tradability` allows the planned symbol and session.
+- Complete the three-snapshot quote/book gate immediately before review.
 - Compute:
-  - `entry_limit`: marketable buy limit near current ask, with a tight slippage
-    cap justified by spread and depth.
-  - `target_price = average_fill * 1.02`
-  - `max_stop_price = average_fill * 0.992`
-  - `planned_stop`: the tighter of technical invalidation and `max_stop_price`
-    for risk control.
-  - `allocation = 80%` of available buying power by default, bounded 70-100%
-    according to the conviction tiers in Hard constraints.
-  - `quantity = floor(allocation / entry_limit)` unless whole-share sizing makes
-    the account allocation impossible. Do not use a quantity that prevents a
-    valid protective stop.
+  - `entry_limit`: marketable buy limit at or just above the fresh ask, capped so
+    it cannot chase more than 0.15% above the opening-range high.
+  - `atr_stop_distance = 0.10 * daily_ATR_14`.
+  - `technical_distance = entry_limit - technical_invalidation`.
+  - `stop_distance = max(atr_stop_distance, technical_distance)`.
+  - `planned_stop = entry_limit - stop_distance`.
+  - `stop_slippage_reserve_per_share = max(current_spread, 0.001 * entry_limit)`.
+  - `risk_per_share = stop_distance + stop_slippage_reserve_per_share`.
+  - `risk_budget = account_equity * maturity_risk_fraction`.
+  - `q_risk = floor(risk_budget / risk_per_share)`.
+  - `q_allocation = floor(allocation_cap * available_buying_power / entry_limit)`.
+  - `q_liquidity`: the smaller 5% cap from executable ask depth and recent real
+    one-minute volume.
+  - `quantity = min(q_risk, q_allocation, q_liquidity)`.
+  - `milestone_price = entry_limit * 1.02` and reward/risk to resistance after
+    spread and slippage.
+- Reject rather than alter the stop when stop distance exceeds 0.8%, calculated
+  risk exceeds the maturity cap, notional is below 70%, or reward/risk is below
+  2.5:1.
 - Call `review_equity_order`, evaluate and log the trade ticket, thesis, target,
   stop, invalidation, allocation, expected account risk, and all alerts.
-- If review returns no blocking alert and the trade still satisfies this file,
-  immediately call `place_equity_order` without waiting for Ryan.
+- Present the tool's required market-data disclosure verbatim and obtain any
+  confirmation required by the current tool instructions. Repository standing
+  authorization does not bypass that contract.
+- When the tool permits review bypass only after an explicit user instruction,
+  the entry-review message may ask Ryan to explicitly authorize immediate
+  protective-stop and emergency/target exit placement without separate review
+  for that session. Never infer that bypass from this file alone.
+- Before placing the entry, confirm that a protective stop can be submitted and
+  any required stop confirmation can be obtained promptly. If not, do not enter.
+- After confirmation, repeat the freshness, price, stop, risk, and liquidity
+  checks. If the ticket materially changed, recompute and re-review rather than
+  placing an obsolete review. Place the logical entry once with a fresh UUID.
 
 After a reviewed and filled entry:
 
-- Poll `get_equity_orders` until the entry state is filled, rejected, cancelled,
-  or stale.
-- If the entry partially fills, size the exit plan to the actual filled quantity.
-- Immediately prepare and review a protective sell stop for the filled quantity.
-- If the protective stop review returns no blocking alert, immediately place the
-  protective stop without waiting for Ryan.
-- Do not place a simultaneous target order unless an OCO/bracket mechanism is
-  available and verified through the active broker/tool surface. If no OCO
-  exists, actively monitor the position and close manually with a marketable
-  limit sell when target or invalidation occurs.
+- Poll `get_equity_orders` rapidly until the entry state is filled, rejected,
+  cancelled, or 10 seconds old. Cancel an unfilled remainder at 10 seconds or as
+  soon as price, spread, depth, VWAP, or thesis no longer matches the plan.
+- If the entry partially fills, cancel the remainder and protect only the actual
+  filled quantity. Do not add merely to reach the original allocation.
+- Recompute milestone, stop, risk, and allocation from the actual average fill.
+- Immediately review and place a regular-hours GFD `stop_market` for the filled
+  whole shares, following any broker-required confirmation. Use stop-market only
+  because the pre-entry liquidity gate established that execution is more
+  important than a stop-limit that may not fill.
+- Record unprotected exposure duration. If stop placement or confirmation cannot
+  be completed promptly, flatten the position with a reviewed marketable limit.
+- Robinhood does not currently provide equity bracket orders, and the MCP exposes
+  no OCO operation. Do not place an independent target sell while the full-size
+  protective stop remains live.
+  Pre-review and confirm the exit while the stop remains live; then cancel and
+  confirm the stop and immediately submit the exit. If the exit submission fails,
+  restore protection or flatten through the safest tool-permitted route.
 
 ## Live Monitoring And Exit Management
 
@@ -261,38 +347,56 @@ Once in a trade, monitoring is mandatory. If Codex cannot monitor, do not enter.
 
 Polling loop while position is open:
 
-- Check quote and price book every 15-30 seconds, or faster during sharp moves.
+- Check quote and price book about every 5-10 seconds while an active trigger or
+  open position needs attention. If the tool surface cannot sustain timely
+  monitoring, do not enter or flatten an existing position safely.
 - Check order state after every order action.
 - Keep a running log of thesis, price, spread, volume behavior, stop, target,
   and any catalyst updates.
+- The broker-held stop is primary protection. Monitoring never substitutes for
+  a resting stop.
 - Never widen a stop. Stops may only stay fixed or tighten.
-- Move stop toward breakeven only if price advances enough that normal noise is
-  unlikely to trigger it immediately.
+- To tighten a stop without OCO/replace support, review and obtain any required
+  confirmation for the new stop while the old stop remains live. Then cancel and
+  confirm the old stop and immediately place the new one. If replacement fails,
+  restore protection or flatten; never leave the gap unacknowledged.
+- At +1R, tighten only when a confirmed higher low or other valid structure keeps
+  the new stop outside ordinary noise. At +2R, trail below the nearest confirmed
+  higher low or valid VWAP structure.
 - At +2.0%, exit immediately unless the trade qualifies for a structured runner.
-  A runner is allowed only when price remains above VWAP, spread is at or below
-  0.15% and preferably 0.10%, the broad market remains supportive, the catalyst
-  is still intact, and the stop can be tightened to breakeven or better without
-  sitting inside normal noise.
+  A runner is allowed only when price remains above rising VWAP, spread is at or
+  below 0.10%, the broad market remains supportive, the catalyst is still intact,
+  and a stop can lock at least +1R without sitting inside normal noise.
 - For a structured runner, trail against the nearest clean higher low, VWAP
-  hold, or tight consolidation failure. Never let a winning trade turn into a
-  planned loss after the +2.0% target has been reached.
+  hold, or tight consolidation failure. Never let a trade that reached +2.0%
+  return below a locked +1R floor.
 - Exit immediately if:
-  - price reaches target,
+  - price reaches a planned structural exit or +2% without satisfying runner gates,
   - price hits planned stop or technical invalidation,
   - catalyst is contradicted,
   - VWAP or opening range structure fails,
-  - spread widens beyond 0.20%,
+  - spread widens beyond 0.15% or repeatedly fails the 0.10% operating gate,
   - liquidity disappears,
   - market-wide reversal invalidates the long thesis,
   - the symbol is halted or halt risk becomes obvious,
   - order monitoring fails,
-  - it is 3:55 PM ET.
+  - it is 3:50 PM ET.
 
 For target exits, use a marketable limit sell near the bid with enough price
-protection to avoid a poor fill. After the position is flat, cancel any remaining
-protective stop automatically when the tool permits Codex to complete the action.
-If one trade is stopped out, stop looking for new entries for the day unless Ryan
-explicitly starts a new live workflow after that loss.
+protection to avoid a poor fill. Follow the tool's review/confirmation contract.
+After the position is confirmed flat, cancel any remaining protective stop and
+confirm the cancellation. Never infer flatness from an order submission alone.
+No second filled entry is allowed that day, regardless of the first trade's result.
+
+Circuit breakers:
+
+- Pause new live entries after three consecutive losing trades, a 2% rolling
+  five-session equity drawdown, or a 4% strategy peak-to-trough drawdown.
+- Resume only after a written audit of signal quality, spread, slippage, tool
+  health, and rule adherence. Shadow signals may continue during the pause.
+- Any stale data, duplicate or unknown order, broker outage, missing stop, or
+  inability to monitor activates the kill switch: no new order, and flatten an
+  existing position as soon as the broker surface safely permits.
 
 ## Trade Journal And Continuous Improvement
 
@@ -303,22 +407,33 @@ to `trades/archived/`. Minimum fields:
 
 - Date and ET timestamps
 - Account used, without exposing secrets
+- Strategy version, maturity state, and live/shadow mode
 - Candidate source and scan
 - Catalyst source links
-- Entry setup family
+- Exact opening-relative-volume inputs and ranking scope
+- Opening range OHLCV, ATR, VWAP, and SPY/QQQ context
+- Entry setup family; production trades must use the five-minute Stock-in-Play ORB
 - Score and disqualifying risks considered
-- Entry, target, stop, quantity, allocation, and expected account risk
+- Three pre-order spread/depth snapshots and their data ages
+- Entry, milestone, stop, slippage reserve, quantity, allocation, and expected
+  account risk
 - Review alerts
-- Fill details
+- Fill details, entry latency/slippage, stop placement latency, and unprotected
+  exposure duration
 - Exit details
-- P/L in dollars and percent
+- P/L after fees in dollars, percent, and R; MFE and MAE in percent and R
 - Whether the original thesis held
 - What to change next time
 
-Revise the plan only from evidence. Prefer tightening filters that reduce false
-positives: better catalyst quality, tighter spread limits, higher relative
-volume, stronger VWAP behavior, cleaner 2:1+ reward/risk, and more reliable
-market alignment.
+Maintain results by strategy version. At minimum calculate net expectancy in R,
+profit factor, win rate, average win/loss R, maximum drawdown, median and
+95th-percentile entry/stop slippage, no-trade frequency, and rule-violation count.
+Compare the live exit with a shadow end-of-day exit so the +2% milestone/trailing
+overlay is tested rather than assumed.
+
+Revise the plan only on a fixed cadence of 20 closed signals or monthly,
+whichever is later. Preserve the prior version's sample. Do not optimize from one
+trade or mix VWAP/HOD research signals into the production ORB results.
 
 ## Public Ledger And GitHub Publishing
 
@@ -331,8 +446,8 @@ redacted or omitted.
 trading decision, including entries, exits, stop changes, rejected setups,
 no-trade decisions, daily stop decisions, and force-flat actions. Each `TRADES.md`
 entry should include the ET timestamp, symbol if applicable, decision/action,
-setup family, result or current status, account balance snapshot when available,
-and a link or path to the detailed context file.
+setup family, strategy version, net R or current status, account balance snapshot
+when available, and a link or path to the detailed context file.
 
 Every visible trading decision must also update a detailed context file under
 `trades/active/` or `trades/archived/`. If a decision is session-level rather
@@ -352,9 +467,9 @@ git push
 ```
 
 Always use a meaningful commit message that describes the actual change, such
-as `Updated trades: logged no-trade decision for weak VWAP setup`,
-`Updated trades: opened AAPL VWAP continuation context`, or
-`Updated trades: closed TSLA breakout trade with final balance`. If the change
+as `Updated trades: logged no-trade decision for weak ORB setup`,
+`Updated trades: opened AAPL Stock-in-Play ORB context`, or
+`Updated trades: closed TSLA ORB trade with final balance`. If the change
 is a strategy-only update and no `trades/` file changed, use an `Updated strategy:
 ...` message instead. Do not make empty commits.
 
@@ -365,31 +480,47 @@ Reject a trade immediately if any of these are true:
 - No explicit account number.
 - Account is not `agentic_allowed=true` for live order tools.
 - A current position or unresolved order already exists.
+- A filled entry already occurred that trading day.
+- A drawdown, stale-data, unknown-order, tool-health, or monitoring circuit
+  breaker is active.
+- The signal is not the production five-minute Stock-in-Play ORB, or the signal
+  occurs outside 9:35-10:30 ET.
+- The first-five-minute candle is not bullish, exact opening relative volume is
+  below 1.0, or its inputs/ranking scope cannot be recorded.
 - Stop cannot be placed, monitored, or respected.
-- Target is less than 2% or stop would be more than 0.8%.
+- There is less than 2.2% defensible room or less than 2.5R before resistance
+  after expected spread and slippage.
+- Stop distance is more than 0.8%, planned loss including stop-slippage reserve
+  exceeds the maturity risk cap, or risk-sized notional is below 70%.
 - Stop is so tight that it sits inside the spread or ordinary setup noise rather
   than at real technical invalidation.
-- Reward/risk is worse than 2.5:1 before slippage.
-- Spread is above 0.20% or book depth is inadequate for the planned allocation.
+- Any of the three pre-review snapshots is stale, zero, or crossed; median spread
+  is above 0.10%; any snapshot spread is above 0.15%; or book/tape depth is
+  inadequate for the planned allocation.
 - Planned order size is too large for near-book depth or recent one-minute tape
   volume.
 - The move is based only on rumor, social media, or unexplained scanner activity.
 - The entry is outside regular market hours.
-- The entry is before 9:35 AM ET or after 3:15 PM ET.
-- The trade cannot be exited by 3:55 PM ET.
+- The trade cannot be exited by 3:50 PM ET.
+- Required user confirmation for entry or prompt stop protection is unavailable.
 - Any order review, broker alert, connector error, login/MFA requirement, or
   external blocker that Codex cannot resolve automatically is unresolved.
 
 ## Research Sources
 
-- Robinhood Agentic Trading: https://robinhood.com/us/en/agentic-trading/
-- Robinhood Day Trading: https://robinhood.com/us/en/support/articles/day-trading/
+- Full evidence review and implementation cautions: `STRATEGY_REVIEW.md`
+- Robinhood Agentic Trading: https://robinhood.com/us/en/support/articles/agentic-trading-overview/
+- Robinhood Day Trading: https://robinhood.com/us/en/support/articles/pattern-day-trading/
+- Robinhood equity order types and no-bracket limitation: https://robinhood.com/us/en/support/articles/360001213963/
 - Robinhood Extended-Hours Trading: https://robinhood.com/us/en/support/articles/extendedhours-trading/
 - FINRA Regulatory Notice 26-10: https://www.finra.org/rules-guidance/notices/26-10
 - FINRA frequent intraday trading overview: https://www.finra.org/investors/insights/frequent-intraday-trading
 - FINRA new intraday margin requirements: https://www.finra.org/investors/insights/intraday-margin-requirements
 - FINRA order types: https://www.finra.org/investors/investing/investment-products/stocks/order-types
+- FINRA stop-order risks: https://www.finra.org/investors/insights/stop-orders-factors-consider-during-volatile-markets
 - Investor.gov order types: https://www.investor.gov/introduction-investing/investing-basics/how-stock-markets-work/types-orders
-- QuantConnect opening range breakout research summary: https://www.quantconnect.com/research/18444/opening-range-breakout-for-stocks-in-play/
-- SSRN opening range breakout paper: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4729284
-- Charles Schwab VWAP overview: https://www.schwab.com/learn/story/how-to-use-volume-weighted-indicators-trading
+- 2025 ORB paper (University of St. Gallen copy): https://www.alexandria.unisg.ch/server/api/core/bitstreams/3c2989c4-688d-4d78-8a71-f02690990d51/content
+- Day-trader skill evidence: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=529063
+- Deflated Sharpe Ratio: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2460551
+- Backtest versus out-of-sample evidence: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2745220
+- SEC automated risk-control FAQ: https://www.sec.gov/rules-regulations/staff-guidance/trading-markets-frequently-asked-questions/divisionsmarketregfaq-0
