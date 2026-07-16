@@ -202,6 +202,17 @@ class EvaluationTests(unittest.TestCase):
         with self.assertRaisesRegex(StrategyInputError, "inconsistent OHLC"):
             evaluate_candidate(payload)
 
+    def test_flat_opening_bar_is_valid_input_but_not_bullish(self):
+        payload = qualifying_payload()
+        payload["candidate"]["opening_bar"].update(
+            {"open": 49.5, "high": 49.5, "low": 49.5, "close": 49.5}
+        )
+
+        result = evaluate_candidate(payload)
+
+        self.assertFalse(result.eligible)
+        self.assertIn("first five-minute candle is not bullish", result.hard_rejects)
+
 
 if __name__ == "__main__":
     unittest.main()

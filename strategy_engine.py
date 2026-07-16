@@ -354,7 +354,7 @@ def evaluate_candidate(
     if (
         opening_low > min(opening_open, opening_close)
         or opening_high < max(opening_open, opening_close)
-        or opening_low >= opening_high
+        or opening_low > opening_high
     ):
         raise StrategyInputError(
             "candidate.opening_bar contains inconsistent OHLC values"
