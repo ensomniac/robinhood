@@ -16,6 +16,7 @@ import socket
 import subprocess
 import threading
 import time
+from collections import Counter
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, time as wall_time, timedelta, timezone
 from decimal import Decimal
@@ -92,7 +93,12 @@ def historical_error_category(exc: BaseException) -> str:
         message = str(exc).lower()
         if exc.error_code in CONNECTION_ERROR_CODES or "timed out" in message:
             return "retryable_transport"
-        if "pacing violation" in message or "query cancelled" in message:
+        if (
+            exc.error_code == 100
+            or "pacing violation" in message
+            or "query cancelled" in message
+            or "maximum allowed message rate" in message
+        ):
             return "retryable_provider"
         return "permanent_fidelity"
     if isinstance(exc, IBKRConfigurationError):
@@ -151,6 +157,7 @@ class IBKRConfig:
     connect_timeout_seconds: float = 12.0
     request_timeout_seconds: float = 90.0
     minimum_request_spacing_seconds: float = 0.4
+    max_concurrent_requests: int = 4
     auto_start_tws: bool = False
     tws_start_timeout_seconds: float = 45.0
     tws_app_path: str = ""
@@ -170,6 +177,7 @@ class IBKRConfig:
             "IBKR_CONNECT_TIMEOUT_SECONDS",
             "IBKR_REQUEST_TIMEOUT_SECONDS",
             "IBKR_MIN_REQUEST_SPACING_SECONDS",
+            "IBKR_MAX_CONCURRENT_REQUESTS",
             "IBKR_AUTO_START_TWS",
             "IBKR_TWS_START_TIMEOUT_SECONDS",
             "IBKR_TWS_APP_PATH",
@@ -203,6 +211,12 @@ class IBKRConfig:
                 values.get("IBKR_MIN_REQUEST_SPACING_SECONDS")
                 or cls.minimum_request_spacing_seconds,
                 "IBKR_MIN_REQUEST_SPACING_SECONDS",
+            ),
+            max_concurrent_requests=_integer(
+                values.get("IBKR_MAX_CONCURRENT_REQUESTS")
+                or cls.max_concurrent_requests,
+                "IBKR_MAX_CONCURRENT_REQUESTS",
+                minimum=1,
             ),
             auto_start_tws=_env_bool(
                 values.get("IBKR_AUTO_START_TWS"), cls.auto_start_tws
@@ -321,6 +335,19 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
         self._requests: dict[int, _RequestState] = {}
         self._connection_error: dict[str, Any] | None = None
         self._last_request_at = 0.0
+        self._request_slots = threading.BoundedSemaphore(
+            config.max_concurrent_requests
+        )
+        self._telemetry_started_at = time.monotonic()
+        self._request_counts: Counter[str] = Counter()
+        self._request_completed: Counter[str] = Counter()
+        self._request_failed: Counter[str] = Counter()
+        self._request_duration_seconds: Counter[str] = Counter()
+        self._request_max_duration_seconds: dict[str, float] = {}
+        self._request_in_flight = 0
+        self._request_peak_in_flight = 0
+        self._request_pacing_wait_seconds = 0.0
+        self._request_slot_wait_seconds = 0.0
 
     def __enter__(self) -> "_IBKRHistoricalConnection":
         self.connect_and_wait()
@@ -526,17 +553,92 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
             self._requests[request_id] = state
         return request_id, state
 
-    def _pacing_wait(self) -> None:
+    def _pacing_wait(self) -> float:
+        """Reserve a globally spaced send time before sleeping.
+
+        Reserving under the lock is important once multiple collection workers
+        share the connection.  Computing a delay and updating the timestamp in
+        two separate critical sections lets several threads wake and submit at
+        once, defeating the configured pacing interval.
+        """
         with self._lock:
-            delay = max(
-                0.0,
-                self.config.minimum_request_spacing_seconds
-                - (time.monotonic() - self._last_request_at),
+            now = time.monotonic()
+            scheduled_at = max(
+                now,
+                self._last_request_at
+                + self.config.minimum_request_spacing_seconds,
             )
+            self._last_request_at = scheduled_at
+            delay = scheduled_at - now
         if delay:
             time.sleep(delay)
+        return delay
+
+    def _begin_provider_request(self, kind: str) -> float:
+        slot_started = time.monotonic()
+        self._request_slots.acquire()
+        slot_wait = time.monotonic() - slot_started
+        try:
+            pacing_wait = self._pacing_wait()
+        except Exception:
+            self._request_slots.release()
+            raise
         with self._lock:
-            self._last_request_at = time.monotonic()
+            self._request_counts[kind] += 1
+            self._request_in_flight += 1
+            self._request_peak_in_flight = max(
+                self._request_peak_in_flight,
+                self._request_in_flight,
+            )
+            self._request_pacing_wait_seconds += pacing_wait
+            self._request_slot_wait_seconds += slot_wait
+        return time.monotonic()
+
+    def _end_provider_request(
+        self, kind: str, *, started_at: float, failed: bool
+    ) -> None:
+        duration = time.monotonic() - started_at
+        with self._lock:
+            target = self._request_failed if failed else self._request_completed
+            target[kind] += 1
+            self._request_duration_seconds[kind] += duration
+            self._request_max_duration_seconds[kind] = max(
+                self._request_max_duration_seconds.get(kind, 0.0),
+                duration,
+            )
+            self._request_in_flight -= 1
+        self._request_slots.release()
+
+    def request_telemetry(self) -> dict[str, Any]:
+        with self._lock:
+            submitted = sum(self._request_counts.values())
+            completed = sum(self._request_completed.values())
+            failed = sum(self._request_failed.values())
+            return {
+                "elapsed_seconds": time.monotonic() - self._telemetry_started_at,
+                "submitted": submitted,
+                "completed": completed,
+                "failed": failed,
+                "in_flight": self._request_in_flight,
+                "peak_in_flight": self._request_peak_in_flight,
+                "configured_max_in_flight": self.config.max_concurrent_requests,
+                "minimum_request_spacing_seconds": (
+                    self.config.minimum_request_spacing_seconds
+                ),
+                "pacing_wait_seconds": self._request_pacing_wait_seconds,
+                "slot_wait_seconds": self._request_slot_wait_seconds,
+                "submitted_by_kind": dict(sorted(self._request_counts.items())),
+                "completed_by_kind": dict(
+                    sorted(self._request_completed.items())
+                ),
+                "failed_by_kind": dict(sorted(self._request_failed.items())),
+                "request_seconds_by_kind": dict(
+                    sorted(self._request_duration_seconds.items())
+                ),
+                "max_request_seconds_by_kind": dict(
+                    sorted(self._request_max_duration_seconds.items())
+                ),
+            }
 
     def _finish_request(
         self,
@@ -564,14 +666,23 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
 
     def fetch_contract_details(self, symbol: str) -> list[dict[str, Any]]:
         """Resolve a stock symbol without requesting price or account data."""
-        self._pacing_wait()
-        request_id, state = self._allocate_request("contract-details")
+        kind = "contract-details"
+        request_id, state = self._allocate_request(kind)
+        started_at: float | None = None
+        failed = True
         try:
+            started_at = self._begin_provider_request(kind)
             self.reqContractDetails(request_id, self._contract(symbol))
-            return self._finish_request(request_id, state, lambda _: None)
+            rows = self._finish_request(request_id, state, lambda _: None)
+            failed = False
+            return rows
         finally:
             with self._lock:
                 self._requests.pop(request_id, None)
+            if started_at is not None:
+                self._end_provider_request(
+                    kind, started_at=started_at, failed=failed
+                )
 
     def _request_bars(
         self,
@@ -582,9 +693,12 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
         what: str,
         use_rth: bool,
     ) -> list[dict[str, Any]]:
-        self._pacing_wait()
-        request_id, state = self._allocate_request("historical-bars")
+        kind = "historical-bars"
+        request_id, state = self._allocate_request(kind)
+        started_at: float | None = None
+        failed = True
         try:
+            started_at = self._begin_provider_request(kind)
             self.reqHistoricalData(
                 request_id,
                 self._contract(symbol),
@@ -597,10 +711,18 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
                 False,
                 [],
             )
-            return self._finish_request(request_id, state, self.cancelHistoricalData)
+            rows = self._finish_request(
+                request_id, state, self.cancelHistoricalData
+            )
+            failed = False
+            return rows
         finally:
             with self._lock:
                 self._requests.pop(request_id, None)
+            if started_at is not None:
+                self._end_provider_request(
+                    kind, started_at=started_at, failed=failed
+                )
 
     def fetch_bars(
         self,
@@ -650,9 +772,12 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
     def _request_bid_ask_ticks(
         self, symbol: str, start: datetime, use_rth: bool
     ) -> list[dict[str, Any]]:
-        self._pacing_wait()
-        request_id, state = self._allocate_request("historical-bid-ask-ticks")
+        kind = "historical-bid-ask-ticks"
+        request_id, state = self._allocate_request(kind)
+        started_at: float | None = None
+        failed = True
         try:
+            started_at = self._begin_provider_request(kind)
             self.reqHistoricalTicks(
                 request_id,
                 self._contract(symbol),
@@ -664,14 +789,20 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
                 False,
                 [],
             )
-            return self._finish_request(
+            rows = self._finish_request(
                 request_id,
                 state,
                 lambda _: None,
             )
+            failed = False
+            return rows
         finally:
             with self._lock:
                 self._requests.pop(request_id, None)
+            if started_at is not None:
+                self._end_provider_request(
+                    kind, started_at=started_at, failed=failed
+                )
 
     def fetch_bid_ask_ticks(
         self,
@@ -774,6 +905,9 @@ class IBKRHistoricalClient:
             use_rth=use_rth,
         )
 
+    def request_telemetry(self) -> dict[str, Any]:
+        return self._connection.request_telemetry()
+
     @staticmethod
     def _bar_timestamp(value: Any) -> datetime | None:
         return _IBKRHistoricalConnection._bar_timestamp(value)
@@ -839,10 +973,9 @@ def probe_historical_candidate_with_history(
     immutable pre-session input that later bundle collection can consume without
     repeating the same IBKR requests.
     """
-    contract = probe_historical_symbol(client, symbol)
-    if contract.get("viable") is not True:
-        return contract, None
-    normalized = str(contract["symbol"])
+    normalized = str(symbol).strip().upper()
+    if not normalized or not normalized.replace(".", "").isalnum():
+        raise IBKRConfigurationError(f"invalid equity symbol: {symbol!r}")
     day = _parse_date(session_date)
     target_start = datetime.combine(day, wall_time(0), tzinfo=EASTERN)
 
@@ -855,6 +988,18 @@ def probe_historical_candidate_with_history(
             what="TRADES",
         )
     except IBKRRequestError as exc:
+        if exc.error_code == 200:
+            return (
+                {
+                    "symbol": normalized,
+                    "viable": False,
+                    "reason": "unresolvable_security_definition",
+                    "error_code": exc.error_code,
+                    "prior_opening_sessions": None,
+                    "prior_daily_sessions": 0,
+                },
+                None,
+            )
         if is_symbol_scoped_historical_no_data(exc):
             return (
                 {
@@ -936,6 +1081,15 @@ def probe_historical_candidate_with_history(
                 },
                 None,
             )
+
+    # Most buffered names fail immutable daily gates.  Resolve the explicit US
+    # stock contract only for survivors instead of paying for a separate lookup
+    # that cannot affect an already-rejected candidate.  The daily request above
+    # already uses the same STK/USD/SMART contract shape and safely maps an IBKR
+    # security-definition error to a symbol-scoped skip.
+    contract = probe_historical_symbol(client, normalized)
+    if contract.get("viable") is not True:
+        return contract, None
 
     try:
         opening_rows = client.fetch_bars(

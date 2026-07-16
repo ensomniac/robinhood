@@ -1,5 +1,7 @@
 import json
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 
@@ -30,6 +32,68 @@ def draft_manifest(count=12):
 
 
 class FreezeCandidateUniverseTests(unittest.TestCase):
+    def test_concurrent_preflight_preserves_rank_order_and_bounds_speculation(self):
+        lock = threading.Lock()
+        active = 0
+        peak = 0
+
+        def probe(symbol, day):
+            nonlocal active, peak
+            with lock:
+                active += 1
+                peak = max(peak, active)
+            try:
+                time.sleep(0.003 * (4 - int(symbol[-1]) % 4))
+                return {
+                    "symbol": symbol,
+                    "viable": True,
+                    "reason": "pre_session_history_available",
+                    "error_code": None,
+                }
+            finally:
+                with lock:
+                    active -= 1
+
+        frozen = freeze_candidate_universe(
+            draft_manifest(),
+            probe,
+            max_workers=4,
+        )
+
+        report = frozen["preflight"]["dates"]["2026-03-03"]
+        self.assertGreaterEqual(peak, 2)
+        self.assertEqual(
+            report["accepted_symbols"],
+            [f"T{index:02d}" for index in range(10)],
+        )
+        self.assertEqual(report["unused_buffer_symbols"], ["T10", "T11"])
+        self.assertEqual(report["speculatively_cached_symbols"], ["T10", "T11"])
+
+    def test_concurrent_provider_failure_does_not_launch_another_batch(self):
+        calls = []
+        lock = threading.Lock()
+
+        def probe(symbol, day):
+            with lock:
+                calls.append(symbol)
+            if symbol == "T01":
+                raise IBKRRequestError("pacing violation", error_code=162)
+            return {
+                "symbol": symbol,
+                "viable": True,
+                "reason": "pre_session_history_available",
+                "error_code": None,
+            }
+
+        with self.assertRaisesRegex(IBKRRequestError, "pacing violation"):
+            freeze_candidate_universe(
+                draft_manifest(),
+                probe,
+                max_workers=3,
+            )
+
+        self.assertEqual(sorted(calls), ["T00", "T01", "T02"])
+
     def test_skips_unresolvable_symbol_before_freeze_and_uses_ranked_buffer(self):
         def probe(symbol, day):
             self.assertEqual(day, "2026-03-03")

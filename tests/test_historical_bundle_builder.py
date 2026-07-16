@@ -476,6 +476,7 @@ class CollectionControlTests(unittest.TestCase):
                         data_root=root / "data",
                         status_path=status,
                         transport_retries=0,
+                        max_workers=1,
                     )
             persisted = json.loads(status.read_text(encoding="utf-8"))
 
@@ -577,6 +578,7 @@ class CollectionControlTests(unittest.TestCase):
                     manifest,
                     data_root=root / "data",
                     status_path=status,
+                    max_workers=1,
                 )
             persisted = json.loads(status.read_text(encoding="utf-8"))
 

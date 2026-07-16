@@ -16,6 +16,7 @@ import hashlib
 import json
 import math
 import sys
+import threading
 from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from datetime import UTC, date, datetime
@@ -23,6 +24,7 @@ from pathlib import Path
 from time import monotonic
 from typing import Any
 
+from historical_concurrency import ordered_bounded_results
 from ibkr_historical import (
     DEFAULT_ENV_PATH,
     IBKRConfig,
@@ -37,6 +39,7 @@ from strategy_engine import StrategyInputError, load_config
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_PREFLIGHT_CACHE_ROOT = PROJECT_ROOT / "historical_data" / "preflight"
 PREFLIGHT_CACHE_SCHEMA_VERSION = 2
+DEFAULT_PREFLIGHT_WORKERS = 4
 
 
 class HistoricalUniverseError(RuntimeError):
@@ -50,7 +53,7 @@ DetailedProbe = Callable[
 
 
 class ResumablePreflightProbe:
-    """Persist each immutable pre-session result before probing the next symbol."""
+    """Persist every immutable result before its worker reports completion."""
 
     def __init__(
         self,
@@ -63,6 +66,10 @@ class ResumablePreflightProbe:
         self.probe = probe
         self.qualification = dict(qualification or {})
         self.qualification_sha256 = _canonical_hash(self.qualification)
+        self._stats_lock = threading.Lock()
+        self._cache_hits = 0
+        self._cache_misses = 0
+        self._cold_probe_seconds = 0.0
 
     def _path(self, symbol: str, day: str) -> Path:
         return self.cache_root / day / f"{symbol}.json"
@@ -108,6 +115,8 @@ class ResumablePreflightProbe:
         path = self._path(symbol, day)
         cached = self._cached(path, symbol, day)
         if cached is not None:
+            with self._stats_lock:
+                self._cache_hits += 1
             print(
                 f"  {day} {symbol} cached {self._status(cached)}",
                 file=sys.stderr,
@@ -115,7 +124,12 @@ class ResumablePreflightProbe:
             )
             return cached
         started = monotonic()
+        with self._stats_lock:
+            self._cache_misses += 1
         result, history = self.probe(symbol, day)
+        duration_seconds = monotonic() - started
+        with self._stats_lock:
+            self._cold_probe_seconds += duration_seconds
         normalized = dict(result)
         if normalized.get("viable") is True:
             if not isinstance(history, Mapping):
@@ -132,7 +146,7 @@ class ResumablePreflightProbe:
             "session_date": day,
             "qualification": self.qualification,
             "qualification_sha256": self.qualification_sha256,
-            "duration_seconds": monotonic() - started,
+            "duration_seconds": duration_seconds,
             "result": normalized,
             "pre_session_history": dict(history) if history is not None else None,
         }
@@ -147,6 +161,14 @@ class ResumablePreflightProbe:
             flush=True,
         )
         return normalized
+
+    def stats(self) -> dict[str, Any]:
+        with self._stats_lock:
+            return {
+                "cache_hits": self._cache_hits,
+                "cache_misses": self._cache_misses,
+                "cold_probe_symbol_seconds": self._cold_probe_seconds,
+            }
 
 
 def _canonical_hash(value: Mapping[str, Any]) -> str:
@@ -204,9 +226,11 @@ def freeze_candidate_universe(
     minimum_candidates: int = 10,
     performed_at: str | None = None,
     cache_metadata: Mapping[str, Any] | None = None,
+    max_workers: int = 1,
 ) -> dict[str, Any]:
     """Return a frozen builder manifest from a larger ranked draft pool."""
     required = _positive_integer(minimum_candidates, "minimum_candidates")
+    workers = _positive_integer(max_workers, "max_workers")
     scanner = draft.get("scanner")
     pools = draft.get("candidate_pool_by_date")
     if not isinstance(scanner, Mapping) or not isinstance(pools, Mapping):
@@ -233,85 +257,126 @@ def freeze_candidate_universe(
                 f"{day} draft pool has {size} candidates; at least {required} are required"
             )
 
-        accepted: list[dict[str, Any]] = []
-        accepted_preflight: list[dict[str, Any]] = []
-        skipped: list[dict[str, Any]] = []
-        seen: set[str] = set()
-        last_examined = -1
+        prepared: list[tuple[int, str, Mapping[str, Any]]] = []
+        all_symbols: set[str] = set()
         for index, raw_candidate in enumerate(raw_pool):
             rank = index + 1
             symbol = _candidate_symbol(raw_candidate, day=day, rank=rank)
-            if symbol in seen:
+            if symbol in all_symbols:
                 raise HistoricalUniverseError(
                     f"{day} draft pool repeats symbol {symbol}"
                 )
-            seen.add(symbol)
-            last_examined = index
+            all_symbols.add(symbol)
+            prepared.append((index, symbol, raw_candidate))
+
+        accepted: list[dict[str, Any]] = []
+        accepted_preflight: list[dict[str, Any]] = []
+        skipped: list[dict[str, Any]] = []
+        last_examined = -1
+        provider_started: list[tuple[int, str]] = []
+        provider_started_lock = threading.Lock()
+
+        def run_preflight(
+            item: tuple[int, str, Mapping[str, Any]],
+        ) -> dict[str, Any]:
+            index, symbol, raw_candidate = item
+            rank = index + 1
             pre_session_reason = None
             if raw_candidate.get("is_common_stock") is not True:
                 pre_session_reason = "not_us_listed_common_stock"
             elif raw_candidate.get("dilution_conflict") is True:
                 pre_session_reason = "known_dilution_conflict"
             if pre_session_reason is not None:
+                return {
+                    "symbol": symbol,
+                    "draft_rank": rank,
+                    "local_skip_reason": pre_session_reason,
+                    "provider_called": False,
+                }
+            with provider_started_lock:
+                provider_started.append((index, symbol))
+            result = probe(symbol, day)
+            return {
+                "symbol": symbol,
+                "draft_rank": rank,
+                "result": dict(result),
+                "provider_called": True,
+            }
+
+        outcomes = ordered_bounded_results(
+            prepared,
+            run_preflight,
+            max_workers=workers,
+        )
+        try:
+            for outcome in outcomes:
+                index, symbol, raw_candidate = outcome.item
+                rank = index + 1
+                last_examined = index
+                value = outcome.unwrap()
+                local_skip_reason = value.get("local_skip_reason")
+                if isinstance(local_skip_reason, str):
+                    skipped.append(
+                        {
+                            "symbol": symbol,
+                            "draft_rank": rank,
+                            "reason": local_skip_reason,
+                            "error_code": None,
+                        }
+                    )
+                    continue
+                result = value["result"]
+                if str(result.get("symbol", "")).upper() != symbol:
+                    raise HistoricalUniverseError(
+                        f"{day} {symbol} preflight returned a mismatched symbol"
+                    )
+                if result.get("viable") is True:
+                    history_hash = result.get("pre_session_history_sha256")
+                    if (
+                        isinstance(cache_metadata, Mapping)
+                        and cache_metadata.get("reusable_pre_session_history") is True
+                        and not _is_sha256(history_hash)
+                    ):
+                        raise HistoricalUniverseError(
+                            f"{day} {symbol} preflight omitted its history hash"
+                        )
+                    candidate = deepcopy(dict(raw_candidate))
+                    candidate["symbol"] = symbol
+                    accepted.append(candidate)
+                    accepted_preflight.append(
+                        {
+                            key: deepcopy(result[key])
+                            for key in (
+                                "symbol",
+                                "reason",
+                                "prior_opening_sessions",
+                                "prior_daily_sessions",
+                                "average_daily_volume_14",
+                                "daily_atr_14",
+                                "pre_session_history_sha256",
+                            )
+                            if key in result
+                        }
+                        | {"draft_rank": rank}
+                    )
+                    if len(accepted) == required:
+                        break
+                    continue
+                reason = result.get("reason")
+                if not isinstance(reason, str) or not reason:
+                    raise HistoricalUniverseError(
+                        f"{day} {symbol} preflight rejection needs a reason"
+                    )
                 skipped.append(
                     {
                         "symbol": symbol,
                         "draft_rank": rank,
-                        "reason": pre_session_reason,
-                        "error_code": None,
+                        "reason": reason,
+                        "error_code": result.get("error_code"),
                     }
                 )
-                continue
-            result = probe(symbol, day)
-            if str(result.get("symbol", "")).upper() != symbol:
-                raise HistoricalUniverseError(
-                    f"{day} {symbol} preflight returned a mismatched symbol"
-                )
-            if result.get("viable") is True:
-                history_hash = result.get("pre_session_history_sha256")
-                if (
-                    isinstance(cache_metadata, Mapping)
-                    and cache_metadata.get("reusable_pre_session_history") is True
-                    and not _is_sha256(history_hash)
-                ):
-                    raise HistoricalUniverseError(
-                        f"{day} {symbol} preflight omitted its history hash"
-                    )
-                candidate = deepcopy(dict(raw_candidate))
-                candidate["symbol"] = symbol
-                accepted.append(candidate)
-                accepted_preflight.append(
-                    {
-                        key: deepcopy(result[key])
-                        for key in (
-                            "symbol",
-                            "reason",
-                            "prior_opening_sessions",
-                            "prior_daily_sessions",
-                            "average_daily_volume_14",
-                            "daily_atr_14",
-                            "pre_session_history_sha256",
-                        )
-                        if key in result
-                    }
-                    | {"draft_rank": rank}
-                )
-                if len(accepted) == required:
-                    break
-                continue
-            reason = result.get("reason")
-            if not isinstance(reason, str) or not reason:
-                raise HistoricalUniverseError(
-                    f"{day} {symbol} preflight rejection needs a reason"
-                )
-            skipped.append(
-                {
-                    "symbol": symbol,
-                    "draft_rank": rank,
-                    "reason": reason,
-                    "error_code": result.get("error_code"),
-                }
-            )
+        finally:
+            outcomes.close()
 
         if len(accepted) < required:
             rejected = ", ".join(row["symbol"] for row in skipped) or "none"
@@ -320,11 +385,16 @@ def freeze_candidate_universe(
                 f"candidates; {required} are required (rejected: {rejected})"
             )
         unused = [
-            _candidate_symbol(value, day=day, rank=index + 1)
-            for index, value in enumerate(
-                raw_pool[last_examined + 1 :], last_examined + 1
-            )
+            symbol for index, symbol, _ in prepared if index > last_examined
         ]
+        speculative = sorted(
+            (
+                (index, symbol)
+                for index, symbol in provider_started
+                if index > last_examined
+            ),
+            key=lambda value: value[0],
+        )
         candidates_by_date[day] = accepted
         date_reports[day] = {
             "accepted_symbols": [row["symbol"] for row in accepted],
@@ -332,6 +402,8 @@ def freeze_candidate_universe(
             "skipped": skipped,
             "unused_buffer_symbols": unused,
             "examined_count": last_examined + 1,
+            "max_workers": workers,
+            "speculatively_cached_symbols": [symbol for _, symbol in speculative],
         }
 
     output = {
@@ -377,6 +449,15 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--cache-root", type=Path, default=DEFAULT_PREFLIGHT_CACHE_ROOT
     )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=DEFAULT_PREFLIGHT_WORKERS,
+        help=(
+            "bounded rank-ordered IBKR probes to overlap "
+            f"(default: {DEFAULT_PREFLIGHT_WORKERS})"
+        ),
+    )
     return parser
 
 
@@ -397,6 +478,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
             "minimum_daily_atr_14": float(universe["minimum_daily_atr_14"]),
         }
+        started_at = monotonic()
         with IBKRHistoricalClient(config) as client:
             cache_root = args.cache_root.resolve()
             try:
@@ -429,7 +511,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "strategy_version": strategy_config.version,
                     "rules_hash": strategy_config.rules_hash,
                 },
+                max_workers=args.workers,
             )
+            frozen["preflight"]["performance"] = {
+                "elapsed_seconds": monotonic() - started_at,
+                "max_workers": args.workers,
+                "cache": cached_probe.stats(),
+                "ibkr_requests": client.request_telemetry(),
+            }
         _write_json(frozen, args.output)
         return 0
     except (

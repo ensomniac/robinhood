@@ -32,16 +32,18 @@ The agent asks how many days to simulate. For each requested day:
    ```sh
    python3 historical_universe.py \
      historical_data/manifests/draft-YYYY-MM-DD.json \
-     --output historical_data/manifests/evidence-YYYY-MM-DD.json
+     --output historical_data/manifests/evidence-YYYY-MM-DD.json \
+     --workers 4
    ```
 
    The draft uses `candidate_pool_by_date`; the output uses
    `candidates_by_date` and records accepted, skipped, and unused buffered
    symbols. Preflight never requests target-session prices. It first rejects a
    draft record that is not explicitly a U.S.-listed common stock or already has
-   a known dilution conflict. It then resolves the contract, requests prior daily
-   bars, and enforces the configured 14-session average-volume and ATR gates
-   before downloading opening history. A surviving symbol still needs 14 prior
+   a known dilution conflict. It requests prior daily bars first and enforces the
+   configured 14-session average-volume and ATR gates before paying for explicit
+   contract resolution and opening history. An IBKR error 200 from that STK/USD
+   request remains an unresolvable-symbol skip. A surviving symbol still needs 14 prior
    9:30 five-minute bars with positive volume and at least 15 prior daily
    sessions. A symbol that cannot satisfy those immutable evaluator inputs may
    be skipped for the next ranked buffered name. Provider-wide permission,
@@ -61,6 +63,14 @@ The agent asks how many days to simulate. For each requested day:
    hash copied into the frozen manifest, and are reused by bundle collection
    only after the rule fingerprint and both hashes verify.
 
+   The default four-worker scheduler overlaps provider response latency in
+   bounded rank-order batches. Completion order never changes accepted order.
+   At most the remainder of the active batch can finish beyond the tenth
+   accepted rank; those pre-session-only results are cached and listed as
+   speculative, but remain outside the frozen universe. A provider-wide failure
+   prevents the next batch from launching. Use a smaller `--workers` value when
+   telemetry shows IBKR soft throttling.
+
    On the 2026-07-16 ten-date pass, the old preflight aborted after roughly 24
    minutes without a checkpoint. The optimized pass examined 102 buffered names
    and completed in 736.5 seconds; an exact cache-resume rerun completed in 1.13
@@ -77,7 +87,8 @@ The agent asks how many days to simulate. For each requested day:
 
    ```sh
    python3 historical_bundle_builder.py \
-     historical_data/manifests/evidence-YYYY-MM-DD.json
+     historical_data/manifests/evidence-YYYY-MM-DD.json \
+     --workers 4
    ```
 
    The builder caches each successful raw provider response, derives the first
@@ -94,6 +105,14 @@ The agent asks how many days to simulate. For each requested day:
    after its first blocker instead of producing one false failure per remaining
    symbol. The atomic public status defaults to
    `historical_batches/<manifest-name>.json`.
+
+   Benchmarks and frozen candidates use the same bounded deterministic worker
+   model on one read-only TWS connection. Successful raw files are written by
+   their workers before ordered result handling, so an interruption can reuse
+   already-completed work. The command result includes wall time, request
+   telemetry, cache-hit counters, and preflight-reuse counts. See
+   `HISTORICAL_THROUGHPUT_PLAN.md` for the measured bottleneck, tuning rules, and
+   large-batch acceptance protocol.
 
    IBKR is primary. If `MASSIVE_API_KEY` is configured, a permanent IBKR
    bar/quote fidelity gap may be recollected from Massive's adjusted SIP

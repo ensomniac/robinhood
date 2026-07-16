@@ -1,5 +1,7 @@
 import tempfile
+import time
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -35,6 +37,7 @@ class ConfigTests(unittest.TestCase):
                 "IBKR_HOST=127.0.0.1\n"
                 "IBKR_PORT=7497\n"
                 "IBKR_CLIENT_ID=88\n"
+                "IBKR_MAX_CONCURRENT_REQUESTS=7\n"
                 "IBKR_AUTO_START_TWS=true\n",
                 encoding="utf-8",
             )
@@ -42,6 +45,7 @@ class ConfigTests(unittest.TestCase):
 
         self.assertEqual(config.port, 7497)
         self.assertEqual(config.client_id, 88)
+        self.assertEqual(config.max_concurrent_requests, 7)
         self.assertTrue(config.auto_start_tws)
         self.assertNotIn("account", config.public_dict())
         self.assertNotIn("key", config.public_dict())
@@ -74,6 +78,34 @@ class NormalizationTests(unittest.TestCase):
         self.assertEqual(daily.astimezone(EASTERN).date().isoformat(), "2026-05-12")
         self.assertIsNotNone(epoch)
         self.assertEqual(epoch.tzinfo, timezone.utc)
+
+
+class ConcurrentRequestTests(unittest.TestCase):
+    def test_threads_reserve_distinct_paced_send_times(self):
+        spacing = 0.02
+        connection = _IBKRHistoricalConnection(
+            IBKRConfig(
+                minimum_request_spacing_seconds=spacing,
+                max_concurrent_requests=3,
+            )
+        )
+
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            completed = sorted(
+                executor.map(lambda _: (connection._pacing_wait(), time.monotonic()), range(3))
+            )
+
+        observed = sorted(stamp for _, stamp in completed)
+        gaps = [right - left for left, right in zip(observed, observed[1:])]
+        self.assertTrue(all(gap >= spacing * 0.75 for gap in gaps), gaps)
+
+    def test_message_rate_error_is_retryable_provider_failure(self):
+        error = IBKRRequestError(
+            "maximum allowed message rate exceeded",
+            error_code=100,
+        )
+
+        self.assertEqual(historical_error_category(error), "retryable_provider")
 
 
 class SymbolProbeTests(unittest.TestCase):
@@ -242,8 +274,10 @@ class SymbolProbeTests(unittest.TestCase):
         class FakeClient:
             def __init__(self):
                 self.bar_sizes = []
+                self.contract_calls = 0
 
             def fetch_contract_details(self, symbol):
+                self.contract_calls += 1
                 return [
                     {
                         "symbol": symbol,
@@ -287,6 +321,7 @@ class SymbolProbeTests(unittest.TestCase):
             result["reason"], "average_daily_volume_below_strategy_minimum"
         )
         self.assertEqual(client.bar_sizes, ["1 day"])
+        self.assertEqual(client.contract_calls, 0)
         self.assertIsNone(history)
 
     def test_daily_atr_gate_skips_opening_history_request(self):

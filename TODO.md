@@ -150,6 +150,13 @@ Status: implemented by `historical_universe.py` and the `probe` surface in
   cold-run, resume, bundle-collection, and blocked-date timing on larger batches.
   The daily-first/one-chunk optimization landed after this baseline and still
   needs a new cold-run benchmark.
+- The 2026-07-16 throughput pass added bounded rank-ordered workers, global
+  pacing reservation, provider telemetry, and daily-gate-first request
+  elimination. On the March 30 graph, explicit contract lookups now apply only
+  to the ten daily-gate survivors, reducing planned cold calls from 118 to 74.
+  Initial concurrent trials ran inside an IBKR soft-throttle window and are not
+  clean speedup evidence; retain worker count and request telemetry on the timed
+  100-day run and its exact cached rerun.
 
 ### 10. Durable Progress History And Contribution Hook
 

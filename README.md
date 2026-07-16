@@ -233,7 +233,8 @@ opening/daily history without observing target-session prices:
 ```sh
 python3 historical_universe.py \
   historical_data/manifests/draft-YYYY-MM-DD.json \
-  --output historical_data/manifests/evidence-YYYY-MM-DD.json
+  --output historical_data/manifests/evidence-YYYY-MM-DD.json \
+  --workers 4
 ```
 
 This skips known non-common-stock or dilution-conflicted rows before provider
@@ -247,7 +248,8 @@ Each examined symbol/date is atomically cached under ignored
 resumes rather than restarting. Cache reuse requires the same strategy/rules
 qualification plus matching pre-session content hashes. Accepted opening and
 daily bars are reused by bundle collection without observing target-session
-prices.
+prices. Bounded workers overlap provider latency but consume results in rank
+order; a provider-wide failure prevents the next batch from launching.
 
 For a pre-frozen multi-day evidence manifest, the resumable bundle builder keeps
 successful raw responses under the ignored data directory and validates a full
@@ -255,7 +257,8 @@ day before writing a replay bundle:
 
 ```sh
 python3 historical_bundle_builder.py \
-  historical_data/manifests/evidence-YYYY-MM-DD.json
+  historical_data/manifests/evidence-YYYY-MM-DD.json \
+  --workers 4
 ```
 
 It reports market-data permissions, missing boundary ticks, and unresolved
@@ -265,7 +268,10 @@ immediately, reconnects once by default, resumes from the raw cache, and writes
 an atomic public status under `historical_batches/`. A matching preflight cache
 eliminates the bundle collector's duplicate opening-volume and prior-daily
 requests; missing or incompatible cache entries safely fall back to normal IBKR
-collection.
+collection. The result reports wall time, provider request telemetry, cache
+hits, and preflight reuse. See
+[HISTORICAL_THROUGHPUT_PLAN.md](HISTORICAL_THROUGHPUT_PLAN.md) for measured
+bottlenecks and the large-batch plan.
 
 New schema-2 replay bundles wait for the first opening-range crossing bar to
 complete, reserve the following minute for quote snapshots, and evaluate at that

@@ -737,10 +737,11 @@ When Ryan selects historical mode:
    against that draft pool.
    Its IBKR pre-session preflight must not request or inspect target-session
    prices. Before provider work, skip draft records that are not explicitly
-   U.S.-listed common stock or already carry a dilution conflict. Then resolve
-   the contract and request prior daily history first. Enforce the configured
-   14-session average-volume and ATR gates before requesting the more expensive
-   opening history; qualifying symbols still need 14 positive prior 9:30
+   U.S.-listed common stock or already carry a dilution conflict. Request prior
+   daily history first and enforce the configured 14-session average-volume and
+   ATR gates before paying for explicit contract resolution and the more
+   expensive opening history. Treat error 200 from that STK/USD history request
+   as an unresolvable-symbol skip. Qualifying symbols still need 14 positive prior 9:30
    five-minute volumes and at least 15 prior daily sessions. It may skip a
    symbol-scoped unresolvable, ineligible, or input-incomplete listing and take
    the next ranked buffered candidate. A connection, permission, pacing, or
@@ -766,6 +767,14 @@ When Ryan selects historical mode:
    hashed pre-session opening and daily bars into bundle collection so those
    immutable inputs are not requested twice. A missing, altered, or incompatible
    cache must fall back to normal collection, never to fabricated data.
+   Preflight and frozen-symbol collection may use a small bounded worker pool on
+   one read-only connection. Reserve provider send times under one global pacing
+   lock, cap actual in-flight requests, and consume outcomes in frozen rank/date
+   order. At most one active batch may be speculative. A provider-wide failure
+   must prevent the next batch from launching; already-completed immutable work
+   should be cached for the resume. Never run uncoordinated IBKR processes to
+   bypass pacing. Retain worker count, request counts, peak in-flight requests,
+   pacing waits, cache hits, and wall time for large-batch measurements.
    Before any candidate collection, run
    `python3 ibkr_historical.py check`. If the configured socket is unavailable,
    allow the adapter's local auto-start setting to launch Trader Workstation. If
