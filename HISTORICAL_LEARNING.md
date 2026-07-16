@@ -158,6 +158,13 @@ In TWS, `API > Settings` must have `Enable ActiveX and Socket Clients`,
 `Read-Only API`, and `Allow connections from localhost only` enabled. Its socket
 port must match `IBKR_PORT`. No IBKR API key or account identifier is required.
 
+The local `.env` may set `IBKR_AUTO_START_TWS=true` and point
+`IBKR_TWS_APP_PATH` at the installed application. When `check` finds no socket,
+the adapter then attempts to launch TWS and waits for the configured timeout. It
+cannot complete an interactive login: if the socket remains unavailable, start
+or log in to TWS and rerun `check`. Do not disable read-only or localhost-only
+mode to work around a connection failure.
+
 ```sh
 python3 ibkr_historical.py check
 ```

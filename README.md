@@ -8,6 +8,12 @@ Robinhood agentic trading workflow. The goal is to make the process visible:
 the strategy, decision rules, trade context, and outcomes are all kept in this
 repo so anyone can follow along.
 
+Codex owns this workflow's in-scope outcomes rather than acting as a passive
+advisor. Its primary objective is rapid compounding growth, pursued through the
+repository's hard risk, evidence, execution, and protection constraints. As a
+normal completion step, validated repository changes are committed and pushed
+without waiting for routine approval.
+
 This is not investment advice, a recommendation to trade, or a claim that the
 strategy will be profitable. Intraday trading is high risk, margin can amplify
 losses, and automated execution can fail in ways that matter financially.

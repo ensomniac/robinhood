@@ -24,6 +24,32 @@ stored in `trades/active/` and `trades/archived/`.
 
 Update this file with ongoing changes to the strategy
 
+## Agentic Ownership Mandate
+
+- The primary objective is rapid compounding growth of account equity. Make
+  decisions in the interest of durable geometric growth after spreads, fees,
+  slippage, failed signals, drawdowns, and operational failure risk. The hard
+  risk caps, evidence gates, broker constraints, and protection rules in this
+  file define how that objective is pursued; growth never authorizes bypassing
+  them.
+- Take ownership of this repository's agentic outcomes end to end. Within the
+  authority granted here, decide, implement, validate, operate, monitor,
+  reconcile, journal, and repair the work needed to reach the real outcome. Do
+  not stop at partial wiring, defer a safe in-scope decision merely to avoid
+  responsibility, or treat a tool response as success without verifying the
+  resulting state.
+- Commit every coherent code, configuration, test, and documentation change
+  after it has passed validation proportionate to its risk. Do this
+  autonomously without asking Ryan for routine commit approval. Review the diff,
+  run the relevant tests and audits, confirm no secret or private identifier is
+  included, and use a meaningful commit message. Do not declare completed work
+  while its validated repository changes remain uncommitted.
+- Push validated commits to the configured remote as the normal completion step
+  unless Ryan explicitly requested local-only work or the remote is unavailable.
+  Never delay position protection, flattening, broker reconciliation, or another
+  safety-critical action for Git work. Never commit a known-broken change,
+  secrets, private `.env` data, or ignored raw historical inputs.
+
 ## Session Mode Selection
 
 At the start of every new agentic trading workflow, present the numbered mode
@@ -696,6 +722,13 @@ When Ryan selects historical mode:
    opening-volume lookbacks, daily bars, and historical top-of-book bid/ask
    ticks from a logged-in local TWS session; it has no broker-action surface and
    does not replace the separate scanner-universe or catalyst evidence.
+   Before collection, run `python3 ibkr_historical.py check`. If the configured
+   socket is unavailable, allow the adapter's local auto-start setting to launch
+   Trader Workstation. If the socket still does not become ready, ask Ryan to
+   start or log in to TWS, then retry. Keep `Read-Only API` and localhost-only
+   connections enabled and keep the TWS socket port aligned with `IBKR_PORT`.
+   Do not use IABApp directly, copy its account identifier, invent IBKR keys, or
+   reach through the adapter's private raw client to account or order methods.
    If those facts cannot be obtained, report a data-fidelity blocker; do not
    manufacture quotes, depth, catalysts, bars, or validation-grade results. Use
    explicit synthetic replay equity/buying power; never copy the live balance
@@ -748,9 +781,10 @@ than symbol-specific, create or update a session context file under
 `trades/active/` for that trading day. Keep context files plain text or Markdown
 so they are easy to review publicly.
 
-Whenever `SIGNALS.jsonl`, `TRADES.md`, or any file under `trades/` is changed,
-the root project must be committed and pushed back to GitHub immediately after
-the ledger/context update. Run the workflow from the repo root:
+Every validated repository change is committed and pushed under the Agentic
+Ownership Mandate. When `SIGNALS.jsonl`, `TRADES.md`, or any file under `trades/`
+changes, the root project must be committed and pushed back to GitHub immediately
+after the ledger/context update. Run the workflow from the repo root:
 
 ```sh
 git status --short
@@ -763,8 +797,10 @@ Always use a meaningful commit message that describes the actual change, such
 as `Updated trades: logged no-trade decision for weak ORB setup`,
 `Updated trades: opened AAPL Stock-in-Play ORB context`, or
 `Updated trades: closed TSLA ORB trade with final balance`. If the change
-is a strategy-only update and no `trades/` file changed, use an `Updated strategy:
-...` message instead. Do not make empty commits.
+is a strategy or operating-contract update and no `trades/` file changed, use an
+`Updated strategy: ...` message. For implementation-only work, use a direct
+plain-English summary such as `Added validated IBKR historical data adapter`.
+Do not make empty commits.
 
 ## Hard Reject Conditions
 
