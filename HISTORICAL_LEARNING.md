@@ -147,6 +147,38 @@ At completion, the runner embeds a terminal outcome and moves all context to
 `trades/archived/YYYY_MM_DD/`. It atomically appends the day's validated session
 and signal records as one ledger batch.
 
+## Optional Interactive Brokers Collection
+
+`ibkr_historical.py` is an independent, read-only client for a locally logged-in
+Trader Workstation or IB Gateway. It does not import IABApp and exposes no
+account, portfolio, order, or execution methods. Configure its socket through
+the ignored `.env`, then verify the handshake:
+
+In TWS, `API > Settings` must have `Enable ActiveX and Socket Clients`,
+`Read-Only API`, and `Allow connections from localhost only` enabled. Its socket
+port must match `IBKR_PORT`. No IBKR API key or account identifier is required.
+
+```sh
+python3 ibkr_historical.py check
+```
+
+Collect one candidate's raw market-data evidence with:
+
+```sh
+python3 ibkr_historical.py candidate AAPL \
+  --date 2026-05-12 \
+  --evaluation-time 09:40:00 \
+  --output historical_data/ibkr/2026-05-12-AAPL.json
+```
+
+The output contains the full regular-session one-minute trade bars, 14 prior
+time-matched opening-volume bars, prior daily bars, historical bid/ask ticks with
+top-of-book sizes, and three strategy-shaped quote snapshots. `bars` and
+`quotes` subcommands support narrower ad hoc collection. IBKR historical volume
+is filtered, and historical bid/ask ticks provide top-of-book size rather than a
+full depth ladder. The adapter therefore supplies market data but cannot by
+itself attest full historical scanner capture or point-in-time catalyst fidelity.
+
 ## Limitations
 
 The simulator is deterministic, not a claim of fill certainty. One-minute bars

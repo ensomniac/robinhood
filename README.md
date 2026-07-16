@@ -200,6 +200,29 @@ python3 strategy_learning.py report
 python3 strategy_learning.py propose  # only after both cadence gates pass
 ```
 
+An optional, read-only Interactive Brokers adapter can collect the market-data
+portion of a replay candidate through a locally logged-in Trader Workstation:
+
+```sh
+python3 ibkr_historical.py check
+python3 ibkr_historical.py candidate AAPL \
+  --date 2026-05-12 \
+  --evaluation-time 09:40:00 \
+  --output historical_data/ibkr/2026-05-12-AAPL.json
+```
+
+The adapter has no account, portfolio, or order surface. It collects regular-
+session minute bars, the 14-session time-matched opening-volume lookback, daily
+bars, and historical top-of-book bid/ask ticks with sizes. TWS socket access uses
+the authenticated desktop session and needs no API private key. Historical
+scanner-universe capture and point-in-time catalysts still require independent
+sources.
+
+In TWS, enable `API > Settings > Enable ActiveX and Socket Clients`, keep
+`Read-Only API` and `Allow connections from localhost only` enabled, and make
+the socket port match `IBKR_PORT`. The ignored local `.env` on this machine also
+enables best-effort TWS startup; an interactive login may still be required.
+
 Proposals never apply themselves. See [STRATEGY_LEARNING.md](STRATEGY_LEARNING.md).
 
 ## Publishing Discipline
@@ -240,6 +263,7 @@ Commit messages should describe what changed, for example:
 ├── email_sender.py    # Settings-aware notification CLI and server client
 ├── historical_learning.py # Point-in-time, no-broker replay engine
 ├── HISTORICAL_LEARNING.md # Replay data and operator contract
+├── ibkr_historical.py # Optional read-only TWS historical-data adapter
 ├── IDENTIFIER_ENCRYPTION.md # Inline identifier encryption and recovery guide
 ├── README.md          # Public project overview
 ├── requirements.txt  # Python runtime dependency declaration

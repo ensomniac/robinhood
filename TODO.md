@@ -89,6 +89,22 @@ Status: implemented by `session_mode.py` and the startup rules in `AGENTS.md`.
   rules. Historical and review modes cannot place/cancel orders or silently apply
   strategy changes.
 
+### 6. Optional Interactive Brokers Historical Data Adapter
+
+Status: implemented by `ibkr_historical.py` and documented in
+`HISTORICAL_LEARNING.md`.
+
+- Connects only to an authenticated local TWS/IB Gateway socket and exposes no
+  account, portfolio, order, or execution methods.
+- Collects regular-session historical bars, time-matched opening-volume
+  lookbacks, daily bars, and historical top-of-book bid/ask ticks with sizes.
+- Produces three timestamped, strategy-shaped quote snapshots for a recorded
+  evaluation time and preserves explicit IBKR feed limitations.
+- Uses ignored `.env` connection settings and requires no API private key or
+  account identifier.
+- Fails with an actionable TWS startup/login/API-socket message when the local
+  service is unavailable.
+
 ## Outstanding
 
 No feature from the current backlog remains unimplemented. New ideas should be

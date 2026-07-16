@@ -692,6 +692,10 @@ When Ryan selects historical mode:
    candidates, complete regular-session non-interpolated minute bars, split
    adjustment, time-valid catalysts, the exact opening-volume lookback, and
    historical quote/depth snapshots sufficient for the normal execution gates.
+   The optional `ibkr_historical.py` adapter may collect per-symbol bars,
+   opening-volume lookbacks, daily bars, and historical top-of-book bid/ask
+   ticks from a logged-in local TWS session; it has no broker-action surface and
+   does not replace the separate scanner-universe or catalyst evidence.
    If those facts cannot be obtained, report a data-fidelity blocker; do not
    manufacture quotes, depth, catalysts, bars, or validation-grade results. Use
    explicit synthetic replay equity/buying power; never copy the live balance
