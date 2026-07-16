@@ -1,6 +1,6 @@
 # 2026 Agentic Intraday Strategy Review
 
-Reviewed: 2026-07-15 (ET)
+Reviewed: 2026-07-16 (ET)
 
 Active strategy: `2026-07-15-orb-v3`
 
@@ -39,6 +39,36 @@ Change these parts:
 6. Obey the current MCP tool contract. Repository authorization cannot replace
    an explicit confirmation that a broker tool or platform requires.
 
+### 2026-07-16 frozen-rule checkpoint
+
+The first ten archived historical sessions produced 100 candidate signals: 60
+had a recorded opening-range crossing, but every candidate was rejected and no
+performance-bearing signal closed. Sixty-one candidates failed at least one fact
+known before the replay session began. Of those, 60 failed a daily metric: 51
+were below the one-million-share 14-session average-volume gate and 16 were below
+the $0.50 daily-ATR gate, with seven failing both. Those candidates should never
+have consumed target-session bars and quote requests. Historical preflight now
+applies the already-frozen universe gates before target-session collection; this
+is a throughput and sample-
+construction fix, not a relaxed strategy rule.
+
+Ninety candidates also carried a chase rejection. Review showed that schema-1
+bundle construction took quote snapshots at the start of the one-minute bar
+whose later high established the breakout. The data therefore used information
+not yet available at the quote timestamp. Schema 2 evaluates at the next minute
+boundary after a full post-break quote-observation minute and records the basis
+explicitly; legacy schema-1 artifacts remain readable and unchanged.
+
+This sample contains zero eligible or closed performance signals, so it cannot
+support a threshold, setup, sizing, or exit change. The learning cadence is also
+blocked at zero new closed signals and one elapsed day. Determination: keep
+`2026-07-15-orb-v3` frozen and `UNVALIDATED`, improve evidence fidelity and
+collection throughput, then collect a new unbiased sample. The paper's ADV and
+ATR filters remain the current primary-source rationale, and the larger
+five-minute request is within IBKR's current duration/bar-size table. [University
+of St. Gallen ORB paper](https://www.alexandria.unisg.ch/server/api/core/bitstreams/3c2989c4-688d-4d78-8a71-f02690990d51/content),
+[IBKR TWS API historical-data documentation](https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/)
+
 ## What The Repository Had Right
 
 The original strategy already addressed several common failure modes: it banned
@@ -47,9 +77,11 @@ rejected wide spreads and unprotectable stops, preferred marketable limits, and
 required detailed journaling. Those controls should remain.
 
 Its principal weakness was not a bad indicator. It was a lack of a measured,
-reproducible edge and any executable control that could reproduce the prose. As
-of this review, `TRADES.md` has no completed trades and `trades/` has no completed
-session contexts. The strategy therefore has no local win rate, expectancy,
+reproducible edge and any executable control that could reproduce the prose. At
+the initial review, `TRADES.md` had no completed trades and `trades/` had no
+completed session contexts. The current archive has historical no-trade sessions
+but still no closed performance-bearing signal. The strategy therefore has no
+local win rate, expectancy,
 drawdown, slippage distribution, or setup-specific sample. Version v3 adds
 deterministic evaluation, structured signal data, computed maturity, and a live
 session interlock; those controls make future evidence measurable but do not
@@ -149,7 +181,8 @@ only from out-of-sample results.
 
 ### 1. Strategy maturity
 
-The current state is `UNVALIDATED` because there are no completed local trades.
+The current state is `UNVALIDATED` because there are no completed
+performance-bearing signals or live trades.
 
 | State | Minimum evidence | Permitted live exposure |
 | --- | --- | --- |

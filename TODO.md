@@ -124,21 +124,23 @@ Status: implemented by `historical_universe.py` and the `probe` surface in
 
 - Historical discovery now produces a ranked draft pool with spare candidates
   before the final universe is frozen.
-- The preflight resolves IBKR stock contracts and verifies 14 positive prior
-  opening-volume sessions plus 15 prior daily sessions without requesting
-  target-session prices. A retired, unresolvable, or input-incomplete symbol can
-  be skipped in favor of the next ranked buffered name without using future
-  performance to select the sample.
+- Before provider calls, the preflight rejects draft rows that are not explicitly
+  common stock or already carry a dilution conflict. It then resolves IBKR stock
+  contracts and evaluates prior daily ADV/ATR gates before verifying 14 positive
+  prior opening-volume sessions, all without requesting target-session prices.
+  A retired, unresolvable, ineligible, or input-incomplete symbol can be skipped
+  in favor of the next ranked buffered name without using future performance to
+  select the sample.
 - Only symbol-scoped failures are skippable. Permissions, pacing, connection,
   and provider-wide failures still stop the batch instead of silently shrinking
   or distorting the universe.
 - The frozen evidence manifest records accepted, skipped, and unused buffered
-  symbols plus a hash of the draft. After this point, the builder never replaces
-  a candidate based on observed market data.
+  symbols plus draft, qualification, and accepted-history hashes. After this
+  point, the builder never replaces a candidate based on observed market data.
 - Preflight now checkpoints every examined symbol/date under ignored storage,
-  resumes exact reruns from a versioned cache, and streams progress. The adaptive
-  21-day plus optional seven-day opening-history window avoids unnecessary HMDS
-  chunks while still proving all 14 required prior sessions.
+  resumes exact reruns from a versioned cache, and streams progress. Only names
+  that pass daily gates request opening history; the fixed 28-day window fits in
+  one five-minute HMDS chunk while still proving all 14 required prior sessions.
 - Accepted pre-session opening and daily bars are shared with bundle collection,
   eliminating duplicate provider requests. Cache identity and the no-target-
   price attestation are validated before reuse; cache misses use normal IBKR
@@ -146,6 +148,8 @@ Status: implemented by `historical_universe.py` and the `probe` surface in
 - A 2026-07-16 ten-date measurement completed 102 buffered preflight checks in
   736.5 seconds and repeated the exact cached pass in 1.13 seconds. Keep tracking
   cold-run, resume, bundle-collection, and blocked-date timing on larger batches.
+  The daily-first/one-chunk optimization landed after this baseline and still
+  needs a new cold-run benchmark.
 
 ### 10. Durable Progress History And Contribution Hook
 
@@ -202,8 +206,9 @@ Acceptance criteria:
 
 ### 8. Code Review, Cleanup, And Improve
 
-Status: planned. The progress-history checkpoint now supplies its durable input,
-but the review mode itself is not implemented.
+Status: planned. A manual 2026-07-16 edit-mode review exercised the intended
+inspect/apply/validate/history workflow, but the versioned review prompt and
+bounded automation below are not implemented.
 
 Create a repository-review mode driven by a versioned top-level prompt that
 turns recent diffs, tests, audits, TODO items, and progress findings into a

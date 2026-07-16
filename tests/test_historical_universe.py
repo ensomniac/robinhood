@@ -1,3 +1,4 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,7 +12,11 @@ from ibkr_historical import IBKRRequestError
 
 
 def candidate(symbol):
-    return {"symbol": symbol, "catalyst": {"point_in_time": True}}
+    return {
+        "symbol": symbol,
+        "is_common_stock": True,
+        "catalyst": {"point_in_time": True},
+    }
 
 
 def draft_manifest(count=12):
@@ -81,6 +86,29 @@ class FreezeCandidateUniverseTests(unittest.TestCase):
         with self.assertRaisesRegex(IBKRRequestError, "not connected"):
             freeze_candidate_universe(draft_manifest(), probe)
 
+    def test_known_non_common_stock_is_skipped_without_provider_request(self):
+        draft = draft_manifest()
+        draft["candidate_pool_by_date"]["2026-03-03"][0][
+            "is_common_stock"
+        ] = False
+        calls = []
+
+        def probe(symbol, day):
+            calls.append(symbol)
+            return {
+                "symbol": symbol,
+                "viable": True,
+                "reason": "pre_session_history_available",
+                "error_code": None,
+            }
+
+        frozen = freeze_candidate_universe(draft, probe)
+
+        report = frozen["preflight"]["dates"]["2026-03-03"]
+        self.assertEqual(report["skipped"][0]["reason"], "not_us_listed_common_stock")
+        self.assertNotIn("T00", calls)
+        self.assertEqual(len(frozen["candidates_by_date"]["2026-03-03"]), 10)
+
     def test_preflight_cache_resumes_without_repeating_provider_request(self):
         calls = []
 
@@ -106,7 +134,13 @@ class FreezeCandidateUniverseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             first = ResumablePreflightProbe(root, detailed_probe)
-            self.assertTrue(first("T00", "2026-03-03")["viable"])
+            first_result = first("T00", "2026-03-03")
+            self.assertTrue(first_result["viable"])
+            self.assertEqual(len(first_result["pre_session_history_sha256"]), 64)
+            cached_payload = json.loads(
+                (root / "2026-03-03" / "T00.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(cached_payload["schema_version"], 2)
 
             def should_not_run(symbol, day):
                 raise AssertionError(f"unexpected cache miss for {symbol} {day}")
@@ -115,6 +149,22 @@ class FreezeCandidateUniverseTests(unittest.TestCase):
             self.assertTrue(resumed("T00", "2026-03-03")["viable"])
 
         self.assertEqual(calls, [("T00", "2026-03-03")])
+
+    def test_reusable_history_manifest_requires_content_hashes(self):
+        def probe(symbol, day):
+            return {
+                "symbol": symbol,
+                "viable": True,
+                "reason": "pre_session_history_available",
+                "error_code": None,
+            }
+
+        with self.assertRaisesRegex(HistoricalUniverseError, "history hash"):
+            freeze_candidate_universe(
+                draft_manifest(),
+                probe,
+                cache_metadata={"reusable_pre_session_history": True},
+            )
 
 
 if __name__ == "__main__":

@@ -37,7 +37,7 @@ from trade_lifecycle import (
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_PROPOSAL_ROOT = PROJECT_ROOT / "strategy_proposals"
-LEARNING_SCHEMA_VERSION = 1
+LEARNING_SCHEMA_VERSION = 2
 MINIMUM_SIGNALS_BETWEEN_REVIEWS = 20
 MINIMUM_DAYS_BETWEEN_REVIEWS = 30
 MINIMUM_FEATURE_COHORT = 8
@@ -48,6 +48,18 @@ TRACKED_FEATURES = (
     "stop_fraction",
     "resistance_room_fraction",
     "reward_risk",
+)
+DAILY_METRIC_PREFLIGHT_REASONS = frozenset(
+    {
+        "average daily volume is below the universe minimum",
+        "daily ATR is below the universe minimum",
+    }
+)
+PRE_SESSION_UNIVERSE_REASONS = DAILY_METRIC_PREFLIGHT_REASONS | frozenset(
+    {
+        "security is not a U.S.-listed common stock",
+        "catalyst has a dilution or financing conflict",
+    }
 )
 
 
@@ -219,6 +231,51 @@ def _feature_diagnostics(
     return diagnostics
 
 
+def _signal_diagnostics(
+    records: Sequence[Mapping[str, Any]], config: StrategyConfig
+) -> dict[str, Any]:
+    signals = [
+        record
+        for record in _current_records(records, config)
+        if record.get("record_type") == "signal"
+    ]
+    reason_counts: Counter[str] = Counter()
+    pre_session_rejects = 0
+    daily_metric_rejects = 0
+    for record in signals:
+        raw_reasons = record.get("rejection_reasons")
+        reasons = (
+            [str(value) for value in raw_reasons]
+            if isinstance(raw_reasons, list)
+            else []
+        )
+        reason_counts.update(reasons)
+        if PRE_SESSION_UNIVERSE_REASONS.intersection(reasons):
+            pre_session_rejects += 1
+        if DAILY_METRIC_PREFLIGHT_REASONS.intersection(reasons):
+            daily_metric_rejects += 1
+    return {
+        "signals": len(signals),
+        "triggered_signals": sum(
+            record.get("triggered") is True for record in signals
+        ),
+        "eligible_signals": sum(record.get("eligible") is True for record in signals),
+        "closed_performance_signals": len(_closed_signals(signals, config)),
+        "rejected_signals": sum(
+            record.get("decision") == "rejected" for record in signals
+        ),
+        "pre_session_universe_rejects": pre_session_rejects,
+        "pre_session_universe_reject_fraction": (
+            pre_session_rejects / len(signals) if signals else None
+        ),
+        "daily_metric_preflight_rejects": daily_metric_rejects,
+        "daily_metric_preflight_reject_fraction": (
+            daily_metric_rejects / len(signals) if signals else None
+        ),
+        "rejection_reason_counts": dict(reason_counts.most_common()),
+    }
+
+
 def _split_feature(
     closed: Sequence[Mapping[str, Any]], name: str, threshold: float
 ) -> tuple[list[float], list[float]]:
@@ -337,6 +394,7 @@ def build_learning_report(
     reason_counts = Counter(
         str(item.get("primary_reason")) for item in relevant_outcomes
     )
+    signal_diagnostics = _signal_diagnostics(records, config)
     hypotheses = _hypotheses(closed, strategy_report) if cadence.eligible else []
     return {
         "schema_version": LEARNING_SCHEMA_VERSION,
@@ -352,12 +410,18 @@ def build_learning_report(
             "result_counts": dict(sorted(result_counts.items())),
             "primary_reason_counts": dict(reason_counts.most_common()),
         },
+        "signal_diagnostics": signal_diagnostics,
         "feature_diagnostics": _feature_diagnostics(closed),
         "hypotheses": hypotheses,
         "recommendation": (
             "Review the listed hypotheses; any accepted change must create a new strategy version and confirmation sample."
             if hypotheses
-            else "Keep the frozen rules and continue complete data collection."
+            else (
+                "Keep the frozen rules; enforce pre-session universe gates before "
+                "target-session collection, then continue complete data collection."
+                if signal_diagnostics["pre_session_universe_rejects"]
+                else "Keep the frozen rules and continue complete data collection."
+            )
         ),
     }
 

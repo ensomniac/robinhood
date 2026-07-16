@@ -1,6 +1,6 @@
 # Robinhood Codex Trading Context
 
-Research refreshed: 2026-07-15
+Research refreshed: 2026-07-16
 
 Strategy version: `2026-07-15-orb-v3`
 
@@ -732,31 +732,40 @@ When Ryan selects historical mode:
    once by default, resume from cached raw files, and retain provider provenance
    for every candidate and benchmark. Never interpolate a missing provider bar.
    Freeze the date first, then assemble a point-in-time ranked candidate pool
-   with a buffer beyond the required ten names. Before freezing the final
-   candidate universe, run `historical_universe.py` against that draft pool.
-   Its IBKR pre-session preflight is availability-only and must not request or
-   inspect target-session prices. It verifies a US stock contract, 14 positive
-   prior 9:30 five-minute volumes, and at least 15 prior daily sessions. It may
-   skip a symbol-scoped unresolvable or input-incomplete listing and take the next
-   ranked buffered candidate. A connection, permission, pacing, or provider-wide
-   error blocks the batch and must never be converted into a symbol skip. Record
-   every pre-freeze skip in the frozen manifest. Once the final universe is frozen,
-   never replace a candidate after observing its market data; a later failure
-   remains a fidelity blocker. A public scanner source does not also need to
-   provide bars, quotes, or depth. For each frozen symbol, use the first 9:35-10:30
-   opening-range break as its evaluation time, or 10:30 with `clean_break=false`
-   when no break occurred, and run the full `candidate` collection at that time.
+   with at least 20 names and preferably 30-50 when the source supports it.
+   Before freezing the final candidate universe, run `historical_universe.py`
+   against that draft pool.
+   Its IBKR pre-session preflight must not request or inspect target-session
+   prices. Before provider work, skip draft records that are not explicitly
+   U.S.-listed common stock or already carry a dilution conflict. Then resolve
+   the contract and request prior daily history first. Enforce the configured
+   14-session average-volume and ATR gates before requesting the more expensive
+   opening history; qualifying symbols still need 14 positive prior 9:30
+   five-minute volumes and at least 15 prior daily sessions. It may skip a
+   symbol-scoped unresolvable, ineligible, or input-incomplete listing and take
+   the next ranked buffered candidate. A connection, permission, pacing, or
+   provider-wide error blocks the batch and must never be converted into a
+   symbol skip. Record every pre-freeze skip in the frozen manifest. Once the
+   final universe is frozen, never replace a candidate after observing its
+   market data; a later failure remains a fidelity blocker. A public scanner
+   source does not also need to provide bars, quotes, or depth. For each frozen
+   symbol, find the first one-minute bar from 9:35 through 10:28 whose high trades
+   above the opening range. After that bar is complete, reserve the following
+   minute for the three-snapshot quote window and evaluate at its closing
+   boundary. Use 10:30 with `clean_break=false` when no sufficiently early break
+   occurred. Run full `candidate` collection at that evaluation timestamp.
    Persist each preflight result atomically under ignored
    `historical_data/preflight/` storage. Reuse only cache entries whose probe
-   contract version, symbol, replay date, and no-target-price attestation match.
-   Use the adaptive 21-day opening-history request and extend once by seven days
-   only when fewer than 14 sessions are present. A symbol-specific HMDS `query
-   returned no data` response may be treated as input-incomplete and replaced
-   from the already-ranked buffer; pacing, permission, connection, timeout, and
-   provider-wide failures still block the batch. Feed accepted cached
-   pre-session opening and daily bars into bundle collection so those immutable
-   inputs are not requested twice. A missing or incompatible cache must fall
-   back to normal collection, never to fabricated data.
+   contract version, symbol, replay date, strategy version, rules hash,
+   qualification fingerprint, no-target-price attestation, and content hash
+   match. Request the preceding 28 calendar days of five-minute opening history
+   in one provider chunk after the daily gates pass. A symbol-specific HMDS
+   `query returned no data` response may be treated as input-incomplete and
+   replaced from the already-ranked buffer; pacing, permission, connection,
+   timeout, and provider-wide failures still block the batch. Feed accepted
+   hashed pre-session opening and daily bars into bundle collection so those
+   immutable inputs are not requested twice. A missing, altered, or incompatible
+   cache must fall back to normal collection, never to fabricated data.
    Before any candidate collection, run
    `python3 ibkr_historical.py check`. If the configured socket is unavailable,
    allow the adapter's local auto-start setting to launch Trader Workstation. If

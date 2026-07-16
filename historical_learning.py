@@ -51,7 +51,8 @@ from trade_lifecycle import (
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_DATA_ROOT = PROJECT_ROOT / "historical_data"
 DEFAULT_BATCH_ROOT = PROJECT_ROOT / "historical_batches"
-BUNDLE_SCHEMA_VERSION = 1
+BUNDLE_SCHEMA_VERSION = 2
+SUPPORTED_BUNDLE_SCHEMA_VERSIONS = frozenset({1, BUNDLE_SCHEMA_VERSION})
 BATCH_STATUS_SCHEMA_VERSION = 1
 MINIMUM_CANDIDATES = 10
 REQUIRED_SOURCE_ATTESTATIONS = (
@@ -229,9 +230,11 @@ def validate_bundle(
 ) -> None:
     """Validate point-in-time completeness before any replay artifacts are written."""
     config = config or load_config()
-    if bundle.get("schema_version") != BUNDLE_SCHEMA_VERSION:
+    bundle_schema = bundle.get("schema_version")
+    if bundle_schema not in SUPPORTED_BUNDLE_SCHEMA_VERSIONS:
         raise HistoricalLearningError(
-            f"bundle schema_version must be {BUNDLE_SCHEMA_VERSION}"
+            "bundle schema_version must be one of "
+            f"{sorted(SUPPORTED_BUNDLE_SCHEMA_VERSIONS)}"
         )
     day_text = bundle.get("date")
     if not isinstance(day_text, str):
@@ -353,6 +356,14 @@ def validate_bundle(
             raise HistoricalLearningError(
                 f"candidates[{candidate_index}] evaluation is outside the entry window"
             )
+        if (
+            bundle_schema >= 2
+            and candidate.get("evaluation_basis")
+            != "next_minute_after_completed_breakout_bar"
+        ):
+            raise HistoricalLearningError(
+                f"candidates[{candidate_index}] lacks the completed-bar evaluation basis"
+            )
 
         catalyst = _mapping(
             candidate.get("catalyst"), f"candidates[{candidate_index}].catalyst"
@@ -417,6 +428,7 @@ def validate_bundle(
             raise HistoricalLearningError(
                 f"candidates[{candidate_index}] needs {expected_quotes} quote snapshots"
             )
+        quote_times: list[time] = []
         for quote_index, quote_value in enumerate(quotes):
             quote = _mapping(
                 quote_value,
@@ -430,6 +442,7 @@ def validate_bundle(
                 raise HistoricalLearningError(
                     f"candidates[{candidate_index}] quote snapshot is from the future"
                 )
+            quote_times.append(observed)
 
         bars = candidate.get("bars")
         if not isinstance(bars, list) or len(bars) != len(EXPECTED_BAR_TIMES):
@@ -453,7 +466,15 @@ def validate_bundle(
                 f"candidates[{candidate_index}].opening_bar.high",
                 minimum=0.000001,
             )
-            trigger_index = _bar_index(str(candidate["evaluation_time_et"]))
+            evaluation_index = _bar_index(str(candidate["evaluation_time_et"]))
+            if bundle_schema >= 2:
+                if evaluation_index <= 1:
+                    raise HistoricalLearningError(
+                        f"candidates[{candidate_index}] evaluation has no completed trigger bar"
+                    )
+                trigger_index = evaluation_index - 2
+            else:
+                trigger_index = evaluation_index
             if float(bars[trigger_index]["high"]) <= opening_high:
                 raise HistoricalLearningError(
                     f"candidates[{candidate_index}] trigger minute did not break the opening-range high"
@@ -466,6 +487,15 @@ def validate_bundle(
                 raise HistoricalLearningError(
                     f"candidates[{candidate_index}] evaluation is after the first opening-range break"
                 )
+            if bundle_schema >= 2:
+                trigger_completed = (
+                    datetime.combine(date.min, time(9, 30))
+                    + timedelta(minutes=trigger_index + 1)
+                ).time()
+                if any(observed < trigger_completed for observed in quote_times):
+                    raise HistoricalLearningError(
+                        f"candidates[{candidate_index}] quote snapshot precedes the completed trigger bar"
+                    )
 
 
 def _bar_index(time_et: str) -> int:
@@ -510,7 +540,7 @@ def replay_selected_trade(
     entry_bar = bars[start_index]
     if float(entry_bar["high"]) < entry:
         raise HistoricalLearningError(
-            f"{candidate['signal_id']} entry limit never traded in its trigger minute"
+            f"{candidate['signal_id']} entry limit never traded in its evaluation minute"
         )
     spread = evaluation.quote_summary.median_spread_dollars
     reserve = sizing.slippage_reserve_per_share

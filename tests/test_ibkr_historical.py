@@ -11,6 +11,7 @@ from ibkr_historical import (
     IBKRHistoricalClient,
     IBKRRequestError,
     PRE_SESSION_CACHE_VERSION,
+    _IBKRHistoricalConnection,
     collect_candidate_history,
     collect_quote_evidence,
     ensure_tws_socket,
@@ -170,7 +171,8 @@ class SymbolProbeTests(unittest.TestCase):
 
             def fetch_bars(self, symbol, start, end, *, bar_size, what):
                 rows = []
-                for offset in range(14, 0, -1):
+                count = 15 if bar_size == "1 day" else 14
+                for offset in range(count, 0, -1):
                     stamp = datetime.combine(
                         day - timedelta(days=offset),
                         datetime.min.time().replace(hour=9, minute=30),
@@ -180,7 +182,9 @@ class SymbolProbeTests(unittest.TestCase):
                         {
                             "epoch": int(stamp.timestamp()),
                             "date_et": stamp.date().isoformat(),
-                            "volume": 0 if offset == 7 else 1000,
+                            "volume": (
+                                0 if bar_size == "5 mins" and offset == 7 else 1000
+                            ),
                         }
                     )
                 return rows
@@ -191,6 +195,8 @@ class SymbolProbeTests(unittest.TestCase):
         self.assertEqual(result["reason"], "nonpositive_prior_opening_volume")
 
     def test_symbol_scoped_hmds_no_data_is_a_buffered_skip(self):
+        day = datetime(2026, 6, 8, tzinfo=EASTERN).date()
+
         class FakeClient:
             def fetch_contract_details(self, symbol):
                 return [
@@ -201,7 +207,22 @@ class SymbolProbeTests(unittest.TestCase):
                     }
                 ]
 
-            def fetch_bars(self, *args, **kwargs):
+            def fetch_bars(self, symbol, start, end, *, bar_size, what):
+                if bar_size == "1 day":
+                    return [
+                        {
+                            "epoch": int(
+                                datetime.combine(
+                                    day - timedelta(days=offset),
+                                    datetime.min.time(),
+                                    tzinfo=EASTERN,
+                                ).timestamp()
+                            ),
+                            "date_et": (day - timedelta(days=offset)).isoformat(),
+                            "volume": 1000,
+                        }
+                        for offset in range(15, 0, -1)
+                    ]
                 raise IBKRRequestError(
                     "HMDS query returned no data: SPTX@SMART Trades",
                     error_code=162,
@@ -214,6 +235,180 @@ class SymbolProbeTests(unittest.TestCase):
         self.assertFalse(result["viable"])
         self.assertEqual(result["reason"], "missing_prior_opening_history")
         self.assertIsNone(history)
+
+    def test_daily_volume_gate_skips_opening_history_request(self):
+        day = datetime(2026, 3, 3, tzinfo=EASTERN).date()
+
+        class FakeClient:
+            def __init__(self):
+                self.bar_sizes = []
+
+            def fetch_contract_details(self, symbol):
+                return [
+                    {
+                        "symbol": symbol,
+                        "security_type": "STK",
+                        "currency": "USD",
+                    }
+                ]
+
+            def fetch_bars(self, symbol, start, end, *, bar_size, what):
+                self.bar_sizes.append(bar_size)
+                return [
+                    {
+                        "epoch": int(
+                            datetime.combine(
+                                day - timedelta(days=offset),
+                                datetime.min.time(),
+                                tzinfo=EASTERN,
+                            ).timestamp()
+                        ),
+                        "date_et": (day - timedelta(days=offset)).isoformat(),
+                        "open": 10.0,
+                        "high": 11.0,
+                        "low": 9.0,
+                        "close": 10.0,
+                        "volume": 100_000,
+                    }
+                    for offset in range(15, 0, -1)
+                ]
+
+        client = FakeClient()
+        result, history = probe_historical_candidate_with_history(
+            client,
+            "TEST",
+            day,
+            minimum_average_daily_volume_14=1_000_000,
+            minimum_daily_atr_14=0.5,
+        )
+
+        self.assertFalse(result["viable"])
+        self.assertEqual(
+            result["reason"], "average_daily_volume_below_strategy_minimum"
+        )
+        self.assertEqual(client.bar_sizes, ["1 day"])
+        self.assertIsNone(history)
+
+    def test_daily_atr_gate_skips_opening_history_request(self):
+        day = datetime(2026, 3, 3, tzinfo=EASTERN).date()
+
+        class FakeClient:
+            def __init__(self):
+                self.bar_sizes = []
+
+            def fetch_contract_details(self, symbol):
+                return [
+                    {
+                        "symbol": symbol,
+                        "security_type": "STK",
+                        "currency": "USD",
+                    }
+                ]
+
+            def fetch_bars(self, symbol, start, end, *, bar_size, what):
+                self.bar_sizes.append(bar_size)
+                return [
+                    {
+                        "epoch": int(
+                            datetime.combine(
+                                day - timedelta(days=offset),
+                                datetime.min.time(),
+                                tzinfo=EASTERN,
+                            ).timestamp()
+                        ),
+                        "date_et": (day - timedelta(days=offset)).isoformat(),
+                        "open": 10.0,
+                        "high": 10.1,
+                        "low": 9.9,
+                        "close": 10.0,
+                        "volume": 2_000_000,
+                    }
+                    for offset in range(15, 0, -1)
+                ]
+
+        client = FakeClient()
+        result, history = probe_historical_candidate_with_history(
+            client,
+            "TEST",
+            day,
+            minimum_average_daily_volume_14=1_000_000,
+            minimum_daily_atr_14=0.5,
+        )
+
+        self.assertFalse(result["viable"])
+        self.assertEqual(result["reason"], "daily_atr_below_strategy_minimum")
+        self.assertEqual(client.bar_sizes, ["1 day"])
+        self.assertIsNone(history)
+
+    def test_strategy_qualified_probe_fetches_daily_before_one_opening_window(self):
+        day = datetime(2026, 3, 3, tzinfo=EASTERN).date()
+
+        class FakeClient:
+            def __init__(self):
+                self.requests = []
+
+            def fetch_contract_details(self, symbol):
+                return [
+                    {
+                        "symbol": symbol,
+                        "security_type": "STK",
+                        "currency": "USD",
+                    }
+                ]
+
+            def fetch_bars(self, symbol, start, end, *, bar_size, what):
+                self.requests.append((start, end, bar_size))
+                count = 15 if bar_size == "1 day" else 14
+                hour = 0 if bar_size == "1 day" else 9
+                minute = 0 if bar_size == "1 day" else 30
+                return [
+                    {
+                        "epoch": int(
+                            datetime.combine(
+                                day - timedelta(days=offset),
+                                datetime.min.time().replace(hour=hour, minute=minute),
+                                tzinfo=EASTERN,
+                            ).timestamp()
+                        ),
+                        "date_et": (day - timedelta(days=offset)).isoformat(),
+                        "open": 10.0,
+                        "high": 11.0,
+                        "low": 9.0,
+                        "close": 10.0,
+                        "volume": 2_000_000,
+                    }
+                    for offset in range(count, 0, -1)
+                ]
+
+        client = FakeClient()
+        result, history = probe_historical_candidate_with_history(
+            client,
+            "TEST",
+            day,
+            minimum_average_daily_volume_14=1_000_000,
+            minimum_daily_atr_14=0.5,
+        )
+
+        self.assertTrue(result["viable"])
+        self.assertEqual([row[2] for row in client.requests], ["1 day", "5 mins"])
+        self.assertEqual((day - client.requests[1][0].date()).days, 28)
+        self.assertEqual(result["average_daily_volume_14"], 2_000_000)
+        self.assertEqual(result["daily_atr_14"], 2.0)
+        self.assertIsNotNone(history)
+
+    def test_five_minute_28_day_window_uses_one_provider_request(self):
+        connection = _IBKRHistoricalConnection(IBKRConfig())
+        end = datetime(2026, 3, 3, tzinfo=EASTERN)
+        start = end - timedelta(days=28)
+
+        with patch.object(connection, "_request_bars", return_value=[]) as request:
+            rows = connection.fetch_bars(
+                "TEST", start, end, bar_size="5 mins", what="TRADES"
+            )
+
+        self.assertEqual(rows, [])
+        request.assert_called_once()
+        self.assertEqual(request.call_args.args[2], "28 D")
 
     def test_pacing_failure_remains_a_batch_blocker(self):
         class FakeClient:

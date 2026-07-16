@@ -1,10 +1,12 @@
-"""Freeze a replay universe only after availability-only IBKR preflight.
+"""Freeze a replay universe only after pre-session IBKR eligibility checks.
 
 The draft manifest contains a ranked buffer under ``candidate_pool_by_date``.
 This tool resolves symbols in rank order and freezes the first required viable
-names without requesting target-session price data. Retired, unresolvable, or
-pre-session-history-incomplete symbols may be skipped before the universe is
-frozen; provider-wide failures still stop the batch.
+names without requesting target-session price data. It applies immutable daily
+volume and ATR universe gates before the more expensive opening-history pull.
+Retired, unresolvable, ineligible, or pre-session-history-incomplete symbols may
+be skipped before the universe is frozen; provider-wide failures still stop the
+batch.
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from datetime import UTC, date, datetime
 from pathlib import Path
+from time import monotonic
 from typing import Any
 
 from ibkr_historical import (
@@ -28,11 +31,12 @@ from ibkr_historical import (
     PRE_SESSION_CACHE_VERSION,
     probe_historical_candidate_with_history,
 )
+from strategy_engine import StrategyInputError, load_config
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_PREFLIGHT_CACHE_ROOT = PROJECT_ROOT / "historical_data" / "preflight"
-PREFLIGHT_CACHE_SCHEMA_VERSION = 1
+PREFLIGHT_CACHE_SCHEMA_VERSION = 2
 
 
 class HistoricalUniverseError(RuntimeError):
@@ -48,9 +52,17 @@ DetailedProbe = Callable[
 class ResumablePreflightProbe:
     """Persist each immutable pre-session result before probing the next symbol."""
 
-    def __init__(self, cache_root: Path, probe: DetailedProbe):
+    def __init__(
+        self,
+        cache_root: Path,
+        probe: DetailedProbe,
+        *,
+        qualification: Mapping[str, Any] | None = None,
+    ):
         self.cache_root = cache_root
         self.probe = probe
+        self.qualification = dict(qualification or {})
+        self.qualification_sha256 = _canonical_hash(self.qualification)
 
     def _path(self, symbol: str, day: str) -> Path:
         return self.cache_root / day / f"{symbol}.json"
@@ -69,15 +81,21 @@ class ResumablePreflightProbe:
             or value.get("probe_contract_version") != PRE_SESSION_CACHE_VERSION
             or value.get("symbol") != symbol
             or value.get("session_date") != day
+            or value.get("qualification_sha256") != self.qualification_sha256
         ):
             return None
         result = value.get("result")
         if not isinstance(result, Mapping) or result.get("symbol") != symbol:
             return None
-        if result.get("viable") is True and not isinstance(
-            value.get("pre_session_history"), Mapping
-        ):
-            return None
+        if result.get("viable") is True:
+            history = value.get("pre_session_history")
+            if not isinstance(history, Mapping):
+                return None
+            expected_hash = result.get("pre_session_history_sha256")
+            if not isinstance(expected_hash, str) or expected_hash != _canonical_hash(
+                history
+            ):
+                return None
         return dict(result)
 
     @staticmethod
@@ -96,8 +114,15 @@ class ResumablePreflightProbe:
                 flush=True,
             )
             return cached
+        started = monotonic()
         result, history = self.probe(symbol, day)
         normalized = dict(result)
+        if normalized.get("viable") is True:
+            if not isinstance(history, Mapping):
+                raise HistoricalUniverseError(
+                    f"{day} {symbol} viable preflight omitted reusable history"
+                )
+            normalized["pre_session_history_sha256"] = _canonical_hash(history)
         payload = {
             "schema_version": PREFLIGHT_CACHE_SCHEMA_VERSION,
             "probe_contract_version": PRE_SESSION_CACHE_VERSION,
@@ -105,6 +130,9 @@ class ResumablePreflightProbe:
             "captured_at": datetime.now(UTC).isoformat(),
             "symbol": symbol,
             "session_date": day,
+            "qualification": self.qualification,
+            "qualification_sha256": self.qualification_sha256,
+            "duration_seconds": monotonic() - started,
             "result": normalized,
             "pre_session_history": dict(history) if history is not None else None,
         }
@@ -129,6 +157,16 @@ def _canonical_hash(value: Mapping[str, Any]) -> str:
         ensure_ascii=True,
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _is_sha256(value: Any) -> bool:
+    if not isinstance(value, str) or len(value) != 64:
+        return False
+    try:
+        bytes.fromhex(value)
+    except ValueError:
+        return False
+    return True
 
 
 def _positive_integer(value: Any, name: str) -> int:
@@ -196,6 +234,7 @@ def freeze_candidate_universe(
             )
 
         accepted: list[dict[str, Any]] = []
+        accepted_preflight: list[dict[str, Any]] = []
         skipped: list[dict[str, Any]] = []
         seen: set[str] = set()
         last_examined = -1
@@ -208,15 +247,55 @@ def freeze_candidate_universe(
                 )
             seen.add(symbol)
             last_examined = index
+            pre_session_reason = None
+            if raw_candidate.get("is_common_stock") is not True:
+                pre_session_reason = "not_us_listed_common_stock"
+            elif raw_candidate.get("dilution_conflict") is True:
+                pre_session_reason = "known_dilution_conflict"
+            if pre_session_reason is not None:
+                skipped.append(
+                    {
+                        "symbol": symbol,
+                        "draft_rank": rank,
+                        "reason": pre_session_reason,
+                        "error_code": None,
+                    }
+                )
+                continue
             result = probe(symbol, day)
             if str(result.get("symbol", "")).upper() != symbol:
                 raise HistoricalUniverseError(
                     f"{day} {symbol} preflight returned a mismatched symbol"
                 )
             if result.get("viable") is True:
+                history_hash = result.get("pre_session_history_sha256")
+                if (
+                    isinstance(cache_metadata, Mapping)
+                    and cache_metadata.get("reusable_pre_session_history") is True
+                    and not _is_sha256(history_hash)
+                ):
+                    raise HistoricalUniverseError(
+                        f"{day} {symbol} preflight omitted its history hash"
+                    )
                 candidate = deepcopy(dict(raw_candidate))
                 candidate["symbol"] = symbol
                 accepted.append(candidate)
+                accepted_preflight.append(
+                    {
+                        key: deepcopy(result[key])
+                        for key in (
+                            "symbol",
+                            "reason",
+                            "prior_opening_sessions",
+                            "prior_daily_sessions",
+                            "average_daily_volume_14",
+                            "daily_atr_14",
+                            "pre_session_history_sha256",
+                        )
+                        if key in result
+                    }
+                    | {"draft_rank": rank}
+                )
                 if len(accepted) == required:
                     break
                 continue
@@ -249,8 +328,10 @@ def freeze_candidate_universe(
         candidates_by_date[day] = accepted
         date_reports[day] = {
             "accepted_symbols": [row["symbol"] for row in accepted],
+            "accepted": accepted_preflight,
             "skipped": skipped,
             "unused_buffer_symbols": unused,
+            "examined_count": last_examined + 1,
         }
 
     output = {
@@ -260,11 +341,12 @@ def freeze_candidate_universe(
     }
     output["candidates_by_date"] = candidates_by_date
     output["preflight"] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "performed_at": performed_at or datetime.now(UTC).isoformat(),
         "provider": "Interactive Brokers TWS API pre-session history",
         "minimum_candidates": required,
-        "availability_only": True,
+        "availability_only": False,
+        "pre_session_only": True,
         "target_session_prices_observed": False,
         "draft_manifest_sha256": _canonical_hash(draft),
         "dates": date_reports,
@@ -280,7 +362,9 @@ def _write_json(value: Mapping[str, Any], output: Path | None) -> None:
         print(rendered, end="")
         return
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(rendered, encoding="utf-8")
+    temporary = output.with_suffix(output.suffix + ".tmp")
+    temporary.write_text(rendered, encoding="utf-8")
+    temporary.replace(output)
     print(json.dumps({"written": str(output), "bytes": len(rendered.encode())}))
 
 
@@ -303,6 +387,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not isinstance(draft, Mapping):
             raise HistoricalUniverseError("draft manifest must be a JSON object")
         config = IBKRConfig.from_env(args.env_file)
+        strategy_config = load_config()
+        universe = strategy_config.raw["universe"]
+        qualification = {
+            "strategy_version": strategy_config.version,
+            "rules_hash": strategy_config.rules_hash,
+            "minimum_average_daily_volume_14": float(
+                universe["minimum_average_daily_volume_14"]
+            ),
+            "minimum_daily_atr_14": float(universe["minimum_daily_atr_14"]),
+        }
         with IBKRHistoricalClient(config) as client:
             cache_root = args.cache_root.resolve()
             try:
@@ -312,8 +406,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             cached_probe = ResumablePreflightProbe(
                 cache_root,
                 lambda symbol, day: probe_historical_candidate_with_history(
-                    client, symbol, day
+                    client,
+                    symbol,
+                    day,
+                    minimum_average_daily_volume_14=qualification[
+                        "minimum_average_daily_volume_14"
+                    ],
+                    minimum_daily_atr_14=qualification["minimum_daily_atr_14"],
                 ),
+                qualification=qualification,
             )
             frozen = freeze_candidate_universe(
                 draft,
@@ -324,6 +425,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "probe_contract_version": PRE_SESSION_CACHE_VERSION,
                     "root": cache_root_text,
                     "reusable_pre_session_history": True,
+                    "qualification_sha256": cached_probe.qualification_sha256,
+                    "strategy_version": strategy_config.version,
+                    "rules_hash": strategy_config.rules_hash,
                 },
             )
         _write_json(frozen, args.output)
@@ -331,6 +435,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (
         HistoricalUniverseError,
         IBKRHistoricalError,
+        StrategyInputError,
         OSError,
         json.JSONDecodeError,
     ) as exc:

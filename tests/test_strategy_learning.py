@@ -51,6 +51,37 @@ def closed_signal(index, *, high_quality):
     )
 
 
+def rejected_signal(index, reasons):
+    day = date(2026, 7, 16) + timedelta(days=index)
+    symbol = f"R{index:02d}"
+    return prepare_record(
+        {
+            "record_type": "signal",
+            "signal_id": f"{day.isoformat()}-{symbol}-1",
+            "session_id": f"{day.isoformat()}-session",
+            "date": day.isoformat(),
+            "symbol": symbol,
+            "mode": "shadow",
+            "sample_phase": "pilot",
+            "session_capture_complete": True,
+            "triggered": True,
+            "eligible": False,
+            "decision": "rejected",
+            "closed": False,
+            "net_r": None,
+            "paper_baseline_eligible": False,
+            "entry_slippage_bps": None,
+            "unprotected_seconds": None,
+            "stop_executed": False,
+            "stop_slippage_bps": None,
+            "stop_reserve_bps": None,
+            "rule_violations": [],
+            "rejection_reasons": reasons,
+            "features": {},
+        }
+    )
+
+
 class CadenceTests(unittest.TestCase):
     def test_review_requires_both_signals_and_elapsed_time(self):
         records = [
@@ -97,6 +128,28 @@ class CadenceTests(unittest.TestCase):
 
         with self.assertRaisesRegex(LearningError, "cadence is blocked"):
             write_proposal(report, Path("unused"))
+
+    def test_report_exposes_pre_session_universe_waste(self):
+        records = [
+            rejected_signal(
+                0, ["average daily volume is below the universe minimum"]
+            ),
+            rejected_signal(1, ["daily ATR is below the universe minimum"]),
+            rejected_signal(2, ["opening relative volume is below 1.0"]),
+            rejected_signal(3, ["security is not a U.S.-listed common stock"]),
+        ]
+
+        report = build_learning_report(records, [], as_of=date(2026, 8, 20))
+        diagnostics = report["signal_diagnostics"]
+
+        self.assertEqual(report["schema_version"], 2)
+        self.assertEqual(diagnostics["signals"], 4)
+        self.assertEqual(diagnostics["pre_session_universe_rejects"], 3)
+        self.assertEqual(diagnostics["daily_metric_preflight_rejects"], 2)
+        self.assertAlmostEqual(
+            diagnostics["pre_session_universe_reject_fraction"], 3 / 4
+        )
+        self.assertIn("enforce pre-session universe gates", report["recommendation"])
 
 
 if __name__ == "__main__":

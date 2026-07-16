@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 
 from historical_bundle_builder import (
     HistoricalBundleBuildError,
+    _canonical_hash,
     _collect_candidate_with_preflight_fallback,
     _failure_row,
     _load_pre_session_history,
@@ -66,7 +67,7 @@ def raw_candidate(symbol, day="2026-03-03"):
         "request": {
             "symbol": symbol,
             "date": day,
-            "evaluation_time_et": "09:40:00",
+            "evaluation_time_et": "09:42:00",
         },
         "session_bars": bars,
         "opening_bar": {"volume": 6000},
@@ -84,14 +85,14 @@ def raw_candidate(symbol, day="2026-03-03"):
         ],
         "quote_snapshots": [
             {
-                "observed_at_et": f"{day}T09:39:{second:02d}-05:00",
+                "observed_at_et": f"{day}T{observed}-05:00",
                 "age_seconds": 0,
                 "bid": 10,
                 "ask": 10.01,
                 "ask_depth": 10_000,
                 "recent_real_1m_volume": 20_000,
             }
-            for second in (50, 55, 59)
+            for observed in ("09:41:50", "09:41:55", "09:42:00")
         ],
     }
 
@@ -102,7 +103,7 @@ class EvaluationTimeTests(unittest.TestCase):
             session_bars(break_index=10)
         )
 
-        self.assertEqual(evaluation, "09:40:00")
+        self.assertEqual(evaluation, "09:42:00")
         self.assertTrue(clean_break)
         self.assertEqual(opening["high"], 10.0)
         self.assertEqual(opening["volume"], 5010.0)
@@ -110,6 +111,22 @@ class EvaluationTimeTests(unittest.TestCase):
     def test_no_break_uses_cutoff(self):
         evaluation, clean_break, _ = determine_evaluation(
             session_bars(break_index=None)
+        )
+
+        self.assertEqual(evaluation, "10:30:00")
+        self.assertFalse(clean_break)
+
+    def test_last_eligible_crossing_bar_evaluates_at_cutoff(self):
+        evaluation, clean_break, _ = determine_evaluation(
+            session_bars(break_index=58)
+        )
+
+        self.assertEqual(evaluation, "10:30:00")
+        self.assertTrue(clean_break)
+
+    def test_crossing_at_cutoff_is_not_an_entry_signal(self):
+        evaluation, clean_break, _ = determine_evaluation(
+            session_bars(break_index=59)
         )
 
         self.assertEqual(evaluation, "10:30:00")
@@ -184,7 +201,7 @@ class BundleAssemblyTests(unittest.TestCase):
                 "request": {
                     "symbol": symbol,
                     "date": day,
-                    "evaluation_time_et": "09:40:00",
+                    "evaluation_time_et": "09:42:00",
                 },
                 "session_bars": bars,
                 "session_bar_quality": {"complete": True},
@@ -193,14 +210,14 @@ class BundleAssemblyTests(unittest.TestCase):
                 "daily_bars": daily,
                 "quote_snapshots": [
                     {
-                        "observed_at_et": f"{day}T09:39:{second:02d}-05:00",
+                        "observed_at_et": f"{day}T{observed}-05:00",
                         "age_seconds": 0.0,
                         "bid": 10.0,
                         "ask": 10.01,
                         "ask_depth": 10_000,
                         "recent_real_1m_volume": 20_000,
                     }
-                    for second in (50, 55, 59)
+                    for observed in ("09:41:50", "09:41:55", "09:42:00")
                 ],
             }
 
@@ -227,7 +244,12 @@ class BundleAssemblyTests(unittest.TestCase):
 
         validate_bundle(bundle)
         self.assertEqual(len(bundle["candidates"]), 10)
-        self.assertEqual(bundle["candidates"][0]["evaluation_time_et"], "09:40:00")
+        self.assertEqual(bundle["schema_version"], 2)
+        self.assertEqual(bundle["candidates"][0]["evaluation_time_et"], "09:42:00")
+        self.assertEqual(
+            bundle["candidates"][0]["evaluation_basis"],
+            "next_minute_after_completed_breakout_bar",
+        )
         self.assertEqual(bundle["candidates"][0]["discovery"]["form"], "8-K")
 
 
@@ -248,6 +270,7 @@ class CollectionControlTests(unittest.TestCase):
             cache_file.write_text(
                 json.dumps(
                     {
+                        "schema_version": 1,
                         "probe_contract_version": 1,
                         "symbol": "T00",
                         "session_date": "2026-03-03",
@@ -262,6 +285,7 @@ class CollectionControlTests(unittest.TestCase):
                 {
                     "cache": {
                         "root": str(root),
+                        "schema_version": 1,
                         "reusable_pre_session_history": True,
                     }
                 },
@@ -270,6 +294,74 @@ class CollectionControlTests(unittest.TestCase):
             )
 
         self.assertEqual(loaded, history)
+
+    def test_v2_preflight_history_is_bound_to_manifest_hash(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache_file = root / "2026-03-03" / "T00.json"
+            cache_file.parent.mkdir(parents=True)
+            history = {
+                "schema_version": 1,
+                "symbol": "T00",
+                "session_date": "2026-03-03",
+                "target_session_prices_observed": False,
+                "prior_opening_bars": [],
+                "daily_bars": [],
+            }
+            history_hash = _canonical_hash(history)
+            cache_file.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 2,
+                        "probe_contract_version": 1,
+                        "qualification_sha256": "rules-hash",
+                        "symbol": "T00",
+                        "session_date": "2026-03-03",
+                        "result": {
+                            "symbol": "T00",
+                            "viable": True,
+                            "pre_session_history_sha256": history_hash,
+                        },
+                        "pre_session_history": history,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            preflight = {
+                "schema_version": 2,
+                "dates": {
+                    "2026-03-03": {
+                        "accepted": [
+                            {
+                                "symbol": "T00",
+                                "pre_session_history_sha256": history_hash,
+                            }
+                        ]
+                    }
+                },
+                "cache": {
+                    "root": str(root),
+                    "schema_version": 2,
+                    "qualification_sha256": "rules-hash",
+                    "reusable_pre_session_history": True,
+                },
+            }
+
+            self.assertEqual(
+                _load_pre_session_history(preflight, "2026-03-03", "T00"),
+                history,
+            )
+            preflight["cache"]["schema_version"] = 3
+            self.assertIsNone(
+                _load_pre_session_history(preflight, "2026-03-03", "T00")
+            )
+            preflight["cache"]["schema_version"] = 2
+            preflight["dates"]["2026-03-03"]["accepted"][0][
+                "pre_session_history_sha256"
+            ] = "0" * 64
+            self.assertIsNone(
+                _load_pre_session_history(preflight, "2026-03-03", "T00")
+            )
 
     def test_incompatible_preflight_history_falls_back_to_normal_collection(self):
         calls = []

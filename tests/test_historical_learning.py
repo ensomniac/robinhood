@@ -198,6 +198,35 @@ class BundleTests(unittest.TestCase):
     def test_complete_bundle_validates(self):
         validate_bundle(replay_bundle(), today_et=date(2026, 7, 15))
 
+    def test_v2_bundle_uses_completed_breakout_bar_before_evaluation(self):
+        bundle = replay_bundle()
+        bundle["schema_version"] = 2
+        for candidate in bundle["candidates"]:
+            candidate["evaluation_time_et"] = "09:42:00"
+            candidate[
+                "evaluation_basis"
+            ] = "next_minute_after_completed_breakout_bar"
+            candidate["evaluation_payload"]["session"]["time_et"] = "09:42:00"
+            for observed, quote in zip(
+                ("09:41:50", "09:41:55", "09:42:00"),
+                candidate["evaluation_payload"]["quotes"],
+            ):
+                quote["observed_at_et"] = observed
+
+        validate_bundle(bundle, today_et=date(2026, 7, 15))
+
+        bundle["candidates"][0]["evaluation_payload"]["quotes"][0][
+            "observed_at_et"
+        ] = "09:40:59"
+        with self.assertRaisesRegex(HistoricalLearningError, "precedes"):
+            validate_bundle(bundle, today_et=date(2026, 7, 15))
+        bundle["candidates"][0]["evaluation_payload"]["quotes"][0][
+            "observed_at_et"
+        ] = "09:41:50"
+        del bundle["candidates"][0]["evaluation_basis"]
+        with self.assertRaisesRegex(HistoricalLearningError, "evaluation basis"):
+            validate_bundle(bundle, today_et=date(2026, 7, 15))
+
     def test_missing_depth_attestation_is_rejected(self):
         bundle = replay_bundle()
         bundle["source"]["historical_quotes_and_depth"] = False

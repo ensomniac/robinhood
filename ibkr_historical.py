@@ -28,6 +28,12 @@ from ibapi.client import EClient
 from ibapi.contract import Contract
 from ibapi.wrapper import EWrapper
 
+from historical_metrics import (
+    HistoricalMetricError,
+    average_daily_volume,
+    average_true_range,
+)
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_ENV_PATH = PROJECT_ROOT / ".env"
@@ -44,6 +50,24 @@ INFORMATIONAL_CODES = {
 CONNECTION_ERROR_CODES = {326, 502, 503, 504, 507, 1100, 1300}
 BAR_TYPES = {"TRADES", "MIDPOINT", "BID", "ASK"}
 PRE_SESSION_CACHE_VERSION = 1
+HISTORICAL_BAR_CHUNK_DAYS = {
+    "1 sec": 1,
+    "5 secs": 1,
+    "15 secs": 1,
+    "30 secs": 1,
+    "1 min": 2,
+    "2 mins": 3,
+    "3 mins": 5,
+    # IBKR's current TWS API table permits day-duration requests for five-minute
+    # bars. Thirty days stays near a few thousand RTH bars while collapsing the
+    # preflight's prior-session opening history into one provider request.
+    "5 mins": 30,
+    "10 mins": 30,
+    "15 mins": 30,
+    "30 mins": 30,
+    "1 hour": 90,
+    "1 day": 365,
+}
 
 
 class IBKRHistoricalError(RuntimeError):
@@ -595,21 +619,7 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
         normalized_what = str(what).strip().upper()
         if normalized_what not in BAR_TYPES:
             raise IBKRConfigurationError(f"what must be one of {sorted(BAR_TYPES)}")
-        chunk_days = {
-            "1 sec": 1,
-            "5 secs": 1,
-            "15 secs": 1,
-            "30 secs": 1,
-            "1 min": 2,
-            "2 mins": 3,
-            "3 mins": 5,
-            "5 mins": 7,
-            "10 mins": 14,
-            "15 mins": 21,
-            "30 mins": 30,
-            "1 hour": 90,
-            "1 day": 365,
-        }.get(bar_size)
+        chunk_days = HISTORICAL_BAR_CHUNK_DAYS.get(bar_size)
         if chunk_days is None:
             raise IBKRConfigurationError(f"unsupported bar size: {bar_size}")
         cursor = end_utc
@@ -817,6 +827,9 @@ def probe_historical_candidate_with_history(
     client: IBKRHistoricalClient,
     symbol: str,
     session_date: str | date,
+    *,
+    minimum_average_daily_volume_14: float | None = None,
+    minimum_daily_atr_14: float | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
     """Check only pre-session facts required by the frozen replay contract.
 
@@ -833,82 +846,6 @@ def probe_historical_candidate_with_history(
     day = _parse_date(session_date)
     target_start = datetime.combine(day, wall_time(0), tzinfo=EASTERN)
 
-    def opening_history(start_day: date, end: datetime) -> list[dict[str, Any]]:
-        return client.fetch_bars(
-            normalized,
-            datetime.combine(start_day, wall_time(0), tzinfo=EASTERN),
-            end,
-            bar_size="5 mins",
-            what="TRADES",
-        )
-
-    try:
-        opening_rows = opening_history(day - timedelta(days=21), target_start)
-    except IBKRRequestError as exc:
-        if is_symbol_scoped_historical_no_data(exc):
-            return (
-                {
-                    "symbol": normalized,
-                    "viable": False,
-                    "reason": "missing_prior_opening_history",
-                    "error_code": exc.error_code,
-                },
-                None,
-            )
-        raise
-    opening_by_day = {
-        str(row["date_et"]): row
-        for row in opening_rows
-        if datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(EASTERN).time()
-        == wall_time(9, 30)
-        and str(row.get("date_et", "")) < day.isoformat()
-    }
-    if len(opening_by_day) < 14:
-        earlier_end = datetime.combine(
-            day - timedelta(days=21), wall_time(0), tzinfo=EASTERN
-        )
-        try:
-            earlier_rows = opening_history(day - timedelta(days=28), earlier_end)
-        except IBKRRequestError as exc:
-            if not is_symbol_scoped_historical_no_data(exc):
-                raise
-            earlier_rows = []
-        opening_by_day.update(
-            {
-                str(row["date_et"]): row
-                for row in earlier_rows
-                if datetime.fromtimestamp(int(row["epoch"]), UTC)
-                .astimezone(EASTERN)
-                .time()
-                == wall_time(9, 30)
-                and str(row.get("date_et", "")) < day.isoformat()
-            }
-        )
-    prior_dates = sorted(opening_by_day)[-14:]
-    if len(prior_dates) < 14:
-        return (
-            {
-                "symbol": normalized,
-                "viable": False,
-                "reason": "insufficient_prior_opening_history",
-                "error_code": None,
-                "prior_opening_sessions": len(prior_dates),
-                "prior_daily_sessions": None,
-            },
-            None,
-        )
-    if any(int(opening_by_day[key].get("volume", 0)) <= 0 for key in prior_dates):
-        return (
-            {
-                "symbol": normalized,
-                "viable": False,
-                "reason": "nonpositive_prior_opening_volume",
-                "error_code": None,
-                "prior_opening_sessions": len(prior_dates),
-                "prior_daily_sessions": None,
-            },
-            None,
-        )
     try:
         daily_rows = client.fetch_bars(
             normalized,
@@ -925,7 +862,7 @@ def probe_historical_candidate_with_history(
                     "viable": False,
                     "reason": "missing_prior_daily_history",
                     "error_code": exc.error_code,
-                    "prior_opening_sessions": len(prior_dates),
+                    "prior_opening_sessions": None,
                     "prior_daily_sessions": 0,
                 },
                 None,
@@ -944,8 +881,116 @@ def probe_historical_candidate_with_history(
                 "viable": False,
                 "reason": "insufficient_prior_daily_history",
                 "error_code": None,
+                "prior_opening_sessions": None,
+                "prior_daily_sessions": len(prior_daily),
+            },
+            None,
+        )
+
+    daily_metrics: dict[str, float] = {}
+    if minimum_average_daily_volume_14 is not None:
+        try:
+            daily_metrics["average_daily_volume_14"] = average_daily_volume(
+                prior_daily, 14
+            )
+        except HistoricalMetricError as exc:
+            raise IBKRRequestError(
+                f"cannot calculate pre-session average daily volume: {exc}"
+            ) from exc
+        if daily_metrics["average_daily_volume_14"] < float(
+            minimum_average_daily_volume_14
+        ):
+            return (
+                {
+                    "symbol": normalized,
+                    "viable": False,
+                    "reason": "average_daily_volume_below_strategy_minimum",
+                    "error_code": None,
+                    "prior_opening_sessions": None,
+                    "prior_daily_sessions": len(prior_daily),
+                    **daily_metrics,
+                    "minimum_average_daily_volume_14": float(
+                        minimum_average_daily_volume_14
+                    ),
+                },
+                None,
+            )
+    if minimum_daily_atr_14 is not None:
+        try:
+            daily_metrics["daily_atr_14"] = average_true_range(prior_daily, 14)
+        except HistoricalMetricError as exc:
+            raise IBKRRequestError(
+                f"cannot calculate pre-session daily ATR: {exc}"
+            ) from exc
+        if daily_metrics["daily_atr_14"] < float(minimum_daily_atr_14):
+            return (
+                {
+                    "symbol": normalized,
+                    "viable": False,
+                    "reason": "daily_atr_below_strategy_minimum",
+                    "error_code": None,
+                    "prior_opening_sessions": None,
+                    "prior_daily_sessions": len(prior_daily),
+                    **daily_metrics,
+                    "minimum_daily_atr_14": float(minimum_daily_atr_14),
+                },
+                None,
+            )
+
+    try:
+        opening_rows = client.fetch_bars(
+            normalized,
+            datetime.combine(day - timedelta(days=28), wall_time(0), tzinfo=EASTERN),
+            target_start,
+            bar_size="5 mins",
+            what="TRADES",
+        )
+    except IBKRRequestError as exc:
+        if is_symbol_scoped_historical_no_data(exc):
+            return (
+                {
+                    "symbol": normalized,
+                    "viable": False,
+                    "reason": "missing_prior_opening_history",
+                    "error_code": exc.error_code,
+                    "prior_opening_sessions": 0,
+                    "prior_daily_sessions": len(prior_daily),
+                    **daily_metrics,
+                },
+                None,
+            )
+        raise
+    opening_by_day = {
+        str(row["date_et"]): row
+        for row in opening_rows
+        if datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(EASTERN).time()
+        == wall_time(9, 30)
+        and str(row.get("date_et", "")) < day.isoformat()
+    }
+    prior_dates = sorted(opening_by_day)[-14:]
+    if len(prior_dates) < 14:
+        return (
+            {
+                "symbol": normalized,
+                "viable": False,
+                "reason": "insufficient_prior_opening_history",
+                "error_code": None,
                 "prior_opening_sessions": len(prior_dates),
                 "prior_daily_sessions": len(prior_daily),
+                **daily_metrics,
+            },
+            None,
+        )
+    if any(int(opening_by_day[key].get("volume", 0)) <= 0 for key in prior_dates):
+        return (
+            {
+                "symbol": normalized,
+                "viable": False,
+                "reason": "nonpositive_prior_opening_volume",
+                "error_code": None,
+                "prior_opening_sessions": len(prior_dates),
+                "prior_daily_sessions": len(prior_daily),
+                **daily_metrics,
             },
             None,
         )
@@ -957,6 +1002,7 @@ def probe_historical_candidate_with_history(
         "prior_opening_sessions": len(prior_dates),
         "prior_daily_sessions": len(prior_daily),
         "target_session_prices_observed": False,
+        **daily_metrics,
     }
     history = {
         "schema_version": PRE_SESSION_CACHE_VERSION,

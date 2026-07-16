@@ -23,10 +23,11 @@ The agent asks how many days to simulate. For each requested day:
    ```
 
 2. Use point-in-time scanner and news sources to create a ranked draft pool with
-   at least ten distinct candidates and preferably a 20-50% buffer. Select the
-   date before collecting its candidate facts. Do not choose a day because its
-   result is already known. Before freezing the final ten, run an
-   availability-only IBKR pre-session-history preflight:
+   at least 20 distinct candidates and preferably 30-50 when the source supports
+   it. Select the date before collecting its candidate facts. Do not choose a day
+   because its result is already known. Before freezing the final ten, run a
+   strategy-aware
+   IBKR pre-session-history preflight:
 
    ```sh
    python3 historical_universe.py \
@@ -36,31 +37,37 @@ The agent asks how many days to simulate. For each requested day:
 
    The draft uses `candidate_pool_by_date`; the output uses
    `candidates_by_date` and records accepted, skipped, and unused buffered
-   symbols. Preflight never requests target-session prices. It verifies a US
-   stock contract, 14 prior 9:30 five-minute bars with positive volume, and at
-   least 15 prior daily sessions. A symbol that cannot satisfy those frozen
-   evaluator inputs may be skipped for the next ranked buffered name. Provider-
-   wide permission, connection, and pacing failures stop the batch. If the
-   buffer is exhausted, collection remains blocked rather than freezing fewer
-   than ten names.
+   symbols. Preflight never requests target-session prices. It first rejects a
+   draft record that is not explicitly a U.S.-listed common stock or already has
+   a known dilution conflict. It then resolves the contract, requests prior daily
+   bars, and enforces the configured 14-session average-volume and ATR gates
+   before downloading opening history. A surviving symbol still needs 14 prior
+   9:30 five-minute bars with positive volume and at least 15 prior daily
+   sessions. A symbol that cannot satisfy those immutable evaluator inputs may
+   be skipped for the next ranked buffered name. Provider-wide permission,
+   connection, and pacing failures stop the batch. If the buffer is exhausted,
+   collection remains blocked rather than freezing fewer than ten names.
 
    Preflight checkpoints every examined `symbol + replay date` atomically under
    ignored `historical_data/preflight/` storage. Rerunning the same draft reuses
-   matching cache-version results and streams whether each symbol was ready,
-   skipped, or cached. The opening-volume probe first requests the preceding 21
-   calendar days and extends once by seven days only when fewer than 14 sessions
-   are present; it no longer requests unnecessary older chunks. A symbol-scoped
-   IBKR HMDS `query returned no data` response is an input-incomplete buffered
-   skip, while pacing, permission, connection, and timeout failures remain batch
+   matching strategy/rules qualification and streams whether each symbol was
+   ready, skipped, or cached. Only candidates that pass the daily gates request
+   a 28-calendar-day five-minute opening-history window, which fits in one
+   provider chunk. A symbol-scoped IBKR HMDS `query returned no data` response is
+   an input-incomplete buffered skip, while pacing, permission, connection, and
+   timeout failures remain batch
    blockers. Accepted cache entries retain only pre-session opening/daily bars,
-   explicitly attest that no target-session price was observed, and are reused
-   by bundle collection instead of downloading the same history again.
+   explicitly attest that no target-session price was observed, carry a content
+   hash copied into the frozen manifest, and are reused by bundle collection
+   only after the rule fingerprint and both hashes verify.
 
    On the 2026-07-16 ten-date pass, the old preflight aborted after roughly 24
    minutes without a checkpoint. The optimized pass examined 102 buffered names
    and completed in 736.5 seconds; an exact cache-resume rerun completed in 1.13
    seconds. These measurements are machine/provider observations, not strategy
-   evidence.
+   evidence. The daily-first and one-chunk changes landed after that benchmark;
+   measure their cold-run impact on the next new batch rather than treating the
+   projected request reduction as a measured speedup.
 3. Run `python3 ibkr_historical.py check`, then use the IBKR collector for every
    frozen candidate's regular-session minute bars, opening-volume lookback,
    prior daily bars, and historical top-of-book snapshots. Web sources are not
@@ -74,9 +81,11 @@ The agent asks how many days to simulate. For each requested day:
    ```
 
    The builder caches each successful raw provider response, derives the first
-   ORB evaluation time, ATR, opening RVOL rank, VWAP state, resistance, and
-   benchmark alignment, then writes a day bundle only after all frozen symbols
-   and both benchmarks are complete. When the evidence manifest links a valid
+   completed ORB crossing bar, reserves the following minute for quote snapshots,
+   and evaluates at that quote window's closing boundary. It then derives ATR,
+   opening RVOL rank, VWAP state, resistance, and benchmark alignment. It writes
+   a day bundle only after all frozen symbols and both benchmarks are complete.
+   When the evidence manifest links a valid
    preflight cache, the builder reuses its 14 opening-volume bars and prior daily
    history, then requests only target-session minute bars and quote evidence for
    those fields. A retryable transport failure stops the
@@ -130,13 +139,14 @@ acceptance test, not strategy evidence and not permission to weaken fidelity.
 
 ## Bundle Contract
 
-Each bundle is a JSON object with `schema_version=1`, the historical date,
+New bundles use `schema_version=2`; the validator continues reading immutable
+legacy schema-1 bundles. Each bundle contains the historical date,
 `sample_phase`, complete-capture state, point-in-time source attestations, and at
 least ten candidate objects:
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "date": "2025-06-02",
   "sample_phase": "pilot",
   "session_capture_complete": true,
@@ -185,6 +195,7 @@ Each candidate requires:
 
 - A public `signal_id` in `YYYY-MM-DD-SYMBOL-N` form and matching symbol.
 - An evaluation time from 9:35 through 10:30 ET.
+- For schema 2, `evaluation_basis=next_minute_after_completed_breakout_bar`.
 - A catalyst URL, timezone-aware publication time no later than evaluation, and
   point-in-time attestation.
 - A complete input object accepted by `strategy_engine.py`. Its three quote/book
@@ -204,15 +215,23 @@ runner replaces its maturity with the evidence-earned state and its mode with
 
 ## Replay Semantics
 
-Candidates are evaluated at their recorded trigger time. The selected simulated
-trade is the earliest eligible trigger; simultaneous triggers rank by score,
-then OR_RVOL, then symbol. At most one is selected. Later eligible triggers are
-logged as `missed` with an open outcome and are excluded from strategy-return
-metrics. For every candidate claiming a clean break, validation also proves at
-one-minute resolution that its evaluation bar is the first post-9:35 bar to
-trade above the supplied opening-range high.
+Schema-2 candidates are evaluated after the first completed one-minute bar whose
+high crossed the opening range and a subsequent full minute reserved for the
+three-snapshot quote window. This prevents quotes taken before the crossing bar
+completed from being treated as though the later intraminute high were already
+known. Legacy schema-1 bundles retain their original trigger-minute meaning and
+are never silently rewritten.
 
-The selected trade fills only if its trigger-minute high reaches the evaluated
+The selected simulated trade is the earliest eligible trigger; simultaneous
+triggers rank by score, then OR_RVOL, then symbol. At most one is selected. Later
+eligible triggers are logged as `missed` with an open outcome and are excluded
+from strategy-return
+metrics. For every schema-2 candidate claiming a clean break, validation also
+proves at one-minute resolution that the bar two minutes before evaluation is the
+first post-9:35 bar to trade above the supplied opening-range high and that no
+quote snapshot precedes its completion.
+
+The selected trade fills only if its evaluation-minute high reaches the evaluated
 entry limit. Minute data cannot reveal event order inside a bar, so a bar that
 contains both stop and target resolves to the stop. Stop fills conservatively
 include the planned reserve. The project exit follows the protective stop,
@@ -274,11 +293,12 @@ The evaluator still hard-rejects a stale snapshot; the fallback records the
 liquidity failure rather than making the quote appear fresh. A symbol with no
 same-session quote evidence remains a collection blocker.
 
-Determine each candidate's evaluation time from its IBKR session bars: use the
-first opening-range-high break from 9:35 through 10:30 ET, or 10:30 with
-`clean_break=false` when no break occurred. Then run the full `candidate`
-collection at that timestamp so its three quote snapshots are aligned with the
-evaluation. Do not declare a market-data blocker merely because the scanner or
+Determine each candidate's evaluation time from its IBKR session bars: find the
+first opening-range-high crossing bar from 9:35 through 10:28 ET, wait for that
+bar to complete, use the following minute for the three quote snapshots, and
+evaluate at the quote window's closing boundary. Use 10:30 with
+`clean_break=false` when no sufficiently early break occurred. Do not declare a
+market-data blocker merely because the scanner or
 news archive lacks bars, quotes, or depth; try the IBKR collection first and
 report the exact failed IBKR fact only if the adapter cannot return it.
 

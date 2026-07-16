@@ -236,15 +236,18 @@ python3 historical_universe.py \
   --output historical_data/manifests/evidence-YYYY-MM-DD.json
 ```
 
-This quickly skips retired, unresolvable, or history-incomplete symbols from the
-draft pool while alternatives remain. Provider-wide permissions and connection
-failures still stop the batch, and no candidate may be replaced after the output
-universe is frozen. Each examined symbol/date is atomically cached under ignored
+This skips known non-common-stock or dilution-conflicted rows before provider
+work, then rejects retired, unresolvable, low-ADV, low-ATR, or history-incomplete
+symbols from the draft pool while alternatives remain. Daily gates run before
+the more expensive 28-day opening-history request, which fits in one five-minute
+provider chunk. Provider-wide permissions and connection failures still stop the
+batch, and no candidate may be replaced after the output universe is frozen.
+Each examined symbol/date is atomically cached under ignored
 `historical_data/preflight/` storage, so an interrupted or repeated preflight
-resumes rather than restarting. The adaptive opening-history request asks for 21
-calendar days first and extends once by seven days only when necessary. Accepted
-pre-session opening and daily bars are reused by bundle collection without ever
-observing target-session prices.
+resumes rather than restarting. Cache reuse requires the same strategy/rules
+qualification plus matching pre-session content hashes. Accepted opening and
+daily bars are reused by bundle collection without observing target-session
+prices.
 
 For a pre-frozen multi-day evidence manifest, the resumable bundle builder keeps
 successful raw responses under the ignored data directory and validates a full
@@ -263,6 +266,11 @@ an atomic public status under `historical_batches/`. A matching preflight cache
 eliminates the bundle collector's duplicate opening-volume and prior-daily
 requests; missing or incompatible cache entries safely fall back to normal IBKR
 collection.
+
+New schema-2 replay bundles wait for the first opening-range crossing bar to
+complete, reserve the following minute for quote snapshots, and evaluate at that
+window's closing boundary. This keeps quote snapshots point-in-time; legacy
+schema-1 bundles remain readable without changing their recorded semantics.
 
 IBKR remains primary. If the ignored `.env` contains `MASSIVE_API_KEY`, permanent
 IBKR bar/quote gaps can fall back to adjusted Massive SIP aggregates and

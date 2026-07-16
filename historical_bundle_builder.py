@@ -10,6 +10,7 @@ and validates a complete bundle before writing it under ``historical_data/``.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import statistics
@@ -20,9 +21,15 @@ from typing import Any, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
 from historical_learning import (
+    BUNDLE_SCHEMA_VERSION,
     HistoricalLearningError,
     batch_acceptance,
     validate_bundle,
+)
+from historical_metrics import (
+    HistoricalMetricError,
+    average_daily_volume,
+    average_true_range,
 )
 from ibkr_historical import (
     DEFAULT_ENV_PATH,
@@ -110,7 +117,7 @@ def _ordered_session_bars(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, A
 def determine_evaluation(
     rows: Sequence[Mapping[str, Any]],
 ) -> tuple[str, bool, dict[str, float]]:
-    """Return the first 9:35-10:30 opening-range break, or 10:30 no-break."""
+    """Return a point-in-time evaluation after the first eligible ORB bar."""
     ordered = _ordered_session_bars(rows)
     opening_rows = [
         row for row in ordered if time(9, 30) <= _time_et(row) < time(9, 35)
@@ -133,26 +140,21 @@ def determine_evaluation(
     for row in ordered:
         clock = _time_et(row)
         if (
-            time(9, 35) <= clock <= time(10, 30)
+            time(9, 35) <= clock < time(10, 29)
             and float(row["high"]) > opening["high"]
         ):
-            return clock.replace(microsecond=0).isoformat(), True, opening
+            evaluation_at = (
+                datetime.combine(date.min, clock) + timedelta(minutes=2)
+            ).time()
+            return evaluation_at.replace(microsecond=0).isoformat(), True, opening
     return "10:30:00", False, opening
 
 
 def _atr14(rows: Sequence[Mapping[str, Any]]) -> float:
-    if len(rows) < 15:
-        raise HistoricalBundleBuildError("ATR(14) needs at least 15 prior daily bars")
-    ordered = sorted(rows, key=lambda row: int(row["epoch"]))[-15:]
-    ranges: list[float] = []
-    for previous, current in zip(ordered, ordered[1:]):
-        high = float(current["high"])
-        low = float(current["low"])
-        previous_close = float(previous["close"])
-        ranges.append(
-            max(high - low, abs(high - previous_close), abs(low - previous_close))
-        )
-    return statistics.fmean(ranges)
+    try:
+        return average_true_range(rows, 14)
+    except HistoricalMetricError as exc:
+        raise HistoricalBundleBuildError(str(exc)) from exc
 
 
 def _cumulative_vwap(rows: Sequence[Mapping[str, Any]]) -> float:
@@ -306,7 +308,10 @@ def _build_candidate(
 
     daily = sorted(raw["daily_bars"], key=lambda row: int(row["epoch"]))
     atr = _atr14(daily)
-    average_volume = statistics.fmean(int(row["volume"]) for row in daily[-14:])
+    try:
+        average_volume = average_daily_volume(daily, 14)
+    except HistoricalMetricError as exc:
+        raise HistoricalBundleBuildError(str(exc)) from exc
     prior_highs = [float(row["high"]) for row in daily]
     overhead = [value for value in prior_highs if value > entry_limit]
     resistance = min(overhead) if overhead else max(prior_highs)
@@ -399,6 +404,7 @@ def _build_candidate(
         "signal_id": f"{day}-{symbol}-1",
         "symbol": symbol,
         "evaluation_time_et": evaluation_time,
+        "evaluation_basis": "next_minute_after_completed_breakout_bar",
         "catalyst": dict(evidence["catalyst"]),
         "discovery": _discovery_payload(evidence),
         "market_alignment": {
@@ -466,7 +472,7 @@ def build_bundle(
     all_market_providers.update((benchmark_providers or {}).values())
     market_provider_text = " + ".join(sorted(all_market_providers))
     return {
-        "schema_version": 1,
+        "schema_version": BUNDLE_SCHEMA_VERSION,
         "date": day,
         "sample_phase": "pilot",
         "session_capture_complete": True,
@@ -501,6 +507,16 @@ def _load_json(path: Path) -> Any:
         raise HistoricalBundleBuildError(f"cannot read {path}: {exc}") from exc
 
 
+def _canonical_hash(value: Mapping[str, Any]) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _load_pre_session_history(
     preflight: Mapping[str, Any] | None,
     day: str,
@@ -509,7 +525,13 @@ def _load_pre_session_history(
     if not isinstance(preflight, Mapping):
         return None
     cache = preflight.get("cache")
-    if not isinstance(cache, Mapping) or cache.get("reusable_pre_session_history") is not True:
+    if (
+        not isinstance(cache, Mapping)
+        or cache.get("reusable_pre_session_history") is not True
+    ):
+        return None
+    cache_schema = cache.get("schema_version")
+    if cache_schema not in (1, 2):
         return None
     root_text = cache.get("root")
     if not isinstance(root_text, str) or not root_text.strip():
@@ -527,9 +549,14 @@ def _load_pre_session_history(
     if not isinstance(payload, Mapping):
         return None
     if (
-        payload.get("probe_contract_version") != PRE_SESSION_CACHE_VERSION
+        payload.get("schema_version") != cache_schema
+        or payload.get("probe_contract_version") != PRE_SESSION_CACHE_VERSION
         or payload.get("symbol") != symbol
         or payload.get("session_date") != day
+    ):
+        return None
+    if cache_schema >= 2 and payload.get("qualification_sha256") != cache.get(
+        "qualification_sha256"
     ):
         return None
     result = payload.get("result")
@@ -540,6 +567,39 @@ def _load_pre_session_history(
         or not isinstance(history, Mapping)
     ):
         return None
+    if cache_schema >= 2:
+        expected_hash = result.get("pre_session_history_sha256")
+        dates = preflight.get("dates")
+        date_report = dates.get(day) if isinstance(dates, Mapping) else None
+        accepted = (
+            date_report.get("accepted")
+            if isinstance(date_report, Mapping)
+            else None
+        )
+        accepted_row = (
+            next(
+                (
+                    row
+                    for row in accepted
+                    if isinstance(row, Mapping) and row.get("symbol") == symbol
+                ),
+                None,
+            )
+            if isinstance(accepted, list)
+            else None
+        )
+        manifest_hash = (
+            accepted_row.get("pre_session_history_sha256")
+            if isinstance(accepted_row, Mapping)
+            else None
+        )
+        actual_hash = _canonical_hash(history)
+        if (
+            not isinstance(expected_hash, str)
+            or expected_hash != actual_hash
+            or manifest_hash != actual_hash
+        ):
+            return None
     return history
 
 
