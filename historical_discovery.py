@@ -421,7 +421,14 @@ def _ticker_map(payload: Mapping[str, Any]) -> dict[str, list[dict[str, str]]]:
                 "name": str(row.get("name") or ""),
             }
         )
-    return result
+    # The SEC file can map one operating registrant to common, preferred, and
+    # depositary tickers. Historical discovery needs one issuer candidate, not
+    # every financing instrument. Prefer the shortest symbol (then lexical
+    # order) and leave final common-stock proof to IBKR stockType=COMMON.
+    return {
+        cik: [min(rows, key=lambda row: (len(row["ticker"]), row["ticker"]))]
+        for cik, rows in result.items()
+    }
 
 
 def _ciks_by_ticker(

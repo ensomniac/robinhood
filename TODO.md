@@ -130,6 +130,9 @@ Status: implemented by `historical_universe.py` and the `probe` surface in
   source artifacts are resumably cached outside Git. Large runs retain an
   80-name reserve because a 40-name reserve was empirically too shallow for the
   immutable ADV/ATR gates.
+- SEC registrants are deduplicated to one deterministic representative ticker
+  before preflight. This removes preferred/depositary siblings from the ranked
+  pool; IBKR `stockType=COMMON` remains the authoritative final proof.
 - Before provider calls, the preflight rejects draft rows that are not explicitly
   common stock or already carry a dilution conflict. It then resolves IBKR stock
   contracts and evaluates prior daily ADV/ATR gates before verifying 14 positive

@@ -54,6 +54,7 @@ class HistoricalDiscoveryTests(unittest.TestCase):
             "fields": ["cik", "name", "ticker", "exchange"],
             "data": [
                 [1, "Valid", "GOOD", "Nasdaq"],
+                [1, "Valid Preferred", "GOODP", "Nasdaq"],
                 [2, "Class", "BRK-B", "NYSE"],
                 [3, "OTC", "PINK", "OTC"],
             ],

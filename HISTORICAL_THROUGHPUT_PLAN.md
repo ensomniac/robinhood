@@ -164,6 +164,12 @@ without target-session market prices. Daily indexes, submissions metadata, and
 primary documents are immutable ignored cache entries. Discovery and SEC cache
 telemetry are timed separately from IBKR collection.
 
+One SEC registrant can expose common, preferred, and depositary tickers. The
+builder keeps one deterministic representative ticker per CIK before preflight,
+then requires IBKR `stockType=COMMON` for final acceptance. This prevents one
+issuer from occupying several ranks and avoids sending HMDS history requests to
+secondary instruments that can stall rather than fail quickly.
+
 The 100-day cold-cache exercise exposed two important limits:
 
 - all-market earnings plus every material 8-K expands to thousands of
