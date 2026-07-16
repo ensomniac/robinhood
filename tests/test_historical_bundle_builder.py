@@ -146,6 +146,18 @@ class BundleAssemblyTests(unittest.TestCase):
                 ],
             }
 
+        evidence[0] = {
+            "symbol": "T00",
+            "is_common_stock": True,
+            "catalyst": evidence[0]["catalyst"],
+            "discovery": {
+                "source": "SEC EDGAR daily filing index",
+                "form": "8-K",
+                "filing_items": "8.01,9.01",
+                "accepted_at": "2026-03-02T21:00:00+00:00",
+            },
+        }
+
         bundle = build_bundle(
             day,
             evidence,
@@ -158,6 +170,7 @@ class BundleAssemblyTests(unittest.TestCase):
         validate_bundle(bundle)
         self.assertEqual(len(bundle["candidates"]), 10)
         self.assertEqual(bundle["candidates"][0]["evaluation_time_et"], "09:40:00")
+        self.assertEqual(bundle["candidates"][0]["discovery"]["form"], "8-K")
 
 
 if __name__ == "__main__":

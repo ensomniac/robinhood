@@ -214,6 +214,37 @@ def _replay_bars(raw: Mapping[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
+def _discovery_payload(evidence: Mapping[str, Any]) -> dict[str, Any]:
+    """Preserve frozen discovery evidence without assuming an earnings catalyst."""
+    discovery = evidence.get("discovery")
+    if isinstance(discovery, Mapping):
+        if not discovery:
+            raise HistoricalBundleBuildError(
+                "generic discovery evidence cannot be empty"
+            )
+        return dict(discovery)
+
+    required = (
+        "surprise_rank",
+        "report_date",
+        "report_timing",
+        "eps_estimate",
+        "eps_actual",
+    )
+    missing = [field for field in required if field not in evidence]
+    if missing:
+        raise HistoricalBundleBuildError(
+            f"candidate discovery evidence is incomplete: {missing}"
+        )
+    return {
+        "scanner_surprise_rank": int(evidence["surprise_rank"]),
+        "report_date": evidence["report_date"],
+        "report_timing": evidence["report_timing"],
+        "eps_estimate": evidence["eps_estimate"],
+        "eps_actual": evidence["eps_actual"],
+    }
+
+
 def _build_candidate(
     day: str,
     evidence: Mapping[str, Any],
@@ -353,13 +384,7 @@ def _build_candidate(
         "symbol": symbol,
         "evaluation_time_et": evaluation_time,
         "catalyst": dict(evidence["catalyst"]),
-        "discovery": {
-            "scanner_surprise_rank": int(evidence["surprise_rank"]),
-            "report_date": evidence["report_date"],
-            "report_timing": evidence["report_timing"],
-            "eps_estimate": evidence["eps_estimate"],
-            "eps_actual": evidence["eps_actual"],
-        },
+        "discovery": _discovery_payload(evidence),
         "market_alignment": {
             "candidate_return_fraction": candidate_return,
             "candidate_vwap": vwap,
