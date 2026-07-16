@@ -30,7 +30,20 @@ The agent asks how many days to simulate. For each requested day:
    frozen candidate's regular-session minute bars, opening-volume lookback,
    prior daily bars, and historical top-of-book snapshots. Web sources are not
    expected to supply those market-data fields. Store the assembled replay
-   bundle under the ignored `historical_data/` directory.
+   bundle under the ignored `historical_data/` directory. A frozen evidence
+   manifest can be collected and assembled reproducibly with:
+
+   ```sh
+   python3 historical_bundle_builder.py \
+     historical_data/manifests/evidence-YYYY-MM-DD.json
+   ```
+
+   The builder caches each successful raw IBKR response, derives the first ORB
+   evaluation time, ATR, opening RVOL rank, VWAP state, resistance, and
+   benchmark alignment, then writes a day bundle only after all frozen symbols
+   and both benchmarks are complete. Provider permission, sparse-tick, and
+   retired-symbol failures remain explicit blockers; the builder never replaces
+   a frozen candidate after observing market data.
 4. Validate every bundle before replay:
 
    ```sh

@@ -225,6 +225,19 @@ the authenticated desktop session and needs no API private key. Historical
 scanner-universe capture and point-in-time catalysts still require independent
 sources, but those sources are not expected to provide bars or quote/depth data.
 
+For a pre-frozen multi-day evidence manifest, the resumable bundle builder keeps
+successful raw responses under the ignored data directory and validates a full
+day before writing a replay bundle:
+
+```sh
+python3 historical_bundle_builder.py \
+  historical_data/manifests/evidence-YYYY-MM-DD.json
+```
+
+It reports market-data permissions, missing boundary ticks, and unresolved
+historical symbols as fidelity blockers instead of substituting data or changing
+the frozen candidate universe.
+
 In TWS, enable `API > Settings > Enable ActiveX and Socket Clients`, keep
 `Read-Only API` and `Allow connections from localhost only` enabled, and make
 the socket port match `IBKR_PORT`. The ignored local `.env` on this machine also
