@@ -44,6 +44,7 @@ automated trading experiment.
 | 2026-07-15 | 17:20 | - | Initial / setup | Ledger created | Project setup | - | - | - | - | TBD | - |
 | 2026-03-12 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-03-12-session`](trades/archived/2026_03_12/2026-03-12-session.md) |
 | 2026-04-23 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-04-23-session`](trades/archived/2026_04_23/2026-04-23-session.md) |
+| 2026-05-07 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-05-07-session`](trades/archived/2026_05_07/2026-05-07-session.md) |
 
 ## Open Trades
 
@@ -59,3 +60,8 @@ The seed-frozen ten-date batch completed two validation-grade no-trade sessions
 and retained eight provider-fidelity blockers without substituting dates or
 symbols. See [`historical_batches/2026-07-15-ten-days.json`](historical_batches/2026-07-15-ten-days.json)
 for the machine-readable collection and replay status.
+
+The independently seeded May 7 replay completed as a validation-grade no-trade
+session with all ten candidates collected, no substitutions, and no cascade
+errors. See [`historical_batches/historical-ea36941af8b2205b.json`](historical_batches/historical-ea36941af8b2205b.json)
+for its replay status.

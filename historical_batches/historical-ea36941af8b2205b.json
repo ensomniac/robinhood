@@ -1,0 +1,71 @@
+{
+  "already_replayed_dates": [],
+  "batch_id": "historical-ea36941af8b2205b",
+  "blocked_dates": [],
+  "collection_summary": {},
+  "completed_days": 1,
+  "created_at": "2026-07-16T10:56:29.601614-04:00",
+  "engineering_acceptance": {
+    "checks": {
+      "minimum_20_random_dates": false,
+      "minimum_80_percent_yield": true,
+      "zero_cascade_errors": true,
+      "zero_substitutions": true
+    },
+    "observed": {
+      "cascade_error_count": 0,
+      "completed_days": 1,
+      "requested_days": 1,
+      "substitution_count": 0,
+      "yield_fraction": 1.0
+    },
+    "passed": false,
+    "target": {
+      "maximum_cascade_errors": 0,
+      "maximum_substitutions": 0,
+      "minimum_random_dates": 20,
+      "minimum_yield_fraction": 0.8
+    }
+  },
+  "newly_replayed_days": 1,
+  "policy": "ready_only_no_substitution",
+  "ready_dates": [],
+  "replayed_dates": [
+    "2026-05-07"
+  ],
+  "requested_days": 1,
+  "results": [
+    {
+      "archived_paths": [
+        "trades/archived/2026_05_07/2026-05-07-DDOG-1.md",
+        "trades/archived/2026_05_07/2026-05-07-ARW-1.md",
+        "trades/archived/2026_05_07/2026-05-07-U-1.md",
+        "trades/archived/2026_05_07/2026-05-07-TPR-1.md",
+        "trades/archived/2026_05_07/2026-05-07-HWM-1.md",
+        "trades/archived/2026_05_07/2026-05-07-LNG-1.md",
+        "trades/archived/2026_05_07/2026-05-07-KVUE-1.md",
+        "trades/archived/2026_05_07/2026-05-07-LAMR-1.md",
+        "trades/archived/2026_05_07/2026-05-07-INSM-1.md",
+        "trades/archived/2026_05_07/2026-05-07-VTRS-1.md",
+        "trades/archived/2026_05_07/2026-05-07-session.md"
+      ],
+      "candidate_count": 10,
+      "date": "2026-05-07",
+      "earned_maturity": "UNVALIDATED",
+      "eligible_count": 0,
+      "ledger_records": 11,
+      "seed": 2675606690058986924,
+      "selected_signal_id": null,
+      "session_id": "2026-05-07-session"
+    }
+  ],
+  "schema_version": 1,
+  "seed": 2675606690058986924,
+  "selected_dates": [
+    "2026-05-07"
+  ],
+  "selection_sha256": "ea36941af8b2205b3c37af3ca4b9a31a85c95d081b775bad965921bc88fe3a11",
+  "substituted_dates": [],
+  "updated_at": "2026-07-16T10:56:29.632014-04:00",
+  "yield_fraction": 1.0
+}
