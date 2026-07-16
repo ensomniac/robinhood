@@ -47,6 +47,7 @@ automated trading experiment.
 | 2026-02-24 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-02-24-session`](trades/archived/2026_02_24/2026-02-24-session.md) |
 | 2026-03-12 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-03-12-session`](trades/archived/2026_03_12/2026-03-12-session.md) |
 | 2026-03-24 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-03-24-session`](trades/archived/2026_03_24/2026-03-24-session.md) |
+| 2026-03-30 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-03-30-session`](trades/archived/2026_03_30/2026-03-30-session.md) |
 | 2026-03-31 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-03-31-session`](trades/archived/2026_03_31/2026-03-31-session.md) |
 | 2026-04-07 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-04-07-session`](trades/archived/2026_04_07/2026-04-07-session.md) |
 | 2026-04-23 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-04-23-session`](trades/archived/2026_04_23/2026-04-23-session.md) |
@@ -72,6 +73,16 @@ The independently seeded May 7 replay completed as a validation-grade no-trade
 session with all ten candidates collected, no substitutions, and no cascade
 errors. See [`historical_batches/historical-ea36941af8b2205b.json`](historical_batches/historical-ea36941af8b2205b.json)
 for its replay status.
+
+The independently seeded March 30 replay screened the complete previous-session
+after-close and current-session pre-open SEC windows into a 77-name ranked
+buffer, froze ten viable candidates without observing target-session prices,
+and completed as a validation-grade no-trade session with no substitutions or
+cascade errors. See
+[`historical_batches/evidence-2026-07-16-one-day-2.json`](historical_batches/evidence-2026-07-16-one-day-2.json)
+for collection status and
+[`historical_batches/historical-a6edff85a95aeb11.json`](historical_batches/historical-a6edff85a95aeb11.json)
+for replay status.
 
 The independently seeded July 16 ten-date batch completed seven validation-grade
 no-trade sessions and retained three quote/minute-data fidelity blockers with no
