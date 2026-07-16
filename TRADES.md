@@ -42,9 +42,16 @@ automated trading experiment.
 | Date (ET) | Time (ET) | Symbol | Version / Mode | Decision / Action | Setup | Entry | Exit / Stop / Milestone | Net Result | Net R | Account Balance | Context |
 | --- | --- | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | --- |
 | 2026-07-15 | 17:20 | - | Initial / setup | Ledger created | Project setup | - | - | - | - | TBD | - |
+| 2026-02-09 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-02-09-session`](trades/archived/2026_02_09/2026-02-09-session.md) |
+| 2026-02-11 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-02-11-session`](trades/archived/2026_02_11/2026-02-11-session.md) |
+| 2026-02-24 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-02-24-session`](trades/archived/2026_02_24/2026-02-24-session.md) |
 | 2026-03-12 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-03-12-session`](trades/archived/2026_03_12/2026-03-12-session.md) |
+| 2026-03-24 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-03-24-session`](trades/archived/2026_03_24/2026-03-24-session.md) |
+| 2026-03-31 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-03-31-session`](trades/archived/2026_03_31/2026-03-31-session.md) |
+| 2026-04-07 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-04-07-session`](trades/archived/2026_04_07/2026-04-07-session.md) |
 | 2026-04-23 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-04-23-session`](trades/archived/2026_04_23/2026-04-23-session.md) |
 | 2026-05-07 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-05-07-session`](trades/archived/2026_05_07/2026-05-07-session.md) |
+| 2026-06-25 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-06-25-session`](trades/archived/2026_06_25/2026-06-25-session.md) |
 
 ## Open Trades
 
@@ -65,3 +72,12 @@ The independently seeded May 7 replay completed as a validation-grade no-trade
 session with all ten candidates collected, no substitutions, and no cascade
 errors. See [`historical_batches/historical-ea36941af8b2205b.json`](historical_batches/historical-ea36941af8b2205b.json)
 for its replay status.
+
+The independently seeded July 16 ten-date batch completed seven validation-grade
+no-trade sessions and retained three quote/minute-data fidelity blockers with no
+date or symbol substitutions. Its versioned preflight cache completed 102 cold
+checks in 736.5 seconds and an exact resume in 1.13 seconds. See
+[`historical_batches/evidence-2026-07-16-ten-days.json`](historical_batches/evidence-2026-07-16-ten-days.json)
+for collection status and
+[`historical_batches/historical-8345a0410f124794.json`](historical_batches/historical-8345a0410f124794.json)
+for replay status.

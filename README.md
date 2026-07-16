@@ -239,7 +239,12 @@ python3 historical_universe.py \
 This quickly skips retired, unresolvable, or history-incomplete symbols from the
 draft pool while alternatives remain. Provider-wide permissions and connection
 failures still stop the batch, and no candidate may be replaced after the output
-universe is frozen.
+universe is frozen. Each examined symbol/date is atomically cached under ignored
+`historical_data/preflight/` storage, so an interrupted or repeated preflight
+resumes rather than restarting. The adaptive opening-history request asks for 21
+calendar days first and extends once by seven days only when necessary. Accepted
+pre-session opening and daily bars are reused by bundle collection without ever
+observing target-session prices.
 
 For a pre-frozen multi-day evidence manifest, the resumable bundle builder keeps
 successful raw responses under the ignored data directory and validates a full
@@ -254,7 +259,10 @@ It reports market-data permissions, missing boundary ticks, and unresolved
 historical symbols as fidelity blockers instead of substituting data or changing
 the frozen candidate universe. It stops a disconnected request stream
 immediately, reconnects once by default, resumes from the raw cache, and writes
-an atomic public status under `historical_batches/`.
+an atomic public status under `historical_batches/`. A matching preflight cache
+eliminates the bundle collector's duplicate opening-volume and prior-daily
+requests; missing or incompatible cache entries safely fall back to normal IBKR
+collection.
 
 IBKR remains primary. If the ignored `.env` contains `MASSIVE_API_KEY`, permanent
 IBKR bar/quote gaps can fall back to adjusted Massive SIP aggregates and

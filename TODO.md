@@ -135,6 +135,17 @@ Status: implemented by `historical_universe.py` and the `probe` surface in
 - The frozen evidence manifest records accepted, skipped, and unused buffered
   symbols plus a hash of the draft. After this point, the builder never replaces
   a candidate based on observed market data.
+- Preflight now checkpoints every examined symbol/date under ignored storage,
+  resumes exact reruns from a versioned cache, and streams progress. The adaptive
+  21-day plus optional seven-day opening-history window avoids unnecessary HMDS
+  chunks while still proving all 14 required prior sessions.
+- Accepted pre-session opening and daily bars are shared with bundle collection,
+  eliminating duplicate provider requests. Cache identity and the no-target-
+  price attestation are validated before reuse; cache misses use normal IBKR
+  collection.
+- A 2026-07-16 ten-date measurement completed 102 buffered preflight checks in
+  736.5 seconds and repeated the exact cached pass in 1.13 seconds. Keep tracking
+  cold-run, resume, bundle-collection, and blocked-date timing on larger batches.
 
 ### 10. Durable Progress History And Contribution Hook
 

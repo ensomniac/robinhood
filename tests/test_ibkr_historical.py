@@ -2,6 +2,7 @@ import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from ibkr_historical import (
@@ -9,11 +10,14 @@ from ibkr_historical import (
     IBKRConfigurationError,
     IBKRHistoricalClient,
     IBKRRequestError,
+    PRE_SESSION_CACHE_VERSION,
+    collect_candidate_history,
     collect_quote_evidence,
     ensure_tws_socket,
     historical_error_category,
     is_retryable_historical_error,
     probe_historical_candidate,
+    probe_historical_candidate_with_history,
     probe_historical_symbol,
     select_quote_snapshots,
 )
@@ -185,6 +189,117 @@ class SymbolProbeTests(unittest.TestCase):
 
         self.assertFalse(result["viable"])
         self.assertEqual(result["reason"], "nonpositive_prior_opening_volume")
+
+    def test_symbol_scoped_hmds_no_data_is_a_buffered_skip(self):
+        class FakeClient:
+            def fetch_contract_details(self, symbol):
+                return [
+                    {
+                        "symbol": symbol,
+                        "security_type": "STK",
+                        "currency": "USD",
+                    }
+                ]
+
+            def fetch_bars(self, *args, **kwargs):
+                raise IBKRRequestError(
+                    "HMDS query returned no data: SPTX@SMART Trades",
+                    error_code=162,
+                )
+
+        result, history = probe_historical_candidate_with_history(
+            FakeClient(), "SPTX", "2026-06-08"
+        )
+
+        self.assertFalse(result["viable"])
+        self.assertEqual(result["reason"], "missing_prior_opening_history")
+        self.assertIsNone(history)
+
+    def test_pacing_failure_remains_a_batch_blocker(self):
+        class FakeClient:
+            def fetch_contract_details(self, symbol):
+                return [
+                    {
+                        "symbol": symbol,
+                        "security_type": "STK",
+                        "currency": "USD",
+                    }
+                ]
+
+            def fetch_bars(self, *args, **kwargs):
+                raise IBKRRequestError("pacing violation", error_code=162)
+
+        with self.assertRaisesRegex(IBKRRequestError, "pacing violation"):
+            probe_historical_candidate_with_history(
+                FakeClient(), "SPTX", "2026-06-08"
+            )
+
+    def test_candidate_collection_reuses_pre_session_history(self):
+        day = datetime(2026, 3, 3, tzinfo=EASTERN).date()
+        opening_start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
+        minutes = [
+            {
+                "epoch": int((opening_start + timedelta(minutes=index)).timestamp()),
+                "open": 10.0 + index / 100,
+                "high": 10.1 + index / 100,
+                "low": 9.9 + index / 100,
+                "close": 10.05 + index / 100,
+                "volume": 1000 + index,
+            }
+            for index in range(5)
+        ]
+        prior_opening = []
+        daily = []
+        for offset in range(20, 0, -1):
+            stamp = datetime.combine(
+                day - timedelta(days=offset),
+                datetime.min.time().replace(hour=9, minute=30),
+                tzinfo=EASTERN,
+            )
+            daily_stamp = stamp.replace(hour=0, minute=0)
+            if len(prior_opening) < 14:
+                prior_opening.append(
+                    {
+                        "epoch": int(stamp.timestamp()),
+                        "date_et": stamp.date().isoformat(),
+                        "volume": 5000,
+                    }
+                )
+            daily.append(
+                {
+                    "epoch": int(daily_stamp.timestamp()),
+                    "date_et": daily_stamp.date().isoformat(),
+                    "volume": 1_000_000,
+                }
+            )
+        history = {
+            "schema_version": PRE_SESSION_CACHE_VERSION,
+            "symbol": "TEST",
+            "session_date": day.isoformat(),
+            "target_session_prices_observed": False,
+            "prior_opening_bars": prior_opening,
+            "daily_bars": daily,
+        }
+
+        class NoHistoryClient:
+            def fetch_bars(self, *args, **kwargs):
+                raise AssertionError("pre-session history should come from cache")
+
+        with patch(
+            "ibkr_historical.collect_quote_evidence", return_value=([], [])
+        ):
+            result = collect_candidate_history(
+                NoHistoryClient(),
+                "TEST",
+                day,
+                "09:35:00",
+                session_bars=minutes,
+                pre_session_history=history,
+            )
+
+        self.assertEqual(result["opening_bar"]["volume"], 5010)
+        self.assertEqual(result["prior_opening_volumes"], [5000] * 14)
+        self.assertEqual(len(result["daily_bars"]), 20)
 
 
 class ErrorClassificationTests(unittest.TestCase):

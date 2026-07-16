@@ -25,8 +25,14 @@ from ibkr_historical import (
     IBKRConfig,
     IBKRHistoricalClient,
     IBKRHistoricalError,
-    probe_historical_candidate,
+    PRE_SESSION_CACHE_VERSION,
+    probe_historical_candidate_with_history,
 )
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+DEFAULT_PREFLIGHT_CACHE_ROOT = PROJECT_ROOT / "historical_data" / "preflight"
+PREFLIGHT_CACHE_SCHEMA_VERSION = 1
 
 
 class HistoricalUniverseError(RuntimeError):
@@ -34,6 +40,85 @@ class HistoricalUniverseError(RuntimeError):
 
 
 Probe = Callable[[str, str], Mapping[str, Any]]
+DetailedProbe = Callable[
+    [str, str], tuple[Mapping[str, Any], Mapping[str, Any] | None]
+]
+
+
+class ResumablePreflightProbe:
+    """Persist each immutable pre-session result before probing the next symbol."""
+
+    def __init__(self, cache_root: Path, probe: DetailedProbe):
+        self.cache_root = cache_root
+        self.probe = probe
+
+    def _path(self, symbol: str, day: str) -> Path:
+        return self.cache_root / day / f"{symbol}.json"
+
+    def _cached(self, path: Path, symbol: str, day: str) -> Mapping[str, Any] | None:
+        if not path.exists():
+            return None
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+        if not isinstance(value, Mapping):
+            return None
+        if (
+            value.get("schema_version") != PREFLIGHT_CACHE_SCHEMA_VERSION
+            or value.get("probe_contract_version") != PRE_SESSION_CACHE_VERSION
+            or value.get("symbol") != symbol
+            or value.get("session_date") != day
+        ):
+            return None
+        result = value.get("result")
+        if not isinstance(result, Mapping) or result.get("symbol") != symbol:
+            return None
+        if result.get("viable") is True and not isinstance(
+            value.get("pre_session_history"), Mapping
+        ):
+            return None
+        return dict(result)
+
+    @staticmethod
+    def _status(result: Mapping[str, Any]) -> str:
+        if result.get("viable") is True:
+            return "ready"
+        return f"skipped: {result.get('reason', 'unknown')}"
+
+    def __call__(self, symbol: str, day: str) -> Mapping[str, Any]:
+        path = self._path(symbol, day)
+        cached = self._cached(path, symbol, day)
+        if cached is not None:
+            print(
+                f"  {day} {symbol} cached {self._status(cached)}",
+                file=sys.stderr,
+                flush=True,
+            )
+            return cached
+        result, history = self.probe(symbol, day)
+        normalized = dict(result)
+        payload = {
+            "schema_version": PREFLIGHT_CACHE_SCHEMA_VERSION,
+            "probe_contract_version": PRE_SESSION_CACHE_VERSION,
+            "provider": "Interactive Brokers TWS API pre-session history",
+            "captured_at": datetime.now(UTC).isoformat(),
+            "symbol": symbol,
+            "session_date": day,
+            "result": normalized,
+            "pre_session_history": dict(history) if history is not None else None,
+        }
+        rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(".json.tmp")
+        temporary.write_text(rendered, encoding="utf-8")
+        temporary.replace(path)
+        print(
+            f"  {day} {symbol} {self._status(normalized)}",
+            file=sys.stderr,
+            flush=True,
+        )
+        return normalized
 
 
 def _canonical_hash(value: Mapping[str, Any]) -> str:
@@ -80,6 +165,7 @@ def freeze_candidate_universe(
     *,
     minimum_candidates: int = 10,
     performed_at: str | None = None,
+    cache_metadata: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a frozen builder manifest from a larger ranked draft pool."""
     required = _positive_integer(minimum_candidates, "minimum_candidates")
@@ -183,6 +269,8 @@ def freeze_candidate_universe(
         "draft_manifest_sha256": _canonical_hash(draft),
         "dates": date_reports,
     }
+    if cache_metadata is not None:
+        output["preflight"]["cache"] = deepcopy(dict(cache_metadata))
     return output
 
 
@@ -202,6 +290,9 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--minimum-candidates", type=int, default=10)
     parser.add_argument("--env-file", type=Path, default=DEFAULT_ENV_PATH)
+    parser.add_argument(
+        "--cache-root", type=Path, default=DEFAULT_PREFLIGHT_CACHE_ROOT
+    )
     return parser
 
 
@@ -213,10 +304,27 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise HistoricalUniverseError("draft manifest must be a JSON object")
         config = IBKRConfig.from_env(args.env_file)
         with IBKRHistoricalClient(config) as client:
+            cache_root = args.cache_root.resolve()
+            try:
+                cache_root_text = str(cache_root.relative_to(PROJECT_ROOT.resolve()))
+            except ValueError:
+                cache_root_text = str(cache_root)
+            cached_probe = ResumablePreflightProbe(
+                cache_root,
+                lambda symbol, day: probe_historical_candidate_with_history(
+                    client, symbol, day
+                ),
+            )
             frozen = freeze_candidate_universe(
                 draft,
-                lambda symbol, day: probe_historical_candidate(client, symbol, day),
+                cached_probe,
                 minimum_candidates=args.minimum_candidates,
+                cache_metadata={
+                    "schema_version": PREFLIGHT_CACHE_SCHEMA_VERSION,
+                    "probe_contract_version": PRE_SESSION_CACHE_VERSION,
+                    "root": cache_root_text,
+                    "reusable_pre_session_history": True,
+                },
             )
         _write_json(frozen, args.output)
         return 0

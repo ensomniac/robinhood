@@ -43,6 +43,24 @@ The agent asks how many days to simulate. For each requested day:
    wide permission, connection, and pacing failures stop the batch. If the
    buffer is exhausted, collection remains blocked rather than freezing fewer
    than ten names.
+
+   Preflight checkpoints every examined `symbol + replay date` atomically under
+   ignored `historical_data/preflight/` storage. Rerunning the same draft reuses
+   matching cache-version results and streams whether each symbol was ready,
+   skipped, or cached. The opening-volume probe first requests the preceding 21
+   calendar days and extends once by seven days only when fewer than 14 sessions
+   are present; it no longer requests unnecessary older chunks. A symbol-scoped
+   IBKR HMDS `query returned no data` response is an input-incomplete buffered
+   skip, while pacing, permission, connection, and timeout failures remain batch
+   blockers. Accepted cache entries retain only pre-session opening/daily bars,
+   explicitly attest that no target-session price was observed, and are reused
+   by bundle collection instead of downloading the same history again.
+
+   On the 2026-07-16 ten-date pass, the old preflight aborted after roughly 24
+   minutes without a checkpoint. The optimized pass examined 102 buffered names
+   and completed in 736.5 seconds; an exact cache-resume rerun completed in 1.13
+   seconds. These measurements are machine/provider observations, not strategy
+   evidence.
 3. Run `python3 ibkr_historical.py check`, then use the IBKR collector for every
    frozen candidate's regular-session minute bars, opening-volume lookback,
    prior daily bars, and historical top-of-book snapshots. Web sources are not
@@ -58,7 +76,10 @@ The agent asks how many days to simulate. For each requested day:
    The builder caches each successful raw provider response, derives the first
    ORB evaluation time, ATR, opening RVOL rank, VWAP state, resistance, and
    benchmark alignment, then writes a day bundle only after all frozen symbols
-   and both benchmarks are complete. A retryable transport failure stops the
+   and both benchmarks are complete. When the evidence manifest links a valid
+   preflight cache, the builder reuses its 14 opening-volume bars and prior daily
+   history, then requests only target-session minute bars and quote evidence for
+   those fields. A retryable transport failure stops the
    current request stream immediately, opens one fresh connection by default,
    and resumes from cached files. A permanent failure stops the affected date
    after its first blocker instead of producing one false failure per remaining

@@ -1,7 +1,10 @@
+import tempfile
 import unittest
+from pathlib import Path
 
 from historical_universe import (
     HistoricalUniverseError,
+    ResumablePreflightProbe,
     freeze_candidate_universe,
 )
 from ibkr_historical import IBKRRequestError
@@ -77,6 +80,41 @@ class FreezeCandidateUniverseTests(unittest.TestCase):
 
         with self.assertRaisesRegex(IBKRRequestError, "not connected"):
             freeze_candidate_universe(draft_manifest(), probe)
+
+    def test_preflight_cache_resumes_without_repeating_provider_request(self):
+        calls = []
+
+        def detailed_probe(symbol, day):
+            calls.append((symbol, day))
+            return (
+                {
+                    "symbol": symbol,
+                    "viable": True,
+                    "reason": "pre_session_history_available",
+                    "error_code": None,
+                },
+                {
+                    "schema_version": 1,
+                    "symbol": symbol,
+                    "session_date": day,
+                    "target_session_prices_observed": False,
+                    "prior_opening_bars": [],
+                    "daily_bars": [],
+                },
+            )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first = ResumablePreflightProbe(root, detailed_probe)
+            self.assertTrue(first("T00", "2026-03-03")["viable"])
+
+            def should_not_run(symbol, day):
+                raise AssertionError(f"unexpected cache miss for {symbol} {day}")
+
+            resumed = ResumablePreflightProbe(root, should_not_run)
+            self.assertTrue(resumed("T00", "2026-03-03")["viable"])
+
+        self.assertEqual(calls, [("T00", "2026-03-03")])
 
 
 if __name__ == "__main__":

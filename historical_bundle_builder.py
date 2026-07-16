@@ -27,8 +27,10 @@ from historical_learning import (
 from ibkr_historical import (
     DEFAULT_ENV_PATH,
     IBKRConfig,
+    IBKRConfigurationError,
     IBKRHistoricalClient,
     IBKRHistoricalError,
+    PRE_SESSION_CACHE_VERSION,
     collect_candidate_history,
     historical_error_category,
     is_retryable_historical_error,
@@ -499,6 +501,48 @@ def _load_json(path: Path) -> Any:
         raise HistoricalBundleBuildError(f"cannot read {path}: {exc}") from exc
 
 
+def _load_pre_session_history(
+    preflight: Mapping[str, Any] | None,
+    day: str,
+    symbol: str,
+) -> Mapping[str, Any] | None:
+    if not isinstance(preflight, Mapping):
+        return None
+    cache = preflight.get("cache")
+    if not isinstance(cache, Mapping) or cache.get("reusable_pre_session_history") is not True:
+        return None
+    root_text = cache.get("root")
+    if not isinstance(root_text, str) or not root_text.strip():
+        return None
+    root = Path(root_text)
+    if not root.is_absolute():
+        root = PROJECT_ROOT / root
+    path = root / day / f"{symbol}.json"
+    if not path.exists():
+        return None
+    try:
+        payload = _load_json(path)
+    except HistoricalBundleBuildError:
+        return None
+    if not isinstance(payload, Mapping):
+        return None
+    if (
+        payload.get("probe_contract_version") != PRE_SESSION_CACHE_VERSION
+        or payload.get("symbol") != symbol
+        or payload.get("session_date") != day
+    ):
+        return None
+    result = payload.get("result")
+    history = payload.get("pre_session_history")
+    if (
+        not isinstance(result, Mapping)
+        or result.get("viable") is not True
+        or not isinstance(history, Mapping)
+    ):
+        return None
+    return history
+
+
 def _write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     rendered = json.dumps(value, indent=2, sort_keys=True) + "\n"
@@ -708,6 +752,8 @@ def _collect_candidate_raw(
     client: HistoricalMarketDataClient,
     symbol: str,
     day: str,
+    *,
+    pre_session_history: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     start = datetime.combine(date.fromisoformat(day), time(9, 30), tzinfo=EASTERN)
     end = datetime.combine(date.fromisoformat(day), time(16, 0), tzinfo=EASTERN)
@@ -719,9 +765,32 @@ def _collect_candidate_raw(
         day,
         evaluation_time,
         session_bars=preview,
+        pre_session_history=pre_session_history,
     )
     _validate_candidate_raw(raw, day, symbol)
     return raw
+
+
+def _collect_candidate_with_preflight_fallback(
+    client: HistoricalMarketDataClient,
+    symbol: str,
+    day: str,
+    pre_session_history: Mapping[str, Any] | None,
+) -> tuple[dict[str, Any], bool]:
+    if pre_session_history is None:
+        return _collect_candidate_raw(client, symbol, day), False
+    try:
+        return (
+            _collect_candidate_raw(
+                client,
+                symbol,
+                day,
+                pre_session_history=pre_session_history,
+            ),
+            True,
+        )
+    except IBKRConfigurationError:
+        return _collect_candidate_raw(client, symbol, day), False
 
 
 def collect_manifest(
@@ -753,6 +822,8 @@ def collect_manifest(
     selected_dates, selection_seed, selection_integrity = _selection_metadata(
         manifest_path, manifest, candidates_by_date
     )
+    raw_preflight = manifest.get("preflight")
+    preflight = raw_preflight if isinstance(raw_preflight, Mapping) else None
     created_at: str | None = None
     if status_path is not None and status_path.exists():
         previous = _load_json(status_path)
@@ -795,6 +866,7 @@ def collect_manifest(
                         fallback_client,
                         candidates_by_date,
                         scanner,
+                        preflight,
                         data_root=data_root,
                         raw_root=raw_root,
                         fallback_root=fallback_root,
@@ -841,6 +913,7 @@ def _collect_manifest_dates(
     fallback_client: MassiveHistoricalClient | None,
     candidates_by_date: Mapping[str, Any],
     scanner: Mapping[str, Any],
+    preflight: Mapping[str, Any] | None,
     *,
     data_root: Path,
     raw_root: Path,
@@ -962,14 +1035,24 @@ def _collect_manifest_dates(
             symbol = str(evidence["symbol"])
             path = raw_root / f"{day}-{symbol}.json"
             try:
+                history = None
                 if path.exists():
                     raw = _load_json(path)
                 else:
-                    raw = _collect_candidate_raw(client, symbol, day)
+                    history = _load_pre_session_history(preflight, day, symbol)
+                    raw, reused_preflight = _collect_candidate_with_preflight_fallback(
+                        client,
+                        symbol,
+                        day,
+                        history,
+                    )
+                    if not reused_preflight:
+                        history = None
                     _write_json(path, raw)
                 _validate_candidate_raw(raw, day, symbol)
                 raw_by_symbol[symbol] = raw
-                print(f"  {symbol} ready", file=sys.stderr, flush=True)
+                suffix = " (preflight reused)" if history is not None else ""
+                print(f"  {symbol} ready{suffix}", file=sys.stderr, flush=True)
             except (
                 HistoricalBundleBuildError,
                 IBKRHistoricalError,

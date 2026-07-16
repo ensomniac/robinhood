@@ -8,7 +8,9 @@ from zoneinfo import ZoneInfo
 
 from historical_bundle_builder import (
     HistoricalBundleBuildError,
+    _collect_candidate_with_preflight_fallback,
     _failure_row,
+    _load_pre_session_history,
     _selection_metadata,
     _atr14,
     _market_metrics,
@@ -16,6 +18,7 @@ from historical_bundle_builder import (
     collect_manifest,
     determine_evaluation,
 )
+from ibkr_historical import IBKRConfigurationError
 from historical_learning import validate_bundle
 from historical_providers import HistoricalProviderError, MassiveConfig
 from ibkr_historical import IBKRRequestError
@@ -229,6 +232,69 @@ class BundleAssemblyTests(unittest.TestCase):
 
 
 class CollectionControlTests(unittest.TestCase):
+    def test_loads_matching_reusable_preflight_history(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache_file = root / "2026-03-03" / "T00.json"
+            cache_file.parent.mkdir(parents=True)
+            history = {
+                "schema_version": 1,
+                "symbol": "T00",
+                "session_date": "2026-03-03",
+                "target_session_prices_observed": False,
+                "prior_opening_bars": [],
+                "daily_bars": [],
+            }
+            cache_file.write_text(
+                json.dumps(
+                    {
+                        "probe_contract_version": 1,
+                        "symbol": "T00",
+                        "session_date": "2026-03-03",
+                        "result": {"symbol": "T00", "viable": True},
+                        "pre_session_history": history,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            loaded = _load_pre_session_history(
+                {
+                    "cache": {
+                        "root": str(root),
+                        "reusable_pre_session_history": True,
+                    }
+                },
+                "2026-03-03",
+                "T00",
+            )
+
+        self.assertEqual(loaded, history)
+
+    def test_incompatible_preflight_history_falls_back_to_normal_collection(self):
+        calls = []
+
+        def fake_collect(client, symbol, day, *, pre_session_history=None):
+            calls.append(pre_session_history)
+            if pre_session_history is not None:
+                raise IBKRConfigurationError("stale cache")
+            return {"symbol": symbol, "session_date": day}
+
+        with patch(
+            "historical_bundle_builder._collect_candidate_raw",
+            side_effect=fake_collect,
+        ):
+            raw, reused = _collect_candidate_with_preflight_fallback(
+                object(),
+                "T00",
+                "2026-03-03",
+                {"schema_version": 0},
+            )
+
+        self.assertEqual(raw["symbol"], "T00")
+        self.assertFalse(reused)
+        self.assertEqual(calls, [{"schema_version": 0}, None])
+
     def test_linked_selection_is_authoritative_for_large_integer_seed(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

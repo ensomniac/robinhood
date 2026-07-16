@@ -746,6 +746,17 @@ When Ryan selects historical mode:
    provide bars, quotes, or depth. For each frozen symbol, use the first 9:35-10:30
    opening-range break as its evaluation time, or 10:30 with `clean_break=false`
    when no break occurred, and run the full `candidate` collection at that time.
+   Persist each preflight result atomically under ignored
+   `historical_data/preflight/` storage. Reuse only cache entries whose probe
+   contract version, symbol, replay date, and no-target-price attestation match.
+   Use the adaptive 21-day opening-history request and extend once by seven days
+   only when fewer than 14 sessions are present. A symbol-specific HMDS `query
+   returned no data` response may be treated as input-incomplete and replaced
+   from the already-ranked buffer; pacing, permission, connection, timeout, and
+   provider-wide failures still block the batch. Feed accepted cached
+   pre-session opening and daily bars into bundle collection so those immutable
+   inputs are not requested twice. A missing or incompatible cache must fall
+   back to normal collection, never to fabricated data.
    Before any candidate collection, run
    `python3 ibkr_historical.py check`. If the configured socket is unavailable,
    allow the adapter's local auto-start setting to launch Trader Workstation. If
