@@ -206,8 +206,8 @@ python3 strategy_learning.py report
 python3 strategy_learning.py propose  # only after both cadence gates pass
 ```
 
-An optional, read-only Interactive Brokers adapter can collect the market-data
-portion of a replay candidate through a locally logged-in Trader Workstation:
+The read-only Interactive Brokers adapter is the default required market-data
+collector for replay candidates through a locally logged-in Trader Workstation:
 
 ```sh
 python3 ibkr_historical.py check
@@ -217,12 +217,13 @@ python3 ibkr_historical.py candidate AAPL \
   --output historical_data/ibkr/2026-05-12-AAPL.json
 ```
 
+Use the collector for every candidate in the preselected historical universe.
 The adapter has no account, portfolio, or order surface. It collects regular-
 session minute bars, the 14-session time-matched opening-volume lookback, daily
 bars, and historical top-of-book bid/ask ticks with sizes. TWS socket access uses
 the authenticated desktop session and needs no API private key. Historical
 scanner-universe capture and point-in-time catalysts still require independent
-sources.
+sources, but those sources are not expected to provide bars or quote/depth data.
 
 In TWS, enable `API > Settings > Enable ActiveX and Socket Clients`, keep
 `Read-Only API` and `Allow connections from localhost only` enabled, and make

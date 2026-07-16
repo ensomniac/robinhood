@@ -718,21 +718,33 @@ When Ryan selects historical mode:
    candidates, complete regular-session non-interpolated minute bars, split
    adjustment, time-valid catalysts, the exact opening-volume lookback, and
    historical quote/depth snapshots sufficient for the normal execution gates.
-   The optional `ibkr_historical.py` adapter may collect per-symbol bars,
-   opening-volume lookbacks, daily bars, and historical top-of-book bid/ask
-   ticks from a logged-in local TWS session; it has no broker-action surface and
-   does not replace the separate scanner-universe or catalyst evidence.
-   Before collection, run `python3 ibkr_historical.py check`. If the configured
-   socket is unavailable, allow the adapter's local auto-start setting to launch
-   Trader Workstation. If the socket still does not become ready, ask Ryan to
-   start or log in to TWS, then retry. Keep `Read-Only API` and localhost-only
-   connections enabled and keep the TWS socket port aligned with `IBKR_PORT`.
+   Use `ibkr_historical.py` as the default market-data collector for every
+   candidate. It must pull the per-symbol regular-session bars, 14-session
+   opening-volume lookback, prior daily bars, and historical top-of-book bid/ask
+   ticks from the logged-in local TWS session. Historical top-of-book sizes are
+   the accepted depth evidence for this replay contract even though they are not
+   a full depth ladder. The adapter has no broker-action surface and does not
+   replace the separate point-in-time scanner-universe or catalyst evidence.
+   Freeze the date and candidate universe first, then use the resulting symbols
+   as inputs to the IBKR collector; a public scanner source does not also need to
+   provide bars, quotes, or depth. For each symbol, use the first 9:35-10:30
+   opening-range break as its evaluation time, or 10:30 with `clean_break=false`
+   when no break occurred, and run the full `candidate` collection at that time.
+   Before any candidate collection, run
+   `python3 ibkr_historical.py check`. If the configured socket is unavailable,
+   allow the adapter's local auto-start setting to launch Trader Workstation. If
+   the socket still does not become ready, ask Ryan to start or log in to TWS,
+   then retry. Keep `Read-Only API` and localhost-only connections enabled and
+   keep the TWS socket port aligned with `IBKR_PORT`.
    Do not use IABApp directly, copy its account identifier, invent IBKR keys, or
    reach through the adapter's private raw client to account or order methods.
-   If those facts cannot be obtained, report a data-fidelity blocker; do not
-   manufacture quotes, depth, catalysts, bars, or validation-grade results. Use
-   explicit synthetic replay equity/buying power; never copy the live balance
-   into a historical bundle.
+   Do not report missing historical market data merely because a web archive
+   lacks bars or quote fields; attempt the IBKR collection first. If IBKR cannot
+   return a complete required dataset after the socket and symbol are verified,
+   or if the separate scanner/catalyst evidence is unavailable, report the exact
+   data-fidelity blocker. Do not manufacture quotes, depth, catalysts, bars, or
+   validation-grade results. Use explicit synthetic replay equity/buying power;
+   never copy the live balance into a historical bundle.
 4. Validate the bundle before creating context. Confirmation-phase bundles need
    a preregistration timestamp and manifest hash created before data collection.
 5. Run the frozen `strategy_engine.py` at each recorded trigger. Select at most

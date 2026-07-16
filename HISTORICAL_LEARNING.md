@@ -22,17 +22,22 @@ The agent asks how many days to simulate. For each requested day:
    python3 historical_learning.py select trading-days.json --days 3 > selection.json
    ```
 
-2. Use point-in-time market/news sources to collect one replay bundle per date
-   under the ignored `historical_data/` directory. Select the date before
-   collecting its candidate facts. Do not choose a day because its result is
-   already known.
-3. Validate every bundle before replay:
+2. Use point-in-time scanner and news sources to freeze at least ten distinct
+   candidates and their catalyst provenance for each selected date. Select the
+   date before collecting its candidate facts. Do not choose a day because its
+   result is already known.
+3. Run `python3 ibkr_historical.py check`, then use the IBKR collector for every
+   frozen candidate's regular-session minute bars, opening-volume lookback,
+   prior daily bars, and historical top-of-book snapshots. Web sources are not
+   expected to supply those market-data fields. Store the assembled replay
+   bundle under the ignored `historical_data/` directory.
+4. Validate every bundle before replay:
 
    ```sh
    python3 historical_learning.py validate historical_data/2025-06-02.json
    ```
 
-4. After enough validated bundles exist, run the requested random batch:
+5. After enough validated bundles exist, run the requested random batch:
 
    ```sh
    python3 historical_learning.py run --selection selection.json
@@ -41,7 +46,7 @@ The agent asks how many days to simulate. For each requested day:
    This guarantees that the dates randomized before collection are exactly the
    dates replayed. `python3 historical_learning.py interactive` provides the CLI
    prompts for a pre-collected unbiased bundle pool.
-5. Verify `python3 trade_lifecycle.py audit`,
+6. Verify `python3 trade_lifecycle.py audit`,
    `python3 strategy_ledger.py audit`, the archived context, and `TRADES.md`.
    Commit and push the public evidence under the repository publishing rules.
 
@@ -147,12 +152,13 @@ At completion, the runner embeds a terminal outcome and moves all context to
 `trades/archived/YYYY_MM_DD/`. It atomically appends the day's validated session
 and signal records as one ledger batch.
 
-## Optional Interactive Brokers Collection
+## Required Interactive Brokers Market-Data Collection
 
-`ibkr_historical.py` is an independent, read-only client for a locally logged-in
-Trader Workstation or IB Gateway. It does not import IABApp and exposes no
-account, portfolio, order, or execution methods. Configure its socket through
-the ignored `.env`, then verify the handshake:
+`ibkr_historical.py` is the default required market-data source for historical
+replays. It is an independent, read-only client for a locally logged-in Trader
+Workstation or IB Gateway. It does not import IABApp and exposes no account,
+portfolio, order, or execution methods. Configure its socket through the ignored
+`.env`, then verify the handshake before collecting any candidate:
 
 In TWS, `API > Settings` must have `Enable ActiveX and Socket Clients`,
 `Read-Only API`, and `Allow connections from localhost only` enabled. Its socket
@@ -169,7 +175,7 @@ mode to work around a connection failure.
 python3 ibkr_historical.py check
 ```
 
-Collect one candidate's raw market-data evidence with:
+Collect every frozen candidate's raw market-data evidence with:
 
 ```sh
 python3 ibkr_historical.py candidate AAPL \
@@ -183,8 +189,19 @@ time-matched opening-volume bars, prior daily bars, historical bid/ask ticks wit
 top-of-book sizes, and three strategy-shaped quote snapshots. `bars` and
 `quotes` subcommands support narrower ad hoc collection. IBKR historical volume
 is filtered, and historical bid/ask ticks provide top-of-book size rather than a
-full depth ladder. The adapter therefore supplies market data but cannot by
-itself attest full historical scanner capture or point-in-time catalyst fidelity.
+full depth ladder. Those top-of-book sizes satisfy the replay bundle's historical
+depth evidence requirement. The adapter therefore supplies the required market
+data but cannot by itself attest full historical scanner capture or point-in-time
+catalyst fidelity; obtain only those two evidence classes from independent
+point-in-time sources.
+
+Determine each candidate's evaluation time from its IBKR session bars: use the
+first opening-range-high break from 9:35 through 10:30 ET, or 10:30 with
+`clean_break=false` when no break occurred. Then run the full `candidate`
+collection at that timestamp so its three quote snapshots are aligned with the
+evaluation. Do not declare a market-data blocker merely because the scanner or
+news archive lacks bars, quotes, or depth; try the IBKR collection first and
+report the exact failed IBKR fact only if the adapter cannot return it.
 
 ## Limitations
 
