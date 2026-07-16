@@ -135,6 +135,7 @@ class SymbolProbeTests(unittest.TestCase):
                     {
                         "symbol": symbol,
                         "security_type": "STK",
+                        "stock_type": "COMMON",
                         "currency": "USD",
                     }
                 ]
@@ -143,6 +144,25 @@ class SymbolProbeTests(unittest.TestCase):
 
         self.assertTrue(result["viable"])
         self.assertEqual(result["reason"], "contract_resolved")
+
+    def test_non_common_stock_contract_is_not_viable(self):
+        class FakeClient:
+            def fetch_contract_details(self, symbol):
+                return [
+                    {
+                        "symbol": symbol,
+                        "security_type": "STK",
+                        "stock_type": "ADR",
+                        "currency": "USD",
+                    }
+                ]
+
+        result = probe_historical_symbol(FakeClient(), "TEST")
+
+        self.assertFalse(result["viable"])
+        self.assertEqual(
+            result["reason"], "no_matching_us_common_stock_contract"
+        )
 
     def test_pre_session_probe_requires_strategy_compatible_history(self):
         day = datetime(2026, 3, 3, tzinfo=EASTERN).date()
@@ -156,6 +176,7 @@ class SymbolProbeTests(unittest.TestCase):
                     {
                         "symbol": symbol,
                         "security_type": "STK",
+                        "stock_type": "COMMON",
                         "currency": "USD",
                     }
                 ]
@@ -197,6 +218,7 @@ class SymbolProbeTests(unittest.TestCase):
                     {
                         "symbol": symbol,
                         "security_type": "STK",
+                        "stock_type": "COMMON",
                         "currency": "USD",
                     }
                 ]
@@ -235,6 +257,7 @@ class SymbolProbeTests(unittest.TestCase):
                     {
                         "symbol": symbol,
                         "security_type": "STK",
+                        "stock_type": "COMMON",
                         "currency": "USD",
                     }
                 ]
@@ -282,6 +305,7 @@ class SymbolProbeTests(unittest.TestCase):
                     {
                         "symbol": symbol,
                         "security_type": "STK",
+                        "stock_type": "COMMON",
                         "currency": "USD",
                     }
                 ]
@@ -336,6 +360,7 @@ class SymbolProbeTests(unittest.TestCase):
                     {
                         "symbol": symbol,
                         "security_type": "STK",
+                        "stock_type": "COMMON",
                         "currency": "USD",
                     }
                 ]
@@ -387,6 +412,7 @@ class SymbolProbeTests(unittest.TestCase):
                     {
                         "symbol": symbol,
                         "security_type": "STK",
+                        "stock_type": "COMMON",
                         "currency": "USD",
                     }
                 ]
@@ -452,6 +478,7 @@ class SymbolProbeTests(unittest.TestCase):
                     {
                         "symbol": symbol,
                         "security_type": "STK",
+                        "stock_type": "COMMON",
                         "currency": "USD",
                     }
                 ]

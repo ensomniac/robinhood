@@ -260,7 +260,7 @@ class CollectionControlTests(unittest.TestCase):
             cache_file = root / "2026-03-03" / "T00.json"
             cache_file.parent.mkdir(parents=True)
             history = {
-                "schema_version": 1,
+                "schema_version": 2,
                 "symbol": "T00",
                 "session_date": "2026-03-03",
                 "target_session_prices_observed": False,
@@ -271,7 +271,7 @@ class CollectionControlTests(unittest.TestCase):
                 json.dumps(
                     {
                         "schema_version": 1,
-                        "probe_contract_version": 1,
+                        "probe_contract_version": 2,
                         "symbol": "T00",
                         "session_date": "2026-03-03",
                         "result": {"symbol": "T00", "viable": True},
@@ -301,7 +301,7 @@ class CollectionControlTests(unittest.TestCase):
             cache_file = root / "2026-03-03" / "T00.json"
             cache_file.parent.mkdir(parents=True)
             history = {
-                "schema_version": 1,
+                "schema_version": 2,
                 "symbol": "T00",
                 "session_date": "2026-03-03",
                 "target_session_prices_observed": False,
@@ -313,7 +313,7 @@ class CollectionControlTests(unittest.TestCase):
                 json.dumps(
                     {
                         "schema_version": 2,
-                        "probe_contract_version": 1,
+                        "probe_contract_version": 2,
                         "qualification_sha256": "rules-hash",
                         "symbol": "T00",
                         "session_date": "2026-03-03",

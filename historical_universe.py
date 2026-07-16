@@ -227,6 +227,7 @@ def freeze_candidate_universe(
     performed_at: str | None = None,
     cache_metadata: Mapping[str, Any] | None = None,
     max_workers: int = 1,
+    continue_on_exhausted: bool = False,
 ) -> dict[str, Any]:
     """Return a frozen builder manifest from a larger ranked draft pool."""
     required = _positive_integer(minimum_candidates, "minimum_candidates")
@@ -253,6 +254,21 @@ def freeze_candidate_universe(
             ) from exc
         if not isinstance(raw_pool, list) or len(raw_pool) < required:
             size = len(raw_pool) if isinstance(raw_pool, list) else 0
+            if continue_on_exhausted:
+                date_reports[day] = {
+                    "accepted_symbols": [],
+                    "accepted": [],
+                    "skipped": [],
+                    "unused_buffer_symbols": [],
+                    "examined_count": 0,
+                    "max_workers": workers,
+                    "speculatively_cached_symbols": [],
+                    "blocked": True,
+                    "blocked_reason": (
+                        f"draft_pool_exhausted:{size}_of_{required}_required"
+                    ),
+                }
+                continue
             raise HistoricalUniverseError(
                 f"{day} draft pool has {size} candidates; at least {required} are required"
             )
@@ -378,12 +394,6 @@ def freeze_candidate_universe(
         finally:
             outcomes.close()
 
-        if len(accepted) < required:
-            rejected = ", ".join(row["symbol"] for row in skipped) or "none"
-            raise HistoricalUniverseError(
-                f"{day} exhausted its draft pool with only {len(accepted)} viable "
-                f"candidates; {required} are required (rejected: {rejected})"
-            )
         unused = [
             symbol for index, symbol, _ in prepared if index > last_examined
         ]
@@ -395,8 +405,7 @@ def freeze_candidate_universe(
             ),
             key=lambda value: value[0],
         )
-        candidates_by_date[day] = accepted
-        date_reports[day] = {
+        report = {
             "accepted_symbols": [row["symbol"] for row in accepted],
             "accepted": accepted_preflight,
             "skipped": skipped,
@@ -405,6 +414,22 @@ def freeze_candidate_universe(
             "max_workers": workers,
             "speculatively_cached_symbols": [symbol for _, symbol in speculative],
         }
+        if len(accepted) < required:
+            rejected = ", ".join(row["symbol"] for row in skipped) or "none"
+            if not continue_on_exhausted:
+                raise HistoricalUniverseError(
+                    f"{day} exhausted its draft pool with only {len(accepted)} viable "
+                    f"candidates; {required} are required (rejected: {rejected})"
+                )
+            report["blocked"] = True
+            report["blocked_reason"] = (
+                f"preflight_exhausted:{len(accepted)}_of_{required}_required"
+            )
+            date_reports[day] = report
+            continue
+        report["blocked"] = False
+        candidates_by_date[day] = accepted
+        date_reports[day] = report
 
     output = {
         key: deepcopy(value)
@@ -422,6 +447,9 @@ def freeze_candidate_universe(
         "target_session_prices_observed": False,
         "draft_manifest_sha256": _canonical_hash(draft),
         "dates": date_reports,
+        "blocked_dates": [
+            day for day, report in date_reports.items() if report.get("blocked") is True
+        ],
     }
     if cache_metadata is not None:
         output["preflight"]["cache"] = deepcopy(dict(cache_metadata))
@@ -457,6 +485,11 @@ def _build_parser() -> argparse.ArgumentParser:
             "bounded rank-ordered IBKR probes to overlap "
             f"(default: {DEFAULT_PREFLIGHT_WORKERS})"
         ),
+    )
+    parser.add_argument(
+        "--continue-on-exhausted",
+        action="store_true",
+        help="record exhausted dates as blocked and continue freezing other dates",
     )
     return parser
 
@@ -512,6 +545,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "rules_hash": strategy_config.rules_hash,
                 },
                 max_workers=args.workers,
+                continue_on_exhausted=args.continue_on_exhausted,
             )
             frozen["preflight"]["performance"] = {
                 "elapsed_seconds": monotonic() - started_at,

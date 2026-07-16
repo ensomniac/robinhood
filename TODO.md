@@ -124,6 +124,12 @@ Status: implemented by `historical_universe.py` and the `probe` surface in
 
 - Historical discovery now produces a ranked draft pool with spare candidates
   before the final universe is frozen.
+- `historical_discovery.py` automates the high-market-cap earnings/SEC lane:
+  connector results are normalized, filings are restricted by point-in-time
+  acceptance, strong primary-document dilution language is screened, and all
+  source artifacts are resumably cached outside Git. Large runs retain an
+  80-name reserve because a 40-name reserve was empirically too shallow for the
+  immutable ADV/ATR gates.
 - Before provider calls, the preflight rejects draft rows that are not explicitly
   common stock or already carry a dilution conflict. It then resolves IBKR stock
   contracts and evaluates prior daily ADV/ATR gates before verifying 14 positive
@@ -134,6 +140,10 @@ Status: implemented by `historical_universe.py` and the `probe` surface in
 - Only symbol-scoped failures are skippable. Permissions, pacing, connection,
   and provider-wide failures still stop the batch instead of silently shrinking
   or distorting the universe.
+- `--continue-on-exhausted` records one sparse date as blocked and continues
+  later frozen dates without substitution. Strict fail-fast remains the default.
+- Contract proof now requires IBKR `stockType=COMMON`; the pre-session cache
+  contract was bumped so older entries without this proof cannot be reused.
 - The frozen evidence manifest records accepted, skipped, and unused buffered
   symbols plus draft, qualification, and accepted-history hashes. After this
   point, the builder never replaces a candidate based on observed market data.

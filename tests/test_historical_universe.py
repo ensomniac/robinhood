@@ -143,6 +143,40 @@ class FreezeCandidateUniverseTests(unittest.TestCase):
         with self.assertRaisesRegex(HistoricalUniverseError, "only 9 viable"):
             freeze_candidate_universe(draft_manifest(count=10), probe)
 
+    def test_exhausted_date_can_be_recorded_without_blocking_later_dates(self):
+        draft = draft_manifest(count=10)
+        draft["candidate_pool_by_date"]["2026-03-04"] = [
+            candidate(f"N{index:02d}") for index in range(10)
+        ]
+
+        def probe(symbol, day):
+            viable = day == "2026-03-04" or symbol != "T02"
+            return {
+                "symbol": symbol,
+                "viable": viable,
+                "reason": (
+                    "pre_session_history_available"
+                    if viable
+                    else "unresolvable_security_definition"
+                ),
+                "error_code": None if viable else 200,
+            }
+
+        frozen = freeze_candidate_universe(
+            draft,
+            probe,
+            continue_on_exhausted=True,
+        )
+
+        self.assertNotIn("2026-03-03", frozen["candidates_by_date"])
+        self.assertIn("2026-03-04", frozen["candidates_by_date"])
+        self.assertEqual(frozen["preflight"]["blocked_dates"], ["2026-03-03"])
+        blocked = frozen["preflight"]["dates"]["2026-03-03"]
+        self.assertTrue(blocked["blocked"])
+        self.assertEqual(
+            blocked["blocked_reason"], "preflight_exhausted:9_of_10_required"
+        )
+
     def test_provider_failure_stops_preflight_instead_of_skipping_symbol(self):
         def probe(symbol, day):
             raise IBKRRequestError("not connected", error_code=504)

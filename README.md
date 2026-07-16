@@ -231,10 +231,23 @@ Before the final candidate universe is frozen, put a ranked buffer under
 opening/daily history without observing target-session prices:
 
 ```sh
+python3 historical_discovery.py ingest-earnings \
+  --output historical_data/discovery/earnings.json
+python3 historical_discovery.py build selection.json trading-days.json \
+  historical_data/discovery/earnings.json \
+  --output historical_data/manifests/draft.json \
+  --buffer-limit 80 --workers 4
+```
+
+The discovery helper joins a frozen market-wide earnings capture to SEC filing
+metadata and primary documents, caches source artifacts locally, and screens
+strong dilution language. It does not request target-session market prices.
+
+```sh
 python3 historical_universe.py \
   historical_data/manifests/draft-YYYY-MM-DD.json \
   --output historical_data/manifests/evidence-YYYY-MM-DD.json \
-  --workers 4
+  --workers 4 --continue-on-exhausted
 ```
 
 This skips known non-common-stock or dilution-conflicted rows before provider
@@ -249,7 +262,9 @@ resumes rather than restarting. Cache reuse requires the same strategy/rules
 qualification plus matching pre-session content hashes. Accepted opening and
 daily bars are reused by bundle collection without observing target-session
 prices. Bounded workers overlap provider latency but consume results in rank
-order; a provider-wide failure prevents the next batch from launching.
+order; a provider-wide failure prevents the next batch from launching. In large
+batches, `--continue-on-exhausted` records a sparse date as blocked and proceeds
+without substituting a date or weakening the ten-candidate requirement.
 
 For a pre-frozen multi-day evidence manifest, the resumable bundle builder keeps
 successful raw responses under the ignored data directory and validates a full

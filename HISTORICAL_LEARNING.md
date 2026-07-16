@@ -23,17 +23,33 @@ The agent asks how many days to simulate. For each requested day:
    ```
 
 2. Use point-in-time scanner and news sources to create a ranked draft pool with
-   at least 20 distinct candidates and preferably 30-50 when the source supports
-   it. Select the date before collecting its candidate facts. Do not choose a day
-   because its result is already known. Before freezing the final ten, run a
-   strategy-aware
-   IBKR pre-session-history preflight:
+   at least 20 distinct candidates. Large multi-date runs should target an
+   80-name reserve when the source supports it because immutable ADV/ATR gates
+   can eliminate most earnings names. Select every date before collecting its
+   candidate facts. Do not choose a day because its result is already known.
+   `historical_discovery.py` can normalize a market-wide earnings-calendar
+   capture from stdin, join verified events to SEC daily indexes/submissions,
+   reject strong dilution language in primary documents, and write the draft
+   without requesting target-session prices:
+
+   ```sh
+   python3 historical_discovery.py ingest-earnings \
+     --output historical_data/discovery/earnings.json
+   python3 historical_discovery.py build selection.json trading-days.json \
+     historical_data/discovery/earnings.json \
+     --output historical_data/manifests/draft.json \
+     --buffer-limit 80 --workers 4
+   ```
+
+   The SEC cache is resumable ignored input. The collector's `SEC_USER_AGENT`
+   must identify this application and a contact email. Before freezing the final
+   ten, run the strategy-aware IBKR pre-session-history preflight:
 
    ```sh
    python3 historical_universe.py \
      historical_data/manifests/draft-YYYY-MM-DD.json \
      --output historical_data/manifests/evidence-YYYY-MM-DD.json \
-     --workers 4
+     --workers 4 --continue-on-exhausted
    ```
 
    The draft uses `candidate_pool_by_date`; the output uses
@@ -47,8 +63,10 @@ The agent asks how many days to simulate. For each requested day:
    9:30 five-minute bars with positive volume and at least 15 prior daily
    sessions. A symbol that cannot satisfy those immutable evaluator inputs may
    be skipped for the next ranked buffered name. Provider-wide permission,
-   connection, and pacing failures stop the batch. If the buffer is exhausted,
-   collection remains blocked rather than freezing fewer than ten names.
+   connection, and pacing failures stop the batch. If one date's buffer is
+   exhausted, `--continue-on-exhausted` records that date as blocked and moves
+   to the next frozen date rather than freezing fewer than ten names or replacing
+   the date. Omitting the flag retains strict fail-fast behavior.
 
    Preflight checkpoints every examined `symbol + replay date` atomically under
    ignored `historical_data/preflight/` storage. Rerunning the same draft reuses

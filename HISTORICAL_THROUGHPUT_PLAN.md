@@ -156,23 +156,33 @@ the fidelity rules and cache contract.
 
 ### A. Automated point-in-time discovery
 
-Market bars are only one lane. A validation-grade date also needs a universe and
-time-valid catalyst evidence. IBKR does not provide a historical scanner
-snapshot or historical catalyst archive. Large runs therefore need an automated
-discovery builder that:
+`historical_discovery.py` now starts from the independently frozen date set,
+normalizes market-wide earnings-calendar results, maps supported NYSE/Nasdaq
+symbols through official SEC data, joins 8-K acceptance/items metadata, screens
+primary documents for strong dilution language, and emits a deep ranked draft
+without target-session market prices. Daily indexes, submissions metadata, and
+primary documents are immutable ignored cache entries. Discovery and SEC cache
+telemetry are timed separately from IBKR collection.
 
-1. starts from the independently frozen date set;
-2. captures the prior-session after-close and current-session pre-open windows;
-3. merges authoritative earnings events, SEC/issuer filings, exchange notices,
-   and any licensed point-in-time scanner source;
-4. stores source timestamp, retrieval timestamp, URL/identifier, ranking rule,
-   and the no-target-price attestation;
-5. creates a deep ranked buffer before IBKR preflight;
-6. blocks sparse dates instead of selecting replacement dates after learning
-   their outcomes.
+The 100-day cold-cache exercise exposed two important limits:
 
-This is likely the largest remaining end-to-end operator bottleneck. It must be
-timed separately from market-data collection.
+- all-market earnings plus every material 8-K expands to thousands of
+  registrants that the strategy's ADV/ATR gates will reject;
+- eager document screening scales with the entire reserve, even though
+  preflight only needs enough clean names to freeze ten.
+
+The production default for this strategy is therefore the connector's
+high-market-cap earnings universe cross-checked against SEC filings, with an
+80-name per-date reserve for large runs. A future refinement should screen
+documents incrementally in rank order until each date has enough clean reserve
+names. Exchange notices and a licensed historical scanner remain additive
+discovery lanes when available; they must preserve timestamps, ranking scope,
+and the no-target-price attestation.
+
+Large preflight runs use `--continue-on-exhausted`: a sparse date is recorded as
+blocked and later frozen dates continue. Provider-wide failures still stop the
+stream, and neither behavior permits replacement dates or fewer than ten frozen
+candidates.
 
 ### B. Immutable market-data store
 

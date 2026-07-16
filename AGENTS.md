@@ -731,13 +731,23 @@ When Ryan selects historical mode:
    disconnect, timeout, pacing failure, or other retryable outage. Reconnect
    once by default, resume from cached raw files, and retain provider provenance
    for every candidate and benchmark. Never interpolate a missing provider bar.
-   Freeze the date first, then assemble a point-in-time ranked candidate pool
-   with at least 20 names and preferably 30-50 when the source supports it.
+   Freeze every date first, then assemble a point-in-time ranked candidate pool
+   with at least 20 names. Large multi-date runs should retain up to 80 names per
+   date when the source supports it because the immutable ADV/ATR gates can
+   eliminate most earnings names. `historical_discovery.py` may ingest a frozen
+   market-wide earnings-calendar capture and join it to official SEC daily
+   indexes, submissions metadata, and primary filing documents. Its SEC cache
+   is ignored local input, its user agent must identify the application and a
+   contact email, and its draft must attest that target-session prices were not
+   observed.
    Before freezing the final candidate universe, run `historical_universe.py`
    against that draft pool.
    Its IBKR pre-session preflight must not request or inspect target-session
    prices. Before provider work, skip draft records that are not explicitly
-   U.S.-listed common stock or already carry a dilution conflict. Request prior
+   U.S.-listed common stock or already carry a dilution conflict. The final
+   provider proof must match IBKR `stockType=COMMON`; bump the pre-session cache
+   contract whenever that proof changes so older permissive entries cannot be
+   reused. Request prior
    daily history first and enforce the configured 14-session average-volume and
    ATR gates before paying for explicit contract resolution and the more
    expensive opening history. Treat error 200 from that STK/USD history request
@@ -774,7 +784,11 @@ When Ryan selects historical mode:
    must prevent the next batch from launching; already-completed immutable work
    should be cached for the resume. Never run uncoordinated IBKR processes to
    bypass pacing. Retain worker count, request counts, peak in-flight requests,
-   pacing waits, cache hits, and wall time for large-batch measurements.
+   pacing waits, cache hits, and wall time for large-batch measurements. Large
+   runs may use `--continue-on-exhausted` so a sparse date is recorded as blocked
+   while later frozen dates proceed. This never permits a replacement date or a
+   final universe with fewer than ten candidates; provider-wide failures still
+   stop the whole stream.
    Before any candidate collection, run
    `python3 ibkr_historical.py check`. If the configured socket is unavailable,
    allow the adapter's local auto-start setting to launch Trader Workstation. If

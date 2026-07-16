@@ -50,7 +50,7 @@ INFORMATIONAL_CODES = {
 }
 CONNECTION_ERROR_CODES = {326, 502, 503, 504, 507, 1100, 1300}
 BAR_TYPES = {"TRADES", "MIDPOINT", "BID", "ASK"}
-PRE_SESSION_CACHE_VERSION = 1
+PRE_SESSION_CACHE_VERSION = 2
 HISTORICAL_BAR_CHUNK_DAYS = {
     "1 sec": 1,
     "5 secs": 1,
@@ -479,6 +479,10 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
                 "primary_exchange": str(getattr(contract, "primaryExchange", "")),
                 "valid_exchanges": str(getattr(details, "validExchanges", "")),
                 "long_name": str(getattr(details, "longName", "")),
+                "stock_type": str(getattr(details, "stockType", "")),
+                "industry": str(getattr(details, "industry", "")),
+                "category": str(getattr(details, "category", "")),
+                "subcategory": str(getattr(details, "subcategory", "")),
             }
         )
 
@@ -941,12 +945,13 @@ def probe_historical_symbol(
         if str(row.get("symbol", "")).upper() == normalized
         and row.get("security_type") == "STK"
         and row.get("currency") == "USD"
+        and row.get("stock_type") == "COMMON"
     ]
     if not matching:
         return {
             "symbol": normalized,
             "viable": False,
-            "reason": "no_matching_us_stock_contract",
+            "reason": "no_matching_us_common_stock_contract",
             "error_code": None,
         }
     return {
@@ -954,6 +959,7 @@ def probe_historical_symbol(
         "viable": True,
         "reason": "contract_resolved",
         "error_code": None,
+        "stock_type": "COMMON",
     }
 
 
