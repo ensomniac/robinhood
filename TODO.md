@@ -105,8 +105,101 @@ Status: implemented by `ibkr_historical.py` and documented in
 - Fails with an actionable TWS startup/login/API-socket message when the local
   service is unavailable.
 
+### 9. Pre-Freeze Historical Symbol Viability
+
+Status: implemented by `historical_universe.py` and the `probe` surface in
+`ibkr_historical.py`.
+
+- Historical discovery now produces a ranked draft pool with spare candidates
+  before the final universe is frozen.
+- The preflight resolves IBKR stock contracts without requesting target-session
+  prices. A retired or unresolvable symbol can be skipped in favor of the next
+  ranked buffered name without using future performance to select the sample.
+- Only symbol-scoped failures are skippable. Permissions, pacing, connection,
+  and provider-wide failures still stop the batch instead of silently shrinking
+  or distorting the universe.
+- The frozen evidence manifest records accepted, skipped, and unused buffered
+  symbols plus a hash of the draft. After this point, the builder never replaces
+  a candidate based on observed market data.
+
+### 10. Durable Progress History And Contribution Hook
+
+Status: implemented by `progress_history.py`, `progress/HISTORY.jsonl`, and the
+tracked `.githooks/pre-commit` hook.
+
+- Meaningful breakthroughs, diagnosed failures, provider constraints,
+  architecture decisions, and reusable workflow improvements have a structured,
+  append-only home outside transient conversation history.
+- The history audit validates IDs, timestamps, required findings/impact, unique
+  entries, and repository-relative file references.
+- Substantive staged changes require a new history contribution. Mechanical,
+  generated-ledger, and test-only commits are exempt; an explicit bypass exists
+  only for truly lesson-free maintenance.
+- The first record captures the five-day replay pass: A/B/C market-data
+  entitlements, the required TWS restart, resumable caching, the retired `SEMR`
+  blocker, and the legitimate flat `LOB` opening bar.
+
 ## Outstanding
 
-No feature from the current backlog remains unimplemented. New ideas should be
-added here with scope, safety boundaries, data contract, acceptance tests, and
-publishing behavior before implementation.
+Items below are design-ready backlogs, not authority to weaken live-trading or
+historical-fidelity rules. New ideas should include scope, safety boundaries,
+data contracts, acceptance tests, and publishing behavior before implementation.
+
+### 7. Valuable Data Cache
+
+Status: partially satisfied by the resumable per-candidate IBKR cache in
+`historical_bundle_builder.py`; a provider-neutral cache remains outstanding.
+
+Build a content-addressed cache for expensive, slow, or rate-limited public and
+market-data inputs so future work can reuse verified evidence without confusing
+old data with current truth.
+
+Acceptance criteria:
+
+- Every entry records source/provider, request identity, as-of time, retrieval
+  time, schema version, producer version, content hash, privacy class, and
+  freshness/immutability policy.
+- Point-in-time historical artifacts are immutable. Current/live responses have
+  explicit expiry and can never be described as current after expiry.
+- Writes are atomic and integrity-audited; corrupt, partial, schema-incompatible,
+  or provenance-free entries fail closed and are recollected when safe.
+- Cache hits explain exactly what was reused and why it is still valid. A caller
+  can demand fresh collection for drift-prone or safety-critical facts.
+- Provide `audit`, `inspect`, and `prune` commands plus bounded retention and
+  size reporting. Raw private inputs remain ignored and public summaries remain
+  safe to commit.
+- Never cache credentials, MFA material, session cookies, plaintext account or
+  broker identifiers, or mutable live broker state.
+- Integrate the historical IBKR raw cache first, then authoritative calendars
+  and time-valid catalyst evidence, with deterministic tests for hits, expiry,
+  corruption, schema migration, and concurrent writers.
+
+### 8. Code Review, Cleanup, And Improve
+
+Status: planned. The progress-history checkpoint now supplies its durable input,
+but the review mode itself is not implemented.
+
+Create a repository-review mode driven by a versioned top-level prompt that
+turns recent diffs, tests, audits, TODO items, and progress findings into a
+repeatable inspect-propose-apply-validate loop.
+
+Acceptance criteria:
+
+- The top-level review prompt is public, versioned, testable, and subordinate to
+  `AGENTS.md`, tool requirements, privacy rules, and the active user request. It
+  cannot broaden broker or external-write authority.
+- The mode starts read-only, inventories the current diff and validation state,
+  and emits a scoped review plan before mutation. It never runs while exposure
+  or another safety-critical workflow needs attention.
+- Safe repository cleanup and test improvements may use normal implementation
+  authority. Production strategy changes remain proposals requiring Ryan's
+  explicit approval, a new strategy version, and the existing evidence gates.
+- End-of-run invocation is conditional on meaningful repository work and a clean
+  safety state; it is skipped for urgent live management, simple read-only
+  answers, generated-only updates, and explicit user opt-out.
+- Every applied improvement passes relevant tests/audits, updates the progress
+  history when it yields a reusable lesson, and is committed/pushed under the
+  normal publishing rules.
+- Tests cover prompt loading, instruction precedence, no-op runs, dirty-worktree
+  preservation, strategy-change refusal, progress contribution, and failure
+  recovery without an infinite self-edit loop.

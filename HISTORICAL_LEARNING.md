@@ -22,10 +22,25 @@ The agent asks how many days to simulate. For each requested day:
    python3 historical_learning.py select trading-days.json --days 3 > selection.json
    ```
 
-2. Use point-in-time scanner and news sources to freeze at least ten distinct
-   candidates and their catalyst provenance for each selected date. Select the
+2. Use point-in-time scanner and news sources to create a ranked draft pool with
+   at least ten distinct candidates and preferably a 20-50% buffer. Select the
    date before collecting its candidate facts. Do not choose a day because its
-   result is already known.
+   result is already known. Before freezing the final ten, run an
+   availability-only IBKR contract preflight:
+
+   ```sh
+   python3 historical_universe.py \
+     historical_data/manifests/draft-YYYY-MM-DD.json \
+     --output historical_data/manifests/evidence-YYYY-MM-DD.json
+   ```
+
+   The draft uses `candidate_pool_by_date`; the output uses
+   `candidates_by_date` and records accepted, skipped, and unused buffered
+   symbols. Preflight never requests target-session prices. It may skip only a
+   symbol-scoped unresolvable contract and take the next ranked name. Provider-
+   wide permission, connection, and pacing failures stop the batch. If the
+   buffer is exhausted, collection remains blocked rather than freezing fewer
+   than ten names.
 3. Run `python3 ibkr_historical.py check`, then use the IBKR collector for every
    frozen candidate's regular-session minute bars, opening-volume lookback,
    prior daily bars, and historical top-of-book snapshots. Web sources are not
@@ -42,8 +57,9 @@ The agent asks how many days to simulate. For each requested day:
    evaluation time, ATR, opening RVOL rank, VWAP state, resistance, and
    benchmark alignment, then writes a day bundle only after all frozen symbols
    and both benchmarks are complete. Provider permission, sparse-tick, and
-   retired-symbol failures remain explicit blockers; the builder never replaces
-   a frozen candidate after observing market data.
+   retired-symbol failures discovered after the final freeze remain explicit
+   blockers; the builder never replaces a frozen candidate after observing
+   market data.
 4. Validate every bundle before replay:
 
    ```sh

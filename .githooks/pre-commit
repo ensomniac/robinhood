@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+
+python3 progress_history.py check-staged

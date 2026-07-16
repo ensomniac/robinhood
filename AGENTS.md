@@ -725,9 +725,18 @@ When Ryan selects historical mode:
    the accepted depth evidence for this replay contract even though they are not
    a full depth ladder. The adapter has no broker-action surface and does not
    replace the separate point-in-time scanner-universe or catalyst evidence.
-   Freeze the date and candidate universe first, then use the resulting symbols
-   as inputs to the IBKR collector; a public scanner source does not also need to
-   provide bars, quotes, or depth. For each symbol, use the first 9:35-10:30
+   Freeze the date first, then assemble a point-in-time ranked candidate pool
+   with a buffer beyond the required ten names. Before freezing the final
+   candidate universe, run `historical_universe.py` against that draft pool.
+   Its IBKR contract-resolution preflight is availability-only and must not
+   request or inspect target-session prices. It may skip a symbol-scoped
+   unresolvable contract such as error 200 and take the next ranked buffered
+   candidate. A connection, permission, pacing, or provider-wide error blocks
+   the batch and must never be converted into a symbol skip. Record every
+   pre-freeze skip in the frozen manifest. Once the final universe is frozen,
+   never replace a candidate after observing its market data; a later failure
+   remains a fidelity blocker. A public scanner source does not also need to
+   provide bars, quotes, or depth. For each frozen symbol, use the first 9:35-10:30
    opening-range break as its evaluation time, or 10:30 with `clean_break=false`
    when no break occurred, and run the full `candidate` collection at that time.
    Before any candidate collection, run
@@ -766,6 +775,25 @@ When Ryan selects historical mode:
 See `HISTORICAL_LEARNING.md` for the bundle contract and CLI workflow. Raw replay
 bundles under `historical_data/` are local inputs and are Git-ignored; archived
 context and `SIGNALS.jsonl` are the durable public evidence.
+
+## Progress History Hook
+
+Meaningful outcomes from coding, research, debugging, provider interaction, or
+operational work must contribute a structured entry to
+`progress/HISTORY.jsonl`. Record reusable breakthroughs, diagnosed failures,
+external constraints, architecture decisions, safety improvements, and
+interesting failed approaches that should not be repeated. Be curious and
+generous about preserving useful findings as the system grows; do not limit the
+history to polished successes.
+
+Run `python3 progress_history.py audit` before committing. This checkout should
+use the tracked `.githooks/pre-commit` hook, installed with
+`python3 progress_history.py install-hook`. The hook requires a newly staged
+history entry when substantive source, strategy, or operating documentation is
+staged. `PROGRESS_SKIP=1` is allowed only for genuinely mechanical or generated
+commits with no reusable lesson; never use it after a bug, provider discovery,
+workflow repair, safety decision, or architecture change. Trade outcomes remain
+in their normal ledger and archived contexts rather than being duplicated here.
 
 ## Public Ledger And GitHub Publishing
 

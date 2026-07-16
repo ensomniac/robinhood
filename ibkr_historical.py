@@ -56,6 +56,10 @@ class IBKRConfigurationError(IBKRHistoricalError):
 class IBKRRequestError(IBKRHistoricalError):
     """Raised when TWS rejects or times out a historical-data request."""
 
+    def __init__(self, message: str, *, error_code: int | None = None):
+        super().__init__(message)
+        self.error_code = error_code
+
 
 def _env_bool(value: Any, default: bool = False) -> bool:
     if value is None or str(value).strip() == "":
@@ -383,6 +387,33 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
         if state is not None:
             state.event.set()
 
+    def contractDetails(self, reqId: int, details: Any) -> None:  # noqa: N802
+        with self._lock:
+            state = self._requests.get(int(reqId))
+        if state is None:
+            return
+        contract = details.contract
+        state.rows.append(
+            {
+                "symbol": str(getattr(contract, "symbol", "")),
+                "local_symbol": str(getattr(contract, "localSymbol", "")),
+                "security_type": str(getattr(contract, "secType", "")),
+                "currency": str(getattr(contract, "currency", "")),
+                "exchange": str(getattr(contract, "exchange", "")),
+                "primary_exchange": str(
+                    getattr(contract, "primaryExchange", "")
+                ),
+                "valid_exchanges": str(getattr(details, "validExchanges", "")),
+                "long_name": str(getattr(details, "longName", "")),
+            }
+        )
+
+    def contractDetailsEnd(self, reqId: int) -> None:  # noqa: N802
+        with self._lock:
+            state = self._requests.get(int(reqId))
+        if state is not None:
+            state.event.set()
+
     def historicalTicksBidAsk(
         self, reqId: int, ticks: Sequence[Any], done: bool
     ) -> None:  # noqa: N802
@@ -480,10 +511,24 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
                 f"{self.config.request_timeout_seconds:.1f}s"
             )
         if state.error:
+            raw_code = state.error.get("code")
+            error_code = int(raw_code) if isinstance(raw_code, int) else None
             raise IBKRRequestError(
-                f"{state.kind} request {request_id} failed: {state.error}"
+                f"{state.kind} request {request_id} failed: {state.error}",
+                error_code=error_code,
             )
         return list(state.rows)
+
+    def fetch_contract_details(self, symbol: str) -> list[dict[str, Any]]:
+        """Resolve a stock symbol without requesting price or account data."""
+        self._pacing_wait()
+        request_id, state = self._allocate_request("contract-details")
+        try:
+            self.reqContractDetails(request_id, self._contract(symbol))
+            return self._finish_request(request_id, state, lambda _: None)
+        finally:
+            with self._lock:
+                self._requests.pop(request_id, None)
 
     def _request_bars(
         self,
@@ -681,6 +726,9 @@ class IBKRHistoricalClient:
             use_rth=use_rth,
         )
 
+    def fetch_contract_details(self, symbol: str) -> list[dict[str, Any]]:
+        return self._connection.fetch_contract_details(symbol)
+
     def fetch_bid_ask_ticks(
         self,
         symbol: str,
@@ -699,6 +747,50 @@ class IBKRHistoricalClient:
     @staticmethod
     def _bar_timestamp(value: Any) -> datetime | None:
         return _IBKRHistoricalConnection._bar_timestamp(value)
+
+
+def probe_historical_symbol(
+    client: IBKRHistoricalClient,
+    symbol: str,
+) -> dict[str, Any]:
+    """Return availability-only evidence suitable for a pre-freeze universe gate.
+
+    Error 200 is scoped to an unresolvable security definition and may safely
+    skip one draft-pool symbol. Connection, permission, pacing, and other
+    provider errors remain batch blockers and are deliberately re-raised.
+    """
+    normalized = str(symbol).strip().upper()
+    try:
+        details = client.fetch_contract_details(normalized)
+    except IBKRRequestError as exc:
+        if exc.error_code == 200:
+            return {
+                "symbol": normalized,
+                "viable": False,
+                "reason": "unresolvable_security_definition",
+                "error_code": exc.error_code,
+            }
+        raise
+    matching = [
+        row
+        for row in details
+        if str(row.get("symbol", "")).upper() == normalized
+        and row.get("security_type") == "STK"
+        and row.get("currency") == "USD"
+    ]
+    if not matching:
+        return {
+            "symbol": normalized,
+            "viable": False,
+            "reason": "no_matching_us_stock_contract",
+            "error_code": None,
+        }
+    return {
+        "symbol": normalized,
+        "viable": True,
+        "reason": "contract_resolved",
+        "error_code": None,
+    }
 
 
 def _latest_completed_minute_volume(
@@ -910,6 +1002,12 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("check", help="connect and confirm a read-only TWS API handshake")
 
+    probe = subparsers.add_parser(
+        "probe",
+        help="resolve one stock contract without requesting price or account data",
+    )
+    probe.add_argument("symbol")
+
     bars = subparsers.add_parser("bars", help="fetch historical OHLCV bars")
     bars.add_argument("symbol")
     bars.add_argument("--start", required=True, help="ISO datetime; naive values are ET")
@@ -950,6 +1048,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "read_only_scope": "historical market data only",
                     "config": config.public_dict(),
                 }
+            elif args.command == "probe":
+                result = probe_historical_symbol(client, args.symbol)
             elif args.command == "bars":
                 result = {
                     "provider": "Interactive Brokers TWS API",

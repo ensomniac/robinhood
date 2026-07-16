@@ -11,6 +11,7 @@ from ibkr_historical import (
     IBKRRequestError,
     collect_quote_evidence,
     ensure_tws_socket,
+    probe_historical_symbol,
     select_quote_snapshots,
 )
 
@@ -65,6 +66,43 @@ class NormalizationTests(unittest.TestCase):
         self.assertEqual(daily.astimezone(EASTERN).date().isoformat(), "2026-05-12")
         self.assertIsNotNone(epoch)
         self.assertEqual(epoch.tzinfo, timezone.utc)
+
+
+class SymbolProbeTests(unittest.TestCase):
+    def test_retired_symbol_is_a_skippable_preflight_result(self):
+        class FakeClient:
+            def fetch_contract_details(self, symbol):
+                raise IBKRRequestError("missing", error_code=200)
+
+        result = probe_historical_symbol(FakeClient(), "semr")
+
+        self.assertFalse(result["viable"])
+        self.assertEqual(result["symbol"], "SEMR")
+        self.assertEqual(result["reason"], "unresolvable_security_definition")
+
+    def test_provider_wide_failure_is_not_downgraded_to_a_symbol_skip(self):
+        class FakeClient:
+            def fetch_contract_details(self, symbol):
+                raise IBKRRequestError("permission", error_code=10187)
+
+        with self.assertRaisesRegex(IBKRRequestError, "permission"):
+            probe_historical_symbol(FakeClient(), "ALK")
+
+    def test_resolved_us_stock_is_viable(self):
+        class FakeClient:
+            def fetch_contract_details(self, symbol):
+                return [
+                    {
+                        "symbol": symbol,
+                        "security_type": "STK",
+                        "currency": "USD",
+                    }
+                ]
+
+        result = probe_historical_symbol(FakeClient(), "ALK")
+
+        self.assertTrue(result["viable"])
+        self.assertEqual(result["reason"], "contract_resolved")
 
 
 class QuoteSnapshotTests(unittest.TestCase):

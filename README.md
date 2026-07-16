@@ -211,6 +211,7 @@ collector for replay candidates through a locally logged-in Trader Workstation:
 
 ```sh
 python3 ibkr_historical.py check
+python3 ibkr_historical.py probe AAPL
 python3 ibkr_historical.py candidate AAPL \
   --date 2026-05-12 \
   --evaluation-time 09:40:00 \
@@ -224,6 +225,20 @@ bars, and historical top-of-book bid/ask ticks with sizes. TWS socket access use
 the authenticated desktop session and needs no API private key. Historical
 scanner-universe capture and point-in-time catalysts still require independent
 sources, but those sources are not expected to provide bars or quote/depth data.
+
+Before the final candidate universe is frozen, put a ranked buffer under
+`candidate_pool_by_date` and resolve it without observing target-session prices:
+
+```sh
+python3 historical_universe.py \
+  historical_data/manifests/draft-YYYY-MM-DD.json \
+  --output historical_data/manifests/evidence-YYYY-MM-DD.json
+```
+
+This quickly skips retired or unresolvable symbols from the draft pool while
+alternatives remain. Provider-wide permissions and connection failures still
+stop the batch, and no candidate may be replaced after the output universe is
+frozen.
 
 For a pre-frozen multi-day evidence manifest, the resumable bundle builder keeps
 successful raw responses under the ignored data directory and validates a full
@@ -244,6 +259,22 @@ the socket port match `IBKR_PORT`. The ignored local `.env` on this machine also
 enables best-effort TWS startup; an interactive login may still be required.
 
 Proposals never apply themselves. See [STRATEGY_LEARNING.md](STRATEGY_LEARNING.md).
+
+## Progress History
+
+Reusable engineering and operational discoveries live in
+[`progress/HISTORY.jsonl`](progress/HISTORY.jsonl), with the contribution
+contract in [`progress/README.md`](progress/README.md). Validate and install the
+tracked contribution hook with:
+
+```sh
+python3 progress_history.py audit
+python3 progress_history.py install-hook
+```
+
+The hook prompts substantive commits to preserve their breakthrough, failure,
+provider constraint, or architecture lesson instead of letting it disappear in
+conversation history.
 
 ## Publishing Discipline
 
