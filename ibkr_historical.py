@@ -760,6 +760,41 @@ def select_quote_snapshots(
     return snapshots
 
 
+def collect_quote_evidence(
+    client: IBKRHistoricalClient,
+    symbol: str,
+    session_start: datetime,
+    evaluation: datetime,
+    minute_bars: Sequence[Mapping[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Collect fresh snapshots or preserve a same-session stale-quote reject.
+
+    The normal request stays narrow. When no quote exists in that window, a
+    single same-session fallback obtains the last observable quote state so the
+    evaluator can reject it for age rather than losing the entire candidate.
+    Absence of any regular-session quote remains a hard fidelity blocker.
+    """
+    quote_end = evaluation + timedelta(seconds=1)
+    starts = (evaluation - timedelta(seconds=15), session_start)
+    last_error: IBKRRequestError | None = None
+    for quote_start in starts:
+        ticks = client.fetch_bid_ask_ticks(symbol, quote_start, quote_end, use_rth=True)
+        try:
+            snapshots = select_quote_snapshots(
+                ticks,
+                evaluation,
+                minute_bars,
+                count=3,
+                span_seconds=10,
+            )
+            return ticks, snapshots
+        except IBKRRequestError as exc:
+            last_error = exc
+    if last_error is not None:
+        raise last_error
+    raise IBKRRequestError("no historical bid/ask quote evidence was returned")
+
+
 def collect_candidate_history(
     client: IBKRHistoricalClient,
     symbol: str,
@@ -819,17 +854,12 @@ def collect_candidate_history(
         raise IBKRRequestError(
             f"IBKR returned only {len(daily_bars)} prior daily bars; at least 15 are required"
         )
-    quote_start = evaluation - timedelta(seconds=15)
-    quote_end = evaluation + timedelta(seconds=1)
-    bid_ask_ticks = client.fetch_bid_ask_ticks(
-        symbol, quote_start, quote_end, use_rth=True
-    )
-    snapshots = select_quote_snapshots(
-        bid_ask_ticks,
+    bid_ask_ticks, snapshots = collect_quote_evidence(
+        client,
+        symbol,
+        session_start,
         evaluation,
         minute_bars,
-        count=3,
-        span_seconds=10,
     )
     return {
         "schema_version": 1,

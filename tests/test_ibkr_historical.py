@@ -9,6 +9,7 @@ from ibkr_historical import (
     IBKRConfigurationError,
     IBKRHistoricalClient,
     IBKRRequestError,
+    collect_quote_evidence,
     ensure_tws_socket,
     select_quote_snapshots,
 )
@@ -103,6 +104,36 @@ class QuoteSnapshotTests(unittest.TestCase):
 
         with self.assertRaisesRegex(IBKRRequestError, "no historical bid/ask"):
             select_quote_snapshots([], evaluation, [])
+
+    def test_same_session_fallback_preserves_stale_quote_evidence(self):
+        evaluation = datetime(2026, 5, 12, 9, 40, tzinfo=EASTERN)
+        stale_tick = self._tick(evaluation - timedelta(seconds=60), 99.98, 100.00)
+
+        class FakeClient:
+            def __init__(self):
+                self.calls = []
+
+            def fetch_bid_ask_ticks(self, symbol, start, end, *, use_rth):
+                self.calls.append((symbol, start, end, use_rth))
+                return [] if len(self.calls) == 1 else [stale_tick]
+
+        client = FakeClient()
+        ticks, snapshots = collect_quote_evidence(
+            client,
+            "TEST",
+            evaluation.replace(hour=9, minute=30),
+            evaluation,
+            [
+                {
+                    "epoch": int((evaluation - timedelta(minutes=2)).timestamp()),
+                    "volume": 12_000,
+                }
+            ],
+        )
+
+        self.assertEqual(ticks, [stale_tick])
+        self.assertEqual(len(client.calls), 2)
+        self.assertEqual([row["age_seconds"] for row in snapshots], [50.0, 55.0, 60.0])
 
 
 if __name__ == "__main__":

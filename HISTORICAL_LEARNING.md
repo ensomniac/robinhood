@@ -208,6 +208,12 @@ data but cannot by itself attest full historical scanner capture or point-in-tim
 catalyst fidelity; obtain only those two evidence classes from independent
 point-in-time sources.
 
+When the narrow quote window is empty, the collector makes one regular-session
+lookback request and preserves the last observable quote with its actual age.
+The evaluator still hard-rejects a stale snapshot; the fallback records the
+liquidity failure rather than making the quote appear fresh. A symbol with no
+same-session quote evidence remains a collection blocker.
+
 Determine each candidate's evaluation time from its IBKR session bars: use the
 first opening-range-high break from 9:35 through 10:30 ET, or 10:30 with
 `clean_break=false` when no break occurred. Then run the full `candidate`
