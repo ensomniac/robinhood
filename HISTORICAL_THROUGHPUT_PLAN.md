@@ -7,10 +7,42 @@ Updated: 2026-07-16
 The historical system should process large, randomly frozen date sets without
 changing the strategy, looking at target outcomes during discovery, substituting
 failed dates or symbols after freeze, or weakening the evidence contract. The
-near-term target is a timed 100-day run with stage and provider telemetry. The
-long-term target is fast repeated strategy evaluation over immutable local data,
-where IBKR or another source is contacted only when a verified artifact is not
-already present.
+timed 100-day run is complete with stage and provider telemetry. The ongoing
+target is fast repeated strategy evaluation over immutable local data, where
+IBKR or another source is contacted only when a verified artifact is not already
+present.
+
+## Measured 100-Day Result
+
+The independently frozen run used seed `5387420213521377743`, retained the
+original 100 dates, and finished with 95 validation-grade replays, five explicit
+IBKR quote-boundary blockers, zero substitutions, and zero cascade errors. It
+passed the 80% engineering-yield gate at 95%. The complete selection-through-
+replay workflow took 19,681.079 seconds (5h 28m 1.08s).
+
+The cold path confirms that network acquisition is the bottleneck:
+
+- preflight examined 3,040 cached or cold symbol/date records in 9,190.685
+  seconds, submitted 4,612 IBKR requests, and spent 3,673.363 seconds waiting on
+  pacing;
+- the main bundle-collection segment took 3,779.680 seconds for 1,623 completed
+  requests and spent 817.962 seconds waiting on pacing;
+- the first pass produced 84 dates; a 139.058-second recovery pass rebuilt stale
+  derivation caches and converted invalid-but-rejectable candidate inputs into
+  safe hard rejects, recovering 11 more dates;
+- the final five blocked dates all lack a required historical bid/ask tick at
+  the frozen evaluation boundary. They were not substituted or approximated.
+
+The warm path is the intended strategy-development loop. The exact 100-date
+preflight used 3,040 cache hits, zero misses, zero provider requests, and 0.704
+seconds. A clean local replay evaluated 950 frozen signals across the 95 valid
+days in 13.328 seconds, or 7.13 days per second, with zero provider calls. The
+machine-readable result is retained in
+`historical_batches/2026-07-16-one-hundred-days-speed-test.json`.
+
+None of the 950 signals passed every production gate. This is a strategy
+validation result, not an engineering failure, and the strategy remains
+`UNVALIDATED` with no live broker actions performed.
 
 ## Measured Bottleneck
 
@@ -135,6 +167,12 @@ and end-to-end collection time.
 This is necessary because wall time alone can mislead: a run may be slow because
 it did more cold work, hit a provider throttle window, paged a quote-dense name,
 or waited on a single long response.
+
+Final collection telemetry is persisted in the atomic public batch status, not
+only printed to the terminal. Incompatible ignored raw caches are refreshed once
+under the current derivation contract. Optional fallback throttles no longer
+interrupt or reconnect a healthy IBKR primary stream, and a fallback permission
+failure disables that lane for the rest of the batch.
 
 ## Existing Single-Symbol Surface
 

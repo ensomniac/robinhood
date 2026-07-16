@@ -1,0 +1,116 @@
+{
+  "artifacts": {
+    "batch_status": "historical_batches/collection-2026-07-16-one-hundred-days.json",
+    "evidence_manifest": "historical_batches/evidence-2026-07-16-one-hundred-days.json",
+    "selection_manifest": "historical_data/manifests/selection-2026-07-16-one-hundred-days.json"
+  },
+  "batch_id": "historical-ea716bae5df7269a",
+  "blocked_dates": [
+    {
+      "date": "2026-01-07",
+      "reason": "missing historical bid/ask tick at the frozen replay boundary",
+      "symbol": "ASST"
+    },
+    {
+      "date": "2026-01-12",
+      "reason": "missing historical bid/ask tick at the frozen replay boundary",
+      "symbol": "DFTX"
+    },
+    {
+      "date": "2026-03-27",
+      "reason": "missing historical bid/ask tick at the frozen replay boundary",
+      "symbol": "CCL"
+    },
+    {
+      "date": "2026-04-17",
+      "reason": "missing historical bid/ask tick at the frozen replay boundary",
+      "symbol": "FITB"
+    },
+    {
+      "date": "2026-04-20",
+      "reason": "missing historical bid/ask tick at the frozen replay boundary",
+      "symbol": "FITB"
+    }
+  ],
+  "cold_path": {
+    "bundle_collection_segment": {
+      "completed_requests": 1623,
+      "elapsed_seconds": 3779.679533208022,
+      "failed_requests": 0,
+      "historical_bar_requests": 738,
+      "historical_bid_ask_tick_requests": 885,
+      "pacing_wait_seconds": 817.9620318557136,
+      "peak_in_flight": 4
+    },
+    "end_to_end": {
+      "elapsed_seconds": 19681.079064,
+      "finished_at": "2026-07-16T19:13:57.133878-04:00",
+      "human_elapsed": "5h 28m 1.08s",
+      "started_at": "2026-07-16T13:45:56.054814-04:00"
+    },
+    "preflight": {
+      "cache_hits": 375,
+      "cache_misses": 2665,
+      "completed_requests": 4607,
+      "contract_detail_requests": 990,
+      "elapsed_seconds": 9190.684564958094,
+      "failed_requests": 5,
+      "historical_bar_requests_submitted": 3622,
+      "pacing_wait_seconds": 3673.3627467541955,
+      "peak_in_flight": 4,
+      "submitted_requests": 4612
+    },
+    "recovery_after_robustness_fixes": {
+      "completed_requests": 67,
+      "dates_recovered": 11,
+      "elapsed_seconds": 139.05750854196958,
+      "failed_requests": 0,
+      "pacing_wait_seconds": 21.28145524370484,
+      "peak_in_flight": 3
+    },
+    "total_ibkr_requests": {
+      "completed": 6297,
+      "failed": 5,
+      "submitted": 6302
+    }
+  },
+  "engineering_acceptance": {
+    "cascade_error_count": 0,
+    "passed": true,
+    "substitution_count": 0,
+    "target_minimum_yield_fraction": 0.8
+  },
+  "mode": "historical",
+  "result": {
+    "blocked_days": 5,
+    "completed_days": 95,
+    "eligible_signals": 0,
+    "final_yield_fraction": 0.95,
+    "frozen_signals_evaluated": 950,
+    "initial_completed_days_before_recovery": 84,
+    "maturity": "UNVALIDATED",
+    "requested_days": 100
+  },
+  "schema_version": 1,
+  "selection_seed": 5387420213521377743,
+  "strategy": {
+    "rules_hash": "1947f9d25f63f59848ff28671050fa2af96d302167e5b6f4ce8b56e37a6742cc",
+    "version": "2026-07-15-orb-v3"
+  },
+  "warm_path": {
+    "full_local_replay": {
+      "completed_days": 95,
+      "days_per_second": 7.128027072971221,
+      "elapsed_seconds": 13.327671041013673,
+      "eligible_signals": 0,
+      "provider_requests": 0,
+      "signals_evaluated": 950
+    },
+    "preflight": {
+      "cache_hits": 3040,
+      "cache_misses": 0,
+      "elapsed_seconds": 0.703900417080149,
+      "provider_requests": 0
+    }
+  }
+}

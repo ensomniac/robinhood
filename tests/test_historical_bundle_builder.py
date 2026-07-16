@@ -8,9 +8,11 @@ from zoneinfo import ZoneInfo
 
 from historical_bundle_builder import (
     HistoricalBundleBuildError,
+    _build_candidate,
     _canonical_hash,
     _collect_candidate_with_preflight_fallback,
     _failure_row,
+    _load_or_collect_candidate,
     _load_pre_session_history,
     _selection_metadata,
     _atr14,
@@ -159,6 +161,36 @@ class DerivedMetricTests(unittest.TestCase):
         self.assertTrue(metrics["vwap_flat_or_rising"])
         self.assertAlmostEqual(metrics["last"], 9.9)
 
+    def test_zero_volume_early_window_marks_vwap_trend_unavailable(self):
+        day = "2026-03-03"
+        raw = raw_candidate("UGI", day)
+        raw["session_bars"] = session_bars(break_index=5)
+        for row in raw["session_bars"][:5]:
+            row["volume"] = 0
+        raw["request"]["evaluation_time_et"] = "09:37:00"
+
+        candidate = _build_candidate(
+            day,
+            {
+                "symbol": "UGI",
+                "is_common_stock": True,
+                "catalyst": {"point_in_time": True},
+                "discovery": {"source": "test"},
+            },
+            raw,
+            {
+                "SPY": session_bars(break_index=5),
+                "QQQ": session_bars(break_index=5),
+            },
+            1,
+            10,
+            25_000,
+        )
+
+        self.assertFalse(
+            candidate["evaluation_payload"]["candidate"]["vwap_flat_or_rising"]
+        )
+
 
 class BundleAssemblyTests(unittest.TestCase):
     def test_builds_a_validator_safe_bundle(self):
@@ -252,8 +284,70 @@ class BundleAssemblyTests(unittest.TestCase):
         )
         self.assertEqual(bundle["candidates"][0]["discovery"]["form"], "8-K")
 
+    def test_non_break_below_opening_range_is_ineligible_not_malformed(self):
+        day = "2026-03-03"
+        raw = raw_candidate("T00", day)
+        raw["session_bars"] = session_bars(break_index=None)
+        raw["request"]["evaluation_time_et"] = "10:30:00"
+        for quote in raw["quote_snapshots"]:
+            quote["bid"] = 9.49
+            quote["ask"] = 9.50
+
+        candidate = _build_candidate(
+            day,
+            {
+                "symbol": "T00",
+                "is_common_stock": True,
+                "catalyst": {"point_in_time": True},
+                "discovery": {"source": "test"},
+            },
+            raw,
+            {"SPY": session_bars(), "QQQ": session_bars()},
+            1,
+            10,
+            25_000,
+        )
+
+        payload = candidate["evaluation_payload"]["candidate"]
+        self.assertLess(payload["technical_invalidation"], payload["entry_limit"])
+        self.assertFalse(payload["stop_outside_noise"])
+
 
 class CollectionControlTests(unittest.TestCase):
+    def test_incompatible_candidate_cache_is_refreshed_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            stale = raw_candidate("T00")
+            stale["request"]["evaluation_time_et"] = "09:40:00"
+            path = root / "2026-03-03-T00.json"
+            path.write_text(json.dumps(stale), encoding="utf-8")
+            fresh = raw_candidate("T00")
+            with (
+                patch(
+                    "historical_bundle_builder._load_pre_session_history",
+                    return_value={"schema_version": 2},
+                ),
+                patch(
+                    "historical_bundle_builder."
+                    "_collect_candidate_with_preflight_fallback",
+                    return_value=(fresh, True),
+                ) as collect,
+            ):
+                raw, cache_hit, reused = _load_or_collect_candidate(
+                    object(),
+                    root,
+                    {"cache": {}},
+                    "2026-03-03",
+                    {"symbol": "T00"},
+                )
+            persisted = json.loads(path.read_text(encoding="utf-8"))
+
+        self.assertEqual(collect.call_count, 1)
+        self.assertFalse(cache_hit)
+        self.assertTrue(reused)
+        self.assertEqual(raw["request"]["evaluation_time_et"], "09:42:00")
+        self.assertEqual(persisted["request"]["evaluation_time_et"], "09:42:00")
+
     def test_loads_matching_reusable_preflight_history(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -661,6 +755,77 @@ class CollectionControlTests(unittest.TestCase):
         self.assertEqual(recovery["symbol"], "T00")
         self.assertEqual(recovery["fallback_provider"], "Massive SIP REST API")
         self.assertEqual(result["failures"][0]["stage"], "candidate_fallback")
+
+    def test_retryable_optional_fallback_does_not_reconnect_primary(self):
+        class PrimaryClient:
+            provider_name = "Interactive Brokers TWS API"
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+        class FallbackClient:
+            provider_name = "Massive SIP REST API"
+
+            def close(self):
+                return None
+
+        def collect(client, symbol, day):
+            if isinstance(client, PrimaryClient):
+                raise IBKRRequestError("no historical quote evidence")
+            raise HistoricalProviderError(
+                "Massive HTTP 429", category="retryable_provider"
+            )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = self._manifest(root)
+            status = root / "status.json"
+            with (
+                patch(
+                    "historical_bundle_builder.IBKRConfig.from_env",
+                    return_value=object(),
+                ),
+                patch(
+                    "historical_bundle_builder.IBKRHistoricalClient",
+                    return_value=PrimaryClient(),
+                ) as primary_factory,
+                patch(
+                    "historical_bundle_builder.MassiveConfig.optional_from_env",
+                    return_value=MassiveConfig(api_key="configured"),
+                ),
+                patch(
+                    "historical_bundle_builder.MassiveHistoricalClient",
+                    return_value=FallbackClient(),
+                ),
+                patch(
+                    "historical_bundle_builder._benchmark_history",
+                    side_effect=lambda client, day, symbol: {
+                        "provider": client.provider_name,
+                        "session_bars": session_bars(),
+                    },
+                ),
+                patch(
+                    "historical_bundle_builder._collect_candidate_raw",
+                    side_effect=collect,
+                ),
+            ):
+                result = collect_manifest(
+                    manifest,
+                    data_root=root / "data",
+                    status_path=status,
+                    transport_retries=0,
+                )
+            persisted = json.loads(status.read_text(encoding="utf-8"))
+
+        self.assertEqual(primary_factory.call_count, 1)
+        self.assertFalse(result["valid"])
+        self.assertEqual(result["failures"][0]["stage"], "candidate_fallback")
+        self.assertEqual(result["failures"][0]["category"], "retryable_provider")
+        self.assertFalse(persisted["interrupted"])
+        self.assertIn("performance", persisted)
 
 
 if __name__ == "__main__":

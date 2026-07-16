@@ -150,7 +150,9 @@ def compute_opening_relative_volume(
         raise StrategyInputError(
             f"prior_opening_volumes must contain exactly {lookback} completed sessions"
         )
-    today = _number(today_volume, "opening_bar.volume", positive=True)
+    today = _number(today_volume, "opening_bar.volume")
+    if today < 0:
+        raise StrategyInputError("opening_bar.volume must be nonnegative and finite")
     prior = [
         _number(value, f"prior_opening_volumes[{index}]", positive=True)
         for index, value in enumerate(prior_opening_volumes)

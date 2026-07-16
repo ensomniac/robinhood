@@ -178,6 +178,15 @@ def _cumulative_vwap(rows: Sequence[Mapping[str, Any]]) -> float:
     return weighted / volume
 
 
+def _available_cumulative_vwap(
+    rows: Sequence[Mapping[str, Any]],
+) -> float | None:
+    """Return VWAP when the window contains real volume, otherwise ``None``."""
+    if not rows or sum(int(row["volume"]) for row in rows) <= 0:
+        return None
+    return _cumulative_vwap(rows)
+
+
 def _market_metrics(
     rows: Sequence[Mapping[str, Any]], evaluation_time: str
 ) -> dict[str, float | bool]:
@@ -300,7 +309,10 @@ def _build_candidate(
     evaluation_clock = time.fromisoformat(evaluation_time)
     completed = [row for row in session_rows if _time_et(row) < evaluation_clock]
     vwap = _cumulative_vwap(completed)
-    earlier_vwap = _cumulative_vwap(completed[:-5] or completed[:1])
+    earlier_vwap = _available_cumulative_vwap(completed[:-5] or completed[:1])
+    vwap_flat_or_rising = (
+        earlier_vwap is not None and vwap >= earlier_vwap
+    )
     recent_rows = completed[-3:] or session_rows[:5]
     support_candidates = [
         float(opening["high"]),
@@ -308,7 +320,16 @@ def _build_candidate(
         min(float(row["low"]) for row in recent_rows),
     ]
     below_entry = [value for value in support_candidates if 0 < value < entry_limit]
-    technical_invalidation = max(below_entry) if below_entry else float(opening["low"])
+    has_structural_invalidation = bool(below_entry)
+    technical_invalidation = (
+        max(below_entry)
+        if below_entry
+        else min(
+            float(opening["low"]),
+            min(float(row["low"]) for row in recent_rows),
+            entry_limit * 0.999,
+        )
+    )
 
     daily = sorted(raw["daily_bars"], key=lambda row: int(row["epoch"]))
     atr = _atr14(daily)
@@ -323,7 +344,8 @@ def _build_candidate(
     stop_distance = max(0.10 * atr, entry_limit - technical_invalidation)
     planned_stop = entry_limit - stop_distance
     stop_outside_noise = (
-        planned_stop <= technical_invalidation
+        has_structural_invalidation
+        and planned_stop <= technical_invalidation
         and planned_stop <= min(float(row["low"]) for row in recent_rows)
         and planned_stop < min(float(row["bid"]) for row in quotes) - median_spread
         and stop_distance >= max(2 * median_spread, 0.001 * entry_limit)
@@ -390,7 +412,7 @@ def _build_candidate(
             "tradable": tradable,
             "clean_break": clean_break,
             "above_vwap": above_vwap,
-            "vwap_flat_or_rising": vwap >= earlier_vwap,
+            "vwap_flat_or_rising": vwap_flat_or_rising,
             "benchmark_supportive_or_independent_strength": market_supportive
             or independent_strength,
             "sector_relative_strength": candidate_return > max(benchmark_returns),
@@ -889,20 +911,29 @@ def _load_or_collect_candidate(
     reused_preflight = False
     if cache_hit:
         raw = _load_json(path)
-    else:
-        history = _load_pre_session_history(preflight, day, symbol)
-        raw, reused_preflight = _collect_candidate_with_preflight_fallback(
-            client,
-            symbol,
-            day,
-            history,
-        )
-        _write_json(path, raw)
+        if isinstance(raw, Mapping):
+            normalized = dict(raw)
+            try:
+                _validate_candidate_raw(normalized, day, symbol)
+                return normalized, True, False
+            except (HistoricalBundleBuildError, KeyError, TypeError, ValueError):
+                # Raw provider caches are disposable. Refresh an incompatible
+                # payload once instead of turning an old derivation contract
+                # into a permanent point-in-time data failure.
+                pass
+    history = _load_pre_session_history(preflight, day, symbol)
+    raw, reused_preflight = _collect_candidate_with_preflight_fallback(
+        client,
+        symbol,
+        day,
+        history,
+    )
     if not isinstance(raw, Mapping):
         raise HistoricalBundleBuildError(f"{day} {symbol}: raw candidate is invalid")
     normalized = dict(raw)
     _validate_candidate_raw(normalized, day, symbol)
-    return normalized, cache_hit, reused_preflight
+    _write_json(path, normalized)
+    return normalized, False, reused_preflight
 
 
 def collect_manifest(
@@ -1036,6 +1067,12 @@ def collect_manifest(
         },
     }
     persist(interrupted=False)
+    if status_path is not None:
+        final_status = _load_json(status_path)
+        if isinstance(final_status, Mapping):
+            final_status = dict(final_status)
+            final_status["performance"] = result["performance"]
+            _write_json(status_path, final_status)
     return result
 
 
@@ -1109,6 +1146,7 @@ def _collect_manifest_dates(
                         failures.append(failure)
                         persist(interrupted=True)
                         raise
+                    fallback_failed = False
                     if fallback_client is not None:
                         try:
                             fallback_raw, _ = _load_or_collect_benchmark(
@@ -1146,15 +1184,29 @@ def _collect_manifest_dates(
                             OSError,
                             KeyError,
                         ) as fallback_exc:
+                            fallback_failed = True
                             failure = _failure_row(
                                 day, symbol, "benchmark_fallback", fallback_exc
                             )
                             failure["primary_error"] = str(exc)
+                            if (
+                                isinstance(fallback_exc, HistoricalProviderError)
+                                and fallback_exc.category == "permanent_permission"
+                            ):
+                                print(
+                                    "  Massive fallback disabled after permission "
+                                    "failure",
+                                    file=sys.stderr,
+                                    flush=True,
+                                )
+                                fallback_client = None
                     else:
                         failure = _failure_row(day, symbol, "benchmark", exc)
                     failures.append(failure)
-                    persist(interrupted=failure["retryable"])
-                    if failure["retryable"]:
+                    persist(
+                        interrupted=failure["retryable"] and not fallback_failed
+                    )
+                    if failure["retryable"] and not fallback_failed:
                         raise HistoricalProviderError(
                             failure["error"], category=failure["category"]
                         )
@@ -1225,6 +1277,7 @@ def _collect_manifest_dates(
                         failures.append(failure)
                         persist(interrupted=True)
                         raise
+                    fallback_failed = False
                     if fallback_client is not None:
                         try:
                             fallback_raw, _, _ = _load_or_collect_candidate(
@@ -1262,10 +1315,22 @@ def _collect_manifest_dates(
                             TypeError,
                             ValueError,
                         ) as fallback_exc:
+                            fallback_failed = True
                             failure = _failure_row(
                                 day, symbol, "candidate_fallback", fallback_exc
                             )
                             failure["primary_error"] = str(exc)
+                            if (
+                                isinstance(fallback_exc, HistoricalProviderError)
+                                and fallback_exc.category == "permanent_permission"
+                            ):
+                                print(
+                                    "  Massive fallback disabled after permission "
+                                    "failure",
+                                    file=sys.stderr,
+                                    flush=True,
+                                )
+                                fallback_client = None
                     else:
                         failure = _failure_row(day, symbol, "candidate", exc)
                     failures.append(failure)
@@ -1274,8 +1339,10 @@ def _collect_manifest_dates(
                         file=sys.stderr,
                         flush=True,
                     )
-                    persist(interrupted=failure["retryable"])
-                    if failure["retryable"]:
+                    persist(
+                        interrupted=failure["retryable"] and not fallback_failed
+                    )
+                    if failure["retryable"] and not fallback_failed:
                         raise HistoricalProviderError(
                             failure["error"], category=failure["category"]
                         )

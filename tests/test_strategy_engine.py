@@ -213,6 +213,16 @@ class EvaluationTests(unittest.TestCase):
         self.assertFalse(result.eligible)
         self.assertIn("first five-minute candle is not bullish", result.hard_rejects)
 
+    def test_zero_opening_volume_is_valid_input_but_fails_rvol_gate(self):
+        payload = qualifying_payload()
+        payload["candidate"]["opening_bar"]["volume"] = 0
+
+        result = evaluate_candidate(payload)
+
+        self.assertFalse(result.eligible)
+        self.assertEqual(result.opening_relative_volume, 0.0)
+        self.assertIn("opening relative volume is below 1.0", result.hard_rejects)
+
 
 if __name__ == "__main__":
     unittest.main()
