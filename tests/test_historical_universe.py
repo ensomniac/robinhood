@@ -23,7 +23,8 @@ def draft_manifest(count=12):
 
 class FreezeCandidateUniverseTests(unittest.TestCase):
     def test_skips_unresolvable_symbol_before_freeze_and_uses_ranked_buffer(self):
-        def probe(symbol):
+        def probe(symbol, day):
+            self.assertEqual(day, "2026-03-03")
             if symbol == "T02":
                 return {
                     "symbol": symbol,
@@ -55,7 +56,7 @@ class FreezeCandidateUniverseTests(unittest.TestCase):
         self.assertFalse(frozen["preflight"]["target_session_prices_observed"])
 
     def test_exhausted_pool_fails_instead_of_freezing_too_few_names(self):
-        def probe(symbol):
+        def probe(symbol, day):
             return {
                 "symbol": symbol,
                 "viable": symbol != "T02",
@@ -71,7 +72,7 @@ class FreezeCandidateUniverseTests(unittest.TestCase):
             freeze_candidate_universe(draft_manifest(count=10), probe)
 
     def test_provider_failure_stops_preflight_instead_of_skipping_symbol(self):
-        def probe(symbol):
+        def probe(symbol, day):
             raise IBKRRequestError("not connected", error_code=504)
 
         with self.assertRaisesRegex(IBKRRequestError, "not connected"):

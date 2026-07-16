@@ -1,3 +1,4 @@
+import copy
 import json
 import tempfile
 import unittest
@@ -6,10 +7,13 @@ from pathlib import Path
 
 from historical_learning import (
     HistoricalLearningError,
+    _features,
+    batch_acceptance,
     run_selected_dates,
     select_random_dates,
     validate_bundle,
 )
+from strategy_engine import evaluate_candidate, load_config
 from strategy_ledger import audit_ledger, read_records
 from trade_lifecycle import audit_lifecycle, load_archived_outcomes
 
@@ -160,7 +164,37 @@ def replay_bundle():
     }
 
 
+def replay_bundle_for_day(day):
+    bundle = copy.deepcopy(replay_bundle())
+    original = bundle["date"]
+    bundle["date"] = day
+    for candidate in bundle["candidates"]:
+        candidate["signal_id"] = candidate["signal_id"].replace(original, day)
+    return bundle
+
+
 class BundleTests(unittest.TestCase):
+    def test_engineering_acceptance_requires_scale_yield_and_integrity(self):
+        passing = batch_acceptance(20, 16)
+        too_small = batch_acceptance(10, 10)
+        substituted = batch_acceptance(20, 20, substitution_count=1)
+
+        self.assertTrue(passing["passed"])
+        self.assertFalse(too_small["passed"])
+        self.assertFalse(substituted["passed"])
+
+    def test_ledger_features_encode_no_upside_room_as_zero(self):
+        payload = evaluation_payload("TEST", 1)
+        payload["candidate"]["resistance_price"] = 49.0
+        evaluation = evaluate_candidate(payload, load_config())
+
+        features = _features(evaluation)
+
+        self.assertLess(evaluation.sizing.resistance_room_fraction, 0)
+        self.assertLess(evaluation.sizing.reward_risk, 0)
+        self.assertEqual(features["resistance_room_fraction"], 0.0)
+        self.assertEqual(features["reward_risk"], 0.0)
+
     def test_complete_bundle_validates(self):
         validate_bundle(replay_bundle(), today_et=date(2026, 7, 15))
 
@@ -240,6 +274,112 @@ class ReplayTests(unittest.TestCase):
         self.assertFalse(list(active.glob("*.md")))
         self.assertTrue(ledger_audit.valid)
         self.assertTrue(lifecycle_audit.valid)
+
+    def test_ready_only_replays_available_dates_and_persists_blockers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            active = root / "trades" / "active"
+            archive = root / "trades" / "archived"
+            ledger = root / "SIGNALS.jsonl"
+            data_root = root / "historical_data"
+            status_path = root / "historical_batches" / "batch.json"
+            active.mkdir(parents=True)
+            data_root.mkdir()
+            (data_root / "2025-06-02.json").write_text(
+                json.dumps(replay_bundle_for_day("2025-06-02")), encoding="utf-8"
+            )
+            status_path.parent.mkdir(parents=True)
+            status_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "mode": "historical_collection",
+                        "created_at": "2026-07-16T09:00:00-04:00",
+                        "blocked_dates": [
+                            {
+                                "date": "2025-06-03",
+                                "reason_code": "permanent_fidelity",
+                                "detail": "historical quote missing",
+                                "failures": [{"stage": "candidate"}],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            batch = run_selected_dates(
+                ["2025-06-02", "2025-06-03"],
+                data_root=data_root,
+                ledger_path=ledger,
+                active_root=active,
+                archive_root=archive,
+                seed=7,
+                ready_only=True,
+                status_path=status_path,
+            )
+            persisted = json.loads(status_path.read_text(encoding="utf-8"))
+
+            self.assertEqual(batch, persisted)
+            self.assertEqual(batch["completed_days"], 1)
+            self.assertEqual(batch["newly_replayed_days"], 1)
+            self.assertEqual(batch["replayed_dates"], ["2025-06-02"])
+            self.assertEqual(batch["substituted_dates"], [])
+            self.assertTrue(
+                all(
+                    path.startswith("trades/archived/2025_06_02/")
+                    for path in batch["results"][0]["archived_paths"]
+                )
+            )
+            self.assertEqual(
+                batch["blocked_dates"],
+                [
+                    {
+                        "date": "2025-06-03",
+                        "reason_code": "permanent_fidelity",
+                        "detail": "historical quote missing",
+                    }
+                ],
+            )
+            self.assertEqual(
+                batch["collection_summary"]["blocked_dates"][0]["failures"],
+                [{"stage": "candidate"}],
+            )
+            self.assertTrue((archive / "2025_06_02").is_dir())
+
+            resumed = run_selected_dates(
+                ["2025-06-02", "2025-06-03"],
+                data_root=data_root,
+                ledger_path=ledger,
+                active_root=active,
+                archive_root=archive,
+                seed=7,
+                ready_only=True,
+                status_path=status_path,
+            )
+
+        self.assertEqual(resumed["completed_days"], 1)
+        self.assertEqual(resumed["newly_replayed_days"], 0)
+        self.assertEqual(resumed["replayed_dates"], ["2025-06-02"])
+        self.assertEqual(resumed["already_replayed_dates"], ["2025-06-02"])
+        self.assertEqual(resumed["results"], [])
+
+    def test_strict_selected_dates_still_reject_missing_bundle(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data_root = root / "historical_data"
+            data_root.mkdir()
+
+            with self.assertRaisesRegex(
+                HistoricalLearningError, "do not have replay bundles"
+            ):
+                run_selected_dates(
+                    ["2025-06-02"],
+                    data_root=data_root,
+                    ledger_path=root / "SIGNALS.jsonl",
+                    active_root=root / "active",
+                    archive_root=root / "archive",
+                )
 
 
 if __name__ == "__main__":

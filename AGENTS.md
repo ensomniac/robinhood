@@ -718,22 +718,29 @@ When Ryan selects historical mode:
    candidates, complete regular-session non-interpolated minute bars, split
    adjustment, time-valid catalysts, the exact opening-volume lookback, and
    historical quote/depth snapshots sufficient for the normal execution gates.
-   Use `ibkr_historical.py` as the default market-data collector for every
+   Use `ibkr_historical.py` as the default primary market-data collector for every
    candidate. It must pull the per-symbol regular-session bars, 14-session
    opening-volume lookback, prior daily bars, and historical top-of-book bid/ask
    ticks from the logged-in local TWS session. Historical top-of-book sizes are
    the accepted depth evidence for this replay contract even though they are not
    a full depth ladder. The adapter has no broker-action surface and does not
    replace the separate point-in-time scanner-universe or catalyst evidence.
+   When the ignored `.env` has `MASSIVE_API_KEY`, the provider-neutral builder
+   may use adjusted Massive SIP aggregates and historical NBBO quotes only after
+   a permanent IBKR market-data fidelity failure. Never switch providers for a
+   disconnect, timeout, pacing failure, or other retryable outage. Reconnect
+   once by default, resume from cached raw files, and retain provider provenance
+   for every candidate and benchmark. Never interpolate a missing provider bar.
    Freeze the date first, then assemble a point-in-time ranked candidate pool
    with a buffer beyond the required ten names. Before freezing the final
    candidate universe, run `historical_universe.py` against that draft pool.
-   Its IBKR contract-resolution preflight is availability-only and must not
-   request or inspect target-session prices. It may skip a symbol-scoped
-   unresolvable contract such as error 200 and take the next ranked buffered
-   candidate. A connection, permission, pacing, or provider-wide error blocks
-   the batch and must never be converted into a symbol skip. Record every
-   pre-freeze skip in the frozen manifest. Once the final universe is frozen,
+   Its IBKR pre-session preflight is availability-only and must not request or
+   inspect target-session prices. It verifies a US stock contract, 14 positive
+   prior 9:30 five-minute volumes, and at least 15 prior daily sessions. It may
+   skip a symbol-scoped unresolvable or input-incomplete listing and take the next
+   ranked buffered candidate. A connection, permission, pacing, or provider-wide
+   error blocks the batch and must never be converted into a symbol skip. Record
+   every pre-freeze skip in the frozen manifest. Once the final universe is frozen,
    never replace a candidate after observing its market data; a later failure
    remains a fidelity blocker. A public scanner source does not also need to
    provide bars, quotes, or depth. For each frozen symbol, use the first 9:35-10:30
@@ -756,6 +763,11 @@ When Ryan selects historical mode:
    never copy the live balance into a historical bundle.
 4. Validate the bundle before creating context. Confirmation-phase bundles need
    a preregistration timestamp and manifest hash created before data collection.
+   Use `historical_learning.py run --selection ... --ready-only` for normal
+   batches: replay every validation-grade selected date, record missing/invalid
+   dates as blocked, and skip dates already present in the archive. Reruns must
+   be idempotent. Strict all-or-nothing replay remains available only when it is
+   explicitly useful. Neither policy may substitute another date.
 5. Run the frozen `strategy_engine.py` at each recorded trigger. Select at most
    one simulated trade: the earliest qualified trigger, breaking simultaneous
    ties by score, OR_RVOL, then symbol. Record later eligible triggers as
@@ -769,12 +781,18 @@ When Ryan selects historical mode:
    validated ledger batch, and archive every context with its terminal outcome.
    Run both lifecycle and signal-ledger audits, then update `TRADES.md` and
    commit/push the public artifacts as required below.
-8. After the requested batch completes, ask how many additional days Ryan wants
+8. Persist the atomic public batch status under `historical_batches/` before
+   replay and after each completed date. The historical engineering acceptance
+   gate is at least 16 validation-grade dates from 20 newly randomized dates,
+   zero substitutions, and zero cascade errors. This gate measures collection
+   reliability; it never relaxes data fidelity or strategy maturity rules.
+9. After the requested batch completes, ask how many additional days Ryan wants
    to simulate. Zero ends historical mode.
 
 See `HISTORICAL_LEARNING.md` for the bundle contract and CLI workflow. Raw replay
 bundles under `historical_data/` are local inputs and are Git-ignored; archived
-context and `SIGNALS.jsonl` are the durable public evidence.
+context, `SIGNALS.jsonl`, and privacy-safe `historical_batches/` statuses are the
+durable public evidence.
 
 ## Progress History Hook
 

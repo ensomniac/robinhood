@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import math
 import random
@@ -49,7 +50,9 @@ from trade_lifecycle import (
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_DATA_ROOT = PROJECT_ROOT / "historical_data"
+DEFAULT_BATCH_ROOT = PROJECT_ROOT / "historical_batches"
 BUNDLE_SCHEMA_VERSION = 1
+BATCH_STATUS_SCHEMA_VERSION = 1
 MINIMUM_CANDIDATES = 10
 REQUIRED_SOURCE_ATTESTATIONS = (
     "point_in_time",
@@ -63,6 +66,40 @@ REQUIRED_SOURCE_ATTESTATIONS = (
 
 class HistoricalLearningError(ValueError):
     """Raised when replay data or state cannot support a faithful simulation."""
+
+
+def batch_acceptance(
+    requested_days: int,
+    completed_days: int,
+    *,
+    substitution_count: int = 0,
+    cascade_error_count: int = 0,
+) -> dict[str, Any]:
+    """Return the fixed engineering gate for historical throughput quality."""
+    yield_fraction = completed_days / requested_days if requested_days else 0.0
+    checks = {
+        "minimum_20_random_dates": requested_days >= 20,
+        "minimum_80_percent_yield": yield_fraction >= 0.80,
+        "zero_substitutions": substitution_count == 0,
+        "zero_cascade_errors": cascade_error_count == 0,
+    }
+    return {
+        "target": {
+            "minimum_random_dates": 20,
+            "minimum_yield_fraction": 0.80,
+            "maximum_substitutions": 0,
+            "maximum_cascade_errors": 0,
+        },
+        "observed": {
+            "requested_days": requested_days,
+            "completed_days": completed_days,
+            "yield_fraction": yield_fraction,
+            "substitution_count": substitution_count,
+            "cascade_error_count": cascade_error_count,
+        },
+        "checks": checks,
+        "passed": all(checks.values()),
+    }
 
 
 @dataclass(frozen=True)
@@ -561,13 +598,19 @@ def replay_selected_trade(
 
 
 def _features(evaluation: EvaluationResult) -> dict[str, float]:
+    # The evaluator intentionally preserves negative raw room/reward values so
+    # the hard-reject explanation can distinguish resistance below entry. The
+    # public ledger feature schema is magnitude-only and requires nonnegative
+    # finite values; zero truthfully means there is no defensible upside room.
     return {
         "opening_relative_volume": evaluation.opening_relative_volume,
         "score": float(evaluation.score),
         "median_spread_bps": evaluation.quote_summary.median_spread_fraction * 10000,
         "stop_fraction": evaluation.sizing.stop_fraction,
-        "resistance_room_fraction": evaluation.sizing.resistance_room_fraction,
-        "reward_risk": evaluation.sizing.reward_risk,
+        "resistance_room_fraction": max(
+            0.0, evaluation.sizing.resistance_room_fraction
+        ),
+        "reward_risk": max(0.0, evaluation.sizing.reward_risk),
     }
 
 
@@ -1159,6 +1202,80 @@ def _bundles_by_date(data_root: Path) -> dict[str, Path]:
     return by_date
 
 
+def _selection_hash(dates: Sequence[str], seed: int | None) -> str:
+    payload = json.dumps(
+        {"seed": seed, "selected_dates": list(dates)},
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _write_batch_status(path: Path, value: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rendered = json.dumps(value, indent=2, sort_keys=True) + "\n"
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(rendered, encoding="utf-8")
+    temporary.replace(path)
+
+
+def _batch_status(
+    dates: Sequence[str],
+    *,
+    seed: int | None,
+    ready_dates: Sequence[str],
+    replayed_dates: Sequence[str],
+    newly_replayed_dates: Sequence[str],
+    already_replayed_dates: Sequence[str],
+    blocked: Mapping[str, Mapping[str, str]],
+    results: Sequence[ReplayDayResult],
+    created_at: str | None = None,
+    collection_summary: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    selected = list(dates)
+    replayed = list(replayed_dates)
+    newly_replayed = list(newly_replayed_dates)
+    already_replayed = list(already_replayed_dates)
+    blocked_rows = [
+        {"date": day, **dict(blocked[day])} for day in selected if day in blocked
+    ]
+    completed = len(replayed)
+    now = datetime.now().astimezone().isoformat()
+    public_results: list[dict[str, Any]] = []
+    for result in results:
+        payload = json.loads(json.dumps(asdict(result), sort_keys=True))
+        archive_directory = result.date.replace("-", "_")
+        payload["archived_paths"] = [
+            f"trades/archived/{archive_directory}/{Path(path).name}"
+            for path in result.archived_paths
+        ]
+        public_results.append(payload)
+    return {
+        "schema_version": BATCH_STATUS_SCHEMA_VERSION,
+        "batch_id": f"historical-{_selection_hash(selected, seed)[:16]}",
+        "selection_sha256": _selection_hash(selected, seed),
+        "seed": seed,
+        "created_at": created_at or now,
+        "updated_at": now,
+        "policy": "ready_only_no_substitution",
+        "requested_days": len(selected),
+        "completed_days": completed,
+        "newly_replayed_days": len(newly_replayed),
+        "yield_fraction": completed / len(selected),
+        "selected_dates": selected,
+        "ready_dates": list(ready_dates),
+        "replayed_dates": replayed,
+        "already_replayed_dates": already_replayed,
+        "blocked_dates": blocked_rows,
+        "substituted_dates": [],
+        "engineering_acceptance": batch_acceptance(
+            len(selected), completed, substitution_count=0, cascade_error_count=0
+        ),
+        "collection_summary": dict(collection_summary or {}),
+        "results": public_results,
+    }
+
+
 def run_selected_dates(
     dates: Sequence[str],
     *,
@@ -1167,6 +1284,8 @@ def run_selected_dates(
     active_root: Path = DEFAULT_ACTIVE_ROOT,
     archive_root: Path = DEFAULT_ARCHIVE_ROOT,
     seed: int | None = None,
+    ready_only: bool = False,
+    status_path: Path | None = None,
 ) -> dict[str, Any]:
     if not dates:
         raise HistoricalLearningError("at least one selected date is required")
@@ -1174,27 +1293,136 @@ def run_selected_dates(
         raise HistoricalLearningError("selected dates must be unique")
     by_date = _bundles_by_date(data_root)
     missing = [day for day in dates if day not in by_date]
-    if missing:
+    if missing and not ready_only:
         raise HistoricalLearningError(
             f"selected dates do not have replay bundles: {missing}"
         )
-    results = [
-        run_replay_bundle(
-            load_bundle(by_date[day]),
-            ledger_path=ledger_path,
-            active_root=active_root,
-            archive_root=archive_root,
-            seed=seed,
-        )
-        for day in dates
-    ]
-    return {
-        "seed": seed,
-        "requested_days": len(dates),
-        "completed_days": len(results),
-        "selected_dates": list(dates),
-        "results": [asdict(result) for result in results],
+    if not ready_only:
+        results = [
+            run_replay_bundle(
+                load_bundle(by_date[day]),
+                ledger_path=ledger_path,
+                active_root=active_root,
+                archive_root=archive_root,
+                seed=seed,
+            )
+            for day in dates
+        ]
+        return {
+            "seed": seed,
+            "requested_days": len(dates),
+            "completed_days": len(results),
+            "selected_dates": list(dates),
+            "results": [asdict(result) for result in results],
+        }
+
+    config = load_config()
+    ready: list[str] = []
+    already_replayed: list[str] = []
+    blocked: dict[str, dict[str, str]] = {
+        day: {
+            "reason_code": "missing_replay_bundle",
+            "detail": "No validation-grade replay bundle is available.",
+        }
+        for day in missing
     }
+    for day in dates:
+        if (archive_root / day.replace("-", "_")).exists():
+            already_replayed.append(day)
+            blocked.pop(day, None)
+            continue
+        path = by_date.get(day)
+        if path is None:
+            continue
+        try:
+            validate_bundle(load_bundle(path), config)
+        except (HistoricalLearningError, OSError, json.JSONDecodeError) as exc:
+            blocked[day] = {
+                "reason_code": "invalid_replay_bundle",
+                "detail": str(exc),
+            }
+            continue
+        ready.append(day)
+
+    created_at: str | None = None
+    collection_summary: Mapping[str, Any] | None = None
+    if status_path is not None and status_path.exists():
+        try:
+            previous = json.loads(status_path.read_text(encoding="utf-8"))
+            if isinstance(previous, Mapping):
+                previous_hash = previous.get("selection_sha256")
+                current_hash = _selection_hash(dates, seed)
+                if previous_hash not in (None, current_hash):
+                    raise HistoricalLearningError(
+                        f"batch status selection mismatch: {status_path}"
+                    )
+                if isinstance(previous.get("created_at"), str):
+                    created_at = str(previous["created_at"])
+                if previous.get("mode") == "historical_collection":
+                    collection_summary = json.loads(json.dumps(previous))
+                elif isinstance(previous.get("collection_summary"), Mapping):
+                    collection_summary = json.loads(
+                        json.dumps(previous["collection_summary"])
+                    )
+                for row in previous.get("blocked_dates", []):
+                    if not isinstance(row, Mapping):
+                        continue
+                    day = row.get("date")
+                    if day in blocked and isinstance(row.get("reason_code"), str):
+                        blocked[str(day)] = {
+                            "reason_code": str(row["reason_code"]),
+                            "detail": str(row.get("detail", "")),
+                        }
+        except json.JSONDecodeError as exc:
+            raise HistoricalLearningError(
+                f"cannot parse existing batch status {status_path}: {exc}"
+            ) from exc
+
+    results: list[ReplayDayResult] = []
+    replayed: list[str] = []
+
+    def persist() -> dict[str, Any]:
+        status = _batch_status(
+            dates,
+            seed=seed,
+            ready_dates=[day for day in ready if day not in replayed],
+            replayed_dates=[
+                day for day in dates if day in set(already_replayed).union(replayed)
+            ],
+            newly_replayed_dates=replayed,
+            already_replayed_dates=already_replayed,
+            blocked=blocked,
+            results=results,
+            created_at=created_at,
+            collection_summary=collection_summary,
+        )
+        if status_path is not None:
+            _write_batch_status(status_path, status)
+        return status
+
+    initial_status = persist()
+    created_at = str(initial_status["created_at"])
+    for day in ready:
+        try:
+            result = run_replay_bundle(
+                load_bundle(by_date[day]),
+                ledger_path=ledger_path,
+                active_root=active_root,
+                archive_root=archive_root,
+                config=config,
+                seed=seed,
+            )
+        except Exception as exc:
+            blocked[day] = {
+                "reason_code": "replay_failed",
+                "detail": str(exc),
+            }
+            persist()
+            raise
+        results.append(result)
+        replayed.append(day)
+        persist()
+    return persist()
 
 
 def run_batch(
@@ -1273,6 +1501,16 @@ def _build_parser() -> argparse.ArgumentParser:
         help="selection JSON emitted before point-in-time data collection",
     )
     run.add_argument("--seed", type=int, default=None)
+    run.add_argument(
+        "--ready-only",
+        action="store_true",
+        help="replay valid selected dates and report blocked dates without substitution",
+    )
+    run.add_argument(
+        "--status-output",
+        type=Path,
+        help="atomic machine-readable batch status (defaults under historical_batches with --ready-only)",
+    )
     interactive = subparsers.add_parser(
         "interactive", help="ask how many days to replay and whether to continue"
     )
@@ -1318,6 +1556,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                     active_root=args.active_root,
                     archive_root=args.archive_root,
                     seed=selection_seed,
+                    ready_only=args.ready_only,
+                    status_path=(
+                        args.status_output
+                        or DEFAULT_BATCH_ROOT
+                        / f"historical-{_selection_hash(selection['selected_dates'], selection_seed)[:16]}.json"
+                        if args.ready_only
+                        else args.status_output
+                    ),
                 )
             else:
                 result = run_batch(

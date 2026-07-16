@@ -195,7 +195,7 @@ orders:
 
 ```sh
 python3 historical_learning.py validate /path/to/YYYY-MM-DD.json
-python3 historical_learning.py run --selection selection.json
+python3 historical_learning.py run --selection selection.json --ready-only
 ```
 
 See [HISTORICAL_LEARNING.md](HISTORICAL_LEARNING.md) for the strict data-fidelity
@@ -211,7 +211,7 @@ collector for replay candidates through a locally logged-in Trader Workstation:
 
 ```sh
 python3 ibkr_historical.py check
-python3 ibkr_historical.py probe AAPL
+python3 ibkr_historical.py probe AAPL --date 2026-05-12
 python3 ibkr_historical.py candidate AAPL \
   --date 2026-05-12 \
   --evaluation-time 09:40:00 \
@@ -227,7 +227,8 @@ scanner-universe capture and point-in-time catalysts still require independent
 sources, but those sources are not expected to provide bars or quote/depth data.
 
 Before the final candidate universe is frozen, put a ranked buffer under
-`candidate_pool_by_date` and resolve it without observing target-session prices:
+`candidate_pool_by_date` and resolve its US-stock contract plus required prior
+opening/daily history without observing target-session prices:
 
 ```sh
 python3 historical_universe.py \
@@ -235,10 +236,10 @@ python3 historical_universe.py \
   --output historical_data/manifests/evidence-YYYY-MM-DD.json
 ```
 
-This quickly skips retired or unresolvable symbols from the draft pool while
-alternatives remain. Provider-wide permissions and connection failures still
-stop the batch, and no candidate may be replaced after the output universe is
-frozen.
+This quickly skips retired, unresolvable, or history-incomplete symbols from the
+draft pool while alternatives remain. Provider-wide permissions and connection
+failures still stop the batch, and no candidate may be replaced after the output
+universe is frozen.
 
 For a pre-frozen multi-day evidence manifest, the resumable bundle builder keeps
 successful raw responses under the ignored data directory and validates a full
@@ -251,7 +252,20 @@ python3 historical_bundle_builder.py \
 
 It reports market-data permissions, missing boundary ticks, and unresolved
 historical symbols as fidelity blockers instead of substituting data or changing
-the frozen candidate universe.
+the frozen candidate universe. It stops a disconnected request stream
+immediately, reconnects once by default, resumes from the raw cache, and writes
+an atomic public status under `historical_batches/`.
+
+IBKR remains primary. If the ignored `.env` contains `MASSIVE_API_KEY`, permanent
+IBKR bar/quote gaps can fall back to adjusted Massive SIP aggregates and
+historical NBBO quotes. Transport outages never switch providers. Candidate and
+benchmark provenance is retained in the final bundle, missing intervals are not
+interpolated, and the frozen symbol/date set never changes.
+
+`historical_learning.py run --ready-only` replays every valid date in the
+original selection, reports the rest as blocked, skips already archived dates,
+and never substitutes. The batch engineering gate is at least 80% validation-
+grade yield across 20 random dates with zero substitutions and cascade errors.
 
 In TWS, enable `API > Settings > Enable ActiveX and Socket Clients`, keep
 `Read-Only API` and `Allow connections from localhost only` enabled, and make

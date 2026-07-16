@@ -75,6 +75,12 @@ Status: implemented by `historical_learning.py` and documented in
 - Candidate/session context is created in `trades/active/` during replay, then all
   records are outcome-completed, archived, and atomically appended to the signal
   ledger as a validated batch. Historical mode never calls broker order tools.
+- Normal batches use ready-only replay: every valid date from the original
+  selection runs immediately, missing dates remain explicit blockers, archived
+  dates are idempotently skipped, and no substitute date is introduced.
+- Atomic public batch status tracks selected, ready, replayed, blocked, and
+  already completed dates. The engineering target is at least 80% validation-
+  grade yield across 20 random dates with zero substitutions and cascade errors.
 
 ### 5. Agentic Session Mode Selector
 
@@ -104,6 +110,12 @@ Status: implemented by `ibkr_historical.py` and documented in
   account identifier.
 - Fails with an actionable TWS startup/login/API-socket message when the local
   service is unavailable.
+- Classifies retryable transport/provider failures separately from permanent
+  fidelity gaps, aborts a disconnected request stream immediately, reconnects
+  once by default, and resumes from atomic per-provider caches.
+- An optional Massive SIP adapter supplies adjusted regular-session aggregates
+  and historical NBBO evidence only for permanent primary-provider gaps. It
+  retains field/provider provenance and never fills missing trade intervals.
 
 ### 9. Pre-Freeze Historical Symbol Viability
 
@@ -112,9 +124,11 @@ Status: implemented by `historical_universe.py` and the `probe` surface in
 
 - Historical discovery now produces a ranked draft pool with spare candidates
   before the final universe is frozen.
-- The preflight resolves IBKR stock contracts without requesting target-session
-  prices. A retired or unresolvable symbol can be skipped in favor of the next
-  ranked buffered name without using future performance to select the sample.
+- The preflight resolves IBKR stock contracts and verifies 14 positive prior
+  opening-volume sessions plus 15 prior daily sessions without requesting
+  target-session prices. A retired, unresolvable, or input-incomplete symbol can
+  be skipped in favor of the next ranked buffered name without using future
+  performance to select the sample.
 - Only symbol-scoped failures are skippable. Permissions, pacing, connection,
   and provider-wide failures still stop the batch instead of silently shrinking
   or distorting the universe.
@@ -147,8 +161,9 @@ data contracts, acceptance tests, and publishing behavior before implementation.
 
 ### 7. Valuable Data Cache
 
-Status: partially satisfied by the resumable per-candidate IBKR cache in
-`historical_bundle_builder.py`; a provider-neutral cache remains outstanding.
+Status: partially satisfied by resumable atomic IBKR and Massive namespaces in
+`historical_bundle_builder.py`; content addressing, lifecycle tooling, and
+cross-workflow cache policy remain outstanding.
 
 Build a content-addressed cache for expensive, slow, or rate-limited public and
 market-data inputs so future work can reuse verified evidence without confusing

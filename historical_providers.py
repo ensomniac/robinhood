@@ -1,0 +1,453 @@
+"""Provider-neutral historical market-data clients for replay collection."""
+
+from __future__ import annotations
+
+import os
+from collections import defaultdict
+from dataclasses import dataclass
+from datetime import datetime, time, timedelta, timezone
+from pathlib import Path
+from typing import Any, Mapping, Protocol, Sequence, runtime_checkable
+from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
+
+import requests
+from dotenv import dotenv_values
+
+
+EASTERN = ZoneInfo("America/New_York")
+UTC = timezone.utc
+DEFAULT_BASE_URL = "https://api.massive.com"
+
+
+class HistoricalProviderError(RuntimeError):
+    """A sanitized provider failure with an explicit retry classification."""
+
+    def __init__(self, message: str, *, category: str):
+        super().__init__(message)
+        self.category = category
+        self.retryable = category.startswith("retryable_")
+
+
+@runtime_checkable
+class HistoricalMarketDataClient(Protocol):
+    provider_name: str
+    cache_namespace: str
+
+    def fetch_bars(
+        self,
+        symbol: str,
+        start: str | datetime,
+        end: str | datetime,
+        *,
+        bar_size: str = "1 min",
+        what: str = "TRADES",
+        use_rth: bool = True,
+    ) -> list[dict[str, Any]]: ...
+
+    def fetch_bid_ask_ticks(
+        self,
+        symbol: str,
+        start: str | datetime,
+        end: str | datetime,
+        *,
+        use_rth: bool = True,
+    ) -> list[dict[str, Any]]: ...
+
+
+def _coerce_datetime(value: str | datetime) -> datetime:
+    if isinstance(value, datetime):
+        parsed = value
+    else:
+        parsed = datetime.fromisoformat(value)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=EASTERN)
+    return parsed.astimezone(UTC)
+
+
+@dataclass(frozen=True)
+class MassiveConfig:
+    api_key: str
+    base_url: str = DEFAULT_BASE_URL
+    timeout_seconds: float = 30.0
+
+    @classmethod
+    def optional_from_env(cls, path: Path) -> "MassiveConfig | None":
+        values: dict[str, Any] = {}
+        if path.exists():
+            values.update(dotenv_values(path, interpolate=False))
+        for key in (
+            "MASSIVE_API_KEY",
+            "MASSIVE_BASE_URL",
+            "MASSIVE_TIMEOUT_SECONDS",
+        ):
+            if key in os.environ:
+                values[key] = os.environ[key]
+        api_key = str(values.get("MASSIVE_API_KEY") or "").strip()
+        if not api_key:
+            return None
+        base_url = str(values.get("MASSIVE_BASE_URL") or DEFAULT_BASE_URL).rstrip("/")
+        parsed = urlparse(base_url)
+        if parsed.scheme != "https" or not parsed.netloc:
+            raise HistoricalProviderError(
+                "MASSIVE_BASE_URL must be an HTTPS origin",
+                category="local_configuration",
+            )
+        try:
+            timeout = float(values.get("MASSIVE_TIMEOUT_SECONDS") or 30.0)
+        except (TypeError, ValueError) as exc:
+            raise HistoricalProviderError(
+                "MASSIVE_TIMEOUT_SECONDS must be numeric",
+                category="local_configuration",
+            ) from exc
+        if timeout <= 0:
+            raise HistoricalProviderError(
+                "MASSIVE_TIMEOUT_SECONDS must be positive",
+                category="local_configuration",
+            )
+        return cls(api_key=api_key, base_url=base_url, timeout_seconds=timeout)
+
+    def public_dict(self) -> dict[str, Any]:
+        return {
+            "base_url": self.base_url,
+            "timeout_seconds": self.timeout_seconds,
+            "api_key_configured": bool(self.api_key),
+        }
+
+
+class MassiveHistoricalClient:
+    """Read-only Massive SIP adapter normalized to the replay client contract."""
+
+    provider_name = "Massive SIP REST API"
+    cache_namespace = "massive"
+
+    def __init__(
+        self,
+        config: MassiveConfig,
+        *,
+        session: requests.Session | None = None,
+    ):
+        self.config = config
+        self._session = session or requests.Session()
+        self._owns_session = session is None
+
+    def __enter__(self) -> "MassiveHistoricalClient":
+        return self
+
+    def __exit__(self, exc_type, exc, traceback_obj) -> None:
+        self.close()
+
+    def close(self) -> None:
+        if self._owns_session:
+            self._session.close()
+
+    def _request_pages(
+        self,
+        path: str,
+        *,
+        params: Mapping[str, Any],
+    ) -> list[dict[str, Any]]:
+        origin = urlparse(self.config.base_url).netloc
+        url = f"{self.config.base_url}{path}"
+        next_params: dict[str, Any] | None = dict(params)
+        rows: list[dict[str, Any]] = []
+        pages = 0
+        while url:
+            pages += 1
+            if pages > 500:
+                raise HistoricalProviderError(
+                    "Massive pagination exceeded 500 pages",
+                    category="permanent_fidelity",
+                )
+            request_params = dict(next_params or {})
+            request_params["apiKey"] = self.config.api_key
+            try:
+                response = self._session.get(
+                    url,
+                    params=request_params,
+                    timeout=self.config.timeout_seconds,
+                )
+            except (requests.Timeout, requests.ConnectionError) as exc:
+                raise HistoricalProviderError(
+                    "Massive request failed due to a transport error",
+                    category="retryable_transport",
+                ) from exc
+            except requests.RequestException as exc:
+                raise HistoricalProviderError(
+                    "Massive request failed before a response was received",
+                    category="retryable_provider",
+                ) from exc
+            if response.status_code == 429 or response.status_code >= 500:
+                raise HistoricalProviderError(
+                    f"Massive HTTP {response.status_code}",
+                    category="retryable_provider",
+                )
+            if response.status_code >= 400:
+                category = (
+                    "permanent_permission"
+                    if response.status_code in (401, 403)
+                    else "permanent_fidelity"
+                )
+                raise HistoricalProviderError(
+                    f"Massive HTTP {response.status_code}", category=category
+                )
+            try:
+                payload = response.json()
+            except ValueError as exc:
+                raise HistoricalProviderError(
+                    "Massive returned invalid JSON",
+                    category="retryable_provider",
+                ) from exc
+            if not isinstance(payload, Mapping):
+                raise HistoricalProviderError(
+                    "Massive response must be an object",
+                    category="permanent_fidelity",
+                )
+            status = str(payload.get("status", "")).upper()
+            if status not in ("OK", "DELAYED"):
+                raise HistoricalProviderError(
+                    f"Massive response status was {status or 'missing'}",
+                    category="permanent_fidelity",
+                )
+            page_rows = payload.get("results", [])
+            if not isinstance(page_rows, list):
+                raise HistoricalProviderError(
+                    "Massive results must be an array",
+                    category="permanent_fidelity",
+                )
+            rows.extend(dict(row) for row in page_rows if isinstance(row, Mapping))
+            next_url = payload.get("next_url")
+            if not next_url:
+                break
+            parsed_next = urlparse(str(next_url))
+            if parsed_next.scheme != "https" or parsed_next.netloc != origin:
+                raise HistoricalProviderError(
+                    "Massive returned an unsafe pagination URL",
+                    category="permanent_fidelity",
+                )
+            url = str(next_url)
+            next_params = None
+        return rows
+
+    def _minute_aggregates(
+        self, symbol: str, start: datetime, end: datetime
+    ) -> list[dict[str, Any]]:
+        start_et = start.astimezone(EASTERN)
+        end_et = end.astimezone(EASTERN)
+        inclusive_end = end_et
+        if end_et.time() == time(0, 0):
+            inclusive_end = end_et.replace(microsecond=0) - timedelta(microseconds=1)
+        path = (
+            f"/v2/aggs/ticker/{symbol.upper()}/range/1/minute/"
+            f"{start_et.date().isoformat()}/{inclusive_end.date().isoformat()}"
+        )
+        raw = self._request_pages(
+            path,
+            params={"adjusted": "true", "sort": "asc", "limit": 50000},
+        )
+        normalized: list[dict[str, Any]] = []
+        for row in raw:
+            try:
+                observed = datetime.fromtimestamp(float(row["t"]) / 1000, UTC)
+                epoch = int(observed.timestamp())
+                if not int(start.timestamp()) <= epoch < int(end.timestamp()):
+                    continue
+                eastern = observed.astimezone(EASTERN)
+                if not time(9, 30) <= eastern.time() < time(16, 0):
+                    continue
+                normalized.append(
+                    {
+                        "epoch": epoch,
+                        "time_et": eastern.isoformat(),
+                        "date_et": eastern.date().isoformat(),
+                        "open": float(row["o"]),
+                        "high": float(row["h"]),
+                        "low": float(row["l"]),
+                        "close": float(row["c"]),
+                        "volume": int(float(row["v"])),
+                        "count": int(row.get("n") or 0),
+                        "wap": float(row.get("vw") or 0),
+                        "interpolated": False,
+                    }
+                )
+            except (KeyError, TypeError, ValueError) as exc:
+                raise HistoricalProviderError(
+                    "Massive aggregate row is malformed",
+                    category="permanent_fidelity",
+                ) from exc
+        return sorted(normalized, key=lambda row: int(row["epoch"]))
+
+    @staticmethod
+    def _aggregate_rows(
+        rows: Sequence[Mapping[str, Any]], bar_size: str
+    ) -> list[dict[str, Any]]:
+        grouped: dict[tuple[Any, ...], list[Mapping[str, Any]]] = defaultdict(list)
+        for row in rows:
+            observed = datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(
+                EASTERN
+            )
+            if bar_size == "5 mins":
+                minute = observed.minute - observed.minute % 5
+                key = (observed.date(), observed.hour, minute)
+            elif bar_size == "1 day":
+                key = (observed.date(),)
+            else:
+                raise HistoricalProviderError(
+                    f"Massive does not support bar size {bar_size}",
+                    category="local_configuration",
+                )
+            grouped[key].append(row)
+        result: list[dict[str, Any]] = []
+        for values in grouped.values():
+            ordered = sorted(values, key=lambda row: int(row["epoch"]))
+            volume = sum(int(row["volume"]) for row in ordered)
+            weighted = sum(
+                float(row.get("wap") or 0) * int(row["volume"]) for row in ordered
+            )
+            first = ordered[0]
+            stamp = datetime.fromtimestamp(int(first["epoch"]), UTC).astimezone(EASTERN)
+            if bar_size == "5 mins":
+                stamp = stamp.replace(minute=stamp.minute - stamp.minute % 5, second=0)
+            else:
+                stamp = datetime.combine(stamp.date(), time(0), tzinfo=EASTERN)
+            result.append(
+                {
+                    "epoch": int(stamp.timestamp()),
+                    "time_et": stamp.isoformat(),
+                    "date_et": stamp.date().isoformat(),
+                    "open": float(first["open"]),
+                    "high": max(float(row["high"]) for row in ordered),
+                    "low": min(float(row["low"]) for row in ordered),
+                    "close": float(ordered[-1]["close"]),
+                    "volume": volume,
+                    "count": sum(int(row.get("count") or 0) for row in ordered),
+                    "wap": weighted / volume if volume else 0.0,
+                    "interpolated": False,
+                }
+            )
+        return sorted(result, key=lambda row: int(row["epoch"]))
+
+    def fetch_bars(
+        self,
+        symbol: str,
+        start: str | datetime,
+        end: str | datetime,
+        *,
+        bar_size: str = "1 min",
+        what: str = "TRADES",
+        use_rth: bool = True,
+    ) -> list[dict[str, Any]]:
+        if what.upper() != "TRADES" or not use_rth:
+            raise HistoricalProviderError(
+                "Massive replay adapter supports regular-hours TRADES only",
+                category="local_configuration",
+            )
+        start_utc = _coerce_datetime(start)
+        end_utc = _coerce_datetime(end)
+        if end_utc <= start_utc:
+            raise HistoricalProviderError(
+                "end must be after start", category="local_configuration"
+            )
+        rows = self._minute_aggregates(symbol, start_utc, end_utc)
+        if bar_size == "1 min":
+            return rows
+        if bar_size in ("5 mins", "1 day"):
+            return self._aggregate_rows(rows, bar_size)
+        raise HistoricalProviderError(
+            f"Massive does not support bar size {bar_size}",
+            category="local_configuration",
+        )
+
+    def fetch_bid_ask_ticks(
+        self,
+        symbol: str,
+        start: str | datetime,
+        end: str | datetime,
+        *,
+        use_rth: bool = True,
+    ) -> list[dict[str, Any]]:
+        if not use_rth:
+            raise HistoricalProviderError(
+                "Massive replay adapter supports regular-hours quotes only",
+                category="local_configuration",
+            )
+        start_utc = _coerce_datetime(start)
+        end_utc = _coerce_datetime(end)
+        adjustment_factor = self._split_adjustment_factor(
+            symbol, start_utc.astimezone(EASTERN).date().isoformat()
+        )
+        raw = self._request_pages(
+            f"/v3/quotes/{symbol.upper()}",
+            params={
+                "timestamp.gte": int(start_utc.timestamp() * 1_000_000_000),
+                "timestamp.lte": int(end_utc.timestamp() * 1_000_000_000),
+                "sort": "timestamp",
+                "order": "asc",
+                "limit": 50000,
+            },
+        )
+        ticks: list[dict[str, Any]] = []
+        for row in raw:
+            try:
+                nanoseconds = int(row["sip_timestamp"])
+                observed = datetime.fromtimestamp(nanoseconds / 1_000_000_000, UTC)
+                if not start_utc <= observed <= end_utc:
+                    continue
+                eastern = observed.astimezone(EASTERN)
+                if not time(9, 30) <= eastern.time() < time(16, 0):
+                    continue
+                bid = float(row.get("bid_price") or 0) * adjustment_factor
+                ask = float(row.get("ask_price") or 0) * adjustment_factor
+                if bid <= 0 or ask <= 0:
+                    continue
+                ticks.append(
+                    {
+                        "epoch": int(observed.timestamp()),
+                        "time_et": eastern.isoformat(),
+                        "bid": bid,
+                        "ask": ask,
+                        "bid_size": int(
+                            float(row.get("bid_size") or 0) / adjustment_factor
+                        ),
+                        "ask_size": int(
+                            float(row.get("ask_size") or 0) / adjustment_factor
+                        ),
+                        "split_adjustment_factor": adjustment_factor,
+                        "participant_timestamp_ns": int(
+                            row.get("participant_timestamp") or nanoseconds
+                        ),
+                        "sip_timestamp_ns": nanoseconds,
+                    }
+                )
+            except (KeyError, TypeError, ValueError) as exc:
+                raise HistoricalProviderError(
+                    "Massive quote row is malformed",
+                    category="permanent_fidelity",
+                ) from exc
+        return sorted(ticks, key=lambda row: int(row["sip_timestamp_ns"]))
+
+    def _split_adjustment_factor(self, symbol: str, historical_date: str) -> float:
+        rows = self._request_pages(
+            "/stocks/v1/splits",
+            params={
+                "ticker": symbol.upper(),
+                "execution_date.gt": historical_date,
+                "sort": "execution_date.asc",
+                "limit": 1,
+            },
+        )
+        if not rows:
+            return 1.0
+        try:
+            factor = float(rows[0]["historical_adjustment_factor"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise HistoricalProviderError(
+                "Massive split record lacks a valid historical adjustment factor",
+                category="permanent_fidelity",
+            ) from exc
+        if factor <= 0:
+            raise HistoricalProviderError(
+                "Massive split adjustment factor must be positive",
+                category="permanent_fidelity",
+            )
+        return factor

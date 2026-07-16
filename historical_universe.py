@@ -1,10 +1,10 @@
-"""Freeze a replay universe only after availability-only IBKR symbol preflight.
+"""Freeze a replay universe only after availability-only IBKR preflight.
 
 The draft manifest contains a ranked buffer under ``candidate_pool_by_date``.
 This tool resolves symbols in rank order and freezes the first required viable
-names without requesting target-session price data. Retired or unresolvable
-symbols may be skipped before the universe is frozen; provider-wide failures
-still stop the batch.
+names without requesting target-session price data. Retired, unresolvable, or
+pre-session-history-incomplete symbols may be skipped before the universe is
+frozen; provider-wide failures still stop the batch.
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ from ibkr_historical import (
     IBKRConfig,
     IBKRHistoricalClient,
     IBKRHistoricalError,
-    probe_historical_symbol,
+    probe_historical_candidate,
 )
 
 
@@ -33,7 +33,7 @@ class HistoricalUniverseError(RuntimeError):
     """Raised when a draft pool cannot become a valid frozen universe."""
 
 
-Probe = Callable[[str], Mapping[str, Any]]
+Probe = Callable[[str, str], Mapping[str, Any]]
 
 
 def _canonical_hash(value: Mapping[str, Any]) -> str:
@@ -100,7 +100,9 @@ def freeze_candidate_universe(
         try:
             date.fromisoformat(day)
         except ValueError as exc:
-            raise HistoricalUniverseError(f"invalid candidate-pool date: {day}") from exc
+            raise HistoricalUniverseError(
+                f"invalid candidate-pool date: {day}"
+            ) from exc
         if not isinstance(raw_pool, list) or len(raw_pool) < required:
             size = len(raw_pool) if isinstance(raw_pool, list) else 0
             raise HistoricalUniverseError(
@@ -120,7 +122,7 @@ def freeze_candidate_universe(
                 )
             seen.add(symbol)
             last_examined = index
-            result = probe(symbol)
+            result = probe(symbol, day)
             if str(result.get("symbol", "")).upper() != symbol:
                 raise HistoricalUniverseError(
                     f"{day} {symbol} preflight returned a mismatched symbol"
@@ -154,7 +156,9 @@ def freeze_candidate_universe(
             )
         unused = [
             _candidate_symbol(value, day=day, rank=index + 1)
-            for index, value in enumerate(raw_pool[last_examined + 1 :], last_examined + 1)
+            for index, value in enumerate(
+                raw_pool[last_examined + 1 :], last_examined + 1
+            )
         ]
         candidates_by_date[day] = accepted
         date_reports[day] = {
@@ -172,7 +176,7 @@ def freeze_candidate_universe(
     output["preflight"] = {
         "schema_version": 1,
         "performed_at": performed_at or datetime.now(UTC).isoformat(),
-        "provider": "Interactive Brokers TWS API contract resolution",
+        "provider": "Interactive Brokers TWS API pre-session history",
         "minimum_candidates": required,
         "availability_only": True,
         "target_session_prices_observed": False,
@@ -211,7 +215,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         with IBKRHistoricalClient(config) as client:
             frozen = freeze_candidate_universe(
                 draft,
-                lambda symbol: probe_historical_symbol(client, symbol),
+                lambda symbol, day: probe_historical_candidate(client, symbol, day),
                 minimum_candidates=args.minimum_candidates,
             )
         _write_json(frozen, args.output)

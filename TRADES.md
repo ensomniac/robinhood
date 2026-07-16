@@ -42,6 +42,8 @@ automated trading experiment.
 | Date (ET) | Time (ET) | Symbol | Version / Mode | Decision / Action | Setup | Entry | Exit / Stop / Milestone | Net Result | Net R | Account Balance | Context |
 | --- | --- | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | --- |
 | 2026-07-15 | 17:20 | - | Initial / setup | Ledger created | Project setup | - | - | - | - | TBD | - |
+| 2026-03-12 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-03-12-session`](trades/archived/2026_03_12/2026-03-12-session.md) |
+| 2026-04-23 | 10:30 replay | - | `2026-07-15-orb-v3` / historical shadow | No trade; 0/10 candidates eligible | Five-minute ORB | - | - | $0 simulated | - | Synthetic only | [`2026-04-23-session`](trades/archived/2026_04_23/2026-04-23-session.md) |
 
 ## Open Trades
 
@@ -50,3 +52,10 @@ No open trades are recorded in this ledger yet.
 ## Closed Trades
 
 No closed trades are recorded in this ledger yet.
+
+## Historical Replay Coverage
+
+The seed-frozen ten-date batch completed two validation-grade no-trade sessions
+and retained eight provider-fidelity blockers without substituting dates or
+symbols. See [`historical_batches/2026-07-15-ten-days.json`](historical_batches/2026-07-15-ten-days.json)
+for the machine-readable collection and replay status.

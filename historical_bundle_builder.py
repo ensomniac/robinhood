@@ -1,10 +1,10 @@
 """Collect and assemble validation-grade historical replay bundles.
 
 The input manifest freezes dates, symbols, scanner ranking, and time-valid
-catalyst evidence before any IBKR market data is requested.  This module uses
-only the read-only :mod:`ibkr_historical` facade, caches raw provider responses,
-derives strategy inputs without future bars, and validates a complete bundle
-before writing it under ``historical_data/``.
+catalyst evidence before target-session market data is requested. This module
+uses provider-neutral read-only clients with IBKR as primary and an optional
+Massive SIP fallback, caches raw responses, derives inputs without future bars,
+and validates a complete bundle before writing it under ``historical_data/``.
 """
 
 from __future__ import annotations
@@ -19,13 +19,25 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
-from historical_learning import HistoricalLearningError, validate_bundle
+from historical_learning import (
+    HistoricalLearningError,
+    batch_acceptance,
+    validate_bundle,
+)
 from ibkr_historical import (
     DEFAULT_ENV_PATH,
     IBKRConfig,
     IBKRHistoricalClient,
     IBKRHistoricalError,
     collect_candidate_history,
+    historical_error_category,
+    is_retryable_historical_error,
+)
+from historical_providers import (
+    HistoricalMarketDataClient,
+    HistoricalProviderError,
+    MassiveConfig,
+    MassiveHistoricalClient,
 )
 from strategy_engine import StrategyInputError, evaluate_candidate, load_config
 
@@ -182,7 +194,9 @@ def _market_metrics(
 def _quote_payload(raw: Mapping[str, Any]) -> list[dict[str, Any]]:
     snapshots = raw.get("quote_snapshots")
     if not isinstance(snapshots, list) or len(snapshots) != 3:
-        raise HistoricalBundleBuildError("candidate needs three IBKR quote snapshots")
+        raise HistoricalBundleBuildError(
+            "candidate needs three historical quote snapshots"
+        )
     result: list[dict[str, Any]] = []
     for row in snapshots:
         result.append(
@@ -259,7 +273,7 @@ def _build_candidate(
     request = raw.get("request", {})
     if request.get("symbol") != symbol or request.get("date") != day:
         raise HistoricalBundleBuildError(
-            f"{day} {symbol}: cached IBKR request mismatch"
+            f"{day} {symbol}: cached provider request mismatch"
         )
     if request.get("evaluation_time_et") != evaluation_time:
         raise HistoricalBundleBuildError(
@@ -390,6 +404,7 @@ def _build_candidate(
             "candidate_vwap": vwap,
             "benchmarks": benchmark_metrics,
         },
+        "data_provenance": dict(raw.get("provenance", {})),
         "evaluation_payload": payload,
         "bars": _replay_bars(raw),
     }
@@ -403,6 +418,7 @@ def build_bundle(
     *,
     synthetic_equity: float,
     scanner: Mapping[str, Any],
+    benchmark_providers: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     if len(evidence_rows) < 10:
         raise HistoricalBundleBuildError(
@@ -412,6 +428,11 @@ def build_bundle(
     for evidence in evidence_rows:
         symbol = str(evidence["symbol"])
         raw = raw_by_symbol[symbol]
+        provider = raw.get("provider")
+        if not isinstance(provider, str) or not provider.strip():
+            raise HistoricalBundleBuildError(
+                f"{day} {symbol}: market-data provider provenance is missing"
+            )
         opening_volume = float(raw["opening_bar"]["volume"])
         prior = [float(value) for value in raw["prior_opening_volumes"]]
         if len(prior) != 14 or any(value <= 0 for value in prior):
@@ -433,6 +454,15 @@ def build_bundle(
         )
         for evidence in evidence_rows
     ]
+    candidate_providers = {
+        str(evidence["symbol"]): str(
+            raw_by_symbol[str(evidence["symbol"])].get("provider", "unknown")
+        )
+        for evidence in evidence_rows
+    }
+    all_market_providers = set(candidate_providers.values())
+    all_market_providers.update((benchmark_providers or {}).values())
+    market_provider_text = " + ".join(sorted(all_market_providers))
     return {
         "schema_version": 1,
         "date": day,
@@ -441,7 +471,13 @@ def build_bundle(
         "simulation_account_equity": synthetic_equity,
         "simulation_buying_power": synthetic_equity,
         "source": {
-            "provider": "Robinhood earnings calendar + SEC/issuer catalysts + Interactive Brokers TWS API",
+            "provider": (
+                "Robinhood earnings calendar + SEC/issuer catalysts + "
+                f"{market_provider_text}"
+            ),
+            "market_data_providers": sorted(all_market_providers),
+            "candidate_provider_by_symbol": candidate_providers,
+            "benchmark_provider_by_symbol": dict(benchmark_providers or {}),
             "captured_at": datetime.now(UTC).isoformat(),
             "point_in_time": True,
             "regular_hours_only": True,
@@ -471,20 +507,221 @@ def _write_json(path: Path, value: Any) -> None:
     temporary.replace(path)
 
 
+def _failure_row(
+    day: str,
+    symbol: str,
+    stage: str,
+    exc: BaseException,
+) -> dict[str, Any]:
+    category = (
+        exc.category
+        if isinstance(exc, HistoricalProviderError)
+        else historical_error_category(exc)
+    )
+    if isinstance(exc, HistoricalBundleBuildError) and stage in (
+        "benchmark",
+        "benchmark_fallback",
+        "candidate",
+        "candidate_fallback",
+    ):
+        category = "permanent_fidelity"
+    return {
+        "date": day,
+        "symbol": symbol,
+        "stage": stage,
+        "category": category,
+        "retryable": category.startswith("retryable_"),
+        "error_type": type(exc).__name__,
+        "error": str(exc),
+    }
+
+
+def _collection_status(
+    manifest_path: Path,
+    selection_seed: int | None,
+    selection_integrity: Mapping[str, Any],
+    selected_dates: Sequence[str],
+    built_dates: Sequence[str],
+    failures: Sequence[Mapping[str, Any]],
+    recoveries: Sequence[Mapping[str, Any]],
+    *,
+    interrupted: bool,
+    created_at: str | None,
+) -> dict[str, Any]:
+    now = datetime.now(UTC).isoformat()
+    blocked: list[dict[str, Any]] = []
+    for day in selected_dates:
+        if day in built_dates:
+            continue
+        day_failures = [dict(row) for row in failures if row.get("date") == day]
+        if not day_failures:
+            continue
+        first = next(
+            (row for row in reversed(day_failures) if not row.get("retryable")),
+            day_failures[-1],
+        )
+        blocked.append(
+            {
+                "date": day,
+                "reason_code": str(first["category"]),
+                "detail": str(first["error"]),
+                "failures": day_failures,
+            }
+        )
+    built = list(dict.fromkeys(built_dates))
+    return {
+        "schema_version": 1,
+        "mode": "historical_collection",
+        "manifest": manifest_path.name,
+        "seed": selection_seed,
+        "selection_integrity": dict(selection_integrity),
+        "created_at": created_at or now,
+        "updated_at": now,
+        "requested_days": len(selected_dates),
+        "ready_dates": built,
+        "blocked_dates": blocked,
+        "fallback_recoveries": [dict(row) for row in recoveries],
+        "pending_dates": [
+            day
+            for day in selected_dates
+            if day not in built and not any(row["date"] == day for row in blocked)
+        ],
+        "substituted_dates": [],
+        "cascade_error_count": 0,
+        "engineering_acceptance": batch_acceptance(
+            len(selected_dates),
+            len(built),
+            substitution_count=0,
+            cascade_error_count=0,
+        ),
+        "interrupted": interrupted,
+        "valid": len(built) == len(selected_dates),
+    }
+
+
+def _provider_name(client: HistoricalMarketDataClient) -> str:
+    return str(getattr(client, "provider_name", type(client).__name__))
+
+
+def _selection_metadata(
+    manifest_path: Path,
+    manifest: Mapping[str, Any],
+    candidates_by_date: Mapping[str, Any],
+) -> tuple[list[str], int | None, dict[str, Any]]:
+    candidate_dates = [str(day) for day in candidates_by_date]
+    copied_seed = manifest.get("selection_seed")
+    if copied_seed is not None and not isinstance(copied_seed, int):
+        raise HistoricalBundleBuildError("selection_seed must be an integer")
+    selection_file = manifest.get("selection_file")
+    if not isinstance(selection_file, str) or not selection_file.strip():
+        return (
+            candidate_dates,
+            copied_seed,
+            {
+                "source": "evidence_manifest",
+                "date_set_matches": True,
+                "copied_seed_matches": True,
+            },
+        )
+    selection_path = Path(selection_file)
+    if not selection_path.is_absolute():
+        project_path = PROJECT_ROOT / selection_path
+        local_path = manifest_path.parent / selection_path
+        selection_path = project_path if project_path.exists() else local_path
+    selection = _load_json(selection_path)
+    if not isinstance(selection, Mapping):
+        raise HistoricalBundleBuildError("selection manifest must be an object")
+    seed = selection.get("seed")
+    dates = selection.get("selected_dates")
+    if (
+        not isinstance(seed, int)
+        or not isinstance(dates, list)
+        or not all(isinstance(day, str) for day in dates)
+    ):
+        raise HistoricalBundleBuildError(
+            "selection manifest needs an integer seed and selected_dates array"
+        )
+    if len(dates) != len(set(dates)):
+        raise HistoricalBundleBuildError("selection manifest dates must be unique")
+    if set(dates) != set(candidate_dates):
+        raise HistoricalBundleBuildError(
+            "evidence candidate dates do not match the linked selection manifest"
+        )
+    return (
+        list(dates),
+        seed,
+        {
+            "source": selection_path.name,
+            "date_set_matches": True,
+            "copied_seed_matches": copied_seed in (None, seed),
+            "copied_seed": copied_seed,
+            "authoritative_seed": seed,
+        },
+    )
+
+
 def _benchmark_history(
-    client: IBKRHistoricalClient, day: str, symbol: str
+    client: HistoricalMarketDataClient, day: str, symbol: str
 ) -> dict[str, Any]:
     start = datetime.combine(date.fromisoformat(day), time(9, 30), tzinfo=EASTERN)
     end = datetime.combine(date.fromisoformat(day), time(16, 0), tzinfo=EASTERN)
     bars = client.fetch_bars(symbol, start, end, bar_size="1 min", what="TRADES")
     _ordered_session_bars(bars)
     return {
-        "provider": "Interactive Brokers TWS API",
+        "provider": _provider_name(client),
         "captured_at": datetime.now(UTC).isoformat(),
         "symbol": symbol,
         "date": day,
         "session_bars": bars,
     }
+
+
+def _validate_candidate_raw(raw: Mapping[str, Any], day: str, symbol: str) -> None:
+    request = raw.get("request")
+    if not isinstance(request, Mapping):
+        raise HistoricalBundleBuildError(f"{day} {symbol}: cached request is missing")
+    if request.get("symbol") != symbol or request.get("date") != day:
+        raise HistoricalBundleBuildError(
+            f"{day} {symbol}: cached provider request mismatch"
+        )
+    evaluation_time, _, _ = determine_evaluation(raw["session_bars"])
+    if request.get("evaluation_time_et") != evaluation_time:
+        raise HistoricalBundleBuildError(f"{day} {symbol}: cached evaluation mismatch")
+    prior = raw.get("prior_opening_volumes")
+    if not isinstance(prior, list) or len(prior) != 14:
+        raise HistoricalBundleBuildError(
+            f"{day} {symbol}: opening-volume lookback needs 14 sessions"
+        )
+    if any(float(value) <= 0 for value in prior):
+        raise HistoricalBundleBuildError(
+            f"{day} {symbol}: opening-volume lookback contains nonpositive volume"
+        )
+    daily = raw.get("daily_bars")
+    if not isinstance(daily, list) or len(daily) < 15:
+        raise HistoricalBundleBuildError(
+            f"{day} {symbol}: daily history needs at least 15 sessions"
+        )
+    _quote_payload(raw)
+
+
+def _collect_candidate_raw(
+    client: HistoricalMarketDataClient,
+    symbol: str,
+    day: str,
+) -> dict[str, Any]:
+    start = datetime.combine(date.fromisoformat(day), time(9, 30), tzinfo=EASTERN)
+    end = datetime.combine(date.fromisoformat(day), time(16, 0), tzinfo=EASTERN)
+    preview = client.fetch_bars(symbol, start, end, bar_size="1 min", what="TRADES")
+    evaluation_time, _, _ = determine_evaluation(preview)
+    raw = collect_candidate_history(
+        client,
+        symbol,
+        day,
+        evaluation_time,
+        session_bars=preview,
+    )
+    _validate_candidate_raw(raw, day, symbol)
+    return raw
 
 
 def collect_manifest(
@@ -493,6 +730,8 @@ def collect_manifest(
     data_root: Path = DEFAULT_DATA_ROOT,
     env_file: Path = DEFAULT_ENV_PATH,
     synthetic_equity: float = 25_000.0,
+    status_path: Path | None = None,
+    transport_retries: int = 1,
 ) -> dict[str, Any]:
     manifest = _load_json(manifest_path)
     if not isinstance(manifest, Mapping):
@@ -504,97 +743,332 @@ def collect_manifest(
             "manifest needs scanner and candidates_by_date objects"
         )
     _number(synthetic_equity, "synthetic_equity", positive=True)
+    if transport_retries < 0:
+        raise HistoricalBundleBuildError("transport_retries cannot be negative")
     raw_root = data_root / "ibkr"
+    fallback_root = data_root / "massive"
     built: list[str] = []
-    failures: list[dict[str, str]] = []
+    failures: list[dict[str, Any]] = []
+    recoveries: list[dict[str, Any]] = []
+    selected_dates, selection_seed, selection_integrity = _selection_metadata(
+        manifest_path, manifest, candidates_by_date
+    )
+    created_at: str | None = None
+    if status_path is not None and status_path.exists():
+        previous = _load_json(status_path)
+        if isinstance(previous, Mapping) and isinstance(
+            previous.get("created_at"), str
+        ):
+            created_at = str(previous["created_at"])
+
+    def persist(*, interrupted: bool) -> None:
+        nonlocal created_at
+        if status_path is None:
+            return
+        status = _collection_status(
+            manifest_path,
+            selection_seed,
+            selection_integrity,
+            selected_dates,
+            built,
+            failures,
+            recoveries,
+            interrupted=interrupted,
+            created_at=created_at,
+        )
+        _write_json(status_path, status)
+        created_at = str(status["created_at"])
+
+    persist(interrupted=False)
     config = IBKRConfig.from_env(env_file)
-    with IBKRHistoricalClient(config) as client:
-        for day, values in candidates_by_date.items():
-            if not isinstance(day, str) or not isinstance(values, list):
-                raise HistoricalBundleBuildError("candidate dates must map to arrays")
-            print(f"collecting {day}", file=sys.stderr, flush=True)
-            benchmark_rows: dict[str, Sequence[Mapping[str, Any]]] = {}
-            for symbol in BENCHMARKS:
-                path = raw_root / f"{day}-{symbol}-benchmark.json"
-                try:
-                    raw = (
-                        _load_json(path)
-                        if path.exists()
-                        else _benchmark_history(client, day, symbol)
-                    )
-                    if not path.exists():
-                        _write_json(path, raw)
-                    benchmark_rows[symbol] = raw["session_bars"]
-                except (
-                    HistoricalBundleBuildError,
-                    IBKRHistoricalError,
-                    OSError,
-                    KeyError,
-                ) as exc:
-                    failures.append({"date": day, "symbol": symbol, "error": str(exc)})
-            raw_by_symbol: dict[str, Mapping[str, Any]] = {}
-            for evidence in values:
-                if not isinstance(evidence, Mapping) or not isinstance(
-                    evidence.get("symbol"), str
-                ):
-                    raise HistoricalBundleBuildError(
-                        f"{day}: malformed candidate evidence"
-                    )
-                symbol = str(evidence["symbol"])
-                path = raw_root / f"{day}-{symbol}.json"
-                try:
-                    if path.exists():
-                        raw = _load_json(path)
-                    else:
-                        start = datetime.combine(
-                            date.fromisoformat(day), time(9, 30), tzinfo=EASTERN
-                        )
-                        end = datetime.combine(
-                            date.fromisoformat(day), time(16, 0), tzinfo=EASTERN
-                        )
-                        preview = client.fetch_bars(
-                            symbol, start, end, bar_size="1 min", what="TRADES"
-                        )
-                        evaluation_time, _, _ = determine_evaluation(preview)
-                        raw = collect_candidate_history(
-                            client, symbol, day, evaluation_time
-                        )
-                        _write_json(path, raw)
-                    raw_by_symbol[symbol] = raw
-                    print(f"  {symbol} ready", file=sys.stderr, flush=True)
-                except (
-                    HistoricalBundleBuildError,
-                    IBKRHistoricalError,
-                    OSError,
-                    KeyError,
-                ) as exc:
-                    failures.append({"date": day, "symbol": symbol, "error": str(exc)})
-                    print(f"  {symbol} blocked: {exc}", file=sys.stderr, flush=True)
-            if len(raw_by_symbol) != len(values) or len(benchmark_rows) != len(
-                BENCHMARKS
-            ):
-                continue
+    massive_config = MassiveConfig.optional_from_env(env_file)
+    fallback_client = (
+        MassiveHistoricalClient(massive_config) if massive_config is not None else None
+    )
+    try:
+        attempt = 0
+        while True:
             try:
-                bundle = build_bundle(
-                    day,
-                    values,
-                    raw_by_symbol,
-                    benchmark_rows,
-                    synthetic_equity=synthetic_equity,
-                    scanner=scanner,
+                with IBKRHistoricalClient(config) as client:
+                    _collect_manifest_dates(
+                        client,
+                        fallback_client,
+                        candidates_by_date,
+                        scanner,
+                        data_root=data_root,
+                        raw_root=raw_root,
+                        fallback_root=fallback_root,
+                        synthetic_equity=synthetic_equity,
+                        built=built,
+                        failures=failures,
+                        recoveries=recoveries,
+                        persist=persist,
+                    )
+                break
+            except (IBKRHistoricalError, HistoricalProviderError) as exc:
+                retryable = (
+                    is_retryable_historical_error(exc)
+                    if isinstance(exc, IBKRHistoricalError)
+                    else exc.retryable
                 )
-                validate_bundle(bundle)
-                _write_json(data_root / f"{day}.json", bundle)
-                built.append(day)
+                if retryable:
+                    persist(interrupted=True)
+                if not retryable or attempt >= transport_retries:
+                    raise
+                attempt += 1
+                print(
+                    f"historical provider interrupted; reconnecting "
+                    f"({attempt}/{transport_retries})",
+                    file=sys.stderr,
+                    flush=True,
+                )
+    finally:
+        if fallback_client is not None:
+            fallback_client.close()
+    result = {
+        "built_dates": built,
+        "blocked_dates": [day for day in selected_dates if day not in built],
+        "failures": failures,
+        "fallback_recoveries": recoveries,
+        "valid": len(built) == len(selected_dates),
+    }
+    persist(interrupted=False)
+    return result
+
+
+def _collect_manifest_dates(
+    client: IBKRHistoricalClient,
+    fallback_client: MassiveHistoricalClient | None,
+    candidates_by_date: Mapping[str, Any],
+    scanner: Mapping[str, Any],
+    *,
+    data_root: Path,
+    raw_root: Path,
+    fallback_root: Path,
+    synthetic_equity: float,
+    built: list[str],
+    failures: list[dict[str, Any]],
+    recoveries: list[dict[str, Any]],
+    persist: Any,
+) -> None:
+    for day, values in candidates_by_date.items():
+        if not isinstance(day, str) or not isinstance(values, list):
+            raise HistoricalBundleBuildError("candidate dates must map to arrays")
+        print(f"collecting {day}", file=sys.stderr, flush=True)
+        bundle_path = data_root / f"{day}.json"
+        if bundle_path.exists():
+            try:
+                validate_bundle(_load_json(bundle_path))
+                if day not in built:
+                    built.append(day)
+                print("  validated bundle already ready", file=sys.stderr, flush=True)
+                persist(interrupted=False)
+                continue
+            except (HistoricalBundleBuildError, HistoricalLearningError):
+                pass
+        benchmark_rows: dict[str, Sequence[Mapping[str, Any]]] = {}
+        benchmark_providers: dict[str, str] = {}
+        date_blocked = False
+        for symbol in BENCHMARKS:
+            path = raw_root / f"{day}-{symbol}-benchmark.json"
+            try:
+                raw = (
+                    _load_json(path)
+                    if path.exists()
+                    else _benchmark_history(client, day, symbol)
+                )
+                _ordered_session_bars(raw["session_bars"])
+                if not path.exists():
+                    _write_json(path, raw)
+                benchmark_rows[symbol] = raw["session_bars"]
+                benchmark_providers[symbol] = str(raw["provider"])
             except (
                 HistoricalBundleBuildError,
-                HistoricalLearningError,
-                StrategyInputError,
+                IBKRHistoricalError,
+                HistoricalProviderError,
                 OSError,
                 KeyError,
             ) as exc:
-                failures.append({"date": day, "symbol": "bundle", "error": str(exc)})
-    return {"built_dates": built, "failures": failures, "valid": not failures}
+                if isinstance(
+                    exc, IBKRHistoricalError
+                ) and is_retryable_historical_error(exc):
+                    failure = _failure_row(day, symbol, "benchmark", exc)
+                    failures.append(failure)
+                    persist(interrupted=True)
+                    raise
+                if fallback_client is not None:
+                    fallback_path = fallback_root / f"{day}-{symbol}-benchmark.json"
+                    try:
+                        fallback_raw = (
+                            _load_json(fallback_path)
+                            if fallback_path.exists()
+                            else _benchmark_history(fallback_client, day, symbol)
+                        )
+                        _ordered_session_bars(fallback_raw["session_bars"])
+                        if not fallback_path.exists():
+                            _write_json(fallback_path, fallback_raw)
+                        benchmark_rows[symbol] = fallback_raw["session_bars"]
+                        benchmark_providers[symbol] = str(fallback_raw["provider"])
+                        recoveries.append(
+                            {
+                                "date": day,
+                                "symbol": symbol,
+                                "stage": "benchmark",
+                                "primary_provider": _provider_name(client),
+                                "primary_error": str(exc),
+                                "fallback_provider": _provider_name(fallback_client),
+                            }
+                        )
+                        print(
+                            f"  {symbol} recovered by Massive",
+                            file=sys.stderr,
+                            flush=True,
+                        )
+                        continue
+                    except (
+                        HistoricalBundleBuildError,
+                        HistoricalProviderError,
+                        IBKRHistoricalError,
+                        OSError,
+                        KeyError,
+                    ) as fallback_exc:
+                        failure = _failure_row(
+                            day, symbol, "benchmark_fallback", fallback_exc
+                        )
+                        failure["primary_error"] = str(exc)
+                else:
+                    failure = _failure_row(day, symbol, "benchmark", exc)
+                failures.append(failure)
+                persist(interrupted=failure["retryable"])
+                if failure["retryable"]:
+                    raise HistoricalProviderError(
+                        failure["error"], category=failure["category"]
+                    )
+                date_blocked = True
+                print(
+                    f"  {symbol} blocked: {failure['error']}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                break
+        if date_blocked:
+            continue
+        raw_by_symbol: dict[str, Mapping[str, Any]] = {}
+        for evidence in values:
+            if not isinstance(evidence, Mapping) or not isinstance(
+                evidence.get("symbol"), str
+            ):
+                raise HistoricalBundleBuildError(f"{day}: malformed candidate evidence")
+            symbol = str(evidence["symbol"])
+            path = raw_root / f"{day}-{symbol}.json"
+            try:
+                if path.exists():
+                    raw = _load_json(path)
+                else:
+                    raw = _collect_candidate_raw(client, symbol, day)
+                    _write_json(path, raw)
+                _validate_candidate_raw(raw, day, symbol)
+                raw_by_symbol[symbol] = raw
+                print(f"  {symbol} ready", file=sys.stderr, flush=True)
+            except (
+                HistoricalBundleBuildError,
+                IBKRHistoricalError,
+                HistoricalProviderError,
+                OSError,
+                KeyError,
+                TypeError,
+                ValueError,
+            ) as exc:
+                if isinstance(
+                    exc, IBKRHistoricalError
+                ) and is_retryable_historical_error(exc):
+                    failure = _failure_row(day, symbol, "candidate", exc)
+                    failures.append(failure)
+                    persist(interrupted=True)
+                    raise
+                if fallback_client is not None:
+                    fallback_path = fallback_root / f"{day}-{symbol}.json"
+                    try:
+                        fallback_raw = (
+                            _load_json(fallback_path)
+                            if fallback_path.exists()
+                            else _collect_candidate_raw(fallback_client, symbol, day)
+                        )
+                        _validate_candidate_raw(fallback_raw, day, symbol)
+                        if not fallback_path.exists():
+                            _write_json(fallback_path, fallback_raw)
+                        raw_by_symbol[symbol] = fallback_raw
+                        recoveries.append(
+                            {
+                                "date": day,
+                                "symbol": symbol,
+                                "stage": "candidate",
+                                "primary_provider": _provider_name(client),
+                                "primary_error": str(exc),
+                                "fallback_provider": _provider_name(fallback_client),
+                            }
+                        )
+                        print(
+                            f"  {symbol} recovered by Massive",
+                            file=sys.stderr,
+                            flush=True,
+                        )
+                        continue
+                    except (
+                        HistoricalBundleBuildError,
+                        HistoricalProviderError,
+                        IBKRHistoricalError,
+                        OSError,
+                        KeyError,
+                        TypeError,
+                        ValueError,
+                    ) as fallback_exc:
+                        failure = _failure_row(
+                            day, symbol, "candidate_fallback", fallback_exc
+                        )
+                        failure["primary_error"] = str(exc)
+                else:
+                    failure = _failure_row(day, symbol, "candidate", exc)
+                failures.append(failure)
+                print(
+                    f"  {symbol} blocked: {failure['error']}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                persist(interrupted=failure["retryable"])
+                if failure["retryable"]:
+                    raise HistoricalProviderError(
+                        failure["error"], category=failure["category"]
+                    )
+                date_blocked = True
+                break
+        if date_blocked:
+            continue
+        if len(raw_by_symbol) != len(values) or len(benchmark_rows) != len(BENCHMARKS):
+            continue
+        try:
+            bundle = build_bundle(
+                day,
+                values,
+                raw_by_symbol,
+                benchmark_rows,
+                synthetic_equity=synthetic_equity,
+                scanner=scanner,
+                benchmark_providers=benchmark_providers,
+            )
+            validate_bundle(bundle)
+            _write_json(bundle_path, bundle)
+            if day not in built:
+                built.append(day)
+        except (
+            HistoricalBundleBuildError,
+            HistoricalLearningError,
+            StrategyInputError,
+            OSError,
+            KeyError,
+        ) as exc:
+            failures.append(_failure_row(day, "bundle", "assembly", exc))
+        persist(interrupted=False)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -603,6 +1077,17 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT)
     parser.add_argument("--env-file", type=Path, default=DEFAULT_ENV_PATH)
     parser.add_argument("--synthetic-equity", type=float, default=25_000.0)
+    parser.add_argument(
+        "--transport-retries",
+        type=int,
+        default=1,
+        help="fresh provider connections after retryable interruption",
+    )
+    parser.add_argument(
+        "--status-output",
+        type=Path,
+        help="atomic batch status (defaults to historical_batches/<manifest>.json)",
+    )
     return parser
 
 
@@ -614,10 +1099,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             data_root=args.data_root,
             env_file=args.env_file,
             synthetic_equity=args.synthetic_equity,
+            transport_retries=args.transport_retries,
+            status_path=(
+                args.status_output
+                or PROJECT_ROOT / "historical_batches" / f"{args.manifest.stem}.json"
+            ),
         )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result["valid"] else 1
-    except (HistoricalBundleBuildError, IBKRHistoricalError, OSError) as exc:
+    except (
+        HistoricalBundleBuildError,
+        HistoricalProviderError,
+        IBKRHistoricalError,
+        OSError,
+    ) as exc:
         print(
             json.dumps({"error": str(exc), "error_type": type(exc).__name__}, indent=2)
         )

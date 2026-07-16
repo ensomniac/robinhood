@@ -1,14 +1,24 @@
+import json
+import tempfile
 import unittest
 from datetime import datetime, timedelta
+from pathlib import Path
+from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from historical_bundle_builder import (
+    HistoricalBundleBuildError,
+    _failure_row,
+    _selection_metadata,
     _atr14,
     _market_metrics,
     build_bundle,
+    collect_manifest,
     determine_evaluation,
 )
 from historical_learning import validate_bundle
+from historical_providers import HistoricalProviderError, MassiveConfig
+from ibkr_historical import IBKRRequestError
 
 
 EASTERN = ZoneInfo("America/New_York")
@@ -37,6 +47,50 @@ def session_bars(*, break_index=10):
             }
         )
     return rows
+
+
+def raw_candidate(symbol, day="2026-03-03"):
+    bars = session_bars()
+    daily_start = datetime(2026, 1, 1, tzinfo=EASTERN)
+    return {
+        "provider": "Massive SIP REST API",
+        "provenance": {
+            "session_bars": "Massive SIP REST API",
+            "opening_volume_history": "Massive SIP REST API",
+            "daily_bars": "Massive SIP REST API",
+            "historical_quotes_and_depth": "Massive SIP REST API",
+        },
+        "request": {
+            "symbol": symbol,
+            "date": day,
+            "evaluation_time_et": "09:40:00",
+        },
+        "session_bars": bars,
+        "opening_bar": {"volume": 6000},
+        "prior_opening_volumes": [1000] * 14,
+        "daily_bars": [
+            {
+                "epoch": int((daily_start + timedelta(days=index)).timestamp()),
+                "open": 9.8,
+                "high": 10.8,
+                "low": 9.6,
+                "close": 10.0,
+                "volume": 2_000_000,
+            }
+            for index in range(20)
+        ],
+        "quote_snapshots": [
+            {
+                "observed_at_et": f"{day}T09:39:{second:02d}-05:00",
+                "age_seconds": 0,
+                "bid": 10,
+                "ask": 10.01,
+                "ask_depth": 10_000,
+                "recent_real_1m_volume": 20_000,
+            }
+            for second in (50, 55, 59)
+        ],
+    }
 
 
 class EvaluationTimeTests(unittest.TestCase):
@@ -123,6 +177,7 @@ class BundleAssemblyTests(unittest.TestCase):
                 }
             )
             raw_by_symbol[symbol] = {
+                "provider": "test historical feed",
                 "request": {
                     "symbol": symbol,
                     "date": day,
@@ -171,6 +226,281 @@ class BundleAssemblyTests(unittest.TestCase):
         self.assertEqual(len(bundle["candidates"]), 10)
         self.assertEqual(bundle["candidates"][0]["evaluation_time_et"], "09:40:00")
         self.assertEqual(bundle["candidates"][0]["discovery"]["form"], "8-K")
+
+
+class CollectionControlTests(unittest.TestCase):
+    def test_linked_selection_is_authoritative_for_large_integer_seed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            selection = root / "selection.json"
+            selection.write_text(
+                json.dumps(
+                    {
+                        "seed": 367306429345783127,
+                        "selected_dates": ["2026-03-03"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            dates, seed, integrity = _selection_metadata(
+                root / "evidence.json",
+                {
+                    "selection_file": str(selection),
+                    "selection_seed": 367306429345783100,
+                },
+                {"2026-03-03": []},
+            )
+
+        self.assertEqual(dates, ["2026-03-03"])
+        self.assertEqual(seed, 367306429345783127)
+        self.assertFalse(integrity["copied_seed_matches"])
+
+    def test_cached_provider_shape_failure_is_permanent_fidelity(self):
+        failure = _failure_row(
+            "2026-03-03",
+            "THO",
+            "candidate",
+            HistoricalBundleBuildError("nonpositive opening volume"),
+        )
+
+        self.assertEqual(failure["category"], "permanent_fidelity")
+        self.assertFalse(failure["retryable"])
+
+    def _manifest(self, root, symbols=("T00", "T01")):
+        path = root / "manifest.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "selection_seed": 17,
+                    "scanner": {"universe_capture_complete": True},
+                    "candidates_by_date": {
+                        "2026-03-03": [
+                            {"symbol": symbol, "catalyst": {"point_in_time": True}}
+                            for symbol in symbols
+                        ]
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        return path
+
+    def test_transport_error_aborts_immediately_and_persists_interruption(self):
+        class FakeClient:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = self._manifest(root)
+            status = root / "status.json"
+            error = IBKRRequestError("TWS connection closed", error_code=507)
+            with (
+                patch(
+                    "historical_bundle_builder.IBKRConfig.from_env",
+                    return_value=object(),
+                ),
+                patch(
+                    "historical_bundle_builder.IBKRHistoricalClient",
+                    return_value=FakeClient(),
+                ),
+                patch(
+                    "historical_bundle_builder._benchmark_history", side_effect=error
+                ) as benchmark,
+            ):
+                with self.assertRaisesRegex(IBKRRequestError, "connection closed"):
+                    collect_manifest(
+                        manifest,
+                        data_root=root / "data",
+                        status_path=status,
+                        transport_retries=0,
+                    )
+            persisted = json.loads(status.read_text(encoding="utf-8"))
+
+        self.assertEqual(benchmark.call_count, 1)
+        self.assertTrue(persisted["interrupted"])
+        failure = persisted["blocked_dates"][0]["failures"][0]
+        self.assertEqual(failure["category"], "retryable_transport")
+        self.assertTrue(failure["retryable"])
+
+    def test_transport_error_reconnects_once_then_resumes_cached_batch(self):
+        class FakeClient:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+        calls = 0
+
+        def benchmark(client, day, symbol):
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise IBKRRequestError("TWS connection closed", error_code=507)
+            return {"provider": "fake", "session_bars": session_bars()}
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = self._manifest(root)
+            with (
+                patch(
+                    "historical_bundle_builder.IBKRConfig.from_env",
+                    return_value=object(),
+                ),
+                patch(
+                    "historical_bundle_builder.IBKRHistoricalClient",
+                    side_effect=[FakeClient(), FakeClient()],
+                ) as client_factory,
+                patch(
+                    "historical_bundle_builder._benchmark_history",
+                    side_effect=benchmark,
+                ),
+                patch(
+                    "historical_bundle_builder._collect_candidate_raw",
+                    side_effect=IBKRRequestError("permanent missing quote"),
+                ),
+            ):
+                result = collect_manifest(
+                    manifest,
+                    data_root=root / "data",
+                    env_file=root / "missing.env",
+                    status_path=root / "status.json",
+                )
+
+        self.assertEqual(client_factory.call_count, 2)
+        self.assertEqual(calls, 3)
+        self.assertFalse(result["valid"])
+        self.assertEqual(result["failures"][0]["category"], "retryable_transport")
+        self.assertEqual(result["failures"][-1]["category"], "permanent_fidelity")
+
+    def test_permanent_candidate_failure_stops_that_date_without_cascade(self):
+        class FakeClient:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def fetch_bars(self, *args, **kwargs):
+                return session_bars()
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = self._manifest(root)
+            status = root / "status.json"
+            error = IBKRRequestError("no historical bid/ask evidence")
+            with (
+                patch(
+                    "historical_bundle_builder.IBKRConfig.from_env",
+                    return_value=object(),
+                ),
+                patch(
+                    "historical_bundle_builder.IBKRHistoricalClient",
+                    return_value=FakeClient(),
+                ),
+                patch(
+                    "historical_bundle_builder._benchmark_history",
+                    side_effect=lambda client, day, symbol: {
+                        "provider": "fake",
+                        "session_bars": session_bars(),
+                    },
+                ),
+                patch(
+                    "historical_bundle_builder.collect_candidate_history",
+                    side_effect=error,
+                ) as collect,
+            ):
+                result = collect_manifest(
+                    manifest,
+                    data_root=root / "data",
+                    status_path=status,
+                )
+            persisted = json.loads(status.read_text(encoding="utf-8"))
+
+        self.assertEqual(collect.call_count, 1)
+        self.assertFalse(result["valid"])
+        self.assertFalse(persisted["interrupted"])
+        failure = result["failures"][0]
+        self.assertEqual(failure["category"], "permanent_fidelity")
+        self.assertFalse(failure["retryable"])
+
+    def test_permanent_primary_gap_uses_configured_fallback(self):
+        class PrimaryClient:
+            provider_name = "Interactive Brokers TWS API"
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+        class FallbackClient:
+            provider_name = "Massive SIP REST API"
+
+            def close(self):
+                return None
+
+        fallback = FallbackClient()
+        primary_error = IBKRRequestError("no historical quote evidence")
+
+        def collect(client, symbol, day):
+            if isinstance(client, PrimaryClient):
+                raise primary_error
+            if symbol == "T00":
+                return raw_candidate(symbol, day)
+            raise HistoricalProviderError(
+                "fallback has no data", category="permanent_fidelity"
+            )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = self._manifest(root)
+            with (
+                patch(
+                    "historical_bundle_builder.IBKRConfig.from_env",
+                    return_value=object(),
+                ),
+                patch(
+                    "historical_bundle_builder.IBKRHistoricalClient",
+                    return_value=PrimaryClient(),
+                ),
+                patch(
+                    "historical_bundle_builder.MassiveConfig.optional_from_env",
+                    return_value=MassiveConfig(api_key="configured"),
+                ),
+                patch(
+                    "historical_bundle_builder.MassiveHistoricalClient",
+                    return_value=fallback,
+                ),
+                patch(
+                    "historical_bundle_builder._benchmark_history",
+                    side_effect=lambda client, day, symbol: {
+                        "provider": getattr(client, "provider_name"),
+                        "session_bars": session_bars(),
+                    },
+                ),
+                patch(
+                    "historical_bundle_builder._collect_candidate_raw",
+                    side_effect=collect,
+                ),
+            ):
+                result = collect_manifest(
+                    manifest,
+                    data_root=root / "data",
+                    env_file=root / "missing.env",
+                    status_path=root / "status.json",
+                )
+
+        self.assertEqual(len(result["fallback_recoveries"]), 1)
+        recovery = result["fallback_recoveries"][0]
+        self.assertEqual(recovery["symbol"], "T00")
+        self.assertEqual(recovery["fallback_provider"], "Massive SIP REST API")
+        self.assertEqual(result["failures"][0]["stage"], "candidate_fallback")
 
 
 if __name__ == "__main__":

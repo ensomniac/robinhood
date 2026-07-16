@@ -61,6 +61,24 @@ class IBKRRequestError(IBKRHistoricalError):
         self.error_code = error_code
 
 
+def historical_error_category(exc: BaseException) -> str:
+    """Classify collection failures without treating a disconnect as bad data."""
+    if isinstance(exc, IBKRRequestError):
+        message = str(exc).lower()
+        if exc.error_code in CONNECTION_ERROR_CODES or "timed out" in message:
+            return "retryable_transport"
+        if "pacing violation" in message or "query cancelled" in message:
+            return "retryable_provider"
+        return "permanent_fidelity"
+    if isinstance(exc, IBKRConfigurationError):
+        return "retryable_transport"
+    return "local_processing"
+
+
+def is_retryable_historical_error(exc: BaseException) -> bool:
+    return historical_error_category(exc).startswith("retryable_")
+
+
 def _env_bool(value: Any, default: bool = False) -> bool:
     if value is None or str(value).strip() == "":
         return default
@@ -164,9 +182,9 @@ class IBKRConfig:
             tws_app_path=str(values.get("IBKR_TWS_APP_PATH") or "").strip(),
             exchange=str(values.get("IBKR_EXCHANGE") or cls.exchange).strip().upper(),
             currency=str(values.get("IBKR_CURRENCY") or cls.currency).strip().upper(),
-            primary_exchange=str(
-                values.get("IBKR_PRIMARY_EXCHANGE") or ""
-            ).strip().upper(),
+            primary_exchange=str(values.get("IBKR_PRIMARY_EXCHANGE") or "")
+            .strip()
+            .upper(),
         )
 
     def public_dict(self) -> dict[str, Any]:
@@ -230,9 +248,7 @@ def _coerce_datetime(value: str | datetime) -> datetime:
         try:
             result = datetime.fromisoformat(str(value))
         except ValueError as exc:
-            raise IBKRConfigurationError(
-                f"invalid ISO datetime: {value!r}"
-            ) from exc
+            raise IBKRConfigurationError(f"invalid ISO datetime: {value!r}") from exc
     if result.tzinfo is None:
         result = result.replace(tzinfo=EASTERN)
     return result.astimezone(UTC)
@@ -400,9 +416,7 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
                 "security_type": str(getattr(contract, "secType", "")),
                 "currency": str(getattr(contract, "currency", "")),
                 "exchange": str(getattr(contract, "exchange", "")),
-                "primary_exchange": str(
-                    getattr(contract, "primaryExchange", "")
-                ),
+                "primary_exchange": str(getattr(contract, "primaryExchange", "")),
                 "valid_exchanges": str(getattr(details, "validExchanges", "")),
                 "long_name": str(getattr(details, "longName", "")),
             }
@@ -433,12 +447,8 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
                     "ask": float(getattr(tick, "priceAsk", 0.0)),
                     "bid_size": _decimal_number(getattr(tick, "sizeBid", 0)),
                     "ask_size": _decimal_number(getattr(tick, "sizeAsk", 0)),
-                    "bid_past_low": bool(
-                        getattr(attributes, "bidPastLow", False)
-                    ),
-                    "ask_past_high": bool(
-                        getattr(attributes, "askPastHigh", False)
-                    ),
+                    "bid_past_low": bool(getattr(attributes, "bidPastLow", False)),
+                    "ask_past_high": bool(getattr(attributes, "askPastHigh", False)),
                 }
             )
         if done:
@@ -554,9 +564,7 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
                 False,
                 [],
             )
-            return self._finish_request(
-                request_id, state, self.cancelHistoricalData
-            )
+            return self._finish_request(request_id, state, self.cancelHistoricalData)
         finally:
             with self._lock:
                 self._requests.pop(request_id, None)
@@ -577,9 +585,7 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
             raise IBKRConfigurationError("end must be after start")
         normalized_what = str(what).strip().upper()
         if normalized_what not in BAR_TYPES:
-            raise IBKRConfigurationError(
-                f"what must be one of {sorted(BAR_TYPES)}"
-            )
+            raise IBKRConfigurationError(f"what must be one of {sorted(BAR_TYPES)}")
         chunk_days = {
             "1 sec": 1,
             "5 secs": 1,
@@ -601,7 +607,9 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
         rows: list[dict[str, Any]] = []
         while cursor > start_utc:
             chunk_start = max(start_utc, cursor - timedelta(days=chunk_days))
-            duration_days = max(1, math.ceil((cursor - chunk_start).total_seconds() / 86400))
+            duration_days = max(
+                1, math.ceil((cursor - chunk_start).total_seconds() / 86400)
+            )
             rows.extend(
                 self._request_bars(
                     symbol,
@@ -689,6 +697,9 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
 
 class IBKRHistoricalClient:
     """Public historical-only facade over the internal asynchronous client."""
+
+    provider_name = "Interactive Brokers TWS API"
+    cache_namespace = "ibkr"
 
     def __init__(self, config: IBKRConfig):
         self.config = config
@@ -793,13 +804,94 @@ def probe_historical_symbol(
     }
 
 
+def probe_historical_candidate(
+    client: IBKRHistoricalClient,
+    symbol: str,
+    session_date: str | date,
+) -> dict[str, Any]:
+    """Check only pre-session facts required by the frozen replay contract.
+
+    This deliberately ends every market-data request before the target date. It
+    may reject an unusable listing/history record, but cannot observe the target
+    opening, breakout, quotes, or outcome.
+    """
+    contract = probe_historical_symbol(client, symbol)
+    if contract.get("viable") is not True:
+        return contract
+    normalized = str(contract["symbol"])
+    day = _parse_date(session_date)
+    target_start = datetime.combine(day, wall_time(0), tzinfo=EASTERN)
+    opening_rows = client.fetch_bars(
+        normalized,
+        datetime.combine(day - timedelta(days=45), wall_time(0), tzinfo=EASTERN),
+        target_start,
+        bar_size="5 mins",
+        what="TRADES",
+    )
+    opening_by_day = {
+        str(row["date_et"]): row
+        for row in opening_rows
+        if datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(EASTERN).time()
+        == wall_time(9, 30)
+        and str(row.get("date_et", "")) < day.isoformat()
+    }
+    prior_dates = sorted(opening_by_day)[-14:]
+    if len(prior_dates) < 14:
+        return {
+            "symbol": normalized,
+            "viable": False,
+            "reason": "insufficient_prior_opening_history",
+            "error_code": None,
+            "prior_opening_sessions": len(prior_dates),
+            "prior_daily_sessions": None,
+        }
+    if any(int(opening_by_day[key].get("volume", 0)) <= 0 for key in prior_dates):
+        return {
+            "symbol": normalized,
+            "viable": False,
+            "reason": "nonpositive_prior_opening_volume",
+            "error_code": None,
+            "prior_opening_sessions": len(prior_dates),
+            "prior_daily_sessions": None,
+        }
+    daily_rows = client.fetch_bars(
+        normalized,
+        datetime.combine(day - timedelta(days=75), wall_time(0), tzinfo=EASTERN),
+        target_start,
+        bar_size="1 day",
+        what="TRADES",
+    )
+    prior_daily = [
+        row
+        for row in daily_rows
+        if datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(EASTERN).date()
+        < day
+    ]
+    if len(prior_daily) < 15:
+        return {
+            "symbol": normalized,
+            "viable": False,
+            "reason": "insufficient_prior_daily_history",
+            "error_code": None,
+            "prior_opening_sessions": len(prior_dates),
+            "prior_daily_sessions": len(prior_daily),
+        }
+    return {
+        "symbol": normalized,
+        "viable": True,
+        "reason": "pre_session_history_available",
+        "error_code": None,
+        "prior_opening_sessions": len(prior_dates),
+        "prior_daily_sessions": len(prior_daily),
+        "target_session_prices_observed": False,
+    }
+
+
 def _latest_completed_minute_volume(
     bars: Sequence[Mapping[str, Any]], snapshot_at: datetime
 ) -> int:
     candidates = [
-        row
-        for row in bars
-        if int(row["epoch"]) + 60 <= int(snapshot_at.timestamp())
+        row for row in bars if int(row["epoch"]) + 60 <= int(snapshot_at.timestamp())
     ]
     if not candidates:
         return 0
@@ -826,7 +918,9 @@ def select_quote_snapshots(
     ]
     snapshots: list[dict[str, Any]] = []
     for target in targets:
-        eligible = [row for row in ticks if int(row["epoch"]) <= int(target.timestamp())]
+        eligible = [
+            row for row in ticks if int(row["epoch"]) <= int(target.timestamp())
+        ]
         if not eligible:
             raise IBKRRequestError(
                 f"no historical bid/ask tick exists at or before {target.isoformat()}"
@@ -892,14 +986,15 @@ def collect_candidate_history(
     symbol: str,
     session_date: str | date,
     evaluation_time_et: str,
+    *,
+    session_bars: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
+    provider_name = str(getattr(client, "provider_name", "Interactive Brokers TWS API"))
     day = _parse_date(session_date)
     try:
         evaluation_clock = wall_time.fromisoformat(evaluation_time_et)
     except ValueError as exc:
-        raise IBKRConfigurationError(
-            "evaluation_time_et must be HH:MM:SS"
-        ) from exc
+        raise IBKRConfigurationError("evaluation_time_et must be HH:MM:SS") from exc
     evaluation = datetime.combine(day, evaluation_clock, tzinfo=EASTERN)
     if not wall_time(9, 35) <= evaluation_clock <= wall_time(10, 30):
         raise IBKRConfigurationError(
@@ -907,8 +1002,12 @@ def collect_candidate_history(
         )
     session_start = datetime.combine(day, wall_time(9, 30), tzinfo=EASTERN)
     session_end = datetime.combine(day, wall_time(16, 0), tzinfo=EASTERN)
-    minute_bars = client.fetch_bars(
-        symbol, session_start, session_end, bar_size="1 min", what="TRADES"
+    minute_bars = (
+        list(session_bars)
+        if session_bars is not None
+        else client.fetch_bars(
+            symbol, session_start, session_end, bar_size="1 min", what="TRADES"
+        )
     )
     lookback_start = session_start - timedelta(days=45)
     opening_end = datetime.combine(day, wall_time(9, 35), tzinfo=EASTERN)
@@ -922,19 +1021,20 @@ def collect_candidate_history(
     opening_by_day = {
         row["date_et"]: row
         for row in opening_bars
-        if datetime.fromtimestamp(int(row["epoch"]), UTC)
-        .astimezone(EASTERN)
-        .time()
+        if datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(EASTERN).time()
         == wall_time(9, 30)
     }
     prior_dates = sorted(key for key in opening_by_day if key < day.isoformat())[-14:]
     if len(prior_dates) != 14:
         raise IBKRRequestError(
-            f"IBKR returned only {len(prior_dates)} prior 09:30 five-minute bars; 14 are required"
+            f"{provider_name} returned only {len(prior_dates)} prior 09:30 "
+            "five-minute bars; 14 are required"
         )
     current_opening = opening_by_day.get(day.isoformat())
     if current_opening is None:
-        raise IBKRRequestError("IBKR did not return the selected day's 09:30 opening bar")
+        raise IBKRRequestError(
+            f"{provider_name} did not return the selected day's 09:30 opening bar"
+        )
     daily_bars = client.fetch_bars(
         symbol,
         datetime.combine(day - timedelta(days=75), wall_time(0), tzinfo=EASTERN),
@@ -944,7 +1044,8 @@ def collect_candidate_history(
     )
     if len(daily_bars) < 15:
         raise IBKRRequestError(
-            f"IBKR returned only {len(daily_bars)} prior daily bars; at least 15 are required"
+            f"{provider_name} returned only {len(daily_bars)} prior daily bars; "
+            "at least 15 are required"
         )
     bid_ask_ticks, snapshots = collect_quote_evidence(
         client,
@@ -955,7 +1056,13 @@ def collect_candidate_history(
     )
     return {
         "schema_version": 1,
-        "provider": "Interactive Brokers TWS API",
+        "provider": provider_name,
+        "provenance": {
+            "session_bars": provider_name,
+            "opening_volume_history": provider_name,
+            "daily_bars": provider_name,
+            "historical_quotes_and_depth": provider_name,
+        },
         "captured_at": datetime.now(UTC).isoformat(),
         "request": {
             "symbol": symbol.upper(),
@@ -1000,17 +1107,25 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--env-file", type=Path, default=DEFAULT_ENV_PATH)
     subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("check", help="connect and confirm a read-only TWS API handshake")
+    subparsers.add_parser(
+        "check", help="connect and confirm a read-only TWS API handshake"
+    )
 
     probe = subparsers.add_parser(
         "probe",
-        help="resolve one stock contract without requesting price or account data",
+        help="resolve a stock and optionally verify pre-session history",
     )
     probe.add_argument("symbol")
+    probe.add_argument(
+        "--date",
+        help="target date; checks required prior history without target-session prices",
+    )
 
     bars = subparsers.add_parser("bars", help="fetch historical OHLCV bars")
     bars.add_argument("symbol")
-    bars.add_argument("--start", required=True, help="ISO datetime; naive values are ET")
+    bars.add_argument(
+        "--start", required=True, help="ISO datetime; naive values are ET"
+    )
     bars.add_argument("--end", required=True, help="ISO datetime; naive values are ET")
     bars.add_argument("--bar-size", default="1 min")
     bars.add_argument("--what", choices=sorted(BAR_TYPES), default="TRADES")
@@ -1021,8 +1136,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "quotes", help="fetch historical top-of-book bid/ask ticks with sizes"
     )
     quotes.add_argument("symbol")
-    quotes.add_argument("--start", required=True, help="ISO datetime; naive values are ET")
-    quotes.add_argument("--end", required=True, help="ISO datetime; naive values are ET")
+    quotes.add_argument(
+        "--start", required=True, help="ISO datetime; naive values are ET"
+    )
+    quotes.add_argument(
+        "--end", required=True, help="ISO datetime; naive values are ET"
+    )
     quotes.add_argument("--all-hours", action="store_true")
     quotes.add_argument("--output", type=Path)
 
@@ -1049,7 +1168,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "config": config.public_dict(),
                 }
             elif args.command == "probe":
-                result = probe_historical_symbol(client, args.symbol)
+                result = (
+                    probe_historical_candidate(client, args.symbol, args.date)
+                    if args.date
+                    else probe_historical_symbol(client, args.symbol)
+                )
             elif args.command == "bars":
                 result = {
                     "provider": "Interactive Brokers TWS API",

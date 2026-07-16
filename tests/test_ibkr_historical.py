@@ -11,6 +11,9 @@ from ibkr_historical import (
     IBKRRequestError,
     collect_quote_evidence,
     ensure_tws_socket,
+    historical_error_category,
+    is_retryable_historical_error,
+    probe_historical_candidate,
     probe_historical_symbol,
     select_quote_snapshots,
 )
@@ -103,6 +106,101 @@ class SymbolProbeTests(unittest.TestCase):
 
         self.assertTrue(result["viable"])
         self.assertEqual(result["reason"], "contract_resolved")
+
+    def test_pre_session_probe_requires_strategy_compatible_history(self):
+        day = datetime(2026, 3, 3, tzinfo=EASTERN).date()
+
+        class FakeClient:
+            def __init__(self):
+                self.ends = []
+
+            def fetch_contract_details(self, symbol):
+                return [
+                    {
+                        "symbol": symbol,
+                        "security_type": "STK",
+                        "currency": "USD",
+                    }
+                ]
+
+            def fetch_bars(self, symbol, start, end, *, bar_size, what):
+                self.ends.append(end)
+                count = 14 if bar_size == "5 mins" else 15
+                rows = []
+                for offset in range(count, 0, -1):
+                    stamp = datetime.combine(
+                        day - timedelta(days=offset),
+                        datetime.min.time().replace(hour=9, minute=30),
+                        tzinfo=EASTERN,
+                    )
+                    rows.append(
+                        {
+                            "epoch": int(stamp.timestamp()),
+                            "date_et": stamp.date().isoformat(),
+                            "volume": 1000,
+                        }
+                    )
+                return rows
+
+        client = FakeClient()
+        result = probe_historical_candidate(client, "ALK", day)
+
+        self.assertTrue(result["viable"])
+        self.assertEqual(result["reason"], "pre_session_history_available")
+        self.assertFalse(result["target_session_prices_observed"])
+        self.assertTrue(all(end.date() == day for end in client.ends))
+        self.assertTrue(all(end.time() == datetime.min.time() for end in client.ends))
+
+    def test_pre_session_probe_rejects_zero_opening_volume(self):
+        day = datetime(2026, 3, 3, tzinfo=EASTERN).date()
+
+        class FakeClient:
+            def fetch_contract_details(self, symbol):
+                return [
+                    {
+                        "symbol": symbol,
+                        "security_type": "STK",
+                        "currency": "USD",
+                    }
+                ]
+
+            def fetch_bars(self, symbol, start, end, *, bar_size, what):
+                rows = []
+                for offset in range(14, 0, -1):
+                    stamp = datetime.combine(
+                        day - timedelta(days=offset),
+                        datetime.min.time().replace(hour=9, minute=30),
+                        tzinfo=EASTERN,
+                    )
+                    rows.append(
+                        {
+                            "epoch": int(stamp.timestamp()),
+                            "date_et": stamp.date().isoformat(),
+                            "volume": 0 if offset == 7 else 1000,
+                        }
+                    )
+                return rows
+
+        result = probe_historical_candidate(FakeClient(), "THO", day)
+
+        self.assertFalse(result["viable"])
+        self.assertEqual(result["reason"], "nonpositive_prior_opening_volume")
+
+
+class ErrorClassificationTests(unittest.TestCase):
+    def test_connection_and_timeout_are_retryable(self):
+        disconnected = IBKRRequestError("closed", error_code=507)
+        timed_out = IBKRRequestError("historical-bars request timed out")
+
+        self.assertEqual(historical_error_category(disconnected), "retryable_transport")
+        self.assertTrue(is_retryable_historical_error(disconnected))
+        self.assertTrue(is_retryable_historical_error(timed_out))
+
+    def test_missing_historical_fact_is_permanent_fidelity(self):
+        missing = IBKRRequestError("no historical bid/ask quote evidence")
+
+        self.assertEqual(historical_error_category(missing), "permanent_fidelity")
+        self.assertFalse(is_retryable_historical_error(missing))
 
 
 class QuoteSnapshotTests(unittest.TestCase):

@@ -26,7 +26,7 @@ The agent asks how many days to simulate. For each requested day:
    at least ten distinct candidates and preferably a 20-50% buffer. Select the
    date before collecting its candidate facts. Do not choose a day because its
    result is already known. Before freezing the final ten, run an
-   availability-only IBKR contract preflight:
+   availability-only IBKR pre-session-history preflight:
 
    ```sh
    python3 historical_universe.py \
@@ -36,8 +36,10 @@ The agent asks how many days to simulate. For each requested day:
 
    The draft uses `candidate_pool_by_date`; the output uses
    `candidates_by_date` and records accepted, skipped, and unused buffered
-   symbols. Preflight never requests target-session prices. It may skip only a
-   symbol-scoped unresolvable contract and take the next ranked name. Provider-
+   symbols. Preflight never requests target-session prices. It verifies a US
+   stock contract, 14 prior 9:30 five-minute bars with positive volume, and at
+   least 15 prior daily sessions. A symbol that cannot satisfy those frozen
+   evaluator inputs may be skipped for the next ranked buffered name. Provider-
    wide permission, connection, and pacing failures stop the batch. If the
    buffer is exhausted, collection remains blocked rather than freezing fewer
    than ten names.
@@ -53,36 +55,57 @@ The agent asks how many days to simulate. For each requested day:
      historical_data/manifests/evidence-YYYY-MM-DD.json
    ```
 
-   The builder caches each successful raw IBKR response, derives the first ORB
-   evaluation time, ATR, opening RVOL rank, VWAP state, resistance, and
+   The builder caches each successful raw provider response, derives the first
+   ORB evaluation time, ATR, opening RVOL rank, VWAP state, resistance, and
    benchmark alignment, then writes a day bundle only after all frozen symbols
-   and both benchmarks are complete. Provider permission, sparse-tick, and
-   retired-symbol failures discovered after the final freeze remain explicit
-   blockers; the builder never replaces a frozen candidate after observing
-   market data.
+   and both benchmarks are complete. A retryable transport failure stops the
+   current request stream immediately, opens one fresh connection by default,
+   and resumes from cached files. A permanent failure stops the affected date
+   after its first blocker instead of producing one false failure per remaining
+   symbol. The atomic public status defaults to
+   `historical_batches/<manifest-name>.json`.
+
+   IBKR is primary. If `MASSIVE_API_KEY` is configured, a permanent IBKR
+   bar/quote fidelity gap may be recollected from Massive's adjusted SIP
+   aggregates and historical NBBO quotes. A connection outage never triggers a
+   provider switch. Every recovered candidate and benchmark records its actual
+   provider; no candidate is replaced and no missing bar or quote is fabricated.
 4. Validate every bundle before replay:
 
    ```sh
    python3 historical_learning.py validate historical_data/2025-06-02.json
    ```
 
-5. After enough validated bundles exist, run the requested random batch:
+5. Replay every validation-grade date as soon as it is ready while preserving
+   the original frozen selection:
 
    ```sh
-   python3 historical_learning.py run --selection selection.json
+   python3 historical_learning.py run \
+     --selection selection.json \
+     --ready-only
    ```
 
-   This guarantees that the dates randomized before collection are exactly the
-   dates replayed. `python3 historical_learning.py interactive` provides the CLI
-   prompts for a pre-collected unbiased bundle pool.
+   `--ready-only` skips already archived dates, replays each valid selected date,
+   and records missing/invalid dates as blocked. It never substitutes another
+   date. The default status path under `historical_batches/` is updated before
+   replay and after every completed date, so rerunning the same command is
+   idempotent and resumable. Omit `--ready-only` only when an all-or-nothing
+   atomic batch is explicitly required. `historical_learning.py interactive`
+   remains available for a pre-collected unbiased bundle pool.
 6. Verify `python3 trade_lifecycle.py audit`,
    `python3 strategy_ledger.py audit`, the archived context, and `TRADES.md`.
    Commit and push the public evidence under the repository publishing rules.
 
 If the active context directory is not empty or a selected date already has an
-archive folder, replay stops. An existing live position or unresolved broker
-order also blocks historical mode at the agent-workflow layer; live safety has
-priority over offline research.
+archive folder, strict replay stops; ready-only replay records it as already
+completed. An existing live position or unresolved broker order also blocks
+historical mode at the agent-workflow layer; live safety has priority over
+offline research.
+
+The historical engineering gate is at least 16 validation-grade completions
+from 20 newly randomized dates (80% yield), zero date/symbol substitutions, and
+zero cascade errors. Batch status computes this gate; it is an infrastructure
+acceptance test, not strategy evidence and not permission to weaken fidelity.
 
 ## Bundle Contract
 
@@ -181,9 +204,9 @@ At completion, the runner embeds a terminal outcome and moves all context to
 `trades/archived/YYYY_MM_DD/`. It atomically appends the day's validated session
 and signal records as one ledger batch.
 
-## Required Interactive Brokers Market-Data Collection
+## Historical Market-Data Providers
 
-`ibkr_historical.py` is the default required market-data source for historical
+`ibkr_historical.py` is the default primary market-data source for historical
 replays. It is an independent, read-only client for a locally logged-in Trader
 Workstation or IB Gateway. It does not import IABApp and exposes no account,
 portfolio, order, or execution methods. Configure its socket through the ignored
@@ -237,6 +260,37 @@ collection at that timestamp so its three quote snapshots are aligned with the
 evaluation. Do not declare a market-data blocker merely because the scanner or
 news archive lacks bars, quotes, or depth; try the IBKR collection first and
 report the exact failed IBKR fact only if the adapter cannot return it.
+
+### Optional Massive SIP fallback
+
+Set `MASSIVE_API_KEY` only in the ignored `.env` to enable the read-only
+fallback. Optional settings are `MASSIVE_BASE_URL` and
+`MASSIVE_TIMEOUT_SECONDS`. The key is never written to a bundle, status, error,
+or public configuration output.
+
+`historical_providers.py` normalizes adjusted Massive minute aggregates and
+historical NBBO quotes to the same read-only client contract used by the bundle
+builder. Five-minute opening bars and prior daily bars are resampled only from
+regular-session minute aggregates. Massive does not emit an aggregate for a
+minute with no eligible trade; the adapter preserves that absence and the 390-
+minute bundle validator fails closed rather than filling or interpolating it.
+Because historical NBBO records have no aggregate-style `adjusted` parameter,
+the adapter queries Massive's split factors and adjusts quote prices and sizes
+to the same current-share basis as adjusted aggregates; an invalid factor fails
+closed.
+Pagination is restricted to the configured HTTPS origin before the API key is
+forwarded. Provider contracts: [adjusted stock aggregates](https://massive.com/docs/rest/stocks/aggregates/custom-bars)
+[historical stock NBBO quotes](https://massive.com/docs/rest/stocks/trades-quotes/quotes),
+and [split adjustment factors](https://massive.com/docs/rest/stocks/corporate-actions/splits).
+
+Fallback is limited to permanent market-data fidelity gaps after IBKR has been
+attempted. Retryable disconnects, timeouts, pacing failures, and server errors
+are retried or surfaced; they do not silently select a different provider.
+Separate point-in-time scanner and catalyst evidence is still mandatory.
+
+The live OR_RVOL rule remains unchanged: all 14 prior opening volumes must be
+positive. A provider's zero-volume representation is a preflight/fallback issue,
+not permission to reinterpret or silently version the production strategy.
 
 ## Limitations
 
