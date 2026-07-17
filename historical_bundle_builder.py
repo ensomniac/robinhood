@@ -444,6 +444,20 @@ def _build_candidate(
     }
 
 
+def _frozen_evidence_hash(
+    day: str,
+    evidence_rows: Sequence[Mapping[str, Any]],
+    scanner: Mapping[str, Any],
+) -> str:
+    return _canonical_hash(
+        {
+            "date": day,
+            "candidates": list(evidence_rows),
+            "scanner": dict(scanner),
+        }
+    )
+
+
 def build_bundle(
     day: str,
     evidence_rows: Sequence[Mapping[str, Any]],
@@ -520,6 +534,9 @@ def build_bundle(
             "catalysts_point_in_time": True,
             "universe_capture_complete": scanner.get("universe_capture_complete")
             is True,
+            "frozen_evidence_sha256": _frozen_evidence_hash(
+                day, evidence_rows, scanner
+            ),
             "scanner_definition": dict(scanner),
         },
         "candidates": candidates,
@@ -1101,7 +1118,17 @@ def _collect_manifest_dates(
         bundle_path = data_root / f"{day}.json"
         if bundle_path.exists():
             try:
-                validate_bundle(_load_json(bundle_path))
+                cached_bundle = _load_json(bundle_path)
+                validate_bundle(cached_bundle)
+                expected_evidence_hash = _frozen_evidence_hash(day, values, scanner)
+                source = cached_bundle.get("source")
+                if (
+                    not isinstance(source, Mapping)
+                    or source.get("frozen_evidence_sha256") != expected_evidence_hash
+                ):
+                    raise HistoricalBundleBuildError(
+                        f"{day}: cached bundle belongs to different frozen evidence"
+                    )
                 if day not in built:
                     built.append(day)
                 print("  validated bundle already ready", file=sys.stderr, flush=True)

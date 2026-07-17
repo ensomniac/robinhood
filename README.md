@@ -199,7 +199,22 @@ python3 historical_learning.py run --selection selection.json --ready-only
 ```
 
 See [HISTORICAL_LEARNING.md](HISTORICAL_LEARNING.md) for the strict data-fidelity
-contract. Evidence review is similarly non-executing:
+contract. Once bundles are local, the research-only matrix runner can evaluate
+several versioned bar-based strategies in parallel without provider calls or
+production-ledger writes:
+
+```sh
+python3 historical_research.py run \
+  --evidence historical_batches/evidence-2026-07-16-one-hundred-days.json \
+  --workers 4
+```
+
+It progressively reveals immutable bars, enters only on the next minute, uses a
+shared conservative execution model, stores isolated per-strategy shards under
+ignored `research_runs/`, and can publish a compact comparison. See
+[HISTORICAL_RESEARCH.md](HISTORICAL_RESEARCH.md) for supported strategies,
+limitations, plugin requirements, and reproducibility rules. Evidence review is
+similarly non-executing:
 
 ```sh
 python3 strategy_learning.py report
@@ -365,6 +380,9 @@ Commit messages should describe what changed, for example:
 ├── email_sender.py    # Settings-aware notification CLI and server client
 ├── historical_learning.py # Point-in-time, no-broker replay engine
 ├── HISTORICAL_LEARNING.md # Replay data and operator contract
+├── historical_research.py # Process-parallel research-only strategy matrix
+├── historical_research_strategies.py # Versioned immutable-bar plugins
+├── HISTORICAL_RESEARCH.md # Research isolation and plugin contract
 ├── ibkr_historical.py # Optional read-only TWS historical-data adapter
 ├── IDENTIFIER_ENCRYPTION.md # Inline identifier encryption and recovery guide
 ├── README.md          # Public project overview

@@ -132,6 +132,12 @@ The agent asks how many days to simulate. For each requested day:
    `HISTORICAL_THROUGHPUT_PLAN.md` for the measured bottleneck, tuning rules, and
    large-batch acceptance protocol.
 
+   Every newly assembled bundle stores `source.frozen_evidence_sha256`, covering
+   its date, ordered candidate evidence, and scanner contract. A same-date file
+   is a bundle-cache hit only when normal validation and this hash both pass.
+   This prevents an older frozen universe from being silently reused for a newer
+   evidence manifest. Research replay also compares ordered symbols directly.
+
    IBKR is primary. If `MASSIVE_API_KEY` is configured, a permanent IBKR
    bar/quote fidelity gap may be recollected from Massive's adjusted SIP
    aggregates and historical NBBO quotes. A connection outage never triggers a

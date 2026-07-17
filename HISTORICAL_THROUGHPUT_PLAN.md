@@ -257,13 +257,32 @@ Keep IBKR primary under the current contract, but isolate provider lanes:
 - a bulk/flat-file provider should be evaluated for large research corpora,
   because IBKR explicitly says it is not a specialized bulk market-data source.
 
-### D. CPU-parallel replay only after data is local
+### D. CPU-parallel research after data is local
 
-Once immutable bundles are present, strategy evaluation is independent by date
-and can use process-level parallelism safely. This must be a separate phase from
-provider collection. It should produce per-date temporary results and merge them
-into the public ledger in frozen date order under one writer, preserving audit
-and idempotency.
+Implemented in `historical_research.py`. Once immutable bundles are present,
+one process-pool task loads one date and evaluates all selected versioned
+strategies against the same frozen candidates. The parent is the only writer and
+sorts isolated per-strategy/date shards deterministically. Generated shards are
+ignored; compact aggregate results can be published under `research_results/`.
+
+This research plane is intentionally separate from production historical
+replay. It makes zero provider requests and never merges experimental results
+into `SIGNALS.jsonl`, `trades/`, or maturity. Every plugin receives progressively
+revealed immutable bar prefixes, so the runner enforces no-lookahead even for an
+external plugin. Shared next-open entry, adverse slippage, stop-first ambiguity,
+target, and force-flat semantics keep comparisons like-for-like. See
+`HISTORICAL_RESEARCH.md` for the plugin and operator contracts.
+
+The first evidence-bound matrix ran four strategies across the 100 requested
+dates in 2.003 seconds with four processes versus 7.332 seconds with one, a 3.66x
+speedup; both stable outputs were identical. It covered 95 dates and retained
+the five known quote-boundary blockers. A pre-run identity audit also found four
+older date bundles with the wrong frozen symbols. Bundle cache reuse now requires
+an exact frozen-evidence hash, and the research runner independently compares
+ordered bundle symbols with the evidence manifest. Repairing the corpus reused
+926 raw candidates and needed only 36 fresh candidates, 92 IBKR requests, and
+201.790 seconds. This reinforces the core bottleneck result: verified acquisition
+and cache identity dominate; local multi-strategy evaluation is cheap.
 
 ## 100-Day Speed-Test Protocol
 

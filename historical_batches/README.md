@@ -4,6 +4,11 @@ This directory contains privacy-safe, machine-readable status for frozen
 historical selections. Raw replay inputs remain under the Git-ignored
 `historical_data/` directory.
 
+One-off corpus audits and repairs may also retain compact machine-readable
+evidence here. The 2026-07-16 evidence-bound repair records the stale same-date
+bundle identity failure, exact cache/provider telemetry, and final 95-of-100
+coverage without publishing raw market data.
+
 `historical_bundle_builder.py` writes collection state here by default. It
 records ready and blocked dates, typed failures, fallback recoveries, zero
 substitutions, and the fixed engineering acceptance gate. It never records API

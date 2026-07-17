@@ -225,3 +225,7 @@ __marimo__/
 # Raw replay inputs can be large and provider-specific. Public replay evidence
 # is retained in SIGNALS.jsonl and archived context instead.
 historical_data/
+
+# Per-date research shards are reproducible from the ignored immutable bundles.
+# Compact aggregate results may be published separately under research_results/.
+research_runs/

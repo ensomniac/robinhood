@@ -283,6 +283,16 @@ class BundleAssemblyTests(unittest.TestCase):
             "next_minute_after_completed_breakout_bar",
         )
         self.assertEqual(bundle["candidates"][0]["discovery"]["form"], "8-K")
+        self.assertEqual(
+            bundle["source"]["frozen_evidence_sha256"],
+            _canonical_hash(
+                {
+                    "date": day,
+                    "candidates": evidence,
+                    "scanner": {"universe_capture_complete": True},
+                }
+            ),
+        )
 
     def test_non_break_below_opening_range_is_ineligible_not_malformed(self):
         day = "2026-03-03"

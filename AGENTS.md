@@ -837,6 +837,38 @@ bundles under `historical_data/` are local inputs and are Git-ignored; archived
 context, `SIGNALS.jsonl`, and privacy-safe `historical_batches/` statuses are the
 durable public evidence.
 
+## Historical Multi-Strategy Research Plane
+
+After frozen daily bundles are local, `historical_research.py` may reuse them to
+compare versioned research strategies without repeating provider collection.
+This plane is not production historical replay: it must never write
+`SIGNALS.jsonl`, `TRADES.md`, `trades/`, strategy configuration, or maturity.
+Generated per-date shards remain under ignored `research_runs/`; publish only a
+compact aggregate under `research_results/` when the dataset, configuration,
+implementation hashes, and limitations are retained.
+
+Before using a bundle, require its exact ordered candidate symbols to match the
+public frozen evidence manifest. Newly built bundles must also carry a matching
+`source.frozen_evidence_sha256` over the date, ordered candidate evidence, and
+scanner contract. Date and schema validity alone do not prove cache identity.
+Missing, mismatched, interpolated, or unsupported data remains a coverage
+blocker and never permits substitution or approximation.
+
+Run strategies through a bounded process pool only after data is local. One
+worker should load one date once for every selected strategy, and one parent
+writer should merge deterministic per-strategy/date results. The runner must
+enforce point-in-time disclosure with progressively revealed immutable bar
+prefixes; a signal can identify only the final completed bar in its prefix and
+fills no earlier than the next bar. All compared strategies share the selected
+slippage, target, stop-first ambiguity, and force-flat model. A plugin declares
+data requirements and remains blocked when the bundle lacks them.
+
+Research-plugin outcomes are hypotheses, not production or maturity evidence.
+Do not mix them with the frozen production ORB sample or activate a setup from
+an in-sample matrix. Freeze promising rules and validate them on independent,
+preregistered confirmation dates under a separate strategy version. See
+`HISTORICAL_RESEARCH.md` for the executable contract and measured first run.
+
 ## Progress History Hook
 
 Meaningful outcomes from coding, research, debugging, provider interaction, or

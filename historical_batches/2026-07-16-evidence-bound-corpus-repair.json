@@ -1,0 +1,45 @@
+{
+  "corpus_repair": {
+    "benchmark_cache_hits": 200,
+    "bundles_rebuilt": 95,
+    "candidate_cache_hits": 926,
+    "candidate_cache_misses": 36,
+    "elapsed_seconds": 201.78993,
+    "ibkr_completed_requests": 92,
+    "ibkr_failed_requests": 0,
+    "ibkr_historical_bar_requests": 41,
+    "ibkr_historical_bid_ask_tick_requests": 51,
+    "ibkr_pacing_wait_seconds": 40.404165,
+    "preflight_histories_reused": 36,
+    "worker_count": 4
+  },
+  "evidence_manifest": "historical_batches/evidence-2026-07-16-one-hundred-days.json",
+  "final_coverage": {
+    "blocked_dates": [
+      "2026-01-07",
+      "2026-01-12",
+      "2026-03-27",
+      "2026-04-17",
+      "2026-04-20"
+    ],
+    "cascade_error_count": 0,
+    "evidence_bound_bundle_count": 95,
+    "requested_dates": 100,
+    "substitution_count": 0,
+    "yield_fraction": 0.95
+  },
+  "finding": {
+    "cause": "The bundle cache accepted a valid same-date bundle without proving that it belonged to the current frozen evidence manifest.",
+    "repair": "New bundles store source.frozen_evidence_sha256 over the date, ordered candidate evidence, and scanner contract. Cache reuse verifies that hash, and research replay independently verifies exact ordered symbols.",
+    "stale_same_date_bundles_detected": [
+      "2026-01-23",
+      "2026-04-09",
+      "2026-05-04",
+      "2026-05-13"
+    ]
+  },
+  "mode": "historical_corpus_repair",
+  "provider_requests_during_final_research_matrix": 0,
+  "schema_version": 1,
+  "selection_seed": 5387420213521377743
+}

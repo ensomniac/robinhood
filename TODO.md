@@ -4,6 +4,32 @@ Sparse feature ideas are expanded here into explicit acceptance criteria before
 implementation. Risk-bearing behavior must remain inside `AGENTS.md`; a backlog
 item never grants live-trading authority or permission to weaken safety gates.
 
+## Completed 2026-07-16
+
+### 11. Parallel Multi-Strategy Historical Research
+
+Status: implemented by `historical_research.py`,
+`historical_research_strategies.py`, and `HISTORICAL_RESEARCH.md` on 2026-07-16.
+
+- Reuses complete local daily bundles with zero provider calls and hashes the
+  public evidence manifest plus every available/missing bundle into a stable
+  dataset identity.
+- Binds every builder-produced date bundle to its exact frozen candidate and
+  scanner evidence hash; the runner separately rejects ordered symbol mismatch.
+- Evaluates versioned research plugins across dates in a bounded process pool.
+  Each worker parses one date once for all strategies; one parent writer merges
+  deterministic, isolated per-strategy/date shards.
+- Enforces no-lookahead by exposing progressively revealed immutable bar
+  prefixes and rejecting backdated decisions. All strategies enter on the next
+  bar and share slippage, target, stop-first ambiguity, and force-flat rules.
+- Makes unsupported requirements explicit instead of approximating absent
+  depth, benchmark bars, or subminute data.
+- Keeps generated shards outside Git and experimental signals outside the
+  production ledger, trade archive, configuration, and maturity calculations.
+- Produces a compact auditable result with per-strategy metrics and paired
+  date-level comparisons. Tests prove worker-count determinism and production
+  artifact isolation.
+
 ## Completed 2026-07-15
 
 ### 1. Daily Active Context And Date-Partitioned Archives
