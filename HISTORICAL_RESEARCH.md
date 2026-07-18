@@ -19,6 +19,14 @@ The current bundles represent the already frozen, catalyst-selected candidate
 universe. Results answer “how would these rules have behaved on these frozen
 candidates?” They do not establish full-market expectancy.
 
+This limitation is machine-enforced by `learning_data.py`. The public dataset
+registry classifies the corpus as `catalyst_falsification` with
+`FALSIFICATION_ONLY` claim scope. A production ORB dataset must instead freeze
+the scanner rules and point-in-time security-master identity, then reconstruct
+the dynamic complete 09:35 ET universe using only information available by that
+time. Current contract resolution may not replace a renamed, retired, or
+delisted historical instrument.
+
 ## Architecture
 
 One date is the unit of parallel work. A worker process loads a date bundle

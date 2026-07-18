@@ -203,6 +203,22 @@ stationary-block bootstrap uncertainty, Deflated Sharpe, PBO, Holm family
 decisions, and a power-derived sample target. It does not silently remove a
 signal when adverse cost assumptions turn its fill into a miss.
 
+Audit point-in-time security identity and dataset claims with:
+
+```sh
+python3 learning_data.py audit
+python3 learning_data.py resolve OLD_SYMBOL --as-of 2021-06-01
+python3 learning_data.py freeze-dataset learning_runs/<run-id>/dataset-input.json
+```
+
+A `production_scanner_replay` must reconstruct the dynamic complete universe at
+09:35 ET from information available by then and bind the exact scanner rules and
+security-master hashes. The existing catalyst-selected bundles are registered
+as `catalyst_falsification`; they cannot support a full production-policy claim.
+The security master is intentionally empty until sourced records are added—an
+unresolved historical instrument remains a blocker instead of being replaced
+with a symbol that happens to resolve today.
+
 The early Item 2.02 reversal research has a separate prospective evidence plane.
 It cannot reuse the inspected corpus as confirmation and it cannot activate a
 strategy:
