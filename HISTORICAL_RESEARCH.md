@@ -251,6 +251,30 @@ gains. The production-compatible cohort contains only stops that naturally
 start at or below 0.8%; wider stops are never tightened into it, and fewer than
 20 cohort trades is explicitly insufficient for inference.
 
+## Independent 100-Date Confirmation Result
+
+The preregistered 2026-07-18 run froze the exact 100-date seed
+`1003109952991718283` with zero overlap against
+`strategy-lab-651f20ff135e-b268f18ec755`. Two dates exhausted their ordered
+candidate buffers before target collection and remained explicit blockers.
+After preregistration, 31 validation-grade bundles were collected and 19 more
+dates hit immutable target-data blockers. Collection stopped when the resulting
+21 missing dates made the required 80 validation-grade dates mathematically
+impossible; the remaining 48 dates were not requested or substituted.
+
+The observed subset also rejected the hypothesis on performance. At the frozen
+5 bps-per-side and 2R primary cell, 22 trades returned -10.056R, -0.457R mean
+expectancy, 0.370 profit factor, and 10.492R maximum drawdown. Every frozen
+target and cost-stress cell was negative. Risk-sized structural deployment
+compounded -2.298% with no stop compression or risk-cap violation, while only
+six naturally occurring stops were at or below 0.8%.
+
+The decision is `stop_without_threshold_tuning`. This hypothesis must not
+advance to shadow qualification or a production proposal. The immutable
+manifest and complete result are published under
+`historical_batches/confirmation_manifests/` and
+`research_results/2026-07-18-independent-early-earnings-reversal-confirmation.{json,md}`.
+
 ## Prospective Shadow Execution Qualification
 
 `shadow_reversal.py` evaluates privacy-safe current-day captures from the normal

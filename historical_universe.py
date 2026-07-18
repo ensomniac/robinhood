@@ -241,6 +241,7 @@ def freeze_candidate_universe(
         raise HistoricalUniverseError("candidate_pool_by_date cannot be empty")
 
     candidates_by_date: dict[str, list[dict[str, Any]]] = {}
+    blocked_candidates_by_date: dict[str, list[dict[str, Any]]] = {}
     date_reports: dict[str, dict[str, Any]] = {}
     for day, raw_pool in pools.items():
         if not isinstance(day, str):
@@ -254,6 +255,7 @@ def freeze_candidate_universe(
         if not isinstance(raw_pool, list) or len(raw_pool) < required:
             size = len(raw_pool) if isinstance(raw_pool, list) else 0
             if continue_on_exhausted:
+                blocked_candidates_by_date[day] = []
                 date_reports[day] = {
                     "accepted_symbols": [],
                     "accepted": [],
@@ -422,6 +424,11 @@ def freeze_candidate_universe(
             report["blocked_reason"] = (
                 f"preflight_exhausted:{len(accepted)}_of_{required}_required"
             )
+            # Preserve the complete ordered universe that actually survived
+            # pre-session qualification. Confirmation preregistration needs
+            # these rows to prove that an exhausted date was retained rather
+            # than silently substituted after outcomes were known.
+            blocked_candidates_by_date[day] = accepted
             date_reports[day] = report
             continue
         report["blocked"] = False
@@ -434,6 +441,7 @@ def freeze_candidate_universe(
         if key != "candidate_pool_by_date"
     }
     output["candidates_by_date"] = candidates_by_date
+    output["blocked_candidates_by_date"] = blocked_candidates_by_date
     output["preflight"] = {
         "schema_version": 2,
         "performed_at": performed_at or datetime.now(UTC).isoformat(),

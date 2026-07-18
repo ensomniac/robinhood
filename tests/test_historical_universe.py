@@ -170,6 +170,13 @@ class FreezeCandidateUniverseTests(unittest.TestCase):
 
         self.assertNotIn("2026-03-03", frozen["candidates_by_date"])
         self.assertIn("2026-03-04", frozen["candidates_by_date"])
+        self.assertEqual(
+            [
+                row["symbol"]
+                for row in frozen["blocked_candidates_by_date"]["2026-03-03"]
+            ],
+            ["T00", "T01", "T03", "T04", "T05", "T06", "T07", "T08", "T09"],
+        )
         self.assertEqual(frozen["preflight"]["blocked_dates"], ["2026-03-03"])
         blocked = frozen["preflight"]["dates"]["2026-03-03"]
         self.assertTrue(blocked["blocked"])

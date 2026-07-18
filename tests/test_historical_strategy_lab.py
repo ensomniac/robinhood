@@ -500,6 +500,122 @@ class EvidenceBoundaryTests(unittest.TestCase):
 
 
 class IndependentConfirmationTests(unittest.TestCase):
+    def test_complete_universe_may_include_non_2_02_candidates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            days = consecutive_days("2027-01-01", 100)
+            evidence_value = confirmation_evidence(days)
+            evidence_value["candidates_by_date"][days[0]][0]["discovery"][
+                "filing_items"
+            ] = "8.01,9.01"
+            evidence = root / "new-evidence.json"
+            evidence.write_text(json.dumps(evidence_value), encoding="utf-8")
+            old_evidence = root / "old-evidence.json"
+            old_evidence.write_text(
+                json.dumps(
+                    confirmation_evidence(
+                        consecutive_days("2025-01-01", 100), symbols=("OLD",)
+                    )
+                ),
+                encoding="utf-8",
+            )
+            old_result = root / "old-result.json"
+            old_result.write_text(
+                json.dumps(
+                    {
+                        "manifest": {
+                            "run_id": "strategy-lab-651f20ff135e-b268f18ec755",
+                            "dataset": {
+                                "requested_dates": 100,
+                                "dataset_hash": "a" * 64,
+                                "evidence_manifest": str(old_evidence),
+                            },
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            _path, manifest = freeze_confirmation_manifest(
+                evidence,
+                excluded_result_paths=(old_result,),
+                output_root=root / "manifests",
+                registered_at="2026-07-18T12:00:00+00:00",
+            )
+
+        self.assertEqual(len(manifest["frozen_dates"]), 100)
+        self.assertTrue(manifest["policy"]["require_earnings_2_02"])
+
+    def test_freeze_retains_preflight_blocker_in_exact_100_date_sample(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            old_days = consecutive_days("2025-01-01", 100)
+            old_evidence = root / "old-evidence.json"
+            old_evidence.write_text(
+                json.dumps(confirmation_evidence(old_days, symbols=("OLD",))),
+                encoding="utf-8",
+            )
+            old_result = root / "old-result.json"
+            old_result.write_text(
+                json.dumps(
+                    {
+                        "manifest": {
+                            "run_id": "strategy-lab-651f20ff135e-b268f18ec755",
+                            "dataset": {
+                                "requested_dates": 100,
+                                "dataset_hash": "a" * 64,
+                                "evidence_manifest": str(old_evidence),
+                            },
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            days = consecutive_days("2027-01-01", 100)
+            blocked_day = days[-1]
+            selection = root / "selection.json"
+            selection.write_text(
+                json.dumps({"seed": 73, "selected_dates": list(reversed(days))}),
+                encoding="utf-8",
+            )
+            evidence_value = confirmation_evidence(days[:-1])
+            evidence_value["selection_seed"] = 73
+            evidence_value["parent_selection_file"] = str(selection)
+            blocked_candidate = confirmation_candidate("BLOCK")
+            evidence_value["blocked_candidates_by_date"] = {
+                blocked_day: [blocked_candidate]
+            }
+            blocker_report = {
+                "blocked": True,
+                "blocked_reason": "preflight_exhausted:1_of_10_required",
+                "accepted_symbols": ["BLOCK"],
+                "examined_count": 80,
+            }
+            evidence_value["preflight"] = {
+                "minimum_candidates": 10,
+                "blocked_dates": [blocked_day],
+                "dates": {blocked_day: blocker_report},
+            }
+            evidence = root / "evidence.json"
+            evidence.write_text(json.dumps(evidence_value), encoding="utf-8")
+
+            _path, manifest = freeze_confirmation_manifest(
+                evidence,
+                excluded_result_paths=(old_result,),
+                output_root=root / "manifests",
+                registered_at="2026-07-18T12:00:00+00:00",
+            )
+
+        self.assertEqual(len(manifest["frozen_dates"]), 100)
+        frozen = manifest["frozen_dates"][-1]
+        self.assertEqual(frozen["date"], blocked_day)
+        self.assertEqual(frozen["status"], "precollection_blocked")
+        self.assertEqual(frozen["ordered_symbols"], ["BLOCK"])
+        self.assertEqual(
+            frozen["precollection_blocker"]["reason_code"],
+            "preflight_exhausted:1_of_10_required",
+        )
+
     def test_freeze_rejects_overlap_with_inspected_run(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

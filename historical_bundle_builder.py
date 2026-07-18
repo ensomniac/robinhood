@@ -467,6 +467,7 @@ def build_bundle(
     synthetic_equity: float,
     scanner: Mapping[str, Any],
     benchmark_providers: Mapping[str, str] | None = None,
+    preregistration: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     if len(evidence_rows) < 10:
         raise HistoricalBundleBuildError(
@@ -511,10 +512,10 @@ def build_bundle(
     all_market_providers = set(candidate_providers.values())
     all_market_providers.update((benchmark_providers or {}).values())
     market_provider_text = " + ".join(sorted(all_market_providers))
-    return {
+    bundle = {
         "schema_version": BUNDLE_SCHEMA_VERSION,
         "date": day,
-        "sample_phase": "pilot",
+        "sample_phase": "confirmation" if preregistration is not None else "pilot",
         "session_capture_complete": True,
         "simulation_account_equity": synthetic_equity,
         "simulation_buying_power": synthetic_equity,
@@ -541,6 +542,9 @@ def build_bundle(
         },
         "candidates": candidates,
     }
+    if preregistration is not None:
+        bundle["preregistration"] = dict(preregistration)
+    return bundle
 
 
 def _load_json(path: Path) -> Any:
@@ -691,6 +695,7 @@ def _collection_status(
     built_dates: Sequence[str],
     failures: Sequence[Mapping[str, Any]],
     recoveries: Sequence[Mapping[str, Any]],
+    precollection_blockers: Mapping[str, Mapping[str, Any]],
     *,
     interrupted: bool,
     created_at: str | None,
@@ -699,6 +704,18 @@ def _collection_status(
     blocked: list[dict[str, Any]] = []
     for day in selected_dates:
         if day in built_dates:
+            continue
+        precollection = precollection_blockers.get(day)
+        if precollection is not None:
+            blocked.append(
+                {
+                    "date": day,
+                    "reason_code": str(precollection["reason_code"]),
+                    "detail": "candidate universe blocked before target-session collection",
+                    "failures": [],
+                    "precollection_blocker": dict(precollection),
+                }
+            )
             continue
         day_failures = [dict(row) for row in failures if row.get("date") == day]
         if not day_failures:
@@ -742,7 +759,7 @@ def _collection_status(
             cascade_error_count=0,
         ),
         "interrupted": interrupted,
-        "valid": len(built) == len(selected_dates),
+        "valid": len(built) + len(blocked) == len(selected_dates),
     }
 
 
@@ -805,6 +822,100 @@ def _selection_metadata(
             "authoritative_seed": seed,
         },
     )
+
+
+def _confirmation_collection_context(
+    evidence_path: Path,
+    evidence: Mapping[str, Any],
+    confirmation_manifest_path: Path,
+) -> dict[str, Any]:
+    """Bind collection to a verified preregistration without importing prices."""
+
+    # Local import avoids making the general pilot builder depend on the
+    # strategy-lab module during ordinary collection.
+    from historical_strategy_lab import (  # pylint: disable=import-outside-toplevel
+        HistoricalStrategyLabError,
+        load_confirmation_manifest,
+    )
+
+    try:
+        confirmation = load_confirmation_manifest(confirmation_manifest_path.resolve())
+    except HistoricalStrategyLabError as exc:
+        raise HistoricalBundleBuildError(str(exc)) from exc
+    source = confirmation.get("source_evidence")
+    evidence_sha = hashlib.sha256(evidence_path.resolve().read_bytes()).hexdigest()
+    if not isinstance(source, Mapping) or source.get("sha256") != evidence_sha:
+        raise HistoricalBundleBuildError(
+            "confirmation manifest belongs to different source evidence"
+        )
+    candidates_by_date = evidence.get("candidates_by_date")
+    blocked_by_date = evidence.get("blocked_candidates_by_date", {})
+    if not isinstance(candidates_by_date, Mapping) or not isinstance(
+        blocked_by_date, Mapping
+    ):
+        raise HistoricalBundleBuildError(
+            "confirmation evidence candidate universes are malformed"
+        )
+    scanner = evidence.get("scanner")
+    if not isinstance(scanner, Mapping):
+        raise HistoricalBundleBuildError("confirmation evidence scanner is missing")
+    frozen_dates = confirmation.get("frozen_dates")
+    if not isinstance(frozen_dates, list):
+        raise HistoricalBundleBuildError("confirmation manifest frozen dates are missing")
+    selected_dates: list[str] = []
+    precollection_blockers: dict[str, Mapping[str, Any]] = {}
+    ready_dates: set[str] = set()
+    for frozen in frozen_dates:
+        if not isinstance(frozen, Mapping):
+            raise HistoricalBundleBuildError("confirmation frozen date is malformed")
+        day = str(frozen.get("date", ""))
+        selected_dates.append(day)
+        status = str(frozen.get("status", "validation_ready"))
+        expected_symbols = list(frozen.get("ordered_symbols", []))
+        if status == "precollection_blocked":
+            rows = blocked_by_date.get(day)
+            if not isinstance(rows, list) or [row.get("symbol") for row in rows] != expected_symbols:
+                raise HistoricalBundleBuildError(
+                    f"{day}: blocked universe differs from confirmation manifest"
+                )
+            blocker = frozen.get("precollection_blocker")
+            if not isinstance(blocker, Mapping):
+                raise HistoricalBundleBuildError(
+                    f"{day}: confirmation precollection blocker is missing"
+                )
+            precollection_blockers[day] = dict(blocker)
+            continue
+        rows = candidates_by_date.get(day)
+        if not isinstance(rows, list) or [row.get("symbol") for row in rows] != expected_symbols:
+            raise HistoricalBundleBuildError(
+                f"{day}: candidate order differs from confirmation manifest"
+            )
+        if _frozen_evidence_hash(day, rows, scanner) != frozen.get(
+            "frozen_evidence_sha256"
+        ):
+            raise HistoricalBundleBuildError(
+                f"{day}: frozen evidence differs from confirmation manifest"
+            )
+        ready_dates.add(day)
+    if ready_dates != {str(day) for day in candidates_by_date}:
+        raise HistoricalBundleBuildError(
+            "confirmation manifest does not cover the exact collectable date set"
+        )
+    return {
+        "selected_dates": selected_dates,
+        "selection_seed": source.get("selection_seed"),
+        "selection_integrity": {
+            "source": confirmation_manifest_path.name,
+            "confirmation_manifest_sha256": confirmation["manifest_sha256"],
+            "date_set_matches": True,
+            "copied_seed_matches": True,
+        },
+        "precollection_blockers": precollection_blockers,
+        "preregistration": {
+            "manifest_hash": confirmation["manifest_sha256"],
+            "registered_at": confirmation["registered_at"],
+        },
+    }
 
 
 def _benchmark_history(
@@ -962,6 +1073,7 @@ def collect_manifest(
     status_path: Path | None = None,
     transport_retries: int = 1,
     max_workers: int = DEFAULT_COLLECTION_WORKERS,
+    confirmation_manifest_path: Path | None = None,
 ) -> dict[str, Any]:
     if isinstance(max_workers, bool) or max_workers < 1:
         raise HistoricalBundleBuildError("max_workers must be a positive integer")
@@ -986,6 +1098,19 @@ def collect_manifest(
     selected_dates, selection_seed, selection_integrity = _selection_metadata(
         manifest_path, manifest, candidates_by_date
     )
+    precollection_blockers: Mapping[str, Mapping[str, Any]] = {}
+    preregistration: Mapping[str, str] | None = None
+    if confirmation_manifest_path is not None:
+        confirmation_context = _confirmation_collection_context(
+            manifest_path,
+            manifest,
+            confirmation_manifest_path,
+        )
+        selected_dates = confirmation_context["selected_dates"]
+        selection_seed = confirmation_context["selection_seed"]
+        selection_integrity = confirmation_context["selection_integrity"]
+        precollection_blockers = confirmation_context["precollection_blockers"]
+        preregistration = confirmation_context["preregistration"]
     raw_preflight = manifest.get("preflight")
     preflight = raw_preflight if isinstance(raw_preflight, Mapping) else None
     created_at: str | None = None
@@ -1008,6 +1133,7 @@ def collect_manifest(
             built,
             failures,
             recoveries,
+            precollection_blockers,
             interrupted=interrupted,
             created_at=created_at,
         )
@@ -1044,6 +1170,7 @@ def collect_manifest(
                             persist=persist,
                             max_workers=max_workers,
                             performance=performance_counters,
+                            preregistration=preregistration,
                         )
                     finally:
                         telemetry = getattr(client, "request_telemetry", None)
@@ -1075,7 +1202,10 @@ def collect_manifest(
         "blocked_dates": [day for day in selected_dates if day not in built],
         "failures": failures,
         "fallback_recoveries": recoveries,
-        "valid": len(built) == len(selected_dates),
+        "valid": (
+            len(built) == len(candidates_by_date)
+            and len(built) + len(precollection_blockers) == len(selected_dates)
+        ),
         "performance": {
             "elapsed_seconds": monotonic() - collection_started,
             "max_workers": max_workers,
@@ -1110,6 +1240,7 @@ def _collect_manifest_dates(
     persist: Any,
     max_workers: int,
     performance: Counter[str],
+    preregistration: Mapping[str, str] | None,
 ) -> None:
     for day, values in candidates_by_date.items():
         if not isinstance(day, str) or not isinstance(values, list):
@@ -1128,6 +1259,13 @@ def _collect_manifest_dates(
                 ):
                     raise HistoricalBundleBuildError(
                         f"{day}: cached bundle belongs to different frozen evidence"
+                    )
+                if preregistration is not None and (
+                    cached_bundle.get("sample_phase") != "confirmation"
+                    or cached_bundle.get("preregistration") != preregistration
+                ):
+                    raise HistoricalBundleBuildError(
+                        f"{day}: cached bundle belongs to different preregistration"
                     )
                 if day not in built:
                     built.append(day)
@@ -1390,6 +1528,7 @@ def _collect_manifest_dates(
                 synthetic_equity=synthetic_equity,
                 scanner=scanner,
                 benchmark_providers=benchmark_providers,
+                preregistration=preregistration,
             )
             validate_bundle(bundle)
             _write_json(bundle_path, bundle)
@@ -1433,6 +1572,11 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="atomic batch status (defaults to historical_batches/<manifest>.json)",
     )
+    parser.add_argument(
+        "--confirmation-manifest",
+        type=Path,
+        help="verified preregistration manifest that binds confirmation bundles",
+    )
     return parser
 
 
@@ -1450,6 +1594,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.status_output
                 or PROJECT_ROOT / "historical_batches" / f"{args.manifest.stem}.json"
             ),
+            confirmation_manifest_path=args.confirmation_manifest,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result["valid"] else 1

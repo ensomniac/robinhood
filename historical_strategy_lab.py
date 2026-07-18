@@ -407,15 +407,6 @@ def _candidate_symbols(rows: Any, day: str) -> tuple[str, ...]:
         _parse_timestamp(
             catalyst.get("published_at"), f"{day} {symbol} catalyst.published_at"
         )
-        filing_items = (
-            str(discovery.get("filing_items", ""))
-            if isinstance(discovery, Mapping)
-            else ""
-        )
-        if "2.02" not in {item.strip() for item in filing_items.split(",")}:
-            raise HistoricalStrategyLabError(
-                f"{day} {symbol}: confirmation universe requires Item 2.02 evidence"
-            )
         symbols.append(symbol)
     if len(set(symbols)) != len(symbols):
         raise HistoricalStrategyLabError(f"{day}: candidate symbols must be unique")
@@ -460,6 +451,71 @@ def _excluded_run_identity(result_path: Path) -> dict[str, Any]:
     }
 
 
+def _confirmation_selection_boundary(
+    evidence_path: Path,
+    evidence: Mapping[str, Any],
+    candidates_by_date: Mapping[str, Any],
+    blocked_candidates_by_date: Mapping[str, Any],
+) -> tuple[list[str], dict[str, Any] | None]:
+    """Resolve the exact requested sample, including preflight-blocked dates."""
+
+    ready_dates = {str(value) for value in candidates_by_date}
+    blocked_dates = {str(value) for value in blocked_candidates_by_date}
+    if ready_dates & blocked_dates:
+        raise HistoricalStrategyLabError(
+            "confirmation dates cannot be both ready and preflight-blocked"
+        )
+    selection_value = evidence.get("parent_selection_file") or evidence.get(
+        "selection_file"
+    )
+    if not isinstance(selection_value, str) or not selection_value.strip():
+        # Backward-compatible fixture path: a confirmation evidence file that
+        # predates linked selections still freezes every represented date.
+        return sorted(ready_dates | blocked_dates), None
+    selection_path = _resolve_recorded_path(
+        selection_value, relative_to=evidence_path.parent
+    ).resolve()
+    selection = _read_json_object(selection_path, "confirmation selection manifest")
+    selected_dates = selection.get("selected_dates")
+    seed = selection.get("seed")
+    if (
+        not isinstance(seed, int)
+        or not isinstance(selected_dates, list)
+        or not all(isinstance(day, str) and DATE_PATTERN.fullmatch(day) for day in selected_dates)
+        or len(selected_dates) != len(set(selected_dates))
+    ):
+        raise HistoricalStrategyLabError(
+            "confirmation selection requires a unique selected_dates array and integer seed"
+        )
+    represented = ready_dates | blocked_dates
+    if set(selected_dates) != represented:
+        missing = sorted(set(selected_dates) - represented)
+        extra = sorted(represented - set(selected_dates))
+        raise HistoricalStrategyLabError(
+            "confirmation evidence does not represent the exact selected dates "
+            f"(missing={missing[:10]}, extra={extra[:10]})"
+        )
+    copied_seed = evidence.get("selection_seed")
+    if copied_seed != seed:
+        raise HistoricalStrategyLabError(
+            "confirmation evidence selection seed does not match linked selection"
+        )
+    preflight = evidence.get("preflight")
+    declared_blocked = (
+        preflight.get("blocked_dates") if isinstance(preflight, Mapping) else None
+    )
+    if not isinstance(declared_blocked, list) or set(declared_blocked) != blocked_dates:
+        raise HistoricalStrategyLabError(
+            "confirmation preflight blockers do not match blocked candidate universes"
+        )
+    return sorted(selected_dates), {
+        "path": _display_path(selection_path),
+        "sha256": _sha256_file(selection_path),
+        "seed": seed,
+        "selected_dates_sha256": _sha256_bytes(_canonical_json(selected_dates)),
+    }
+
+
 def freeze_confirmation_manifest(
     evidence_path: Path,
     *,
@@ -473,9 +529,14 @@ def freeze_confirmation_manifest(
     evidence = _read_json_object(evidence_path, "confirmation evidence manifest")
     scanner = evidence.get("scanner")
     candidates_by_date = evidence.get("candidates_by_date")
+    blocked_candidates_by_date = evidence.get("blocked_candidates_by_date", {})
     if not isinstance(scanner, Mapping) or not isinstance(candidates_by_date, Mapping):
         raise HistoricalStrategyLabError(
             "confirmation evidence must contain scanner and candidates_by_date objects"
+        )
+    if not isinstance(blocked_candidates_by_date, Mapping):
+        raise HistoricalStrategyLabError(
+            "confirmation blocked_candidates_by_date must be an object"
         )
     if (
         scanner.get("point_in_time") is not True
@@ -494,12 +555,31 @@ def freeze_confirmation_manifest(
         raise HistoricalStrategyLabError(
             "candidate evidence cannot be prepared after preregistration"
         )
+    requested_dates, selection_identity = _confirmation_selection_boundary(
+        evidence_path,
+        evidence,
+        candidates_by_date,
+        blocked_candidates_by_date,
+    )
+    preflight = evidence.get("preflight")
+    preflight_dates = (
+        preflight.get("dates") if isinstance(preflight, Mapping) else None
+    )
     frozen_dates: list[dict[str, Any]] = []
-    for day in sorted(str(value) for value in candidates_by_date):
+    for day in requested_dates:
         if not DATE_PATTERN.fullmatch(day):
             raise HistoricalStrategyLabError(f"invalid confirmation date {day!r}")
-        rows = candidates_by_date[day]
-        symbols = _candidate_symbols(rows, day)
+        blocked = day in blocked_candidates_by_date
+        rows = (
+            blocked_candidates_by_date[day]
+            if blocked
+            else candidates_by_date[day]
+        )
+        if blocked and not isinstance(rows, list):
+            raise HistoricalStrategyLabError(
+                f"{day}: blocked candidate universe must be an array"
+            )
+        symbols = _candidate_symbols(rows, day) if rows else ()
         for row in rows:
             published = _parse_timestamp(
                 row["catalyst"]["published_at"],
@@ -509,16 +589,44 @@ def freeze_confirmation_manifest(
                 raise HistoricalStrategyLabError(
                     f"{day} {row['symbol']}: catalyst evidence postdates preregistration"
                 )
+        blocker: dict[str, Any] | None = None
+        if blocked:
+            report = (
+                preflight_dates.get(day)
+                if isinstance(preflight_dates, Mapping)
+                else None
+            )
+            if not isinstance(report, Mapping) or report.get("blocked") is not True:
+                raise HistoricalStrategyLabError(
+                    f"{day}: preflight blocker detail is missing"
+                )
+            if list(report.get("accepted_symbols", [])) != list(symbols):
+                raise HistoricalStrategyLabError(
+                    f"{day}: blocked candidate order differs from preflight"
+                )
+            blocker = {
+                "reason_code": str(report.get("blocked_reason", "preflight_blocked")),
+                "accepted_candidates": len(symbols),
+                "required_candidates": int(preflight.get("minimum_candidates", 10)),
+                "examined_candidates": int(report.get("examined_count", 0)),
+                "preflight_report_sha256": _sha256_bytes(_canonical_json(report)),
+            }
         frozen_evidence = {
             "date": day,
             "candidates": rows,
             "scanner": dict(scanner),
         }
+        if blocker is not None:
+            frozen_evidence["precollection_blocker"] = blocker
         frozen_dates.append(
             {
                 "date": day,
+                "status": (
+                    "precollection_blocked" if blocked else "validation_ready"
+                ),
                 "ordered_symbols": list(symbols),
                 "ordered_candidates": rows,
+                "precollection_blocker": blocker,
                 "frozen_evidence_sha256": _sha256_bytes(
                     _canonical_json(frozen_evidence)
                 ),
@@ -569,6 +677,7 @@ def freeze_confirmation_manifest(
             "prepared_at": evidence["prepared_at"],
             "parent_selection_file": evidence.get("parent_selection_file"),
             "selection_seed": evidence.get("selection_seed"),
+            "selection_manifest": selection_identity,
             "scanner": dict(scanner),
         },
         "excluded_inspected_runs": excluded_runs,
@@ -646,6 +755,28 @@ def load_confirmation_manifest(path: Path) -> dict[str, Any]:
         raise HistoricalStrategyLabError(
             "confirmation dates must be unique and chronological"
         )
+    for frozen in frozen_dates:
+        status = frozen.get("status", "validation_ready")
+        symbols = frozen.get("ordered_symbols")
+        candidates = frozen.get("ordered_candidates")
+        if status not in {"validation_ready", "precollection_blocked"}:
+            raise HistoricalStrategyLabError(
+                f"{frozen.get('date')}: invalid frozen-date status"
+            )
+        if not isinstance(symbols, list) or not isinstance(candidates, list):
+            raise HistoricalStrategyLabError(
+                f"{frozen.get('date')}: malformed frozen candidate universe"
+            )
+        if status == "validation_ready" and not symbols:
+            raise HistoricalStrategyLabError(
+                f"{frozen.get('date')}: validation-ready date has no candidates"
+            )
+        if status == "precollection_blocked" and not isinstance(
+            frozen.get("precollection_blocker"), Mapping
+        ):
+            raise HistoricalStrategyLabError(
+                f"{frozen.get('date')}: precollection blocker is missing"
+            )
     current_plugin = plugin_manifest_hash_input(("opening-reversal",))
     if manifest.get("strategy_plugin") != current_plugin:
         raise HistoricalStrategyLabError(
@@ -1656,14 +1787,35 @@ def _confirmation_dataset(
     for frozen in manifest["frozen_dates"]:
         day = str(frozen["date"])
         path = data_root / f"{day}.json"
+        frozen_status = str(frozen.get("status", "validation_ready"))
+        if frozen_status == "precollection_blocked" and path.is_file():
+            raise HistoricalStrategyLabError(
+                f"{day}: precollection-blocked date cannot receive a target bundle"
+            )
+        status = (
+            "precollection_blocked"
+            if frozen_status == "precollection_blocked"
+            else "available"
+            if path.is_file()
+            else "missing"
+        )
         bundles.append(
             {
                 "date": day,
                 "path": str(path),
-                "status": "available" if path.is_file() else "missing",
+                "status": status,
                 "sha256": _sha256_file(path) if path.is_file() else None,
                 "expected_symbols": list(frozen["ordered_symbols"]),
+                "expected_filing_items": {
+                    str(row["symbol"]): str(row.get("discovery", {}).get("filing_items", ""))
+                    for row in frozen["ordered_candidates"]
+                },
                 "expected_frozen_hash": frozen["frozen_evidence_sha256"],
+                "blocker_reason": (
+                    frozen.get("precollection_blocker", {}).get("reason_code")
+                    if frozen_status == "precollection_blocked"
+                    else None
+                ),
             }
         )
     identity = {
@@ -1682,7 +1834,7 @@ def _confirmation_dataset(
         "bundles": bundles,
         "dataset_hash": _sha256_bytes(_canonical_json(identity)),
         "available_dates": sum(value["status"] == "available" for value in bundles),
-        "missing_dates": sum(value["status"] == "missing" for value in bundles),
+        "missing_dates": sum(value["status"] != "available" for value in bundles),
     }
 
 
@@ -1716,6 +1868,7 @@ def _verify_confirmation_bundle(
         raise HistoricalStrategyLabError(
             f"{day}: bundle preregistration does not match frozen manifest"
         )
+    expected_filing_items = item.get("expected_filing_items", {})
     for raw in bundle["candidates"]:
         discovery = raw.get("discovery")
         items = (
@@ -1723,9 +1876,10 @@ def _verify_confirmation_bundle(
             if isinstance(discovery, Mapping)
             else ""
         )
-        if "2.02" not in {value.strip() for value in items.split(",")}:
+        symbol = str(raw.get("symbol", ""))
+        if items != expected_filing_items.get(symbol):
             raise HistoricalStrategyLabError(
-                f"{day} {raw.get('symbol')}: bundle lost frozen Item 2.02 evidence"
+                f"{day} {symbol}: bundle filing-item evidence differs from frozen universe"
             )
     return bundle
 
@@ -1741,7 +1895,7 @@ def _confirmation_observations(
         day = str(item["date"])
         bundle = _verify_confirmation_bundle(item, manifest)
         if bundle is None:
-            blocked[day] = "bundle_missing"
+            blocked[day] = str(item.get("blocker_reason") or "bundle_missing")
             continue
         for raw in bundle["candidates"]:
             observations[day].append(_observation(day, raw, plugin, config))

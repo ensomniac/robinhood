@@ -293,6 +293,23 @@ class BundleAssemblyTests(unittest.TestCase):
                 }
             ),
         )
+        confirmation = build_bundle(
+            day,
+            evidence,
+            raw_by_symbol,
+            {"SPY": bars, "QQQ": bars},
+            synthetic_equity=25_000,
+            scanner={"universe_capture_complete": True},
+            preregistration={
+                "manifest_hash": "a" * 64,
+                "registered_at": "2026-03-04T00:00:00+00:00",
+            },
+        )
+        validate_bundle(confirmation)
+        self.assertEqual(confirmation["sample_phase"], "confirmation")
+        self.assertEqual(
+            confirmation["preregistration"]["manifest_hash"], "a" * 64
+        )
 
     def test_non_break_below_opening_range_is_ineligible_not_malformed(self):
         day = "2026-03-03"
