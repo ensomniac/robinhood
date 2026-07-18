@@ -194,6 +194,103 @@ The first production-aware result and its frozen follow-up contract are:
 - `research_results/2026-07-18-production-aware-strategy-lab.{json,md}`
 - `research_results/2026-07-18-early-earnings-reversal-confirmation.md`
 
+## Independent Confirmation Workflow
+
+The lab also owns the prospective confirmation boundary for the sole frozen
+`reversal-early-earnings@1.0.0` policy. This is a two-step workflow; an old
+bundle cannot be relabeled after its outcome is known.
+
+First, generate a new point-in-time evidence manifest with at least 100 dates
+and complete ordered Item 2.02 candidate universes. Its scanner attestation must
+state `target_session_prices_observed=false`. The dates must not overlap any date
+inspected by `strategy-lab-651f20ff135e-b268f18ec755`. Freeze it before target-
+session collection:
+
+```sh
+python3 historical_strategy_lab.py freeze-confirmation \
+  --evidence historical_batches/evidence-<new-independent-sample>.json
+```
+
+The command writes
+`historical_batches/confirmation_manifests/confirmation-<sha256>.json`. The hash
+covers every date, ordered candidate and catalyst row, excluded dataset identity,
+the one policy/plugin, execution grid, acceptance thresholds, deployment model,
+production baseline, and implementation hashes. Validate the frozen identity at
+any time with:
+
+```sh
+python3 historical_strategy_lab.py validate-confirmation \
+  historical_batches/confirmation_manifests/confirmation-<sha256>.json
+```
+
+Only after that file exists may the normal read-only historical collector request
+the target sessions. Every resulting bundle must use `sample_phase=confirmation`,
+carry the exact manifest hash and registration timestamp, retain the exact date
+and symbol order, and have `source.captured_at` strictly after preregistration.
+Then run the fixed confirmation:
+
+```sh
+python3 historical_strategy_lab.py run-confirmation \
+  historical_batches/confirmation_manifests/confirmation-<sha256>.json \
+  --bootstrap-samples 20000 \
+  --publish-prefix research_results/<independent-confirmation-name>
+```
+
+The result publishes every requested date, blocker, primary trade/exit, and all
+12 frozen cost/target cells. It applies the predeclared 80-date/50-signal,
+expectancy, PF, drawdown, bootstrap, chronological-half, best-five-removal,
+cost-stress, and target-stress gates. Failure returns
+`stop_without_threshold_tuning`; callers cannot supply another policy or grid.
+
+Two deployment views remain separate from strategy R. The structural arm keeps
+the real stop, reserves 10 bps for stop slippage, and sizes whole shares to the
+UNVALIDATED 0.25% account-risk budget with an 80% allocation cap. It reports
+account compounding, log growth, account drawdown, allocation/shortfall, stop
+geometry, stop slippage, binding caps, and performance without the largest five
+gains. The production-compatible cohort contains only stops that naturally
+start at or below 0.8%; wider stops are never tightened into it, and fewer than
+20 cohort trades is explicitly insufficient for inference.
+
+## Prospective Shadow Execution Qualification
+
+`shadow_reversal.py` evaluates privacy-safe current-day captures from the normal
+read-only discovery, completed-bar, NBBO, and book surfaces. It has no account
+connector or order-action interface. A capture includes the pre-09:30 frozen
+shortlist, complete minute bars, Item 2.02 evidence, signal-detection time, three
+quote/book observations with quote and receipt timestamps, stop-readiness and
+simulated-protection times, a compact monitored bid/ask path, and a monitoring-
+gap attestation. Synthetic equity and buying power are required; live balances
+and broker identifiers are rejected.
+
+Record every session, including no-trade and missed-signal days:
+
+```sh
+python3 shadow_reversal.py record /path/to/privacy-safe-shadow-capture.json
+```
+
+The runner recomputes the first completed bearish-opening reclaim before 09:40,
+selects strength then symbol on a simultaneous signal, rejects delayed or stale
+observations, never assumes a fill above 0.15% of the signal close, preserves the
+structural stop, applies risk/allocation/depth/volume sizing, resolves an
+ambiguous stop/target interval stop-first, and requires a 15:50 bid for force
+flat. Records are hash-sealed under `shadow_results/`.
+
+After at least 20 completed signals spanning at least 30 calendar days, aggregate
+them with the independent historical result:
+
+```sh
+python3 shadow_reversal.py qualify shadow_results/2026-*.json \
+  --confirmation-result research_results/<independent-confirmation-name>.json \
+  --output shadow_results/qualification.json
+```
+
+The qualifier enforces quote/spread freshness, p95 entry slippage at most 15
+bps, p95 simulated unprotected exposure at most ten seconds, positive expectancy,
+PF at least 1.20, drawdown at most 6R, complete lifecycles, preserved stops, zero
+rule violations, and no above-cap fills. A pass only becomes
+`qualified_for_normal_cadence_review`; it never edits production or invokes
+`strategy_learning.py` automatically.
+
 ## First 100-Date Matrix
 
 The evidence-bound run on 2026-07-16 retained all 100 requested dates, covered
@@ -239,9 +336,13 @@ target-session performance.
 
 ## Validation
 
-`tests/test_historical_research.py` proves immutable inputs, progressive
+`tests/test_historical_research.py`, `tests/test_historical_strategy_lab.py`, and
+`tests/test_shadow_reversal.py` prove immutable inputs, progressive
 no-lookahead disclosure, next-bar entry, adverse same-minute ambiguity,
-requirements blocking, malformed-bar rejection, built-in patterns, identical
-stable output across one and multiple workers, and unchanged production ledger
-files. Before publishing a result, run the full repository tests and audits in
-the normal project workflow.
+requirements blocking, malformed-bar rejection, exact preregistration and
+excluded-date identity, manifest mutation/order/capture-time refusal,
+deterministic one-policy results, structural-stop sizing, stale/chase/partial/
+monitoring failures, forced flattening, the no-order shadow boundary, identical
+stable output across worker counts, and unchanged production ledger files.
+Before publishing a result, run the full repository tests and audits in the
+normal project workflow.

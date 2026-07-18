@@ -21,6 +21,7 @@ import time
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -50,12 +51,22 @@ from strategy_engine import (
 
 
 SCHEMA_VERSION = 1
-LAB_VERSION = "2026-07-18-v2"
+LAB_VERSION = "2026-07-18-v3"
+CONFIRMATION_SCHEMA_VERSION = 1
+CONFIRMATION_CONTRACT_ID = "early-item-2.02-reversal-confirmation-v1"
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_EVIDENCE = (
     PROJECT_ROOT / "historical_batches" / "evidence-2026-07-16-one-hundred-days.json"
 )
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "research_runs"
+DEFAULT_CONFIRMATION_ROOT = (
+    PROJECT_ROOT / "historical_batches" / "confirmation_manifests"
+)
+DEFAULT_EXCLUDED_RESULT = (
+    PROJECT_ROOT
+    / "research_results"
+    / "2026-07-18-production-aware-strategy-lab.json"
+)
 PRODUCTION_PATHS = (
     PROJECT_ROOT / "strategy_config.toml",
     PROJECT_ROOT / "SIGNALS.jsonl",
@@ -69,6 +80,7 @@ PROTECTED_PUBLISH_PATHS = PRODUCTION_PATHS + (
 SCORE_REASON = re.compile(r"^score \d+ is below the \d+-point maturity gate$")
 STALE_REASON = re.compile(r"^snapshot \d+ is stale$")
 CROSSED_REASON = re.compile(r"^snapshot \d+ is crossed$")
+DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 class HistoricalStrategyLabError(RuntimeError):
@@ -210,6 +222,42 @@ BUILTIN_POLICIES: dict[str, Policy] = {
     )
 }
 
+# This is the only policy the prospective confirmation workflow may execute.
+# It is deliberately a separate constant so a caller cannot supply a policy
+# grid or opportunistically substitute another selector after outcomes exist.
+FROZEN_CONFIRMATION_POLICY = BUILTIN_POLICIES["reversal-early-earnings"]
+CONFIRMATION_EXECUTION_GRID = {
+    "slippage_bps_per_side": [5.0, 10.0, 20.0],
+    "target_r": [1.0, 1.5, 2.0, 3.0],
+    "primary": {"slippage_bps_per_side": 5.0, "target_r": 2.0},
+    "force_flat_time_et": "15:50:00",
+    "same_bar_ambiguity": "stop_first",
+}
+CONFIRMATION_ACCEPTANCE_THRESHOLDS = {
+    "minimum_requested_dates": 100,
+    "minimum_validation_grade_dates": 80,
+    "minimum_executed_signals": 50,
+    "primary_minimum_profit_factor": 1.30,
+    "stress_minimum_profit_factor": 1.20,
+    "maximum_drawdown_r": 6.0,
+    "bootstrap_one_sided_confidence": 0.90,
+    "chronological_halves_must_be_positive": True,
+    "total_without_best_five_must_be_positive": True,
+    "all_frozen_targets_must_be_positive": True,
+}
+CONFIRMATION_DEPLOYMENT = {
+    "synthetic_starting_equity": 100_000.0,
+    "synthetic_buying_power_fraction": 1.0,
+    "account_risk_fraction": 0.0025,
+    "stop_slippage_reserve_fraction": 0.001,
+    "allocation_cap_fraction": 0.80,
+    "allocation_objective_floor_fraction": 0.70,
+    "production_compatible_stop_fraction": 0.008,
+    "minimum_production_compatible_trades_for_inference": 20,
+    "whole_shares_only": True,
+    "structural_stops_must_not_be_compressed": True,
+}
+
 
 @dataclass(frozen=True, slots=True)
 class Observation:
@@ -288,6 +336,337 @@ def _atomic_text(path: Path, text: str) -> None:
 
 def _atomic_json(path: Path, value: Any) -> None:
     _atomic_text(path, json.dumps(value, indent=2, sort_keys=True) + "\n")
+
+
+def _read_json_object(path: Path, label: str) -> dict[str, Any]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise HistoricalStrategyLabError(f"cannot read {label} {path}: {exc}") from exc
+    if not isinstance(value, dict):
+        raise HistoricalStrategyLabError(f"{label} must be a JSON object")
+    return value
+
+
+def _parse_timestamp(value: Any, label: str) -> datetime:
+    if not isinstance(value, str):
+        raise HistoricalStrategyLabError(f"{label} must be an ISO timestamp")
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError as exc:
+        raise HistoricalStrategyLabError(f"{label} must be an ISO timestamp") from exc
+    if parsed.tzinfo is None:
+        raise HistoricalStrategyLabError(f"{label} must include a timezone")
+    return parsed
+
+
+def _display_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(PROJECT_ROOT))
+    except ValueError:
+        return str(resolved)
+
+
+def _resolve_recorded_path(value: Any, *, relative_to: Path) -> Path:
+    path = Path(str(value))
+    if path.is_absolute():
+        return path
+    project_path = PROJECT_ROOT / path
+    if project_path.exists():
+        return project_path
+    return relative_to / path
+
+
+def _candidate_symbols(rows: Any, day: str) -> tuple[str, ...]:
+    if not isinstance(rows, list) or not rows:
+        raise HistoricalStrategyLabError(
+            f"{day}: frozen candidate universe must be a non-empty array"
+        )
+    symbols: list[str] = []
+    for index, row in enumerate(rows, 1):
+        if not isinstance(row, Mapping):
+            raise HistoricalStrategyLabError(
+                f"{day}: candidate {index} must be an object"
+            )
+        symbol = str(row.get("symbol", "")).strip().upper()
+        if not symbol:
+            raise HistoricalStrategyLabError(
+                f"{day}: candidate {index} has no symbol"
+            )
+        catalyst = row.get("catalyst")
+        discovery = row.get("discovery")
+        if (
+            not isinstance(catalyst, Mapping)
+            or catalyst.get("point_in_time") is not True
+            or not str(catalyst.get("source_url", "")).strip()
+        ):
+            raise HistoricalStrategyLabError(
+                f"{day} {symbol}: point-in-time catalyst evidence is incomplete"
+            )
+        _parse_timestamp(
+            catalyst.get("published_at"), f"{day} {symbol} catalyst.published_at"
+        )
+        filing_items = (
+            str(discovery.get("filing_items", ""))
+            if isinstance(discovery, Mapping)
+            else ""
+        )
+        if "2.02" not in {item.strip() for item in filing_items.split(",")}:
+            raise HistoricalStrategyLabError(
+                f"{day} {symbol}: confirmation universe requires Item 2.02 evidence"
+            )
+        symbols.append(symbol)
+    if len(set(symbols)) != len(symbols):
+        raise HistoricalStrategyLabError(f"{day}: candidate symbols must be unique")
+    return tuple(symbols)
+
+
+def _excluded_run_identity(result_path: Path) -> dict[str, Any]:
+    result = _read_json_object(result_path, "excluded strategy-lab result")
+    manifest = result.get("manifest")
+    if not isinstance(manifest, Mapping):
+        raise HistoricalStrategyLabError(
+            f"{result_path}: excluded result has no manifest"
+        )
+    dataset = manifest.get("dataset")
+    if not isinstance(dataset, Mapping):
+        raise HistoricalStrategyLabError(
+            f"{result_path}: excluded result has no dataset identity"
+        )
+    evidence_path = _resolve_recorded_path(
+        dataset.get("evidence_manifest"), relative_to=result_path.parent
+    )
+    evidence = _read_json_object(evidence_path, "excluded evidence manifest")
+    candidates_by_date = evidence.get("candidates_by_date")
+    if not isinstance(candidates_by_date, Mapping) or not candidates_by_date:
+        raise HistoricalStrategyLabError(
+            f"{evidence_path}: excluded evidence has no inspected dates"
+        )
+    dates = sorted(str(day) for day in candidates_by_date)
+    if int(dataset.get("requested_dates", -1)) != len(dates):
+        raise HistoricalStrategyLabError(
+            f"{result_path}: excluded requested-date count is inconsistent"
+        )
+    return {
+        "run_id": str(manifest.get("run_id", "")),
+        "dataset_hash": str(dataset.get("dataset_hash", "")),
+        "result_path": _display_path(result_path),
+        "result_sha256": _sha256_file(result_path),
+        "evidence_path": _display_path(evidence_path),
+        "evidence_sha256": _sha256_file(evidence_path),
+        "requested_dates": dates,
+        "requested_dates_sha256": _sha256_bytes(_canonical_json(dates)),
+    }
+
+
+def freeze_confirmation_manifest(
+    evidence_path: Path,
+    *,
+    excluded_result_paths: Sequence[Path] = (DEFAULT_EXCLUDED_RESULT,),
+    output_root: Path = DEFAULT_CONFIRMATION_ROOT,
+    registered_at: str | None = None,
+) -> tuple[Path, dict[str, Any]]:
+    """Freeze the only permitted confirmation policy before price collection."""
+
+    evidence_path = evidence_path.resolve()
+    evidence = _read_json_object(evidence_path, "confirmation evidence manifest")
+    scanner = evidence.get("scanner")
+    candidates_by_date = evidence.get("candidates_by_date")
+    if not isinstance(scanner, Mapping) or not isinstance(candidates_by_date, Mapping):
+        raise HistoricalStrategyLabError(
+            "confirmation evidence must contain scanner and candidates_by_date objects"
+        )
+    if (
+        scanner.get("point_in_time") is not True
+        or scanner.get("universe_capture_complete") is not True
+        or scanner.get("target_session_prices_observed") is not False
+    ):
+        raise HistoricalStrategyLabError(
+            "confirmation discovery must attest a complete point-in-time universe "
+            "with target_session_prices_observed=false"
+        )
+    registered = _parse_timestamp(
+        registered_at or datetime.now(UTC).isoformat(), "registered_at"
+    )
+    prepared = _parse_timestamp(evidence.get("prepared_at"), "evidence.prepared_at")
+    if prepared > registered:
+        raise HistoricalStrategyLabError(
+            "candidate evidence cannot be prepared after preregistration"
+        )
+    frozen_dates: list[dict[str, Any]] = []
+    for day in sorted(str(value) for value in candidates_by_date):
+        if not DATE_PATTERN.fullmatch(day):
+            raise HistoricalStrategyLabError(f"invalid confirmation date {day!r}")
+        rows = candidates_by_date[day]
+        symbols = _candidate_symbols(rows, day)
+        for row in rows:
+            published = _parse_timestamp(
+                row["catalyst"]["published_at"],
+                f"{day} {row['symbol']} catalyst.published_at",
+            )
+            if published > registered:
+                raise HistoricalStrategyLabError(
+                    f"{day} {row['symbol']}: catalyst evidence postdates preregistration"
+                )
+        frozen_evidence = {
+            "date": day,
+            "candidates": rows,
+            "scanner": dict(scanner),
+        }
+        frozen_dates.append(
+            {
+                "date": day,
+                "ordered_symbols": list(symbols),
+                "ordered_candidates": rows,
+                "frozen_evidence_sha256": _sha256_bytes(
+                    _canonical_json(frozen_evidence)
+                ),
+            }
+        )
+    minimum_dates = int(
+        CONFIRMATION_ACCEPTANCE_THRESHOLDS["minimum_requested_dates"]
+    )
+    if len(frozen_dates) < minimum_dates:
+        raise HistoricalStrategyLabError(
+            f"confirmation requires at least {minimum_dates} frozen dates"
+        )
+    excluded_runs = [
+        _excluded_run_identity(path.resolve()) for path in excluded_result_paths
+    ]
+    required_run = "strategy-lab-651f20ff135e-b268f18ec755"
+    if required_run not in {value["run_id"] for value in excluded_runs}:
+        raise HistoricalStrategyLabError(
+            f"confirmation must exclude inspected run {required_run}"
+        )
+    excluded_dates = {
+        day for value in excluded_runs for day in value["requested_dates"]
+    }
+    overlap = sorted(
+        value["date"] for value in frozen_dates if value["date"] in excluded_dates
+    )
+    if overlap:
+        raise HistoricalStrategyLabError(
+            "confirmation dates overlap previously inspected dates: "
+            + ", ".join(overlap[:10])
+        )
+    config = load_config()
+    plugin_identity = plugin_manifest_hash_input(("opening-reversal",))
+    implementation_paths = (
+        Path(__file__),
+        PROJECT_ROOT / "historical_research.py",
+        PROJECT_ROOT / "historical_research_strategies.py",
+    )
+    body: dict[str, Any] = {
+        "schema_version": CONFIRMATION_SCHEMA_VERSION,
+        "kind": "historical_strategy_confirmation_preregistration",
+        "confirmation_contract_id": CONFIRMATION_CONTRACT_ID,
+        "registered_at": registered.isoformat(),
+        "status": "frozen_before_target_session_collection",
+        "source_evidence": {
+            "path": _display_path(evidence_path),
+            "sha256": _sha256_file(evidence_path),
+            "prepared_at": evidence["prepared_at"],
+            "parent_selection_file": evidence.get("parent_selection_file"),
+            "selection_seed": evidence.get("selection_seed"),
+            "scanner": dict(scanner),
+        },
+        "excluded_inspected_runs": excluded_runs,
+        "frozen_dates": frozen_dates,
+        "policy": asdict(FROZEN_CONFIRMATION_POLICY),
+        "strategy_plugin": plugin_identity,
+        "execution_grid": CONFIRMATION_EXECUTION_GRID,
+        "acceptance_thresholds": CONFIRMATION_ACCEPTANCE_THRESHOLDS,
+        "deployment_views": CONFIRMATION_DEPLOYMENT,
+        "production_baseline": {
+            "strategy_version": config.version,
+            "rules_hash": config.rules_hash,
+            "production_rules_must_remain_unchanged": True,
+        },
+        "collection_contract": {
+            "target_session_capture_must_follow_registered_at": True,
+            "bundle_sample_phase": "confirmation",
+            "bundle_manifest_hash_must_match": True,
+            "candidate_order_must_match": True,
+            "date_and_symbol_substitution_allowed": False,
+        },
+        "implementations": {
+            str(path.relative_to(PROJECT_ROOT)): _sha256_file(path)
+            for path in implementation_paths
+        },
+        "automatic_strategy_application": False,
+        "broker_actions_allowed": False,
+    }
+    manifest_hash = _sha256_bytes(_canonical_json(body))
+    manifest = {**body, "manifest_sha256": manifest_hash}
+    output_root = _safe_publish_prefix(output_root / "manifest").parent
+    output_path = output_root / f"confirmation-{manifest_hash}.json"
+    if output_path.exists():
+        if _read_json_object(output_path, "confirmation manifest") != manifest:
+            raise HistoricalStrategyLabError(
+                "hash-addressed confirmation manifest already exists with other content"
+            )
+    else:
+        _atomic_json(output_path, manifest)
+    return output_path, manifest
+
+
+def load_confirmation_manifest(path: Path) -> dict[str, Any]:
+    manifest = _read_json_object(path, "confirmation manifest")
+    recorded_hash = manifest.get("manifest_sha256")
+    if not isinstance(recorded_hash, str) or len(recorded_hash) != 64:
+        raise HistoricalStrategyLabError("confirmation manifest hash is missing")
+    body = dict(manifest)
+    body.pop("manifest_sha256", None)
+    actual_hash = _sha256_bytes(_canonical_json(body))
+    if actual_hash != recorded_hash:
+        raise HistoricalStrategyLabError("confirmation manifest was mutated")
+    if path.name != f"confirmation-{recorded_hash}.json":
+        raise HistoricalStrategyLabError(
+            "confirmation manifest filename is not hash-addressed"
+        )
+    if (
+        manifest.get("schema_version") != CONFIRMATION_SCHEMA_VERSION
+        or manifest.get("confirmation_contract_id") != CONFIRMATION_CONTRACT_ID
+        or manifest.get("policy") != asdict(FROZEN_CONFIRMATION_POLICY)
+        or manifest.get("execution_grid") != CONFIRMATION_EXECUTION_GRID
+        or manifest.get("acceptance_thresholds")
+        != CONFIRMATION_ACCEPTANCE_THRESHOLDS
+        or manifest.get("deployment_views") != CONFIRMATION_DEPLOYMENT
+    ):
+        raise HistoricalStrategyLabError(
+            "confirmation manifest does not match the frozen executable contract"
+        )
+    _parse_timestamp(manifest.get("registered_at"), "manifest.registered_at")
+    frozen_dates = manifest.get("frozen_dates")
+    if not isinstance(frozen_dates, list) or len(frozen_dates) < 100:
+        raise HistoricalStrategyLabError("confirmation manifest has too few dates")
+    dates = [str(value.get("date", "")) for value in frozen_dates]
+    if dates != sorted(dates) or len(set(dates)) != len(dates):
+        raise HistoricalStrategyLabError(
+            "confirmation dates must be unique and chronological"
+        )
+    current_plugin = plugin_manifest_hash_input(("opening-reversal",))
+    if manifest.get("strategy_plugin") != current_plugin:
+        raise HistoricalStrategyLabError(
+            "opening-reversal implementation changed after preregistration"
+        )
+    for relative, expected_hash in manifest.get("implementations", {}).items():
+        path_value = PROJECT_ROOT / str(relative)
+        if not path_value.is_file() or _sha256_file(path_value) != expected_hash:
+            raise HistoricalStrategyLabError(
+                f"confirmation implementation changed after preregistration: {relative}"
+            )
+    config = load_config()
+    baseline = manifest.get("production_baseline")
+    if not isinstance(baseline, Mapping) or (
+        baseline.get("strategy_version") != config.version
+        or baseline.get("rules_hash") != config.rules_hash
+    ):
+        raise HistoricalStrategyLabError(
+            "production baseline changed after confirmation preregistration"
+        )
+    return manifest
 
 
 def _seconds(time_et: str) -> int:
@@ -730,6 +1109,7 @@ def summarize_policy(
     execution: ExecutionConfig,
     *,
     bootstrap_samples: int,
+    include_daily: bool = False,
 ) -> dict[str, Any]:
     daily: list[dict[str, Any]] = []
     aggregate_filtered = Counter()
@@ -796,7 +1176,7 @@ def summarize_policy(
         )[:16],
         16,
     )
-    return {
+    summary = {
         "policy": asdict(policy),
         "requested_days": len(requested_dates),
         "covered_days": len(covered),
@@ -850,6 +1230,10 @@ def summarize_policy(
             ),
         },
     }
+    if include_daily:
+        summary["execution"] = asdict(execution)
+        summary["daily"] = daily
+    return summary
 
 
 def _all_signal_diagnostics(
@@ -1265,6 +1649,644 @@ def run_lab(
     return result
 
 
+def _confirmation_dataset(
+    manifest: Mapping[str, Any], data_root: Path
+) -> dict[str, Any]:
+    bundles: list[dict[str, Any]] = []
+    for frozen in manifest["frozen_dates"]:
+        day = str(frozen["date"])
+        path = data_root / f"{day}.json"
+        bundles.append(
+            {
+                "date": day,
+                "path": str(path),
+                "status": "available" if path.is_file() else "missing",
+                "sha256": _sha256_file(path) if path.is_file() else None,
+                "expected_symbols": list(frozen["ordered_symbols"]),
+                "expected_frozen_hash": frozen["frozen_evidence_sha256"],
+            }
+        )
+    identity = {
+        "confirmation_manifest_sha256": manifest["manifest_sha256"],
+        "bundles": [
+            {
+                "date": value["date"],
+                "status": value["status"],
+                "sha256": value["sha256"],
+            }
+            for value in bundles
+        ],
+    }
+    return {
+        "dates": [str(value["date"]) for value in manifest["frozen_dates"]],
+        "bundles": bundles,
+        "dataset_hash": _sha256_bytes(_canonical_json(identity)),
+        "available_dates": sum(value["status"] == "available" for value in bundles),
+        "missing_dates": sum(value["status"] == "missing" for value in bundles),
+    }
+
+
+def _verify_confirmation_bundle(
+    item: Mapping[str, Any], manifest: Mapping[str, Any]
+) -> Mapping[str, Any] | None:
+    bundle = _load_verified_bundle(
+        item, expected_frozen_hash=str(item["expected_frozen_hash"])
+    )
+    if bundle is None:
+        return None
+    day = str(item["date"])
+    registered = _parse_timestamp(
+        manifest["registered_at"], "manifest.registered_at"
+    )
+    source = bundle["source"]
+    captured = _parse_timestamp(source.get("captured_at"), f"{day} source.captured_at")
+    if captured <= registered:
+        raise HistoricalStrategyLabError(
+            f"{day}: target-session capture must follow preregistration"
+        )
+    if bundle.get("sample_phase") != "confirmation":
+        raise HistoricalStrategyLabError(
+            f"{day}: confirmation bundle cannot be relabeled from another phase"
+        )
+    preregistration = bundle.get("preregistration")
+    if not isinstance(preregistration, Mapping) or (
+        preregistration.get("manifest_hash") != manifest["manifest_sha256"]
+        or preregistration.get("registered_at") != manifest["registered_at"]
+    ):
+        raise HistoricalStrategyLabError(
+            f"{day}: bundle preregistration does not match frozen manifest"
+        )
+    for raw in bundle["candidates"]:
+        discovery = raw.get("discovery")
+        items = (
+            str(discovery.get("filing_items", ""))
+            if isinstance(discovery, Mapping)
+            else ""
+        )
+        if "2.02" not in {value.strip() for value in items.split(",")}:
+            raise HistoricalStrategyLabError(
+                f"{day} {raw.get('symbol')}: bundle lost frozen Item 2.02 evidence"
+            )
+    return bundle
+
+
+def _confirmation_observations(
+    dataset: Mapping[str, Any], manifest: Mapping[str, Any]
+) -> tuple[dict[str, list[Observation]], dict[str, str]]:
+    plugin = load_strategy(FROZEN_CONFIRMATION_POLICY.strategy_spec)
+    config = load_config()
+    observations: dict[str, list[Observation]] = defaultdict(list)
+    blocked: dict[str, str] = {}
+    for item in dataset["bundles"]:
+        day = str(item["date"])
+        bundle = _verify_confirmation_bundle(item, manifest)
+        if bundle is None:
+            blocked[day] = "bundle_missing"
+            continue
+        for raw in bundle["candidates"]:
+            observations[day].append(_observation(day, raw, plugin, config))
+    return dict(observations), blocked
+
+
+def _fractional_drawdown(equities: Sequence[float]) -> float:
+    if not equities:
+        return 0.0
+    peak = equities[0]
+    maximum = 0.0
+    for equity in equities:
+        peak = max(peak, equity)
+        if peak > 0:
+            maximum = max(maximum, (peak - equity) / peak)
+    return maximum
+
+
+def _simulate_deployment(
+    daily: Sequence[Mapping[str, Any]],
+    *,
+    maximum_stop_fraction: float | None = None,
+    excluded_signal_ids: frozenset[str] = frozenset(),
+) -> dict[str, Any]:
+    assumptions = CONFIRMATION_DEPLOYMENT
+    starting_equity = float(assumptions["synthetic_starting_equity"])
+    equity = starting_equity
+    equity_path = [equity]
+    details: list[dict[str, Any]] = []
+    stopped_slippage_bps: list[float] = []
+    for row in daily:
+        if row.get("status") != "trade":
+            continue
+        trade = row["trade"]
+        signal_id = str(trade["signal_id"])
+        if signal_id in excluded_signal_ids:
+            continue
+        entry = float(trade["entry_price"])
+        structural_stop = float(trade["technical_stop"])
+        stop_distance = entry - structural_stop
+        stop_fraction = stop_distance / entry
+        if maximum_stop_fraction is not None and stop_fraction > maximum_stop_fraction:
+            continue
+        reserve = entry * float(assumptions["stop_slippage_reserve_fraction"])
+        risk_per_share = stop_distance + reserve
+        risk_budget = equity * float(assumptions["account_risk_fraction"])
+        buying_power = equity * float(
+            assumptions["synthetic_buying_power_fraction"]
+        )
+        allocation_budget = (
+            buying_power * float(assumptions["allocation_cap_fraction"])
+        )
+        q_risk = math.floor(risk_budget / risk_per_share)
+        q_allocation = math.floor(allocation_budget / entry)
+        quantity = min(q_risk, q_allocation)
+        binding_cap = "risk" if q_risk <= q_allocation else "allocation"
+        equity_before = equity
+        pnl = quantity * (float(trade["exit_price"]) - entry)
+        equity += pnl
+        account_return = pnl / equity_before if equity_before else 0.0
+        allocation = quantity * entry / equity_before if equity_before else 0.0
+        planned_loss_fraction = (
+            quantity * risk_per_share / equity_before if equity_before else 0.0
+        )
+        if quantity > 0 and planned_loss_fraction > float(
+            assumptions["account_risk_fraction"]
+        ) + 1e-12:
+            raise HistoricalStrategyLabError(
+                f"{signal_id}: whole-share sizing exceeded the account-risk cap"
+            )
+        stop_slippage_bps = None
+        if "stop" in str(trade["exit_reason"]):
+            stop_slippage_bps = max(
+                0.0,
+                (structural_stop - float(trade["exit_price"])) / entry * 10_000.0,
+            )
+            stopped_slippage_bps.append(stop_slippage_bps)
+        details.append(
+            {
+                "date": row["date"],
+                "signal_id": signal_id,
+                "symbol": trade["symbol"],
+                "structural_stop": structural_stop,
+                "deployed_stop": structural_stop,
+                "stop_compressed": False,
+                "stop_fraction": round(stop_fraction, 8),
+                "reserve_fraction": assumptions[
+                    "stop_slippage_reserve_fraction"
+                ],
+                "q_risk": q_risk,
+                "q_allocation": q_allocation,
+                "quantity": quantity,
+                "binding_cap": binding_cap,
+                "planned_loss_fraction": round(planned_loss_fraction, 8),
+                "allocation_fraction": round(allocation, 8),
+                "allocation_shortfall_fraction": round(
+                    max(
+                        0.0,
+                        float(assumptions["allocation_objective_floor_fraction"])
+                        - allocation,
+                    ),
+                    8,
+                ),
+                "modeled_stop_slippage_bps": (
+                    round(stop_slippage_bps, 8)
+                    if stop_slippage_bps is not None
+                    else None
+                ),
+                "account_return_fraction": round(account_return, 10),
+                "equity_before": round(equity_before, 8),
+                "equity_after": round(equity, 8),
+            }
+        )
+        equity_path.append(equity)
+    returns = [float(value["account_return_fraction"]) for value in details]
+    allocations = [float(value["allocation_fraction"]) for value in details]
+    shortfalls = [
+        float(value["allocation_shortfall_fraction"]) for value in details
+    ]
+    stops = [float(value["stop_fraction"]) for value in details]
+    log_returns = [math.log1p(value) for value in returns if value > -1.0]
+    return {
+        "trades": len(details),
+        "starting_equity": starting_equity,
+        "ending_equity": round(equity, 8),
+        "compounded_account_return_fraction": round(
+            equity / starting_equity - 1.0, 10
+        ),
+        "mean_account_return_fraction": (
+            round(statistics.fmean(returns), 10) if returns else None
+        ),
+        "expected_log_growth_per_trade": (
+            round(statistics.fmean(log_returns), 10) if log_returns else None
+        ),
+        "total_log_growth": round(sum(log_returns), 10),
+        "peak_to_trough_account_drawdown_fraction": round(
+            _fractional_drawdown(equity_path), 10
+        ),
+        "median_allocation_fraction": (
+            round(statistics.median(allocations), 8) if allocations else None
+        ),
+        "p90_allocation_fraction": (
+            round(_quantile(allocations, 0.90), 8) if allocations else None
+        ),
+        "median_allocation_shortfall_fraction": (
+            round(statistics.median(shortfalls), 8) if shortfalls else None
+        ),
+        "p90_allocation_shortfall_fraction": (
+            round(_quantile(shortfalls, 0.90), 8) if shortfalls else None
+        ),
+        "median_stop_fraction": (
+            round(statistics.median(stops), 8) if stops else None
+        ),
+        "p90_stop_fraction": (
+            round(_quantile(stops, 0.90), 8) if stops else None
+        ),
+        "median_modeled_stop_slippage_bps": (
+            round(statistics.median(stopped_slippage_bps), 8)
+            if stopped_slippage_bps
+            else None
+        ),
+        "p90_modeled_stop_slippage_bps": (
+            round(_quantile(stopped_slippage_bps, 0.90), 8)
+            if stopped_slippage_bps
+            else None
+        ),
+        "stop_compressions": sum(value["stop_compressed"] for value in details),
+        "risk_cap_violations": sum(
+            value["planned_loss_fraction"]
+            > float(assumptions["account_risk_fraction"]) + 1e-12
+            for value in details
+        ),
+        "details": details,
+    }
+
+
+def _deployment_views(daily: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    structural = _simulate_deployment(daily)
+    largest_gains = frozenset(
+        value["signal_id"]
+        for value in sorted(
+            structural["details"],
+            key=lambda row: (-float(row["account_return_fraction"]), row["signal_id"]),
+        )[:5]
+    )
+    structural["performance_without_largest_five_gains"] = _simulate_deployment(
+        daily, excluded_signal_ids=largest_gains
+    )
+    structural["largest_five_gain_signal_ids"] = sorted(largest_gains)
+    compatible = _simulate_deployment(
+        daily,
+        maximum_stop_fraction=float(
+            CONFIRMATION_DEPLOYMENT["production_compatible_stop_fraction"]
+        ),
+    )
+    compatible["minimum_trades_for_inference"] = CONFIRMATION_DEPLOYMENT[
+        "minimum_production_compatible_trades_for_inference"
+    ]
+    compatible["sufficient_for_inference"] = compatible["trades"] >= int(
+        compatible["minimum_trades_for_inference"]
+    )
+    compatible["wider_stops_tightened_into_cohort"] = 0
+    compatible_largest_gains = frozenset(
+        value["signal_id"]
+        for value in sorted(
+            compatible["details"],
+            key=lambda row: (-float(row["account_return_fraction"]), row["signal_id"]),
+        )[:5]
+    )
+    compatible["performance_without_largest_five_gains"] = _simulate_deployment(
+        daily,
+        maximum_stop_fraction=float(
+            CONFIRMATION_DEPLOYMENT["production_compatible_stop_fraction"]
+        ),
+        excluded_signal_ids=compatible_largest_gains,
+    )
+    compatible["largest_five_gain_signal_ids"] = sorted(compatible_largest_gains)
+    return {
+        "assumptions": CONFIRMATION_DEPLOYMENT,
+        "structural_stop_risk_sized": structural,
+        "naturally_production_compatible_stop_cohort": compatible,
+    }
+
+
+def _profit_factor_pass(summary: Mapping[str, Any], minimum: float) -> bool:
+    value = summary.get("profit_factor")
+    if value is None:
+        return bool(summary.get("total_r", 0) > 0)
+    return float(value) >= minimum
+
+
+def _confirmation_acceptance(
+    primary: Mapping[str, Any], sensitivity: Sequence[Mapping[str, Any]]
+) -> dict[str, Any]:
+    thresholds = CONFIRMATION_ACCEPTANCE_THRESHOLDS
+    daily = primary["daily"]
+    midpoint = len(daily) // 2
+    halves = []
+    for label, rows in (("first", daily[:midpoint]), ("second", daily[midpoint:])):
+        values = [
+            float(value["trade"]["net_r"])
+            for value in rows
+            if value["status"] == "trade"
+        ]
+        halves.append({"half": label, **_return_stats(values)})
+
+    def cell(slippage: float, target: float) -> Mapping[str, Any]:
+        return next(
+            value
+            for value in sensitivity
+            if value["entry_slippage_bps"] == slippage
+            and value["exit_slippage_bps"] == slippage
+            and value["target_r"] == target
+        )
+
+    gates: dict[str, dict[str, Any]] = {}
+
+    def gate(name: str, passed: bool, actual: Any, required: str) -> None:
+        gates[name] = {"passed": bool(passed), "actual": actual, "required": required}
+
+    gate(
+        "requested_dates",
+        primary["requested_days"] >= int(thresholds["minimum_requested_dates"]),
+        primary["requested_days"],
+        f">={thresholds['minimum_requested_dates']}",
+    )
+    gate(
+        "validation_grade_dates",
+        primary["covered_days"]
+        >= int(thresholds["minimum_validation_grade_dates"]),
+        primary["covered_days"],
+        f">={thresholds['minimum_validation_grade_dates']}",
+    )
+    gate(
+        "executed_signals",
+        primary["trades"] >= int(thresholds["minimum_executed_signals"]),
+        primary["trades"],
+        f">={thresholds['minimum_executed_signals']}",
+    )
+    gate("primary_expectancy", bool(primary["mean_r"] and primary["mean_r"] > 0), primary["mean_r"], ">0")
+    gate(
+        "primary_profit_factor",
+        _profit_factor_pass(primary, float(thresholds["primary_minimum_profit_factor"])),
+        primary["profit_factor"],
+        f">={thresholds['primary_minimum_profit_factor']}",
+    )
+    gate(
+        "primary_drawdown",
+        primary["maximum_drawdown_r"] <= float(thresholds["maximum_drawdown_r"]),
+        primary["maximum_drawdown_r"],
+        f"<={thresholds['maximum_drawdown_r']}",
+    )
+    lower = primary["bootstrap_trade_mean"]["lower_90_one_sided"]
+    gate("bootstrap_lower_mean_r", lower is not None and lower > 0, lower, ">0")
+    gate(
+        "chronological_halves",
+        all(value["total_r"] > 0 for value in halves),
+        halves,
+        "positive total R in both halves",
+    )
+    without_five = primary["concentration"]["total_without_top_five_r"]
+    gate(
+        "without_best_five",
+        without_five is not None and without_five > 0,
+        without_five,
+        ">0 total R",
+    )
+    for slippage in (10.0, 20.0):
+        value = cell(slippage, 2.0)
+        gate(
+            f"cost_stress_{int(slippage)}bps",
+            value["total_r"] > 0
+            and _profit_factor_pass(
+                value, float(thresholds["stress_minimum_profit_factor"])
+            )
+            and value["maximum_drawdown_r"]
+            <= float(thresholds["maximum_drawdown_r"]),
+            dict(value),
+            "positive total R, PF>=1.20, drawdown<=6R",
+        )
+    target_cells = [cell(5.0, target) for target in (1.0, 1.5, 2.0, 3.0)]
+    gate(
+        "all_frozen_targets",
+        all(value["total_r"] > 0 for value in target_cells),
+        [dict(value) for value in target_cells],
+        "positive total R at 1R, 1.5R, 2R, and 3R",
+    )
+    minimums_passed = all(
+        gates[value]["passed"]
+        for value in ("requested_dates", "validation_grade_dates", "executed_signals")
+    )
+    all_passed = all(value["passed"] for value in gates.values())
+    return {
+        "status": (
+            "passed"
+            if all_passed
+            else "rejected"
+            if minimums_passed
+            else "insufficient_independent_evidence"
+        ),
+        "all_passed": all_passed,
+        "gates": gates,
+    }
+
+
+def run_confirmation(
+    manifest_path: Path,
+    *,
+    data_root: Path = DEFAULT_DATA_ROOT,
+    output_root: Path = DEFAULT_OUTPUT_ROOT,
+    bootstrap_samples: int = 10_000,
+    publish_prefix: Path | None = None,
+) -> dict[str, Any]:
+    """Evaluate exactly one preregistered policy on post-freeze bundles."""
+
+    if bootstrap_samples < 100:
+        raise HistoricalStrategyLabError("bootstrap samples must be at least 100")
+    started = time.perf_counter()
+    before = production_hashes()
+    manifest = load_confirmation_manifest(manifest_path.resolve())
+    dataset = _confirmation_dataset(manifest, data_root)
+    observations, blocked = _confirmation_observations(dataset, manifest)
+    dates = tuple(dataset["dates"])
+    primary_execution = ExecutionConfig(
+        entry_slippage_bps=5.0,
+        exit_slippage_bps=5.0,
+        target_r=2.0,
+        force_flat_time_et="15:50:00",
+    )
+    primary = summarize_policy(
+        FROZEN_CONFIRMATION_POLICY,
+        dates,
+        observations,
+        blocked,
+        primary_execution,
+        bootstrap_samples=bootstrap_samples,
+        include_daily=True,
+    )
+    sensitivity: list[dict[str, Any]] = []
+    for slippage in CONFIRMATION_EXECUTION_GRID["slippage_bps_per_side"]:
+        for target in CONFIRMATION_EXECUTION_GRID["target_r"]:
+            execution = ExecutionConfig(
+                entry_slippage_bps=float(slippage),
+                exit_slippage_bps=float(slippage),
+                target_r=float(target),
+                force_flat_time_et="15:50:00",
+            )
+            summary = summarize_policy(
+                FROZEN_CONFIRMATION_POLICY,
+                dates,
+                observations,
+                blocked,
+                execution,
+                bootstrap_samples=100,
+            )
+            sensitivity.append(
+                {
+                    "entry_slippage_bps": float(slippage),
+                    "exit_slippage_bps": float(slippage),
+                    "target_r": float(target),
+                    **_compact_sensitivity(summary),
+                }
+            )
+    acceptance = _confirmation_acceptance(primary, sensitivity)
+    deployment = _deployment_views(primary["daily"])
+    decision = (
+        "advance_structural_stop_risk_sized_arm_to_shadow"
+        if acceptance["all_passed"]
+        else "stop_without_threshold_tuning"
+    )
+    result_id = (
+        f"strategy-confirmation-{manifest['manifest_sha256'][:12]}-"
+        f"{dataset['dataset_hash'][:12]}"
+    )
+    result = {
+        "schema_version": CONFIRMATION_SCHEMA_VERSION,
+        "manifest": {
+            "result_id": result_id,
+            "confirmation_manifest": _display_path(manifest_path),
+            "confirmation_manifest_sha256": manifest["manifest_sha256"],
+            "confirmation_contract_id": CONFIRMATION_CONTRACT_ID,
+            "registered_at": manifest["registered_at"],
+            "dataset_hash": dataset["dataset_hash"],
+            "requested_dates": len(dates),
+            "available_dates": dataset["available_dates"],
+            "missing_dates": dataset["missing_dates"],
+            "independent_confirmation": True,
+            "previously_inspected_date_overlap": 0,
+            "provider_requests": 0,
+            "automatic_strategy_application": False,
+            "broker_actions_allowed": False,
+        },
+        "policy_result": primary,
+        "execution_cost_target_cells": sensitivity,
+        "acceptance": acceptance,
+        "deployment_views": deployment,
+        "decision": {
+            "historical_confirmation": acceptance["status"],
+            "next_stage": decision,
+            "production_maximum_stop_changed": False,
+            "production_strategy_changed": False,
+            "production_compatible_cohort_is_separate": True,
+        },
+        "runtime": {
+            "elapsed_seconds": round(time.perf_counter() - started, 6),
+            "provider_requests": 0,
+            "policy_count": 1,
+            "cost_target_cells": len(sensitivity),
+            "bootstrap_samples": bootstrap_samples,
+        },
+    }
+    after = production_hashes()
+    if before != after:
+        changed = [key for key in before if before[key] != after[key]]
+        raise HistoricalStrategyLabError(
+            f"confirmation changed protected production artifacts: {changed}"
+        )
+    result["manifest"]["production_isolation"] = {
+        "verified_unchanged": True,
+        "paths": sorted(before),
+    }
+    output_path = _safe_publish_prefix(
+        output_root / result_id / "result"
+    ).with_suffix(".json")
+    _atomic_json(output_path, result)
+    report = render_confirmation_report(result)
+    _atomic_text(output_path.with_name("report.md"), report)
+    if publish_prefix is not None:
+        prefix = _safe_publish_prefix(publish_prefix)
+        _atomic_json(prefix.with_suffix(".json"), result)
+        _atomic_text(prefix.with_suffix(".md"), report)
+    return result
+
+
+def render_confirmation_report(result: Mapping[str, Any]) -> str:
+    manifest = result["manifest"]
+    primary = result["policy_result"]
+    structural = result["deployment_views"]["structural_stop_risk_sized"]
+    compatible = result["deployment_views"][
+        "naturally_production_compatible_stop_cohort"
+    ]
+    gates = result["acceptance"]["gates"]
+    lines = [
+        "# Independent Early Item 2.02 Reversal Confirmation",
+        "",
+        f"Result ID: `{manifest['result_id']}`",
+        "",
+        "## Evidence Boundary",
+        "",
+        f"- Preregistered manifest: `{manifest['confirmation_manifest_sha256']}`",
+        f"- Requested dates: {manifest['requested_dates']}",
+        f"- Validation-grade dates: {manifest['available_dates']}",
+        f"- Missing dates retained as blockers: {manifest['missing_dates']}",
+        "- Prior inspected-date overlap: 0",
+        "- Policies executed: 1",
+        "- Provider and broker actions during evaluation: 0",
+        "- Production strategy changes: 0",
+        "",
+        "## Primary 5 bps / 2R Result",
+        "",
+        f"- Trades: {primary['trades']}",
+        f"- Mean R: {_format_number(primary['mean_r'])}",
+        f"- Total R: {_format_number(primary['total_r'])}",
+        f"- Profit factor: {_format_number(primary['profit_factor'])}",
+        f"- Maximum drawdown: {_format_number(primary['maximum_drawdown_r'])}R",
+        f"- One-sided 90% bootstrap lower mean R: {_format_number(primary['bootstrap_trade_mean']['lower_90_one_sided'])}",
+        "",
+        "## Acceptance",
+        "",
+        f"Overall: `{result['acceptance']['status']}`",
+        "",
+        "| Gate | Pass | Actual | Required |",
+        "|---|---|---|---|",
+    ]
+    for name, gate in gates.items():
+        actual = gate["actual"]
+        if isinstance(actual, (dict, list)):
+            actual = "see JSON"
+        lines.append(
+            f"| {name} | {'yes' if gate['passed'] else 'no'} | {actual} | {gate['required']} |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Risk-Sized Deployment Geometry",
+            "",
+            f"- Structural-arm trades: {structural['trades']}",
+            f"- Compounded account return: {_format_percent(structural['compounded_account_return_fraction'])}",
+            f"- Expected log growth per trade: {_format_number(structural['expected_log_growth_per_trade'])}",
+            f"- Peak-to-trough account drawdown: {_format_percent(structural['peak_to_trough_account_drawdown_fraction'])}",
+            f"- Median allocation: {_format_percent(structural['median_allocation_fraction'])}",
+            f"- P90 allocation: {_format_percent(structural['p90_allocation_fraction'])}",
+            f"- Structural-stop compressions: {structural['stop_compressions']}",
+            f"- Risk-cap violations: {structural['risk_cap_violations']}",
+            f"- Naturally <=0.8% cohort: {compatible['trades']} trades; inference sufficient: {'yes' if compatible['sufficient_for_inference'] else 'no'}",
+            "",
+            f"Decision: `{result['decision']['next_stage']}`.",
+            "",
+            "A failed gate stops advancement and does not authorize tuning on this sample. Passing advances only the unchanged structural-stop, risk-sized arm to prospective shadow qualification.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def render_report(result: Mapping[str, Any]) -> str:
     manifest = result["manifest"]
     summaries = result["policy_summaries"]
@@ -1531,6 +2553,28 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument("--bootstrap-samples", type=int, default=10_000)
     run.add_argument("--publish-prefix", type=Path)
+    freeze = subparsers.add_parser(
+        "freeze-confirmation",
+        help="freeze a hash-addressed independent-confirmation manifest",
+    )
+    freeze.add_argument("--evidence", type=Path, required=True)
+    freeze.add_argument("--exclude-result", type=Path, action="append")
+    freeze.add_argument("--output-root", type=Path, default=DEFAULT_CONFIRMATION_ROOT)
+    freeze.add_argument("--registered-at")
+    validate = subparsers.add_parser(
+        "validate-confirmation",
+        help="verify a frozen confirmation manifest and implementation identity",
+    )
+    validate.add_argument("manifest", type=Path)
+    confirm = subparsers.add_parser(
+        "run-confirmation",
+        help="evaluate the sole frozen policy on post-preregistration bundles",
+    )
+    confirm.add_argument("manifest", type=Path)
+    confirm.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT)
+    confirm.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    confirm.add_argument("--bootstrap-samples", type=int, default=10_000)
+    confirm.add_argument("--publish-prefix", type=Path)
     return parser
 
 
@@ -1541,6 +2585,65 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(
                 json.dumps(
                     [asdict(value) for value in BUILTIN_POLICIES.values()],
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 0
+        if args.command == "freeze-confirmation":
+            excluded = tuple(args.exclude_result or (DEFAULT_EXCLUDED_RESULT,))
+            path, manifest = freeze_confirmation_manifest(
+                args.evidence,
+                excluded_result_paths=excluded,
+                output_root=args.output_root,
+                registered_at=args.registered_at,
+            )
+            print(
+                json.dumps(
+                    {
+                        "manifest": str(path),
+                        "manifest_sha256": manifest["manifest_sha256"],
+                        "registered_at": manifest["registered_at"],
+                        "frozen_dates": len(manifest["frozen_dates"]),
+                        "broker_actions_allowed": False,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 0
+        if args.command == "validate-confirmation":
+            manifest = load_confirmation_manifest(args.manifest.resolve())
+            print(
+                json.dumps(
+                    {
+                        "manifest_sha256": manifest["manifest_sha256"],
+                        "registered_at": manifest["registered_at"],
+                        "frozen_dates": len(manifest["frozen_dates"]),
+                        "status": "valid",
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 0
+        if args.command == "run-confirmation":
+            result = run_confirmation(
+                args.manifest,
+                data_root=args.data_root,
+                output_root=args.output_root,
+                bootstrap_samples=args.bootstrap_samples,
+                publish_prefix=args.publish_prefix,
+            )
+            print(
+                json.dumps(
+                    {
+                        "result_id": result["manifest"]["result_id"],
+                        "acceptance": result["acceptance"]["status"],
+                        "next_stage": result["decision"]["next_stage"],
+                        "provider_requests": 0,
+                        "production_strategy_changed": False,
+                    },
                     indent=2,
                     sort_keys=True,
                 )

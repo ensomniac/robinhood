@@ -183,6 +183,30 @@ five improvements, applies one coherent slice, validates it, records the lesson,
 and stops. It cannot access the broker or activate production strategy changes.
 Local inventories and plans remain under ignored `learning_runs/`.
 
+The early Item 2.02 reversal research has a separate prospective evidence plane.
+It cannot reuse the inspected corpus as confirmation and it cannot activate a
+strategy:
+
+```sh
+# Before requesting any target-session prices for the new 100+ date sample.
+python3 historical_strategy_lab.py freeze-confirmation \
+  --evidence historical_batches/evidence-<new-independent-sample>.json
+
+# After post-preregistration bundles exist under ignored historical_data/.
+python3 historical_strategy_lab.py run-confirmation \
+  historical_batches/confirmation_manifests/confirmation-<sha256>.json
+
+# For each prospective current-day no-order observation.
+python3 shadow_reversal.py record /path/to/privacy-safe-shadow-capture.json
+```
+
+The confirmation runner executes only the frozen early Item 2.02 policy and
+reports both R expectancy and structural-stop, risk-sized account geometry. The
+shadow recorder recomputes the signal, NBBO/depth, chase cap, protection timing,
+and exit lifecycle without exposing an order-action path. See
+[HISTORICAL_RESEARCH.md](HISTORICAL_RESEARCH.md) for the exact freeze, collection,
+qualification, and stop-without-tuning gates.
+
 The active workflow uses local decision surfaces around authoritative
 broker and market tool responses:
 
@@ -404,6 +428,7 @@ Commit messages should describe what changed, for example:
 ├── HISTORICAL_LEARNING.md # Replay data and operator contract
 ├── historical_research.py # Process-parallel research-only strategy matrix
 ├── historical_research_strategies.py # Versioned immutable-bar plugins
+├── historical_strategy_lab.py # Frozen-policy lab and confirmation manifests
 ├── learning_loop.py  # Read-only latency inventory and change-plan guard
 ├── HISTORICAL_RESEARCH.md # Research isolation and plugin contract
 ├── ibkr_historical.py # Optional read-only TWS historical-data adapter
@@ -412,6 +437,7 @@ Commit messages should describe what changed, for example:
 ├── requirements.txt  # Python runtime dependency declaration
 ├── session_guard.py  # Entry, protection, heartbeat, and flatten interlock
 ├── session_mode.py   # Explicit live/shadow/historical/review selector
+├── shadow_reversal.py # No-order prospective reversal qualification recorder
 ├── SIGNAL_LEDGER.md  # Structured public signal-record schema and workflow
 ├── sensitive_data.py # Fast encrypt/decrypt/audit/benchmark CLI
 ├── settings.toml      # Human-editable operational settings

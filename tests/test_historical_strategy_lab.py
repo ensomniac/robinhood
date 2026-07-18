@@ -3,6 +3,7 @@ import hashlib
 import json
 import tempfile
 import unittest
+from datetime import date, timedelta
 from pathlib import Path
 
 from historical_research import ExecutionConfig
@@ -15,11 +16,15 @@ from historical_strategy_lab import (
     _expected_frozen_hashes,
     _load_verified_bundle,
     _safe_publish_prefix,
+    _simulate_deployment,
     _status,
     evaluate_policy_day,
+    freeze_confirmation_manifest,
+    load_confirmation_manifest,
     normalize_rejection_reason,
     rejection_category,
     run_lab,
+    run_confirmation,
 )
 from strategy_engine import evaluate_candidate
 from tests.test_strategy_engine import qualifying_payload
@@ -76,6 +81,33 @@ def orb_bars():
     return bars
 
 
+def reversal_bars():
+    bars = minute_bars(100.0)
+    for index in range(5):
+        bars[index].update(
+            {
+                "open": 100.0,
+                "high": 100.1,
+                "low": 99.7,
+                "close": 99.8,
+                "volume": 10_000,
+            }
+        )
+    bars[5].update(
+        {
+            "open": 99.8,
+            "high": 100.1,
+            "low": 99.75,
+            "close": 100.05,
+            "volume": 10_000,
+        }
+    )
+    bars[6].update(
+        {"open": 100.06, "high": 101.0, "low": 100.0, "close": 100.9}
+    )
+    return bars
+
+
 def observation(
     symbol,
     *,
@@ -110,6 +142,127 @@ def observation(
         earnings_2_02=earnings,
         production_evaluation_time_et="09:37:00",
     )
+
+
+def confirmation_candidate(symbol="TEST"):
+    return {
+        "symbol": symbol,
+        "catalyst": {
+            "point_in_time": True,
+            "published_at": "2026-07-17T08:00:00-04:00",
+            "source_url": f"https://www.sec.gov/{symbol}",
+        },
+        "discovery": {"filing_items": "2.02,9.01"},
+    }
+
+
+def confirmation_evidence(days, symbols=("TEST",)):
+    return {
+        "schema_version": 1,
+        "prepared_at": "2026-07-18T10:00:00+00:00",
+        "selection_seed": 7,
+        "scanner": {
+            "point_in_time": True,
+            "universe_capture_complete": True,
+            "target_session_prices_observed": False,
+        },
+        "candidates_by_date": {
+            day: [confirmation_candidate(symbol) for symbol in symbols]
+            for day in days
+        },
+    }
+
+
+def consecutive_days(start, count):
+    first = date.fromisoformat(start)
+    return [(first + timedelta(days=index)).isoformat() for index in range(count)]
+
+
+def freeze_fixture(root, *, symbols=("TEST",)):
+    old_days = consecutive_days("2025-01-01", 100)
+    old_evidence = root / "old-evidence.json"
+    old_evidence.write_text(
+        json.dumps(confirmation_evidence(old_days, symbols=("OLD",))),
+        encoding="utf-8",
+    )
+    old_result = root / "old-result.json"
+    old_result.write_text(
+        json.dumps(
+            {
+                "manifest": {
+                    "run_id": "strategy-lab-651f20ff135e-b268f18ec755",
+                    "dataset": {
+                        "requested_dates": 100,
+                        "dataset_hash": "a" * 64,
+                        "evidence_manifest": str(old_evidence),
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    days = consecutive_days("2027-01-01", 100)
+    evidence = root / "new-evidence.json"
+    evidence.write_text(
+        json.dumps(confirmation_evidence(days, symbols=symbols)),
+        encoding="utf-8",
+    )
+    path, manifest = freeze_confirmation_manifest(
+        evidence,
+        excluded_result_paths=(old_result,),
+        output_root=root / "manifests",
+        registered_at="2026-07-18T12:00:00+00:00",
+    )
+    return days, path, manifest
+
+
+def write_confirmation_bundle(
+    data_root,
+    day,
+    manifest,
+    *,
+    symbols=("TEST",),
+    captured_at=None,
+):
+    frozen = next(value for value in manifest["frozen_dates"] if value["date"] == day)
+    candidates = []
+    for symbol in symbols:
+        payload = copy.deepcopy(qualifying_payload())
+        payload["candidate"]["symbol"] = symbol
+        payload["session"]["time_et"] = "09:36:00"
+        candidates.append(
+            {
+                "symbol": symbol,
+                "signal_id": f"{day}-{symbol}-1",
+                "bars": reversal_bars(),
+                "evaluation_payload": payload,
+                "evaluation_time_et": "09:36:00",
+                "discovery": {"filing_items": "2.02,9.01"},
+            }
+        )
+    bundle = {
+        "date": day,
+        "schema_version": 2,
+        "sample_phase": "confirmation",
+        "preregistration": {
+            "registered_at": manifest["registered_at"],
+            "manifest_hash": manifest["manifest_sha256"],
+        },
+        "session_capture_complete": True,
+        "source": {
+            "point_in_time": True,
+            "regular_hours_only": True,
+            "split_adjusted": True,
+            "universe_capture_complete": True,
+            "frozen_evidence_sha256": frozen["frozen_evidence_sha256"],
+            "captured_at": captured_at or f"{day}T21:00:00+00:00",
+        },
+        "candidates": candidates,
+    }
+    data_root.mkdir(parents=True, exist_ok=True)
+    path = data_root / f"{day}.json"
+    path.write_text(json.dumps(bundle), encoding="utf-8")
+    return path
 
 
 class GateTaxonomyTests(unittest.TestCase):
@@ -344,6 +497,176 @@ class EvidenceBoundaryTests(unittest.TestCase):
             self.assertEqual(result["policy_summaries"][0]["trades"], 1)
             self.assertTrue((root / "published.json").is_file())
             self.assertTrue((root / "published.md").is_file())
+
+
+class IndependentConfirmationTests(unittest.TestCase):
+    def test_freeze_rejects_overlap_with_inspected_run(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            old_days = consecutive_days("2025-01-01", 100)
+            old_evidence = root / "old.json"
+            old_evidence.write_text(
+                json.dumps(confirmation_evidence(old_days, symbols=("OLD",))),
+                encoding="utf-8",
+            )
+            old_result = root / "result.json"
+            old_result.write_text(
+                json.dumps(
+                    {
+                        "manifest": {
+                            "run_id": "strategy-lab-651f20ff135e-b268f18ec755",
+                            "dataset": {
+                                "requested_dates": 100,
+                                "dataset_hash": "a" * 64,
+                                "evidence_manifest": str(old_evidence),
+                            },
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(
+                HistoricalStrategyLabError, "overlap previously inspected"
+            ):
+                freeze_confirmation_manifest(
+                    old_evidence,
+                    excluded_result_paths=(old_result,),
+                    output_root=root / "manifests",
+                    registered_at="2026-07-18T12:00:00+00:00",
+                )
+
+    def test_manifest_is_hash_addressed_and_mutation_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _days, path, manifest = freeze_fixture(root)
+
+            self.assertEqual(
+                path.name, f"confirmation-{manifest['manifest_sha256']}.json"
+            )
+            self.assertEqual(load_confirmation_manifest(path), manifest)
+            mutated = copy.deepcopy(manifest)
+            mutated["registered_at"] = "2026-07-18T12:00:01+00:00"
+            path.write_text(json.dumps(mutated), encoding="utf-8")
+
+            with self.assertRaisesRegex(
+                HistoricalStrategyLabError, "manifest was mutated"
+            ):
+                load_confirmation_manifest(path)
+
+    def test_capture_before_preregistration_and_symbol_reordering_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            days, manifest_path, manifest = freeze_fixture(root)
+            data_root = root / "data"
+            write_confirmation_bundle(
+                data_root,
+                days[0],
+                manifest,
+                captured_at="2026-07-18T11:59:59+00:00",
+            )
+
+            with self.assertRaisesRegex(
+                HistoricalStrategyLabError, "capture must follow preregistration"
+            ):
+                run_confirmation(
+                    manifest_path,
+                    data_root=data_root,
+                    output_root=root / "runs",
+                    bootstrap_samples=100,
+                )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            days, manifest_path, manifest = freeze_fixture(
+                root, symbols=("AAA", "BBB")
+            )
+            data_root = root / "data"
+            write_confirmation_bundle(
+                data_root, days[0], manifest, symbols=("BBB", "AAA")
+            )
+
+            with self.assertRaisesRegex(
+                HistoricalStrategyLabError, "ordered candidate universe"
+            ):
+                run_confirmation(
+                    manifest_path,
+                    data_root=data_root,
+                    output_root=root / "runs",
+                    bootstrap_samples=100,
+                )
+
+    def test_confirmation_executes_only_frozen_policy_and_is_deterministic(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            days, manifest_path, manifest = freeze_fixture(root)
+            data_root = root / "data"
+            write_confirmation_bundle(data_root, days[0], manifest)
+
+            first = run_confirmation(
+                manifest_path,
+                data_root=data_root,
+                output_root=root / "runs-1",
+                bootstrap_samples=100,
+            )
+            second = run_confirmation(
+                manifest_path,
+                data_root=data_root,
+                output_root=root / "runs-2",
+                bootstrap_samples=100,
+            )
+
+            self.assertEqual(
+                first["policy_result"]["policy"]["policy_id"],
+                "reversal-early-earnings",
+            )
+            self.assertEqual(first["runtime"]["policy_count"], 1)
+            self.assertEqual(first["policy_result"], second["policy_result"])
+            self.assertEqual(first["acceptance"], second["acceptance"])
+            self.assertEqual(
+                first["decision"]["next_stage"], "stop_without_threshold_tuning"
+            )
+            self.assertTrue(
+                first["manifest"]["production_isolation"]["verified_unchanged"]
+            )
+
+    def test_risk_sized_deployment_never_compresses_stop_or_forces_allocation(self):
+        daily = []
+        for index in range(6):
+            daily.append(
+                {
+                    "date": f"2027-01-{index + 1:02d}",
+                    "status": "trade",
+                    "trade": {
+                        "signal_id": f"2027-01-{index + 1:02d}-TEST-1",
+                        "symbol": "TEST",
+                        "entry_price": 100.0,
+                        "technical_stop": 98.0,
+                        "exit_price": 104.0,
+                        "exit_reason": "target",
+                    },
+                }
+            )
+
+        deployment = _simulate_deployment(daily)
+
+        self.assertEqual(deployment["stop_compressions"], 0)
+        self.assertEqual(deployment["risk_cap_violations"], 0)
+        self.assertTrue(
+            all(
+                value["deployed_stop"] == value["structural_stop"]
+                for value in deployment["details"]
+            )
+        )
+        self.assertTrue(
+            all(value["allocation_fraction"] < 0.70 for value in deployment["details"])
+        )
+        self.assertTrue(
+            all(
+                value["planned_loss_fraction"] <= 0.0025
+                for value in deployment["details"]
+            )
+        )
 
 
 class ResearchGateTests(unittest.TestCase):

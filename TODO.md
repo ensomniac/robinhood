@@ -71,6 +71,41 @@ Status: implemented by `historical_strategy_lab.py` and documented in
   production strategy-review cadence, editing `strategy_config.toml`, or
   making broker/provider calls.
 
+### 15. Independent Reversal Confirmation And Shadow Qualification
+
+Status: prospective infrastructure implemented by `historical_strategy_lab.py`
+and `shadow_reversal.py` on 2026-07-18. The required new 100-date historical
+sample and 30-calendar-day shadow sample have not been collected; production
+rules remain frozen.
+
+- Freezes a public hash-addressed manifest before target-session collection.
+  It embeds at least 100 new dates, complete ordered Item 2.02 evidence,
+  previously inspected run/date identities, the sole policy and plugin,
+  execution grid, acceptance thresholds, deployment assumptions, production
+  baseline, preregistration time, and implementation hashes.
+- Rejects inspected-date overlap, altered manifests or implementations,
+  pre-preregistration captures, phase relabeling, candidate reordering, date or
+  symbol substitution, and any attempt to supply another policy or grid.
+- Evaluates the independent sample at 5/10/20 bps and 1/1.5/2/3R, publishes
+  every requested date/blocker and primary trade/exit, and applies the frozen
+  date/signal, expectancy, PF, drawdown, bootstrap, halves, best-five, cost, and
+  target gates. Failure stops without retuning.
+- Adds structural-stop whole-share deployment at 0.25% account risk plus a 10
+  bps reserve, with account compounding/log growth/drawdown, allocation and
+  shortfall, stop slippage, binding cap, and largest-five-removal metrics.
+  A separate cohort admits only naturally <=0.8% stops and needs 20 trades for
+  inference; no stop is tightened and no allocation floor increases risk.
+- Adds a privacy-safe input-driven current-day shadow recorder. It recomputes
+  completed early signals, three fresh NBBO/book snapshots, chase-cap fills,
+  structural sizing, detection/readiness/protection timing, monitored MFE/MAE,
+  stop-first ambiguity, 2R exits, and 15:50 flattening. No-trade and missed days
+  are hash-sealed alongside complete lifecycles.
+- The shadow module has no account or order-action interface. Its aggregate gate
+  requires 20 completed signals across 30 calendar days, clean quote/monitoring
+  evidence, <=15 bps p95 entry slippage, <=10-second p95 unprotected exposure,
+  positive expectancy, PF >=1.20, drawdown <=6R, preserved stops, zero violations,
+  and no above-cap fills. Passing only permits the normal cadence review.
+
 ## Completed 2026-07-16
 
 ### 11. Parallel Multi-Strategy Historical Research
