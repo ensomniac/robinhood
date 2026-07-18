@@ -1,3 +1,4 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -5,10 +6,15 @@ from unittest.mock import patch
 
 from learning_loop import (
     LearningLoopError,
+    audit_program,
     build_inventory,
     classify_bottleneck,
+    close_run,
     load_prompt,
     review_change_plan,
+    run_bounded,
+    run_next,
+    start_run,
 )
 
 
@@ -16,7 +22,7 @@ class LearningPromptTests(unittest.TestCase):
     def test_public_prompt_is_versioned_ordered_and_bounded(self):
         contract = load_prompt()
 
-        self.assertEqual(contract["version"], "2026-07-18-v1")
+        self.assertEqual(contract["version"], "2026-07-18-v2")
         self.assertEqual(contract["max_apply_rounds"], 1)
         self.assertEqual(len(contract["phases"]), 8)
 
@@ -143,6 +149,92 @@ class ChangePlanTests(unittest.TestCase):
             )
         with self.assertRaisesRegex(LearningLoopError, "at most one"):
             review_change_plan({"apply_rounds": 2, "changes": []})
+
+
+class PersistentRunTests(unittest.TestCase):
+    def _root(self, directory):
+        root = Path(directory)
+        (root / "learning").mkdir()
+        (root / "LEARNING_PROGRAM.md").write_text("program\n", encoding="utf-8")
+        for name in ("DATASETS", "STRATEGIES"):
+            (root / "learning" / f"{name}.jsonl").write_text("", encoding="utf-8")
+        experiment = {
+            "schema_version": 1,
+            "event_id": "experiment-test-registered",
+            "entity_id": "experiment-test",
+            "event_type": "registered",
+            "recorded_at": "2026-07-18T17:00:00-04:00",
+            "payload": {
+                "family_id": "family-test",
+                "status": "FAILED",
+                "hypothesis": "A registered test hypothesis.",
+                "result_paths": [],
+                "disposition": "failed",
+            },
+        }
+        (root / "learning" / "EXPERIMENTS.jsonl").write_text(
+            json.dumps(experiment) + "\n", encoding="utf-8"
+        )
+        return root
+
+    def test_failed_objective_resumes_to_terminal_close(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._root(directory)
+            run_root = root / "learning_runs"
+            with patch("learning_loop._git_dirty_paths", return_value=[]):
+                state = start_run("experiment-test", root=root, run_root=run_root)
+            first = run_next(state["run_id"], root=root, run_root=run_root)
+            second = run_next(state["run_id"], root=root, run_root=run_root)
+            third = run_next(state["run_id"], root=root, run_root=run_root)
+
+            self.assertEqual(first["status"], "INVENTORIED")
+            self.assertEqual(second["status"], "REJECTED")
+            self.assertEqual(third["status"], "CLOSED")
+
+    def test_bounded_run_stops_when_judgment_is_needed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._root(directory)
+            run_root = root / "learning_runs"
+            experiment_path = root / "learning" / "EXPERIMENTS.jsonl"
+            value = json.loads(experiment_path.read_text(encoding="utf-8"))
+            value["payload"]["status"] = "INVENTED"
+            experiment_path.write_text(json.dumps(value) + "\n", encoding="utf-8")
+            with patch("learning_loop._git_dirty_paths", return_value=[]):
+                state = start_run("experiment-test", root=root, run_root=run_root)
+
+            result = run_bounded(state["run_id"], 5, root=root, run_root=run_root)
+
+            self.assertEqual(result["state"]["status"], "HYPOTHESIS_REGISTERED")
+            self.assertFalse(result["steps"][-1]["progressed"])
+
+    def test_production_artifact_change_fails_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._root(directory)
+            (root / "strategy_config.toml").write_text(
+                "version = 1\n", encoding="utf-8"
+            )
+            run_root = root / "learning_runs"
+            with patch("learning_loop._git_dirty_paths", return_value=[]):
+                state = start_run("experiment-test", root=root, run_root=run_root)
+            (root / "strategy_config.toml").write_text(
+                "version = 2\n", encoding="utf-8"
+            )
+
+            with self.assertRaisesRegex(LearningLoopError, "production artifacts"):
+                run_next(state["run_id"], root=root, run_root=run_root)
+
+    def test_explicit_close_and_audit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._root(directory)
+            run_root = root / "learning_runs"
+            with patch("learning_loop._git_dirty_paths", return_value=[]):
+                state = start_run("experiment-test", root=root, run_root=run_root)
+            closed = close_run(state["run_id"], "blocked", root=root, run_root=run_root)
+            audit = audit_program(root=root, run_root=run_root)
+
+            self.assertEqual(closed["status"], "CLOSED")
+            self.assertEqual(closed["outcome"], "blocked")
+            self.assertTrue(audit["valid"])
 
 
 if __name__ == "__main__":

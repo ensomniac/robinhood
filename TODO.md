@@ -174,10 +174,12 @@ Status: implemented safely by `strategy_learning.py`.
   exits, archived outcome reasons, and bounded feature-cohort diagnostics.
 - A review proposal is allowed only after both 20 new closed frozen-rule signals
   and 30 calendar days since version start or the last review.
-- Generated changes are hypotheses for explicit human review. The tool has no
-  apply command and never edits `strategy_config.toml` or `AGENTS.md`.
-- Any accepted change requires Ryan's explicit approval, a new strategy version
-  and rules hash, preserved prior sample, and preregistered confirmation evidence.
+- Generated changes are hypotheses for an evidence-backed delegated decision.
+  The tool has no apply command and never edits `strategy_config.toml` or
+  `AGENTS.md`.
+- Any accepted change requires a separate production-change workflow, a new
+  strategy version and rules hash, preserved prior sample, and preregistered
+  confirmation evidence.
   This resolves the risk in automatic self-modification without discarding the
   requested continuous-learning capability.
 

@@ -1,6 +1,6 @@
 # Repository Learning Loop
 
-Prompt version: `2026-07-18-v1`
+Prompt version: `2026-07-18-v2`
 
 This is the public operating prompt for `learning` mode. It is subordinate to
 `AGENTS.md`, the active user request, tool requirements, privacy rules, and every
@@ -11,7 +11,9 @@ activates a production strategy change.
 The loop is deliberately bounded. One invocation may apply at most one coherent
 engineering slice and may make at most one repair attempt after validation. A
 failure that survives that repair is recorded and returned as a blocker; it does
-not trigger another self-edit cycle.
+not trigger another self-edit cycle. `LEARNING_PROGRAM.md` and the append-only
+`learning/` registries persist the larger program across explicit invocations;
+ignored `learning_runs/` state makes each finite objective resumable.
 
 ## Phase 0 - Safety Gate
 
@@ -25,6 +27,8 @@ not trigger another self-edit cycle.
 5. Run `python3 learning_loop.py inspect` with the relevant batch, evidence, and
    research artifacts. Do not assume collection is slow, evaluation is slow, or
    symbol resolution is slow without telemetry.
+6. Run `python3 learning_loop.py audit` and register the objective before
+   starting a resumable run.
 
 ## Phase 1 - Evidence And Strengths
 
@@ -104,6 +108,7 @@ Run lifecycle, ledger, progress, and sensitive-data audits as applicable. Commit
 and push validated changes under the normal repository mandate.
 
 End with the measured before/after result, the remaining dominant bottleneck,
-and the next experiment. Do not recursively launch another learning loop. A
-future run must be a new explicit invocation or a separately implemented,
-tested, safety-gated end-of-run hook.
+and the next experiment. Update the public registries with every terminal
+failure as well as every success. Do not recursively launch another learning loop.
+A future run must be a new explicit invocation or a separately
+implemented, tested, safety-gated scheduler invocation.

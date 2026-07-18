@@ -11,12 +11,23 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
+import time
+from contextlib import contextmanager
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+from learning_registry import (
+    REGISTRIES,
+    RegistryError,
+    audit_registries,
+    current_entities,
+    registry_fingerprint,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -51,6 +62,30 @@ ALLOWED_CHANGE_KINDS = {
     "generated",
 }
 PROTECTED_PATHS = {"strategy_config.toml", ".env"}
+RUN_ROOT = PROJECT_ROOT / "learning_runs"
+PROGRAM_PATH = PROJECT_ROOT / "LEARNING_PROGRAM.md"
+RUN_SCHEMA_VERSION = 2
+RUN_ID_PATTERN = re.compile(r"^learning-[0-9]{8}t[0-9]{6}z-[a-z0-9][a-z0-9._-]{2,63}$")
+OBJECTIVE_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{2,127}$")
+RUN_STATUSES = {
+    "CREATED",
+    "INVENTORIED",
+    "HYPOTHESIS_REGISTERED",
+    "PREREGISTERED",
+    "DATA_READY",
+    "EVALUATED",
+    "ADVERSARIALLY_REVIEWED",
+    "REJECTED",
+    "CONFIRMATION_QUEUED",
+    "SHADOW_QUEUED",
+    "CLOSED",
+}
+PROTECTED_PRODUCTION_PATHS = (
+    Path("strategy_config.toml"),
+    Path("SIGNALS.jsonl"),
+    Path("TRADES.md"),
+    Path("trades"),
+)
 
 
 class LearningLoopError(RuntimeError):
@@ -324,16 +359,321 @@ def review_change_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _write_state(path: Path, value: Mapping[str, Any]) -> None:
+def _write_state(
+    path: Path, value: Mapping[str, Any], *, allowed_root: Path = RUN_ROOT
+) -> None:
     resolved = path.resolve()
-    allowed_root = (PROJECT_ROOT / "learning_runs").resolve()
-    if allowed_root not in resolved.parents:
+    resolved_root = allowed_root.resolve()
+    if resolved_root not in resolved.parents:
         raise LearningLoopError("learning state must be written under learning_runs/")
     rendered = json.dumps(value, indent=2, sort_keys=True) + "\n"
     resolved.parent.mkdir(parents=True, exist_ok=True)
     temporary = resolved.with_suffix(resolved.suffix + ".tmp")
     temporary.write_text(rendered, encoding="utf-8")
     temporary.replace(resolved)
+
+
+def _sha256_path(path: Path) -> str | None:
+    """Hash a file or directory without following symlinks."""
+    if not path.exists():
+        return None
+    digest = hashlib.sha256()
+    if path.is_file():
+        digest.update(b"file\0")
+        digest.update(path.read_bytes())
+        return digest.hexdigest()
+    digest.update(b"directory\0")
+    for child in sorted(item for item in path.rglob("*") if item.is_file()):
+        digest.update(str(child.relative_to(path)).encode())
+        digest.update(b"\0")
+        digest.update(child.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def protected_production_hashes(root: Path = PROJECT_ROOT) -> dict[str, str | None]:
+    return {
+        str(relative): _sha256_path(root / relative)
+        for relative in PROTECTED_PRODUCTION_PATHS
+    }
+
+
+def _run_path(run_id: str, run_root: Path = RUN_ROOT) -> Path:
+    if not RUN_ID_PATTERN.fullmatch(run_id):
+        raise LearningLoopError(f"invalid learning run id {run_id!r}")
+    return run_root / run_id / "state.json"
+
+
+def _load_state(path: Path) -> dict[str, Any]:
+    state = _load_json(path)
+    if state.get("schema_version") != RUN_SCHEMA_VERSION:
+        raise LearningLoopError(f"{path} has an unsupported run schema")
+    run_id = state.get("run_id")
+    if not isinstance(run_id, str) or path != _run_path(run_id, path.parents[1]):
+        raise LearningLoopError(f"{path} run identity does not match its location")
+    if state.get("status") not in RUN_STATUSES:
+        raise LearningLoopError(f"{path} has an invalid run status")
+    transitions = state.get("transitions")
+    if not isinstance(transitions, list) or not transitions:
+        raise LearningLoopError(f"{path} needs a transition history")
+    return state
+
+
+def _utc_now() -> datetime:
+    return datetime.now(UTC)
+
+
+def _transition(state: dict[str, Any], status: str, reason: str) -> None:
+    if status not in RUN_STATUSES:
+        raise LearningLoopError(f"unsupported run transition {status}")
+    now = _utc_now().isoformat()
+    state["status"] = status
+    state["updated_at"] = now
+    state["transitions"].append({"at": now, "status": status, "reason": reason})
+
+
+def _pid_is_alive(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+@contextmanager
+def _run_lock(path: Path, *, stale_after_seconds: int = 3600):
+    lock_path = path.with_name("run.lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"pid": os.getpid(), "created_at_epoch": time.time()}
+    while True:
+        try:
+            descriptor = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+            with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+                json.dump(payload, stream, sort_keys=True)
+            break
+        except FileExistsError:
+            try:
+                current = json.loads(lock_path.read_text(encoding="utf-8"))
+                age = time.time() - float(current.get("created_at_epoch", 0))
+                pid = int(current.get("pid", 0))
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                age, pid = stale_after_seconds + 1, 0
+            if age <= stale_after_seconds or _pid_is_alive(pid):
+                raise LearningLoopError(f"learning run is locked: {lock_path}")
+            lock_path.unlink(missing_ok=True)
+    try:
+        yield
+    finally:
+        lock_path.unlink(missing_ok=True)
+
+
+def initialize_program(*, root: Path = PROJECT_ROOT) -> dict[str, Any]:
+    if not (root / PROGRAM_PATH.name).is_file():
+        raise LearningLoopError("persistent learning program document is missing")
+    registry_status = audit_registries(root / "learning")
+    return {
+        "initialized": True,
+        "program": str(PROGRAM_PATH.relative_to(PROJECT_ROOT)),
+        "registries": registry_status,
+        "broker_actions_allowed": False,
+        "automatic_strategy_application": False,
+    }
+
+
+def start_run(
+    objective_id: str,
+    *,
+    root: Path = PROJECT_ROOT,
+    run_root: Path = RUN_ROOT,
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    if not OBJECTIVE_ID_PATTERN.fullmatch(objective_id):
+        raise LearningLoopError("objective id must be a stable lowercase identifier")
+    initialize_program(root=root)
+    experiments = current_entities("experiments", root / "learning")
+    if objective_id not in experiments:
+        raise LearningLoopError(
+            "objective must be registered in learning/EXPERIMENTS.jsonl before starting"
+        )
+    instant = now or _utc_now()
+    stamp = instant.strftime("%Y%m%dt%H%M%Sz").lower()
+    slug = objective_id.removeprefix("experiment-")[:64]
+    run_id = f"learning-{stamp}-{slug}"
+    path = _run_path(run_id, run_root)
+    if path.exists():
+        raise LearningLoopError(f"learning run already exists: {run_id}")
+    recorded_at = instant.isoformat()
+    state = {
+        "schema_version": RUN_SCHEMA_VERSION,
+        "run_id": run_id,
+        "objective_id": objective_id,
+        "status": "CREATED",
+        "started_at": recorded_at,
+        "updated_at": recorded_at,
+        "broker_actions_allowed": False,
+        "automatic_strategy_application": False,
+        "baseline": {
+            "dirty_paths": _git_dirty_paths(root),
+            "production_hashes": protected_production_hashes(root),
+            "registry_hashes": {
+                name: registry_fingerprint(name, root / "learning")
+                for name in REGISTRIES
+            },
+        },
+        "transitions": [
+            {"at": recorded_at, "status": "CREATED", "reason": "run started"}
+        ],
+        "next_action": "inventory the registered objective and protected state",
+    }
+    _write_state(path, state, allowed_root=run_root)
+    return state
+
+
+def _latest_experiment(objective_id: str, root: Path) -> dict[str, Any]:
+    try:
+        return current_entities("experiments", root / "learning")[objective_id]
+    except KeyError as exc:
+        raise LearningLoopError(
+            f"registered objective disappeared: {objective_id}"
+        ) from exc
+
+
+def _desired_run_status(experiment_status: str) -> tuple[str, str]:
+    mapping = {
+        "INVENTED": ("HYPOTHESIS_REGISTERED", "preregister the hypothesis contract"),
+        "PREREGISTERED": ("PREREGISTERED", "collect or attach the frozen dataset"),
+        "DATA_READY": ("DATA_READY", "run the registered evaluation"),
+        "EVALUATED": ("EVALUATED", "perform adversarial review"),
+        "ADVERSARIALLY_REVIEWED": (
+            "ADVERSARIALLY_REVIEWED",
+            "record reject, confirmation, or shadow disposition",
+        ),
+        "CONFIRMATION_QUEUED": (
+            "CONFIRMATION_QUEUED",
+            "start a separately frozen confirmation dataset",
+        ),
+        "SHADOW_QUEUED": ("SHADOW_QUEUED", "start prospective shadow qualification"),
+        "FAILED": ("REJECTED", "close without threshold tuning"),
+        "REJECTED": ("REJECTED", "close the rejected objective"),
+        "RETIRED": ("REJECTED", "close the retired objective"),
+        "CLOSED": ("REJECTED", "close the completed objective"),
+    }
+    try:
+        return mapping[experiment_status]
+    except KeyError as exc:
+        raise LearningLoopError(
+            f"experiment has unsupported lifecycle status {experiment_status!r}"
+        ) from exc
+
+
+def run_next(
+    run_id: str, *, root: Path = PROJECT_ROOT, run_root: Path = RUN_ROOT
+) -> dict[str, Any]:
+    path = _run_path(run_id, run_root)
+    with _run_lock(path):
+        state = _load_state(path)
+        if state["status"] == "CLOSED":
+            return {**state, "progressed": False}
+        current_hashes = protected_production_hashes(root)
+        if current_hashes != state["baseline"]["production_hashes"]:
+            raise LearningLoopError(
+                "protected production artifacts changed during learning run"
+            )
+        previous = str(state["status"])
+        if previous == "CREATED":
+            _transition(state, "INVENTORIED", "protected state and registries verified")
+            state["next_action"] = "align the run with the current experiment event"
+        else:
+            experiment = _latest_experiment(str(state["objective_id"]), root)
+            desired, next_action = _desired_run_status(
+                str(experiment["payload"]["status"])
+            )
+            if previous in {"REJECTED", "CONFIRMATION_QUEUED", "SHADOW_QUEUED"}:
+                _transition(
+                    state, "CLOSED", f"terminal disposition recorded from {previous}"
+                )
+                state["outcome"] = previous.lower()
+                state["next_action"] = "start a new explicit bounded learning run"
+            elif previous == desired:
+                state["next_action"] = next_action
+                state["updated_at"] = _utc_now().isoformat()
+            else:
+                _transition(
+                    state,
+                    desired,
+                    f"synchronized with experiment event {experiment['event_id']}",
+                )
+                state["next_action"] = next_action
+        _write_state(path, state, allowed_root=run_root)
+        return {**state, "progressed": previous != state["status"]}
+
+
+def run_bounded(
+    run_id: str,
+    max_steps: int,
+    *,
+    root: Path = PROJECT_ROOT,
+    run_root: Path = RUN_ROOT,
+) -> dict[str, Any]:
+    if isinstance(max_steps, bool) or not 1 <= max_steps <= 20:
+        raise LearningLoopError("max_steps must be between 1 and 20")
+    steps: list[dict[str, Any]] = []
+    for _ in range(max_steps):
+        state = run_next(run_id, root=root, run_root=run_root)
+        steps.append({"status": state["status"], "progressed": state["progressed"]})
+        if not state["progressed"] or state["status"] == "CLOSED":
+            break
+    return {"run_id": run_id, "steps": steps, "state": state}
+
+
+def run_status(run_id: str, *, run_root: Path = RUN_ROOT) -> dict[str, Any]:
+    return _load_state(_run_path(run_id, run_root))
+
+
+def close_run(
+    run_id: str,
+    outcome: str,
+    *,
+    root: Path = PROJECT_ROOT,
+    run_root: Path = RUN_ROOT,
+) -> dict[str, Any]:
+    if outcome not in {"completed", "failed", "blocked"}:
+        raise LearningLoopError("close outcome must be completed, failed, or blocked")
+    path = _run_path(run_id, run_root)
+    with _run_lock(path):
+        state = _load_state(path)
+        if protected_production_hashes(root) != state["baseline"]["production_hashes"]:
+            raise LearningLoopError(
+                "protected production artifacts changed during learning run"
+            )
+        if state["status"] != "CLOSED":
+            _transition(state, "CLOSED", f"run explicitly closed: {outcome}")
+        state["outcome"] = outcome
+        state["next_action"] = "start a new explicit bounded learning run"
+        _write_state(path, state, allowed_root=run_root)
+        return state
+
+
+def audit_program(
+    *, root: Path = PROJECT_ROOT, run_root: Path = RUN_ROOT
+) -> dict[str, Any]:
+    program = initialize_program(root=root)
+    runs: list[dict[str, Any]] = []
+    if run_root.exists():
+        for path in sorted(run_root.glob("learning-*/state.json")):
+            state = _load_state(path)
+            runs.append(
+                {
+                    "run_id": state["run_id"],
+                    "status": state["status"],
+                    "objective_id": state["objective_id"],
+                }
+            )
+    return {"valid": True, "program": program, "runs": runs}
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -355,6 +695,24 @@ def _build_parser() -> argparse.ArgumentParser:
         "review-plan", help="validate a one-slice machine-readable change plan"
     )
     plan.add_argument("plan", type=Path)
+    subparsers.add_parser("init", help="validate the persistent program and registries")
+    status = subparsers.add_parser("status", help="show one resumable run")
+    status.add_argument("--run-id", required=True)
+    start = subparsers.add_parser("start", help="start a registered bounded objective")
+    start.add_argument("--objective", required=True)
+    next_step = subparsers.add_parser(
+        "run-next", help="perform one deterministic transition"
+    )
+    next_step.add_argument("--run-id", required=True)
+    run = subparsers.add_parser("run", help="perform bounded deterministic transitions")
+    run.add_argument("--run-id", required=True)
+    run.add_argument("--max-steps", type=int, required=True)
+    subparsers.add_parser("audit", help="audit registries and resumable run state")
+    close = subparsers.add_parser("close", help="explicitly close one bounded run")
+    close.add_argument("--run-id", required=True)
+    close.add_argument(
+        "--outcome", choices=("completed", "failed", "blocked"), required=True
+    )
     return parser
 
 
@@ -365,7 +723,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = load_prompt()
         elif args.command == "review-plan":
             result = review_change_plan(_load_json(args.plan))
-        else:
+        elif args.command == "inspect":
             result = build_inventory(
                 batch_path=args.batch_status,
                 evidence_path=args.evidence,
@@ -374,9 +732,23 @@ def main(argv: Sequence[str] | None = None) -> int:
             result["inspected_at"] = datetime.now(UTC).isoformat()
             if args.output is not None:
                 _write_state(args.output, result)
+        elif args.command == "init":
+            result = initialize_program()
+        elif args.command == "status":
+            result = run_status(args.run_id)
+        elif args.command == "start":
+            result = start_run(args.objective)
+        elif args.command == "run-next":
+            result = run_next(args.run_id)
+        elif args.command == "run":
+            result = run_bounded(args.run_id, args.max_steps)
+        elif args.command == "audit":
+            result = audit_program()
+        else:
+            result = close_run(args.run_id, args.outcome)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
-    except (LearningLoopError, OSError, ValueError) as exc:
+    except (LearningLoopError, RegistryError, OSError, ValueError) as exc:
         print(
             json.dumps({"error": str(exc), "error_type": type(exc).__name__}, indent=2)
         )

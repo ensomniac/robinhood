@@ -395,7 +395,6 @@ def _candidate_symbols(rows: Any, day: str) -> tuple[str, ...]:
                 f"{day}: candidate {index} has no symbol"
             )
         catalyst = row.get("catalyst")
-        discovery = row.get("discovery")
         if (
             not isinstance(catalyst, Mapping)
             or catalyst.get("point_in_time") is not True

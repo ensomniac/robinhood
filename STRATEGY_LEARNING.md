@@ -96,13 +96,16 @@ The command writes a timestamped JSON proposal under `strategy_proposals/`.
 Predeclared diagnostics can flag exit-overlay underperformance, stop reserve
 shortfall, or material cohort differences at OR_RVOL 3 and score 95. These are
 research hypotheses, not optimized live thresholds. Every proposal explicitly
-states that automatic application is false and user approval is required.
+states that automatic application is false and a separate production-version
+workflow is required.
 
-There is intentionally no `apply` command. Accepting a proposal requires Ryan's
-explicit approval, a documented source/evidence review, a new strategy version,
-new rules hash, preserved prior sample, updated tests/docs, and a preregistered
-confirmation sample. A proposal with no supported hypothesis freezes the current
-rules and asks for more complete data.
+There is intentionally no `apply` command. Codex makes the evidence-backed
+application decision under the delegated authority in `AGENTS.md`. An accepted
+proposal still requires a documented source/evidence review, a separate
+production-change workflow, a new strategy version and rules hash, preserved
+prior sample, updated tests/docs, and preregistered confirmation evidence. A
+proposal with no supported hypothesis freezes the current rules and asks for
+more complete data.
 
 ## Publishing
 

@@ -1,3 +1,4 @@
+import json
 import tempfile
 import unittest
 from datetime import date, timedelta
@@ -115,12 +116,16 @@ class CadenceTests(unittest.TestCase):
                 as_of=date(2026, 8, 20),
             )
             path = write_proposal(report, proposal_root)
+            proposal = json.loads(path.read_text(encoding="utf-8"))
 
         categories = {item["category"] for item in report["hypotheses"]}
         self.assertEqual(report["status"], "review_ready")
         self.assertFalse(report["automatic_application"])
         self.assertIn("opening_relative_volume", categories)
         self.assertTrue(path.name.endswith("-strategy-review.json"))
+        self.assertFalse(proposal["requires_user_approval"])
+        self.assertTrue(proposal["delegated_application_decision"])
+        self.assertTrue(proposal["requires_separate_production_change_workflow"])
         self.assertEqual(load_config().version, report["strategy_version"])
 
     def test_blocked_report_cannot_be_written_as_proposal(self):
@@ -131,9 +136,7 @@ class CadenceTests(unittest.TestCase):
 
     def test_report_exposes_pre_session_universe_waste(self):
         records = [
-            rejected_signal(
-                0, ["average daily volume is below the universe minimum"]
-            ),
+            rejected_signal(0, ["average daily volume is below the universe minimum"]),
             rejected_signal(1, ["daily ATR is below the universe minimum"]),
             rejected_signal(2, ["opening relative volume is below 1.0"]),
             rejected_signal(3, ["security is not a U.S.-listed common stock"]),

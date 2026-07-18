@@ -173,15 +173,21 @@ more data:
 
 ```sh
 python3 session_mode.py --mode learning
+python3 learning_registry.py audit
+python3 learning_loop.py init
 python3 learning_loop.py inspect
 python3 learning_loop.py review-plan learning_runs/plan.json
+python3 learning_loop.py start --objective experiment-<registered-id>
+python3 learning_loop.py run --run-id learning-<id> --max-steps 20
 ```
 
-The versioned [LEARNING_LOOP.md](LEARNING_LOOP.md) prompt inventories existing
-changes, identifies ten working controls, proves the bottleneck, filters at most
-five improvements, applies one coherent slice, validates it, records the lesson,
-and stops. It cannot access the broker or activate production strategy changes.
-Local inventories and plans remain under ignored `learning_runs/`.
+The versioned [LEARNING_LOOP.md](LEARNING_LOOP.md) prompt governs each bounded
+slice. [LEARNING_PROGRAM.md](LEARNING_PROGRAM.md) and the append-only `learning/`
+registries persist datasets, experiment families, failures, and three-axis
+strategy evidence across invocations. The controller performs finite,
+resumable state transitions and stops when Codex judgment or new evidence is
+required. It cannot access the broker or activate production strategy changes.
+Operational state remains under ignored `learning_runs/`.
 
 The early Item 2.02 reversal research has a separate prospective evidence plane.
 It cannot reuse the inspected corpus as confirmation and it cannot activate a

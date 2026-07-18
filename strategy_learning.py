@@ -2,8 +2,9 @@
 
 This module never edits ``strategy_config.toml``.  It converts frozen-rule
 signal history and archived terminal outcomes into diagnostics and, only after
-the configured review cadence is earned, a proposal for human review.  Applying
-a proposal requires a separately authorized strategy version change.
+the configured review cadence is earned, a proposal for an evidence-backed
+application decision. Applying a proposal requires a separate strategy-version
+workflow and can never occur through this module.
 """
 
 from __future__ import annotations
@@ -256,9 +257,7 @@ def _signal_diagnostics(
             daily_metric_rejects += 1
     return {
         "signals": len(signals),
-        "triggered_signals": sum(
-            record.get("triggered") is True for record in signals
-        ),
+        "triggered_signals": sum(record.get("triggered") is True for record in signals),
         "eligible_signals": sum(record.get("eligible") is True for record in signals),
         "closed_performance_signals": len(_closed_signals(signals, config)),
         "rejected_signals": sum(
@@ -441,7 +440,11 @@ def write_proposal(
     proposal = dict(report)
     cadence = report["cadence"]
     proposal["reviewed_closed_signals"] = cadence["current_closed_signals"]
-    proposal["requires_user_approval"] = True
+    # Retained for schema compatibility. Repository governance delegates the
+    # evidence-backed decision to Codex, while this tool remains non-applying.
+    proposal["requires_user_approval"] = False
+    proposal["delegated_application_decision"] = True
+    proposal["requires_separate_production_change_workflow"] = True
     proposal["requires_new_strategy_version"] = bool(report.get("hypotheses"))
     try:
         with destination.open("x", encoding="utf-8") as handle:
