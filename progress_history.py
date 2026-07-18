@@ -38,7 +38,9 @@ def _nonempty_text(value: Any, name: str) -> str:
 def _text_list(value: Any, name: str, *, required: bool = False) -> list[str]:
     if not isinstance(value, list):
         raise ProgressHistoryError(f"{name} must be an array")
-    result = [_nonempty_text(item, f"{name}[{index}]") for index, item in enumerate(value)]
+    result = [
+        _nonempty_text(item, f"{name}[{index}]") for index, item in enumerate(value)
+    ]
     if required and not result:
         raise ProgressHistoryError(f"{name} cannot be empty")
     return result
@@ -88,7 +90,9 @@ def load_history(path: Path = DEFAULT_HISTORY_PATH) -> list[dict[str, Any]]:
     identifiers: set[str] = set()
     for line_number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         if not raw.strip():
-            raise ProgressHistoryError(f"line {line_number}: blank lines are not allowed")
+            raise ProgressHistoryError(
+                f"line {line_number}: blank lines are not allowed"
+            )
         try:
             value = json.loads(raw)
         except json.JSONDecodeError as exc:
@@ -140,7 +144,9 @@ def _git(*args: str) -> str:
 def staged_paths() -> list[str]:
     return [
         line.strip()
-        for line in _git("diff", "--cached", "--name-only", "--diff-filter=ACMR").splitlines()
+        for line in _git(
+            "diff", "--cached", "--name-only", "--diff-filter=ACMR"
+        ).splitlines()
         if line.strip()
     ]
 

@@ -143,10 +143,7 @@ def determine_evaluation(
     }
     for row in ordered:
         clock = _time_et(row)
-        if (
-            time(9, 35) <= clock < time(10, 29)
-            and float(row["high"]) > opening["high"]
-        ):
+        if time(9, 35) <= clock < time(10, 29) and float(row["high"]) > opening["high"]:
             evaluation_at = (
                 datetime.combine(date.min, clock) + timedelta(minutes=2)
             ).time()
@@ -310,9 +307,7 @@ def _build_candidate(
     completed = [row for row in session_rows if _time_et(row) < evaluation_clock]
     vwap = _cumulative_vwap(completed)
     earlier_vwap = _available_cumulative_vwap(completed[:-5] or completed[:1])
-    vwap_flat_or_rising = (
-        earlier_vwap is not None and vwap >= earlier_vwap
-    )
+    vwap_flat_or_rising = earlier_vwap is not None and vwap >= earlier_vwap
     recent_rows = completed[-3:] or session_rows[:5]
     support_candidates = [
         float(opening["high"]),
@@ -619,9 +614,7 @@ def _load_pre_session_history(
         dates = preflight.get("dates")
         date_report = dates.get(day) if isinstance(dates, Mapping) else None
         accepted = (
-            date_report.get("accepted")
-            if isinstance(date_report, Mapping)
-            else None
+            date_report.get("accepted") if isinstance(date_report, Mapping) else None
         )
         accepted_row = (
             next(
@@ -861,7 +854,9 @@ def _confirmation_collection_context(
         raise HistoricalBundleBuildError("confirmation evidence scanner is missing")
     frozen_dates = confirmation.get("frozen_dates")
     if not isinstance(frozen_dates, list):
-        raise HistoricalBundleBuildError("confirmation manifest frozen dates are missing")
+        raise HistoricalBundleBuildError(
+            "confirmation manifest frozen dates are missing"
+        )
     selected_dates: list[str] = []
     precollection_blockers: dict[str, Mapping[str, Any]] = {}
     ready_dates: set[str] = set()
@@ -874,7 +869,10 @@ def _confirmation_collection_context(
         expected_symbols = list(frozen.get("ordered_symbols", []))
         if status == "precollection_blocked":
             rows = blocked_by_date.get(day)
-            if not isinstance(rows, list) or [row.get("symbol") for row in rows] != expected_symbols:
+            if (
+                not isinstance(rows, list)
+                or [row.get("symbol") for row in rows] != expected_symbols
+            ):
                 raise HistoricalBundleBuildError(
                     f"{day}: blocked universe differs from confirmation manifest"
                 )
@@ -886,7 +884,10 @@ def _confirmation_collection_context(
             precollection_blockers[day] = dict(blocker)
             continue
         rows = candidates_by_date.get(day)
-        if not isinstance(rows, list) or [row.get("symbol") for row in rows] != expected_symbols:
+        if (
+            not isinstance(rows, list)
+            or [row.get("symbol") for row in rows] != expected_symbols
+        ):
             raise HistoricalBundleBuildError(
                 f"{day}: candidate order differs from confirmation manifest"
             )
@@ -1280,9 +1281,7 @@ def _collect_manifest_dates(
         date_blocked = False
         benchmark_outcomes = ordered_bounded_results(
             BENCHMARKS,
-            lambda symbol: _load_or_collect_benchmark(
-                client, raw_root, day, symbol
-            ),
+            lambda symbol: _load_or_collect_benchmark(client, raw_root, day, symbol),
             max_workers=min(max_workers, len(BENCHMARKS)),
         )
         try:
@@ -1321,9 +1320,7 @@ def _collect_manifest_dates(
                                 symbol,
                             )
                             benchmark_rows[symbol] = fallback_raw["session_bars"]
-                            benchmark_providers[symbol] = str(
-                                fallback_raw["provider"]
-                            )
+                            benchmark_providers[symbol] = str(fallback_raw["provider"])
                             recoveries.append(
                                 {
                                     "date": day,
@@ -1368,9 +1365,7 @@ def _collect_manifest_dates(
                     else:
                         failure = _failure_row(day, symbol, "benchmark", exc)
                     failures.append(failure)
-                    persist(
-                        interrupted=failure["retryable"] and not fallback_failed
-                    )
+                    persist(interrupted=failure["retryable"] and not fallback_failed)
                     if failure["retryable"] and not fallback_failed:
                         raise HistoricalProviderError(
                             failure["error"], category=failure["category"]
@@ -1504,9 +1499,7 @@ def _collect_manifest_dates(
                         file=sys.stderr,
                         flush=True,
                     )
-                    persist(
-                        interrupted=failure["retryable"] and not fallback_failed
-                    )
+                    persist(interrupted=failure["retryable"] and not fallback_failed)
                     if failure["retryable"] and not fallback_failed:
                         raise HistoricalProviderError(
                             failure["error"], category=failure["category"]

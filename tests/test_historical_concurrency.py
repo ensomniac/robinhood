@@ -23,9 +23,7 @@ class OrderedBoundedResultsTests(unittest.TestCase):
                 with lock:
                     active -= 1
 
-        results = list(
-            ordered_bounded_results([1, 2, 3], work, max_workers=3)
-        )
+        results = list(ordered_bounded_results([1, 2, 3], work, max_workers=3))
 
         self.assertGreaterEqual(peak, 2)
         self.assertEqual([result.item for result in results], [1, 2, 3])

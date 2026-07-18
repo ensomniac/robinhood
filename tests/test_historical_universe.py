@@ -193,9 +193,7 @@ class FreezeCandidateUniverseTests(unittest.TestCase):
 
     def test_known_non_common_stock_is_skipped_without_provider_request(self):
         draft = draft_manifest()
-        draft["candidate_pool_by_date"]["2026-03-03"][0][
-            "is_common_stock"
-        ] = False
+        draft["candidate_pool_by_date"]["2026-03-03"][0]["is_common_stock"] = False
         calls = []
 
         def probe(symbol, day):

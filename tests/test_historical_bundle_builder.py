@@ -119,17 +119,13 @@ class EvaluationTimeTests(unittest.TestCase):
         self.assertFalse(clean_break)
 
     def test_last_eligible_crossing_bar_evaluates_at_cutoff(self):
-        evaluation, clean_break, _ = determine_evaluation(
-            session_bars(break_index=58)
-        )
+        evaluation, clean_break, _ = determine_evaluation(session_bars(break_index=58))
 
         self.assertEqual(evaluation, "10:30:00")
         self.assertTrue(clean_break)
 
     def test_crossing_at_cutoff_is_not_an_entry_signal(self):
-        evaluation, clean_break, _ = determine_evaluation(
-            session_bars(break_index=59)
-        )
+        evaluation, clean_break, _ = determine_evaluation(session_bars(break_index=59))
 
         self.assertEqual(evaluation, "10:30:00")
         self.assertFalse(clean_break)
@@ -307,9 +303,7 @@ class BundleAssemblyTests(unittest.TestCase):
         )
         validate_bundle(confirmation)
         self.assertEqual(confirmation["sample_phase"], "confirmation")
-        self.assertEqual(
-            confirmation["preregistration"]["manifest_hash"], "a" * 64
-        )
+        self.assertEqual(confirmation["preregistration"]["manifest_hash"], "a" * 64)
 
     def test_non_break_below_opening_range_is_ineligible_not_malformed(self):
         day = "2026-03-03"
@@ -473,16 +467,12 @@ class CollectionControlTests(unittest.TestCase):
                 history,
             )
             preflight["cache"]["schema_version"] = 3
-            self.assertIsNone(
-                _load_pre_session_history(preflight, "2026-03-03", "T00")
-            )
+            self.assertIsNone(_load_pre_session_history(preflight, "2026-03-03", "T00"))
             preflight["cache"]["schema_version"] = 2
             preflight["dates"]["2026-03-03"]["accepted"][0][
                 "pre_session_history_sha256"
             ] = "0" * 64
-            self.assertIsNone(
-                _load_pre_session_history(preflight, "2026-03-03", "T00")
-            )
+            self.assertIsNone(_load_pre_session_history(preflight, "2026-03-03", "T00"))
 
     def test_incompatible_preflight_history_falls_back_to_normal_collection(self):
         calls = []

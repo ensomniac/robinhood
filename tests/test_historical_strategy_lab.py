@@ -102,9 +102,7 @@ def reversal_bars():
             "volume": 10_000,
         }
     )
-    bars[6].update(
-        {"open": 100.06, "high": 101.0, "low": 100.0, "close": 100.9}
-    )
+    bars[6].update({"open": 100.06, "high": 101.0, "low": 100.0, "close": 100.9})
     return bars
 
 
@@ -167,8 +165,7 @@ def confirmation_evidence(days, symbols=("TEST",)):
             "target_session_prices_observed": False,
         },
         "candidates_by_date": {
-            day: [confirmation_candidate(symbol) for symbol in symbols]
-            for day in days
+            day: [confirmation_candidate(symbol) for symbol in symbols] for day in days
         },
     }
 
@@ -694,9 +691,7 @@ class IndependentConfirmationTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            days, manifest_path, manifest = freeze_fixture(
-                root, symbols=("AAA", "BBB")
-            )
+            days, manifest_path, manifest = freeze_fixture(root, symbols=("AAA", "BBB"))
             data_root = root / "data"
             write_confirmation_bundle(
                 data_root, days[0], manifest, symbols=("BBB", "AAA")

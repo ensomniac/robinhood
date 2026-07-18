@@ -154,8 +154,10 @@ def _assert_privacy_safe(value: Any, path: str = "capture") -> None:
 def _item_202_candidate(raw: Mapping[str, Any], day: str) -> tuple[str, str]:
     symbol = str(raw.get("symbol", "")).strip().upper()
     alias = str(raw.get("public_alias", "")).strip()
-    if not symbol or not PUBLIC_ALIAS.fullmatch(alias) or not alias.startswith(
-        f"{day}-{symbol}-"
+    if (
+        not symbol
+        or not PUBLIC_ALIAS.fullmatch(alias)
+        or not alias.startswith(f"{day}-{symbol}-")
     ):
         raise ShadowReversalError(
             f"{day}: candidate needs a matching privacy-safe public_alias"
@@ -163,7 +165,9 @@ def _item_202_candidate(raw: Mapping[str, Any], day: str) -> tuple[str, str]:
     catalyst = raw.get("catalyst")
     if not isinstance(catalyst, Mapping) or catalyst.get("point_in_time") is not True:
         raise ShadowReversalError(f"{alias}: catalyst must be point-in-time")
-    items = {value.strip() for value in str(catalyst.get("filing_items", "")).split(",")}
+    items = {
+        value.strip() for value in str(catalyst.get("filing_items", "")).split(",")
+    }
     if "2.02" not in items:
         raise ShadowReversalError(f"{alias}: catalyst must include SEC Item 2.02")
     published = _timestamp(catalyst.get("published_at"), f"{alias}.published_at")
@@ -202,8 +206,16 @@ def _quote_snapshot(raw: Mapping[str, Any], label: str) -> dict[str, Any]:
 
 def _market_path_point(raw: Mapping[str, Any], label: str) -> dict[str, Any]:
     snapshot = _quote_snapshot(raw, label)
-    low_bid = _number(raw.get("interval_low_bid", snapshot["bid"]), f"{label}.interval_low_bid", positive=True)
-    high_bid = _number(raw.get("interval_high_bid", snapshot["bid"]), f"{label}.interval_high_bid", positive=True)
+    low_bid = _number(
+        raw.get("interval_low_bid", snapshot["bid"]),
+        f"{label}.interval_low_bid",
+        positive=True,
+    )
+    high_bid = _number(
+        raw.get("interval_high_bid", snapshot["bid"]),
+        f"{label}.interval_high_bid",
+        positive=True,
+    )
     if low_bid > high_bid:
         raise ShadowReversalError(f"{label}: interval low exceeds interval high")
     snapshot.update({"interval_low_bid": low_bid, "interval_high_bid": high_bid})
@@ -311,9 +323,19 @@ def _simulate_exit(
         "exit_at": exit_timestamp.isoformat(),
         "exit_reason": exit_reason,
         "net_r": round((exit_price - entry) / risk, 8),
-        "mfe_r": round((max(value["interval_high_bid"] for value in lifecycle_points) - entry) / risk, 8),
-        "mae_r": round((min(value["interval_low_bid"] for value in lifecycle_points) - entry) / risk, 8),
-        "modeled_stop_slippage_bps": round(stop_slippage, 8) if stop_slippage is not None else None,
+        "mfe_r": round(
+            (max(value["interval_high_bid"] for value in lifecycle_points) - entry)
+            / risk,
+            8,
+        ),
+        "mae_r": round(
+            (min(value["interval_low_bid"] for value in lifecycle_points) - entry)
+            / risk,
+            8,
+        ),
+        "modeled_stop_slippage_bps": round(stop_slippage, 8)
+        if stop_slippage is not None
+        else None,
         "same_interval_ambiguity": ambiguity,
         "violations": violations,
     }
@@ -323,7 +345,10 @@ def evaluate_shadow_session(capture: Mapping[str, Any]) -> dict[str, Any]:
     """Turn one complete read-only capture into a privacy-safe lifecycle record."""
 
     _assert_privacy_safe(capture)
-    if capture.get("schema_version") != SCHEMA_VERSION or capture.get("mode") != "shadow":
+    if (
+        capture.get("schema_version") != SCHEMA_VERSION
+        or capture.get("mode") != "shadow"
+    ):
         raise ShadowReversalError("capture must use schema 1 and mode=shadow")
     day = str(capture.get("date", ""))
     try:
@@ -431,17 +456,33 @@ def evaluate_shadow_session(capture: Mapping[str, Any]) -> dict[str, Any]:
         observed_times = [value["observed_at"] for value in snapshots]
         if observed_times != sorted(observed_times):
             violations.append("quote_snapshots_not_chronological")
-        if observed_times and (observed_times[-1] - observed_times[0]).total_seconds() > MAX_SNAPSHOT_WINDOW_SECONDS:
+        if (
+            observed_times
+            and (observed_times[-1] - observed_times[0]).total_seconds()
+            > MAX_SNAPSHOT_WINDOW_SECONDS
+        ):
             violations.append("quote_snapshot_window_exceeds_10_seconds")
         if any(value["stale"] for value in snapshots):
             violations.append("stale_entry_quote")
         if any(value["crossed"] for value in snapshots):
             violations.append("crossed_entry_quote")
-        if snapshots and max(value["spread_fraction"] for value in snapshots) > HARD_SPREAD_FRACTION:
+        if (
+            snapshots
+            and max(value["spread_fraction"] for value in snapshots)
+            > HARD_SPREAD_FRACTION
+        ):
             violations.append("entry_spread_exceeds_hard_limit")
-        if snapshots and statistics.median(value["spread_fraction"] for value in snapshots) > OPERATING_SPREAD_FRACTION:
+        if (
+            snapshots
+            and statistics.median(value["spread_fraction"] for value in snapshots)
+            > OPERATING_SPREAD_FRACTION
+        ):
             violations.append("median_entry_spread_exceeds_operating_limit")
-        if snapshots and (observed_times[-1] - signal_completed_at).total_seconds() > MAX_ENTRY_OBSERVATION_DELAY_SECONDS:
+        if (
+            snapshots
+            and (observed_times[-1] - signal_completed_at).total_seconds()
+            > MAX_ENTRY_OBSERVATION_DELAY_SECONDS
+        ):
             missed_reasons.append("entry_observation_delayed")
     stop_ready_value = raw.get("stop_ready_at")
     protection_value = raw.get("simulated_protection_at")
@@ -454,9 +495,7 @@ def evaluate_shadow_session(capture: Mapping[str, Any]) -> dict[str, Any]:
         missed_reasons.append("protection_timestamp_missing")
         protection = None
     else:
-        protection = _timestamp(
-            protection_value, f"{alias}.simulated_protection_at"
-        )
+        protection = _timestamp(protection_value, f"{alias}.simulated_protection_at")
     entry = snapshots[-1]["ask"] if snapshots else None
     chase_cap = bar.close * (1.0 + CHASE_CAP_FRACTION)
     if entry is not None and entry > chase_cap:
@@ -484,7 +523,13 @@ def evaluate_shadow_session(capture: Mapping[str, Any]) -> dict[str, Any]:
         }
         for value in snapshots
     ]
-    if missed_reasons or violations or entry is None or stop_ready is None or protection is None:
+    if (
+        missed_reasons
+        or violations
+        or entry is None
+        or stop_ready is None
+        or protection is None
+    ):
         record = {
             **base_record,
             "status": "missed_signal",
@@ -515,7 +560,9 @@ def evaluate_shadow_session(capture: Mapping[str, Any]) -> dict[str, Any]:
         violations.append("structural_stop_not_below_entry")
     reserve = entry * STOP_RESERVE_FRACTION
     risk_per_share = stop_distance + reserve
-    q_risk = math.floor(equity * RISK_FRACTION / risk_per_share) if risk_per_share > 0 else 0
+    q_risk = (
+        math.floor(equity * RISK_FRACTION / risk_per_share) if risk_per_share > 0 else 0
+    )
     q_allocation = math.floor(buying_power * ALLOCATION_CAP_FRACTION / entry)
     q_depth = math.floor(min(value["ask_size"] for value in snapshots) * 0.05)
     q_volume = math.floor(bar.volume * 0.05)
@@ -543,8 +590,12 @@ def evaluate_shadow_session(capture: Mapping[str, Any]) -> dict[str, Any]:
         violations.append("negative_unprotected_exposure")
     record = {
         **base_record,
-        "status": "trade" if outcome.get("complete") and not violations else "incomplete_signal",
-        "reason": "modeled_lifecycle_complete" if outcome.get("complete") and not violations else "lifecycle_or_rule_violation",
+        "status": "trade"
+        if outcome.get("complete") and not violations
+        else "incomplete_signal",
+        "reason": "modeled_lifecycle_complete"
+        if outcome.get("complete") and not violations
+        else "lifecycle_or_rule_violation",
         "selected_public_alias": alias,
         "symbol": symbol,
         "signal_bar_start_et": bar.time_et,
@@ -556,7 +607,9 @@ def evaluate_shadow_session(capture: Mapping[str, Any]) -> dict[str, Any]:
         "hypothetical_entry_at": fill_at.isoformat(),
         "hypothetical_fill_price": round(entry, 8),
         "chase_cap_price": round(chase_cap, 8),
-        "entry_slippage_bps_from_signal_close": round((entry / bar.close - 1.0) * 10_000.0, 8),
+        "entry_slippage_bps_from_signal_close": round(
+            (entry / bar.close - 1.0) * 10_000.0, 8
+        ),
         "stop_ready_at": stop_ready.isoformat(),
         "simulated_protection_at": protection.isoformat(),
         "unprotected_exposure_seconds": round(unprotected, 6),
@@ -574,7 +627,9 @@ def evaluate_shadow_session(capture: Mapping[str, Any]) -> dict[str, Any]:
         "binding_cap": binding_cap,
         "planned_loss_fraction": round(planned_loss_fraction, 8),
         "allocation_fraction": round(allocation, 8),
-        "allocation_shortfall_fraction": round(max(0.0, ALLOCATION_OBJECTIVE_FLOOR_FRACTION - allocation), 8),
+        "allocation_shortfall_fraction": round(
+            max(0.0, ALLOCATION_OBJECTIVE_FLOOR_FRACTION - allocation), 8
+        ),
         "outcome": outcome,
         "rule_violations": sorted(set(violations)),
         "lifecycle_complete": bool(outcome.get("complete")) and not violations,
@@ -593,7 +648,10 @@ def verify_shadow_record(record: Mapping[str, Any]) -> dict[str, Any]:
     expected = value.pop("record_sha256", None)
     if not isinstance(expected, str) or _sha256(_canonical_json(value)) != expected:
         raise ShadowReversalError("shadow record hash mismatch")
-    if value.get("schema_version") != SCHEMA_VERSION or value.get("contract_id") != CONTRACT_ID:
+    if (
+        value.get("schema_version") != SCHEMA_VERSION
+        or value.get("contract_id") != CONTRACT_ID
+    ):
         raise ShadowReversalError("shadow record contract mismatch")
     if value.get("order_actions_allowed") is not False:
         raise ShadowReversalError("shadow record cannot authorize order actions")
@@ -603,7 +661,10 @@ def verify_shadow_record(record: Mapping[str, Any]) -> dict[str, Any]:
 def write_shadow_record(record: Mapping[str, Any], path: Path | None = None) -> Path:
     verified = verify_shadow_record(record)
     if path is None:
-        path = DEFAULT_OUTPUT_ROOT / f"{verified['date']}-{verified['record_sha256'][:12]}.json"
+        path = (
+            DEFAULT_OUTPUT_ROOT
+            / f"{verified['date']}-{verified['record_sha256'][:12]}.json"
+        )
     resolved = path.resolve()
     allowed = DEFAULT_OUTPUT_ROOT.resolve()
     if allowed != resolved.parent and allowed not in resolved.parents:
@@ -627,7 +688,9 @@ def qualify_shadow_records(
     dates = [date.fromisoformat(str(value["date"])) for value in verified]
     if len(set(dates)) != len(dates):
         raise ShadowReversalError("qualification requires one record per date")
-    ordered = [value for _, value in sorted(zip(dates, verified), key=lambda row: row[0])]
+    ordered = [
+        value for _, value in sorted(zip(dates, verified), key=lambda row: row[0])
+    ]
     signal_records = [value for value in ordered if value["status"] != "no_trade"]
     returns = [
         float(value["outcome"]["net_r"]) if value["status"] == "trade" else 0.0
@@ -661,25 +724,84 @@ def qualify_shadow_records(
         and confirmation_result.get("decision", {}).get("next_stage")
         == "advance_structural_stop_risk_sized_arm_to_shadow"
     )
-    pf_passed = (
-        stats["profit_factor"] is None and stats["total_r"] > 0
-    ) or (
+    pf_passed = (stats["profit_factor"] is None and stats["total_r"] > 0) or (
         stats["profit_factor"] is not None and stats["profit_factor"] >= 1.20
     )
     gates = {
-        "minimum_completed_signals": {"passed": len(signal_records) >= 20, "actual": len(signal_records), "required": ">=20"},
-        "calendar_span": {"passed": span_days >= 30, "actual": span_days, "required": ">=30 days"},
-        "zero_rule_violations": {"passed": not violations, "actual": violations, "required": "none"},
-        "lifecycle_complete": {"passed": all(value.get("lifecycle_complete") for value in ordered), "actual": sum(bool(value.get("lifecycle_complete")) for value in ordered), "required": len(ordered)},
-        "median_spread": {"passed": bool(spreads) and statistics.median(spreads) <= OPERATING_SPREAD_FRACTION, "actual": round(statistics.median(spreads), 8) if spreads else None, "required": "<=0.001"},
-        "maximum_spread": {"passed": bool(spreads) and max(spreads) <= HARD_SPREAD_FRACTION, "actual": round(max(spreads), 8) if spreads else None, "required": "<=0.0015"},
-        "entry_slippage_p95": {"passed": bool(slippages) and _quantile(slippages, 0.95) <= 15.0, "actual": round(_quantile(slippages, 0.95), 8) if slippages else None, "required": "<=15 bps"},
-        "unprotected_exposure_p95": {"passed": bool(unprotected) and _quantile(unprotected, 0.95) <= 10.0, "actual": round(_quantile(unprotected, 0.95), 8) if unprotected else None, "required": "<=10 seconds"},
-        "positive_expectancy": {"passed": stats["mean_r"] is not None and stats["mean_r"] > 0, "actual": stats["mean_r"], "required": ">0R"},
-        "profit_factor": {"passed": pf_passed, "actual": stats["profit_factor"], "required": ">=1.20"},
-        "maximum_drawdown": {"passed": stats["maximum_drawdown_r"] <= 6.0, "actual": stats["maximum_drawdown_r"], "required": "<=6R"},
-        "no_fill_above_chase_cap": {"passed": all(value.get("hypothetical_fill_price", 0) <= value.get("chase_cap_price", math.inf) for value in signal_records if value["status"] == "trade"), "actual": True, "required": True},
-        "structural_stops_preserved": {"passed": all(value.get("structural_stop_compressed") is False for value in signal_records), "actual": 0, "required": 0},
+        "minimum_completed_signals": {
+            "passed": len(signal_records) >= 20,
+            "actual": len(signal_records),
+            "required": ">=20",
+        },
+        "calendar_span": {
+            "passed": span_days >= 30,
+            "actual": span_days,
+            "required": ">=30 days",
+        },
+        "zero_rule_violations": {
+            "passed": not violations,
+            "actual": violations,
+            "required": "none",
+        },
+        "lifecycle_complete": {
+            "passed": all(value.get("lifecycle_complete") for value in ordered),
+            "actual": sum(bool(value.get("lifecycle_complete")) for value in ordered),
+            "required": len(ordered),
+        },
+        "median_spread": {
+            "passed": bool(spreads)
+            and statistics.median(spreads) <= OPERATING_SPREAD_FRACTION,
+            "actual": round(statistics.median(spreads), 8) if spreads else None,
+            "required": "<=0.001",
+        },
+        "maximum_spread": {
+            "passed": bool(spreads) and max(spreads) <= HARD_SPREAD_FRACTION,
+            "actual": round(max(spreads), 8) if spreads else None,
+            "required": "<=0.0015",
+        },
+        "entry_slippage_p95": {
+            "passed": bool(slippages) and _quantile(slippages, 0.95) <= 15.0,
+            "actual": round(_quantile(slippages, 0.95), 8) if slippages else None,
+            "required": "<=15 bps",
+        },
+        "unprotected_exposure_p95": {
+            "passed": bool(unprotected) and _quantile(unprotected, 0.95) <= 10.0,
+            "actual": round(_quantile(unprotected, 0.95), 8) if unprotected else None,
+            "required": "<=10 seconds",
+        },
+        "positive_expectancy": {
+            "passed": stats["mean_r"] is not None and stats["mean_r"] > 0,
+            "actual": stats["mean_r"],
+            "required": ">0R",
+        },
+        "profit_factor": {
+            "passed": pf_passed,
+            "actual": stats["profit_factor"],
+            "required": ">=1.20",
+        },
+        "maximum_drawdown": {
+            "passed": stats["maximum_drawdown_r"] <= 6.0,
+            "actual": stats["maximum_drawdown_r"],
+            "required": "<=6R",
+        },
+        "no_fill_above_chase_cap": {
+            "passed": all(
+                value.get("hypothetical_fill_price", 0)
+                <= value.get("chase_cap_price", math.inf)
+                for value in signal_records
+                if value["status"] == "trade"
+            ),
+            "actual": True,
+            "required": True,
+        },
+        "structural_stops_preserved": {
+            "passed": all(
+                value.get("structural_stop_compressed") is False
+                for value in signal_records
+            ),
+            "actual": 0,
+            "required": 0,
+        },
     }
     shadow_passed = all(value["passed"] for value in gates.values())
     return {
@@ -690,7 +812,9 @@ def qualify_shadow_records(
         "last_date": max(dates).isoformat(),
         "calendar_span_days": span_days,
         "no_trade_days": sum(value["status"] == "no_trade" for value in ordered),
-        "missed_signal_days": sum(value["status"] == "missed_signal" for value in ordered),
+        "missed_signal_days": sum(
+            value["status"] == "missed_signal" for value in ordered
+        ),
         "modeled_trade_days": sum(value["status"] == "trade" for value in ordered),
         "signal_statistics_including_operational_misses_as_zero_r": stats,
         "gates": gates,
@@ -711,10 +835,14 @@ def qualify_shadow_records(
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
-    record = subparsers.add_parser("record", help="evaluate and seal one shadow session capture")
+    record = subparsers.add_parser(
+        "record", help="evaluate and seal one shadow session capture"
+    )
     record.add_argument("capture", type=Path)
     record.add_argument("--output", type=Path)
-    qualify = subparsers.add_parser("qualify", help="aggregate prospective shadow records")
+    qualify = subparsers.add_parser(
+        "qualify", help="aggregate prospective shadow records"
+    )
     qualify.add_argument("records", type=Path, nargs="+")
     qualify.add_argument("--confirmation-result", type=Path)
     qualify.add_argument("--output", type=Path)
@@ -752,7 +880,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(output, indent=2, sort_keys=True))
         return 0
     except (ShadowReversalError, OSError, ValueError) as exc:
-        print(json.dumps({"error": str(exc), "error_type": type(exc).__name__}, indent=2))
+        print(
+            json.dumps({"error": str(exc), "error_type": type(exc).__name__}, indent=2)
+        )
         return 1
 
 

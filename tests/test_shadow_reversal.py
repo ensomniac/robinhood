@@ -28,9 +28,7 @@ def reversal_bars():
         )
         minute_of_day += 1
     for index in range(5):
-        bars[index].update(
-            {"open": 100.0, "high": 100.1, "low": 99.7, "close": 99.8}
-        )
+        bars[index].update({"open": 100.0, "high": 100.1, "low": 99.7, "close": 99.8})
     bars[5].update(
         {
             "open": 99.8,
@@ -214,9 +212,7 @@ class ShadowQualificationTests(unittest.TestCase):
             },
         }
 
-        result = qualify_shadow_records(
-            records, confirmation_result=confirmation
-        )
+        result = qualify_shadow_records(records, confirmation_result=confirmation)
 
         self.assertTrue(result["shadow_execution_passed"])
         self.assertTrue(result["historical_confirmation_passed"])

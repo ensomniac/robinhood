@@ -63,9 +63,7 @@ DEFAULT_CONFIRMATION_ROOT = (
     PROJECT_ROOT / "historical_batches" / "confirmation_manifests"
 )
 DEFAULT_EXCLUDED_RESULT = (
-    PROJECT_ROOT
-    / "research_results"
-    / "2026-07-18-production-aware-strategy-lab.json"
+    PROJECT_ROOT / "research_results" / "2026-07-18-production-aware-strategy-lab.json"
 )
 PRODUCTION_PATHS = (
     PROJECT_ROOT / "strategy_config.toml",
@@ -391,9 +389,7 @@ def _candidate_symbols(rows: Any, day: str) -> tuple[str, ...]:
             )
         symbol = str(row.get("symbol", "")).strip().upper()
         if not symbol:
-            raise HistoricalStrategyLabError(
-                f"{day}: candidate {index} has no symbol"
-            )
+            raise HistoricalStrategyLabError(f"{day}: candidate {index} has no symbol")
         catalyst = row.get("catalyst")
         if (
             not isinstance(catalyst, Mapping)
@@ -480,7 +476,10 @@ def _confirmation_selection_boundary(
     if (
         not isinstance(seed, int)
         or not isinstance(selected_dates, list)
-        or not all(isinstance(day, str) and DATE_PATTERN.fullmatch(day) for day in selected_dates)
+        or not all(
+            isinstance(day, str) and DATE_PATTERN.fullmatch(day)
+            for day in selected_dates
+        )
         or len(selected_dates) != len(set(selected_dates))
     ):
         raise HistoricalStrategyLabError(
@@ -561,19 +560,13 @@ def freeze_confirmation_manifest(
         blocked_candidates_by_date,
     )
     preflight = evidence.get("preflight")
-    preflight_dates = (
-        preflight.get("dates") if isinstance(preflight, Mapping) else None
-    )
+    preflight_dates = preflight.get("dates") if isinstance(preflight, Mapping) else None
     frozen_dates: list[dict[str, Any]] = []
     for day in requested_dates:
         if not DATE_PATTERN.fullmatch(day):
             raise HistoricalStrategyLabError(f"invalid confirmation date {day!r}")
         blocked = day in blocked_candidates_by_date
-        rows = (
-            blocked_candidates_by_date[day]
-            if blocked
-            else candidates_by_date[day]
-        )
+        rows = blocked_candidates_by_date[day] if blocked else candidates_by_date[day]
         if blocked and not isinstance(rows, list):
             raise HistoricalStrategyLabError(
                 f"{day}: blocked candidate universe must be an array"
@@ -620,9 +613,7 @@ def freeze_confirmation_manifest(
         frozen_dates.append(
             {
                 "date": day,
-                "status": (
-                    "precollection_blocked" if blocked else "validation_ready"
-                ),
+                "status": ("precollection_blocked" if blocked else "validation_ready"),
                 "ordered_symbols": list(symbols),
                 "ordered_candidates": rows,
                 "precollection_blocker": blocker,
@@ -631,9 +622,7 @@ def freeze_confirmation_manifest(
                 ),
             }
         )
-    minimum_dates = int(
-        CONFIRMATION_ACCEPTANCE_THRESHOLDS["minimum_requested_dates"]
-    )
+    minimum_dates = int(CONFIRMATION_ACCEPTANCE_THRESHOLDS["minimum_requested_dates"])
     if len(frozen_dates) < minimum_dates:
         raise HistoricalStrategyLabError(
             f"confirmation requires at least {minimum_dates} frozen dates"
@@ -738,8 +727,7 @@ def load_confirmation_manifest(path: Path) -> dict[str, Any]:
         or manifest.get("confirmation_contract_id") != CONFIRMATION_CONTRACT_ID
         or manifest.get("policy") != asdict(FROZEN_CONFIRMATION_POLICY)
         or manifest.get("execution_grid") != CONFIRMATION_EXECUTION_GRID
-        or manifest.get("acceptance_thresholds")
-        != CONFIRMATION_ACCEPTANCE_THRESHOLDS
+        or manifest.get("acceptance_thresholds") != CONFIRMATION_ACCEPTANCE_THRESHOLDS
         or manifest.get("deployment_views") != CONFIRMATION_DEPLOYMENT
     ):
         raise HistoricalStrategyLabError(
@@ -1806,7 +1794,9 @@ def _confirmation_dataset(
                 "sha256": _sha256_file(path) if path.is_file() else None,
                 "expected_symbols": list(frozen["ordered_symbols"]),
                 "expected_filing_items": {
-                    str(row["symbol"]): str(row.get("discovery", {}).get("filing_items", ""))
+                    str(row["symbol"]): str(
+                        row.get("discovery", {}).get("filing_items", "")
+                    )
                     for row in frozen["ordered_candidates"]
                 },
                 "expected_frozen_hash": frozen["frozen_evidence_sha256"],
@@ -1846,9 +1836,7 @@ def _verify_confirmation_bundle(
     if bundle is None:
         return None
     day = str(item["date"])
-    registered = _parse_timestamp(
-        manifest["registered_at"], "manifest.registered_at"
-    )
+    registered = _parse_timestamp(manifest["registered_at"], "manifest.registered_at")
     source = bundle["source"]
     captured = _parse_timestamp(source.get("captured_at"), f"{day} source.captured_at")
     if captured <= registered:
@@ -1941,12 +1929,8 @@ def _simulate_deployment(
         reserve = entry * float(assumptions["stop_slippage_reserve_fraction"])
         risk_per_share = stop_distance + reserve
         risk_budget = equity * float(assumptions["account_risk_fraction"])
-        buying_power = equity * float(
-            assumptions["synthetic_buying_power_fraction"]
-        )
-        allocation_budget = (
-            buying_power * float(assumptions["allocation_cap_fraction"])
-        )
+        buying_power = equity * float(assumptions["synthetic_buying_power_fraction"])
+        allocation_budget = buying_power * float(assumptions["allocation_cap_fraction"])
         q_risk = math.floor(risk_budget / risk_per_share)
         q_allocation = math.floor(allocation_budget / entry)
         quantity = min(q_risk, q_allocation)
@@ -1959,9 +1943,11 @@ def _simulate_deployment(
         planned_loss_fraction = (
             quantity * risk_per_share / equity_before if equity_before else 0.0
         )
-        if quantity > 0 and planned_loss_fraction > float(
-            assumptions["account_risk_fraction"]
-        ) + 1e-12:
+        if (
+            quantity > 0
+            and planned_loss_fraction
+            > float(assumptions["account_risk_fraction"]) + 1e-12
+        ):
             raise HistoricalStrategyLabError(
                 f"{signal_id}: whole-share sizing exceeded the account-risk cap"
             )
@@ -1981,9 +1967,7 @@ def _simulate_deployment(
                 "deployed_stop": structural_stop,
                 "stop_compressed": False,
                 "stop_fraction": round(stop_fraction, 8),
-                "reserve_fraction": assumptions[
-                    "stop_slippage_reserve_fraction"
-                ],
+                "reserve_fraction": assumptions["stop_slippage_reserve_fraction"],
                 "q_risk": q_risk,
                 "q_allocation": q_allocation,
                 "quantity": quantity,
@@ -2011,18 +1995,14 @@ def _simulate_deployment(
         equity_path.append(equity)
     returns = [float(value["account_return_fraction"]) for value in details]
     allocations = [float(value["allocation_fraction"]) for value in details]
-    shortfalls = [
-        float(value["allocation_shortfall_fraction"]) for value in details
-    ]
+    shortfalls = [float(value["allocation_shortfall_fraction"]) for value in details]
     stops = [float(value["stop_fraction"]) for value in details]
     log_returns = [math.log1p(value) for value in returns if value > -1.0]
     return {
         "trades": len(details),
         "starting_equity": starting_equity,
         "ending_equity": round(equity, 8),
-        "compounded_account_return_fraction": round(
-            equity / starting_equity - 1.0, 10
-        ),
+        "compounded_account_return_fraction": round(equity / starting_equity - 1.0, 10),
         "mean_account_return_fraction": (
             round(statistics.fmean(returns), 10) if returns else None
         ),
@@ -2045,12 +2025,8 @@ def _simulate_deployment(
         "p90_allocation_shortfall_fraction": (
             round(_quantile(shortfalls, 0.90), 8) if shortfalls else None
         ),
-        "median_stop_fraction": (
-            round(statistics.median(stops), 8) if stops else None
-        ),
-        "p90_stop_fraction": (
-            round(_quantile(stops, 0.90), 8) if stops else None
-        ),
+        "median_stop_fraction": (round(statistics.median(stops), 8) if stops else None),
+        "p90_stop_fraction": (round(_quantile(stops, 0.90), 8) if stops else None),
         "median_modeled_stop_slippage_bps": (
             round(statistics.median(stopped_slippage_bps), 8)
             if stopped_slippage_bps
@@ -2163,8 +2139,7 @@ def _confirmation_acceptance(
     )
     gate(
         "validation_grade_dates",
-        primary["covered_days"]
-        >= int(thresholds["minimum_validation_grade_dates"]),
+        primary["covered_days"] >= int(thresholds["minimum_validation_grade_dates"]),
         primary["covered_days"],
         f">={thresholds['minimum_validation_grade_dates']}",
     )
@@ -2174,10 +2149,17 @@ def _confirmation_acceptance(
         primary["trades"],
         f">={thresholds['minimum_executed_signals']}",
     )
-    gate("primary_expectancy", bool(primary["mean_r"] and primary["mean_r"] > 0), primary["mean_r"], ">0")
+    gate(
+        "primary_expectancy",
+        bool(primary["mean_r"] and primary["mean_r"] > 0),
+        primary["mean_r"],
+        ">0",
+    )
     gate(
         "primary_profit_factor",
-        _profit_factor_pass(primary, float(thresholds["primary_minimum_profit_factor"])),
+        _profit_factor_pass(
+            primary, float(thresholds["primary_minimum_profit_factor"])
+        ),
         primary["profit_factor"],
         f">={thresholds['primary_minimum_profit_factor']}",
     )
@@ -2210,8 +2192,7 @@ def _confirmation_acceptance(
             and _profit_factor_pass(
                 value, float(thresholds["stress_minimum_profit_factor"])
             )
-            and value["maximum_drawdown_r"]
-            <= float(thresholds["maximum_drawdown_r"]),
+            and value["maximum_drawdown_r"] <= float(thresholds["maximum_drawdown_r"]),
             dict(value),
             "positive total R, PF>=1.20, drawdown<=6R",
         )
@@ -2356,9 +2337,9 @@ def run_confirmation(
         "verified_unchanged": True,
         "paths": sorted(before),
     }
-    output_path = _safe_publish_prefix(
-        output_root / result_id / "result"
-    ).with_suffix(".json")
+    output_path = _safe_publish_prefix(output_root / result_id / "result").with_suffix(
+        ".json"
+    )
     _atomic_json(output_path, result)
     report = render_confirmation_report(result)
     _atomic_text(output_path.with_name("report.md"), report)

@@ -41,9 +41,7 @@ def _ordered_daily_bars(
     return ordered
 
 
-def average_daily_volume(
-    rows: Sequence[Mapping[str, Any]], periods: int = 14
-) -> float:
+def average_daily_volume(rows: Sequence[Mapping[str, Any]], periods: int = 14) -> float:
     """Return mean volume over the latest completed daily bars."""
     if periods < 1:
         raise HistoricalMetricError("volume periods must be positive")
@@ -54,9 +52,7 @@ def average_daily_volume(
     return statistics.fmean(volumes)
 
 
-def average_true_range(
-    rows: Sequence[Mapping[str, Any]], periods: int = 14
-) -> float:
+def average_true_range(rows: Sequence[Mapping[str, Any]], periods: int = 14) -> float:
     """Return Wilder-style simple ATR from completed daily OHLC bars."""
     if periods < 1:
         raise HistoricalMetricError("ATR periods must be positive")
