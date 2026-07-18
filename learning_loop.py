@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from learning_data import audit_learning_data
+from learning_experiment import audit_experiment_program
 from learning_registry import (
     REGISTRIES,
     RegistryError,
@@ -480,11 +481,16 @@ def initialize_program(*, root: Path = PROJECT_ROOT) -> dict[str, Any]:
         registry_root=root / "learning",
         security_path=root / "learning" / "SECURITY_MASTER.jsonl",
     )
+    experiment_status = audit_experiment_program(
+        registry_root=root / "learning",
+        hypothesis_root=root / "learning" / "hypotheses",
+    )
     return {
         "initialized": True,
         "program": str(PROGRAM_PATH.relative_to(PROJECT_ROOT)),
         "registries": registry_status,
         "learning_data": data_status,
+        "experiment_program": experiment_status,
         "broker_actions_allowed": False,
         "automatic_strategy_application": False,
     }

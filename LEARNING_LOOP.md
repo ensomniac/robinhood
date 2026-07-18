@@ -61,6 +61,12 @@ learning-time reduction, fidelity risk, implementation size, reversibility,
 required evidence, and acceptance test. Include simplification and deletion
 options, not only new components.
 
+When a candidate is a new trading mechanism, freeze it through
+`learning_experiment.py` and count it against the three-per-ISO-week hypothesis
+budget. Its complete parameter grid, locked primary parameters, falsification
+criteria, contamination risks, and production-compatibility risks must be
+registered before evaluation.
+
 Production-rule edits, automatic strategy activation, broker actions, account
 access, credential handling, and external application writes are out of scope.
 Repository commit/push after validation remains governed by `AGENTS.md`; it is

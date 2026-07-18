@@ -219,6 +219,24 @@ The security master is intentionally empty until sourced records are added—an
 unresolved historical instrument remains a blocker instead of being replaced
 with a symbol that happens to resolve today.
 
+Invent and preregister strategies through a bounded contract:
+
+```sh
+cp learning/HYPOTHESIS_TEMPLATE.json learning_runs/<run-id>/hypothesis.json
+python3 learning_experiment.py freeze learning_runs/<run-id>/hypothesis.json
+python3 learning_experiment.py rolling-plan learning_runs/<run-id>/dates.json
+python3 learning_experiment.py validate-result \
+  learning/hypotheses/experiment-<id>-<sha256>.json \
+  learning_runs/<run-id>/evaluation.json
+```
+
+The engine allows at most three new mechanisms per ISO week and at most 256
+predeclared trials per family. Every trial must appear in the result. A locked
+primary trial must pass geometric growth, stationary-bootstrap, profit-factor,
+drawdown, Deflated-Sharpe, PBO, Holm-family, and rolling-origin gates before
+development can queue independent confirmation. A failed confirmation can only
+close; it cannot return to threshold tuning.
+
 The early Item 2.02 reversal research has a separate prospective evidence plane.
 It cannot reuse the inspected corpus as confirmation and it cannot activate a
 strategy:
