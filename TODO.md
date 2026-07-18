@@ -44,6 +44,33 @@ Status: implemented in `ibkr_historical.py` and `historical_universe.py` on
   is local corpus reuse, then request elimination, then new collection only for
   missing coverage or confirmation.
 
+### 14. Production-Aware Counterfactual Strategy Lab
+
+Status: implemented by `historical_strategy_lab.py` and documented in
+`HISTORICAL_RESEARCH.md` on 2026-07-18. Production rules remain frozen.
+
+- Converts every executable stored signal into a research outcome while
+  retaining the current production evaluator's exact rejection reasons. This
+  restores labels and marginal gate evidence even when the complete production
+  stack never trades.
+- Verifies the public evidence manifest, exact scanner/candidate frozen hash,
+  ordered symbols, full session/source attestations, bundle hashes, and
+  production artifact isolation before publishing a result.
+- Tests 15 predeclared one-trade policies across 0/5/10/20 bps per-side costs
+  and 1/1.5/2/3R targets, with chronological stability phases, 20,000-sample
+  base bootstraps, drawdown, concentration, stop geometry, and implied notional.
+- On the 95-date usable corpus, only simple early reversal strength and the
+  Item 2.02 earnings subset survived the severe-cost research gate. The
+  earnings subset retained +9.813R and PF 1.282 at 20 bps per side but remained
+  production-incompatible because its median structural stop was 2.088% and
+  implied median notional was 11.4% at the current risk budget.
+- Rejects tight-stop early ORB and the current VWAP-pullback definition,
+  deprioritizes HOD continuation, and refuses to treat score/RVOL selection
+  variants as winners after their 20 bps robustness failure.
+- Freezes a public independent-confirmation contract without bypassing the
+  production strategy-review cadence, editing `strategy_config.toml`, or
+  making broker/provider calls.
+
 ## Completed 2026-07-16
 
 ### 11. Parallel Multi-Strategy Historical Research

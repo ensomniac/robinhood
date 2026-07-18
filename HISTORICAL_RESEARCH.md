@@ -1,6 +1,6 @@
 # Historical Multi-Strategy Research
 
-Updated: 2026-07-16
+Updated: 2026-07-18
 
 ## Purpose And Boundary
 
@@ -152,6 +152,47 @@ mean/median/total R, profit factor, maximum drawdown, exit reasons, common
 rejections, and a paired date-level comparison against the selected baseline.
 No-trade days are 0R in the paired comparison, and only dates covered by both
 strategies enter a pair.
+
+## Production-Aware Strategy Lab
+
+`historical_strategy_lab.py` is the higher-level learning controller for testing
+why a production rule stack does or does not trade. It reuses the same frozen
+bundles, progressive plugin contract, next-bar entry, stop-first ambiguity, and
+force-flat semantics, then adds:
+
+- exact reconstruction and verification of each bundle's frozen scanner and
+  ordered-candidate evidence hash;
+- current `strategy_engine.py` evaluation for every frozen candidate, with
+  normalized production rejection categories and pass/fail outcome cohorts;
+- versioned one-trade-per-day policies for production eligibility, early timing,
+  Item 2.02 catalysts, stop compatibility, and simultaneous-signal selection;
+- a complete slippage/target matrix, chronological 60/20/20 stability phases,
+  deterministic bootstrap uncertainty, trade concentration, stop distance, and
+  risk-implied notional;
+- before/after hashes proving that production configuration, ledgers, contexts,
+  and maturity artifacts did not change.
+
+Run the complete declared lab family locally:
+
+```sh
+python3 historical_strategy_lab.py run \
+  --evidence historical_batches/evidence-2026-07-16-one-hundred-days.json \
+  --bootstrap-samples 20000 \
+  --publish-prefix research_results/2026-07-18-production-aware-strategy-lab
+```
+
+The default grid is 0, 5, 10, and 20 bps of adverse entry and exit slippage
+crossed with 1R, 1.5R, 2R, and 3R targets. The lab publishes every cell. Its
+`promising_for_independent_confirmation` label requires positive retrospective
+phases, a positive one-sided 90% bootstrap lower bound, robust PF/drawdown at 10
+and 20 bps, and positive results at all four target levels. That label never
+changes live rules; newly frozen dates and deployable execution geometry remain
+mandatory.
+
+The first production-aware result and its frozen follow-up contract are:
+
+- `research_results/2026-07-18-production-aware-strategy-lab.{json,md}`
+- `research_results/2026-07-18-early-earnings-reversal-confirmation.md`
 
 ## First 100-Date Matrix
 
