@@ -156,8 +156,24 @@ class PersistentRunTests(unittest.TestCase):
         root = Path(directory)
         (root / "learning").mkdir()
         (root / "LEARNING_PROGRAM.md").write_text("program\n", encoding="utf-8")
-        for name in ("DATASETS", "STRATEGIES"):
-            (root / "learning" / f"{name}.jsonl").write_text("", encoding="utf-8")
+        (root / "learning" / "DATASETS.jsonl").write_text("", encoding="utf-8")
+        strategy = {
+            "schema_version": 1,
+            "event_id": "strategy-test-registered",
+            "entity_id": "strategy-test",
+            "event_type": "registered",
+            "recorded_at": "2026-07-18T17:00:00-04:00",
+            "payload": {
+                "version": "strategy-test",
+                "alpha_state": "DEVELOPMENT",
+                "execution_state": "UNVERIFIED",
+                "operations_state": "READY",
+                "production_role": "CHAMPION",
+            },
+        }
+        (root / "learning" / "STRATEGIES.jsonl").write_text(
+            json.dumps(strategy) + "\n", encoding="utf-8"
+        )
         experiment = {
             "schema_version": 1,
             "event_id": "experiment-test-registered",

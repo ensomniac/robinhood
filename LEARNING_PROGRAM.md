@@ -36,7 +36,7 @@ rewritten or deleted.
 3. **Point-in-time security master and scanner-faithful datasets:** implemented;
    no current dataset qualifies as a production scanner replay.
 4. **Registered hypothesis and experiment lifecycle:** implemented.
-5. **Three-axis champion/challenger evidence:** queued.
+5. **Three-axis champion/challenger evidence:** implemented.
 6. **Operating cadence and monitoring:** queued.
 
 ## Current Evidence Decisions

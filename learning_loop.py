@@ -30,6 +30,7 @@ from learning_registry import (
     current_entities,
     registry_fingerprint,
 )
+from learning_strategy import audit_strategy_evidence
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -485,12 +486,14 @@ def initialize_program(*, root: Path = PROJECT_ROOT) -> dict[str, Any]:
         registry_root=root / "learning",
         hypothesis_root=root / "learning" / "hypotheses",
     )
+    strategy_status = audit_strategy_evidence(root / "learning")
     return {
         "initialized": True,
         "program": str(PROGRAM_PATH.relative_to(PROJECT_ROOT)),
         "registries": registry_status,
         "learning_data": data_status,
         "experiment_program": experiment_status,
+        "strategy_evidence": strategy_status,
         "broker_actions_allowed": False,
         "automatic_strategy_application": False,
     }

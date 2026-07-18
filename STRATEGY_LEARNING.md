@@ -79,6 +79,13 @@ The report does not treat rejected or daily-limit-missed ideas as realized
 returns. It includes only records with the current strategy version and rules
 hash in current-rule conclusions.
 
+The persistent learning plane tracks alpha, execution, and operational
+readiness independently through `learning_strategy.py`. Research strength
+cannot substitute for shadow/live execution evidence, and execution quality
+cannot substitute for confirmed alpha. Champion/challenger comparisons use
+paired daily account returns, including no-trade zeros, while this ledger report
+remains the authority for earned production maturity.
+
 ## Review Cadence And Proposals
 
 A written strategy review requires both:

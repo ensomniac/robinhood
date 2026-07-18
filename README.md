@@ -237,6 +237,23 @@ drawdown, Deflated-Sharpe, PBO, Holm-family, and rolling-origin gates before
 development can queue independent confirmation. A failed confirmation can only
 close; it cannot return to threshold tuning.
 
+Inspect strategy readiness and compare challengers on paired requested days:
+
+```sh
+python3 learning_strategy.py audit
+python3 learning_strategy.py report
+python3 learning_strategy.py compare learning_runs/<run-id>/paired-days.json
+python3 learning_strategy.py health learning_runs/<run-id>/health.json
+```
+
+Alpha (`UNTESTED` through `RETIRED`), execution (`UNVERIFIED` through
+`LIVE_CALIBRATED`), and operations (`READY`, `PAUSED`, or `KILL_SWITCH`) advance
+independently. Paired comparisons retain zero-return days and use time-uniform
+confidence bounds over geometric log-return differences. Integrity, rule, or
+protection failures pause immediately; statistical degradation is reported but
+never changes production rules automatically. `strategy_ledger.py report`
+remains authoritative for production maturity.
+
 The early Item 2.02 reversal research has a separate prospective evidence plane.
 It cannot reuse the inspected corpus as confirmation and it cannot activate a
 strategy:
