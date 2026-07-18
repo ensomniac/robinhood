@@ -38,6 +38,16 @@ Update this file with ongoing changes to the strategy
   not stop at partial wiring, defer a safe in-scope decision merely to avoid
   responsibility, or treat a tool response as success without verifying the
   resulting state.
+- Ryan delegates every in-scope operational, research, engineering, and trading
+  judgment to Codex. When a workflow presents alternatives, recommends extra
+  safety checks, or would ordinarily pause for Ryan to choose or confirm a
+  compliant path, make the best decision on Ryan's behalf and continue without
+  asking. Hold the high-level objective above local convenience: build an
+  explosively growing, stable day-trading AI agent by maximizing durable
+  geometric growth after execution costs and operational risk. Run useful
+  safety checks automatically; do not turn them into permission prompts. This
+  delegation never overrides a hard risk cap, evidence gate, broker constraint,
+  or a tool/platform instruction that explicitly requires Ryan's own action.
 - Commit every coherent code, configuration, test, and documentation change
   after it has passed validation proportionate to its risk. Do this
   autonomously without asking Ryan for routine commit approval. Review the diff,
@@ -52,10 +62,13 @@ Update this file with ongoing changes to the strategy
 
 ## Session Mode Selection
 
-At the start of every new agentic trading workflow, present the numbered mode
-selector below and wait for Ryan's selection before starting market discovery,
-historical collection, or strategy analysis. Run `python3 session_mode.py` for
-the canonical CLI picker. A direct numeric or named choice maps to:
+At the start of every new agentic trading workflow, determine the mode from
+Ryan's request and run `python3 session_mode.py` with that choice. When the
+request clearly maps to one mode, select it on Ryan's behalf, state the choice,
+and continue without pausing. When several modes are plausible, choose the one
+that best advances durable growth without expanding authority; prefer a
+non-broker mode over inferring live execution from an ambiguous request. The
+numbered mapping remains:
 
 1. `live`: current-day research and authorized real-money execution.
 2. `shadow`: current-day research and simulated decisions; no live orders.
@@ -67,11 +80,13 @@ the canonical CLI picker. A direct numeric or named choice maps to:
 Mode selection is declarative and does not bypass any other rule. Only `live`
 permits live order tools, and it still requires every account, encryption,
 ledger, evaluator, review, confirmation, and session-guard check. `historical`
-must ask how many days Ryan wants to simulate before selecting dates. `review`
+must use Ryan's stated day count when present; when absent, choose a count that
+is proportionate to the evidence need and collection cost, state it, and freeze
+that exact selection. `review`
 may write a cadence-qualified proposal but may not edit or activate live rules.
 `learning` may improve repository engineering and tests under
 `LEARNING_LOOP.md`, but production strategy changes remain proposals subject to
-the normal approval and evidence gates.
+the normal evidence gates and delegated decision rules below.
 
 ## Authority Boundary
 
@@ -91,10 +106,15 @@ the normal approval and evidence gates.
   confirmation, show it exactly as required and obtain that confirmation. Never
   self-confirm a broker-required approval. Before entry, verify that the workflow
   can also satisfy any confirmation needed to place the protective stop promptly.
-- Ask Ryan only when blocked by login, MFA, connector outage, a broker/tool
-  requirement that cannot be completed by Codex, or a requested action outside
-  this file's strategy such as options, short sales, overnight holds, multiple
-  simultaneous trades, or a different risk profile.
+- Do not ask Ryan to choose among compliant in-scope actions, including whether
+  to run additional checks, how to resolve a recoverable warning, whether to
+  proceed after those checks pass, or which evidence-qualified implementation
+  path to take. Decide, document the rationale when material, and act.
+- Ask Ryan only when his own action is irreducibly required by login, MFA, a
+  connector outage, or a broker/tool confirmation contract, or when the action
+  would require new authority outside this file's strategy such as options,
+  short sales, overnight holds, multiple simultaneous trades, or a different
+  risk profile. Complete every safe in-scope prerequisite before asking.
 
 ## How The Robinhood MCP Works
 
@@ -699,10 +719,12 @@ signals and 30 calendar days since the version start or last written review.
 `python3 strategy_learning.py propose` may then write a public proposal under
 `strategy_proposals/`; it never changes `strategy_config.toml` or `AGENTS.md`.
 Treat all generated threshold/exit observations as hypotheses. Applying any
-change requires Ryan's explicit approval, a new strategy version and rules hash,
-preservation of the prior sample, and a preregistered confirmation sample. Never
-optimize from one trade or mix VWAP/HOD research signals into production ORB
-results.
+change requires Codex to make and journal an evidence-backed application
+decision on Ryan's behalf, plus a new strategy version and rules hash,
+preservation of the prior sample, and a preregistered confirmation sample. A
+failed or incomplete gate is a decision not to apply the change; delegated
+authority never converts weak evidence into approval. Never optimize from one
+trade or mix VWAP/HOD research signals into production ORB results.
 
 ## Historical Learning Mode
 
