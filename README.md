@@ -254,6 +254,18 @@ protection failures pause immediately; statistical degradation is reported but
 never changes production rules automatically. `strategy_ledger.py report`
 remains authoritative for production maturity.
 
+Run the finite persistent cadence after the close:
+
+```sh
+python3 learning_cadence.py status
+python3 learning_cadence.py run --max-tasks 5
+```
+
+The cadence completes safe deterministic audits and returns `needs_agent` for
+provider collection or research judgment. See
+[LEARNING_CADENCE.md](LEARNING_CADENCE.md). The repository does not install an
+external scheduler automatically.
+
 The early Item 2.02 reversal research has a separate prospective evidence plane.
 It cannot reuse the inspected corpus as confirmation and it cannot activate a
 strategy:

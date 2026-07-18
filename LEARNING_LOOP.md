@@ -118,3 +118,8 @@ and the next experiment. Update the public registries with every terminal
 failure as well as every success. Do not recursively launch another learning loop.
 A future run must be a new explicit invocation or a separately
 implemented, tested, safety-gated scheduler invocation.
+
+The implemented scheduler target is `learning_cadence.py`. It may run
+deterministic audits and record ignored local cadence state, but provider
+collection and hypothesis invention remain explicit agent handoffs. See
+`LEARNING_CADENCE.md` for the finite operator contract.

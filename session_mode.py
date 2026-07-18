@@ -65,8 +65,8 @@ MODES = (
         ),
         broker_actions_allowed=False,
         next_step=(
-            "Run learning_loop.py inspect, challenge the measured bottleneck, "
-            "apply at most one validated slice, and record the result."
+            "Run learning_loop.py audit and learning_cadence.py run; resume one "
+            "registered bounded objective and record its result."
         ),
     ),
 )

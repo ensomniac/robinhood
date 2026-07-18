@@ -8,9 +8,10 @@ item never grants live-trading authority or permission to weaken safety gates.
 
 ### 12. Bounded Edit And Learning Loop
 
-Status: implemented by `LEARNING_LOOP.md`, `learning_loop.py`, and
-`session_mode.py` on 2026-07-18. Automatic post-run invocation remains
-intentionally deferred until the manual controller has more operating evidence.
+Status: implemented by `LEARNING_PROGRAM.md`, `LEARNING_LOOP.md`, the public
+`learning/` registries, `learning_loop.py`, `learning_cadence.py`, and the
+evidence/data/statistics modules on 2026-07-18. External scheduler installation
+remains an explicit operator action.
 
 - Publishes a versioned eight-phase prompt subordinate to `AGENTS.md`: safety,
   ten working controls, bottleneck proof, at most five candidates, adversarial
@@ -22,10 +23,15 @@ intentionally deferred until the manual controller has more operating evidence.
 - Validates machine-readable change plans, supports a deliberate no-op, refuses
   external/broker actions and `strategy_config.toml` edits, requires proposals
   to remain isolated, and caps the apply loop to one round.
-- Keeps generated run state under ignored `learning_runs/`. Tests cover prompt
-  order and safety boundaries, dirty-state preservation, bottleneck
-  classification, no-op behavior, strategy-change refusal, progress
-  requirements, and non-recursion.
+- Keeps generated run and cadence state under ignored `learning_runs/`, while
+  datasets, complete experiment families, negative results, and three-axis
+  strategy evidence remain public and append-only.
+- Adds selection-aware daily account statistics, point-in-time security and
+  data-claim contracts, bounded hypothesis invention, paired champion/challenger
+  evidence, degradation monitoring, and a finite daily-to-quarterly cadence.
+- Tests cover prompt and authority boundaries, resume and lock behavior,
+  evidence identity, no-lookahead/selection controls, strategy-transition
+  refusal, no-op behavior, privacy, progress, and non-recursion.
 
 ### 13. Cross-Date Contract Resolution Cache
 

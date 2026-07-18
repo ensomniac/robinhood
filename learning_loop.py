@@ -21,6 +21,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from learning_cadence import cadence_status
 from learning_data import audit_learning_data
 from learning_experiment import audit_experiment_program
 from learning_registry import (
@@ -688,7 +689,12 @@ def audit_program(
                     "objective_id": state["objective_id"],
                 }
             )
-    return {"valid": True, "program": program, "runs": runs}
+    return {
+        "valid": True,
+        "program": program,
+        "cadence": cadence_status(state_path=run_root / "cadence-state.json"),
+        "runs": runs,
+    }
 
 
 def _build_parser() -> argparse.ArgumentParser:

@@ -19,7 +19,8 @@ class ModeSelectionTests(unittest.TestCase):
 
         self.assertEqual(mode.key, "learning")
         self.assertFalse(mode.broker_actions_allowed)
-        self.assertIn("learning_loop.py inspect", mode.next_step)
+        self.assertIn("learning_loop.py audit", mode.next_step)
+        self.assertIn("learning_cadence.py run", mode.next_step)
 
     def test_invalid_mode_is_rejected(self):
         with self.assertRaises(ModeSelectionError):
