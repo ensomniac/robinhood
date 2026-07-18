@@ -6,6 +6,7 @@ from pathlib import Path
 from learning_data import (
     LearningDataError,
     append_security_record,
+    audit_dataset_claims,
     audit_learning_data,
     freeze_dataset_contract,
     load_frozen_dataset_contract,
@@ -13,6 +14,7 @@ from learning_data import (
     security_master_sha256,
     validate_dataset_payload,
 )
+from learning_registry import append_event
 
 
 def security_record(
@@ -91,6 +93,22 @@ class SecurityMasterTests(unittest.TestCase):
             path = Path(directory) / "missing.jsonl"
             self.assertEqual(len(security_master_sha256(path)), 64)
 
+    def test_sampled_observation_dates_do_not_invent_continuity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "SECURITY_MASTER.jsonl"
+            record = security_record(
+                "sampled", "instrument-one", "AAA", "2026-01-05", "2026-03-16"
+            )
+            record["observed_dates"] = ["2026-01-05", "2026-03-16"]
+            append_security_record(record, path)
+
+            self.assertEqual(
+                resolve_security("AAA", date(2026, 1, 5), path=path)["record_id"],
+                "sampled",
+            )
+            with self.assertRaisesRegex(LearningDataError, "exactly one"):
+                resolve_security("AAA", date(2026, 2, 2), path=path)
+
 
 class DatasetLaneTests(unittest.TestCase):
     def test_catalyst_lane_cannot_claim_production_replay(self):
@@ -122,6 +140,8 @@ class DatasetLaneTests(unittest.TestCase):
                         "complete_universe": True,
                         "scanner_rules_sha256": "a" * 64,
                         "security_master_sha256": "b" * 64,
+                        "security_master_path": "learning/security-master.jsonl.gz",
+                        "security_master_attestation_path": "historical_batches/security-master.json",
                     },
                 },
             )
@@ -141,6 +161,8 @@ class DatasetLaneTests(unittest.TestCase):
                     "complete_universe": True,
                     "scanner_rules_sha256": "a" * 64,
                     "security_master_sha256": "b" * 64,
+                    "security_master_path": "learning/security-master.jsonl.gz",
+                    "security_master_attestation_path": "historical_batches/security-master.json",
                 },
             },
         )
@@ -151,7 +173,50 @@ class DatasetLaneTests(unittest.TestCase):
         result = audit_learning_data()
 
         self.assertTrue(result["valid"])
-        self.assertEqual(result["datasets"]["datasets"], 2)
+        self.assertEqual(result["datasets"]["datasets"], 3)
+
+    def test_public_audit_uses_attestation_when_licensed_master_is_absent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            project = Path(directory)
+            registry_root = project / "learning"
+            attestation = project / "historical_batches" / "security-master.json"
+            attestation.parent.mkdir(parents=True)
+            attestation.write_text(
+                '{"security_master":{"sha256":"' + "b" * 64 + '"}}\n',
+                encoding="utf-8",
+            )
+            append_event(
+                "datasets",
+                {
+                    "schema_version": 1,
+                    "event_id": "dataset-scanner-test-registered",
+                    "entity_id": "dataset-scanner-test",
+                    "event_type": "registered",
+                    "recorded_at": "2026-07-18T18:00:00-04:00",
+                    "payload": {
+                        "lane": "production_scanner_replay",
+                        "claim_scope": "PRODUCTION_POLICY_REPLAY",
+                        "status": "READY",
+                        "evidence_paths": ["historical_batches/security-master.json"],
+                        "inspected": True,
+                        "universe_contract": {
+                            "selection_time_et": "09:35:00",
+                            "information_cutoff": "TARGET_SESSION_09:35_ET",
+                            "selection_is_dynamic": True,
+                            "complete_universe": True,
+                            "scanner_rules_sha256": "a" * 64,
+                            "security_master_sha256": "b" * 64,
+                            "security_master_path": "learning/private.jsonl.gz",
+                            "security_master_attestation_path": "historical_batches/security-master.json",
+                        },
+                    },
+                },
+                registry_root,
+            )
+
+            result = audit_dataset_claims(registry_root)
+
+            self.assertTrue(result["valid"])
 
     def test_hash_addressed_contract_rejects_results_and_mutation(self):
         contract = {

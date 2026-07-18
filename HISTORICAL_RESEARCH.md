@@ -27,6 +27,13 @@ the dynamic complete 09:35 ET universe using only information available by that
 time. Current contract resolution may not replace a renamed, retired, or
 delisted historical instrument.
 
+The first scanner-faithful pilot is now frozen separately. Its sourced security
+master, exact 20 dates, split-adjustment input, 118-file collection requirement,
+and current credentials blocker are documented in `SCANNER_REPLAY.md`. Until
+that pilot is READY, this catalyst corpus remains falsification-only and must
+not generate additional tuned variants. `learning/RESEARCH_LOCK.json` enforces
+that rule in both hypothesis freezing and the weekly cadence.
+
 ## Architecture
 
 One date is the unit of parallel work. A worker process loads a date bundle

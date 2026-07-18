@@ -9,10 +9,12 @@ from learning_experiment import (
     audit_experiment_program,
     build_rolling_origin_plan,
     disposition_from_result,
+    enforce_research_lock,
     enforce_weekly_hypothesis_budget,
     enumerate_trials,
     freeze_hypothesis_contract,
     load_hypothesis_contract,
+    research_lock_status,
     validate_complete_evaluation,
     validate_hypothesis_contract,
     validate_transition,
@@ -130,7 +132,9 @@ class HypothesisContractTests(unittest.TestCase):
     def test_hash_addressed_hypothesis_rejects_mutation(self):
         with tempfile.TemporaryDirectory() as directory:
             path, frozen = freeze_hypothesis_contract(
-                hypothesis_contract(), Path(directory)
+                hypothesis_contract(),
+                Path(directory),
+                research_lock_path=Path(directory) / "missing-lock.json",
             )
             self.assertEqual(load_hypothesis_contract(path), frozen)
             path.write_text(
@@ -167,6 +171,65 @@ class HypothesisContractTests(unittest.TestCase):
                 enforce_weekly_hypothesis_budget(
                     hypothesis_contract(), registry_root=root
                 )
+
+    def test_research_lock_blocks_the_inspected_catalyst_lane(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lock_path = root / "RESEARCH_LOCK.json"
+            lock_path.write_text(
+                '{"schema_version":1,"active":true,'
+                '"blocked_dataset_lane":"catalyst_falsification",'
+                '"required_dataset_id":"dataset-scanner-replay",'
+                '"required_dataset_inspected":true,'
+                '"required_dataset_lane":"production_scanner_replay",'
+                '"required_dataset_status":"READY",'
+                '"evidence_path":"collection-status.json",'
+                '"reason":"No additional strategy variant until fidelity is READY."}\n',
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(
+                LearningExperimentError, "No additional strategy variant"
+            ):
+                enforce_research_lock(
+                    hypothesis_contract(),
+                    lock_path=lock_path,
+                    registry_root=root,
+                )
+
+            enforce_research_lock(
+                hypothesis_contract("development"),
+                lock_path=lock_path,
+                registry_root=root,
+            )
+
+            append_event(
+                "datasets",
+                {
+                    "schema_version": 1,
+                    "event_id": "dataset-scanner-replay-ready",
+                    "entity_id": "dataset-scanner-replay",
+                    "event_type": "registered",
+                    "recorded_at": "2026-07-18T20:00:00-04:00",
+                    "payload": {
+                        "lane": "production_scanner_replay",
+                        "status": "READY",
+                        "evidence_paths": ["collection-status.json"],
+                        "inspected": True,
+                    },
+                },
+                root,
+            )
+            self.assertFalse(
+                research_lock_status(lock_path=lock_path, registry_root=root)[
+                    "blocks_new_hypotheses"
+                ]
+            )
+            enforce_research_lock(
+                hypothesis_contract(),
+                lock_path=lock_path,
+                registry_root=root,
+            )
 
     def test_failed_confirmation_cannot_return_to_tuning(self):
         with self.assertRaisesRegex(LearningExperimentError, "not allowed"):

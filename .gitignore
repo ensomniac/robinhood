@@ -233,3 +233,9 @@ research_runs/
 # Bounded edit/learning inventories and machine-readable plans are local run
 # state. Reusable outcomes belong in progress/HISTORY.jsonl and public docs.
 learning_runs/
+
+# Provider-derived point-in-time identities are populated locally but cannot be
+# redistributed from this public repository. Public evidence retains hashes,
+# source contracts, and aggregate coverage only.
+learning/SECURITY_MASTER.jsonl
+learning/security_masters/

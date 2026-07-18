@@ -11,6 +11,7 @@ from learning_cadence import (
     load_state,
     run_due_tasks,
 )
+from learning_registry import append_event
 
 
 class CadenceStateTests(unittest.TestCase):
@@ -68,7 +69,13 @@ class CadenceExecutionTests(unittest.TestCase):
                 with patch(
                     "learning_cadence._run_integrity", return_value={"valid": True}
                 ):
-                    result = run_due_tasks(max_tasks=3, state_path=path, as_of=now)
+                    result = run_due_tasks(
+                        max_tasks=3,
+                        state_path=path,
+                        research_lock_path=Path(directory) / "missing-lock.json",
+                        registry_root=Path(directory) / "learning",
+                        as_of=now,
+                    )
 
             self.assertEqual(result["results"][0]["task"], "daily_integrity")
             self.assertEqual(result["results"][0]["status"], "completed")
@@ -82,6 +89,79 @@ class CadenceExecutionTests(unittest.TestCase):
                 if item["task"] == "weekly_hypothesis_review"
             )
             self.assertTrue(weekly["due"])
+
+    def test_active_research_lock_no_ops_weekly_invention(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            state_path = root / "learning_runs" / "cadence-state.json"
+            lock_path = root / "RESEARCH_LOCK.json"
+            lock_path.write_text(
+                '{"schema_version":1,"active":true,'
+                '"blocked_dataset_lane":"catalyst_falsification",'
+                '"required_dataset_id":"dataset-scanner-replay",'
+                '"required_dataset_inspected":true,'
+                '"required_dataset_lane":"production_scanner_replay",'
+                '"required_dataset_status":"READY",'
+                '"evidence_path":"collection-status.json",'
+                '"reason":"scanner fidelity first"}\n',
+                encoding="utf-8",
+            )
+            now = datetime(2026, 7, 18, 20, tzinfo=UTC)
+            with patch("learning_cadence.PROJECT_ROOT", root):
+                with patch(
+                    "learning_cadence._run_integrity", return_value={"valid": True}
+                ):
+                    result = run_due_tasks(
+                        max_tasks=3,
+                        state_path=state_path,
+                        research_lock_path=lock_path,
+                        registry_root=root / "learning",
+                        as_of=now,
+                    )
+
+            weekly = result["results"][2]
+            self.assertEqual(weekly["task"], "weekly_hypothesis_review")
+            self.assertEqual(weekly["status"], "no_op")
+            self.assertEqual(weekly["reason"], "research_fidelity_lock")
+            self.assertEqual(weekly["required_dataset_id"], "dataset-scanner-replay")
+
+    def test_collecting_dataset_remains_a_nightly_agent_handoff(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            registry_root = root / "learning"
+            append_event(
+                "datasets",
+                {
+                    "schema_version": 1,
+                    "event_id": "dataset-scanner-registered",
+                    "entity_id": "dataset-scanner",
+                    "event_type": "registered",
+                    "recorded_at": "2026-07-18T20:00:00-04:00",
+                    "payload": {
+                        "lane": "development",
+                        "status": "COLLECTING",
+                        "evidence_paths": ["manifest.json"],
+                        "inspected": False,
+                    },
+                },
+                registry_root,
+            )
+            now = datetime(2026, 7, 18, 20, tzinfo=UTC)
+            with patch("learning_cadence.PROJECT_ROOT", root):
+                with patch(
+                    "learning_cadence._run_integrity", return_value={"valid": True}
+                ):
+                    result = run_due_tasks(
+                        max_tasks=2,
+                        state_path=root / "learning_runs" / "cadence-state.json",
+                        research_lock_path=root / "missing-lock.json",
+                        registry_root=registry_root,
+                        as_of=now,
+                    )
+
+            nightly = result["results"][1]
+            self.assertEqual(nightly["status"], "needs_agent")
+            self.assertEqual(nightly["pending_datasets"], ["dataset-scanner"])
 
     def test_corrupt_authority_state_fails_closed(self):
         with tempfile.TemporaryDirectory() as directory:

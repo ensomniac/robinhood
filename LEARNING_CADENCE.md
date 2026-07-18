@@ -26,8 +26,14 @@ separate operational action; this repository does not silently install one.
   axes, production ledger, lifecycle, privacy, and durable progress.
 - Nightly: resume only a dataset already registered as `FROZEN` or `COLLECTING`.
   The cadence surfaces the exact IDs but performs no provider calls itself.
-- Weekly: allow no more than three distinct new mechanisms. Codex may record a
-  no-op when available data cannot falsify a useful idea.
+  The current scanner pilot is registered `COLLECTING`, so this task keeps
+  surfacing its exact ID until its 118 minute files and 20 daily universes are
+  collected and inspected; use `SCANNER_REPLAY.md` as its runbook.
+- Weekly: allow no more than three distinct new mechanisms. An active
+  `learning/RESEARCH_LOCK.json` makes catalyst-corpus invention an automatic
+  `research_fidelity_lock` no-op until the named dataset is registered at its
+  required status. Codex may also record a no-op when available data cannot
+  falsify a useful idea.
 - Monthly: surface only experiments that already earned
   `CONFIRMATION_QUEUED`; otherwise complete as a no-op.
 - Quarterly: recompute production maturity and all strategy readiness axes.

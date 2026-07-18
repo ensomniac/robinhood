@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "active": true,
+  "blocked_dataset_lane": "catalyst_falsification",
+  "evidence_path": "historical_batches/scanner_replay/collection-status.json",
+  "reason": "No additional strategy variant may be invented on the inspected catalyst corpus until the first faithful dynamic 09:35 scanner replay is READY.",
+  "required_dataset_id": "dataset-production-scanner-replay-2026-07-18-v1",
+  "required_dataset_inspected": true,
+  "required_dataset_lane": "production_scanner_replay",
+  "required_dataset_status": "READY"
+}

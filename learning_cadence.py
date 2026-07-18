@@ -13,11 +13,13 @@ from typing import Any
 
 from learning_data import audit_learning_data
 from learning_experiment import (
+    DEFAULT_RESEARCH_LOCK,
     MAX_NEW_HYPOTHESES_PER_ISO_WEEK,
     audit_experiment_program,
+    research_lock_status,
     weekly_hypothesis_count,
 )
-from learning_registry import audit_registries, current_entities
+from learning_registry import REGISTRY_ROOT, audit_registries, current_entities
 from learning_strategy import audit_strategy_evidence, build_strategy_evidence_report
 from progress_history import load_history
 from sensitive_data import audit_context_files, get_cipher
@@ -245,10 +247,12 @@ def _run_integrity() -> dict[str, Any]:
     }
 
 
-def _run_monthly_confirmation_review() -> dict[str, Any]:
+def _run_monthly_confirmation_review(
+    *, registry_root: Path = REGISTRY_ROOT
+) -> dict[str, Any]:
     queued = [
         entity_id
-        for entity_id, event in current_entities("experiments").items()
+        for entity_id, event in current_entities("experiments", registry_root).items()
         if event["payload"]["status"] == "CONFIRMATION_QUEUED"
     ]
     return {
@@ -277,6 +281,8 @@ def run_due_tasks(
     *,
     max_tasks: int,
     state_path: Path = DEFAULT_STATE_PATH,
+    research_lock_path: Path = DEFAULT_RESEARCH_LOCK,
+    registry_root: Path = REGISTRY_ROOT,
     as_of: datetime | None = None,
 ) -> dict[str, Any]:
     if isinstance(max_tasks, bool) or not 1 <= max_tasks <= len(TASKS):
@@ -295,7 +301,9 @@ def run_due_tasks(
         elif key == "nightly_frozen_collection":
             pending = [
                 entity_id
-                for entity_id, event in current_entities("datasets").items()
+                for entity_id, event in current_entities(
+                    "datasets", registry_root
+                ).items()
                 if event["payload"]["status"] in {"FROZEN", "COLLECTING"}
             ]
             if pending:
@@ -311,7 +319,22 @@ def run_due_tasks(
                 complete_task(key, "no_op", state_path=state_path, completed_at=now)
                 results.append({"task": key, "status": "no_op", "pending_datasets": []})
         elif key == "weekly_hypothesis_review":
-            used = weekly_hypothesis_count(now)
+            lock = research_lock_status(
+                lock_path=research_lock_path, registry_root=registry_root
+            )
+            if lock.get("blocks_new_hypotheses"):
+                complete_task(key, "no_op", state_path=state_path, completed_at=now)
+                results.append(
+                    {
+                        "task": key,
+                        "status": "no_op",
+                        "reason": "research_fidelity_lock",
+                        "required_dataset_id": lock.get("required_dataset_id"),
+                        "evidence_path": lock.get("evidence_path"),
+                    }
+                )
+                continue
+            used = weekly_hypothesis_count(now, registry_root=registry_root)
             remaining = max(0, MAX_NEW_HYPOTHESES_PER_ISO_WEEK - used)
             if remaining:
                 results.append(
@@ -326,7 +349,7 @@ def run_due_tasks(
                 complete_task(key, "no_op", state_path=state_path, completed_at=now)
                 results.append({"task": key, "status": "budget_exhausted"})
         elif key == "monthly_confirmation_review":
-            evidence = _run_monthly_confirmation_review()
+            evidence = _run_monthly_confirmation_review(registry_root=registry_root)
             if evidence["outcome"] == "no_op":
                 complete_task(key, "no_op", state_path=state_path, completed_at=now)
                 results.append({"task": key, "status": "no_op", "evidence": evidence})

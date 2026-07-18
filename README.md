@@ -326,6 +326,14 @@ contract. Once bundles are local, the research-only matrix runner can evaluate
 several versioned bar-based strategies in parallel without provider calls or
 production-ledger writes:
 
+The first full-universe 09:35 scanner replay uses a separate, pre-price frozen
+pipeline. Its sourced security master is populated, while market-wide minute
+collection awaits the provider's separate S3 credentials. See
+[SCANNER_REPLAY.md](SCANNER_REPLAY.md) for the exact immutable manifest, claim
+boundary, current status, and resume commands. Catalyst-corpus variants remain
+blocked until this dataset is READY; `learning/RESEARCH_LOCK.json` enforces the
+block in hypothesis freezing and weekly cadence execution.
+
 ```sh
 python3 historical_research.py run \
   --evidence historical_batches/evidence-2026-07-16-one-hundred-days.json \

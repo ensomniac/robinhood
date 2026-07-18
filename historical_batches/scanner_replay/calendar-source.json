@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "retrieved_at": "2026-07-18T21:00:00-04:00",
+  "authoritative_source": {
+    "publisher": "New York Stock Exchange",
+    "holidays_and_hours_url": "https://www.nyse.com/markets/hours-calendars",
+    "yearly_calendar_url": "https://www.nyse.com/publicdocs/nyse/ICE_NYSE_2026_Yearly_Trading_Calendar.pdf"
+  },
+  "construction": "Weekdays from 2025-12-01 through 2026-06-30 minus the NYSE full-market holidays in that interval. The 2026 H1 target pool is the corresponding 2026-01-01 through 2026-06-30 subset.",
+  "full_market_holidays": [
+    "2025-12-25",
+    "2026-01-01",
+    "2026-01-19",
+    "2026-02-16",
+    "2026-04-03",
+    "2026-05-25",
+    "2026-06-19"
+  ],
+  "early_closes": "None of the selected dates is an early-close session.",
+  "target_calendar_path": "historical_batches/scanner_replay/target-calendar-2026-h1.json",
+  "session_calendar_path": "historical_batches/scanner_replay/session-calendar-2025-12-through-2026-06.json"
+}

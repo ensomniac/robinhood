@@ -72,7 +72,7 @@ class LearningRegistryTests(unittest.TestCase):
         result = audit_registries()
 
         self.assertTrue(result["valid"])
-        self.assertEqual(result["datasets"]["entities"], 2)
+        self.assertEqual(result["datasets"]["entities"], 3)
         self.assertEqual(result["experiments"]["entities"], 2)
         self.assertEqual(result["strategies"]["entities"], 2)
 

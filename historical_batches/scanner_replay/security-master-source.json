@@ -1,0 +1,147 @@
+{
+  "captured_at": "2026-07-18T19:13:14.720211-04:00",
+  "requested_dates": [
+    "2026-01-02",
+    "2026-01-05",
+    "2026-01-06",
+    "2026-01-07",
+    "2026-01-20",
+    "2026-02-26",
+    "2026-03-16",
+    "2026-03-27",
+    "2026-04-02",
+    "2026-04-10",
+    "2026-04-13",
+    "2026-04-14",
+    "2026-04-17",
+    "2026-04-20",
+    "2026-05-19",
+    "2026-05-27",
+    "2026-06-09",
+    "2026-06-16",
+    "2026-06-17",
+    "2026-06-23"
+  ],
+  "schema_version": 1,
+  "security_master": {
+    "fallback_identity_records": 1235,
+    "instruments": 5593,
+    "path": "learning/SECURITY_MASTER.jsonl",
+    "records": 5668,
+    "sha256": "8a6912f2ccefe84a9dd8a2e81c78de38cb0b1d713c18b95528f2d0363d9de99a"
+  },
+  "snapshots": [
+    {
+      "date": "2026-01-02",
+      "rows": 5228,
+      "sha256": "e61327b8f77188bd0b4afd340776120cc3e36e7c39415d4c108f17ded29c5d0d"
+    },
+    {
+      "date": "2026-01-05",
+      "rows": 5224,
+      "sha256": "ef14ff6c158b40c73d4da2a384b03a3ebf5869ace7df81d7fb2b272085cc3977"
+    },
+    {
+      "date": "2026-01-06",
+      "rows": 5226,
+      "sha256": "8a61709c8b4278b664e53dffe4b0dffc5371e98985dc5d840eae20b8d96bfd92"
+    },
+    {
+      "date": "2026-01-07",
+      "rows": 5223,
+      "sha256": "153c36b4f85286ff619c1acf6fd362d849f966b64a4d6a1ce1f7bcd206e91abd"
+    },
+    {
+      "date": "2026-01-20",
+      "rows": 5227,
+      "sha256": "c813a29934e6736a1cdbb0662695e17e46bf9c9ad1134b015eb6ab540e012fd1"
+    },
+    {
+      "date": "2026-02-26",
+      "rows": 5258,
+      "sha256": "776f9b83e0709b44ca568b11b1bcbe98dd90d5e6d773cd5152828a10f6493b88"
+    },
+    {
+      "date": "2026-03-16",
+      "rows": 5265,
+      "sha256": "c22ad001aa97d4056c17765cdaf9b4dd851d95bd664bccff134b151a72958210"
+    },
+    {
+      "date": "2026-03-27",
+      "rows": 5266,
+      "sha256": "2f84154b4aee9eff9c388b63a06e1e12a0d6ca133d1e794ff56b5ceb2d8dab0b"
+    },
+    {
+      "date": "2026-04-02",
+      "rows": 5261,
+      "sha256": "841e70ca23d44bebc76e109c480d24ad0f136dee2309f17254f244162b6288ec"
+    },
+    {
+      "date": "2026-04-10",
+      "rows": 5260,
+      "sha256": "4cdd222a951f01a9345817771d8fb4c379a2ed0c42d7edc751389a0b2fb78fc6"
+    },
+    {
+      "date": "2026-04-13",
+      "rows": 5262,
+      "sha256": "8945adc34dba5477b2046d0ee8267f3f8ffaffe470506f6e8d7dc61a9018fa87"
+    },
+    {
+      "date": "2026-04-14",
+      "rows": 5263,
+      "sha256": "7c5f66a589d139bf5ce6dbfd97f2cfc1cba4b68ef6139ecf436b15b9b0d32895"
+    },
+    {
+      "date": "2026-04-17",
+      "rows": 5271,
+      "sha256": "b9bc0b2b24512b7d0e77f44afc2a476122876dbf9f490c28942ad92da543bd3a"
+    },
+    {
+      "date": "2026-04-20",
+      "rows": 5275,
+      "sha256": "6c632049ca1e3d51b193a59bcba1cec4946cb863017398ac7fa9c8bd08ac784e"
+    },
+    {
+      "date": "2026-05-19",
+      "rows": 5277,
+      "sha256": "249577305129d4975adb2edf32b826172fb1ac09ab78d6996b6eada38e7100b6"
+    },
+    {
+      "date": "2026-05-27",
+      "rows": 5287,
+      "sha256": "1241b265884473052750821199c8eb86044c32be918c4cada59190f606a139d3"
+    },
+    {
+      "date": "2026-06-09",
+      "rows": 5296,
+      "sha256": "d5e9605809c6ab8d9e162aea9bde6a08fb4b700fc82360882f0969c2b5148a52"
+    },
+    {
+      "date": "2026-06-16",
+      "rows": 5294,
+      "sha256": "a2787fcbb5f7e5237032f74000380d0216d7105a5dec7dab8c3dc44a5a1a090c"
+    },
+    {
+      "date": "2026-06-17",
+      "rows": 5294,
+      "sha256": "09637f0e6952ec555b0dc21e14b7cf08472e50b57bd16b086b7f5d42223c1f90"
+    },
+    {
+      "date": "2026-06-23",
+      "rows": 5304,
+      "sha256": "e93e8c55837d580ba7084961619afa0e9ef08501f63bd69e734c83eb6ecfac8e"
+    }
+  ],
+  "source": {
+    "documentation_url": "https://massive.com/docs/rest/stocks/tickers/all-tickers",
+    "endpoint": "https://api.massive.com/v3/reference/tickers",
+    "provider": "Massive",
+    "query_contract": {
+      "active": true,
+      "locale": "us",
+      "market": "stocks",
+      "point_in_time_parameter": "date",
+      "type": "CS"
+    }
+  }
+}

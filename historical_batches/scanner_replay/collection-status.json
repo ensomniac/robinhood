@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "dataset_id": "dataset-production-scanner-replay-2026-07-18-v1",
+  "updated_at": "2026-07-18T19:30:00-04:00",
+  "mode": "historical",
+  "status": "BLOCKED_COLLECTION",
+  "frozen_manifest": {
+    "path": "historical_batches/scanner_replay/manifests/dataset-production-scanner-replay-2026-07-18-v1-01f6fd204c02b29cb4aa9c24542273332bddcdc9140ac5eeb159a2635a3d53f0.json",
+    "sha256": "01f6fd204c02b29cb4aa9c24542273332bddcdc9140ac5eeb159a2635a3d53f0",
+    "requested_dates": 20,
+    "substitutions_allowed": false,
+    "pre_freeze_target_artifact_count": 0
+  },
+  "security_master": {
+    "path": "learning/SECURITY_MASTER.jsonl",
+    "immutable_snapshot_path": "learning/security_masters/security-master-8a6912f2ccefe84a9dd8a2e81c78de38cb0b1d713c18b95528f2d0363d9de99a.jsonl.gz",
+    "sha256": "8a6912f2ccefe84a9dd8a2e81c78de38cb0b1d713c18b95528f2d0363d9de99a",
+    "sourced_target_snapshots": 20,
+    "records": 5668,
+    "instruments": 5593,
+    "figi_backed_records": 4433,
+    "listing_key_fallback_records": 1235
+  },
+  "corporate_actions": {
+    "local_ignored_artifact": "learning_runs/scanner_replay/splits.json.gz",
+    "source": "Massive /stocks/v1/splits",
+    "events": 891,
+    "sha256": "0be5859007884dc8ec1cbf1e1245293443da7da0fafa03c6b3bb3ce84c30cd2b"
+  },
+  "minute_collection": {
+    "source": "Massive U.S. Stocks SIP minute aggregate flat files",
+    "required_files": 118,
+    "ready_files": 0,
+    "blocker_code": "MISSING_MASSIVE_S3_CREDENTIALS",
+    "blocker": "Existing Dashboard-issued MASSIVE_S3_ACCESS_KEY_ID and MASSIVE_S3_SECRET_ACCESS_KEY are not configured in the ignored .env."
+  },
+  "claim_state": {
+    "production_scanner_replay_ready": false,
+    "collecting_registry_event_written": true,
+    "ready_registry_event_written": false,
+    "strategy_variants_allowed": false,
+    "reason": "The dynamic 09:35 universe has not been computed; the frozen catalyst corpus remains falsification-only."
+  },
+  "resume_command": "python3 scanner_replay.py collect-minutes historical_batches/scanner_replay/manifests/dataset-production-scanner-replay-2026-07-18-v1-01f6fd204c02b29cb4aa9c24542273332bddcdc9140ac5eeb159a2635a3d53f0.json"
+}

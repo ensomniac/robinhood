@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import os
@@ -106,6 +107,29 @@ def validate_security_record(
     valid_to = _iso_date(record.get("valid_to"), f"{prefix}valid_to", nullable=True)
     if valid_to is not None and valid_from is not None and valid_to < valid_from:
         raise LearningDataError(f"{prefix}valid_to precedes valid_from")
+    observed_dates = record.get("observed_dates")
+    if observed_dates is not None:
+        if not isinstance(observed_dates, list) or not observed_dates:
+            raise LearningDataError(f"{prefix}observed_dates must be non-empty")
+        parsed_observations = [
+            _iso_date(item, f"{prefix}observed_dates") for item in observed_dates
+        ]
+        if len(set(observed_dates)) != len(
+            observed_dates
+        ) or parsed_observations != sorted(parsed_observations):
+            raise LearningDataError(
+                f"{prefix}observed_dates must be unique and chronological"
+            )
+        if any(
+            item is None
+            or valid_from is None
+            or item < valid_from
+            or (valid_to is not None and item > valid_to)
+            for item in parsed_observations
+        ):
+            raise LearningDataError(
+                f"{prefix}observed_dates must fall inside the validity bounds"
+            )
     _timestamp(record.get("recorded_at"), f"{prefix}recorded_at")
     _repo_paths(record.get("provenance_paths"), f"{prefix}provenance_paths")
     return record
@@ -116,7 +140,17 @@ def load_security_master(path: Path = DEFAULT_SECURITY_MASTER) -> list[dict[str,
         return []
     records: list[dict[str, Any]] = []
     record_ids: set[str] = set()
-    for number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+    if path.suffix == ".gz":
+        try:
+            with gzip.open(path, "rt", encoding="utf-8") as source:
+                lines = source.read().splitlines()
+        except OSError as exc:
+            raise LearningDataError(
+                f"cannot read compressed security master: {path}"
+            ) from exc
+    else:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    for number, raw in enumerate(lines, 1):
         if not raw.strip():
             raise LearningDataError(f"{path}: line {number} is blank")
         try:
@@ -145,7 +179,36 @@ def _intervals_overlap(left: Mapping[str, Any], right: Mapping[str, Any]) -> boo
         if right.get("valid_to")
         else date.max
     )
+    left_observed = left.get("observed_dates")
+    right_observed = right.get("observed_dates")
+    if isinstance(left_observed, list) and isinstance(right_observed, list):
+        return bool(set(left_observed).intersection(right_observed))
+    if isinstance(left_observed, list):
+        return any(
+            right_start <= date.fromisoformat(item) <= right_end
+            for item in left_observed
+        )
+    if isinstance(right_observed, list):
+        return any(
+            left_start <= date.fromisoformat(item) <= left_end
+            for item in right_observed
+        )
     return left_start <= right_end and right_start <= left_end
+
+
+def security_record_covers(record: Mapping[str, Any], as_of: date) -> bool:
+    """Return whether a sourced record establishes identity on ``as_of``."""
+
+    observed_dates = record.get("observed_dates")
+    if isinstance(observed_dates, list):
+        return as_of.isoformat() in observed_dates
+    start = date.fromisoformat(str(record["valid_from"]))
+    end = (
+        date.fromisoformat(str(record["valid_to"]))
+        if record.get("valid_to")
+        else date.max
+    )
+    return start <= as_of <= end
 
 
 def _validate_security_intervals(records: Sequence[Mapping[str, Any]]) -> None:
@@ -198,13 +261,7 @@ def resolve_security(
             continue
         if primary_exchange and record["primary_exchange"] != primary_exchange:
             continue
-        start = date.fromisoformat(record["valid_from"])
-        end = (
-            date.fromisoformat(record["valid_to"])
-            if record.get("valid_to")
-            else date.max
-        )
-        if start <= as_of <= end:
+        if security_record_covers(record, as_of):
             matches.append(record)
     if len(matches) != 1:
         raise LearningDataError(
@@ -248,6 +305,18 @@ def validate_dataset_payload(
             value = universe.get(field)
             if not isinstance(value, str) or len(value) != 64:
                 raise LearningDataError(f"{entity_id}: {field} must be a SHA-256")
+        security_master_path = universe.get("security_master_path")
+        if not isinstance(security_master_path, str) or not security_master_path:
+            raise LearningDataError(
+                f"{entity_id}: universe_contract.security_master_path is required"
+            )
+        _repo_paths([security_master_path], f"{entity_id}.security_master_path")
+        attestation_path = universe.get("security_master_attestation_path")
+        if not isinstance(attestation_path, str) or not attestation_path:
+            raise LearningDataError(
+                f"{entity_id}: universe_contract.security_master_attestation_path is required"
+            )
+        _repo_paths([attestation_path], f"{entity_id}.security_master_attestation_path")
     elif lane == "catalyst_falsification":
         if payload.get("point_in_time_evidence") is not True:
             raise LearningDataError(
@@ -277,15 +346,33 @@ def audit_dataset_claims(
     security_path: Path = DEFAULT_SECURITY_MASTER,
 ) -> dict[str, Any]:
     entities = current_entities("datasets", root)
+    project_root = root.parent
     lane_counts: dict[str, int] = {}
     for entity_id, event in entities.items():
         payload = validate_dataset_payload(entity_id, event["payload"])
         lane = str(payload["lane"])
         if lane == "production_scanner_replay":
             recorded = payload["universe_contract"]["security_master_sha256"]
-            if recorded != security_master_sha256(security_path):
+            recorded_path = payload["universe_contract"]["security_master_path"]
+            local_snapshot = project_root / recorded_path
+            if local_snapshot.exists():
+                observed_hash = security_master_sha256(local_snapshot)
+            else:
+                attestation_path = payload["universe_contract"][
+                    "security_master_attestation_path"
+                ]
+                try:
+                    attestation = json.loads(
+                        (project_root / attestation_path).read_text(encoding="utf-8")
+                    )
+                    observed_hash = attestation["security_master"]["sha256"]
+                except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
+                    raise LearningDataError(
+                        f"{entity_id}: security-master attestation is unreadable"
+                    ) from exc
+            if recorded != observed_hash:
                 raise LearningDataError(
-                    f"{entity_id}: production replay security-master hash is stale"
+                    f"{entity_id}: production replay security-master snapshot is missing or stale"
                 )
         lane_counts[lane] = lane_counts.get(lane, 0) + 1
     return {

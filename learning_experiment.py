@@ -18,6 +18,7 @@ from learning_registry import REGISTRY_ROOT, current_entities
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_HYPOTHESIS_ROOT = REGISTRY_ROOT / "hypotheses"
+DEFAULT_RESEARCH_LOCK = REGISTRY_ROOT / "RESEARCH_LOCK.json"
 SCHEMA_VERSION = 1
 MAX_NEW_HYPOTHESES_PER_ISO_WEEK = 3
 MAX_TRIALS_PER_FAMILY = 256
@@ -220,9 +221,16 @@ def validate_hypothesis_contract(value: Any) -> dict[str, Any]:
 
 
 def freeze_hypothesis_contract(
-    value: Mapping[str, Any], output_root: Path = DEFAULT_HYPOTHESIS_ROOT
+    value: Mapping[str, Any],
+    output_root: Path = DEFAULT_HYPOTHESIS_ROOT,
+    *,
+    research_lock_path: Path = DEFAULT_RESEARCH_LOCK,
+    registry_root: Path = REGISTRY_ROOT,
 ) -> tuple[Path, dict[str, Any]]:
     contract = validate_hypothesis_contract(value)
+    enforce_research_lock(
+        contract, lock_path=research_lock_path, registry_root=registry_root
+    )
     content = dict(contract)
     content.pop("contract_sha256", None)
     fingerprint = _fingerprint(content)
@@ -282,6 +290,67 @@ def enforce_weekly_hypothesis_budget(
         raise LearningExperimentError(
             f"weekly hypothesis budget of {MAX_NEW_HYPOTHESES_PER_ISO_WEEK} is exhausted"
         )
+
+
+def research_lock_status(
+    *,
+    lock_path: Path = DEFAULT_RESEARCH_LOCK,
+    registry_root: Path = REGISTRY_ROOT,
+) -> dict[str, Any]:
+    if not lock_path.exists():
+        return {"active": False, "blocks_new_hypotheses": False}
+    lock = _read_object(lock_path)
+    if lock.get("schema_version") != 1 or not isinstance(lock.get("active"), bool):
+        raise LearningExperimentError("research lock is malformed")
+    if not lock["active"]:
+        return {**lock, "blocks_new_hypotheses": False}
+    blocked_lane = _text(lock.get("blocked_dataset_lane"), "blocked_dataset_lane")
+    if blocked_lane not in DATASET_LANES:
+        raise LearningExperimentError(
+            "research lock blocked_dataset_lane is unsupported"
+        )
+    required_id = _text(lock.get("required_dataset_id"), "required_dataset_id")
+    required_status = _text(
+        lock.get("required_dataset_status"), "required_dataset_status"
+    )
+    required_lane = _text(lock.get("required_dataset_lane"), "required_dataset_lane")
+    required_evidence = _text(lock.get("evidence_path"), "evidence_path")
+    evidence_path = Path(required_evidence)
+    if evidence_path.is_absolute() or ".." in evidence_path.parts:
+        raise LearningExperimentError("research lock evidence_path is unsafe")
+    if lock.get("required_dataset_inspected") is not True:
+        raise LearningExperimentError(
+            "active research lock must require an inspected dataset"
+        )
+    dataset = current_entities("datasets", registry_root).get(required_id)
+    payload = dataset["payload"] if dataset else {}
+    checks = {
+        "registered": dataset is not None,
+        "status": payload.get("status") == required_status,
+        "lane": payload.get("lane") == required_lane,
+        "inspected": payload.get("inspected") is True,
+        "evidence": required_evidence in (payload.get("evidence_paths") or []),
+    }
+    satisfied = all(checks.values())
+    return {
+        **lock,
+        "satisfied": satisfied,
+        "unsatisfied_conditions": [key for key, passed in checks.items() if not passed],
+        "blocks_new_hypotheses": not satisfied,
+    }
+
+
+def enforce_research_lock(
+    contract: Mapping[str, Any],
+    *,
+    lock_path: Path = DEFAULT_RESEARCH_LOCK,
+    registry_root: Path = REGISTRY_ROOT,
+) -> None:
+    lock = research_lock_status(lock_path=lock_path, registry_root=registry_root)
+    if lock.get("blocks_new_hypotheses") and contract.get("dataset_lane") == lock.get(
+        "blocked_dataset_lane"
+    ):
+        raise LearningExperimentError(str(lock.get("reason") or "research is locked"))
 
 
 def validate_transition(previous: str, current: str) -> None:
@@ -433,6 +502,10 @@ def audit_experiment_program(
         "frozen_contracts": contracts,
         "hypothesis_root": str(hypothesis_root),
         "weekly_limit": MAX_NEW_HYPOTHESES_PER_ISO_WEEK,
+        "research_lock": research_lock_status(
+            registry_root=registry_root,
+            lock_path=registry_root / "RESEARCH_LOCK.json",
+        ),
     }
 
 

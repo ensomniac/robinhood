@@ -21,6 +21,9 @@ does not activate production rules.
   failure, and disposition.
 - `learning/STRATEGIES.jsonl` records immutable strategy identities and their
   alpha, execution, operations, and production-role states.
+- `learning/RESEARCH_LOCK.json` blocks new catalyst-corpus hypothesis contracts
+  until its required scanner-replay dataset reaches the registered `READY`
+  state.
 - Ignored `learning_runs/<run-id>/state.json` holds resumable operational state.
 - `progress/HISTORY.jsonl` remains the durable architecture and findings log.
 - `strategy_ledger.py report` remains authoritative for earned production
@@ -33,11 +36,15 @@ rewritten or deleted.
 
 1. **Persistent controller and registries:** implemented.
 2. **Daily account simulator and selection-aware statistics:** implemented.
-3. **Point-in-time security master and scanner-faithful datasets:** implemented;
-   no current dataset qualifies as a production scanner replay.
-4. **Registered hypothesis and experiment lifecycle:** implemented.
-5. **Three-axis champion/challenger evidence:** implemented.
-6. **Operating cadence and monitoring:** implemented.
+3. **Point-in-time security master:** populated from 20 dated common-stock
+   snapshots and bound to an immutable hash-addressed snapshot.
+4. **Scanner-faithful dataset:** frozen and collecting; it does not qualify as
+   a production scanner replay until 118 market-wide minute files are present,
+   the dynamic results are inspected, and a READY registry event supersedes its
+   current COLLECTING event.
+5. **Registered hypothesis and experiment lifecycle:** implemented.
+6. **Three-axis champion/challenger evidence:** implemented.
+7. **Operating cadence and monitoring:** implemented.
 
 ## Current Evidence Decisions
 
@@ -51,11 +58,14 @@ rewritten or deleted.
 
 ## Current Next Objective
 
-Populate the point-in-time security master from sourced identity records and
-build the first `production_scanner_replay` dataset by reconstructing the dynamic
-complete 09:35 ET universe. Until that evidence exists, the weekly hypothesis
-review should prefer a documented no-op over inventing more variants on the
-already inspected catalyst corpus.
+Resume the frozen `dataset-production-scanner-replay-2026-07-18-v1` collection
+after the existing Massive Dashboard-issued S3 credentials are present in the
+ignored `.env`. Download the exact 118 market-wide minute files, reconstruct and
+inspect all 20 dynamic 09:35 ET universes, and only then register the dataset as
+READY. Until that evidence exists, the weekly hypothesis review must record a
+no-op rather than inventing more variants on the already inspected catalyst
+corpus. This boundary is enforced by `learning_experiment.py` and
+`learning_cadence.py`, not only documented. See `SCANNER_REPLAY.md`.
 
 ## Bounded Iteration
 
