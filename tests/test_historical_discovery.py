@@ -1,8 +1,13 @@
 import json
+import tempfile
 import unittest
+from pathlib import Path
+from types import SimpleNamespace
 
 from historical_discovery import (
+    HistoricalDiscoveryError,
     _document_has_dilution,
+    _load_master_index,
     _ticker_map,
     extract_earnings_events,
     parse_master_index,
@@ -23,7 +28,14 @@ class HistoricalDiscoveryTests(unittest.TestCase):
             "report": {**tentative["report"], "verified": True},
         }
         payload = [
-            {"content": [{"type": "text", "text": json.dumps({"data": {"results": [tentative]}})}]},
+            {
+                "content": [
+                    {
+                        "type": "text",
+                        "text": json.dumps({"data": {"results": [tentative]}}),
+                    }
+                ]
+            },
             {"data": {"results": [verified]}},
         ]
 
@@ -49,6 +61,59 @@ class HistoricalDiscoveryTests(unittest.TestCase):
             ],
         )
 
+    def test_missing_daily_master_is_empty_only_when_quarter_index_confirms_absence(
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as directory:
+            cache_root = Path(directory)
+
+            class Client:
+                config = SimpleNamespace(cache_root=cache_root)
+
+                def text(self, _url, _path):
+                    raise HistoricalDiscoveryError("SEC HTTP 403")
+
+                def json(self, _url, _path):
+                    return {"directory": {"item": [{"name": "master.20241011.idx"}]}}
+
+            self.assertEqual(_load_master_index(Client(), "2024-10-14"), "")
+            self.assertEqual(
+                (cache_root / "master" / "2024-10-14.idx").read_bytes(),
+                b"",
+            )
+
+    def test_listed_daily_master_preserves_fetch_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cache_root = Path(directory)
+
+            class Client:
+                config = SimpleNamespace(cache_root=cache_root)
+
+                def text(self, _url, _path):
+                    raise HistoricalDiscoveryError("SEC HTTP 403")
+
+                def json(self, _url, _path):
+                    return {"directory": {"item": [{"name": "master.20241014.idx"}]}}
+
+            with self.assertRaisesRegex(HistoricalDiscoveryError, "SEC HTTP 403"):
+                _load_master_index(Client(), "2024-10-14")
+
+    def test_malformed_quarter_index_preserves_fetch_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cache_root = Path(directory)
+
+            class Client:
+                config = SimpleNamespace(cache_root=cache_root)
+
+                def text(self, _url, _path):
+                    raise HistoricalDiscoveryError("SEC HTTP 503")
+
+                def json(self, _url, _path):
+                    return {"directory": {"item": None}}
+
+            with self.assertRaisesRegex(HistoricalDiscoveryError, "SEC HTTP 503"):
+                _load_master_index(Client(), "2024-10-14")
+
     def test_ticker_map_keeps_supported_primary_exchange_symbols_only(self):
         payload = {
             "fields": ["cik", "name", "ticker", "exchange"],
@@ -70,7 +135,9 @@ class HistoricalDiscoveryTests(unittest.TestCase):
         self.assertTrue(
             _document_has_dilution("We entered an at-the-market offering.", ["8.01"])
         )
-        self.assertFalse(_document_has_dilution("Quarterly operating results", ["2.02"]))
+        self.assertFalse(
+            _document_has_dilution("Quarterly operating results", ["2.02"])
+        )
 
 
 if __name__ == "__main__":

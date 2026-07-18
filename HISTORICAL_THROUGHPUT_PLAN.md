@@ -49,6 +49,15 @@ validation result, not an engineering failure, and the strategy remains
 The Python evaluator and JSON validation are not the current bottleneck. The
 network request graph is.
 
+The 100-day telemetry also disproves contract lookup as the primary delay.
+Contract details accounted for 990 of 4,612 submitted preflight requests but
+only 29.161 of 14,049.332 summed request-seconds (0.21%). Historical bars used
+the remaining 14,020.172 request-seconds, while the complete cached four-strategy
+matrix ran in 2.003 seconds with zero provider calls. Repeated symbol proof is a
+real secondary cost because it consumes pacing slots, but learning iterations
+should prioritize the existing frozen corpus and treat new bar acquisition as a
+separate corpus-expansion job.
+
 The March 30 one-day replay provided a useful cold baseline:
 
 - The ranked draft contained 77 names. Sixty ranks had to be examined to freeze
@@ -124,6 +133,16 @@ For the March 30 graph this reduces cold provider calls from 118 to 74:
 
 The order does not change any eligibility rule. It only postpones work that
 cannot affect an already-final rejection.
+
+Contract-details requests are now additionally deduplicated across dates and
+workers. The ignored `historical_data/contracts/` cache binds each result to the
+exact STK request identity, verifies a content hash, expires positive metadata
+after 30 days and error-200 metadata after one day by default, never stores
+provider-wide failures, and single-flights concurrent same-symbol misses. The
+100-day evidence contained 1,094 contract-proof occurrences across only 530
+unique symbols, so an ideal cold pass under an unchanged provider truth could
+avoid up to 564 repeated lookups. This is a request-count projection, not a
+post-change wall-time benchmark.
 
 ### 2. Bounded deterministic workers
 
@@ -256,6 +275,21 @@ Keep IBKR primary under the current contract, but isolate provider lanes:
 - transport or pacing failures never trigger a provider switch;
 - a bulk/flat-file provider should be evaluated for large research corpora,
   because IBKR explicitly says it is not a specialized bulk market-data source.
+
+Massive's official stock flat-file catalog is the concrete next candidate. It
+publishes one daily aggregate file and one minute aggregate file across U.S.
+equities, plus historical trade and quote files, specifically to avoid thousands
+of per-symbol REST requests. The files are unadjusted, so an integration must
+apply and audit split adjustments before it can satisfy this replay contract;
+plan entitlements and quote-file size must also be verified with a small frozen
+sample before changing the default provider lane. Do not infer S3 access from an
+existing REST key.
+
+References:
+
+- <https://massive.com/docs/flat-files/stocks/overview>
+- <https://massive.com/docs/flat-files/stocks/day-aggregates>
+- <https://massive.com/docs/flat-files/quickstart>
 
 ### D. CPU-parallel research after data is local
 

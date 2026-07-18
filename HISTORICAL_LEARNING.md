@@ -81,6 +81,16 @@ The agent asks how many days to simulate. For each requested day:
    hash copied into the frozen manifest, and are reused by bundle collection
    only after the rule fingerprint and both hashes verify.
 
+   Contract resolution has a separate cross-date cache under ignored
+   `historical_data/contracts/`. Its namespace includes the exact STK exchange,
+   currency, and primary-exchange request identity; each result has an integrity
+   hash and explicit expiry. Resolved metadata defaults to 30 days,
+   unresolvable error-200 metadata to one day, and provider-wide errors are never
+   stored. Concurrent dates asking about the same symbol share one in-flight
+   request. Use `--fresh-contracts` to bypass persisted metadata when a current
+   provider refresh is necessary. This avoids repeated symbol proof but does not
+   cache, infer, or relax the date-specific ADV, ATR, or opening-volume facts.
+
    The default four-worker scheduler overlaps provider response latency in
    bounded rank-order batches. Completion order never changes accepted order.
    At most the remainder of the active batch can finish beyond the tenth

@@ -56,6 +56,19 @@ MODES = (
         broker_actions_allowed=False,
         next_step="Run strategy_learning.py report; write a proposal only when cadence gates pass.",
     ),
+    SessionMode(
+        key="learning",
+        label="Edit / learning loop",
+        description=(
+            "Bounded repository learning and engineering improvement with no "
+            "broker actions or automatic strategy activation."
+        ),
+        broker_actions_allowed=False,
+        next_step=(
+            "Run learning_loop.py inspect, challenge the measured bottleneck, "
+            "apply at most one validated slice, and record the result."
+        ),
+    ),
 )
 MODE_BY_KEY = {mode.key: mode for mode in MODES}
 

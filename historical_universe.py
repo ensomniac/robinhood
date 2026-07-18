@@ -26,6 +26,7 @@ from typing import Any
 
 from historical_concurrency import ordered_bounded_results
 from ibkr_historical import (
+    DEFAULT_CONTRACT_CACHE_ROOT,
     DEFAULT_ENV_PATH,
     IBKRConfig,
     IBKRHistoricalClient,
@@ -47,9 +48,7 @@ class HistoricalUniverseError(RuntimeError):
 
 
 Probe = Callable[[str, str], Mapping[str, Any]]
-DetailedProbe = Callable[
-    [str, str], tuple[Mapping[str, Any], Mapping[str, Any] | None]
-]
+DetailedProbe = Callable[[str, str], tuple[Mapping[str, Any], Mapping[str, Any] | None]]
 
 
 class ResumablePreflightProbe:
@@ -394,9 +393,7 @@ def freeze_candidate_universe(
         finally:
             outcomes.close()
 
-        unused = [
-            symbol for index, symbol, _ in prepared if index > last_examined
-        ]
+        unused = [symbol for index, symbol, _ in prepared if index > last_examined]
         speculative = sorted(
             (
                 (index, symbol)
@@ -474,8 +471,17 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--minimum-candidates", type=int, default=10)
     parser.add_argument("--env-file", type=Path, default=DEFAULT_ENV_PATH)
+    parser.add_argument("--cache-root", type=Path, default=DEFAULT_PREFLIGHT_CACHE_ROOT)
     parser.add_argument(
-        "--cache-root", type=Path, default=DEFAULT_PREFLIGHT_CACHE_ROOT
+        "--contract-cache-root",
+        type=Path,
+        default=DEFAULT_CONTRACT_CACHE_ROOT,
+        help="expiring integrity-checked cross-date symbol proof cache",
+    )
+    parser.add_argument(
+        "--fresh-contracts",
+        action="store_true",
+        help="bypass cached contract details and refresh provider truth",
     )
     parser.add_argument(
         "--workers",
@@ -512,7 +518,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             "minimum_daily_atr_14": float(universe["minimum_daily_atr_14"]),
         }
         started_at = monotonic()
-        with IBKRHistoricalClient(config) as client:
+        with IBKRHistoricalClient(
+            config,
+            contract_cache_root=args.contract_cache_root,
+            refresh_contract_details=args.fresh_contracts,
+        ) as client:
             cache_root = args.cache_root.resolve()
             try:
                 cache_root_text = str(cache_root.relative_to(PROJECT_ROOT.resolve()))

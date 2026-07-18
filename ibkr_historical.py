@@ -9,6 +9,7 @@ the offline replay workflow.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -38,6 +39,7 @@ from historical_metrics import (
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_ENV_PATH = PROJECT_ROOT / ".env"
+DEFAULT_CONTRACT_CACHE_ROOT = PROJECT_ROOT / "historical_data" / "contracts"
 EASTERN = ZoneInfo("America/New_York")
 UTC = timezone.utc
 INFORMATIONAL_CODES = {
@@ -51,6 +53,9 @@ INFORMATIONAL_CODES = {
 CONNECTION_ERROR_CODES = {326, 502, 503, 504, 507, 1100, 1300}
 BAR_TYPES = {"TRADES", "MIDPOINT", "BID", "ASK"}
 PRE_SESSION_CACHE_VERSION = 2
+CONTRACT_CACHE_SCHEMA_VERSION = 1
+CONTRACT_CACHE_RESOLVED_TTL_SECONDS = 30 * 24 * 60 * 60
+CONTRACT_CACHE_UNRESOLVABLE_TTL_SECONDS = 24 * 60 * 60
 HISTORICAL_BAR_CHUNK_DAYS = {
     "1 sec": 1,
     "5 secs": 1,
@@ -85,6 +90,175 @@ class IBKRRequestError(IBKRHistoricalError):
     def __init__(self, message: str, *, error_code: int | None = None):
         super().__init__(message)
         self.error_code = error_code
+
+
+def _canonical_sha256(value: Any) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+class ContractDetailsCache:
+    """Integrity-check expiring symbol proofs shared across replay dates.
+
+    Contract details are current provider metadata, not immutable historical
+    prices. Positive results therefore expire after 30 days by default, while
+    an unresolvable-symbol result expires after one day. Provider, permission,
+    pacing, and transport errors are never cached.
+    """
+
+    def __init__(
+        self,
+        root: Path,
+        *,
+        exchange: str = "SMART",
+        currency: str = "USD",
+        primary_exchange: str = "",
+        resolved_ttl_seconds: float = CONTRACT_CACHE_RESOLVED_TTL_SECONDS,
+        unresolvable_ttl_seconds: float = CONTRACT_CACHE_UNRESOLVABLE_TTL_SECONDS,
+    ):
+        if resolved_ttl_seconds <= 0 or unresolvable_ttl_seconds <= 0:
+            raise IBKRConfigurationError("contract cache TTLs must be positive")
+        self.root = Path(root)
+        self.request_identity = {
+            "security_type": "STK",
+            "exchange": str(exchange).strip().upper(),
+            "currency": str(currency).strip().upper(),
+            "primary_exchange": str(primary_exchange).strip().upper(),
+        }
+        if (
+            not self.request_identity["exchange"]
+            or not self.request_identity["currency"]
+        ):
+            raise IBKRConfigurationError(
+                "contract cache exchange and currency cannot be empty"
+            )
+        self.namespace = _canonical_sha256(self.request_identity)[:12]
+        self.resolved_ttl_seconds = float(resolved_ttl_seconds)
+        self.unresolvable_ttl_seconds = float(unresolvable_ttl_seconds)
+        self._lock = threading.Lock()
+        self._hits = 0
+        self._misses = 0
+        self._invalid = 0
+        self._expired = 0
+        self._writes = 0
+
+    @staticmethod
+    def _symbol(value: str) -> str:
+        normalized = str(value).strip().upper()
+        if not normalized or not normalized.replace(".", "").isalnum():
+            raise IBKRConfigurationError(f"invalid equity symbol: {value!r}")
+        return normalized
+
+    def _path(self, symbol: str) -> Path:
+        return self.root / self.namespace / f"{self._symbol(symbol)}.json"
+
+    def _request(self, symbol: str) -> dict[str, str]:
+        return {"symbol": self._symbol(symbol), **self.request_identity}
+
+    def load(self, symbol: str) -> dict[str, Any] | None:
+        normalized = self._symbol(symbol)
+        path = self._path(normalized)
+        if not path.is_file():
+            with self._lock:
+                self._misses += 1
+            return None
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            content_hash = payload.pop("content_sha256")
+            request = payload["request"]
+            outcome = payload["outcome"]
+            expires_at = datetime.fromisoformat(payload["expires_at"])
+            valid = (
+                payload.get("schema_version") == CONTRACT_CACHE_SCHEMA_VERSION
+                and payload.get("provider") == "Interactive Brokers TWS API"
+                and request == self._request(normalized)
+                and isinstance(outcome, dict)
+                and outcome.get("status") in {"resolved", "unresolvable"}
+                and isinstance(content_hash, str)
+                and content_hash == _canonical_sha256(payload)
+                and expires_at.tzinfo is not None
+            )
+            if outcome.get("status") == "resolved":
+                details = outcome.get("details")
+                valid = (
+                    valid
+                    and isinstance(details, list)
+                    and all(isinstance(row, dict) for row in details)
+                )
+            else:
+                valid = valid and outcome.get("error_code") == 200
+        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+            valid = False
+            expires_at = datetime.min.replace(tzinfo=UTC)
+        if not valid:
+            with self._lock:
+                self._invalid += 1
+                self._misses += 1
+            return None
+        if expires_at.astimezone(UTC) <= datetime.now(UTC):
+            with self._lock:
+                self._expired += 1
+                self._misses += 1
+            return None
+        with self._lock:
+            self._hits += 1
+        return dict(outcome)
+
+    def _store(
+        self, symbol: str, outcome: Mapping[str, Any], ttl_seconds: float
+    ) -> None:
+        normalized = self._symbol(symbol)
+        captured_at = datetime.now(UTC)
+        payload: dict[str, Any] = {
+            "schema_version": CONTRACT_CACHE_SCHEMA_VERSION,
+            "provider": "Interactive Brokers TWS API",
+            "captured_at": captured_at.isoformat(),
+            "expires_at": (captured_at + timedelta(seconds=ttl_seconds)).isoformat(),
+            "privacy_class": "public_market_metadata",
+            "request": self._request(normalized),
+            "outcome": dict(outcome),
+        }
+        payload["content_sha256"] = _canonical_sha256(payload)
+        rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+        path = self._path(normalized)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(".json.tmp")
+        temporary.write_text(rendered, encoding="utf-8")
+        temporary.replace(path)
+        with self._lock:
+            self._writes += 1
+
+    def store_details(self, symbol: str, details: Sequence[Mapping[str, Any]]) -> None:
+        self._store(
+            symbol,
+            {"status": "resolved", "details": [dict(row) for row in details]},
+            self.resolved_ttl_seconds,
+        )
+
+    def store_unresolvable(self, symbol: str) -> None:
+        self._store(
+            symbol,
+            {"status": "unresolvable", "error_code": 200},
+            self.unresolvable_ttl_seconds,
+        )
+
+    def stats(self) -> dict[str, Any]:
+        with self._lock:
+            return {
+                "namespace": self.namespace,
+                "hits": self._hits,
+                "misses": self._misses,
+                "invalid": self._invalid,
+                "expired": self._expired,
+                "writes": self._writes,
+                "resolved_ttl_seconds": self.resolved_ttl_seconds,
+                "unresolvable_ttl_seconds": self.unresolvable_ttl_seconds,
+            }
 
 
 def historical_error_category(exc: BaseException) -> str:
@@ -335,9 +509,7 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
         self._requests: dict[int, _RequestState] = {}
         self._connection_error: dict[str, Any] | None = None
         self._last_request_at = 0.0
-        self._request_slots = threading.BoundedSemaphore(
-            config.max_concurrent_requests
-        )
+        self._request_slots = threading.BoundedSemaphore(config.max_concurrent_requests)
         self._telemetry_started_at = time.monotonic()
         self._request_counts: Counter[str] = Counter()
         self._request_completed: Counter[str] = Counter()
@@ -569,8 +741,7 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
             now = time.monotonic()
             scheduled_at = max(
                 now,
-                self._last_request_at
-                + self.config.minimum_request_spacing_seconds,
+                self._last_request_at + self.config.minimum_request_spacing_seconds,
             )
             self._last_request_at = scheduled_at
             delay = scheduled_at - now
@@ -632,9 +803,7 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
                 "pacing_wait_seconds": self._request_pacing_wait_seconds,
                 "slot_wait_seconds": self._request_slot_wait_seconds,
                 "submitted_by_kind": dict(sorted(self._request_counts.items())),
-                "completed_by_kind": dict(
-                    sorted(self._request_completed.items())
-                ),
+                "completed_by_kind": dict(sorted(self._request_completed.items())),
                 "failed_by_kind": dict(sorted(self._request_failed.items())),
                 "request_seconds_by_kind": dict(
                     sorted(self._request_duration_seconds.items())
@@ -684,9 +853,7 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
             with self._lock:
                 self._requests.pop(request_id, None)
             if started_at is not None:
-                self._end_provider_request(
-                    kind, started_at=started_at, failed=failed
-                )
+                self._end_provider_request(kind, started_at=started_at, failed=failed)
 
     def _request_bars(
         self,
@@ -715,18 +882,14 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
                 False,
                 [],
             )
-            rows = self._finish_request(
-                request_id, state, self.cancelHistoricalData
-            )
+            rows = self._finish_request(request_id, state, self.cancelHistoricalData)
             failed = False
             return rows
         finally:
             with self._lock:
                 self._requests.pop(request_id, None)
             if started_at is not None:
-                self._end_provider_request(
-                    kind, started_at=started_at, failed=failed
-                )
+                self._end_provider_request(kind, started_at=started_at, failed=failed)
 
     def fetch_bars(
         self,
@@ -804,9 +967,7 @@ class _IBKRHistoricalConnection(EWrapper, EClient):
             with self._lock:
                 self._requests.pop(request_id, None)
             if started_at is not None:
-                self._end_provider_request(
-                    kind, started_at=started_at, failed=failed
-                )
+                self._end_provider_request(kind, started_at=started_at, failed=failed)
 
     def fetch_bid_ask_ticks(
         self,
@@ -855,9 +1016,29 @@ class IBKRHistoricalClient:
     provider_name = "Interactive Brokers TWS API"
     cache_namespace = "ibkr"
 
-    def __init__(self, config: IBKRConfig):
+    def __init__(
+        self,
+        config: IBKRConfig,
+        *,
+        contract_cache_root: Path | None = DEFAULT_CONTRACT_CACHE_ROOT,
+        refresh_contract_details: bool = False,
+    ):
         self.config = config
         self._connection = _IBKRHistoricalConnection(config)
+        self._contract_cache = (
+            ContractDetailsCache(
+                contract_cache_root,
+                exchange=config.exchange,
+                currency=config.currency,
+                primary_exchange=config.primary_exchange,
+            )
+            if contract_cache_root is not None
+            else None
+        )
+        self._refresh_contract_details = bool(refresh_contract_details)
+        self._contract_lock_guard = threading.Lock()
+        self._contract_locks: dict[str, threading.Lock] = {}
+        self._contract_memory: dict[str, dict[str, Any]] = {}
 
     def __enter__(self) -> "IBKRHistoricalClient":
         self.connect_and_wait()
@@ -892,7 +1073,59 @@ class IBKRHistoricalClient:
         )
 
     def fetch_contract_details(self, symbol: str) -> list[dict[str, Any]]:
-        return self._connection.fetch_contract_details(symbol)
+        normalized = ContractDetailsCache._symbol(symbol)
+
+        def cached(*, allow_disk: bool = True) -> list[dict[str, Any]] | None:
+            with self._contract_lock_guard:
+                outcome = self._contract_memory.get(normalized)
+            if outcome is None:
+                if (
+                    not allow_disk
+                    or self._contract_cache is None
+                    or self._refresh_contract_details
+                ):
+                    return None
+                outcome = self._contract_cache.load(normalized)
+                if outcome is None:
+                    return None
+                with self._contract_lock_guard:
+                    self._contract_memory[normalized] = outcome
+            if outcome["status"] == "unresolvable":
+                raise IBKRRequestError(
+                    f"cached contract-details request for {normalized} is unresolvable",
+                    error_code=200,
+                )
+            return [dict(row) for row in outcome["details"]]
+
+        result = cached()
+        if result is not None:
+            return result
+        with self._contract_lock_guard:
+            symbol_lock = self._contract_locks.setdefault(normalized, threading.Lock())
+        with symbol_lock:
+            result = cached(allow_disk=False)
+            if result is not None:
+                return result
+            try:
+                details = self._connection.fetch_contract_details(normalized)
+            except IBKRRequestError as exc:
+                if exc.error_code == 200 and self._contract_cache is not None:
+                    self._contract_cache.store_unresolvable(normalized)
+                if exc.error_code == 200:
+                    with self._contract_lock_guard:
+                        self._contract_memory[normalized] = {
+                            "status": "unresolvable",
+                            "error_code": 200,
+                        }
+                raise
+            if self._contract_cache is not None:
+                self._contract_cache.store_details(normalized, details)
+            with self._contract_lock_guard:
+                self._contract_memory[normalized] = {
+                    "status": "resolved",
+                    "details": [dict(row) for row in details],
+                }
+            return details
 
     def fetch_bid_ask_ticks(
         self,
@@ -910,7 +1143,13 @@ class IBKRHistoricalClient:
         )
 
     def request_telemetry(self) -> dict[str, Any]:
-        return self._connection.request_telemetry()
+        telemetry = self._connection.request_telemetry()
+        telemetry["contract_cache"] = (
+            self._contract_cache.stats()
+            if self._contract_cache is not None
+            else {"enabled": False}
+        )
+        return telemetry
 
     @staticmethod
     def _bar_timestamp(value: Any) -> datetime | None:
@@ -1314,8 +1553,13 @@ def _validate_pre_session_history(
     normalized = symbol.upper()
     if value.get("schema_version") != PRE_SESSION_CACHE_VERSION:
         raise IBKRConfigurationError("pre-session cache version is unsupported")
-    if value.get("symbol") != normalized or value.get("session_date") != day.isoformat():
-        raise IBKRConfigurationError("pre-session cache identity does not match request")
+    if (
+        value.get("symbol") != normalized
+        or value.get("session_date") != day.isoformat()
+    ):
+        raise IBKRConfigurationError(
+            "pre-session cache identity does not match request"
+        )
     if value.get("target_session_prices_observed") is not False:
         raise IBKRConfigurationError("pre-session cache crossed the target boundary")
     opening = value.get("prior_opening_bars")
@@ -1329,7 +1573,9 @@ def _validate_pre_session_history(
     if len(opening_rows) != 14 or len(daily_rows) != len(daily):
         raise IBKRConfigurationError("pre-session cache bars must be objects")
     if any(int(row.get("volume", 0)) <= 0 for row in opening_rows):
-        raise IBKRConfigurationError("pre-session cache opening volume must be positive")
+        raise IBKRConfigurationError(
+            "pre-session cache opening volume must be positive"
+        )
     boundary = datetime.combine(day, wall_time(0), tzinfo=EASTERN).astimezone(UTC)
     if any(int(row["epoch"]) >= int(boundary.timestamp()) for row in opening_rows):
         raise IBKRConfigurationError("pre-session opening cache crossed target date")
@@ -1385,14 +1631,12 @@ def collect_candidate_history(
         opening_by_day = {
             row["date_et"]: row
             for row in opening_bars
-            if datetime.fromtimestamp(int(row["epoch"]), UTC)
-            .astimezone(EASTERN)
-            .time()
+            if datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(EASTERN).time()
             == wall_time(9, 30)
         }
-        prior_dates = sorted(
-            key for key in opening_by_day if key < day.isoformat()
-        )[-14:]
+        prior_dates = sorted(key for key in opening_by_day if key < day.isoformat())[
+            -14:
+        ]
         if len(prior_dates) != 14:
             raise IBKRRequestError(
                 f"{provider_name} returned only {len(prior_dates)} prior 09:30 "
@@ -1448,9 +1692,7 @@ def collect_candidate_history(
         },
         "opening_bar": current_opening,
         "prior_opening_bars": prior_opening_bars,
-        "prior_opening_volumes": [
-            int(row["volume"]) for row in prior_opening_bars
-        ],
+        "prior_opening_volumes": [int(row["volume"]) for row in prior_opening_bars],
         "daily_bars": daily_bars[-20:],
         "bid_ask_ticks": bid_ask_ticks,
         "quote_snapshots": snapshots,
@@ -1475,6 +1717,17 @@ def _write_json(value: Any, output: Path | None) -> None:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--env-file", type=Path, default=DEFAULT_ENV_PATH)
+    parser.add_argument(
+        "--contract-cache-root",
+        type=Path,
+        default=DEFAULT_CONTRACT_CACHE_ROOT,
+        help="expiring integrity-checked symbol proof cache",
+    )
+    parser.add_argument(
+        "--fresh-contracts",
+        action="store_true",
+        help="bypass cached contract details and refresh provider truth",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser(
         "check", help="connect and confirm a read-only TWS API handshake"
@@ -1529,7 +1782,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     try:
         config = IBKRConfig.from_env(args.env_file)
-        with IBKRHistoricalClient(config) as client:
+        with IBKRHistoricalClient(
+            config,
+            contract_cache_root=args.contract_cache_root,
+            refresh_contract_details=args.fresh_contracts,
+        ) as client:
             if args.command == "check":
                 result: Any = {
                     "connected": True,

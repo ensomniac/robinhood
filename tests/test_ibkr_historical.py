@@ -1,3 +1,4 @@
+import json
 import tempfile
 import time
 import unittest
@@ -92,7 +93,9 @@ class ConcurrentRequestTests(unittest.TestCase):
 
         with ThreadPoolExecutor(max_workers=3) as executor:
             completed = sorted(
-                executor.map(lambda _: (connection._pacing_wait(), time.monotonic()), range(3))
+                executor.map(
+                    lambda _: (connection._pacing_wait(), time.monotonic()), range(3)
+                )
             )
 
         observed = sorted(stamp for _, stamp in completed)
@@ -109,6 +112,150 @@ class ConcurrentRequestTests(unittest.TestCase):
 
 
 class SymbolProbeTests(unittest.TestCase):
+    def test_contract_details_cache_reuses_symbol_proof_across_clients(self):
+        details = [
+            {
+                "symbol": "ALK",
+                "security_type": "STK",
+                "stock_type": "COMMON",
+                "currency": "USD",
+            }
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            cache_root = Path(directory)
+            first = IBKRHistoricalClient(IBKRConfig(), contract_cache_root=cache_root)
+            with patch.object(
+                first._connection, "fetch_contract_details", return_value=details
+            ) as provider:
+                self.assertEqual(first.fetch_contract_details("alk"), details)
+                self.assertEqual(first.fetch_contract_details("ALK"), details)
+            provider.assert_called_once_with("ALK")
+
+            second = IBKRHistoricalClient(IBKRConfig(), contract_cache_root=cache_root)
+            with patch.object(
+                second._connection,
+                "fetch_contract_details",
+                side_effect=AssertionError("provider should not be called"),
+            ):
+                self.assertEqual(second.fetch_contract_details("ALK"), details)
+            self.assertEqual(second.request_telemetry()["contract_cache"]["hits"], 1)
+
+    def test_contract_cache_keeps_unresolvable_symbols_short_lived_and_local(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cache_root = Path(directory)
+            first = IBKRHistoricalClient(IBKRConfig(), contract_cache_root=cache_root)
+            with patch.object(
+                first._connection,
+                "fetch_contract_details",
+                side_effect=IBKRRequestError("missing", error_code=200),
+            ) as provider:
+                result = probe_historical_symbol(first, "SEMR")
+            provider.assert_called_once_with("SEMR")
+            self.assertFalse(result["viable"])
+
+            second = IBKRHistoricalClient(IBKRConfig(), contract_cache_root=cache_root)
+            with patch.object(
+                second._connection,
+                "fetch_contract_details",
+                side_effect=AssertionError("provider should not be called"),
+            ):
+                cached = probe_historical_symbol(second, "SEMR")
+            self.assertEqual(cached["reason"], "unresolvable_security_definition")
+            cache_path = next(cache_root.rglob("SEMR.json"))
+            payload = json.loads(cache_path.read_text(encoding="utf-8"))
+            captured = datetime.fromisoformat(payload["captured_at"])
+            expires = datetime.fromisoformat(payload["expires_at"])
+            self.assertEqual((expires - captured).total_seconds(), 24 * 60 * 60)
+            self.assertNotIn("root", second.request_telemetry()["contract_cache"])
+
+    def test_contract_cache_single_flights_concurrent_symbol_requests(self):
+        details = [
+            {
+                "symbol": "ALK",
+                "security_type": "STK",
+                "stock_type": "COMMON",
+                "currency": "USD",
+            }
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            client = IBKRHistoricalClient(
+                IBKRConfig(), contract_cache_root=Path(directory)
+            )
+
+            def slow_provider(symbol):
+                time.sleep(0.01)
+                return details
+
+            with patch.object(
+                client._connection,
+                "fetch_contract_details",
+                side_effect=slow_provider,
+            ) as provider:
+                with ThreadPoolExecutor(max_workers=4) as executor:
+                    results = list(
+                        executor.map(client.fetch_contract_details, ["ALK"] * 4)
+                    )
+
+            self.assertEqual(results, [details] * 4)
+            provider.assert_called_once_with("ALK")
+
+    def test_contract_cache_never_stores_provider_wide_failure(self):
+        details = [
+            {
+                "symbol": "ALK",
+                "security_type": "STK",
+                "stock_type": "COMMON",
+                "currency": "USD",
+            }
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            cache_root = Path(directory)
+            client = IBKRHistoricalClient(IBKRConfig(), contract_cache_root=cache_root)
+            with patch.object(
+                client._connection,
+                "fetch_contract_details",
+                side_effect=[
+                    IBKRRequestError("permission", error_code=10187),
+                    details,
+                ],
+            ) as provider:
+                with self.assertRaisesRegex(IBKRRequestError, "permission"):
+                    client.fetch_contract_details("ALK")
+                self.assertEqual(list(cache_root.rglob("*.json")), [])
+                self.assertEqual(client.fetch_contract_details("ALK"), details)
+            self.assertEqual(provider.call_count, 2)
+
+    def test_tampered_contract_cache_fails_closed_and_refreshes(self):
+        details = [
+            {
+                "symbol": "ALK",
+                "security_type": "STK",
+                "stock_type": "COMMON",
+                "currency": "USD",
+            }
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            cache_root = Path(directory)
+            first = IBKRHistoricalClient(IBKRConfig(), contract_cache_root=cache_root)
+            with patch.object(
+                first._connection, "fetch_contract_details", return_value=details
+            ):
+                first.fetch_contract_details("ALK")
+            cache_path = next(cache_root.rglob("ALK.json"))
+            payload = json.loads(cache_path.read_text(encoding="utf-8"))
+            payload["outcome"]["details"][0]["stock_type"] = "ADR"
+            cache_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            second = IBKRHistoricalClient(IBKRConfig(), contract_cache_root=cache_root)
+            with patch.object(
+                second._connection, "fetch_contract_details", return_value=details
+            ) as provider:
+                self.assertEqual(second.fetch_contract_details("ALK"), details)
+            provider.assert_called_once_with("ALK")
+            stats = second.request_telemetry()["contract_cache"]
+            self.assertEqual(stats["invalid"], 1)
+            self.assertEqual(stats["writes"], 1)
+
     def test_retired_symbol_is_a_skippable_preflight_result(self):
         class FakeClient:
             def fetch_contract_details(self, symbol):
@@ -160,9 +307,7 @@ class SymbolProbeTests(unittest.TestCase):
         result = probe_historical_symbol(FakeClient(), "TEST")
 
         self.assertFalse(result["viable"])
-        self.assertEqual(
-            result["reason"], "no_matching_us_common_stock_contract"
-        )
+        self.assertEqual(result["reason"], "no_matching_us_common_stock_contract")
 
     def test_pre_session_probe_requires_strategy_compatible_history(self):
         day = datetime(2026, 3, 3, tzinfo=EASTERN).date()
@@ -487,9 +632,7 @@ class SymbolProbeTests(unittest.TestCase):
                 raise IBKRRequestError("pacing violation", error_code=162)
 
         with self.assertRaisesRegex(IBKRRequestError, "pacing violation"):
-            probe_historical_candidate_with_history(
-                FakeClient(), "SPTX", "2026-06-08"
-            )
+            probe_historical_candidate_with_history(FakeClient(), "SPTX", "2026-06-08")
 
     def test_candidate_collection_reuses_pre_session_history(self):
         day = datetime(2026, 3, 3, tzinfo=EASTERN).date()
@@ -542,9 +685,7 @@ class SymbolProbeTests(unittest.TestCase):
             def fetch_bars(self, *args, **kwargs):
                 raise AssertionError("pre-session history should come from cache")
 
-        with patch(
-            "ibkr_historical.collect_quote_evidence", return_value=([], [])
-        ):
+        with patch("ibkr_historical.collect_quote_evidence", return_value=([], [])):
             result = collect_candidate_history(
                 NoHistoryClient(),
                 "TEST",

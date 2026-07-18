@@ -229,3 +229,7 @@ historical_data/
 # Per-date research shards are reproducible from the ignored immutable bundles.
 # Compact aggregate results may be published separately under research_results/.
 research_runs/
+
+# Bounded edit/learning inventories and machine-readable plans are local run
+# state. Reusable outcomes belong in progress/HISTORY.jsonl and public docs.
+learning_runs/

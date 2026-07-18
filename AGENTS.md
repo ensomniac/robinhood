@@ -61,12 +61,17 @@ the canonical CLI picker. A direct numeric or named choice maps to:
 2. `shadow`: current-day research and simulated decisions; no live orders.
 3. `historical`: random unarchived-day replay; no broker actions.
 4. `review`: read-only learning report and, when earned, a strategy proposal.
+5. `learning`: bounded repository edit/learning loop; no broker actions or
+   automatic strategy activation.
 
 Mode selection is declarative and does not bypass any other rule. Only `live`
 permits live order tools, and it still requires every account, encryption,
 ledger, evaluator, review, confirmation, and session-guard check. `historical`
 must ask how many days Ryan wants to simulate before selecting dates. `review`
 may write a cadence-qualified proposal but may not edit or activate live rules.
+`learning` may improve repository engineering and tests under
+`LEARNING_LOOP.md`, but production strategy changes remain proposals subject to
+the normal approval and evidence gates.
 
 ## Authority Boundary
 
@@ -747,7 +752,14 @@ When Ryan selects historical mode:
    U.S.-listed common stock or already carry a dilution conflict. The final
    provider proof must match IBKR `stockType=COMMON`; bump the pre-session cache
    contract whenever that proof changes so older permissive entries cannot be
-   reused. Request prior
+   reused. Contract-detail responses are current market metadata rather than
+   immutable historical facts. Cache them only in the integrity-checked,
+   request-identity-qualified `historical_data/contracts/` namespace: resolved
+   responses expire after 30 days by default, unresolvable error-200 responses
+   after one day, and permission, transport, timeout, and pacing failures are
+   never cached. Concurrent probes of the same symbol must single-flight one
+   provider request. `--fresh-contracts` bypasses persisted proof when a current
+   refresh is required. Request prior
    daily history first and enforce the configured 14-session average-volume and
    ATR gates before paying for explicit contract resolution and the more
    expensive opening history. Treat error 200 from that STK/USD history request
@@ -868,6 +880,32 @@ Do not mix them with the frozen production ORB sample or activate a setup from
 an in-sample matrix. Freeze promising rules and validate them on independent,
 preregistered confirmation dates under a separate strategy version. See
 `HISTORICAL_RESEARCH.md` for the executable contract and measured first run.
+
+## Edit / Learning Loop
+
+`learning` mode is the bounded repository-improvement workflow defined by the
+versioned public prompt in `LEARNING_LOOP.md`. Start it with:
+
+```sh
+python3 session_mode.py --mode learning
+python3 learning_loop.py inspect
+```
+
+The controller is read-only with respect to source and broker/provider state. It
+captures the dirty worktree as a preservation baseline, loads the relevant batch
+and research telemetry, distinguishes cold acquisition from local evaluation,
+and validates a machine-readable one-slice plan before normal implementation.
+The loop must identify ten working controls, prove one bottleneck, generate at
+most five improvements, adversarially filter them, apply at most one coherent
+slice, validate and benchmark it, append a progress lesson, then stop.
+
+Use frozen local bundles before requesting new historical data. A new collection
+is justified only by missing coverage or an independent confirmation need.
+`learning` cannot use broker actions, edit `strategy_config.toml`, activate a
+research strategy, recurse after a failed repair, or broaden external-write
+authority. Generated inventories and plans stay under ignored `learning_runs/`;
+durable outcomes belong in source, tests, public docs, and
+`progress/HISTORY.jsonl`.
 
 ## Progress History Hook
 

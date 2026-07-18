@@ -4,6 +4,46 @@ Sparse feature ideas are expanded here into explicit acceptance criteria before
 implementation. Risk-bearing behavior must remain inside `AGENTS.md`; a backlog
 item never grants live-trading authority or permission to weaken safety gates.
 
+## Completed 2026-07-18
+
+### 12. Bounded Edit And Learning Loop
+
+Status: implemented by `LEARNING_LOOP.md`, `learning_loop.py`, and
+`session_mode.py` on 2026-07-18. Automatic post-run invocation remains
+intentionally deferred until the manual controller has more operating evidence.
+
+- Publishes a versioned eight-phase prompt subordinate to `AGENTS.md`: safety,
+  ten working controls, bottleneck proof, at most five candidates, adversarial
+  filtering, one apply slice, validation/benchmarking, and durable recording.
+- Adds an explicit `learning` session mode with no broker authority and no
+  automatic strategy activation.
+- Inventories and preserves the dirty worktree, reads batch/evidence/research
+  telemetry, and distinguishes cold data acquisition from fast local research.
+- Validates machine-readable change plans, supports a deliberate no-op, refuses
+  external/broker actions and `strategy_config.toml` edits, requires proposals
+  to remain isolated, and caps the apply loop to one round.
+- Keeps generated run state under ignored `learning_runs/`. Tests cover prompt
+  order and safety boundaries, dirty-state preservation, bottleneck
+  classification, no-op behavior, strategy-change refusal, progress
+  requirements, and non-recursion.
+
+### 13. Cross-Date Contract Resolution Cache
+
+Status: implemented in `ibkr_historical.py` and `historical_universe.py` on
+2026-07-18.
+
+- Caches IBKR contract detail results by exact STK request identity with an
+  integrity hash, atomic writes, public metadata classification, and telemetry.
+- Resolved results expire after 30 days by default; error-200 unresolvable
+  results expire after one day; transport, permission, pacing, and timeout
+  failures are never cached.
+- Concurrent same-symbol probes single-flight, process memory avoids repeated
+  disk reads, and `--fresh-contracts` forces a current provider refresh.
+- The 100-day evidence showed contract lookup is secondary, not primary: 29.161
+  of 14,049.332 summed preflight request-seconds. The durable learning priority
+  is local corpus reuse, then request elimination, then new collection only for
+  missing coverage or confirmation.
+
 ## Completed 2026-07-16
 
 ### 11. Parallel Multi-Strategy Historical Research
@@ -249,34 +289,3 @@ Acceptance criteria:
 - Integrate the historical IBKR raw cache first, then authoritative calendars
   and time-valid catalyst evidence, with deterministic tests for hits, expiry,
   corruption, schema migration, and concurrent writers.
-
-### 8. Code Review, Cleanup, And Improve
-
-Status: planned. A manual 2026-07-16 edit-mode review exercised the intended
-inspect/apply/validate/history workflow, but the versioned review prompt and
-bounded automation below are not implemented.
-
-Create a repository-review mode driven by a versioned top-level prompt that
-turns recent diffs, tests, audits, TODO items, and progress findings into a
-repeatable inspect-propose-apply-validate loop.
-
-Acceptance criteria:
-
-- The top-level review prompt is public, versioned, testable, and subordinate to
-  `AGENTS.md`, tool requirements, privacy rules, and the active user request. It
-  cannot broaden broker or external-write authority.
-- The mode starts read-only, inventories the current diff and validation state,
-  and emits a scoped review plan before mutation. It never runs while exposure
-  or another safety-critical workflow needs attention.
-- Safe repository cleanup and test improvements may use normal implementation
-  authority. Production strategy changes remain proposals requiring Ryan's
-  explicit approval, a new strategy version, and the existing evidence gates.
-- End-of-run invocation is conditional on meaningful repository work and a clean
-  safety state; it is skipped for urgent live management, simple read-only
-  answers, generated-only updates, and explicit user opt-out.
-- Every applied improvement passes relevant tests/audits, updates the progress
-  history when it yields a reusable lesson, and is committed/pushed under the
-  normal publishing rules.
-- Tests cover prompt loading, instruction precedence, no-op runs, dirty-worktree
-  preservation, strategy-change refusal, progress contribution, and failure
-  recovery without an infinite self-edit loop.

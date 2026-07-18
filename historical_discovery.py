@@ -37,7 +37,17 @@ DEFAULT_CACHE_ROOT = PROJECT_ROOT / "historical_data" / "sec"
 DEFAULT_ENV_PATH = PROJECT_ROOT / ".env"
 SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers_exchange.json"
 SEC_SUBMISSIONS_ROOT = "https://data.sec.gov/submissions"
-MATERIAL_ITEMS = {"1.01", "1.02", "2.01", "2.02", "2.05", "2.06", "5.02", "7.01", "8.01"}
+MATERIAL_ITEMS = {
+    "1.01",
+    "1.02",
+    "2.01",
+    "2.02",
+    "2.05",
+    "2.06",
+    "5.02",
+    "7.01",
+    "8.01",
+}
 ITEM_PRIORITY = {
     "2.02": 0,
     "1.01": 1,
@@ -116,9 +126,7 @@ def extract_earnings_events(payload: Any) -> list[dict[str, Any]]:
     unique: dict[tuple[Any, ...], dict[str, Any]] = {}
     for event in events:
         report = event.get("report")
-        if not isinstance(report, Mapping) or not isinstance(
-            report.get("date"), str
-        ):
+        if not isinstance(report, Mapping) or not isinstance(report.get("date"), str):
             continue
         symbol = str(event.get("symbol") or "").strip().upper()
         if not symbol:
@@ -262,7 +270,9 @@ class SecClient:
         try:
             parsed = json.loads(self._get(url, path))
         except json.JSONDecodeError as exc:
-            raise HistoricalDiscoveryError(f"SEC returned invalid JSON for {url}") from exc
+            raise HistoricalDiscoveryError(
+                f"SEC returned invalid JSON for {url}"
+            ) from exc
         if not isinstance(parsed, Mapping):
             raise HistoricalDiscoveryError(f"SEC JSON must be an object: {url}")
         return parsed
@@ -293,6 +303,50 @@ def _master_url(day: str) -> str:
     )
 
 
+def _quarter_index_url(day: str) -> str:
+    parsed = date.fromisoformat(day)
+    return (
+        "https://www.sec.gov/Archives/edgar/daily-index/"
+        f"{parsed.year}/QTR{_quarter(parsed)}/index.json"
+    )
+
+
+def _load_master_index(client: SecClient, day: str) -> str:
+    parsed = date.fromisoformat(day)
+    expected_name = f"master.{parsed.strftime('%Y%m%d')}.idx"
+    path = client.config.cache_root / "master" / f"{day}.idx"
+    try:
+        return client.text(_master_url(day), path)
+    except HistoricalDiscoveryError as original:
+        quarter = _quarter(parsed)
+        listing = client.json(
+            _quarter_index_url(day),
+            client.config.cache_root
+            / "master"
+            / f"{parsed.year}-QTR{quarter}-index.json",
+        )
+        directory = listing.get("directory")
+        items = directory.get("item") if isinstance(directory, Mapping) else None
+        if not isinstance(items, list):
+            raise original
+        names = {
+            str(item.get("name"))
+            for item in items
+            if isinstance(item, Mapping) and item.get("name")
+        }
+        if expected_name in names:
+            raise original
+
+        # EDGAR has no daily master file on some market-open federal holidays.
+        # Cache the verified empty result so a resumed large batch does not
+        # repeatedly request a resource the official quarter index omits.
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(path.suffix + ".tmp")
+        temporary.write_bytes(b"")
+        temporary.replace(path)
+        return ""
+
+
 def parse_master_index(text: str) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     started = False
@@ -321,7 +375,10 @@ def _columnar_rows(value: Mapping[str, Any]) -> list[dict[str, Any]]:
     fields = {key: rows for key, rows in value.items() if isinstance(rows, list)}
     count = max((len(rows) for rows in fields.values()), default=0)
     return [
-        {key: rows[index] if index < len(rows) else None for key, rows in fields.items()}
+        {
+            key: rows[index] if index < len(rows) else None
+            for key, rows in fields.items()
+        }
         for index in range(count)
     ]
 
@@ -379,14 +436,14 @@ def _document_has_dilution(text: str, items: Sequence[str]) -> bool:
     return any(pattern in normalized for pattern in STRONG_DILUTION_PATTERNS)
 
 
-def _prior_trading_days(
-    calendar: Sequence[str], day: str, *, count: int
-) -> list[str]:
+def _prior_trading_days(calendar: Sequence[str], day: str, *, count: int) -> list[str]:
     ordered = sorted(calendar)
     try:
         index = ordered.index(day)
     except ValueError as exc:
-        raise HistoricalDiscoveryError(f"selected date is not in calendar: {day}") from exc
+        raise HistoricalDiscoveryError(
+            f"selected date is not in calendar: {day}"
+        ) from exc
     if index < count:
         raise HistoricalDiscoveryError(
             f"calendar lacks {count} prior sessions for {day}"
@@ -457,8 +514,7 @@ def _build_filing_record(
     cik = str(master["cik"]).lstrip("0")
     accession_path = accession.replace("-", "")
     source_url = (
-        f"https://www.sec.gov/Archives/edgar/data/{cik}/"
-        f"{accession_path}/{primary}"
+        f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession_path}/{primary}"
     )
     return {
         "symbol": ticker["ticker"],
@@ -483,7 +539,9 @@ def build_draft(
     buffer_limit: int,
 ) -> dict[str, Any]:
     selected = selection.get("selected_dates")
-    if not isinstance(selected, list) or not all(isinstance(day, str) for day in selected):
+    if not isinstance(selected, list) or not all(
+        isinstance(day, str) for day in selected
+    ):
         raise HistoricalDiscoveryError("selection needs selected_dates")
     if isinstance(buffer_limit, bool) or buffer_limit < 10:
         raise HistoricalDiscoveryError("buffer_limit must be at least 10")
@@ -500,10 +558,7 @@ def build_draft(
     ciks_by_ticker = _ciks_by_ticker(tickers_by_cik)
 
     relevant_symbols: set[str] = set()
-    source_days_by_target = {
-        day: set(prior[day]) | {day}
-        for day in selected
-    }
+    source_days_by_target = {day: set(prior[day]) | {day} for day in selected}
     relevant_days = set(source_days)
     for event in earnings_events:
         report = event.get("report")
@@ -518,16 +573,11 @@ def build_draft(
         ):
             relevant_symbols.add(str(event.get("symbol") or "").upper())
     relevant_ciks = {
-        cik
-        for symbol in relevant_symbols
-        for cik in ciks_by_ticker.get(symbol, set())
+        cik for symbol in relevant_symbols for cik in ciks_by_ticker.get(symbol, set())
     }
 
     def load_master(day: str) -> tuple[str, list[dict[str, str]]]:
-        text = client.text(
-            _master_url(day),
-            client.config.cache_root / "master" / f"{day}.idx",
-        )
+        text = _load_master_index(client, day)
         return day, parse_master_index(text)
 
     master_by_day: dict[str, list[dict[str, str]]] = {}
@@ -538,16 +588,11 @@ def build_draft(
         master_by_day[day] = [
             row
             for row in rows
-            if row["form"] == "8-K"
-            and row["cik"].lstrip("0") in relevant_ciks
+            if row["form"] == "8-K" and row["cik"].lstrip("0") in relevant_ciks
         ]
 
     ciks = sorted(
-        {
-            row["cik"].lstrip("0")
-            for rows in master_by_day.values()
-            for row in rows
-        }
+        {row["cik"].lstrip("0") for rows in master_by_day.values() for row in rows}
     )
 
     def load_submission(cik: str) -> tuple[str, Mapping[str, Any]]:
@@ -620,7 +665,9 @@ def build_draft(
             timing = "am" if filing["filed_on"] == day else "pm"
             event = events_by_key.get((symbol, filing["filed_on"], timing))
             surprise = _surprise(event) if event is not None else None
-            priority = min(ITEM_PRIORITY[item] for item in filing["items"] if item in ITEM_PRIORITY)
+            priority = min(
+                ITEM_PRIORITY[item] for item in filing["items"] if item in ITEM_PRIORITY
+            )
             row = dict(filing)
             row["earnings"] = dict(event) if event is not None else None
             row["surprise"] = surprise
@@ -639,9 +686,7 @@ def build_draft(
         )[: buffer_limit * 2]
 
     unique_documents = {
-        row["source_url"]: row
-        for rows in preliminary_by_day.values()
-        for row in rows
+        row["source_url"]: row for rows in preliminary_by_day.values() for row in rows
     }
 
     def load_document(item: tuple[str, Mapping[str, Any]]) -> tuple[str, bool]:

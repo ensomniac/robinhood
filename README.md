@@ -163,9 +163,25 @@ Start a new agentic workflow with the numbered mode picker:
 python3 session_mode.py
 ```
 
-The modes are live trading, current-day shadow trading, historical learning, and
-strategy review. Selection itself is non-mutating. Only live mode permits broker
-actions, and every normal safety gate still applies.
+The modes are live trading, current-day shadow trading, historical learning,
+strategy review, and the bounded edit/learning loop. Selection itself is
+non-mutating. Only live mode permits broker actions, and every normal safety
+gate still applies.
+
+Run the engineering learning loop against measured artifacts before collecting
+more data:
+
+```sh
+python3 session_mode.py --mode learning
+python3 learning_loop.py inspect
+python3 learning_loop.py review-plan learning_runs/plan.json
+```
+
+The versioned [LEARNING_LOOP.md](LEARNING_LOOP.md) prompt inventories existing
+changes, identifies ten working controls, proves the bottleneck, filters at most
+five improvements, applies one coherent slice, validates it, records the lesson,
+and stops. It cannot access the broker or activate production strategy changes.
+Local inventories and plans remain under ignored `learning_runs/`.
 
 The active workflow uses local decision surfaces around authoritative
 broker and market tool responses:
@@ -276,7 +292,12 @@ Each examined symbol/date is atomically cached under ignored
 resumes rather than restarting. Cache reuse requires the same strategy/rules
 qualification plus matching pre-session content hashes. Accepted opening and
 daily bars are reused by bundle collection without observing target-session
-prices. Bounded workers overlap provider latency but consume results in rank
+prices. Repeated contract proof is separately cached under ignored
+`historical_data/contracts/` with request identity and a content hash. Resolved
+metadata expires after 30 days by default, error-200 unresolvable results after
+one day, and provider-wide failures are never cached. Same-symbol probes
+single-flight across workers; `--fresh-contracts` forces a provider refresh.
+Bounded workers overlap provider latency but consume results in rank
 order; a provider-wide failure prevents the next batch from launching. In large
 batches, `--continue-on-exhausted` records a sparse date as blocked and proceeds
 without substituting a date or weakening the ten-candidate requirement.
@@ -377,11 +398,13 @@ Commit messages should describe what changed, for example:
 .
 ├── .env.example       # Key variable names only; the real .env is ignored
 ├── AGENTS.md          # Operating contract for Codex and the trading strategy
+├── LEARNING_LOOP.md   # Versioned bounded edit/learning prompt
 ├── email_sender.py    # Settings-aware notification CLI and server client
 ├── historical_learning.py # Point-in-time, no-broker replay engine
 ├── HISTORICAL_LEARNING.md # Replay data and operator contract
 ├── historical_research.py # Process-parallel research-only strategy matrix
 ├── historical_research_strategies.py # Versioned immutable-bar plugins
+├── learning_loop.py  # Read-only latency inventory and change-plan guard
 ├── HISTORICAL_RESEARCH.md # Research isolation and plugin contract
 ├── ibkr_historical.py # Optional read-only TWS historical-data adapter
 ├── IDENTIFIER_ENCRYPTION.md # Inline identifier encryption and recovery guide
