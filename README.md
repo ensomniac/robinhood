@@ -189,6 +189,20 @@ resumable state transitions and stops when Codex judgment or new evidence is
 required. It cannot access the broker or activate production strategy changes.
 Operational state remains under ignored `learning_runs/`.
 
+Research contracts must materialize every requested trading day, including
+missed, rejected, and no-signal days as explicit zero account returns. Evaluate
+account compounding and the complete registered search family with:
+
+```sh
+python3 learning_statistics.py learning_runs/<run-id>/statistics-input.json \
+  --output learning_runs/<run-id>/statistics-result.json
+```
+
+The report includes log growth, compounded return, account drawdown,
+stationary-block bootstrap uncertainty, Deflated Sharpe, PBO, Holm family
+decisions, and a power-derived sample target. It does not silently remove a
+signal when adverse cost assumptions turn its fill into a miss.
+
 The early Item 2.02 reversal research has a separate prospective evidence plane.
 It cannot reuse the inspected corpus as confirmation and it cannot activate a
 strategy:

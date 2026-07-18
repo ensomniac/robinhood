@@ -32,7 +32,7 @@ rewritten or deleted.
 ## Program State
 
 1. **Persistent controller and registries:** implemented.
-2. **Daily account simulator and selection-aware statistics:** queued.
+2. **Daily account simulator and selection-aware statistics:** implemented.
 3. **Point-in-time security master and scanner-faithful datasets:** queued.
 4. **Registered hypothesis and experiment lifecycle:** queued.
 5. **Three-axis champion/challenger evidence:** queued.
