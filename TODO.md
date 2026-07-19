@@ -29,7 +29,10 @@ binding, and three have no accession. The conservative combined ceiling is only
 eight positive pairs, below the required 20, so outcomes remain locked. The
 current handoff is to freeze and commit the exact captured transport-failure
 retry set before network access, then inspect it before issuer-chain recovery.
-A wait, pause, or insufficient sample is progress state, not completion.
+`catalyst_transport_recovery.py` now reconstructs exactly 13 failures, 13 joins,
+and six pairs with fixed pacing, resumable checkpoints, no substitution, and
+the 20-GiB reserve. Commit this implementation before freezing its manifest. A
+wait, pause, or insufficient sample is progress state, not completion.
 
 ## Completed 2026-07-19
 

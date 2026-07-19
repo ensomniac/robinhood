@@ -99,6 +99,33 @@ only eight against the required 20. The capacity gate therefore remains closed,
 no outcome contract is permitted, and the next ordered recovery step is the
 exact frozen retry of captured transport failures.
 
+## Captured Transport-Failure Retry
+
+`catalyst_transport_recovery.py` implements that next step. It reconstructs
+exactly the 13 original `source request transport failure` records, their 13
+pair/source joins, and six point-in-time pairs from the frozen capture,
+discovery, and identity artifacts. Every row is an issuer-host candidate. No
+other failure, URL, article, date, symbol, or source may enter the retry set.
+
+The collector retries the same exact URL at a fixed maximum rate of two request
+starts per second. It retains the original public-address validation, redirect
+revalidation, timeout, response-size limit, and user agent; only transport,
+HTTP 429, and HTTP 5xx failures are retryable. Every terminal source is
+checkpointed, the 20-GiB reserve is checked before requests and response writes,
+and neither provider nor secondary-source substitution is allowed.
+
+```sh
+python3 catalyst_transport_recovery.py freeze
+python3 catalyst_transport_recovery.py collect --manifest <manifest>
+python3 catalyst_transport_recovery.py inspect --manifest <manifest>
+```
+
+As with the SEC branch, the implementation must be committed before `freeze`,
+and the returned manifest must be committed before `collect`. Successful byte
+recovery does not prove issuer ownership, issuer binding, causal time, or event
+direction. Those decisions belong to a later frozen canonical issuer-page and
+document-chain contract.
+
 ## Claim Boundary
 
 Successful response recovery proves only that the exact SEC-operated filing
