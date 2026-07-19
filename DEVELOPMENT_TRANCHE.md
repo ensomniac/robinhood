@@ -124,3 +124,11 @@ binds its repository path and file hash into new market manifests. It likewise
 binds the public selection file, seed, dates, hash, and no-substitution flag.
 Legacy manifests remain readable, while every newly frozen contract gets the
 stronger lineage checks.
+
+Market manifest `e500cf2a...85a3643` now freezes 100 targets, all 243 required
+sessions, a 5,797-symbol point-in-time union, raw Alpaca SIP 15-minute regular
+bars and exact 09:30-09:34 minute bars, the calendar, selection, master, splits,
+unchanged v3 rules, canonical store, provider fidelity, and zero substitution.
+Its pre-freeze status independently reports zero target artifacts, requests,
+retries, derived rows, or canonical merges. Commit and push this manifest before
+running its `collect` command.
