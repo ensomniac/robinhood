@@ -31,9 +31,11 @@ current handoff is to freeze and commit the exact captured transport-failure
 retry set before network access, then inspect it before issuer-chain recovery.
 `catalyst_transport_recovery.py` now reconstructs exactly 13 failures, 13 joins,
 and six pairs with fixed pacing, resumable checkpoints, no substitution, and
-the 20-GiB reserve. Its exact manifest is frozen under
-`7837dd65...b46261d9`; commit and push it before collecting. A wait, pause, or
-insufficient sample is progress state, not completion.
+the 20-GiB reserve. Its exact manifest `7837dd65...b46261d9` is independently
+inspected `READY`: all 13 retries remained transport failures with zero response
+bytes. The current handoff is to freeze exact canonical issuer-page and
+document-chain recovery before new requests. A wait, pause, or insufficient
+sample is progress state, not completion.
 
 ## Completed 2026-07-19
 

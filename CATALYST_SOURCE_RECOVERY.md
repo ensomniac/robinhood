@@ -127,6 +127,12 @@ recovery does not prove issuer ownership, issuer binding, causal time, or event
 direction. Those decisions belong to a later frozen canonical issuer-page and
 document-chain contract.
 
+Collection and independent inspection are now `READY`: all 13 same-URL retries
+again ended in the exact transport-failure class, no HTTP response or response
+byte was received, and no substitution occurred. This rules out another direct
+retry as a useful next step. The campaign advances to canonical issuer-page and
+document-chain recovery while retaining these failures in the denominator.
+
 ## Claim Boundary
 
 Successful response recovery proves only that the exact SEC-operated filing
