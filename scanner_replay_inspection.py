@@ -1449,6 +1449,15 @@ def inspect_replay(
         split_attestation = _verify_pre_collection_split_attestation(
             split_attestation_path, split_path
         )
+    frozen_strategy_source = manifest["dataset_payload"]["universe_contract"].get(
+        "production_strategy_attestation_path"
+    )
+    if frozen_strategy_source is not None and (
+        PROJECT_ROOT / str(frozen_strategy_source)
+    ).resolve() != strategy_attestation_path.resolve():
+        raise ScannerInspectionError(
+            "inspector strategy attestation differs from the frozen manifest"
+        )
     strategy_attestation = _verify_pre_collection_strategy_attestation(
         strategy_attestation_path, rules
     )

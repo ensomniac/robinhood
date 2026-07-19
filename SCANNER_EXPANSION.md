@@ -106,6 +106,7 @@ python3 scanner_replay_alpaca.py freeze \
   --security-source historical_batches/scanner_expansion/security-master-source.json \
   --splits learning_runs/scanner_expansion/splits.json.gz \
   --split-source historical_batches/scanner_expansion/split-actions-source.json \
+  --strategy-source historical_batches/scanner_expansion/production-strategy-source.json \
   --reuse-manifest historical_batches/scanner_replay/manifests/dataset-production-scanner-replay-2026-07-19-v4-645f727fe0b596ee591a6ff32515b50883634b0e3294e83333ff6b83949b04b4.json \
   --output-root historical_batches/scanner_expansion/manifests
 ```

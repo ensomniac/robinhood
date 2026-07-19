@@ -187,6 +187,9 @@ exists yet.
 - Bound split history and its public source attestation into the frozen scanner
   contract, and generalized the independent inspector to rehash both fresh and
   inherited session artifacts under any frozen scanner dataset identity.
+- Published the hardened v3 configuration's exact file/canonical hashes and
+  immutable source commit; the expansion manifest and inspector now bind that
+  attestation before any target market row is collected.
 - Explicitly disclose preexisting source rows and keep the campaign out of
   independent-alpha claims. Direct catalyst and outcome contracts remain
   separate future freezes.

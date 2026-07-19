@@ -99,6 +99,12 @@ DEFAULT_SPLIT_SOURCE = (
     / "scanner_replay"
     / "split-actions-source.json"
 )
+DEFAULT_STRATEGY_SOURCE = (
+    PROJECT_ROOT
+    / "historical_batches"
+    / "scanner_expansion"
+    / "production-strategy-source.json"
+)
 CSV_FIELDS = (
     "ticker",
     "volume",
@@ -882,6 +888,7 @@ def freeze_contract(
     security_source_path: Path = DEFAULT_SECURITY_SOURCE,
     split_path: Path = DEFAULT_SPLITS,
     split_source_path: Path = DEFAULT_SPLIT_SOURCE,
+    strategy_source_path: Path = DEFAULT_STRATEGY_SOURCE,
     output_root: Path,
     index_root: Path,
     reuse_manifest_path: Path | None = None,
@@ -926,6 +933,19 @@ def freeze_contract(
         or str(split_range.get("execution_date_lte") or "") < max(requested)
     ):
         raise ScannerReplayError("split-actions source attestation does not cover contract")
+    strategy_source = _read_object(strategy_source_path)
+    strategy_artifact = strategy_source.get("artifact")
+    strategy_config_path = PROJECT_ROOT / "strategy_config.toml"
+    if (
+        strategy_source.get("schema_version") != 1
+        or not isinstance(strategy_artifact, Mapping)
+        or strategy_artifact.get("path") != "strategy_config.toml"
+        or strategy_artifact.get("file_sha256")
+        != _sha256_file(strategy_config_path)
+        or strategy_artifact.get("strategy_version")
+        != rules.get("strategy_version")
+    ):
+        raise ScannerReplayError("production-strategy source attestation differs")
     records = load_security_master(security_path)
     symbols = _target_symbols(records, requested)
     reusable_source: dict[str, Any] | None = None
@@ -1006,6 +1026,14 @@ def freeze_contract(
                 "split_actions_attestation_path": _repo_path(split_source_path),
                 "split_actions_attestation_sha256": _sha256_file(
                     split_source_path
+                ),
+                "production_strategy_sha256": _sha256_file(strategy_config_path),
+                "production_strategy_path": "strategy_config.toml",
+                "production_strategy_attestation_path": _repo_path(
+                    strategy_source_path
+                ),
+                "production_strategy_attestation_sha256": _sha256_file(
+                    strategy_source_path
                 ),
             },
         },
@@ -1128,6 +1156,16 @@ def verify_contract_inputs(
         != _sha256_file(split_source_path)
     ):
         raise ScannerReplayError("split actions no longer match the contract")
+    strategy_path = PROJECT_ROOT / str(universe["production_strategy_path"])
+    strategy_source_path = PROJECT_ROOT / str(
+        universe["production_strategy_attestation_path"]
+    )
+    if (
+        universe["production_strategy_sha256"] != _sha256_file(strategy_path)
+        or universe["production_strategy_attestation_sha256"]
+        != _sha256_file(strategy_source_path)
+    ):
+        raise ScannerReplayError("production strategy no longer matches the contract")
     collection = manifest["collection_contract"]
     if collection.get("scanner_engine_sha256") != _sha256_file(
         PROJECT_ROOT / "scanner_replay.py"
@@ -1377,6 +1415,9 @@ def _build_parser() -> argparse.ArgumentParser:
     freeze.add_argument("--security-source", type=Path, default=DEFAULT_SECURITY_SOURCE)
     freeze.add_argument("--splits", type=Path, default=DEFAULT_SPLITS)
     freeze.add_argument("--split-source", type=Path, default=DEFAULT_SPLIT_SOURCE)
+    freeze.add_argument(
+        "--strategy-source", type=Path, default=DEFAULT_STRATEGY_SOURCE
+    )
     freeze.add_argument("--output-root", type=Path, default=DEFAULT_MANIFEST_ROOT)
     freeze.add_argument("--reuse-manifest", type=Path)
     splits = subparsers.add_parser("collect-splits")
@@ -1412,6 +1453,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 security_source_path=args.security_source,
                 split_path=args.splits,
                 split_source_path=args.split_source,
+                strategy_source_path=args.strategy_source,
                 output_root=args.output_root,
                 index_root=index_root(store, args.dataset_id),
                 reuse_manifest_path=args.reuse_manifest,
