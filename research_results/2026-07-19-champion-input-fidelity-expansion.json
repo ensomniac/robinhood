@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "Primary-source direction and halt fidelity only; not alpha, confirmation, maturity, promotion, or a strategy variant.",
+  "claim_scope": "DEVELOPMENT_ONLY",
+  "counts": {
+    "conflict_pairs": 48,
+    "filing_negative_or_financing_conflict": 48,
+    "filing_stale_before_prior_close": 361,
+    "filing_unresolved_primary_source": 87,
+    "filing_verified_material_direction_unresolved": 186,
+    "filing_verified_positive_primary": 14,
+    "filings_classified": 696,
+    "halt_dates_collected": 100,
+    "official_halt_records": 5649,
+    "pair_no_recent_primary": 1674,
+    "pair_reject_conflict": 48,
+    "pair_unresolved_recent_primary": 68,
+    "pair_verified_material_direction_unresolved": 183,
+    "pair_verified_positive_primary": 14,
+    "selected_pairs": 1987,
+    "trigger_halt_risk_pairs": 0,
+    "trigger_halt_windows_evaluated": 1460,
+    "verified_material_catalysts": 197,
+    "verified_positive_directions": 14
+  },
+  "dataset_id": "dataset-champion-input-fidelity-2026-07-19-expansion-v1",
+  "findings": {
+    "broker_specific_historical_tradability_available": false,
+    "filing_presence_never_implies_positive_direction": true,
+    "official_halt_window_join_complete": true,
+    "prior_close_recency_enforced": true,
+    "production_rule_change_earned": false
+  },
+  "inspected": true,
+  "manifest_sha256": "043f21e4290bb6019413382e314c13aa284550a03160f7cc5ffed32149a7b46a",
+  "private_result_sha256": "215b821f7d0462261cde9c4eb65fd69306c84c6108441d5d1430c354d1310f85",
+  "private_selection_content_sha256": "98bb20e5deb40cc7d1c59f8b050aa25b03b1de20c70094dd4d0f58a047fc78a2",
+  "remaining_fidelity_gaps": [
+    "non-SEC issuer events and analyst actions need direct-source corroboration",
+    "broker-specific historical tradability requires prospective qualification",
+    "resistance, stop invalidation/noise, and exact market alignment remain unresolved"
+  ],
+  "schema_version": 1,
+  "source_fidelity_dataset_id": "dataset-selected-candidate-fidelity-2026-07-19-expansion-v1",
+  "source_trigger_dataset_id": "dataset-clean-trigger-fidelity-2026-07-19-expansion-v1",
+  "status": "READY",
+  "symbols_ciks_filings_and_raw_rows_public": false,
+  "target_outcomes_observed_or_derived": false
+}

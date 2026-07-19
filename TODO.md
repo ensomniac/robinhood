@@ -264,7 +264,14 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Froze catalyst direction plus official halt-state manifest
   `043f21e4...a7b46a`, binding all 1,987 pair recency cutoffs and 1,460 clean
   trigger windows to the existing conservative classifier and Nasdaq source.
-  Next: collect and inspect; non-SEC catalysts remain an explicit gap.
+- Classified all 696 candidate filings and collected all 100 official halt
+  dates. Only 14 of 1,987 pairs have verified-positive SEC primary direction;
+  48 are conflict rejects, 183 have material-but-unresolved direction, 68 have
+  another unresolved recent primary, and 1,674 have no qualifying recent SEC
+  primary. None of 1,460 trigger windows overlaps an active official halt.
+- Next: freeze and apply unchanged-v3 non-return gates to the 14 SEC-positive
+  pairs. Separately design direct-source acquisition for issuer releases and
+  attributed analyst actions; do not loosen the catalyst gate or read returns.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

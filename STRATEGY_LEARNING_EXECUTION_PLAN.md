@@ -362,13 +362,19 @@ the executable trigger without earning a rule revision.
 `043f21e4...a7b46a`, combining all 1,987 SEC candidate records with the 1,460
 clean-cross windows for conservative primary-direction classification and
 official Nasdaq halt state, still before any return field.
+That stage is independently `READY`: only 14 pairs have verified-positive SEC
+primary direction, 48 are conflict rejects, and 1,925 are unresolved or lack a
+recent qualifying SEC primary. Catalyst truth, not scanner or raw-trigger yield,
+is therefore the dominant measured deployment-capacity bottleneck. This does
+not justify weakening the catalyst gate; non-SEC direct sources remain missing.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
 
 1. Freeze the exact selected pairs and staged acquisition contracts before
    trigger or return fields are read. The selection and base join are frozen;
-   direct primary-catalyst and condition-aware trigger contracts remain next.
+   direct primary-catalyst and condition-aware trigger contracts are complete
+   for SEC evidence; non-SEC direct-source coverage remains unresolved.
 2. Apply the existing clean-trigger, condition-aware prefix VWAP, stop/noise,
    resistance, benchmark, spread, chase, halt, and conservative-capacity
    contracts unchanged. Missing inputs block and must not abort unrelated rows.
