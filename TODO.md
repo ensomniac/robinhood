@@ -59,6 +59,11 @@ eligible 2025 sessions remain and the deterministic 100-date tranche requires
 243 target/lookback sessions. Commit and push this implementation before
 freezing the selection, then commit the frozen manifest before any provider
 access. See `DEVELOPMENT_TRANCHE.md`.
+The implementation is pushed and manifest `6bc3d685...ad4f82` is now
+independently inspected `FROZEN_READY`: 100 dates, 227 exclusions, 185 eligible
+pool dates, 243 required target/lookback sessions, zero overlap, and no provider
+or outcome access. The current handoff is to commit and push this manifest and
+selection before collecting dated Massive reference snapshots.
 
 ## Completed 2026-07-19
 

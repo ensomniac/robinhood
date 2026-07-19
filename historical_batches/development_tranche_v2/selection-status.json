@@ -1,0 +1,23 @@
+{
+  "capacity_projection": {
+    "capacity_ready": true,
+    "projected_private_bytes": 963544240,
+    "projected_provider_request_upper_bound": 34118,
+    "reserve_bytes": 21474836480
+  },
+  "date_substitution_allowed": false,
+  "dataset_id": "dataset-development-tranche-2026-07-19-v2",
+  "disjoint": true,
+  "eligible_dates": 185,
+  "excluded_dates": 227,
+  "inspected": true,
+  "manifest_sha256": "6bc3d6852e2758fd0067e15b8a91d996c49071e18b0dd16e4edb090fe0ad4f82",
+  "next_action": "Commit this selection manifest before dated reference collection, then build and freeze the point-in-time security master and market manifest.",
+  "provider_accessed": false,
+  "required_sessions": 243,
+  "schema_version": 1,
+  "selected_dates": 100,
+  "selection_rebuilt": true,
+  "status": "FROZEN_READY",
+  "target_outcomes_observed_or_derived": false
+}
