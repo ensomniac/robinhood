@@ -1,0 +1,42 @@
+{
+  "capture_status_counts": {
+    "CAPTURE_ERROR": 13,
+    "RESPONSE_CAPTURED": 121
+  },
+  "causal_availability_verified": false,
+  "claim_boundary": "Bounded response capture on frozen source-routing leads; not proof of source identity, causality, event direction, alpha, or a strategy change.",
+  "claim_scope": "DEVELOPMENT_ONLY",
+  "content_type_counts": {
+    "application/pdf": 13,
+    "application/xml": 1,
+    "text/html": 107
+  },
+  "dataset_id": "dataset-catalyst-primary-source-capture-2026-07-19-expansion-v1",
+  "findings": {
+    "causal_availability_verified": false,
+    "issuer_binding_verified": false,
+    "primary_catalyst_verified": false,
+    "production_rule_change_earned": false,
+    "response_hashes_verified": true,
+    "source_ownership_verified": false,
+    "terminal_capture_disposition_complete": true
+  },
+  "http_status_counts": {
+    "200": 84,
+    "403": 35,
+    "404": 2
+  },
+  "inspected": true,
+  "manifest_sha256": "409a807f1cae100ced8b9018aeb99612a2efc9d5f496e5981c26654762b41ef4",
+  "next_required_stage": "parse captured sources under a frozen contract and verify ownership, issuer binding, historical publication time, direction, and conflicts",
+  "primary_catalyst_verified": false,
+  "private_index_sha256": "09b23f818f11f39e7806347ff31a00995d6d0b53cdc7c1138ae187d580424eaa",
+  "response_bytes": 23793420,
+  "schema_version": 1,
+  "selected_urls": 134,
+  "source_ownership_verified": false,
+  "status": "READY",
+  "symbols_articles_urls_and_responses_public": false,
+  "target_outcomes_observed_or_derived": false,
+  "terminal_urls": 134
+}

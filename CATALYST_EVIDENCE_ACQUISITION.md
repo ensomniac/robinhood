@@ -116,6 +116,10 @@ The exact 134 unique primary-routing URLs are frozen for bounded response
 capture as manifest `409a807f...b41ef4` in
 `CATALYST_PRIMARY_SOURCE_CAPTURE.md`.
 
+Capture is complete: 121 responses totaling 23,793,420 bytes passed hash
+inspection and 13 targets retained terminal transport errors. Parsing and
+source verification remain separately frozen work.
+
 ### Stage D - Classify and independently inspect
 
 - Freeze classifier rules before classification. Positive phrases never

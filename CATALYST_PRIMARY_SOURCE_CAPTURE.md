@@ -2,7 +2,7 @@
 
 Dataset: `dataset-catalyst-primary-source-capture-2026-07-19-expansion-v1`
 
-Status: frozen before network collection
+Status: inspected `READY` for bounded response capture only
 
 Manifest: `409a807f1cae100ced8b9018aeb99612a2efc9d5f496e5981c26654762b41ef4`
 
@@ -16,6 +16,13 @@ stay under `LOCAL_HISTORICAL_DATA_ROOT`. Public artifacts contain only counts
 and hashes. A successful response does not verify source ownership, issuer
 binding, historical availability by 09:35 ET, event direction, conflicts, or a
 primary catalyst. Outcomes and production changes remain inaccessible.
+
+All 134 URLs reached a terminal disposition. The collector stored and verified
+121 hashed responses totaling 23,793,420 bytes: 84 HTTP 200, 35 HTTP 403, and
+two HTTP 404 responses, comprising 107 HTML, 13 PDF, and one XML body. Thirteen
+targets ended as bounded transport errors. A non-200 response is still a hashed
+capture observation; a 200 response still is not proof of ownership, causality,
+or a catalyst.
 
 ```sh
 python3 catalyst_primary_source_capture.py freeze

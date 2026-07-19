@@ -398,7 +398,9 @@ corroboration-routing leads for 227, while rejecting 42,836 article-level
 platform links before network acquisition.
 `CATALYST_PRIMARY_SOURCE_CAPTURE.md` freezes the exact 134 unique
 primary-routing URLs as manifest `409a807f...b41ef4` before bounded network
-capture; capture success alone cannot satisfy the catalyst gate.
+capture. All targets now have terminal dispositions: 121 hashed responses and
+13 bounded transport errors. Capture success alone cannot satisfy the catalyst
+gate; source parsing, ownership, issuer binding, and causal timestamps remain.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
