@@ -139,6 +139,12 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
         != 3
     ):
         raise StrategyInputError("execution.quote_snapshot_count must remain exactly 3")
+    for field in (
+        "maximum_quote_age_seconds",
+        "entry_timeout_seconds",
+        "monitoring_heartbeat_seconds",
+    ):
+        _number(execution.get(field), f"execution.{field}", positive=True)
     a_plus_spread = _number(
         execution.get("maximum_a_plus_median_spread_fraction"),
         "execution.maximum_a_plus_median_spread_fraction",
@@ -190,6 +196,11 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
         )
     ):
         raise StrategyInputError("risk fractions or reward/risk limit are invalid")
+    if not 0 < _number(
+        risk.get("allocation_target_floor_fraction"),
+        "risk.allocation_target_floor_fraction",
+    ) <= 1:
+        raise StrategyInputError("risk allocation target floor must be in (0, 1]")
     if _integer(
         circuit_breakers.get("maximum_consecutive_losses"),
         "circuit_breakers.maximum_consecutive_losses",
@@ -211,6 +222,14 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
         "minimum_opening_relative_volume",
     ):
         _number(universe.get(field), f"universe.{field}", positive=True)
+    if (
+        _integer(
+            universe.get("opening_relative_volume_lookback"),
+            "universe.opening_relative_volume_lookback",
+        )
+        != 14
+    ):
+        raise StrategyInputError("opening relative-volume lookback must remain 14")
     maturity_order = ("UNVALIDATED", "PROVISIONAL", "VALIDATED")
     risk_fractions: list[float] = []
     allocation_caps: list[float] = []
@@ -218,6 +237,8 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
         values = maturities.get(name)
         if not isinstance(values, Mapping):
             raise StrategyInputError(f"maturity.{name} is missing")
+        if not isinstance(values.get("live_allowed"), bool):
+            raise StrategyInputError(f"maturity.{name}.live_allowed must be boolean")
         risk_fractions.append(
             _number(values.get("risk_fraction"), f"maturity.{name}.risk_fraction")
         )
@@ -252,7 +273,10 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
 
 def load_config(path: Path = DEFAULT_CONFIG_PATH) -> StrategyConfig:
     contents = path.read_bytes()
-    raw = tomllib.loads(contents.decode("utf-8"))
+    try:
+        raw = tomllib.loads(contents.decode("utf-8"))
+    except (UnicodeDecodeError, tomllib.TOMLDecodeError) as exc:
+        raise StrategyInputError("strategy config is not valid UTF-8 TOML") from exc
     _validate_config(raw)
     canonical = json.dumps(raw, sort_keys=True, separators=(",", ":")).encode()
     return StrategyConfig(raw=raw, rules_hash=hashlib.sha256(canonical).hexdigest())
@@ -386,9 +410,12 @@ def _parse_et(value: Any, name: str) -> time:
     if not isinstance(value, str):
         raise StrategyInputError(f"{name} must be HH:MM:SS")
     try:
-        return time.fromisoformat(value)
+        parsed = time.fromisoformat(value)
     except ValueError as exc:
         raise StrategyInputError(f"{name} must be HH:MM:SS") from exc
+    if parsed.tzinfo is not None:
+        raise StrategyInputError(f"{name} must be an unqualified ET wall time")
+    return parsed
 
 
 def _score_opening_rvol(rvol: float, rank: int) -> int:

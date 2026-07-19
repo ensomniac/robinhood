@@ -303,6 +303,13 @@ class ConfigValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(StrategyInputError, "entry_start"):
             load_config(path)
 
+    def test_rejects_malformed_toml_without_traceback_contract(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "strategy.toml"
+            path.write_text("[strategy\n", encoding="utf-8")
+            with self.assertRaisesRegex(StrategyInputError, "valid UTF-8 TOML"):
+                load_config(path)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -207,8 +207,10 @@ version.
   `qualified`, and it is rejected while `UNVALIDATED` because pilots require A+.
 - Added configuration invariants for strategy identity/schema, ordered session
   times, three-snapshot semantics, ordered spread limits, execution fractions,
-  risk bounds, universe minima, monotone maturity risk/allocation caps, score
-  ranges, and promotion sample ordering.
+  timeouts/heartbeat, risk bounds, universe minima and exact 14-session opening
+  lookback, monotone maturity risk/allocation caps, score ranges, and promotion
+  sample ordering. Malformed TOML now returns the engine's validation error
+  contract instead of escaping as an unhandled parser exception.
 - Added direct regression tests for the previously possible false A+
   classification and malformed configuration relationships.
 - Promoted a planned stop at or above the observed bid from a warning to the
