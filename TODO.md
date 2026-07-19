@@ -272,6 +272,9 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Next: freeze and apply unchanged-v3 non-return gates to the 14 SEC-positive
   pairs. Separately design direct-source acquisition for issuer releases and
   attributed analyst actions; do not loosen the catalyst gate or read returns.
+- Froze that exact 14-pair evaluation as manifest `3144c677...746da`, binding
+  unchanged-v3 rules, source hashes, both readiness implementations, and an
+  outcome-blind boundary. Next: build and independently inspect gate attrition.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

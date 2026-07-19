@@ -367,6 +367,10 @@ primary direction, 48 are conflict rejects, and 1,925 are unresolved or lack a
 recent qualifying SEC primary. Catalyst truth, not scanner or raw-trigger yield,
 is therefore the dominant measured deployment-capacity bottleneck. This does
 not justify weakening the catalyst gate; non-SEC direct sources remain missing.
+`CHAMPION_INPUT_READINESS_EXPANSION.md` freezes manifest
+`3144c677...746da` before evaluating those 14 SEC-positive pairs. It hash-binds
+the unchanged v3 rules and both independent non-return gate implementations;
+target returns remain inaccessible.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
