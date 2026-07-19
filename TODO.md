@@ -226,6 +226,13 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Retargeted the research lock to the selected-pair evaluation. Next: implement
   and independently inspect the manifest-aware catalyst/trigger/outcome join,
   publishing unchanged-v3 gate attrition before returns.
+- Froze base-join manifest `15d8baef...e2f6b` before network collection. The
+  new adapter hash-binds and reuses the completed 389-pair collector without
+  modifying or copying it; a pilot, 10 GiB reserve, exact 1,987-pair identity,
+  and aggregate-only public outputs are mandatory.
+- Next: pilot and collect one-minute bars, secondary news discovery, raw trigger
+  tapes, and trigger-time NBBO. Then freeze primary-catalyst and clean-condition
+  fidelity before any unchanged-v3 return evaluation.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

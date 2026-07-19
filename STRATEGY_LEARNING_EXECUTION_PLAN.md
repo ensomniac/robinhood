@@ -337,12 +337,18 @@ Step 1 below is now complete: `SCANNER_SELECTED_PAIRS.md` and manifest
 `369efda1...22c140b` freeze those exact 1,987 private pairs before any richer
 field or target outcome is read. The research lock now requires independently
 inspected unchanged-v3 evaluation of that contract before strategy invention.
+The base acquisition contract in `SCANNER_EXPANSION_JOIN.md` is also frozen as
+manifest `15d8baef...e2f6b`. It reuses the byte-identical, hash-bound 389-pair
+collector through a small dataset adapter instead of duplicating or modifying
+completed evidence code. Collection still precedes catalyst verification,
+condition-aware trigger inspection, gate attrition, and every return field.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
 
-1. Freeze the exact selected pairs and direct primary-catalyst acquisition
-   contract before trigger or return fields are read.
+1. Freeze the exact selected pairs and staged acquisition contracts before
+   trigger or return fields are read. The selection and base join are frozen;
+   direct primary-catalyst and condition-aware trigger contracts remain next.
 2. Apply the existing clean-trigger, condition-aware prefix VWAP, stop/noise,
    resistance, benchmark, spread, chase, halt, and conservative-capacity
    contracts unchanged. Missing inputs block.
