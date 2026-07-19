@@ -345,10 +345,10 @@ passes from 177 to 155. The next inspected layer classified the 100 SEC complete
 submissions with exact prior-close recency: only 12 of 389 pairs have a verified
 material recent primary catalyst, only one has verified positive direction, and
 six are conflict rejects. It also joined all 325 clean-trigger windows to 966
-official Nasdaq historical halt rows with no overlaps. This closes historical
-halt state, not broker-specific tradability or the remaining resistance,
-structural-stop, benchmark-strength, and conservative-liquidity inputs. V3
-remains unchanged. An outcome-blind readiness join subsequently found zero
+official Nasdaq historical halt rows with no overlaps. This closed historical
+halt state, but did not yet close broker-specific tradability, resistance,
+structural-stop, benchmark-strength, or conservative-liquidity inputs. V3
+remained unchanged. An outcome-blind readiness join subsequently found zero
 resolved hard-gate survivors: the only verified positive-catalyst pair failed
 spread and chase. It also corrected the engine-compatible chase count to 101
 and found zero pairs passing every measured non-catalyst proxy. Returns remain
@@ -363,6 +363,13 @@ condition-aware raw-trade prefix rather than a completed-bar approximation. See
 [CHAMPION_INPUT_FIDELITY.md](CHAMPION_INPUT_FIDELITY.md) and
 [CHAMPION_INPUT_READINESS.md](CHAMPION_INPUT_READINESS.md), and
 [SIP_BAR_AGGREGATION.md](SIP_BAR_AGGREGATION.md).
+The next frozen input layer in [PREENTRY_STRUCTURE.md](PREENTRY_STRUCTURE.md)
+defines point-in-time stop noise and split-aware resistance without reading
+outcomes. It independently reconstructed all 325 terminal trigger records; 153
+of 255 derivable stops fit the unchanged 0.8% cap and 89 pass both unchanged
+stop and resistance geometry. Seventy records remain explicitly unresolved.
+This closes an input-definition gap, not alpha validation, and v3 remains
+unchanged.
 
 ```sh
 python3 historical_research.py run \

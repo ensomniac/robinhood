@@ -82,8 +82,23 @@ class AlpacaConfigTests(unittest.TestCase):
         self.assertEqual(config.base_url, "https://data.alpaca.markets")
         self.assertEqual(config.feed, "sip")
         self.assertEqual(config.adjustment, "raw")
+        self.assertEqual(config.minimum_interval_seconds, 0.35)
         self.assertNotIn("key-value", str(config.public_dict()))
         self.assertNotIn("secret-value", str(config.public_dict()))
+
+    def test_configurable_request_pacing_is_public_and_nonnegative(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / ".env"
+            path.write_text(
+                "ALPACA_KEY=key-value\n"
+                "ALPACA_SECRET=secret-value\n"
+                "ALPACA_MINIMUM_INTERVAL_SECONDS=0.5\n",
+                encoding="utf-8",
+            )
+            config = AlpacaConfig.optional_from_env(path)
+
+        self.assertEqual(config.minimum_interval_seconds, 0.5)
+        self.assertEqual(config.public_dict()["minimum_interval_seconds"], 0.5)
 
     def test_partial_credentials_are_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -277,11 +292,16 @@ class AlpacaNormalizationTests(unittest.TestCase):
         session = FakeSession(
             [
                 FakeResponse({"bars": [raw], "next_page_token": "next"}),
-                FakeResponse({"bars": [{**raw, "t": (start + timedelta(minutes=1)).isoformat()}]}),
+                FakeResponse(
+                    {"bars": [{**raw, "t": (start + timedelta(minutes=1)).isoformat()}]}
+                ),
             ]
         )
         client = AlpacaHistoricalClient(
-            AlpacaConfig(api_key="key", api_secret="secret"), session=session
+            AlpacaConfig(
+                api_key="key", api_secret="secret", minimum_interval_seconds=0
+            ),
+            session=session,
         )
 
         bars = client.fetch_bars("AAPL", start, start + timedelta(minutes=2))
@@ -293,6 +313,61 @@ class AlpacaNormalizationTests(unittest.TestCase):
         self.assertEqual(session.calls[1][1]["page_token"], "next")
         self.assertEqual(session.calls[0][3]["APCA-API-KEY-ID"], "key")
         self.assertEqual(session.calls[0][3]["APCA-API-SECRET-KEY"], "secret")
+
+    def test_pagination_respects_configured_minimum_request_interval(self):
+        start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
+        raw = {
+            "t": start.isoformat(),
+            "o": 10,
+            "h": 10.1,
+            "l": 9.9,
+            "c": 10.05,
+            "v": 100,
+            "n": 3,
+            "vw": 10,
+        }
+        session = FakeSession(
+            [
+                FakeResponse({"bars": [raw], "next_page_token": "next"}),
+                FakeResponse({"bars": []}),
+            ]
+        )
+        clock = [10.0]
+        sleeps = []
+
+        def sleeper(seconds):
+            sleeps.append(seconds)
+            clock[0] += seconds
+
+        client = AlpacaHistoricalClient(
+            AlpacaConfig(
+                api_key="key", api_secret="secret", minimum_interval_seconds=0.5
+            ),
+            session=session,
+            sleeper=sleeper,
+            monotonic=lambda: clock[0],
+        )
+
+        client.fetch_bars("AAPL", start, start + timedelta(minutes=2), bar_size="1 min")
+
+        self.assertEqual(sleeps, [0.5])
+
+    def test_fifteen_minute_bars_use_the_native_alpaca_timeframe(self):
+        start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
+        session = FakeSession([FakeResponse({"bars": []})])
+        client = AlpacaHistoricalClient(
+            AlpacaConfig(api_key="key", api_secret="secret"), session=session
+        )
+
+        bars = client.fetch_bars(
+            "AAPL",
+            start,
+            start + timedelta(minutes=15),
+            bar_size="15 mins",
+        )
+
+        self.assertEqual(bars, [])
+        self.assertEqual(session.calls[0][1]["timeframe"], "15Min")
 
     def test_quotes_preserve_exchange_condition_and_tape_context(self):
         start = datetime(2026, 3, 3, 9, 35, tzinfo=EASTERN)

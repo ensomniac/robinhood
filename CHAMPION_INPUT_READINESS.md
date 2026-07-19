@@ -135,20 +135,21 @@ Do not expose returns for this corpus and do not change v3. A return analysis
 would be dominated by knowingly incomplete catalyst coverage and unresolved
 production inputs; it could only encourage post-hoc gate relaxation.
 
-The current rule stack has a genuine deployability problem: the 0.8% stop cap
-and 2.2% resistance-room requirement appear jointly difficult for the observed
-opening-range geometry. But the diagnostic levels are not yet sufficiently
-faithful to say which production rule is wrong. The next evidence must separate:
+At this layer, the current rule stack appeared to have a genuine deployability
+problem: the 0.8% stop cap and 2.2% resistance-room requirement were jointly
+difficult for the diagnostic opening-range geometry. The subsequent frozen
+contract in `PREENTRY_STRUCTURE.md` separated:
 
 1. a reproducible real-time structural invalidation/noise definition;
 2. a reproducible resistance definition available before entry;
 3. a larger, previously uninspected scanner sample with direct catalyst sources;
 4. prospective broker tradability and shadow execution calibration.
 
-Only after those contracts are frozen should the system test whether the
-unchanged v3 rules select any trades. If they still produce near-zero capacity,
-one preregistered rule revision may be tested on new data. It must not be tuned
-against these 20 development dates.
+That contract is now independently inspected and shows 89 joint geometry passes
+without changing either threshold. The system must next test unchanged v3 on at
+least 100 previously uninspected dynamic scanner dates. If it still produces
+near-zero capacity or poor net expectancy, one preregistered revision may be
+tested on new data. It must not be tuned against these 20 development dates.
 
 ## Runbook
 

@@ -136,10 +136,16 @@ def _timestamp_et(row: Mapping[str, Any], day: str | None = None) -> str:
             scale = 1_000_000.0
         elif absolute > 1e11:
             scale = 1_000.0
-        return datetime.fromtimestamp(float(raw) / scale, UTC).astimezone(EASTERN).isoformat()
+        return (
+            datetime.fromtimestamp(float(raw) / scale, UTC)
+            .astimezone(EASTERN)
+            .isoformat()
+        )
     if day is not None and isinstance(row.get("date_et"), str):
         parsed_day = normalize_date(str(row["date_et"]))
-        return datetime.combine(date.fromisoformat(parsed_day), time(0), tzinfo=EASTERN).isoformat()
+        return datetime.combine(
+            date.fromisoformat(parsed_day), time(0), tzinfo=EASTERN
+        ).isoformat()
     raise HistoricalStoreError("row is missing a usable timestamp")
 
 
@@ -359,7 +365,8 @@ class HistoricalStoreConfig:
         resolved_root = root.resolve()
         resolved_project = PROJECT_ROOT.resolve()
         if require_outside_repo and (
-            resolved_root == resolved_project or resolved_project in resolved_root.parents
+            resolved_root == resolved_project
+            or resolved_project in resolved_root.parents
         ):
             raise HistoricalStoreError(
                 "LOCAL_HISTORICAL_DATA_ROOT must be outside the public repository"
@@ -385,13 +392,16 @@ def _new_document(symbol: str, day: str) -> dict[str, Any]:
 def _gzip_json_bytes(value: Any) -> bytes:
     import io
 
-    raw = json.dumps(
-        value,
-        indent=2,
-        sort_keys=True,
-        ensure_ascii=True,
-        allow_nan=False,
-    ).encode("utf-8") + b"\n"
+    raw = (
+        json.dumps(
+            value,
+            indent=2,
+            sort_keys=True,
+            ensure_ascii=True,
+            allow_nan=False,
+        ).encode("utf-8")
+        + b"\n"
+    )
     buffer = io.BytesIO()
     with gzip.GzipFile(fileobj=buffer, mode="wb", compresslevel=6, mtime=0) as stream:
         stream.write(raw)
@@ -403,7 +413,9 @@ def _load_gzip_json(path: Path) -> Any:
         with gzip.open(path, "rt", encoding="utf-8") as stream:
             return json.load(stream)
     except (OSError, json.JSONDecodeError) as exc:
-        raise HistoricalStoreError(f"cannot read canonical history {path}: {exc}") from exc
+        raise HistoricalStoreError(
+            f"cannot read canonical history {path}: {exc}"
+        ) from exc
 
 
 def _provenance_sample(value: Mapping[str, Any] | None) -> dict[str, Any] | None:
@@ -495,9 +507,7 @@ def build_dataset(
         "row_count": len(normalized_rows),
         **(dict(quality) if quality is not None else {}),
     }
-    normalized_limitations = sorted(
-        {str(item) for item in limitations if str(item)}
-    )
+    normalized_limitations = sorted({str(item) for item in limitations if str(item)})
     identity = {
         "kind": normalized_kind,
         "provider": provider_id(provider),
@@ -573,7 +583,9 @@ class HistoricalDayStore:
             try:
                 current = json.loads(path.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError) as exc:
-                raise HistoricalStoreError(f"invalid historical store metadata: {exc}") from exc
+                raise HistoricalStoreError(
+                    f"invalid historical store metadata: {exc}"
+                ) from exc
             if current != expected:
                 raise HistoricalStoreError("historical store metadata is incompatible")
             return
@@ -639,11 +651,17 @@ class HistoricalDayStore:
                 raise HistoricalStoreError(f"{label} symbol does not match its path")
         for field in ("datasets", "contexts"):
             rows = value.get(field)
-            if not isinstance(rows, list) or any(not isinstance(row, Mapping) for row in rows):
+            if not isinstance(rows, list) or any(
+                not isinstance(row, Mapping) for row in rows
+            ):
                 raise HistoricalStoreError(f"{label}.{field} must be an object array")
             identifiers = [str(row.get("id", "")) for row in rows]
-            if any(not item for item in identifiers) or len(identifiers) != len(set(identifiers)):
-                raise HistoricalStoreError(f"{label}.{field} identifiers must be unique")
+            if any(not item for item in identifiers) or len(identifiers) != len(
+                set(identifiers)
+            ):
+                raise HistoricalStoreError(
+                    f"{label}.{field} identifiers must be unique"
+                )
         for dataset in value["datasets"]:
             if dataset.get("provider") != provider_id(str(dataset.get("provider", ""))):
                 raise HistoricalStoreError(f"{label} contains a noncanonical provider")
@@ -669,7 +687,10 @@ class HistoricalDayStore:
                 f"{dataset.get('channel')}:{dataset.get('timeframe') or 'na'}:"
                 f"{content_hash[:16]}"
             )
-            if dataset.get("content_sha256") != content_hash or dataset.get("id") != expected_id:
+            if (
+                dataset.get("content_sha256") != content_hash
+                or dataset.get("id") != expected_id
+            ):
                 raise HistoricalStoreError(f"{label} contains a corrupt dataset")
         for context in value["contexts"]:
             if context.get("provider") != provider_id(str(context.get("provider", ""))):
@@ -683,11 +704,16 @@ class HistoricalDayStore:
                 f"context:{context.get('provider')}:{context.get('kind')}:"
                 f"{content_hash[:16]}"
             )
-            if context.get("content_sha256") != content_hash or context.get("id") != expected_id:
+            if (
+                context.get("content_sha256") != content_hash
+                or context.get("id") != expected_id
+            ):
                 raise HistoricalStoreError(f"{label} contains a corrupt context")
 
     @staticmethod
-    def _merge_item(collection: list[dict[str, Any]], incoming: Mapping[str, Any]) -> bool:
+    def _merge_item(
+        collection: list[dict[str, Any]], incoming: Mapping[str, Any]
+    ) -> bool:
         identifier = str(incoming.get("id", ""))
         if not identifier:
             raise HistoricalStoreError("stored item is missing an id")
@@ -740,7 +766,9 @@ class HistoricalDayStore:
         directory = self.root / normalize_symbol(symbol).lower()
         if not directory.is_dir():
             return []
-        return sorted(path.name[:-8] for path in directory.glob("[0-9][0-9][0-9][0-9]/*.json.gz"))
+        return sorted(
+            path.name[:-8] for path in directory.glob("[0-9][0-9][0-9][0-9]/*.json.gz")
+        )
 
     def select_dataset(
         self,
@@ -758,7 +786,9 @@ class HistoricalDayStore:
         document = self.load(symbol, day)
         if document is None:
             return None
-        provider_rank = {provider_id(value): index for index, value in enumerate(providers)}
+        provider_rank = {
+            provider_id(value): index for index, value in enumerate(providers)
+        }
         candidates = []
         for dataset in document["datasets"]:
             if dataset.get("kind") != kind or dataset.get("channel") != channel:
@@ -769,7 +799,10 @@ class HistoricalDayStore:
                 continue
             if adjustment is not None and dataset.get("adjustment") != adjustment:
                 continue
-            if require_complete and dataset.get("quality", {}).get("complete") is not True:
+            if (
+                require_complete
+                and dataset.get("quality", {}).get("complete") is not True
+            ):
                 continue
             provider = provider_id(str(dataset.get("provider", "")))
             if provider not in provider_rank:
@@ -791,7 +824,9 @@ class HistoricalDayStore:
         files = sorted(
             path
             for path in self.root.glob("*/[0-9][0-9][0-9][0-9]/*.json.gz")
-            if not any(part.startswith("_") for part in path.relative_to(self.root).parts)
+            if not any(
+                part.startswith("_") for part in path.relative_to(self.root).parts
+            )
         )
         errors: list[dict[str, str]] = []
         dataset_count = 0
@@ -831,7 +866,9 @@ class HistoricalDayStore:
         files = sorted(
             path
             for path in self.root.glob("*/[0-9][0-9][0-9][0-9]/*.json.gz")
-            if not any(part.startswith("_") for part in path.relative_to(self.root).parts)
+            if not any(
+                part.startswith("_") for part in path.relative_to(self.root).parts
+            )
         )
         changed_files = 0
         changed_items = 0
@@ -898,7 +935,12 @@ class HistoricalDayStore:
                             else:
                                 identity = {
                                     key: item.get(key)
-                                    for key in ("kind", "provider", "observed_at", "payload")
+                                    for key in (
+                                        "kind",
+                                        "provider",
+                                        "observed_at",
+                                        "payload",
+                                    )
                                 }
                                 content_hash = canonical_sha256(identity)
                                 item["content_sha256"] = content_hash
@@ -931,15 +973,20 @@ class HistoricalDayStore:
 def aggregate_bars(
     rows: Sequence[Mapping[str, Any]], timeframe: str
 ) -> list[dict[str, Any]]:
-    """Aggregate expanded minute rows into 5-minute or daily provider rows."""
+    """Aggregate expanded minute rows into 5/15-minute or daily provider rows."""
 
-    if timeframe not in {"5m", "1d"}:
+    if timeframe not in {"5m", "15m", "1d"}:
         raise HistoricalStoreError(f"unsupported aggregate timeframe: {timeframe}")
     grouped: dict[tuple[Any, ...], list[Mapping[str, Any]]] = {}
     for row in rows:
         observed = datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(EASTERN)
-        if timeframe == "5m":
-            key = (observed.date(), observed.hour, observed.minute - observed.minute % 5)
+        if timeframe in {"5m", "15m"}:
+            width = 5 if timeframe == "5m" else 15
+            key = (
+                observed.date(),
+                observed.hour,
+                observed.minute - observed.minute % width,
+            )
         else:
             key = (observed.date(),)
         grouped.setdefault(key, []).append(row)
@@ -948,12 +995,19 @@ def aggregate_bars(
         ordered = sorted(values, key=lambda row: int(row["epoch"]))
         first = ordered[0]
         observed = datetime.fromtimestamp(int(first["epoch"]), UTC).astimezone(EASTERN)
-        if timeframe == "5m":
-            stamp = observed.replace(minute=observed.minute - observed.minute % 5, second=0, microsecond=0)
+        if timeframe in {"5m", "15m"}:
+            width = 5 if timeframe == "5m" else 15
+            stamp = observed.replace(
+                minute=observed.minute - observed.minute % width,
+                second=0,
+                microsecond=0,
+            )
         else:
             stamp = datetime.combine(observed.date(), time(0), tzinfo=EASTERN)
         volume = sum(int(row.get("volume", 0)) for row in ordered)
-        weighted = sum(float(row.get("wap", 0)) * int(row.get("volume", 0)) for row in ordered)
+        weighted = sum(
+            float(row.get("wap", 0)) * int(row.get("volume", 0)) for row in ordered
+        )
         result.append(
             {
                 "epoch": int(stamp.timestamp()),
@@ -966,7 +1020,9 @@ def aggregate_bars(
                 "volume": volume,
                 "count": sum(int(row.get("count", 0)) for row in ordered),
                 "wap": weighted / volume if volume else 0.0,
-                "interpolated": any(bool(row.get("interpolated", False)) for row in ordered),
+                "interpolated": any(
+                    bool(row.get("interpolated", False)) for row in ordered
+                ),
             }
         )
     return sorted(result, key=lambda row: int(row["epoch"]))

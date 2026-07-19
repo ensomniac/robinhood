@@ -117,9 +117,9 @@ remain frozen and no target outcomes were read.
   every measured non-catalyst proxy together.
 - Confirmed that the single verified positive primary-catalyst pair fails both
   spread and chase, leaving zero resolved hard-gate survivors before outcomes.
-- Next: specify real-time structural invalidation/noise and technical resistance
-  without tuning these dates, then freeze 100+ new scanner dates with direct
-  catalyst evidence and evaluate unchanged v3 first.
+- Follow-on item 22 now supplies exact real-time structural invalidation/noise
+  and technical resistance without tuning these dates. Next freeze 100+ new
+  scanner dates with direct catalyst evidence and evaluate unchanged v3 first.
 
 ### 21. Condition-Aware SIP Bar And Prefix VWAP Fidelity
 
@@ -138,9 +138,35 @@ frozen and no target outcomes were read.
   denominator; the median eligible/reported-volume ratio is about 0.8207.
 - Added a fail-closed raw-prefix VWAP primitive so a future replay can compute
   session VWAP at the exact trigger timestamp without peeking to minute end.
-- Next: freeze one reproducible structural invalidation/noise contract and one
-  point-in-time technical-resistance contract before collecting the 100+ new
-  scanner dates. Do not revisit target returns on these 20 development dates.
+- Follow-on item 22 now freezes the reproducible structural invalidation/noise
+  and point-in-time resistance contracts. Collect the 100+ new scanner dates
+  next; do not revisit target returns on these 20 development dates.
+
+### 22. Point-In-Time Stop/Noise And Resistance Semantics
+
+Status: `dataset-preentry-structure-fidelity-2026-07-19-v2` is independently
+inspected `READY` for development-only input semantics; production rules remain
+frozen and no target outcomes were read.
+
+- Froze opening support at the exact five-minute high, ordinary noise at the
+  greater of median observed spread and mean absolute completed-minute close
+  increment, and structural invalidation just below that noise zone.
+- Kept the existing 0.10-ATR stop floor, 0.8% maximum stop fraction, and 2.2%
+  resistance-room threshold unchanged.
+- Collected all 249 raw-SIP long-history requests, all 325 exact 04:00-09:30 ET
+  premarket windows, and 2,268 Massive split events into the external store.
+  Two hundred thirty-four identities have all 252 same-symbol sessions; 15
+  retain explicit gaps that cannot prove price discovery.
+- Derived 255 records; 153 stops fit the unchanged cap, 148 resistance records
+  pass the unchanged room rule, and 89 pass both. Sixteen missing-snapshot and
+  54 below-opening-high records remain unresolved.
+- Preserved the failed v1 build contract and superseded only its missing-snapshot
+  error path; v2 changed no dates, identities, thresholds, or semantics.
+- Independently rebuilt all 325 terminal records, split factors, minute prefixes,
+  aggregate counts, private hashes, and public privacy checks.
+- Next: freeze at least 100 previously uninspected dynamic scanner dates, acquire
+  direct catalyst sources, and evaluate unchanged v3 before proposing one
+  preregistered revision.
 
 ## Completed 2026-07-18
 

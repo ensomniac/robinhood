@@ -199,7 +199,9 @@ providers. Massive aggregate bars are retained as split-adjusted SIP data, and
 its historical quote adjustments and limitations remain explicit. Alpaca
 defaults to `feed=sip` and `adjustment=raw`; do not silently substitute IEX for
 SIP or raw for split-adjusted data. Feed and adjustment compatibility must be a
-deliberate caller requirement.
+deliberate caller requirement. `ALPACA_MINIMUM_INTERVAL_SECONDS` defaults to
+0.35 seconds and paces every REST page, including pagination. Reduce it only
+when the purchased plan explicitly permits the resulting request rate.
 
 The canonical collector never requires Massive S3 credentials. The dynamic
 scanner collector also has a non-S3 path: `scanner_replay_alpaca.py` batches raw
@@ -267,6 +269,14 @@ windows are selected by exact provenance coverage rather than by
 the 2026-07-17 04:00-09:30 ET window and reproduced the same 322 epochs from the
 local store on the immediate cache read. This is a cache-path integration test,
 not strategy evidence.
+
+Native Alpaca `15Min` bars are canonicalized as `timeframe=15m`. A complete
+local one-minute regular-session series may also be aggregated deterministically
+to 15 minutes. A 252-session live pilot returned and cached 6,552 AAPL bars with
+exact OHLCV replay across all 252 day files. The pre-entry structure collector
+uses this coarse history plus exact selected-symbol premarket windows instead of
+mirroring unnecessary full-session one-minute history; see
+`PREENTRY_STRUCTURE.md`.
 
 The replay bundle and preflight CLIs also open the canonical store. Their
 ignored raw evidence shards remain for exact workflow resume and bundle audit,

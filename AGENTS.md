@@ -826,9 +826,13 @@ When Ryan selects historical mode:
    the WAP denominator differed in every tested minute. Missing prefix coverage
    or an unsupported condition is a blocker. This is input validation, not
    alpha evidence or permission to change the live VWAP rule.
-   First freeze exact real-time invalidation/noise and resistance definitions,
-   then evaluate unchanged v3 on at least 100 previously uninspected scanner
-   dates with direct catalyst evidence.
+   `PREENTRY_STRUCTURE.md` now freezes exact real-time invalidation/noise and
+   split-aware resistance definitions. Across 255 derivable clean-trigger
+   records, 153 fit the unchanged 0.8% stop cap and 89 pass both unchanged stop
+   and resistance geometry; 70 records fail closed before derivation. Use the
+   frozen contract unchanged on at least 100 previously uninspected scanner
+   dates with direct catalyst evidence. This is deployability evidence, not
+   alpha evidence or permission to change a production threshold.
    Before freezing any new bulk market-data contract, measure a representative
    pilot's canonical bytes and provider requests per symbol-session, project
    both over the exact target set, and verify free space for the projection plus

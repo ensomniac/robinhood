@@ -177,6 +177,12 @@ class HistoricalServiceTests(unittest.TestCase):
         self.assertEqual(len(bars), 2)
         self.assertEqual(bars[0]["volume"], 500)
 
+        fifteen = client.fetch_bars(
+            "AAPL", start, start + timedelta(minutes=30), bar_size="15 mins"
+        )
+        self.assertEqual(len(fifteen), 2)
+        self.assertEqual(fifteen[0]["volume"], 1500)
+
     def test_local_quotes_union_shards_without_mixing_feeds(self):
         start = datetime(2026, 3, 3, 9, 35, tzinfo=EASTERN)
         datasets = []

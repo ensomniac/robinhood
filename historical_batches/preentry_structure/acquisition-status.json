@@ -1,0 +1,19 @@
+{
+  "coverage": {
+    "daily_identities": 249,
+    "daily_identities_full_252_session_coverage": 234,
+    "daily_identities_with_coverage_gaps": 15,
+    "daily_identity_requests_complete": 249,
+    "premarket_windows_complete": 325,
+    "split_events": 2268,
+    "trigger_pairs": 325
+  },
+  "dataset_id": "dataset-preentry-structure-fidelity-2026-07-19-v2",
+  "manifest_sha256": "73390adee260fc80fe0faa514eac5ba474d94b1eb28ab443d6557331be36cdb3",
+  "private_acquisition_sha256": "2639f41152f9c38e107511447412830879e7e97394f83d85d346651173cbf21b",
+  "private_splits_sha256": "fde4c028eb787251f98e0e6626fcf7c5284468b391d345b1bc12f7d8201c8e68",
+  "raw_rows_and_symbols_public": false,
+  "schema_version": 1,
+  "status": "COLLECTION_COMPLETE",
+  "target_outcomes_observed_or_derived": false
+}

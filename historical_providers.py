@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import time as time_module
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone
@@ -462,6 +463,7 @@ class AlpacaConfig:
     api_secret: str
     base_url: str = DEFAULT_ALPACA_DATA_URL
     timeout_seconds: float = 30.0
+    minimum_interval_seconds: float = 0.35
     feed: str = "sip"
     adjustment: str = "raw"
 
@@ -478,6 +480,7 @@ class AlpacaConfig:
             "ALPACA_FEED",
             "ALPACA_ADJUSTMENT",
             "ALPACA_TIMEOUT_SECONDS",
+            "ALPACA_MINIMUM_INTERVAL_SECONDS",
             "APCA_API_KEY_ID",
             "APCA_API_SECRET_KEY",
             "APCA_API_DATA_URL",
@@ -489,9 +492,7 @@ class AlpacaConfig:
             values.get("ALPACA_KEY") or values.get("APCA_API_KEY_ID") or ""
         ).strip()
         secret = str(
-            values.get("ALPACA_SECRET")
-            or values.get("APCA_API_SECRET_KEY")
-            or ""
+            values.get("ALPACA_SECRET") or values.get("APCA_API_SECRET_KEY") or ""
         ).strip()
         if not api_key and not secret:
             return None
@@ -501,9 +502,7 @@ class AlpacaConfig:
                 category="local_configuration",
             )
         configured_url = str(
-            values.get("ALPACA_DATA_BASE_URL")
-            or values.get("APCA_API_DATA_URL")
-            or ""
+            values.get("ALPACA_DATA_BASE_URL") or values.get("APCA_API_DATA_URL") or ""
         ).strip()
         if not configured_url:
             # ALPACA_ENDPOINT is commonly a paper-trading URL. It is accepted
@@ -518,11 +517,10 @@ class AlpacaConfig:
                 configured_url = legacy
         base_url = (configured_url or DEFAULT_ALPACA_DATA_URL).rstrip("/")
         parsed = urlparse(base_url)
-        if (
-            parsed.scheme != "https"
-            or parsed.netloc
-            not in {"data.alpaca.markets", "data.sandbox.alpaca.markets"}
-        ):
+        if parsed.scheme != "https" or parsed.netloc not in {
+            "data.alpaca.markets",
+            "data.sandbox.alpaca.markets",
+        }:
             raise HistoricalProviderError(
                 "Alpaca historical data URL must use an official HTTPS data host",
                 category="local_configuration",
@@ -541,14 +539,17 @@ class AlpacaConfig:
             )
         try:
             timeout = float(values.get("ALPACA_TIMEOUT_SECONDS") or 30.0)
+            minimum_interval = float(
+                values.get("ALPACA_MINIMUM_INTERVAL_SECONDS") or 0.35
+            )
         except (TypeError, ValueError) as exc:
             raise HistoricalProviderError(
-                "ALPACA_TIMEOUT_SECONDS must be numeric",
+                "Alpaca timing values must be numeric",
                 category="local_configuration",
             ) from exc
-        if timeout <= 0:
+        if timeout <= 0 or minimum_interval < 0:
             raise HistoricalProviderError(
-                "ALPACA_TIMEOUT_SECONDS must be positive",
+                "Alpaca timing values are out of range",
                 category="local_configuration",
             )
         return cls(
@@ -556,6 +557,7 @@ class AlpacaConfig:
             api_secret=secret,
             base_url=base_url,
             timeout_seconds=timeout,
+            minimum_interval_seconds=minimum_interval,
             feed=feed,
             adjustment=adjustment,
         )
@@ -564,6 +566,7 @@ class AlpacaConfig:
         return {
             "base_url": self.base_url,
             "timeout_seconds": self.timeout_seconds,
+            "minimum_interval_seconds": self.minimum_interval_seconds,
             "feed": self.feed,
             "adjustment": self.adjustment,
             "credentials_configured": bool(self.api_key and self.api_secret),
@@ -581,10 +584,15 @@ class AlpacaHistoricalClient:
         config: AlpacaConfig,
         *,
         session: requests.Session | None = None,
+        sleeper: Any = time_module.sleep,
+        monotonic: Any = time_module.monotonic,
     ):
         self.config = config
         self._session = session or requests.Session()
         self._owns_session = session is None
+        self._sleeper = sleeper
+        self._monotonic = monotonic
+        self._last_request_started: float | None = None
 
     def __enter__(self) -> "AlpacaHistoricalClient":
         return self
@@ -604,6 +612,14 @@ class AlpacaHistoricalClient:
     def adjustment(self) -> str:
         return self.config.adjustment
 
+    def _throttle(self) -> None:
+        if self._last_request_started is not None:
+            elapsed = self._monotonic() - self._last_request_started
+            remaining = self.config.minimum_interval_seconds - elapsed
+            if remaining > 0:
+                self._sleeper(remaining)
+        self._last_request_started = self._monotonic()
+
     def _request_pages(
         self,
         path: str,
@@ -622,6 +638,7 @@ class AlpacaHistoricalClient:
                     "Alpaca pagination exceeded 500 pages",
                     category="permanent_fidelity",
                 )
+            self._throttle()
             try:
                 response = self._session.get(
                     url,
@@ -718,9 +735,12 @@ class AlpacaHistoricalClient:
                 "Alpaca historical adapter supports TRADES bars only",
                 category="local_configuration",
             )
-        timeframe = {"1 min": "1Min", "5 mins": "5Min", "1 day": "1Day"}.get(
-            bar_size
-        )
+        timeframe = {
+            "1 min": "1Min",
+            "5 mins": "5Min",
+            "15 mins": "15Min",
+            "1 day": "1Day",
+        }.get(bar_size)
         if timeframe is None:
             raise HistoricalProviderError(
                 f"Alpaca does not support bar size {bar_size}",
@@ -757,8 +777,10 @@ class AlpacaHistoricalClient:
                 if not start_utc <= observed < end_utc:
                     continue
                 eastern = observed.astimezone(EASTERN)
-                if bar_size != "1 day" and use_rth and not (
-                    time(9, 30) <= eastern.time() < time(16, 0)
+                if (
+                    bar_size != "1 day"
+                    and use_rth
+                    and not (time(9, 30) <= eastern.time() < time(16, 0))
                 ):
                     continue
                 rows.append(

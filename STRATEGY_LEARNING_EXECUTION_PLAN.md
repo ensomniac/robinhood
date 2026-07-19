@@ -296,26 +296,33 @@ so zero pairs survive the resolved hard-gate cascade. The chase reconstruction
 also corrected the earlier 155 upper-cap-only count to 101 engine-compatible
 passes by requiring the final ask to remain at or above the opening high.
 
-The matrix passed independent pipeline inspection but did not make the input
-contract complete. A subsequent frozen source-oracle validation closed
-intraminute VWAP semantics: 325 of 325 raw-trade reconstructions matched the
-provider's OHLCV/count and WAP, with zero unsupported conditions. Because
-WAP-eligible volume differed from reported volume in every crossing minute,
-future trigger-time VWAP must use the condition-aware raw trade prefix described
-in `SIP_BAR_AGGREGATION.md`. Confirmed technical resistance, structural
-invalidation/noise, sector evidence, and broker-specific tradability remain
-unresolved or prospective. Therefore the exact `2026-07-15-orb-v3` rules may
-not read outcomes on these dates. See `CHAMPION_INPUT_READINESS.md`.
+The matrix passed independent pipeline inspection. A subsequent frozen
+source-oracle validation closed intraminute VWAP semantics: 325 of 325 raw-trade
+reconstructions matched the provider's OHLCV/count and WAP, with zero
+unsupported conditions. Because WAP-eligible volume differed from reported
+volume in every crossing minute, future trigger-time VWAP must use the
+condition-aware raw trade prefix described in `SIP_BAR_AGGREGATION.md`.
 
-Once those definitions are frozen on an outcome-blind basis, retain every selected candidate, every
-trigger, every production rejection reason, and a paired paper-aligned
-end-of-day outcome. Report both the one-trade daily portfolio and all-signal
-gate attribution. It may still conclude that zero or too few pairs are
-evaluable. That would be an evidence result, not permission to loosen gates on
-these dates. The first 20 scanner dates validate the pipeline and expose gross
-selection behavior; they are not enough for production promotion. Once the
-machinery passes, freeze at least 100 previously uninspected scanner dates for
-the first meaningful alpha sample.
+The separately frozen structure layer in `PREENTRY_STRUCTURE.md` then closed
+the stop/noise and resistance definition gap without outcomes. It completed all
+249 identity-history requests and 325 exact premarket windows, retained 15
+same-symbol history gaps as unresolved, and independently reconstructed all 325
+terminal records. Of 255 derivable records, 153 fit the unchanged 0.8% stop cap
+and 89 pass both unchanged stop and resistance geometry. This replaces the
+opening-low diagnostic proxy; it does not validate the definition's alpha or
+earn a production change. Sector evidence and broker-specific tradability remain
+unresolved or prospective. The exact 20 development dates still may not support
+an alpha or promotion claim. See `CHAMPION_INPUT_READINESS.md` and
+`PREENTRY_STRUCTURE.md`.
+
+On at least 100 previously uninspected dynamic scanner dates, retain every
+selected candidate, every trigger, every production rejection reason, and a
+paired paper-aligned end-of-day outcome. Apply the frozen VWAP and structure
+contracts without editing them after selection. Report both the one-trade daily
+portfolio and all-signal gate attribution. It may still conclude that zero or
+too few pairs are evaluable. That would be an evidence result, not permission to
+loosen gates. The first 20 scanner dates validate the pipeline and expose gross
+selection behavior; they are not enough for production promotion.
 
 ### Stage 4 - Earn at most one rule revision
 

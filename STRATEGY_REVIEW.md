@@ -151,11 +151,11 @@ reproduced every source hash, classification, halt interval, and canonical
 context. This closes historical halt state, not broker-specific tradability.
 `CHAMPION_INPUT_FIDELITY.md` is authoritative for this layer.
 
-The current evidence therefore argues for further fidelity, not looser entry
-rules. The unchanged champion must next be assembled without target outcomes
-for resistance room, structural invalidation/noise, benchmark-relative
-strength, and conservative visible liquidity. A missing value stays blocking.
-The 20 development dates cannot earn a numeric threshold or production change.
+This source layer argued for further fidelity, not looser entry rules. The
+unchanged champion was subsequently assembled without target outcomes for
+resistance room, structural invalidation/noise, benchmark-relative strength,
+and conservative visible liquidity. A missing value stays blocking. The 20
+development dates cannot earn a numeric threshold or production change.
 
 The outcome-blind unchanged-champion readiness join then tested whether the
 resolved inputs could support an evaluation at all. They cannot. Only one of
@@ -173,6 +173,14 @@ the dates are already contaminated for strategy inference. It is evidence that
 deployability must be measured before alpha: define those inputs reproducibly,
 freeze new scanner dates with direct catalysts, and evaluate v3 unchanged before
 testing one preregistered revision. `CHAMPION_INPUT_READINESS.md` is authoritative.
+
+The frozen follow-on in `PREENTRY_STRUCTURE.md` now supplies those exact
+stop/noise and resistance definitions. It independently reconstructed all 325
+terminal records: 153 of 255 derivable stops fit the unchanged 0.8% cap and 89
+pass both unchanged geometry gates, while 70 records remain unresolved. This
+corrects the deployability proxy but does not read returns, validate alpha, or
+earn a production change. The next evidence must come from at least 100
+previously uninspected dynamic scanner dates with direct catalyst sources.
 
 The remaining intraminute VWAP ambiguity was then closed without examining
 returns. A hash-frozen implementation of Alpaca's published tape-specific

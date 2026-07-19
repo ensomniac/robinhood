@@ -1,6 +1,6 @@
 # Persistent Strategy Learning Program
 
-Program version: `2026-07-19-v8`
+Program version: `2026-07-19-v9`
 
 Production champion: `2026-07-15-orb-v3`
 
@@ -76,8 +76,13 @@ rewritten or deleted.
    reported volume, proving that exact intraminute/session VWAP requires the raw
    condition-aware trade prefix rather than `bar.wap * bar.volume`.
 10. **Registered hypothesis and experiment lifecycle:** implemented.
-11. **Three-axis champion/challenger evidence:** implemented.
-12. **Operating cadence and monitoring:** implemented.
+11. **Exact pre-entry structure semantics:** independently inspected `READY`.
+    All 249 long-history requests and 325 premarket windows are terminal; 255
+    trigger records derive without lookahead, 153 fit the unchanged 0.8% stop
+    cap, and 89 pass both stop and resistance geometry. Missing quote/history
+    inputs remain unresolved rather than favorable.
+12. **Three-axis champion/challenger evidence:** implemented.
+13. **Operating cadence and monitoring:** implemented.
 
 ## Current Evidence Decisions
 
@@ -92,20 +97,21 @@ rewritten or deleted.
 
 ## Current Next Objective
 
-The first outcome-blind unchanged-champion readiness join is complete and
-independently inspected. Exact intraminute VWAP semantics are now also frozen
-and source-oracle validated. No pair can currently enter a faithful v3 outcome
-evaluation, and the frozen stop/resistance geometry deserves focused definition
-work, not retrospective relaxation. The next objective is to freeze
-reproducible real-time structural invalidation/noise and technical resistance
-contracts, then acquire at least 100 previously uninspected scanner dates with
-direct catalyst sources. Broker-specific tradability remains a prospective
-execution-qualification requirement. Evaluate unchanged v3 first on that new
-sample; earn at most one preregistered revision only if its deployment capacity
-or net expectancy fails. See `SCANNER_REPLAY.md`,
+The first outcome-blind unchanged-champion readiness join, exact intraminute
+VWAP semantics, and deterministic stop/noise and resistance contracts are now
+independently inspected. The structure layer replaces misleading proxies but
+does not change v3 or expose outcomes: 89 of 255 derivable trigger records pass
+both unchanged geometry gates, while 70 fail closed before derivation. The next
+objective is to acquire at least 100 previously uninspected dynamic scanner
+dates with direct catalyst sources and apply the exact input contracts there.
+Broker-specific tradability remains a prospective execution-qualification
+requirement. Evaluate unchanged v3 first on that new sample; earn at most one
+preregistered revision only if its deployment capacity or net expectancy fails.
+See `SCANNER_REPLAY.md`,
 `SELECTED_CANDIDATE_JOIN.md`, `SELECTED_CANDIDATE_FIDELITY.md`,
 `CHAMPION_INPUT_FIDELITY.md`, `CHAMPION_INPUT_READINESS.md`,
-`SIP_BAR_AGGREGATION.md`, and `STRATEGY_LEARNING_EXECUTION_PLAN.md`.
+`SIP_BAR_AGGREGATION.md`, `PREENTRY_STRUCTURE.md`, and
+`STRATEGY_LEARNING_EXECUTION_PLAN.md`.
 
 ## Bounded Iteration
 

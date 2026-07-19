@@ -1,0 +1,23 @@
+{
+  "current_dataset_id": "dataset-preentry-structure-fidelity-2026-07-19-v2",
+  "lineage": [
+    {
+      "dataset_id": "dataset-preentry-structure-fidelity-2026-07-19-v1",
+      "disposition": "FAILED_BUILD_CONTRACT",
+      "failure": "The frozen builder indexed the final quote snapshot before checking whether the clean-trigger record contained exactly three snapshots.",
+      "manifest_sha256": "e09eaef1f83c23287c92dfa7d6bd97bcd361d582f0b8f8daa0157dcb8cb914ae",
+      "market_data_collection_complete": true,
+      "outcomes_observed_or_derived": false
+    },
+    {
+      "dataset_id": "dataset-preentry-structure-fidelity-2026-07-19-v2",
+      "disposition": "INDEPENDENTLY_INSPECTED_READY",
+      "manifest_sha256": "73390adee260fc80fe0faa514eac5ba474d94b1eb28ab443d6557331be36cdb3",
+      "supersedes": "dataset-preentry-structure-fidelity-2026-07-19-v1",
+      "correction": "Require exactly three point-in-time quote snapshots before dereferencing the final observation; otherwise retain an explicit unresolved record.",
+      "dates_identities_thresholds_and_strategy_semantics_changed": false,
+      "outcomes_observed_or_derived": false
+    }
+  ],
+  "schema_version": 1
+}

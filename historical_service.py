@@ -141,9 +141,12 @@ class RecordingHistoricalClient:
             use_rth=use_rth,
         )
         provider, feed, adjustment = _provider_metadata(self.client)
-        timeframe = {"1 min": "1m", "5 mins": "5m", "1 day": "1d"}.get(
-            bar_size, bar_size.replace(" ", "")
-        )
+        timeframe = {
+            "1 min": "1m",
+            "5 mins": "5m",
+            "15 mins": "15m",
+            "1 day": "1d",
+        }.get(bar_size, bar_size.replace(" ", ""))
         grouped: dict[str, list[dict[str, Any]]] = {}
         for row in rows:
             day = str(row.get("date_et") or "")
@@ -354,7 +357,12 @@ class LocalHistoricalClient:
             )
         start_utc = _coerce(start)
         end_utc = _coerce(end)
-        timeframe = {"1 min": "1m", "5 mins": "5m", "1 day": "1d"}.get(bar_size)
+        timeframe = {
+            "1 min": "1m",
+            "5 mins": "5m",
+            "15 mins": "15m",
+            "1 day": "1d",
+        }.get(bar_size)
         if timeframe is None:
             raise HistoricalProviderError(
                 f"local cache does not support bar size {bar_size}",
@@ -384,7 +392,7 @@ class LocalHistoricalClient:
             rows: list[dict[str, Any]] = []
             if dataset is not None:
                 rows = [expand_bar(row) for row in dataset["rows"]]
-            elif timeframe in {"5m", "1d"}:
+            elif timeframe in {"5m", "15m", "1d"}:
                 minute = self.store.select_dataset(
                     symbol,
                     day,
