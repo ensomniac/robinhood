@@ -177,6 +177,15 @@ chain. Issuer-to-target binding, causal publication time, relevance, financing
 conflict, and event direction require a separately frozen outcome-blind
 semantic review. Outcomes remain inaccessible throughout recovery.
 
+Collection and independent inspection are now `READY`. All 12 frozen URLs have
+terminal dispositions: eight responses were retained, including seven HTTP 200
+responses and one HTTP 403 response, while four ended in bounded capture errors.
+The private store contains 2,263,234 hash-verified response bytes. Inspection
+rebuilt the exact selection and aggregate counts and verified every retained
+response hash, official-domain redirect boundary, and no-substitution rule. The
+next stage must freeze issuer ownership, target binding, causal timestamp,
+relevance, financing conflict, and direction before reading semantics.
+
 ## Claim Boundary
 
 Successful response recovery proves only that the exact SEC-operated filing

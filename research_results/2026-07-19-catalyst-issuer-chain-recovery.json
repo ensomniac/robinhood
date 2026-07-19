@@ -1,0 +1,37 @@
+{
+  "capture_status_counts": {
+    "CAPTURE_ERROR": 4,
+    "RESPONSE_CAPTURED": 8
+  },
+  "claim_boundary": "Canonical issuer-controlled chain capture only; not proof that the document issuer equals the target security, that publication was causal, or that event direction, alpha, or a strategy change is established.",
+  "claim_scope": "DEVELOPMENT_ONLY",
+  "dataset_id": "dataset-catalyst-issuer-chain-recovery-2026-07-19-expansion-v1",
+  "http_status_counts": {
+    "200": 7,
+    "403": 1
+  },
+  "inspected": true,
+  "inspection": {
+    "issuer_domain_redirect_boundaries_verified": true,
+    "no_substitution_verified": true,
+    "response_hashes_verified": true,
+    "selection_rebuilt": true,
+    "terminal_counts_rebuilt": true
+  },
+  "manifest_sha256": "15f7b129be15389a1ad59159f75e37ea79f49c8fd8d1a85ae08a73c3fd1d2ebf",
+  "next_required_stage": "freeze issuer ownership, target binding, causal timestamp, relevance, financing conflict, and event-direction semantics before review",
+  "private_index_sha256": "00322641b5e1c5e9509cbb2a94879744ac2f16f15b50fbe4da0a7b3e00796ac0",
+  "response_bytes": 2263234,
+  "schema_version": 1,
+  "selection_counts": {
+    "chain_urls": 12,
+    "chains": 6,
+    "source_predecessors": 13,
+    "unique_urls": 12
+  },
+  "source_semantics_classified": false,
+  "status": "READY",
+  "symbols_dates_urls_sources_responses_and_rows_public": false,
+  "target_outcomes_observed_or_derived": false,
+  "terminal_urls": 12
+}
