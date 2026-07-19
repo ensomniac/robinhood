@@ -103,6 +103,7 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
         universe = raw["universe"]
         execution = raw["execution"]
         risk = raw["risk"]
+        circuit_breakers = raw["circuit_breakers"]
         maturities = raw["maturity"]
         promotion = raw["promotion"]
     except KeyError as exc:
@@ -112,6 +113,7 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
         "universe": universe,
         "execution": execution,
         "risk": risk,
+        "circuit_breakers": circuit_breakers,
         "maturity": maturities,
         "promotion": promotion,
     }
@@ -188,6 +190,20 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
         )
     ):
         raise StrategyInputError("risk fractions or reward/risk limit are invalid")
+    if _integer(
+        circuit_breakers.get("maximum_consecutive_losses"),
+        "circuit_breakers.maximum_consecutive_losses",
+        minimum=1,
+    ) < 1:
+        raise StrategyInputError("maximum consecutive losses must be positive")
+    for field in (
+        "maximum_rolling_five_session_drawdown_fraction",
+        "maximum_strategy_drawdown_fraction",
+    ):
+        if not 0 < _number(
+            circuit_breakers.get(field), f"circuit_breakers.{field}"
+        ) < 1:
+            raise StrategyInputError(f"circuit_breakers.{field} must be in (0, 1)")
     for field in (
         "minimum_open_price",
         "minimum_average_daily_volume_14",
@@ -602,9 +618,7 @@ def evaluate_candidate(
     if planned_stop >= min(
         _number(snapshot["bid"], "quote.bid", positive=True) for snapshot in snapshots
     ):
-        # This is informational: a stop near the current market may be valid, but
-        # the explicit outside-noise gate must support it.
-        warnings.append("planned stop is near the current quoted market; recheck noise")
+        rejects.append("planned stop is not below the observed bid")
 
     observed_p95_fraction = _number(
         candidate.get("observed_stop_slippage_p95_fraction", 0.0),

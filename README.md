@@ -65,11 +65,16 @@ The numeric rules live in [strategy_config.toml](strategy_config.toml).
 `session_guard.py` enforces the live entry/protection interlock; and
 `strategy_ledger.py` provides append-only signal records, reproducible metrics,
 paired exit comparison, and evidence-earned maturity.
-Configuration loading fails closed when session times, spread limits, maturity
-risk/allocation caps, or promotion sample ordering are internally inconsistent.
+Configuration loading fails closed when session times, spread limits, circuit
+breakers, maturity risk/allocation caps, or promotion sample ordering are
+internally inconsistent.
 The evaluator also distinguishes the 0.08% A+ median-spread limit from the
 broader 0.10% operating limit: an `UNVALIDATED` 90-point pilot is rejected when
 it cannot actually earn A+ classification.
+The same evaluator hard-rejects a planned stop that is not below the observed
+bid. Drawdown and consecutive-loss breakers now live in the numeric config and
+are consumed by `session_guard.py`, rather than being duplicated as guard
+literals.
 
 ## Public Trade Ledger
 

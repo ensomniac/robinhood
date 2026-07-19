@@ -1,4 +1,6 @@
 import unittest
+import tempfile
+from pathlib import Path
 
 from session_guard import evaluate_guard
 from strategy_engine import load_config
@@ -68,6 +70,24 @@ class EntryGuardTests(unittest.TestCase):
         self.assertIn(
             "rolling five-session drawdown circuit breaker is active", result.reasons
         )
+
+    def test_drawdown_breaker_uses_numeric_config_source(self):
+        source = Path("strategy_config.toml").read_text(encoding="utf-8")
+        source = source.replace(
+            "maximum_rolling_five_session_drawdown_fraction = 0.02",
+            "maximum_rolling_five_session_drawdown_fraction = 0.03",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "strategy.toml"
+            path.write_text(source, encoding="utf-8")
+            config = load_config(path)
+            snapshot = safe_snapshot()
+            snapshot["evaluation_rules_hash"] = config.rules_hash
+            snapshot["rolling_five_session_drawdown_fraction"] = 0.02
+
+            result = evaluate_guard(snapshot, "UNVALIDATED", config)
+
+        self.assertEqual(result.status, "ENTRY_READY")
 
     def test_stale_strategy_evaluation_is_blocked(self):
         snapshot = safe_snapshot()

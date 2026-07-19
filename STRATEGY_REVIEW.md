@@ -211,7 +211,11 @@ existing A+ spread condition explicitly: a wider but otherwise clean setup can
 remain `qualified` after promotion, but it cannot pass an `UNVALIDATED` A+ pilot.
 Configuration loading also fails closed on inconsistent time, spread, risk,
 maturity, and promotion relationships. This is rule fidelity and operational
-hardening, not a new alpha threshold, so v3 and its rules hash remain unchanged.
+hardening, not a new alpha threshold, so v3 remains unchanged. The rules hash
+does change to bind a normalized config: the unchanged three-loss, 2% rolling
+five-session, and 4% strategy drawdown breakers now live in the numeric source
+of truth instead of guard literals. The engine also hard-rejects a planned stop
+at or above an observed bid, enforcing the existing outside-spread requirement.
 
 ## What The Repository Had Right
 

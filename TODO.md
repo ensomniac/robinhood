@@ -208,6 +208,11 @@ version.
   ranges, and promotion sample ordering.
 - Added direct regression tests for the previously possible false A+
   classification and malformed configuration relationships.
+- Promoted a planned stop at or above the observed bid from a warning to the
+  existing hard outside-spread rejection promised by the strategy.
+- Moved the unchanged three-loss, 2% rolling-five-session, and 4% strategy
+  drawdown breakers from guard literals into `strategy_config.toml`; the guard
+  now proves those values are its numeric source.
 
 ## Completed 2026-07-18
 

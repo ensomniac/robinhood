@@ -171,6 +171,19 @@ class EvaluationTests(unittest.TestCase):
             result.hard_rejects,
         )
 
+    def test_stop_inside_observed_market_is_a_hard_reject(self):
+        payload = qualifying_payload()
+        payload["candidate"]["daily_atr_14"] = 0.5
+        payload["candidate"]["technical_invalidation"] = 50.04
+
+        result = evaluate_candidate(payload)
+
+        self.assertFalse(result.eligible)
+        self.assertAlmostEqual(result.sizing.planned_stop, 50.0)
+        self.assertIn(
+            "planned stop is not below the observed bid", result.hard_rejects
+        )
+
     def test_low_allocation_is_disclosed_but_not_a_hard_reject(self):
         payload = qualifying_payload()
         payload["candidate"]["technical_invalidation"] = 49.65

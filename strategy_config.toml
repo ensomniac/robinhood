@@ -36,6 +36,11 @@ minimum_resistance_room_fraction = 0.0220
 minimum_reward_risk = 2.50
 allocation_target_floor_fraction = 0.70
 
+[circuit_breakers]
+maximum_consecutive_losses = 3
+maximum_rolling_five_session_drawdown_fraction = 0.02
+maximum_strategy_drawdown_fraction = 0.04
+
 [maturity.UNVALIDATED]
 live_allowed = true
 risk_fraction = 0.0025

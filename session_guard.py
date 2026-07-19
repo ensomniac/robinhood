@@ -130,6 +130,7 @@ def evaluate_guard(
     max_data_age = float(config.raw["execution"]["maximum_quote_age_seconds"])
     max_heartbeat = float(config.raw["execution"]["monitoring_heartbeat_seconds"])
     transition_limit = float(config.raw["execution"]["entry_timeout_seconds"])
+    circuit_breakers = config.raw["circuit_breakers"]
 
     position_quantity = _integer(snapshot, "position_quantity")
     active_entry_orders = _integer(snapshot, "active_entry_orders")
@@ -340,11 +341,17 @@ def evaluate_guard(
         blockers.append("declared maturity exceeds evidence-earned maturity")
     if filled_entries_today:
         blockers.append("today's filled-entry limit is exhausted")
-    if _number(snapshot, "rolling_five_session_drawdown_fraction") >= 0.02:
+    if _number(snapshot, "rolling_five_session_drawdown_fraction") >= float(
+        circuit_breakers["maximum_rolling_five_session_drawdown_fraction"]
+    ):
         blockers.append("rolling five-session drawdown circuit breaker is active")
-    if _number(snapshot, "strategy_drawdown_fraction") >= 0.04:
+    if _number(snapshot, "strategy_drawdown_fraction") >= float(
+        circuit_breakers["maximum_strategy_drawdown_fraction"]
+    ):
         blockers.append("strategy peak-to-trough drawdown circuit breaker is active")
-    if _integer(snapshot, "consecutive_losses") >= 3:
+    if _integer(snapshot, "consecutive_losses") >= int(
+        circuit_breakers["maximum_consecutive_losses"]
+    ):
         blockers.append("three-consecutive-loss circuit breaker is active")
     if _boolean(snapshot, "manual_circuit_breaker_active"):
         blockers.append("manual or external circuit breaker is active")

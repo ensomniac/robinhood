@@ -145,6 +145,9 @@ Operational MCP rules:
   fail-closed relationship checks. A score of at least 90 does not earn A+
   unless the measured median spread also satisfies the configured 0.08% A+
   limit; while `UNVALIDATED`, failure of that spread gate blocks the live pilot.
+  The planned stop must be strictly below every observed bid. Consecutive-loss
+  and drawdown breaker values come only from `[circuit_breakers]` in the config;
+  do not reproduce them as numeric literals in another executable path.
 - Before submitting a reviewed entry and after every order-state change, run the
   current broker/account facts through `session_guard.py`. A new live entry is
   allowed only from `ENTRY_READY`. Exposure statuses take priority over research,
