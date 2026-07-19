@@ -184,3 +184,101 @@ Completed: 2026-07-18 ET
   `research_results/2026-07-18-production-aware-strategy-lab.*`. A separate
   confirmation contract records the next evidence gate without creating a
   cadence-bypassing production strategy proposal.
+
+## Post-Execution Correction
+
+Updated: 2026-07-19 ET
+
+The independent confirmation described above is no longer pending. Its frozen
+100-date contract stopped when the required 80 validation-grade dates became
+unreachable. The 31 usable dates produced 22 trades; at the primary 5 bps per
+side and 2R setting they lost 10.056R, with -0.457R mean expectancy, 0.370
+profit factor, and 10.492R maximum drawdown. Every target and cost-stress cell
+was negative. The early Item 2.02 reversal is therefore `RETIRED`; it must not be
+sent to shadow qualification or repaired by tuning the failed sample.
+
+This result also changes the interpretation of the 95-bundle development
+corpus. It remains valuable for falsification, implementation tests, and
+counterfactual gate diagnostics, but its catalyst-derived ten-name universes
+cannot answer whether the production scanner would have selected the same names
+at 09:35. New mechanism invention on that corpus remains locked until the
+dynamic point-in-time scanner replay is complete and independently inspected.
+
+## Revised Evidence Sequence
+
+The shortest credible path toward explosive compounding is now the following
+ordered sequence. Skipping a stage would create faster backtests but weaker
+evidence and a greater chance of compounding a false edge.
+
+### Stage 1 - Close selection fidelity
+
+Status: completed and independently inspected on 2026-07-19.
+
+The frozen 20-date dynamic 09:35 scanner replay reached `READY` with all
+118 hash-attested source sessions, the exact point-in-time common-stock master,
+unchanged rules and dates, all 20 rankings, and an independent reconstruction of
+the master population, ADV, ATR, opening RVOL, split factors, dispositions, and
+top-20 identities. It retained 105,261 security-date evaluations, 1,228 eligible
+rows, and 389 selected pairs; the one nine-name day was not padded. All 608,386
+canonical documents were reconciled to source. This stage measures universe
+selection only; it did not earn an alpha-rule change.
+
+### Stage 2 - Build a trade-capable selected-candidate join
+
+Freeze a new manifest over only the selected date-symbol pairs before collecting
+additional target-session data. For each pair, add canonical one-minute trades,
+time-valid catalyst evidence, historical SIP quotes where available, SPY/QQQ
+context, and the inputs needed for VWAP, resistance, trigger, stop, chase, and
+paired end-of-day outcomes. Missing quote, catalyst, or tradability evidence is
+an explicit blocker, never a substituted symbol or current fact. Provider
+fallback may accelerate acquisition, but a metric must not blend providers
+within a session.
+
+Run a storage-capacity preflight before freezing that acquisition: measure bytes
+per selected pair from a representative pilot, publish the projected incremental
+bytes and request count, and require enough free space for the projection plus
+an atomic-write/audit reserve. The current volume is already 96% allocated even
+though the canonical history store is only about 2.2 GB. A full-universe
+one-minute pull is therefore wasteful and unsafe; Stage 2 collects only the
+frozen selected pairs and benchmarks. Stop cleanly before the reserve is
+exhausted, retain the exact manifest, and resume without date or symbol
+substitution after capacity is restored.
+
+### Stage 3 - Evaluate the existing champion and its attribution baseline
+
+Run the exact `2026-07-15-orb-v3` rules first. Retain every selected candidate,
+every trigger, every production rejection reason, and a paired paper-aligned
+end-of-day outcome. Report both the one-trade daily portfolio and all-signal gate
+attribution. The first 20 scanner dates validate the pipeline and expose gross
+selection behavior; they are not enough for production promotion. Once the
+machinery passes, freeze at least 100 previously uninspected scanner dates for
+the first meaningful alpha sample.
+
+### Stage 4 - Earn at most one rule revision
+
+A rule may be tightened, removed, or otherwise revised only when the frozen
+champion sample contains enough closed outcomes to estimate its marginal effect,
+the hypothesis is preregistered before a new confirmation slice, all tested
+alternatives are disclosed, and the result survives chronological, cost,
+concentration, drawdown, and bootstrap checks. One accepted mechanism creates a
+new strategy version and resets its evidence sample. A no-op is the correct
+decision when the evidence does not distinguish a change from noise.
+
+### Stage 5 - Qualify execution separately
+
+Positive historical alpha is insufficient. The unchanged candidate and order
+logic must collect prospective shadow evidence for observation delay, executable
+spread/depth, chase-cap fills, protection latency, stop slippage, and monitoring
+continuity. Live pilots remain limited by the maturity rules in `AGENTS.md` and
+`strategy_config.toml`; alpha evidence cannot stand in for broker-path evidence.
+
+## Why This Sequence Supports Geometric Growth
+
+With one concentrated trade per day, a biased shortlist corrupts every
+downstream expectancy estimate. Closing that bias first makes later work slower
+once but reusable indefinitely through the canonical local cache. Measuring
+paired net-R and log-equity outcomes then directs effort toward rules that improve
+the entire distribution, not merely win rate or one attractive backtest. Frozen
+families, explicit negative results, and independent confirmation reduce the
+multiple-testing penalty; spread, slippage, capacity, drawdown, and protection
+gates prevent a paper edge from being mistaken for deployable compounding.

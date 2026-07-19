@@ -96,9 +96,9 @@ def _fetch(args: argparse.Namespace, store: HistoricalDayStore) -> dict[str, Any
             what="TRADES",
             use_rth=True,
         )
-        if len(values) != 390:
+        if not values:
             raise HistoricalProviderError(
-                f"full regular session needs 390 minute bars, got {len(values)}",
+                "full regular-session request returned no minute bars",
                 category="permanent_fidelity",
             )
         return values

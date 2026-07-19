@@ -1,6 +1,6 @@
 # Repository Learning Loop
 
-Prompt version: `2026-07-18-v2`
+Prompt version: `2026-07-19-v3`
 
 This is the public operating prompt for `learning` mode. It is subordinate to
 `AGENTS.md`, the active user request, tool requirements, privacy rules, and every
@@ -27,8 +27,10 @@ ignored `learning_runs/` state makes each finite objective resumable.
 5. Run `python3 learning_loop.py inspect` with the relevant batch, evidence, and
    research artifacts. Do not assume collection is slow, evaluation is slow, or
    symbol resolution is slow without telemetry.
-6. Run `python3 learning_loop.py audit` and register the objective before
-   starting a resumable run.
+6. Run `python3 learning_loop.py audit` and register the objective in
+   `learning/EXPERIMENTS.jsonl` or `learning/DATASETS.jsonl` before starting a
+   resumable run. A frozen collection is a dataset objective, not a synthetic
+   experiment.
 
 ## Phase 1 - Evidence And Strengths
 
@@ -118,6 +120,13 @@ and the next experiment. Update the public registries with every terminal
 failure as well as every success. Do not recursively launch another learning loop.
 A future run must be a new explicit invocation or a separately
 implemented, tested, safety-gated scheduler invocation.
+
+The persistent controller follows the objective's own registry. Experiment
+events use the hypothesis lifecycle. Dataset events map `COLLECTING` to a frozen
+collection handoff, uninspected `READY` to an independent-inspection handoff,
+inspected `READY` to successful closure, and `FAILED` or `RETIRED` to rejection
+and closure. This keeps data-engineering work resumable without pretending that
+collection is a strategy experiment or consuming the hypothesis budget.
 
 The implemented scheduler target is `learning_cadence.py`. It may run
 deterministic audits and record ignored local cadence state, but provider

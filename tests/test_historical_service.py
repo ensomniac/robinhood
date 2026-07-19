@@ -73,6 +73,25 @@ class HistoricalServiceTests(unittest.TestCase):
         document = self.store.load("AAPL", "2026-03-03")
         self.assertEqual(document["datasets"][0]["provider"], "alpaca")
         self.assertEqual(document["datasets"][0]["feed"], "sip")
+        self.assertFalse(document["datasets"][0]["quality"]["complete"])
+        self.assertEqual(document["datasets"][0]["scope"], "observed_window")
+
+    def test_full_requested_window_is_complete_without_390_populated_buckets(self):
+        start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
+        rows = [
+            minute_row(start + timedelta(minutes=index), index)
+            for index in range(210)
+        ]
+        client = RecordingHistoricalClient(FakeProvider(rows), self.store)
+
+        client.fetch_bars("AAPL", start, start.replace(hour=16, minute=0))
+
+        dataset = self.store.load("AAPL", "2026-03-03")["datasets"][0]
+        self.assertEqual(dataset["quality"]["row_count"], 210)
+        self.assertTrue(dataset["quality"]["complete"])
+        self.assertTrue(dataset["quality"]["requested_window_complete"])
+        self.assertTrue(dataset["quality"]["sparse_intervals_allowed"])
+        self.assertEqual(dataset["scope"], "full_session")
 
     def test_local_cache_aggregates_complete_minutes(self):
         start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
@@ -192,6 +211,49 @@ class HistoricalServiceTests(unittest.TestCase):
 
         self.assertTrue(result["valid"])
         self.assertEqual(result["rows"], 390)
+        self.assertEqual(result["attempts"][0]["lane"], "cache")
+
+    def test_fetch_accepts_complete_early_close_cache(self):
+        start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
+        rows = [
+            minute_row(start + timedelta(minutes=index), index)
+            for index in range(210)
+        ]
+        self.store.merge(
+            "AAPL",
+            "2026-03-03",
+            datasets=[
+                build_dataset(
+                    kind="bars",
+                    provider="ibkr",
+                    rows=[compact_bar(row) for row in rows],
+                    channel="trades",
+                    timeframe="1m",
+                    feed="smart",
+                    adjustment="provider_adjusted_unknown_basis",
+                    scope="full_session",
+                    quality={
+                        "complete": True,
+                        "requested_window_complete": True,
+                        "sparse_intervals_allowed": True,
+                    },
+                )
+            ],
+        )
+        args = Namespace(
+            symbol="AAPL",
+            date="2026-03-03",
+            env_file=Path(self.temporary.name) / "missing.env",
+        )
+
+        with patch(
+            "historical_data_cli.open_provider_set",
+            side_effect=AssertionError("complete cache hit must not open providers"),
+        ):
+            result = _fetch(args, self.store)
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["rows"], 210)
         self.assertEqual(result["attempts"][0]["lane"], "cache")
 
     def test_fallback_advances_after_retryable_failure(self):

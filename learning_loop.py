@@ -68,7 +68,7 @@ ALLOWED_CHANGE_KINDS = {
 PROTECTED_PATHS = {"strategy_config.toml", ".env"}
 RUN_ROOT = PROJECT_ROOT / "learning_runs"
 PROGRAM_PATH = PROJECT_ROOT / "LEARNING_PROGRAM.md"
-RUN_SCHEMA_VERSION = 2
+RUN_SCHEMA_VERSION = 3
 RUN_ID_PATTERN = re.compile(r"^learning-[0-9]{8}t[0-9]{6}z-[a-z0-9][a-z0-9._-]{2,63}$")
 OBJECTIVE_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{2,127}$")
 RUN_STATUSES = {
@@ -417,6 +417,13 @@ def _load_state(path: Path) -> dict[str, Any]:
         raise LearningLoopError(f"{path} run identity does not match its location")
     if state.get("status") not in RUN_STATUSES:
         raise LearningLoopError(f"{path} has an invalid run status")
+    if state.get("objective_registry") not in {"experiments", "datasets"}:
+        raise LearningLoopError(f"{path} has an invalid objective registry")
+    objective_id = state.get("objective_id")
+    if not isinstance(objective_id, str) or not OBJECTIVE_ID_PATTERN.fullmatch(
+        objective_id
+    ):
+        raise LearningLoopError(f"{path} has an invalid objective id")
     transitions = state.get("transitions")
     if not isinstance(transitions, list) or not transitions:
         raise LearningLoopError(f"{path} needs a transition history")
@@ -510,14 +517,24 @@ def start_run(
     if not OBJECTIVE_ID_PATTERN.fullmatch(objective_id):
         raise LearningLoopError("objective id must be a stable lowercase identifier")
     initialize_program(root=root)
-    experiments = current_entities("experiments", root / "learning")
-    if objective_id not in experiments:
+    registries = {
+        name: current_entities(name, root / "learning")
+        for name in ("experiments", "datasets")
+    }
+    matches = [name for name, entities in registries.items() if objective_id in entities]
+    if not matches:
         raise LearningLoopError(
-            "objective must be registered in learning/EXPERIMENTS.jsonl before starting"
+            "objective must be registered in learning/EXPERIMENTS.jsonl or "
+            "learning/DATASETS.jsonl before starting"
         )
+    if len(matches) != 1:
+        raise LearningLoopError(
+            f"objective id is ambiguous across learning registries: {objective_id}"
+        )
+    objective_registry = matches[0]
     instant = now or _utc_now()
     stamp = instant.strftime("%Y%m%dt%H%M%Sz").lower()
-    slug = objective_id.removeprefix("experiment-")[:64]
+    slug = objective_id[:64]
     run_id = f"learning-{stamp}-{slug}"
     path = _run_path(run_id, run_root)
     if path.exists():
@@ -527,6 +544,7 @@ def start_run(
         "schema_version": RUN_SCHEMA_VERSION,
         "run_id": run_id,
         "objective_id": objective_id,
+        "objective_registry": objective_registry,
         "status": "CREATED",
         "started_at": recorded_at,
         "updated_at": recorded_at,
@@ -549,16 +567,22 @@ def start_run(
     return state
 
 
-def _latest_experiment(objective_id: str, root: Path) -> dict[str, Any]:
+def _latest_objective(
+    objective_id: str, objective_registry: str, root: Path
+) -> dict[str, Any]:
+    if objective_registry not in {"experiments", "datasets"}:
+        raise LearningLoopError(
+            f"unsupported objective registry {objective_registry!r}"
+        )
     try:
-        return current_entities("experiments", root / "learning")[objective_id]
+        return current_entities(objective_registry, root / "learning")[objective_id]
     except KeyError as exc:
         raise LearningLoopError(
             f"registered objective disappeared: {objective_id}"
         ) from exc
 
 
-def _desired_run_status(experiment_status: str) -> tuple[str, str]:
+def _desired_experiment_run_status(experiment_status: str) -> tuple[str, str]:
     mapping = {
         "INVENTED": ("HYPOTHESIS_REGISTERED", "preregister the hypothesis contract"),
         "PREREGISTERED": ("PREREGISTERED", "collect or attach the frozen dataset"),
@@ -576,7 +600,7 @@ def _desired_run_status(experiment_status: str) -> tuple[str, str]:
         "FAILED": ("REJECTED", "close without threshold tuning"),
         "REJECTED": ("REJECTED", "close the rejected objective"),
         "RETIRED": ("REJECTED", "close the retired objective"),
-        "CLOSED": ("REJECTED", "close the completed objective"),
+        "CLOSED": ("CLOSED", "start a new explicit bounded learning run"),
     }
     try:
         return mapping[experiment_status]
@@ -584,6 +608,32 @@ def _desired_run_status(experiment_status: str) -> tuple[str, str]:
         raise LearningLoopError(
             f"experiment has unsupported lifecycle status {experiment_status!r}"
         ) from exc
+
+
+def _desired_objective_run_status(
+    objective_registry: str, objective: Mapping[str, Any]
+) -> tuple[str, str]:
+    payload = objective.get("payload")
+    if not isinstance(payload, Mapping):
+        raise LearningLoopError("registered objective payload is invalid")
+    status = str(payload.get("status", ""))
+    if objective_registry == "experiments":
+        return _desired_experiment_run_status(status)
+    if objective_registry != "datasets":
+        raise LearningLoopError(
+            f"unsupported objective registry {objective_registry!r}"
+        )
+    if status == "COLLECTING":
+        return "PREREGISTERED", "collect the exact frozen dataset contract"
+    if status == "READY":
+        if payload.get("inspected") is True:
+            return "CLOSED", "start a new explicit bounded learning run"
+        return "DATA_READY", "independently inspect the frozen dataset"
+    if status in {"FAILED", "RETIRED"}:
+        return "REJECTED", "close the failed or retired dataset objective"
+    raise LearningLoopError(
+        f"dataset has unsupported lifecycle status {status!r}"
+    )
 
 
 def run_next(
@@ -604,9 +654,12 @@ def run_next(
             _transition(state, "INVENTORIED", "protected state and registries verified")
             state["next_action"] = "align the run with the current experiment event"
         else:
-            experiment = _latest_experiment(str(state["objective_id"]), root)
-            desired, next_action = _desired_run_status(
-                str(experiment["payload"]["status"])
+            objective_registry = str(state.get("objective_registry", ""))
+            objective = _latest_objective(
+                str(state["objective_id"]), objective_registry, root
+            )
+            desired, next_action = _desired_objective_run_status(
+                objective_registry, objective
             )
             if previous in {"REJECTED", "CONFIRMATION_QUEUED", "SHADOW_QUEUED"}:
                 _transition(
@@ -621,9 +674,12 @@ def run_next(
                 _transition(
                     state,
                     desired,
-                    f"synchronized with experiment event {experiment['event_id']}",
+                    f"synchronized with {objective_registry} event "
+                    f"{objective['event_id']}",
                 )
                 state["next_action"] = next_action
+                if desired == "CLOSED":
+                    state["outcome"] = "completed"
         _write_state(path, state, allowed_root=run_root)
         return {**state, "progressed": previous != state["status"]}
 
@@ -687,6 +743,7 @@ def audit_program(
                     "run_id": state["run_id"],
                     "status": state["status"],
                     "objective_id": state["objective_id"],
+                    "objective_registry": state["objective_registry"],
                 }
             )
     return {

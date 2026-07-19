@@ -70,9 +70,18 @@ class LearningRegistryTests(unittest.TestCase):
 
     def test_repository_registries_audit(self):
         result = audit_registries()
+        datasets = current_entities("datasets")
 
         self.assertTrue(result["valid"])
-        self.assertEqual(result["datasets"]["entities"], 3)
+        self.assertEqual(result["datasets"]["entities"], len(datasets))
+        self.assertTrue(
+            {
+                "dataset-production-scanner-replay-2026-07-18-v1",
+                "dataset-production-scanner-replay-2026-07-19-v2",
+                "dataset-production-scanner-replay-2026-07-19-v3",
+                "dataset-production-scanner-replay-2026-07-19-v4",
+            }.issubset(datasets)
+        )
         self.assertEqual(result["experiments"]["entities"], 2)
         self.assertEqual(result["strategies"]["entities"], 2)
 

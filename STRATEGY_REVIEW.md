@@ -1,6 +1,6 @@
 # 2026 Agentic Intraday Strategy Review
 
-Reviewed: 2026-07-16 (ET)
+Reviewed: 2026-07-19 (ET)
 
 Active strategy: `2026-07-15-orb-v3`
 
@@ -68,6 +68,54 @@ ATR filters remain the current primary-source rationale, and the larger
 five-minute request is within IBKR's current duration/bar-size table. [University
 of St. Gallen ORB paper](https://www.alexandria.unisg.ch/server/api/core/bitstreams/3c2989c4-688d-4d78-8a71-f02690990d51/content),
 [IBKR TWS API historical-data documentation](https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/)
+
+### 2026-07-19 evidence and architecture checkpoint
+
+The accumulated public ledger now contains 106 closed no-trade sessions and
+1,060 rejected candidate signals. Six hundred six candidates recorded an ORB
+crossing, but zero were eligible and zero produced a closed performance label.
+The current maturity report therefore remains `UNVALIDATED`: expectancy,
+profit factor, win rate, payoff ratio, bootstrap confidence, entry slippage,
+stop slippage, and protection latency are all still unmeasured for the active
+strategy. A large count of overlapping rejections is not evidence that any one
+threshold is wrong. In particular, 975 chase rejects, 798 reward/risk rejects,
+773 resistance-room rejects, 753 median-spread rejects, and 612 stop-noise
+rejects came from the earlier catalyst-derived replay surface, which did not
+reconstruct the production 09:35 cross-section.
+
+The strongest mined challenger also failed its independent test. The frozen
+early Item 2.02 reversal produced 22 primary trades over 31 usable dates and
+lost 10.056R: -0.457R mean expectancy, 0.370 profit factor, and 10.492R maximum
+drawdown. Every target and cost-stress cell was negative. The correct response
+is deletion and focus, not another parameter search: the reversal is `RETIRED`,
+its unused prospective shadow runner has been removed, and its immutable
+manifest and result remain as falsification evidence.
+
+The source-attested dynamic 09:35 scanner replay described in
+`SCANNER_REPLAY.md` is now inspected `READY`. It froze the point-in-time security
+master, exact dates, scanner rules, calendar, split actions, pre-collection
+production configuration, provider request contract, and independent rebuild
+before any target-session strategy outcome was joined. All 118 source sessions
+passed; the 20 dates contained 105,261 point-in-time security evaluations, 1,228
+eligible rows, and 389 exact selected pairs. Nineteen dates supplied a top 20;
+one supplied only nine and was not padded. The inspector reconciled 608,386
+canonical documents to the source and independently reproduced every metric,
+disposition, rank, and shortlist hash.
+
+This is a strategy rule
+about evidence eligibility, not an alpha threshold: no result from the old
+catalyst-derived universe justified a new mechanism or production rule before
+this fidelity gate closed. Its completion releases the mechanical research lock,
+but the first 20 dates validate selection machinery only; they cannot promote or
+revise the active strategy because catalyst, quote, depth, breakout, execution,
+and outcome fields remain absent.
+
+Determination: preserve every numeric v3 production rule and the
+`2026-07-15-orb-v3` sample identity. Collect detailed data only for the frozen
+selected pairs, evaluate the unchanged champion first,
+and earn at most one preregistered revision from a subsequently frozen sample.
+This sequence maximizes the chance that additional complexity improves net
+geometric growth instead of fitting a biased shortlist.
 
 ## What The Repository Had Right
 

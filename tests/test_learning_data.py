@@ -14,7 +14,7 @@ from learning_data import (
     security_master_sha256,
     validate_dataset_payload,
 )
-from learning_registry import append_event
+from learning_registry import append_event, current_entities
 
 
 def security_record(
@@ -85,6 +85,22 @@ class SecurityMasterTests(unittest.TestCase):
             with self.assertRaisesRegex(LearningDataError, "intervals overlap"):
                 append_security_record(
                     security_record("two", "instrument-one", "BBB", "2021-01-01", None),
+                    path,
+                )
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "SECURITY_MASTER.jsonl"
+            append_security_record(
+                security_record(
+                    "one", "instrument-one", "AAA", "2020-01-01", "2022-01-01"
+                ),
+                path,
+            )
+            with self.assertRaisesRegex(LearningDataError, "intervals overlap"):
+                append_security_record(
+                    security_record(
+                        "two", "instrument-two", "AAA", "2021-01-01", None
+                    ),
                     path,
                 )
 
@@ -171,9 +187,17 @@ class DatasetLaneTests(unittest.TestCase):
 
     def test_current_public_dataset_claims_audit(self):
         result = audit_learning_data()
+        entities = current_entities("datasets")
 
         self.assertTrue(result["valid"])
-        self.assertEqual(result["datasets"]["datasets"], 3)
+        self.assertEqual(result["datasets"]["datasets"], len(entities))
+        self.assertTrue(
+            {
+                "dataset-development-2026-07-16-100-day",
+                "dataset-confirmation-2026-07-18-reversal",
+                "dataset-production-scanner-replay-2026-07-19-v4",
+            }.issubset(entities)
+        )
 
     def test_public_audit_uses_attestation_when_licensed_master_is_absent(self):
         with tempfile.TemporaryDirectory() as directory:

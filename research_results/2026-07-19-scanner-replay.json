@@ -1,0 +1,453 @@
+{
+  "claim_boundary": "Faithful dynamic 09:35 scanner-universe reconstruction only; catalyst, NBBO spread, depth, tradability, breakout, and outcomes are not trade eligible.",
+  "complete_universe": true,
+  "completed_dates": 20,
+  "dataset_id": "dataset-production-scanner-replay-2026-07-19-v4",
+  "dates": [
+    {
+      "date": "2026-01-02",
+      "eligible_count": 38,
+      "evaluated_count": 5228,
+      "master_common_stock_count": 5228,
+      "rejection_counts": {
+        "below_minimum_atr": 102,
+        "below_minimum_average_daily_volume": 16,
+        "below_minimum_open_price": 90,
+        "below_minimum_opening_rvol": 237,
+        "eligible": 38,
+        "incomplete_prior_opening_history": 1204,
+        "incomplete_prior_session_history": 8,
+        "incomplete_target_opening_bar": 3462,
+        "non_bullish_opening_candle": 70,
+        "non_positive_opening_return": 1
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "d40854cf5533f7306d3285b83a1037d512221c38cf30f2b38620f3411fca7311"
+    },
+    {
+      "date": "2026-01-05",
+      "eligible_count": 97,
+      "evaluated_count": 5224,
+      "master_common_stock_count": 5224,
+      "rejection_counts": {
+        "below_minimum_atr": 97,
+        "below_minimum_average_daily_volume": 14,
+        "below_minimum_open_price": 94,
+        "below_minimum_opening_rvol": 156,
+        "eligible": 97,
+        "incomplete_prior_opening_history": 1342,
+        "incomplete_prior_session_history": 10,
+        "incomplete_target_opening_bar": 3318,
+        "non_bullish_opening_candle": 92,
+        "non_positive_opening_return": 4
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "28d91c2b191231b238bc26e1a2e7a7647fc8fbba9f7e4536d1436ee738514123"
+    },
+    {
+      "date": "2026-01-06",
+      "eligible_count": 67,
+      "evaluated_count": 5226,
+      "master_common_stock_count": 5226,
+      "rejection_counts": {
+        "below_minimum_atr": 103,
+        "below_minimum_average_daily_volume": 12,
+        "below_minimum_open_price": 86,
+        "below_minimum_opening_rvol": 216,
+        "eligible": 67,
+        "incomplete_prior_opening_history": 1292,
+        "incomplete_prior_session_history": 8,
+        "incomplete_target_opening_bar": 3375,
+        "non_bullish_opening_candle": 57,
+        "non_positive_opening_return": 10
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "ece797b9747555847db91ecb05fd35899ab3262adc10f98b1b8cc305f1af3100"
+    },
+    {
+      "date": "2026-01-07",
+      "eligible_count": 44,
+      "evaluated_count": 5223,
+      "master_common_stock_count": 5223,
+      "rejection_counts": {
+        "below_minimum_atr": 105,
+        "below_minimum_average_daily_volume": 7,
+        "below_minimum_open_price": 81,
+        "below_minimum_opening_rvol": 194,
+        "eligible": 44,
+        "incomplete_prior_opening_history": 1262,
+        "incomplete_prior_session_history": 8,
+        "incomplete_target_opening_bar": 3412,
+        "non_bullish_opening_candle": 92,
+        "non_positive_opening_return": 18
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "4e021627468c87b923c167ff5f3201cb7abe18c5e129fc2910e3e98b7db7d15c"
+    },
+    {
+      "date": "2026-01-20",
+      "eligible_count": 72,
+      "evaluated_count": 5227,
+      "master_common_stock_count": 5227,
+      "rejection_counts": {
+        "below_minimum_atr": 89,
+        "below_minimum_average_daily_volume": 8,
+        "below_minimum_open_price": 95,
+        "below_minimum_opening_rvol": 76,
+        "eligible": 72,
+        "incomplete_prior_opening_history": 1398,
+        "incomplete_prior_session_history": 8,
+        "incomplete_target_opening_bar": 3217,
+        "non_bullish_opening_candle": 134,
+        "non_positive_opening_return": 130
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "af6ec2c1c73ebc753ea40d7da27a54072a0d03ebfbb25e4b6a604154ae740c2c"
+    },
+    {
+      "date": "2026-02-26",
+      "eligible_count": 57,
+      "evaluated_count": 5258,
+      "master_common_stock_count": 5258,
+      "rejection_counts": {
+        "below_minimum_atr": 65,
+        "below_minimum_average_daily_volume": 9,
+        "below_minimum_open_price": 94,
+        "below_minimum_opening_rvol": 352,
+        "eligible": 57,
+        "incomplete_prior_opening_history": 1097,
+        "incomplete_prior_session_history": 7,
+        "incomplete_target_opening_bar": 3506,
+        "non_bullish_opening_candle": 64,
+        "non_positive_opening_return": 7
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "28f0f6856b48f5ef0dea443b88612a5a297ff3ea4a4473c8625dc2daa20668c5"
+    },
+    {
+      "date": "2026-03-16",
+      "eligible_count": 96,
+      "evaluated_count": 5265,
+      "master_common_stock_count": 5265,
+      "rejection_counts": {
+        "below_minimum_atr": 61,
+        "below_minimum_average_daily_volume": 10,
+        "below_minimum_open_price": 90,
+        "below_minimum_opening_rvol": 323,
+        "eligible": 96,
+        "incomplete_prior_opening_history": 1216,
+        "incomplete_prior_session_history": 14,
+        "incomplete_target_opening_bar": 3383,
+        "non_bullish_opening_candle": 69,
+        "non_positive_opening_return": 3
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "9985a8e877fe36f523dc4bc2395d8fcca650bff137b3f11c960fc7d280b69b6f"
+    },
+    {
+      "date": "2026-03-27",
+      "eligible_count": 9,
+      "evaluated_count": 5266,
+      "master_common_stock_count": 5266,
+      "rejection_counts": {
+        "below_minimum_atr": 67,
+        "below_minimum_average_daily_volume": 8,
+        "below_minimum_open_price": 93,
+        "below_minimum_opening_rvol": 391,
+        "eligible": 9,
+        "incomplete_prior_opening_history": 1067,
+        "incomplete_prior_session_history": 8,
+        "incomplete_target_opening_bar": 3564,
+        "non_bullish_opening_candle": 43,
+        "non_positive_opening_return": 16
+      },
+      "shortlist_count": 9,
+      "shortlist_sha256": "aea232ca824f42ce4ff07247ad9d600c8b962109c0c06bd74a8fd1b4cc404174"
+    },
+    {
+      "date": "2026-04-02",
+      "eligible_count": 21,
+      "evaluated_count": 5261,
+      "master_common_stock_count": 5261,
+      "rejection_counts": {
+        "below_minimum_atr": 74,
+        "below_minimum_average_daily_volume": 7,
+        "below_minimum_open_price": 99,
+        "below_minimum_opening_rvol": 313,
+        "eligible": 21,
+        "incomplete_prior_opening_history": 1111,
+        "incomplete_prior_session_history": 11,
+        "incomplete_target_opening_bar": 3522,
+        "non_bullish_opening_candle": 53,
+        "non_positive_opening_return": 50
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "b549ea27f8565615051c5f4b16dc999901c39b77286368f49fa9aecc15ce3ce3"
+    },
+    {
+      "date": "2026-04-10",
+      "eligible_count": 53,
+      "evaluated_count": 5260,
+      "master_common_stock_count": 5260,
+      "rejection_counts": {
+        "below_minimum_atr": 68,
+        "below_minimum_average_daily_volume": 9,
+        "below_minimum_open_price": 87,
+        "below_minimum_opening_rvol": 308,
+        "eligible": 53,
+        "incomplete_prior_opening_history": 1112,
+        "incomplete_prior_session_history": 7,
+        "incomplete_target_opening_bar": 3567,
+        "non_bullish_opening_candle": 48,
+        "non_positive_opening_return": 1
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "e141ef4e16e7b3ab887e88d42bd490cded0f0ed1568113e4ce37d280e5992493"
+    },
+    {
+      "date": "2026-04-13",
+      "eligible_count": 63,
+      "evaluated_count": 5262,
+      "master_common_stock_count": 5262,
+      "rejection_counts": {
+        "below_minimum_atr": 65,
+        "below_minimum_average_daily_volume": 9,
+        "below_minimum_open_price": 87,
+        "below_minimum_opening_rvol": 271,
+        "eligible": 63,
+        "incomplete_prior_opening_history": 1144,
+        "incomplete_prior_session_history": 5,
+        "incomplete_target_opening_bar": 3541,
+        "non_bullish_opening_candle": 66,
+        "non_positive_opening_return": 11
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "ce63687b928842e9e5b3bc97062e18dff5e1e4c5f6b852aaaeaf73e4a3d4c649"
+    },
+    {
+      "date": "2026-04-14",
+      "eligible_count": 92,
+      "evaluated_count": 5263,
+      "master_common_stock_count": 5263,
+      "rejection_counts": {
+        "below_minimum_atr": 69,
+        "below_minimum_average_daily_volume": 8,
+        "below_minimum_open_price": 80,
+        "below_minimum_opening_rvol": 207,
+        "eligible": 92,
+        "incomplete_prior_opening_history": 1218,
+        "incomplete_prior_session_history": 8,
+        "incomplete_target_opening_bar": 3467,
+        "non_bullish_opening_candle": 106,
+        "non_positive_opening_return": 8
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "252873247e6a5257c04988b617d2cb0c8fdc885b6390fa18325a5a6060d4e423"
+    },
+    {
+      "date": "2026-04-17",
+      "eligible_count": 148,
+      "evaluated_count": 5271,
+      "master_common_stock_count": 5271,
+      "rejection_counts": {
+        "below_minimum_atr": 83,
+        "below_minimum_average_daily_volume": 8,
+        "below_minimum_open_price": 73,
+        "below_minimum_opening_rvol": 96,
+        "eligible": 148,
+        "incomplete_prior_opening_history": 1276,
+        "incomplete_prior_session_history": 9,
+        "incomplete_target_opening_bar": 3401,
+        "non_bullish_opening_candle": 157,
+        "non_positive_opening_return": 20
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "99ed64bb2af8bbf67fca0658bf7f34338c5710dae2652b160206f15ba9ed2e05"
+    },
+    {
+      "date": "2026-04-20",
+      "eligible_count": 48,
+      "evaluated_count": 5275,
+      "master_common_stock_count": 5275,
+      "rejection_counts": {
+        "below_minimum_atr": 79,
+        "below_minimum_average_daily_volume": 9,
+        "below_minimum_open_price": 81,
+        "below_minimum_opening_rvol": 279,
+        "eligible": 48,
+        "incomplete_prior_opening_history": 1252,
+        "incomplete_prior_session_history": 11,
+        "incomplete_target_opening_bar": 3415,
+        "non_bullish_opening_candle": 69,
+        "non_positive_opening_return": 32
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "2b9ca55976ed8e0a2675fc088406e5219d8bea140feaa41de7f19e669ba4de34"
+    },
+    {
+      "date": "2026-05-19",
+      "eligible_count": 33,
+      "evaluated_count": 5277,
+      "master_common_stock_count": 5277,
+      "rejection_counts": {
+        "below_minimum_atr": 66,
+        "below_minimum_average_daily_volume": 11,
+        "below_minimum_open_price": 86,
+        "below_minimum_opening_rvol": 334,
+        "eligible": 33,
+        "incomplete_prior_opening_history": 1432,
+        "incomplete_prior_session_history": 12,
+        "incomplete_target_opening_bar": 3170,
+        "non_bullish_opening_candle": 108,
+        "non_positive_opening_return": 25
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "c5aee6995d925491093cb7cdea4aada663c2bf1e51b27decbd28436316f04f12"
+    },
+    {
+      "date": "2026-05-27",
+      "eligible_count": 85,
+      "evaluated_count": 5287,
+      "master_common_stock_count": 5287,
+      "rejection_counts": {
+        "below_minimum_atr": 68,
+        "below_minimum_average_daily_volume": 20,
+        "below_minimum_open_price": 84,
+        "below_minimum_opening_rvol": 324,
+        "eligible": 85,
+        "incomplete_prior_opening_history": 1179,
+        "incomplete_prior_session_history": 17,
+        "incomplete_target_opening_bar": 3396,
+        "non_bullish_opening_candle": 94,
+        "non_positive_opening_return": 20
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "bc1fd3b1d8c102d1be4fbae6b8f611aad8fc4724af2aa69c102fc9764d4fbb45"
+    },
+    {
+      "date": "2026-06-09",
+      "eligible_count": 61,
+      "evaluated_count": 5296,
+      "master_common_stock_count": 5296,
+      "rejection_counts": {
+        "below_minimum_atr": 73,
+        "below_minimum_average_daily_volume": 16,
+        "below_minimum_open_price": 97,
+        "below_minimum_opening_rvol": 401,
+        "eligible": 61,
+        "incomplete_prior_opening_history": 1187,
+        "incomplete_prior_session_history": 18,
+        "incomplete_target_opening_bar": 3396,
+        "non_bullish_opening_candle": 39,
+        "non_positive_opening_return": 8
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "175223b8bcde80b6d398a08fe921ac7e83421efdb91b9d4c2fb67cfa8b3b1d63"
+    },
+    {
+      "date": "2026-06-16",
+      "eligible_count": 61,
+      "evaluated_count": 5294,
+      "master_common_stock_count": 5294,
+      "rejection_counts": {
+        "below_minimum_atr": 70,
+        "below_minimum_average_daily_volume": 16,
+        "below_minimum_open_price": 101,
+        "below_minimum_opening_rvol": 375,
+        "eligible": 61,
+        "incomplete_prior_opening_history": 1188,
+        "incomplete_prior_session_history": 16,
+        "incomplete_target_opening_bar": 3407,
+        "non_bullish_opening_candle": 43,
+        "non_positive_opening_return": 17
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "abd10da5d567006f27874a2df1ddeaa6f66b27e1e2781b4564368ef5a911f88b"
+    },
+    {
+      "date": "2026-06-17",
+      "eligible_count": 43,
+      "evaluated_count": 5294,
+      "master_common_stock_count": 5294,
+      "rejection_counts": {
+        "below_minimum_atr": 67,
+        "below_minimum_average_daily_volume": 15,
+        "below_minimum_open_price": 101,
+        "below_minimum_opening_rvol": 407,
+        "eligible": 43,
+        "incomplete_prior_opening_history": 1053,
+        "incomplete_prior_session_history": 21,
+        "incomplete_target_opening_bar": 3546,
+        "non_bullish_opening_candle": 37,
+        "non_positive_opening_return": 4
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "11e7c5063ca7512fc25088a28a9809ee14ae8894dca290f4a18f034b339208d6"
+    },
+    {
+      "date": "2026-06-23",
+      "eligible_count": 40,
+      "evaluated_count": 5304,
+      "master_common_stock_count": 5304,
+      "rejection_counts": {
+        "below_minimum_atr": 61,
+        "below_minimum_average_daily_volume": 16,
+        "below_minimum_open_price": 105,
+        "below_minimum_opening_rvol": 319,
+        "eligible": 40,
+        "incomplete_prior_opening_history": 1209,
+        "incomplete_prior_session_history": 16,
+        "incomplete_target_opening_bar": 3393,
+        "non_bullish_opening_candle": 59,
+        "non_positive_opening_return": 86
+      },
+      "shortlist_count": 20,
+      "shortlist_sha256": "4a9902c75c267e33a07757aa7b51bbf6239b557459d05bf8ff9a9fc21f50b798"
+    }
+  ],
+  "detailed_artifact": {
+    "local_path": "learning_runs/scanner_replay_alpaca/scanner-replay-detail.json",
+    "public": false,
+    "sha256": "102ef9cf15146e55a3ebdc3a95c4672862911c6379f2f7b691f6d036fcdc4af1"
+  },
+  "information_cutoff": "TARGET_SESSION_09:35_ET",
+  "requested_dates": [
+    "2026-01-02",
+    "2026-01-05",
+    "2026-01-06",
+    "2026-01-07",
+    "2026-01-20",
+    "2026-02-26",
+    "2026-03-16",
+    "2026-03-27",
+    "2026-04-02",
+    "2026-04-10",
+    "2026-04-13",
+    "2026-04-14",
+    "2026-04-17",
+    "2026-04-20",
+    "2026-05-19",
+    "2026-05-27",
+    "2026-06-09",
+    "2026-06-16",
+    "2026-06-17",
+    "2026-06-23"
+  ],
+  "scanner_rules_sha256": "1fe223866ac034c7afdfad6accc98bb155d600320b37ea1b32df650a48fa6667",
+  "schema_version": 1,
+  "security_master_sha256": "8a6912f2ccefe84a9dd8a2e81c78de38cb0b1d713c18b95528f2d0363d9de99a",
+  "selection_is_dynamic": true,
+  "selection_time_et": "09:35:00",
+  "source": {
+    "adjustment": "raw",
+    "canonical_per_symbol_day_store": true,
+    "contract_sha256": "645f727fe0b596ee591a6ff32515b50883634b0e3294e83333ff6b83949b04b4",
+    "derived_index_public": false,
+    "feed": "sip",
+    "provider": "Alpaca",
+    "session_artifact_count": 118,
+    "session_artifacts_sha256": "cc14221602f38fb599e84394fa2b0d1a2e3d6e6bbba5272acdf64a26d46e2851"
+  },
+  "split_actions_sha256": "0be5859007884dc8ec1cbf1e1245293443da7da0fafa03c6b3bb3ce84c30cd2b",
+  "status": "READY"
+}

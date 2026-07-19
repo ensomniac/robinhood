@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
 from pathlib import Path
 from time import monotonic
 from typing import Any, Callable, Iterator, Sequence, TypeVar
@@ -74,6 +74,32 @@ def _provider_metadata(client: HistoricalMarketDataClient) -> tuple[str, str, st
     return provider, "unknown", "unknown"
 
 
+def _covers_regular_session(
+    start: str | datetime,
+    end: str | datetime,
+    day: str,
+    *,
+    use_rth: bool,
+) -> bool:
+    """Return whether the successful request covered the normal RTH envelope.
+
+    Trade-bar APIs legitimately omit intervals with no qualifying trades, and a
+    scheduled early close can contain fewer than 390 minute buckets.  Coverage
+    is therefore a property of the exhausted request window, not row density.
+    A partial-window request remains incomplete even if every requested bucket
+    was returned.
+    """
+
+    if not use_rth:
+        return False
+    session_day = date.fromisoformat(day)
+    session_open = datetime.combine(session_day, time(9, 30), tzinfo=EASTERN)
+    session_end = datetime.combine(session_day, time(16, 0), tzinfo=EASTERN)
+    return _coerce(start) <= session_open.astimezone(UTC) and _coerce(
+        end
+    ) >= session_end.astimezone(UTC)
+
+
 class RecordingHistoricalClient:
     """Persist every successful provider response in canonical daily shape."""
 
@@ -112,7 +138,6 @@ class RecordingHistoricalClient:
         timeframe = {"1 min": "1m", "5 mins": "5m", "1 day": "1d"}.get(
             bar_size, bar_size.replace(" ", "")
         )
-        expected = {"1m": 390, "5m": 78, "1d": 1}.get(timeframe)
         grouped: dict[str, list[dict[str, Any]]] = {}
         for row in rows:
             day = str(row.get("date_et") or "")
@@ -132,7 +157,9 @@ class RecordingHistoricalClient:
         captured_at = datetime.now(UTC).isoformat()
         for day, values in grouped.items():
             values.sort(key=lambda row: str(row["t"]))
-            complete = expected is not None and len(values) == expected
+            complete = _covers_regular_session(
+                start, end, day, use_rth=use_rth
+            )
             self.store.merge(
                 symbol,
                 day,
@@ -147,7 +174,11 @@ class RecordingHistoricalClient:
                         adjustment=adjustment,
                         session="regular" if use_rth else "all",
                         scope="full_session" if complete else "observed_window",
-                        quality={"complete": complete},
+                        quality={
+                            "complete": complete,
+                            "requested_window_complete": complete,
+                            "sparse_intervals_allowed": True,
+                        },
                         provenance={
                             "source_type": "live_provider_collection",
                             "captured_at": captured_at,

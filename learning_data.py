@@ -212,17 +212,21 @@ def security_record_covers(record: Mapping[str, Any], as_of: date) -> bool:
 
 
 def _validate_security_intervals(records: Sequence[Mapping[str, Any]]) -> None:
-    for index, left in enumerate(records):
-        for right in records[index + 1 :]:
-            same_instrument = left["instrument_id"] == right["instrument_id"]
-            same_listing = (
-                left["symbol"] == right["symbol"]
-                and left["primary_exchange"] == right["primary_exchange"]
-            )
-            if (same_instrument or same_listing) and _intervals_overlap(left, right):
+    instruments: dict[str, list[Mapping[str, Any]]] = {}
+    listings: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+    for record in records:
+        buckets = (
+            instruments.setdefault(str(record["instrument_id"]), []),
+            listings.setdefault(
+                (str(record["symbol"]), str(record["primary_exchange"])), []
+            ),
+        )
+        for bucket in buckets:
+            if any(_intervals_overlap(previous, record) for previous in bucket):
                 raise LearningDataError(
                     "security-master intervals overlap for an instrument or listing"
                 )
+            bucket.append(record)
 
 
 def append_security_record(

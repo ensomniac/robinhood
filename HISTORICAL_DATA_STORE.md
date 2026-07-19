@@ -173,9 +173,26 @@ defaults to `feed=sip` and `adjustment=raw`; do not silently substitute IEX for
 SIP or raw for split-adjusted data. Feed and adjustment compatibility must be a
 deliberate caller requirement.
 
-The canonical collector never requires Massive S3 credentials. Flat files may
-remain useful for a separate market-wide scanner-replay bulk ingestion, but the
-per-symbol/day cache uses read-only APIs and local storage.
+The canonical collector never requires Massive S3 credentials. The dynamic
+scanner collector also has a non-S3 path: `scanner_replay_alpaca.py` batches raw
+historical Alpaca SIP bars, writes every returned 15-minute regular-session and
+one-minute opening-window series through `HistoricalDayStore`, and uses a
+private derived index only to accelerate full-universe replay. The opening
+window is always `quality.complete=false` with
+`opening_window_complete=true|false`; a normal complete one-minute cache read
+can therefore never mistake five rows for a full session. A minute-derived
+one-day aggregate is stored as `kind=derived`, not as a provider daily bar.
+The completed v4 run independently reconciled 608,386 canonical documents,
+including 557,520 opening-minute datasets, to all 118 source indexes; its
+aggregate evidence is public while licensed symbol rows remain outside Git.
+
+Provider `1Day` bars are not interchangeable with minute-derived session bars.
+Alpaca applies type-specific trade-condition rules to daily bars, and the v2
+scanner pilot proved that its daily open/volume can differ from regular-session
+minute aggregation. Such rows may be retained with a non-preferred
+`provider_trade_date` scope and an explicit limitation, but they cannot satisfy
+scanner ADV/ATR input. See `SCANNER_REPLAY.md` for the frozen v4 source contract
+and failure lineage.
 
 ## Operator commands
 
@@ -199,19 +216,37 @@ Fetch a complete day cache-first, then IBKR, Massive, and Alpaca:
 python3 historical_data_cli.py fetch AAPL --date 2026-07-17
 ```
 
-The generic `fetch` command currently requires the standard 390 one-minute
-regular-session rows. It fails closed on a newly collected 210-row early-close
-session because the store does not yet carry an authoritative session-schedule
-table that can distinguish a real half day from a provider truncation. Legacy
-early closes with explicit source completeness are preserved, but extending the
-one-command collector requires a sourced calendar with close times; do not
-weaken the row gate to guess.
+Resume the separate full-universe scanner collection without S3:
+
+```sh
+python3 scanner_replay_alpaca.py collect \
+  historical_batches/scanner_replay/manifests/dataset-production-scanner-replay-2026-07-19-v4-645f727fe0b596ee591a6ff32515b50883634b0e3294e83333ff6b83949b04b4.json
+```
+
+The generic `fetch` command treats a successful, exhausted request covering the
+full 09:30-16:00 ET envelope as complete. It does not require 390 populated
+minute buckets: trade-bar APIs can omit intervals without qualifying trades,
+and scheduled early closes naturally return fewer rows. The canonical quality
+record therefore carries `requested_window_complete=true` and
+`sparse_intervals_allowed=true`. Partial-window and empty responses remain
+incomplete and cannot satisfy a `require_complete` cache read. Workflows with a
+sourced exchange calendar should additionally retain the actual scheduled close
+in their point-in-time source contract.
 
 The replay bundle and preflight CLIs also open the canonical store. Their
 ignored raw evidence shards remain for exact workflow resume and bundle audit,
 but successful market-data calls are recorded canonically at collection time.
 Use `historical_data_cli.py fetch` for a future bulk-history mode rather than
 calling low-level provider diagnostics directly.
+
+Before a new bulk manifest is frozen, measure the pilot's canonical bytes per
+symbol-session and provider requests per symbol-session, project both over the
+exact target set, and inspect free space on the volume containing
+`LOCAL_HISTORICAL_DATA_ROOT`. Preserve additional capacity for atomic temporary
+files and a full validation pass. Prefer selected-symbol one-minute collection
+over a full-universe one-minute mirror; broad daily or coarse intraday coverage
+and narrow trade-capable detail provide the useful fidelity at far lower storage
+and request cost.
 
 ## Migration and no-loss audit
 

@@ -22,7 +22,7 @@ class LearningPromptTests(unittest.TestCase):
     def test_public_prompt_is_versioned_ordered_and_bounded(self):
         contract = load_prompt()
 
-        self.assertEqual(contract["version"], "2026-07-18-v2")
+        self.assertEqual(contract["version"], "2026-07-19-v3")
         self.assertEqual(contract["max_apply_rounds"], 1)
         self.assertEqual(len(contract["phases"]), 8)
 
@@ -156,7 +156,23 @@ class PersistentRunTests(unittest.TestCase):
         root = Path(directory)
         (root / "learning").mkdir()
         (root / "LEARNING_PROGRAM.md").write_text("program\n", encoding="utf-8")
-        (root / "learning" / "DATASETS.jsonl").write_text("", encoding="utf-8")
+        dataset = {
+            "schema_version": 1,
+            "event_id": "dataset-test-registered",
+            "entity_id": "dataset-test",
+            "event_type": "registered",
+            "recorded_at": "2026-07-18T17:00:00-04:00",
+            "payload": {
+                "lane": "development",
+                "status": "COLLECTING",
+                "evidence_paths": ["evidence.json"],
+                "inspected": False,
+                "claim_scope": "DEVELOPMENT_ONLY",
+            },
+        }
+        (root / "learning" / "DATASETS.jsonl").write_text(
+            json.dumps(dataset) + "\n", encoding="utf-8"
+        )
         strategy = {
             "schema_version": 1,
             "event_id": "strategy-test-registered",
@@ -207,6 +223,67 @@ class PersistentRunTests(unittest.TestCase):
             self.assertEqual(second["status"], "REJECTED")
             self.assertEqual(third["status"], "CLOSED")
 
+    def test_collecting_dataset_is_a_resumable_objective(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._root(directory)
+            run_root = root / "learning_runs"
+            with patch("learning_loop._git_dirty_paths", return_value=[]):
+                state = start_run("dataset-test", root=root, run_root=run_root)
+
+            result = run_bounded(
+                state["run_id"], 5, root=root, run_root=run_root
+            )
+
+            self.assertEqual(state["objective_registry"], "datasets")
+            self.assertEqual(result["state"]["status"], "PREREGISTERED")
+            self.assertEqual(
+                result["state"]["next_action"],
+                "collect the exact frozen dataset contract",
+            )
+
+    def test_inspected_ready_dataset_closes_as_completed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._root(directory)
+            run_root = root / "learning_runs"
+            with patch("learning_loop._git_dirty_paths", return_value=[]):
+                state = start_run("dataset-test", root=root, run_root=run_root)
+            dataset_path = root / "learning" / "DATASETS.jsonl"
+            event = json.loads(dataset_path.read_text(encoding="utf-8"))
+            event["event_id"] = "dataset-test-ready"
+            event["event_type"] = "status"
+            event["payload"]["status"] = "READY"
+            event["payload"]["inspected"] = True
+            with dataset_path.open("a", encoding="utf-8") as stream:
+                stream.write(json.dumps(event) + "\n")
+
+            first = run_next(state["run_id"], root=root, run_root=run_root)
+            second = run_next(state["run_id"], root=root, run_root=run_root)
+
+            self.assertEqual(first["status"], "INVENTORIED")
+            self.assertEqual(second["status"], "CLOSED")
+            self.assertEqual(second["outcome"], "completed")
+
+    def test_uninspected_ready_dataset_stops_for_independent_inspection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._root(directory)
+            run_root = root / "learning_runs"
+            dataset_path = root / "learning" / "DATASETS.jsonl"
+            event = json.loads(dataset_path.read_text(encoding="utf-8"))
+            event["payload"]["status"] = "READY"
+            dataset_path.write_text(json.dumps(event) + "\n", encoding="utf-8")
+            with patch("learning_loop._git_dirty_paths", return_value=[]):
+                state = start_run("dataset-test", root=root, run_root=run_root)
+
+            result = run_bounded(
+                state["run_id"], 5, root=root, run_root=run_root
+            )
+
+            self.assertEqual(result["state"]["status"], "DATA_READY")
+            self.assertEqual(
+                result["state"]["next_action"],
+                "independently inspect the frozen dataset",
+            )
+
     def test_bounded_run_stops_when_judgment_is_needed(self):
         with tempfile.TemporaryDirectory() as directory:
             root = self._root(directory)
@@ -222,6 +299,24 @@ class PersistentRunTests(unittest.TestCase):
 
             self.assertEqual(result["state"]["status"], "HYPOTHESIS_REGISTERED")
             self.assertFalse(result["steps"][-1]["progressed"])
+
+    def test_completed_experiment_closes_as_completed_not_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._root(directory)
+            run_root = root / "learning_runs"
+            experiment_path = root / "learning" / "EXPERIMENTS.jsonl"
+            value = json.loads(experiment_path.read_text(encoding="utf-8"))
+            value["payload"]["status"] = "CLOSED"
+            experiment_path.write_text(json.dumps(value) + "\n", encoding="utf-8")
+            with patch("learning_loop._git_dirty_paths", return_value=[]):
+                state = start_run("experiment-test", root=root, run_root=run_root)
+
+            result = run_bounded(
+                state["run_id"], 5, root=root, run_root=run_root
+            )
+
+            self.assertEqual(result["state"]["status"], "CLOSED")
+            self.assertEqual(result["state"]["outcome"], "completed")
 
     def test_production_artifact_change_fails_closed(self):
         with tempfile.TemporaryDirectory() as directory:

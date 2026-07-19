@@ -4,6 +4,32 @@ Sparse feature ideas are expanded here into explicit acceptance criteria before
 implementation. Risk-bearing behavior must remain inside `AGENTS.md`; a backlog
 item never grants live-trading authority or permission to weaken safety gates.
 
+## Completed 2026-07-19
+
+### 16. Faithful Dynamic 09:35 Scanner Replay
+
+Status: `dataset-production-scanner-replay-2026-07-19-v4` is independently
+inspected `READY`; production strategy rules remain frozen.
+
+- Collected all 118 frozen Alpaca raw SIP sessions without S3, substitution, or
+  provider retries and retained every observation in the external canonical
+  symbol/year/day store.
+- Reconstructed 105,261 point-in-time common-stock evaluations across the exact
+  20 dates, admitted 1,228 under the unchanged v3 universe gates, and retained
+  389 selected pairs. The nine-name short day was not padded.
+- Independently rehashed source artifacts and recomputed security-master
+  populations, split factors, ADV, ATR, opening RVOL, dispositions, ranks, and
+  shortlist hashes; reconciled 608,386 canonical documents back to source.
+- Kept public evidence privacy-safe and aggregate-only. This closes universe
+  selection fidelity, not catalyst, quote, execution, outcome, or alpha
+  validation.
+- Made frozen datasets first-class resumable learning objectives, corrected
+  sparse/early-close cache reuse, and removed the terminally rejected reversal's
+  unused 1,135-line shadow implementation and tests.
+- Next: freeze the exact 389-pair selected-candidate join, collect detailed
+  target-session inputs plus SPY/QQQ, and run the unchanged champion before any
+  new hypothesis or threshold proposal.
+
 ## Completed 2026-07-18
 
 ### 12. Bounded Edit And Learning Loop
@@ -77,12 +103,12 @@ Status: implemented by `historical_strategy_lab.py` and documented in
   production strategy-review cadence, editing `strategy_config.toml`, or
   making broker/provider calls.
 
-### 15. Independent Reversal Confirmation And Shadow Qualification
+### 15. Independent Reversal Confirmation And Retired Shadow Path
 
-Status: prospective infrastructure implemented by `historical_strategy_lab.py`
-and `shadow_reversal.py` on 2026-07-18. The required new 100-date historical
-sample and 30-calendar-day shadow sample have not been collected; production
-rules remain frozen.
+Status: historical confirmation completed and failed on 2026-07-18. The
+challenger is `RETIRED`; the unused prospective shadow implementation was
+removed, its Git history and evidence remain auditable, and production rules
+remain frozen.
 
 - Freezes a public hash-addressed manifest before target-session collection.
   It embeds at least 100 new dates, complete ordered Item 2.02 evidence,
@@ -101,16 +127,12 @@ rules remain frozen.
   shortfall, stop slippage, binding cap, and largest-five-removal metrics.
   A separate cohort admits only naturally <=0.8% stops and needs 20 trades for
   inference; no stop is tightened and no allocation floor increases risk.
-- Adds a privacy-safe input-driven current-day shadow recorder. It recomputes
-  completed early signals, three fresh NBBO/book snapshots, chase-cap fills,
-  structural sizing, detection/readiness/protection timing, monitored MFE/MAE,
-  stop-first ambiguity, 2R exits, and 15:50 flattening. No-trade and missed days
-  are hash-sealed alongside complete lifecycles.
-- The shadow module has no account or order-action interface. Its aggregate gate
-  requires 20 completed signals across 30 calendar days, clean quote/monitoring
-  evidence, <=15 bps p95 entry slippage, <=10-second p95 unprotected exposure,
-  positive expectancy, PF >=1.20, drawdown <=6R, preserved stops, zero violations,
-  and no above-cap fills. Passing only permits the normal cadence review.
+- The frozen 100-date confirmation stopped when the required 80 usable dates
+  became mathematically unreachable. Its 22 primary trades returned -10.056R,
+  -0.457R mean expectancy, 0.370 profit factor, and 10.492R maximum drawdown;
+  every target and cost-stress cell was negative. No shadow sample was started,
+  the hypothesis-specific shadow runner and its tests were deleted, and the
+  failed contract may not be retuned.
 
 ## Completed 2026-07-16
 
@@ -222,14 +244,16 @@ Status: implemented by `historical_learning.py` and documented in
 
 Status: implemented by `session_mode.py` and the startup rules in `AGENTS.md`.
 
-- Every new agentic trading workflow presents four explicit choices: live,
-  current-day shadow, historical learning, or strategy review.
+- Every new agentic trading workflow has five explicit choices: live,
+  current-day shadow, historical replay, strategy review, or bounded repository
+  learning. When one mode is clear, Codex selects it and continues without a
+  redundant prompt.
 - The numbered CLI also accepts stable named modes for automation and returns a
   machine-readable selection plus the next required safety step.
 - Selection is declarative. Only live mode permits broker actions; no mode choice
   bypasses account, review, confirmation, evaluator, guard, lifecycle, or privacy
-  rules. Historical and review modes cannot place/cancel orders or silently apply
-  strategy changes.
+  rules. Shadow, historical, review, and learning modes cannot place/cancel
+  orders or silently apply strategy changes.
 
 ### 6. Optional Interactive Brokers Historical Data Adapter
 

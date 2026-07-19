@@ -910,10 +910,3 @@ def aggregate_bars(
             }
         )
     return sorted(result, key=lambda row: int(row["epoch"]))
-
-
-def expected_regular_minutes(day: str | date) -> int:
-    """Return the normal RTH expectation; known early closes remain explicit data quality."""
-
-    normalize_date(day)
-    return 390

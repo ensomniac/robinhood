@@ -1,0 +1,48 @@
+{
+    "allowed_primary_exchanges": [
+        "ARCX",
+        "BATS",
+        "XASE",
+        "XNAS",
+        "XNYS"
+    ],
+    "information_cutoff": "TARGET_SESSION_09:35_ET",
+    "lookbacks": {
+        "average_daily_volume_sessions": 14,
+        "daily_atr_sessions": 14,
+        "opening_relative_volume_sessions": 14,
+        "prior_sessions_loaded": 15
+    },
+    "missing_data_policy": "Reject the listing with an explicit reason; never substitute a current symbol, another security, another date, or end-of-day data.",
+    "purpose": "Reconstruct the complete dynamic common-stock scanner universe at 09:35 ET; this artifact does not establish catalyst, spread, depth, tradability, breakout, or trade eligibility.",
+    "ranking": [
+        "opening_relative_volume descending",
+        "opening_return descending",
+        "symbol ascending"
+    ],
+    "schema_version": 1,
+    "security_type": "COMMON",
+    "selection_time_et": "09:35:00",
+    "shortlist_size": 20,
+    "source_contract": {
+        "identity": "Massive /v3/reference/tickers with the target date, type=CS, and active=true",
+        "market_data": "Unadjusted consolidated SIP minute bars or exact aggregates derived only from such minute bars; the provider and query shape are fixed in the hash-addressed collection contract.",
+        "prior_data_only": true,
+        "target_bar_window_et": "09:30:00 inclusive through 09:35:00 exclusive"
+    },
+    "split_policy": {
+        "corporate_action_source": "Massive /stocks/v1/splits",
+        "market_data_basis": "unadjusted",
+        "future_actions_allowed": false,
+        "normalization": "For each prior session, multiply price by the product of split_from/split_to and volume by its reciprocal for split execution dates after that session and at or before the target date."
+    },
+    "strategy_version": "2026-07-15-orb-v3",
+    "thresholds": {
+        "minimum_average_daily_volume_14": 1000000,
+        "minimum_daily_atr_14": 0.5,
+        "minimum_open_price": 5,
+        "minimum_opening_relative_volume": 1,
+        "require_bullish_opening_candle": true,
+        "require_positive_opening_return": true
+    }
+}

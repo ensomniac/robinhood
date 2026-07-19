@@ -178,6 +178,7 @@ python3 learning_loop.py init
 python3 learning_loop.py inspect
 python3 learning_loop.py review-plan learning_runs/plan.json
 python3 learning_loop.py start --objective experiment-<registered-id>
+python3 learning_loop.py start --objective dataset-<registered-id>
 python3 learning_loop.py run --run-id learning-<id> --max-steps 20
 ```
 
@@ -185,7 +186,7 @@ The versioned [LEARNING_LOOP.md](LEARNING_LOOP.md) prompt governs each bounded
 slice. [LEARNING_PROGRAM.md](LEARNING_PROGRAM.md) and the append-only `learning/`
 registries persist datasets, experiment families, failures, and three-axis
 strategy evidence across invocations. The controller performs finite,
-resumable state transitions and stops when Codex judgment or new evidence is
+resumable experiment or dataset state transitions and stops when Codex judgment or new evidence is
 required. It cannot access the broker or activate production strategy changes.
 Operational state remains under ignored `learning_runs/`.
 
@@ -266,27 +267,26 @@ provider collection or research judgment. See
 [LEARNING_CADENCE.md](LEARNING_CADENCE.md). The repository does not install an
 external scheduler automatically.
 
-The early Item 2.02 reversal research has a separate prospective evidence plane.
-It cannot reuse the inspected corpus as confirmation and it cannot activate a
-strategy:
+The early Item 2.02 reversal research reached a terminal negative result. Its
+frozen confirmation machinery remains for audit and reproducibility, but the
+hypothesis-specific prospective shadow path was removed and must not be run or
+retuned:
 
 ```sh
-# Before requesting any target-session prices for the new 100+ date sample.
+# Historical reproduction only; do not freeze a replacement sample to tune the failure.
 python3 historical_strategy_lab.py freeze-confirmation \
   --evidence historical_batches/evidence-<new-independent-sample>.json
 
 # After post-preregistration bundles exist under ignored historical_data/.
 python3 historical_strategy_lab.py run-confirmation \
   historical_batches/confirmation_manifests/confirmation-<sha256>.json
-
-# For each prospective current-day no-order observation.
-python3 shadow_reversal.py record /path/to/privacy-safe-shadow-capture.json
 ```
 
 The confirmation runner executes only the frozen early Item 2.02 policy and
-reports both R expectancy and structural-stop, risk-sized account geometry. The
-shadow recorder recomputes the signal, NBBO/depth, chase cap, protection timing,
-and exit lifecycle without exposing an order-action path. See
+reports both R expectancy and structural-stop, risk-sized account geometry. Its
+22 primary trades lost 10.056R with -0.457R mean expectancy, 0.370 profit factor,
+and 10.492R maximum drawdown; every target and cost-stress cell was negative.
+The result is retained as falsification evidence, not a workflow to continue. See
 [HISTORICAL_RESEARCH.md](HISTORICAL_RESEARCH.md) for the exact freeze, collection,
 qualification, and stop-without-tuning gates.
 
@@ -327,12 +327,15 @@ several versioned bar-based strategies in parallel without provider calls or
 production-ledger writes:
 
 The first full-universe 09:35 scanner replay uses a separate, pre-price frozen
-pipeline. Its sourced security master is populated, while market-wide minute
-collection awaits the provider's separate S3 credentials. See
+pipeline. Its sourced security master is populated, and v4 is now independently
+inspected `READY`: 118 Alpaca raw SIP sessions produced all 20 dynamic ranks and
+389 exact selected date-symbol pairs without S3. Provider observations live in
+the external symbol-first canonical store; only a private hash-attested full-
+universe index is derived for fast replay. See
 [SCANNER_REPLAY.md](SCANNER_REPLAY.md) for the exact immutable manifest, claim
-boundary, current status, and resume commands. Catalyst-corpus variants remain
-blocked until this dataset is READY; `learning/RESEARCH_LOCK.json` enforces the
-block in hypothesis freezing and weekly cadence execution.
+boundary, failed-contract lineage, current status, and reproduction commands.
+The fidelity lock is satisfied, but the next work remains a frozen selected-
+candidate join and unchanged-champion evaluation, not an automatic new variant.
 
 ```sh
 python3 historical_research.py run \
@@ -537,6 +540,9 @@ Commit messages should describe what changed, for example:
 ├── email_sender.py    # Settings-aware notification CLI and server client
 ├── historical_learning.py # Point-in-time, no-broker replay engine
 ├── HISTORICAL_LEARNING.md # Replay data and operator contract
+├── historical_data_cli.py # Cache-first canonical history operator CLI
+├── historical_service.py # Local/IBKR/Massive/Alpaca fallback and recording
+├── historical_store.py # External symbol/year/day canonical store
 ├── historical_research.py # Process-parallel research-only strategy matrix
 ├── historical_research_strategies.py # Versioned immutable-bar plugins
 ├── historical_strategy_lab.py # Frozen-policy lab and confirmation manifests
@@ -548,7 +554,9 @@ Commit messages should describe what changed, for example:
 ├── requirements.txt  # Python runtime dependency declaration
 ├── session_guard.py  # Entry, protection, heartbeat, and flatten interlock
 ├── session_mode.py   # Explicit live/shadow/historical/review selector
-├── shadow_reversal.py # No-order prospective reversal qualification recorder
+├── scanner_replay_alpaca.py # Frozen non-S3 full-universe source collector
+├── scanner_replay_inspection.py # Independent scanner/canonical-data verifier
+├── SCANNER_REPLAY.md # Dynamic 09:35 selection contract and runbook
 ├── SIGNAL_LEDGER.md  # Structured public signal-record schema and workflow
 ├── sensitive_data.py # Fast encrypt/decrypt/audit/benchmark CLI
 ├── settings.toml      # Human-editable operational settings

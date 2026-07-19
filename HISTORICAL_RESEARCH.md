@@ -295,45 +295,16 @@ manifest and complete result are published under
 `historical_batches/confirmation_manifests/` and
 `research_results/2026-07-18-independent-early-earnings-reversal-confirmation.{json,md}`.
 
-## Prospective Shadow Execution Qualification
+## Retired Shadow Qualification Path
 
-`shadow_reversal.py` evaluates privacy-safe current-day captures from the normal
-read-only discovery, completed-bar, NBBO, and book surfaces. It has no account
-connector or order-action interface. A capture includes the pre-09:30 frozen
-shortlist, complete minute bars, Item 2.02 evidence, signal-detection time, three
-quote/book observations with quote and receipt timestamps, stop-readiness and
-simulated-protection times, a compact monitored bid/ask path, and a monitoring-
-gap attestation. Synthetic equity and buying power are required; live balances
-and broker identifiers are rejected.
-
-Record every session, including no-trade and missed-signal days:
-
-```sh
-python3 shadow_reversal.py record /path/to/privacy-safe-shadow-capture.json
-```
-
-The runner recomputes the first completed bearish-opening reclaim before 09:40,
-selects strength then symbol on a simultaneous signal, rejects delayed or stale
-observations, never assumes a fill above 0.15% of the signal close, preserves the
-structural stop, applies risk/allocation/depth/volume sizing, resolves an
-ambiguous stop/target interval stop-first, and requires a 15:50 bid for force
-flat. Records are hash-sealed under `shadow_results/`.
-
-After at least 20 completed signals spanning at least 30 calendar days, aggregate
-them with the independent historical result:
-
-```sh
-python3 shadow_reversal.py qualify shadow_results/2026-*.json \
-  --confirmation-result research_results/<independent-confirmation-name>.json \
-  --output shadow_results/qualification.json
-```
-
-The qualifier enforces quote/spread freshness, p95 entry slippage at most 15
-bps, p95 simulated unprotected exposure at most ten seconds, positive expectancy,
-PF at least 1.20, drawdown at most 6R, complete lifecycles, preserved stops, zero
-rule violations, and no above-cap fills. A pass only becomes
-`qualified_for_normal_cadence_review`; it never edits production or invokes
-`strategy_learning.py` automatically.
+The reversal-specific prospective shadow runner was removed after independent
+confirmation rejected the hypothesis. No shadow observation had been started,
+and retaining an executable qualification path contradicted the terminal
+`stop_without_threshold_tuning` decision. The implementation and its tests
+remain available in Git history; the frozen manifest and published negative
+result remain the durable audit artifacts. Future execution qualification must
+belong to an evidence-qualified strategy version, not be inherited from this
+retired reversal.
 
 ## First 100-Date Matrix
 
@@ -380,13 +351,12 @@ target-session performance.
 
 ## Validation
 
-`tests/test_historical_research.py`, `tests/test_historical_strategy_lab.py`, and
-`tests/test_shadow_reversal.py` prove immutable inputs, progressive
+`tests/test_historical_research.py` and `tests/test_historical_strategy_lab.py`
+prove immutable inputs, progressive
 no-lookahead disclosure, next-bar entry, adverse same-minute ambiguity,
 requirements blocking, malformed-bar rejection, exact preregistration and
 excluded-date identity, manifest mutation/order/capture-time refusal,
-deterministic one-policy results, structural-stop sizing, stale/chase/partial/
-monitoring failures, forced flattening, the no-order shadow boundary, identical
-stable output across worker counts, and unchanged production ledger files.
+deterministic one-policy results, structural-stop sizing, identical stable
+output across worker counts, and unchanged production ledger files.
 Before publishing a result, run the full repository tests and audits in the
 normal project workflow.

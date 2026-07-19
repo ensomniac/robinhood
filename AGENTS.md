@@ -1,6 +1,6 @@
 # Robinhood Codex Trading Context
 
-Research refreshed: 2026-07-16
+Research refreshed: 2026-07-19
 
 Strategy version: `2026-07-15-orb-v3`
 
@@ -762,6 +762,29 @@ When Ryan selects historical mode:
    never splice incompatible bars, lookbacks, or quotes. Retain every attempt
    and accepted provider in status and bundle provenance. Never interpolate a
    missing provider bar.
+   The separate full-universe 09:35 scanner replay uses the active frozen
+   contract in `SCANNER_REPLAY.md`. Its non-S3 Alpaca path must request raw SIP
+   15-minute regular-session bars plus the five raw opening minutes, retain
+   those observations in the same canonical day store, and treat the private
+   market-wide file only as a hash-attested derived index. Do not use Alpaca
+   `1Day` bars for scanner ADV/ATR: their daily trade-condition semantics were
+   empirically falsified as a substitute for minute-derived regular-session
+   aggregates. Do not activate or claim scanner evidence until the independent
+   inspection command passes and the exact dataset is registered READY.
+   Dataset v4 passed that gate on 2026-07-19: 118 source sessions, 20 dynamic
+   rankings, 105,261 point-in-time evaluations, 389 selected pairs, and 608,386
+   canonical documents were independently verified. This is selection-fidelity
+   evidence only. Freeze a separate selected-pair join before collecting
+   catalyst, quote, breakout, execution, or outcome evidence, and evaluate the
+   unchanged champion before proposing any rule change.
+   Before freezing any new bulk market-data contract, measure a representative
+   pilot's canonical bytes and provider requests per symbol-session, project
+   both over the exact target set, and verify free space for the projection plus
+   atomic-write and audit headroom. Prefer coarse full-universe coverage plus
+   selected-symbol one-minute detail; do not mirror full-universe one-minute
+   data when the decision only needs the frozen shortlist. Stop and resume the
+   same manifest before exhausting the reserve; never substitute dates or
+   symbols to shrink a frozen collection after outcomes are observable.
    Freeze every date first, then assemble a point-in-time ranked candidate pool
    with at least 20 names. Large multi-date runs should retain up to 80 names per
    date when the source supports it because the immutable ADV/ATR gates can

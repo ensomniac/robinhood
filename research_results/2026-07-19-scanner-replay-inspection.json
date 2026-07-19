@@ -1,0 +1,240 @@
+{
+  "aggregate_rejection_counts": {
+    "below_minimum_atr": 1532,
+    "below_minimum_average_daily_volume": 228,
+    "below_minimum_open_price": 1804,
+    "below_minimum_opening_rvol": 5579,
+    "eligible": 1228,
+    "incomplete_prior_opening_history": 24239,
+    "incomplete_prior_session_history": 222,
+    "incomplete_target_opening_bar": 68458,
+    "non_bullish_opening_candle": 1500,
+    "non_positive_opening_return": 471
+  },
+  "canonical_persistence": {
+    "derived_1d_datasets_verified": 608386,
+    "documents_verified": 608386,
+    "opening_1m_datasets_verified": 557520,
+    "regular_15m_datasets_verified": 608386,
+    "valid": true
+  },
+  "claim_boundary": "Faithful dynamic 09:35 scanner-universe reconstruction only; catalyst, NBBO spread, depth, tradability, breakout, and outcomes are not trade eligible.",
+  "completed_dates": 20,
+  "dataset_id": "dataset-production-scanner-replay-2026-07-19-v4",
+  "date_evidence": [
+    {
+      "date": "2026-01-02",
+      "eligible": 38,
+      "evaluated": 5228,
+      "selected": 20,
+      "shortlist_sha256": "d40854cf5533f7306d3285b83a1037d512221c38cf30f2b38620f3411fca7311",
+      "valid": true
+    },
+    {
+      "date": "2026-01-05",
+      "eligible": 97,
+      "evaluated": 5224,
+      "selected": 20,
+      "shortlist_sha256": "28d91c2b191231b238bc26e1a2e7a7647fc8fbba9f7e4536d1436ee738514123",
+      "valid": true
+    },
+    {
+      "date": "2026-01-06",
+      "eligible": 67,
+      "evaluated": 5226,
+      "selected": 20,
+      "shortlist_sha256": "ece797b9747555847db91ecb05fd35899ab3262adc10f98b1b8cc305f1af3100",
+      "valid": true
+    },
+    {
+      "date": "2026-01-07",
+      "eligible": 44,
+      "evaluated": 5223,
+      "selected": 20,
+      "shortlist_sha256": "4e021627468c87b923c167ff5f3201cb7abe18c5e129fc2910e3e98b7db7d15c",
+      "valid": true
+    },
+    {
+      "date": "2026-01-20",
+      "eligible": 72,
+      "evaluated": 5227,
+      "selected": 20,
+      "shortlist_sha256": "af6ec2c1c73ebc753ea40d7da27a54072a0d03ebfbb25e4b6a604154ae740c2c",
+      "valid": true
+    },
+    {
+      "date": "2026-02-26",
+      "eligible": 57,
+      "evaluated": 5258,
+      "selected": 20,
+      "shortlist_sha256": "28f0f6856b48f5ef0dea443b88612a5a297ff3ea4a4473c8625dc2daa20668c5",
+      "valid": true
+    },
+    {
+      "date": "2026-03-16",
+      "eligible": 96,
+      "evaluated": 5265,
+      "selected": 20,
+      "shortlist_sha256": "9985a8e877fe36f523dc4bc2395d8fcca650bff137b3f11c960fc7d280b69b6f",
+      "valid": true
+    },
+    {
+      "date": "2026-03-27",
+      "eligible": 9,
+      "evaluated": 5266,
+      "selected": 9,
+      "shortlist_sha256": "aea232ca824f42ce4ff07247ad9d600c8b962109c0c06bd74a8fd1b4cc404174",
+      "valid": true
+    },
+    {
+      "date": "2026-04-02",
+      "eligible": 21,
+      "evaluated": 5261,
+      "selected": 20,
+      "shortlist_sha256": "b549ea27f8565615051c5f4b16dc999901c39b77286368f49fa9aecc15ce3ce3",
+      "valid": true
+    },
+    {
+      "date": "2026-04-10",
+      "eligible": 53,
+      "evaluated": 5260,
+      "selected": 20,
+      "shortlist_sha256": "e141ef4e16e7b3ab887e88d42bd490cded0f0ed1568113e4ce37d280e5992493",
+      "valid": true
+    },
+    {
+      "date": "2026-04-13",
+      "eligible": 63,
+      "evaluated": 5262,
+      "selected": 20,
+      "shortlist_sha256": "ce63687b928842e9e5b3bc97062e18dff5e1e4c5f6b852aaaeaf73e4a3d4c649",
+      "valid": true
+    },
+    {
+      "date": "2026-04-14",
+      "eligible": 92,
+      "evaluated": 5263,
+      "selected": 20,
+      "shortlist_sha256": "252873247e6a5257c04988b617d2cb0c8fdc885b6390fa18325a5a6060d4e423",
+      "valid": true
+    },
+    {
+      "date": "2026-04-17",
+      "eligible": 148,
+      "evaluated": 5271,
+      "selected": 20,
+      "shortlist_sha256": "99ed64bb2af8bbf67fca0658bf7f34338c5710dae2652b160206f15ba9ed2e05",
+      "valid": true
+    },
+    {
+      "date": "2026-04-20",
+      "eligible": 48,
+      "evaluated": 5275,
+      "selected": 20,
+      "shortlist_sha256": "2b9ca55976ed8e0a2675fc088406e5219d8bea140feaa41de7f19e669ba4de34",
+      "valid": true
+    },
+    {
+      "date": "2026-05-19",
+      "eligible": 33,
+      "evaluated": 5277,
+      "selected": 20,
+      "shortlist_sha256": "c5aee6995d925491093cb7cdea4aada663c2bf1e51b27decbd28436316f04f12",
+      "valid": true
+    },
+    {
+      "date": "2026-05-27",
+      "eligible": 85,
+      "evaluated": 5287,
+      "selected": 20,
+      "shortlist_sha256": "bc1fd3b1d8c102d1be4fbae6b8f611aad8fc4724af2aa69c102fc9764d4fbb45",
+      "valid": true
+    },
+    {
+      "date": "2026-06-09",
+      "eligible": 61,
+      "evaluated": 5296,
+      "selected": 20,
+      "shortlist_sha256": "175223b8bcde80b6d398a08fe921ac7e83421efdb91b9d4c2fb67cfa8b3b1d63",
+      "valid": true
+    },
+    {
+      "date": "2026-06-16",
+      "eligible": 61,
+      "evaluated": 5294,
+      "selected": 20,
+      "shortlist_sha256": "abd10da5d567006f27874a2df1ddeaa6f66b27e1e2781b4564368ef5a911f88b",
+      "valid": true
+    },
+    {
+      "date": "2026-06-17",
+      "eligible": 43,
+      "evaluated": 5294,
+      "selected": 20,
+      "shortlist_sha256": "11e7c5063ca7512fc25088a28a9809ee14ae8894dca290f4a18f034b339208d6",
+      "valid": true
+    },
+    {
+      "date": "2026-06-23",
+      "eligible": 40,
+      "evaluated": 5304,
+      "selected": 20,
+      "shortlist_sha256": "4a9902c75c267e33a07757aa7b51bbf6239b557459d05bf8ff9a9fc21f50b798",
+      "valid": true
+    }
+  ],
+  "detail_sha256": "102ef9cf15146e55a3ebdc3a95c4672862911c6379f2f7b691f6d036fcdc4af1",
+  "invariants": {
+    "broker_actions_allowed": false,
+    "canonical_source_observations_verified": true,
+    "denominators_recomputed": true,
+    "frozen_dates_unchanged": true,
+    "production_strategy_pre_collection_attested": true,
+    "rankings_recomputed": true,
+    "raw_source_metrics_recomputed": true,
+    "security_master_population_recomputed": true,
+    "session_calendar_pre_collection_attested": true,
+    "shortlist_hashes_recomputed": true,
+    "source_artifacts_rehashed": true,
+    "source_collection_post_freeze_attested": true,
+    "split_actions_pre_collection_attested": true,
+    "split_adjustments_recomputed": true,
+    "strategy_rules_changed": false,
+    "summary_source_collection_bound": true,
+    "threshold_dispositions_recomputed": true
+  },
+  "manifest_sha256": "645f727fe0b596ee591a6ff32515b50883634b0e3294e83333ff6b83949b04b4",
+  "production_strategy": {
+    "canonical_rules_hash": "1947f9d25f63f59848ff28671050fa2af96d302167e5b6f4ce8b56e37a6742cc",
+    "pre_collection_commit_verified": true,
+    "scanner_fields_match": true,
+    "strategy_version": "2026-07-15-orb-v3"
+  },
+  "schema_version": 1,
+  "session_calendar": {
+    "pre_collection_commit_verified": true,
+    "provider_dates_verified": true,
+    "sessions": 145,
+    "sha256": "f6a1d38e9924f247c047e7bfbf2f4334a3a97c1dbe1c96098daad09fbd0aea8d"
+  },
+  "source_collection": {
+    "all_captured_after_freeze": true,
+    "canonical_day_merges": 608386,
+    "derived_rows": 2481269,
+    "provider_requests": 15087,
+    "provider_retries": 0
+  },
+  "source_sessions_verified": 118,
+  "split_actions": {
+    "events": 891,
+    "pre_collection_commit_verified": true,
+    "sha256": "0be5859007884dc8ec1cbf1e1245293443da7da0fafa03c6b3bb3ce84c30cd2b"
+  },
+  "split_adjusted_evaluations": 39,
+  "status": "INSPECTED",
+  "summary_sha256": "2aa8a45e6b17c88dd1fca5eb396a04444176699c06c131dc2b79c40eebbf5538",
+  "total_eligible": 1228,
+  "total_evaluated": 105261,
+  "total_selected": 389,
+  "valid": true
+}
