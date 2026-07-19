@@ -571,9 +571,10 @@ results with a shadow version that exits at the close so the +2% milestone and
 trailing overlay can be evaluated rather than assumed.
 
 `strategy_ledger.py record` creates the append-only public observations;
-`strategy_ledger.py audit` checks schema, uniqueness, privacy, and required
-paired outcomes; and `strategy_ledger.py report` calculates these metrics and
-the promotion result. `strategy_engine.py` is the canonical candidate math and
+`strategy_ledger.py audit` checks schema, uniqueness, privacy, required paired
+outcomes, and session/signal counts and identities; and
+`strategy_ledger.py report` calculates these metrics and the promotion result.
+`strategy_engine.py` is the canonical candidate math and
 `session_guard.py` is the pre-entry/open-position interlock. The scripts do not
 replace authoritative broker or market data; they prevent inconsistent use of it.
 

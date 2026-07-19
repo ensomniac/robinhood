@@ -236,6 +236,10 @@ version.
   terminal, and a mode-matched `live` or `shadow` decision. The maturity filter
   independently enforces the same cohort, preventing rejected, missed, or
   malformed rows from inflating closed-signal counts or expectancy.
+- Added cross-record ledger reconciliation: exactly one session per signal
+  group, exact candidate and trigger counts, at most one executed decision,
+  consistent `trade_taken`, and matching dates, modes, phases, hashes, and
+  complete-capture claims. The existing 1,166-record ledger passes unchanged.
 
 ## Completed 2026-07-18
 

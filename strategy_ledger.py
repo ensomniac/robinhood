@@ -266,6 +266,68 @@ def validate_record(
         raise LedgerError("stop executions require actual slippage and planned reserve")
 
 
+def _relational_violations(
+    records: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    sessions: dict[str, list[Mapping[str, Any]]] = {}
+    signals: dict[str, list[Mapping[str, Any]]] = {}
+    for record in records:
+        session_id = record.get("session_id")
+        if not isinstance(session_id, str):
+            continue
+        target = sessions if record.get("record_type") == "session" else signals
+        target.setdefault(session_id, []).append(record)
+
+    violations: list[str] = []
+    for session_id in sorted(set(sessions) | set(signals)):
+        session_rows = sessions.get(session_id, [])
+        signal_rows = signals.get(session_id, [])
+        if len(session_rows) != 1:
+            violations.append(
+                f"{session_id}: expected exactly one session record, got {len(session_rows)}"
+            )
+            continue
+        session = session_rows[0]
+        if session.get("candidate_count") != len(signal_rows):
+            violations.append(
+                f"{session_id}: candidate_count does not match signal records"
+            )
+        triggered_count = sum(row.get("triggered") is True for row in signal_rows)
+        if session.get("triggered_signal_count") != triggered_count:
+            violations.append(
+                f"{session_id}: triggered_signal_count does not match signal records"
+            )
+        executed_count = sum(
+            row.get("decision") in ("live", "shadow") for row in signal_rows
+        )
+        if executed_count > 1:
+            violations.append(f"{session_id}: more than one executed decision exists")
+        if session.get("trade_taken") is not (executed_count == 1):
+            violations.append(
+                f"{session_id}: trade_taken does not match executed decisions"
+            )
+        for row in signal_rows:
+            for field in (
+                "date",
+                "mode",
+                "sample_phase",
+                "strategy_version",
+                "rules_hash",
+            ):
+                if row.get(field) != session.get(field):
+                    violations.append(
+                        f"{session_id}: signal {row.get('signal_id')} disagrees on {field}"
+                    )
+            if (
+                session.get("session_capture_complete") is True
+                and row.get("session_capture_complete") is not True
+            ):
+                violations.append(
+                    f"{session_id}: complete session contains an incomplete signal"
+                )
+    return violations
+
+
 def prepare_record(
     payload: Mapping[str, Any], config: StrategyConfig | None = None
 ) -> dict[str, Any]:
@@ -381,6 +443,7 @@ def audit_ledger(
             sessions += 1
         elif record.get("record_type") == "signal":
             signals += 1
+    violations.extend(_relational_violations(records))
     return LedgerAudit(str(path), len(records), sessions, signals, tuple(violations))
 
 

@@ -6,6 +6,7 @@ from strategy_engine import load_config
 from strategy_ledger import (
     LedgerError,
     append_record,
+    append_records,
     audit_ledger,
     build_report,
     read_records,
@@ -62,8 +63,10 @@ class AppendAndAuditTests(unittest.TestCase):
     def test_append_adds_current_version_hash_and_is_readable(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "signals.jsonl"
-
-            appended = append_record(session_payload(), path)
+            payload = session_payload()
+            payload["candidate_count"] = 0
+            payload["triggered_signal_count"] = 0
+            appended = append_record(payload, path)
             records = read_records(path)
             audit = audit_ledger(path)
 
@@ -101,6 +104,38 @@ class AppendAndAuditTests(unittest.TestCase):
 
         self.assertFalse(audit.valid)
         self.assertIn("invalid JSON", audit.violations[0])
+
+    def test_audit_requires_one_coherent_session_signal_group(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "signals.jsonl"
+            session = session_payload(trade_taken=True)
+            session["candidate_count"] = 1
+            append_records([session, signal_payload()], path)
+
+            audit = audit_ledger(path)
+
+        self.assertTrue(audit.valid)
+
+    def test_audit_rejects_orphans_and_session_count_disagreement(self):
+        with tempfile.TemporaryDirectory() as directory:
+            orphan_path = Path(directory) / "orphan.jsonl"
+            append_record(signal_payload(), orphan_path)
+            orphan = audit_ledger(orphan_path)
+
+            mismatch_path = Path(directory) / "mismatch.jsonl"
+            append_records(
+                [session_payload(trade_taken=True), signal_payload()], mismatch_path
+            )
+            mismatch = audit_ledger(mismatch_path)
+
+        self.assertFalse(orphan.valid)
+        self.assertTrue(
+            any("exactly one session record" in item for item in orphan.violations)
+        )
+        self.assertFalse(mismatch.valid)
+        self.assertTrue(
+            any("candidate_count" in item for item in mismatch.violations)
+        )
 
     def test_closed_trigger_requires_paired_eod_outcome(self):
         payload = signal_payload()

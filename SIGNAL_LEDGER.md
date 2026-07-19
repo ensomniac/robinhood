@@ -28,12 +28,20 @@ Append one prepared session or signal object:
 python3 strategy_ledger.py record /path/to/public-record.json
 ```
 
-Validate JSON, uniqueness, privacy fields, required paired exits, and execution
-fields:
+Validate JSON, uniqueness, privacy fields, required paired exits, execution
+fields, and the full session/signal relationship:
 
 ```sh
 python3 strategy_ledger.py audit
 ```
+
+The relationship audit requires exactly one session record for every signal
+group; reconciles candidate and triggered counts; permits at most one executed
+decision; checks `trade_taken`; and binds every signal to the session's date,
+mode, sample phase, rules hash, and capture-completeness claim. Prefer atomic
+session-plus-signal batches for generated history. A transient single-record CLI
+append is not considered complete until the matching group has been written and
+the audit passes.
 
 Calculate expectancy, profit factor, win rate, drawdown, execution percentiles,
 no-trade frequency, paired project-versus-EOD exits, and earned maturity:
