@@ -63,7 +63,9 @@ HTTP 200; every page contains both an acceptance-datetime candidate and
 CIK-shaped identity evidence. These remain candidates until the frozen semantic
 review accepts them against each pair's 09:35 cutoff and target CIK.
 
-`catalyst_sec_semantics.py` implements that final SEC recovery gate. Its
+`catalyst_sec_semantics.py` implements that final SEC recovery gate. Manifest
+`db9c81e3b8dd8c5d6cce78dc66247f7c0f8e364773e52a2463c3d65964e5d758`
+now freezes the adjudication contract before extraction. Its
 `freeze` command binds the recovered-source and filing-detail artifacts, the
 exact 26-source/37-join/31-pair selection, the nine directory-CIK-match joins,
 the parser implementations, the New York acceptance-time rule, the event
@@ -73,10 +75,9 @@ CIK; a matching archive directory alone is insufficient. Only an exact-CIK
 join accepted no later than 09:35 ET can reach private relevance and event
 review. Financing or dilution conflict is resolved before any positive label.
 
-The workflow is deliberately split across commits:
+The remaining workflow is deliberately split across commits:
 
 ```sh
-python3 catalyst_sec_semantics.py freeze
 python3 catalyst_sec_semantics.py extract --manifest <manifest>
 python3 catalyst_sec_semantics.py review --manifest <manifest>
 python3 catalyst_sec_semantics.py review --manifest <manifest> \
