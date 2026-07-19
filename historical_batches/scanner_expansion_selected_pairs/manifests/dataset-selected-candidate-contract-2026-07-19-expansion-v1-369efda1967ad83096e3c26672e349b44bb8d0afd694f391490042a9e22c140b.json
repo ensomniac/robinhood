@@ -1,0 +1,745 @@
+{
+  "builder_sha256": "a0500b3629b04eecbedf49d64e44ee561c99de1fe176afe77e662b37f06dceba",
+  "dataset_id": "dataset-selected-candidate-contract-2026-07-19-expansion-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "research_results/2026-07-19-scanner-expansion.json",
+      "SCANNER_EXPANSION.md",
+      "STRATEGY_LEARNING_EXECUTION_PLAN.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "downstream_contract": {
+    "permitted_next_inputs": [
+      "point-in-time primary catalyst evidence",
+      "clean trigger and NBBO evidence",
+      "unchanged-v3 post-trigger outcomes"
+    ],
+    "private_selection_location": "LOCAL_HISTORICAL_DATA_ROOT/_derived/scanner_selected_pairs/dataset-selected-candidate-contract-2026-07-19-expansion-v1/selected-pairs.json.gz",
+    "selection_only": true,
+    "source_outcomes_observed_or_derived": false,
+    "strategy_variant_or_production_change_allowed": false,
+    "substitutions_allowed": false,
+    "targets_frozen_before_downstream_collection": true
+  },
+  "manifest_sha256": "369efda1967ad83096e3c26672e349b44bb8d0afd694f391490042a9e22c140b",
+  "registered_at": "2026-07-19T12:42:49.052353+00:00",
+  "requested_dates": [
+    "2026-01-09",
+    "2026-01-12",
+    "2026-01-13",
+    "2026-01-14",
+    "2026-01-15",
+    "2026-01-16",
+    "2026-01-21",
+    "2026-01-22",
+    "2026-01-23",
+    "2026-01-26",
+    "2026-01-27",
+    "2026-01-28",
+    "2026-01-29",
+    "2026-01-30",
+    "2026-02-02",
+    "2026-02-03",
+    "2026-02-04",
+    "2026-02-05",
+    "2026-02-06",
+    "2026-02-09",
+    "2026-02-10",
+    "2026-02-11",
+    "2026-02-12",
+    "2026-02-13",
+    "2026-02-17",
+    "2026-02-18",
+    "2026-02-19",
+    "2026-02-20",
+    "2026-02-23",
+    "2026-02-24",
+    "2026-02-25",
+    "2026-02-27",
+    "2026-03-02",
+    "2026-03-03",
+    "2026-03-04",
+    "2026-03-05",
+    "2026-03-06",
+    "2026-03-09",
+    "2026-03-10",
+    "2026-03-11",
+    "2026-03-12",
+    "2026-03-13",
+    "2026-03-17",
+    "2026-03-18",
+    "2026-03-19",
+    "2026-03-20",
+    "2026-03-23",
+    "2026-03-24",
+    "2026-03-25",
+    "2026-03-26",
+    "2026-03-30",
+    "2026-04-01",
+    "2026-04-06",
+    "2026-04-07",
+    "2026-04-08",
+    "2026-04-09",
+    "2026-04-15",
+    "2026-04-16",
+    "2026-04-21",
+    "2026-04-22",
+    "2026-04-23",
+    "2026-04-24",
+    "2026-04-27",
+    "2026-04-28",
+    "2026-04-29",
+    "2026-05-01",
+    "2026-05-04",
+    "2026-05-05",
+    "2026-05-06",
+    "2026-05-07",
+    "2026-05-08",
+    "2026-05-11",
+    "2026-05-12",
+    "2026-05-13",
+    "2026-05-14",
+    "2026-05-15",
+    "2026-05-18",
+    "2026-05-20",
+    "2026-05-21",
+    "2026-05-22",
+    "2026-05-26",
+    "2026-05-28",
+    "2026-05-29",
+    "2026-06-01",
+    "2026-06-02",
+    "2026-06-03",
+    "2026-06-04",
+    "2026-06-05",
+    "2026-06-08",
+    "2026-06-10",
+    "2026-06-11",
+    "2026-06-12",
+    "2026-06-15",
+    "2026-06-18",
+    "2026-06-22",
+    "2026-06-24",
+    "2026-06-25",
+    "2026-06-26",
+    "2026-06-29",
+    "2026-06-30"
+  ],
+  "schema_version": 1,
+  "selection_contract": {
+    "daily_shortlists": [
+      {
+        "date": "2026-01-09",
+        "shortlist_count": 20,
+        "shortlist_sha256": "f7cf5d3532225d273f3e492b5f46f90754efe21f7c40d89c7b95510dd977e6bd"
+      },
+      {
+        "date": "2026-01-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "97bb26fef80f60f3b1c9b861959dafb62e72c951a795d6e2d709b66667353704"
+      },
+      {
+        "date": "2026-01-13",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e7a5c785b571a9aad8b94289cfacfa8938de5bd82d1808168e279a36abba54f7"
+      },
+      {
+        "date": "2026-01-14",
+        "shortlist_count": 20,
+        "shortlist_sha256": "6b43e953b962c99bab94dae7ba1d2a2633eb0dc58b32cd1a99aa8d4a1963b5c9"
+      },
+      {
+        "date": "2026-01-15",
+        "shortlist_count": 20,
+        "shortlist_sha256": "36533eed1f3b65e4320ea097a41668b04b2028761337c1c25fda45f1b5d4d417"
+      },
+      {
+        "date": "2026-01-16",
+        "shortlist_count": 20,
+        "shortlist_sha256": "bcb55547912328a6875ae12f021d0497b4da2a66da58f747aac899419f63c057"
+      },
+      {
+        "date": "2026-01-21",
+        "shortlist_count": 20,
+        "shortlist_sha256": "7d173f0de3db59c8610f204ea38444ae27b6da8a84b60db7a584a69c8c055609"
+      },
+      {
+        "date": "2026-01-22",
+        "shortlist_count": 20,
+        "shortlist_sha256": "0e6bfe306cdc618718a1710e1426dbf041262bee2b556e7ec4c1550bef7f790e"
+      },
+      {
+        "date": "2026-01-23",
+        "shortlist_count": 20,
+        "shortlist_sha256": "084fa8dea4ac3294ea8f17593b3e0bdb67083ea24a446520eed794cf641bb279"
+      },
+      {
+        "date": "2026-01-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "be9449c299b25cc81e99f3abeb0ea709005acc660138372f2431d08e6a93ae90"
+      },
+      {
+        "date": "2026-01-27",
+        "shortlist_count": 20,
+        "shortlist_sha256": "67b3a3a958d8f63fd5c44354e57edd03841373b01f474fb78e979ba77de0d6e6"
+      },
+      {
+        "date": "2026-01-28",
+        "shortlist_count": 20,
+        "shortlist_sha256": "12a195287b7149aa445db95ad3bfc399ac60454ccaacb821b223a04f0114354d"
+      },
+      {
+        "date": "2026-01-29",
+        "shortlist_count": 20,
+        "shortlist_sha256": "aeae81d6658f4a4398efdb3aa78ac771fabcf0c4e6aa47d856d36e1d4447cd5f"
+      },
+      {
+        "date": "2026-01-30",
+        "shortlist_count": 20,
+        "shortlist_sha256": "6f7055068c5e3183c5ea6bea011f5f22fcd4d3ec535306d8226eeb20acde68df"
+      },
+      {
+        "date": "2026-02-02",
+        "shortlist_count": 20,
+        "shortlist_sha256": "c45d3dd64a9cdd4eaf97b9d7f389a9a5d13344338a3bb207438e4198b4b44ca7"
+      },
+      {
+        "date": "2026-02-03",
+        "shortlist_count": 20,
+        "shortlist_sha256": "c58b528f55a7819d22adcc913d569acd46d16869d650a6b2e85e9f06f264e065"
+      },
+      {
+        "date": "2026-02-04",
+        "shortlist_count": 20,
+        "shortlist_sha256": "27095a7e9e0ab31e5ea46d8acab94dcf3785fc5bdb6e0479beb98b5794eb0e90"
+      },
+      {
+        "date": "2026-02-05",
+        "shortlist_count": 20,
+        "shortlist_sha256": "824e5de014ed78df2d581c171d24de55675c5a5da1536dde36d00472d5646b1e"
+      },
+      {
+        "date": "2026-02-06",
+        "shortlist_count": 20,
+        "shortlist_sha256": "5eb5228a817e639d9f51b314628b23beae7a021ef376f997d1337cbfabf56afb"
+      },
+      {
+        "date": "2026-02-09",
+        "shortlist_count": 20,
+        "shortlist_sha256": "33420988de5b737bbdde9a26e3f5980e3ae317eee3031ae984008ca4d3757d5e"
+      },
+      {
+        "date": "2026-02-10",
+        "shortlist_count": 20,
+        "shortlist_sha256": "86f3f117a0ebd4af9de021cd3afb7aac27a09e7c963e8c188459ffc992f97b40"
+      },
+      {
+        "date": "2026-02-11",
+        "shortlist_count": 20,
+        "shortlist_sha256": "26fc8541d3e957f87191542b4b1a6f8fdd08f5ce5cd00fd764d28b88cf4b1450"
+      },
+      {
+        "date": "2026-02-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "78da2fe0a17316d07840e5107e188c208afbe2d6d9f965c207bae161facab13f"
+      },
+      {
+        "date": "2026-02-13",
+        "shortlist_count": 20,
+        "shortlist_sha256": "97abaefd6cca427fa6fbe167e994e0478bc735a085cff2a4aec4c09a27a2bd31"
+      },
+      {
+        "date": "2026-02-17",
+        "shortlist_count": 20,
+        "shortlist_sha256": "5d7125606dc8d26234e97b79289711035de17c61d950fa2073f573f15e63a49a"
+      },
+      {
+        "date": "2026-02-18",
+        "shortlist_count": 20,
+        "shortlist_sha256": "6ace74696b365ef5824546069c39c36623c4bba0b7b1b7ec063e63e41cdc5e8c"
+      },
+      {
+        "date": "2026-02-19",
+        "shortlist_count": 20,
+        "shortlist_sha256": "d11876c6954d6e60d1fb596fe3c34871a9eec421645d69ab47be0df34e564227"
+      },
+      {
+        "date": "2026-02-20",
+        "shortlist_count": 20,
+        "shortlist_sha256": "938d91e14c7ad934e52e0160af0f82cd087d78077a0534998170673bfbab1757"
+      },
+      {
+        "date": "2026-02-23",
+        "shortlist_count": 20,
+        "shortlist_sha256": "700d01669cce8a839a97e5dc71da38476aebf693fa3f0e89ffa5a2a68628be36"
+      },
+      {
+        "date": "2026-02-24",
+        "shortlist_count": 20,
+        "shortlist_sha256": "ba18919d5b9aac28069a85fdfb8ee70eaef4baa39f208d3e4152bc4cc2fc5408"
+      },
+      {
+        "date": "2026-02-25",
+        "shortlist_count": 20,
+        "shortlist_sha256": "364620d0695044e6d210423de0ffc476996cc052476a4f7504143b5fb19d07d6"
+      },
+      {
+        "date": "2026-02-27",
+        "shortlist_count": 20,
+        "shortlist_sha256": "94452aff546341d9468f9dde9dec38d2a2da2ad2196eab59ad3985902e8f0706"
+      },
+      {
+        "date": "2026-03-02",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e08db3ffc1b0605fd04e47110a241438bb30c255ceddcb5b5311c0977e3caa37"
+      },
+      {
+        "date": "2026-03-03",
+        "shortlist_count": 16,
+        "shortlist_sha256": "775eb93d8c481c838057754440b75fa4010e1d92958dfa3c17dfaf25fafb02eb"
+      },
+      {
+        "date": "2026-03-04",
+        "shortlist_count": 20,
+        "shortlist_sha256": "54789c764c48ea36eb695a4953f13f92e060cd311c1b32a28c017ccf0a3b844c"
+      },
+      {
+        "date": "2026-03-05",
+        "shortlist_count": 20,
+        "shortlist_sha256": "d11f0dfbd763e2ed8bfcf3060b8a7ff748ce7c6e3ab8dcabf14f570d537635fa"
+      },
+      {
+        "date": "2026-03-06",
+        "shortlist_count": 20,
+        "shortlist_sha256": "a45fed3e6514d2a9c88e3bdd5cdaccc10e427c96f2207867e405103a5babf2cd"
+      },
+      {
+        "date": "2026-03-09",
+        "shortlist_count": 20,
+        "shortlist_sha256": "3a5bc3046566ea4515c9e4632d07548fcc9401d3f3d8916eb20506df686916d7"
+      },
+      {
+        "date": "2026-03-10",
+        "shortlist_count": 20,
+        "shortlist_sha256": "5945929033b14655576e1ffc2a463befe2fdc708937d2336a0cb4d8c4b4f5ec1"
+      },
+      {
+        "date": "2026-03-11",
+        "shortlist_count": 20,
+        "shortlist_sha256": "509748d4592aa306dbdefe34b00f59405cb9a08d9726715f2f46c325b06a8619"
+      },
+      {
+        "date": "2026-03-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "6d8cb2037618ed1be12e8e6382e517655726c963feecb52e3a8f3d596dff2913"
+      },
+      {
+        "date": "2026-03-13",
+        "shortlist_count": 20,
+        "shortlist_sha256": "9dee3606dbd44d509e781e36015ddb5e159db9dbbbc07d8850efd475e9bd7c15"
+      },
+      {
+        "date": "2026-03-17",
+        "shortlist_count": 20,
+        "shortlist_sha256": "8b6662ab548207ebd4655e2e7f74326937ca0e8176d1bec098b3fb537aff3629"
+      },
+      {
+        "date": "2026-03-18",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e07cdca058e58d93395b8909662c961c861c74ed6ba70b9cb25fe5e821aea0e5"
+      },
+      {
+        "date": "2026-03-19",
+        "shortlist_count": 20,
+        "shortlist_sha256": "6d1d8662687b1e911fc6a4b58c3ef5f90e894d5ca9c3aa31eaf5ad0034f79b10"
+      },
+      {
+        "date": "2026-03-20",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e282cd1e17dbbf63a6ff502fcaabf1438924b0312a95085b128abecf68941045"
+      },
+      {
+        "date": "2026-03-23",
+        "shortlist_count": 20,
+        "shortlist_sha256": "f52928a520a69e835a5a3f8e0ab4616282c20e367380dc4b9166fa0c701c3377"
+      },
+      {
+        "date": "2026-03-24",
+        "shortlist_count": 20,
+        "shortlist_sha256": "29fa798ef839bf3c5322bcfb9fed8753b96ea9eac3ed3bc571bc5618da476c69"
+      },
+      {
+        "date": "2026-03-25",
+        "shortlist_count": 20,
+        "shortlist_sha256": "233f0b502549575273673b70a49ff353cf7ed2e567bed63e88919e18a275bf20"
+      },
+      {
+        "date": "2026-03-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "ae7aec52091dc1094bc8cb9e2d3839cd03a59d60ff49b5c6058e17873feb5d7b"
+      },
+      {
+        "date": "2026-03-30",
+        "shortlist_count": 20,
+        "shortlist_sha256": "ef0702accb87c3823f0100bf3b02c5c54078c538dbb14987f15076bd8e209821"
+      },
+      {
+        "date": "2026-04-01",
+        "shortlist_count": 20,
+        "shortlist_sha256": "f33981d7120b37c3b0d8612c24b82eeaaa41d509885f1c7b77b45ca91a50f9ba"
+      },
+      {
+        "date": "2026-04-06",
+        "shortlist_count": 20,
+        "shortlist_sha256": "bb7b9f68d7d594801eda89ea6837bc1a0e1a73be0202498cc9534d5d213b7ead"
+      },
+      {
+        "date": "2026-04-07",
+        "shortlist_count": 11,
+        "shortlist_sha256": "29487eaf3b12de83aafdaa1b764ff724dd35ee8d300ef1c9f43a913b014d0c37"
+      },
+      {
+        "date": "2026-04-08",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e058aaaac754f2f45ea9ad776d663ec069e053bad173604d4e083f59e4b640c1"
+      },
+      {
+        "date": "2026-04-09",
+        "shortlist_count": 20,
+        "shortlist_sha256": "4f24a7af1362a6ca4d7c066770695849e4f779a3d44e06ff38c24a1e0ecc1f79"
+      },
+      {
+        "date": "2026-04-15",
+        "shortlist_count": 20,
+        "shortlist_sha256": "975cac3c0f02931b5e911c11c7dd88ab927edec3bba632fbcc36c832093406fb"
+      },
+      {
+        "date": "2026-04-16",
+        "shortlist_count": 20,
+        "shortlist_sha256": "3d17b02f8a7197fee3c8f523449aac1c28cf47c57db0f7bf937724894df7b902"
+      },
+      {
+        "date": "2026-04-21",
+        "shortlist_count": 20,
+        "shortlist_sha256": "22a13e98fb60ff281b60fc1632253b5d22f30f3dfbffb6648fb98dce3ef47ee4"
+      },
+      {
+        "date": "2026-04-22",
+        "shortlist_count": 20,
+        "shortlist_sha256": "a1dc536d73f5ad8575157645f65a3db76fa24cb42a734029a169bda1e19069cd"
+      },
+      {
+        "date": "2026-04-23",
+        "shortlist_count": 20,
+        "shortlist_sha256": "f4f8880aacf69748ba8c4d7d92a4847af5ee7fbcd8bb246c5a6a14d731f75767"
+      },
+      {
+        "date": "2026-04-24",
+        "shortlist_count": 20,
+        "shortlist_sha256": "38e4a0a4a3500575420a5c32f00c2b62996f6fe319f454727cd0f90522daf331"
+      },
+      {
+        "date": "2026-04-27",
+        "shortlist_count": 20,
+        "shortlist_sha256": "49c10eab6eb487828486dfd1dac65c09e2e325457c5945b7a0424bad70b5c6f5"
+      },
+      {
+        "date": "2026-04-28",
+        "shortlist_count": 20,
+        "shortlist_sha256": "c869252a3fc2d0d260c039c06af00a1b8e55de548c7037dc89baffc3e9304719"
+      },
+      {
+        "date": "2026-04-29",
+        "shortlist_count": 20,
+        "shortlist_sha256": "aa043fd8cc5d9f5a392374718f8832e6645e2310a8b55c774830229873e07b35"
+      },
+      {
+        "date": "2026-05-01",
+        "shortlist_count": 20,
+        "shortlist_sha256": "178a0c9be44f964b6b2090083f0cd9a2b73cedcd4d29e209db219549c41403da"
+      },
+      {
+        "date": "2026-05-04",
+        "shortlist_count": 20,
+        "shortlist_sha256": "cd44f1e1fbfc9b15ed609fd0ac24d915a9c842fdf836f93992a04c5847b4ed05"
+      },
+      {
+        "date": "2026-05-05",
+        "shortlist_count": 20,
+        "shortlist_sha256": "f66b2c06f2e054ef947580c4b5018f7dea1078649a18778094cf40b012b469a8"
+      },
+      {
+        "date": "2026-05-06",
+        "shortlist_count": 20,
+        "shortlist_sha256": "3f37285cbde70069be9b5f5fd35b5c175891adfcfbd0cbc67bf98d91ae473a33"
+      },
+      {
+        "date": "2026-05-07",
+        "shortlist_count": 20,
+        "shortlist_sha256": "41f3ad93a1adcd507874ca46f6d82c5b8f091b63dd067cca23ff77bf3e193e11"
+      },
+      {
+        "date": "2026-05-08",
+        "shortlist_count": 20,
+        "shortlist_sha256": "dc9c0b54f3e97bc12bb04cdeea44d3aae7dbb59cbddbc630376bf11784bcd049"
+      },
+      {
+        "date": "2026-05-11",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e85425e1e97cb4db1d743f15db0d144fa6605c6e8999c384d04225506f3539e6"
+      },
+      {
+        "date": "2026-05-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "8edd21d8236e13965a9a4ad0b942f21b9cc4a8ed2d3e710cdf348299c77ee008"
+      },
+      {
+        "date": "2026-05-13",
+        "shortlist_count": 20,
+        "shortlist_sha256": "f95c14d40a9ec6b2f22582d9f229717d5b54fa982d00d377ddc4c420263b294a"
+      },
+      {
+        "date": "2026-05-14",
+        "shortlist_count": 20,
+        "shortlist_sha256": "6805e69613f2afd9b09c5b0bb8c8cf2aaf45f48887eb0e1ea61d8f5f64d5acdd"
+      },
+      {
+        "date": "2026-05-15",
+        "shortlist_count": 20,
+        "shortlist_sha256": "83844f98690c4455d20b816f0eb82a2dfc3e13766cef8c768ee8ab76285f84c6"
+      },
+      {
+        "date": "2026-05-18",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e5c3145861c64172e77dd3397fb6e4589ceb2f96bf2103921ff7e55ae077e6e3"
+      },
+      {
+        "date": "2026-05-20",
+        "shortlist_count": 20,
+        "shortlist_sha256": "a799ed05baa21c7ee3eb7299b4ebcc45bb244abbc5098fafd97c63ea83c1e68f"
+      },
+      {
+        "date": "2026-05-21",
+        "shortlist_count": 20,
+        "shortlist_sha256": "eb03f69f0769e651daaafbfbd2e464d6b13ec5a09f747abc8f984215bdaf7443"
+      },
+      {
+        "date": "2026-05-22",
+        "shortlist_count": 20,
+        "shortlist_sha256": "c56d84a9cf28090326048989dd26b09a1e078d41e55c913274fdb51cd3bb575f"
+      },
+      {
+        "date": "2026-05-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "5e40578045208dc1d89399858c68d63cf7272345b3981dfc6a421a912f59cecc"
+      },
+      {
+        "date": "2026-05-28",
+        "shortlist_count": 20,
+        "shortlist_sha256": "20cdff6ad7b2daadc60471d76dc9e09c69917ec5fd655ef41bab4e67ee7d3311"
+      },
+      {
+        "date": "2026-05-29",
+        "shortlist_count": 20,
+        "shortlist_sha256": "91b700976a19770d29da6fd113ca28af9742308cd7bca2a41fdb25f35498ad5d"
+      },
+      {
+        "date": "2026-06-01",
+        "shortlist_count": 20,
+        "shortlist_sha256": "a1f9c22889a890486907a20f2ce7f4157122f78c8e1aa27fa271bdc0249dcdf8"
+      },
+      {
+        "date": "2026-06-02",
+        "shortlist_count": 20,
+        "shortlist_sha256": "35b110273ac1dcfcc259b7f3fa69a247534f809ed13c10fe4f36ec8b727a72dc"
+      },
+      {
+        "date": "2026-06-03",
+        "shortlist_count": 20,
+        "shortlist_sha256": "291785a0946ad4e3a06b302d33ead4497a54b9ca2466b6eeddbc259851257395"
+      },
+      {
+        "date": "2026-06-04",
+        "shortlist_count": 20,
+        "shortlist_sha256": "6d3e7f4129aedda99ea84ff1e89d81d1402a61e446e70412f7d90bcc65d90b75"
+      },
+      {
+        "date": "2026-06-05",
+        "shortlist_count": 20,
+        "shortlist_sha256": "728aeb5fe914ecb356fa87089c2fc11e556a635d756587232fe4fef2d806ec32"
+      },
+      {
+        "date": "2026-06-08",
+        "shortlist_count": 20,
+        "shortlist_sha256": "3f09776ff72a4655f7b48c0e5f9c04f9e976455d272fb6bbcea1e9a9023cafc4"
+      },
+      {
+        "date": "2026-06-10",
+        "shortlist_count": 20,
+        "shortlist_sha256": "7a8f81294e13812effa71816925d3bb3e909a715a0e88768104072ebc46673f2"
+      },
+      {
+        "date": "2026-06-11",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e595ba204aa5d3dd1d24ab2fe6d4e17f33b50fa360fd9106fc1e1103f3b9c52f"
+      },
+      {
+        "date": "2026-06-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "075e0bfe0eeff244b4ec34504a2a70ec2e8336214723b879b9476288d2a92822"
+      },
+      {
+        "date": "2026-06-15",
+        "shortlist_count": 20,
+        "shortlist_sha256": "4a9d35cffa0f26639ab6774f043bc22547900d9ae08c46865ad462e5488eae3f"
+      },
+      {
+        "date": "2026-06-18",
+        "shortlist_count": 20,
+        "shortlist_sha256": "4a1c266ae616e83a0e65475a46754334d1979c0a82571e0f7e2e693cb84c5a0e"
+      },
+      {
+        "date": "2026-06-22",
+        "shortlist_count": 20,
+        "shortlist_sha256": "efacbc0b0907437877b6326c16f261b24de13d3f85128f0f083f0da4a2c71159"
+      },
+      {
+        "date": "2026-06-24",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e6ad3a7ec93c2b4a3df16adbddae0251b141204f6bea90df637b8bda614fa3f4"
+      },
+      {
+        "date": "2026-06-25",
+        "shortlist_count": 20,
+        "shortlist_sha256": "bc1289f055dc7b1902f1ced889720fd3f0ad2ff03f61ff5e0389095d84abf05d"
+      },
+      {
+        "date": "2026-06-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "b25c2439fdfbae60d3eac85c64b82aeec331c515d77826ce7584d307470c98b9"
+      },
+      {
+        "date": "2026-06-29",
+        "shortlist_count": 20,
+        "shortlist_sha256": "d01191705340f2d04ee4dcc446a6912482ac1201d7425d53c1f7db7c66429e52"
+      },
+      {
+        "date": "2026-06-30",
+        "shortlist_count": 20,
+        "shortlist_sha256": "c7b119a95acd17f8c6322aa2612006e46124a2d4c34299c21e96e8f82db8a9a0"
+      }
+    ],
+    "private_selection_content_sha256": "29e3a9fda67b62e6fc842138a77d8909d5f22498e7e9bc28b18d4b2d8f080f8c",
+    "requested_dates": [
+      "2026-01-09",
+      "2026-01-12",
+      "2026-01-13",
+      "2026-01-14",
+      "2026-01-15",
+      "2026-01-16",
+      "2026-01-21",
+      "2026-01-22",
+      "2026-01-23",
+      "2026-01-26",
+      "2026-01-27",
+      "2026-01-28",
+      "2026-01-29",
+      "2026-01-30",
+      "2026-02-02",
+      "2026-02-03",
+      "2026-02-04",
+      "2026-02-05",
+      "2026-02-06",
+      "2026-02-09",
+      "2026-02-10",
+      "2026-02-11",
+      "2026-02-12",
+      "2026-02-13",
+      "2026-02-17",
+      "2026-02-18",
+      "2026-02-19",
+      "2026-02-20",
+      "2026-02-23",
+      "2026-02-24",
+      "2026-02-25",
+      "2026-02-27",
+      "2026-03-02",
+      "2026-03-03",
+      "2026-03-04",
+      "2026-03-05",
+      "2026-03-06",
+      "2026-03-09",
+      "2026-03-10",
+      "2026-03-11",
+      "2026-03-12",
+      "2026-03-13",
+      "2026-03-17",
+      "2026-03-18",
+      "2026-03-19",
+      "2026-03-20",
+      "2026-03-23",
+      "2026-03-24",
+      "2026-03-25",
+      "2026-03-26",
+      "2026-03-30",
+      "2026-04-01",
+      "2026-04-06",
+      "2026-04-07",
+      "2026-04-08",
+      "2026-04-09",
+      "2026-04-15",
+      "2026-04-16",
+      "2026-04-21",
+      "2026-04-22",
+      "2026-04-23",
+      "2026-04-24",
+      "2026-04-27",
+      "2026-04-28",
+      "2026-04-29",
+      "2026-05-01",
+      "2026-05-04",
+      "2026-05-05",
+      "2026-05-06",
+      "2026-05-07",
+      "2026-05-08",
+      "2026-05-11",
+      "2026-05-12",
+      "2026-05-13",
+      "2026-05-14",
+      "2026-05-15",
+      "2026-05-18",
+      "2026-05-20",
+      "2026-05-21",
+      "2026-05-22",
+      "2026-05-26",
+      "2026-05-28",
+      "2026-05-29",
+      "2026-06-01",
+      "2026-06-02",
+      "2026-06-03",
+      "2026-06-04",
+      "2026-06-05",
+      "2026-06-08",
+      "2026-06-10",
+      "2026-06-11",
+      "2026-06-12",
+      "2026-06-15",
+      "2026-06-18",
+      "2026-06-22",
+      "2026-06-24",
+      "2026-06-25",
+      "2026-06-26",
+      "2026-06-29",
+      "2026-06-30"
+    ],
+    "selected_pair_count": 1987,
+    "source_dataset_id": "dataset-production-scanner-replay-2026-07-19-expansion-v1",
+    "source_detail_sha256": "dcc0df08be99af4301c991a010c9ccc996f64d5e9f169b4fc28d58af0345829a",
+    "source_manifest_sha256": "03a6eff46748cb396b0a5f532d884a9532766c6e546c92afda6c2947a9a9e22b",
+    "source_summary_sha256": "505f83eaf81ab7e17eaaf480d5253d0e2ae8ba7006aba5dcaa8e4e23c79ded80"
+  }
+}

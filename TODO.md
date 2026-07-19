@@ -219,6 +219,13 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Next: freeze the exact 1,987 selected pairs into a separate point-in-time
   catalyst, trigger, and outcome contract. Evaluate unchanged v3 before
   proposing any new strategy rule.
+- Froze the exact 1,987 private pairs in selection-only manifest
+  `369efda1...22c140b` before any downstream field or outcome access. The
+  freezer is source-generic, validates every rank/hash, is idempotent, and keeps
+  symbols outside Git.
+- Retargeted the research lock to the selected-pair evaluation. Next: implement
+  and independently inspect the manifest-aware catalyst/trigger/outcome join,
+  publishing unchanged-v3 gate attrition before returns.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

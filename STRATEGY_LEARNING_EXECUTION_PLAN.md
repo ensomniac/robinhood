@@ -324,14 +324,19 @@ too few pairs are evaluable. That would be an evidence result, not permission to
 loosen gates. The first 20 scanner dates validate the pipeline and expose gross
 selection behavior; they are not enough for production promotion.
 
-The expansion campaign in `SCANNER_EXPANSION.md` now freezes exactly those 100
-new H1-2026 dates with seed `20260719` after excluding every v4 target. It has
-zero date overlap and no substitutions. The reference/security-master phase is
-running before market data is frozen. The 133-session graph reuses only 113
-compatible, hash-attested inputs and requests every new-universe symbol delta;
-20 sessions require fresh full-universe collection. Reuse is an acquisition
-optimization, not additional alpha evidence, and the inspector must trace each
-inherited row set back to its original artifact.
+The expansion campaign in `SCANNER_EXPANSION.md` completed and independently
+inspected exactly those 100 new H1-2026 dates with seed `20260719` after
+excluding every v4 target. It has zero date overlap and no substitutions. The
+133-session graph reused only 113 compatible, hash-attested inputs, requested
+2,147 exact new-universe symbol deltas, and collected 20 fresh full-universe
+sessions. Independent reconstruction verified 526,587 evaluations and selected
+1,987 eligible security-date pairs. Reuse remains an acquisition optimization,
+not additional alpha evidence.
+
+Step 1 below is now complete: `SCANNER_SELECTED_PAIRS.md` and manifest
+`369efda1...22c140b` freeze those exact 1,987 private pairs before any richer
+field or target outcome is read. The research lock now requires independently
+inspected unchanged-v3 evaluation of that contract before strategy invention.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
