@@ -107,7 +107,10 @@ lead, and 804 do not. No record was promoted to primary evidence.
 
 The prerequisite offline routing contract is frozen as manifest
 `14107372...de495a` in `CATALYST_SOURCE_LEADS.md`. It cannot contact a source or
-promote a host category to verified evidence.
+promote a host category to verified evidence. Derivation is now `READY`: 123
+pairs have authority/exchange/potential-issuer routing leads and 227 have
+wire/secondary corroboration leads, after rejecting 42,836 article-level
+platform links.
 
 ### Stage D - Classify and independently inspect
 

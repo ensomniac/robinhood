@@ -392,7 +392,10 @@ pairs; 804 pairs remain without a content-complete lead. This is a better
 direct-source discovery surface, not catalyst verification.
 `CATALYST_SOURCE_LEADS.md` freezes offline URL routing as manifest
 `14107372...de495a` before parsing the 4,205 bodies. Source ownership, issuer
-binding, causal availability, and corroboration remain downstream gates.
+binding, causal availability, and corroboration remain downstream gates. The
+inspected derivation found primary-routing leads for 123 pairs and
+corroboration-routing leads for 227, while rejecting 42,836 article-level
+platform links before network acquisition.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:

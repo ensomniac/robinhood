@@ -301,7 +301,13 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   classify the Benzinga body itself as primary evidence.
 - Froze offline outbound-link routing as manifest `14107372...de495a`, binding
   all content/source hashes, URL normalization, rejected platforms, and routing
-  categories before derivation. Next: derive and inspect aggregate lead coverage.
+  categories before derivation.
+- Inspected all 4,205 bodies: rejected 42,836 article-level platform links;
+  111 articles supply primary-routing leads covering 123 pairs and 293 supply
+  corroboration-routing leads covering 227 pairs.
+- Next: freeze exact candidate URLs and fetch them with source-specific pacing.
+  Verify ownership, issuer binding, causal availability, materiality, direction,
+  conflicts, and corroboration before any catalyst passes.
 - Full external-store audit passed with 844,904 files, 2,334,718 datasets,
   124,537 contexts, 6,605 symbols, 733 dates, and zero errors. About 79 GiB
   remains free; enforce the reserve before further bulk collection.
