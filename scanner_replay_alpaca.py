@@ -79,13 +79,18 @@ DEFAULT_CALENDAR = (
     / "session-calendar-2025-12-through-2026-06.json"
 )
 DEFAULT_SECURITY_MASTER = PROJECT_ROOT / "learning" / "SECURITY_MASTER.jsonl"
+DEFAULT_SECURITY_SOURCE = (
+    PROJECT_ROOT
+    / "historical_batches"
+    / "scanner_replay"
+    / "security-master-source.json"
+)
 DEFAULT_MANIFEST_ROOT = (
     PROJECT_ROOT / "historical_batches" / "scanner_replay" / "manifests"
 )
 DEFAULT_RUN_ROOT = PROJECT_ROOT / "learning_runs" / "scanner_replay_alpaca"
 DEFAULT_SUMMARY = PROJECT_ROOT / "research_results" / "2026-07-19-scanner-replay.json"
 DEFAULT_SPLITS = PROJECT_ROOT / "learning_runs" / "scanner_replay" / "splits.json.gz"
-INDEX_RELATIVE_ROOT = Path("_derived") / "scanner_replay" / DATASET_ID
 CSV_FIELDS = (
     "ticker",
     "volume",
@@ -133,6 +138,39 @@ def _gzip_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
                 writer.writeheader()
                 writer.writerows(rows)
     temporary.replace(path)
+
+
+def _read_csv_rows(path: Path) -> list[dict[str, Any]]:
+    try:
+        with gzip.open(path, "rt", encoding="utf-8", newline="") as source:
+            return [dict(row) for row in csv.DictReader(source)]
+    except (OSError, csv.Error) as exc:
+        raise ScannerReplayError(f"cannot read reusable scanner index {path}") from exc
+
+
+def _validate_index_attestation(
+    attestation: Mapping[str, Any],
+    *,
+    day: str,
+    dataset_id: str,
+    source_path: Path,
+) -> None:
+    expected_source = {
+        "provider": "Alpaca",
+        "endpoint": ALPACA_BARS_URL,
+        "feed": "sip",
+        "adjustment": "raw",
+        "asof": "-",
+    }
+    if (
+        attestation.get("schema_version") != 1
+        or attestation.get("dataset_id") != dataset_id
+        or attestation.get("date") != day
+        or attestation.get("status") != "READY"
+        or attestation.get("source") != expected_source
+        or attestation.get("source_sha256") != _sha256_file(source_path)
+    ):
+        raise ScannerReplayError(f"scanner index failed attestation for {day}")
 
 
 @dataclass(frozen=True)
@@ -634,20 +672,43 @@ def collect_day(
     client: AlpacaBulkBarsClient,
     store: HistoricalDayStore,
     index_root: Path,
+    dataset_id: str = DATASET_ID,
+    inherited_source: Path | None = None,
+    inherited_attestation: Mapping[str, Any] | None = None,
+    expected_inherited_dataset_id: str | None = None,
+    requested_symbol_total: int | None = None,
+    target_symbol_total: int | None = None,
 ) -> dict[str, Any]:
     output = index_root / "minute_aggs" / day[:4] / f"{day}.csv.gz"
     sidecar = index_root / "attestations" / day[:4] / f"{day}.json"
     if output.exists() and sidecar.exists():
         cached = _read_object(sidecar)
-        if (
-            cached.get("dataset_id") == DATASET_ID
-            and cached.get("source_sha256") == _sha256_file(output)
-            and cached.get("status") == "READY"
-        ):
-            return {**cached, "disposition": "cached"}
-        raise ScannerReplayError(f"scanner index attestation is stale for {day}")
+        _validate_index_attestation(
+            cached, day=day, dataset_id=dataset_id, source_path=output
+        )
+        return {**cached, "disposition": "cached"}
     if output.exists() != sidecar.exists():
         raise ScannerReplayError(f"scanner index is partial for {day}")
+
+    inherited_rows: list[dict[str, Any]] = []
+    if inherited_source is not None or inherited_attestation is not None:
+        if inherited_source is None or inherited_attestation is None:
+            raise ScannerReplayError("reusable scanner source is incomplete")
+        inherited_dataset_id = expected_inherited_dataset_id or str(
+            inherited_attestation.get("dataset_id") or ""
+        )
+        _validate_index_attestation(
+            inherited_attestation,
+            day=day,
+            dataset_id=inherited_dataset_id,
+            source_path=inherited_source,
+        )
+        inherited_rows = _read_csv_rows(inherited_source)
+        if inherited_attestation.get("derived_rows") != len(inherited_rows):
+            raise ScannerReplayError("reusable scanner source row count changed")
+        inherited_symbols = {str(row.get("ticker") or "") for row in inherited_rows}
+        if inherited_symbols.intersection(symbols):
+            raise ScannerReplayError("delta collection overlaps inherited symbols")
 
     session_day = date.fromisoformat(day)
     regular_start = datetime.combine(session_day, wall_time(9, 30), tzinfo=EASTERN)
@@ -725,11 +786,12 @@ def collect_day(
                 opening_rows=opening_rows,
             )
         )
+    derived = [*inherited_rows, *derived]
     derived.sort(key=lambda item: (int(item["window_start"]), str(item["ticker"])))
     _gzip_csv(output, derived)
     attestation = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "date": day,
         "status": "READY",
         "source": {
@@ -739,12 +801,24 @@ def collect_day(
             "adjustment": "raw",
             "asof": "-",
         },
-        "requested_symbols": len(symbols),
-        "daily_symbols": len(regular),
-        "regular_session_symbols": len(regular),
-        "regular_session_rows": sum(len(rows) for rows in regular.values()),
-        "opening_symbols": len(opening),
-        "complete_opening_symbols": opening_complete,
+        "requested_symbols": requested_symbol_total or len(symbols),
+        "target_symbol_union_count": target_symbol_total or len(symbols),
+        "daily_symbols": int((inherited_attestation or {}).get("daily_symbols", 0))
+        + len(regular),
+        "regular_session_symbols": int(
+            (inherited_attestation or {}).get("regular_session_symbols", 0)
+        )
+        + len(regular),
+        "regular_session_rows": int(
+            (inherited_attestation or {}).get("regular_session_rows", 0)
+        )
+        + sum(len(rows) for rows in regular.values()),
+        "opening_symbols": int((inherited_attestation or {}).get("opening_symbols", 0))
+        + len(opening),
+        "complete_opening_symbols": int(
+            (inherited_attestation or {}).get("complete_opening_symbols", 0)
+        )
+        + opening_complete,
         "derived_rows": len(derived),
         "canonical_files_changed": changed_files,
         "request_batches": len(batches),
@@ -754,6 +828,18 @@ def collect_day(
         "provider_request_seconds": round(client.request_seconds - seconds_before, 6),
         "source_sha256": _sha256_file(output),
         "captured_at": captured_at,
+        **(
+            {
+                "reused_source": {
+                    "dataset_id": inherited_attestation.get("dataset_id"),
+                    "source_sha256": inherited_attestation.get("source_sha256"),
+                    "inherited_derived_rows": len(inherited_rows),
+                    "delta_symbols_requested": len(symbols),
+                }
+            }
+            if inherited_attestation is not None
+            else {}
+        ),
     }
     _write_json(sidecar, attestation)
     return {**attestation, "disposition": "collected"}
@@ -761,13 +847,18 @@ def collect_day(
 
 def freeze_contract(
     *,
+    dataset_id: str = DATASET_ID,
     selection_path: Path,
     calendar_path: Path,
     rules_path: Path,
     security_path: Path,
+    security_source_path: Path = DEFAULT_SECURITY_SOURCE,
     output_root: Path,
     index_root: Path,
+    reuse_manifest_path: Path | None = None,
 ) -> tuple[Path, dict[str, Any]]:
+    if not dataset_id.startswith("dataset-production-scanner-replay-"):
+        raise ScannerReplayError("scanner dataset_id has an invalid namespace")
     selection = load_selection(selection_path)
     calendar = load_calendar(calendar_path)
     requested = sorted(selection["selected_dates"])
@@ -779,11 +870,60 @@ def freeze_contract(
         )
     rules = validate_rules(rules_path)
     snapshot_path, snapshot_hash = write_security_master_snapshot(security_path)
+    security_source = _read_object(security_source_path)
+    if security_source.get("security_master", {}).get("sha256") != snapshot_hash:
+        raise ScannerReplayError("security-master source attestation does not match")
     records = load_security_master(security_path)
     symbols = _target_symbols(records, requested)
+    reusable_source: dict[str, Any] | None = None
+    if reuse_manifest_path is not None:
+        reuse_manifest = load_contract(reuse_manifest_path)
+        reuse_contract = reuse_manifest["collection_contract"]
+        compatible_fields = (
+            "endpoint",
+            "feed",
+            "adjustment",
+            "symbol_mapping",
+            "regular_session_query",
+            "opening_query",
+            "derived_index_contract",
+        )
+        expected_contract = {
+            "endpoint": ALPACA_BARS_URL,
+            "feed": "sip",
+            "adjustment": "raw",
+            "symbol_mapping": "asof=-; symbol discontinuities remain explicit missing history",
+            "regular_session_query": "15Min from 09:30:00 through 15:59:59.999999 ET",
+            "opening_query": "1Min from 09:30:00 through 09:34:59.999999 ET",
+            "derived_index_contract": (
+                "five real opening rows plus one deterministic 15:59 residual row whose "
+                "OHLCV reconstructs the aggregate of provider 15-minute regular-session "
+                "bars; the residual is an index, not a provider minute observation"
+            ),
+        }
+        if any(
+            reuse_contract.get(field) != expected_contract[field]
+            for field in compatible_fields
+        ):
+            raise ScannerReplayError("reusable scanner source contract is incompatible")
+        reuse_sessions = sorted(
+            set(required).intersection(
+                reuse_manifest["collection_contract"]["required_session_dates"]
+            )
+        )
+        reusable_source = {
+            "dataset_id": reuse_manifest["dataset_id"],
+            "manifest_path": _repo_path(reuse_manifest_path),
+            "manifest_sha256": reuse_manifest["manifest_sha256"],
+            "session_dates": reuse_sessions,
+            "session_count": len(reuse_sessions),
+            "source_rows_existed_before_freeze": True,
+            "target_outcomes_observed_or_derived": False,
+            "reuse_requires_delta_symbol_collection": True,
+        }
     payload = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "registered_at": _timestamp_now(),
         "requested_dates": requested,
         "dataset_payload": {
@@ -793,7 +933,7 @@ def freeze_contract(
             "evidence_paths": [
                 _repo_path(selection_path),
                 _repo_path(rules_path),
-                "historical_batches/scanner_replay/security-master-source.json",
+                _repo_path(security_source_path),
             ],
             "inspected": False,
             "universe_contract": {
@@ -804,7 +944,10 @@ def freeze_contract(
                 "scanner_rules_sha256": _sha256_json(rules),
                 "security_master_sha256": snapshot_hash,
                 "security_master_path": _repo_path(snapshot_path),
-                "security_master_attestation_path": "historical_batches/scanner_replay/security-master-source.json",
+                "security_master_attestation_path": _repo_path(security_source_path),
+                "security_master_attestation_sha256": _sha256_file(
+                    security_source_path
+                ),
             },
         },
         "collection_contract": {
@@ -842,8 +985,13 @@ def freeze_contract(
                 ],
                 "price_rows_inspected_for_source_fidelity_only": True,
                 "dates_symbols_thresholds_or_ranking_changed": False,
-                "artifacts_reused_by_this_contract": False,
+                "artifacts_reused_by_this_contract": reusable_source is not None,
             },
+            **(
+                {"reusable_source": reusable_source}
+                if reusable_source is not None
+                else {}
+            ),
             "substitutions_allowed": False,
             "provider_switching_allowed": False,
         },
@@ -859,7 +1007,7 @@ def freeze_contract(
     }
     fingerprint = _sha256_json(payload)
     frozen = {**payload, "manifest_sha256": fingerprint}
-    output = output_root / f"{DATASET_ID}-{fingerprint}.json"
+    output = output_root / f"{dataset_id}-{fingerprint}.json"
     if output.exists() and _read_object(output) != frozen:
         raise ScannerReplayError("hash-addressed Alpaca scanner contract has changed")
     if not output.exists():
@@ -873,15 +1021,16 @@ def load_contract(path: Path) -> dict[str, Any]:
     content = dict(manifest)
     content.pop("manifest_sha256", None)
     expected = _sha256_json(content)
+    dataset_id = str(manifest.get("dataset_id") or "")
     if (
-        manifest.get("dataset_id") != DATASET_ID
+        not dataset_id.startswith("dataset-production-scanner-replay-")
         or recorded != expected
-        or path.name != f"{DATASET_ID}-{expected}.json"
+        or path.name != f"{dataset_id}-{expected}.json"
     ):
         raise ScannerReplayError(
             "frozen Alpaca scanner contract was mutated or renamed"
         )
-    validate_dataset_payload(DATASET_ID, manifest.get("dataset_payload", {}))
+    validate_dataset_payload(dataset_id, manifest.get("dataset_payload", {}))
     collection = manifest.get("collection_contract")
     if not isinstance(collection, Mapping):
         raise ScannerReplayError("Alpaca scanner contract lacks collection_contract")
@@ -902,6 +1051,14 @@ def verify_contract_inputs(
         raise ScannerReplayError(
             "security-master snapshot no longer matches the Alpaca contract"
         )
+    source_path = PROJECT_ROOT / str(universe["security_master_attestation_path"])
+    expected_source_hash = universe.get("security_master_attestation_sha256")
+    if expected_source_hash is not None and expected_source_hash != _sha256_file(
+        source_path
+    ):
+        raise ScannerReplayError(
+            "security-master source attestation no longer matches the contract"
+        )
     collection = manifest["collection_contract"]
     if collection.get("scanner_engine_sha256") != _sha256_file(
         PROJECT_ROOT / "scanner_replay.py"
@@ -916,15 +1073,16 @@ def verify_contract_inputs(
     return rules, security_path
 
 
-def index_root(store: HistoricalDayStore) -> Path:
-    return store.root / INDEX_RELATIVE_ROOT
+def index_root(store: HistoricalDayStore, dataset_id: str = DATASET_ID) -> Path:
+    return store.root / "_derived" / "scanner_replay" / dataset_id
 
 
 def collection_status(
     manifest: Mapping[str, Any], *, store: HistoricalDayStore
 ) -> dict[str, Any]:
     required = list(manifest["collection_contract"]["required_session_dates"])
-    root = index_root(store)
+    dataset_id = str(manifest["dataset_id"])
+    root = index_root(store, dataset_id)
     ready: list[dict[str, Any]] = []
     invalid: list[str] = []
     for day in required:
@@ -936,16 +1094,17 @@ def collection_status(
             invalid.append(day)
             continue
         item = _read_object(sidecar)
-        if (
-            item.get("source_sha256") != _sha256_file(source)
-            or item.get("status") != "READY"
-        ):
+        try:
+            _validate_index_attestation(
+                item, day=day, dataset_id=dataset_id, source_path=source
+            )
+        except ScannerReplayError:
             invalid.append(day)
             continue
         ready.append(item)
     return {
         "valid": not invalid,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "provider": "Alpaca historical SIP",
         "canonical_store": {"outside_repository": True},
         "session_files": {
@@ -976,15 +1135,80 @@ def collect_contract(
     records = load_security_master(security_path)
     symbols = _target_symbols(records, manifest["requested_dates"])
     required = list(manifest["collection_contract"]["required_session_dates"])
-    root = index_root(store)
+    dataset_id = str(manifest["dataset_id"])
+    root = index_root(store, dataset_id)
+    reusable = manifest["collection_contract"].get("reusable_source")
+    reusable_days: set[str] = set()
+    reusable_root: Path | None = None
+    inherited_symbols: set[str] = set()
+    if isinstance(reusable, Mapping):
+        source_manifest_path = PROJECT_ROOT / str(reusable["manifest_path"])
+        source_manifest = load_contract(source_manifest_path)
+        if source_manifest.get("manifest_sha256") != reusable.get(
+            "manifest_sha256"
+        ) or source_manifest.get("dataset_id") != reusable.get("dataset_id"):
+            raise ScannerReplayError("reusable scanner contract differs from freeze")
+        source_security = PROJECT_ROOT / str(
+            source_manifest["dataset_payload"]["universe_contract"][
+                "security_master_path"
+            ]
+        )
+        source_universe = source_manifest["dataset_payload"]["universe_contract"]
+        if source_universe["security_master_sha256"] != security_master_sha256(
+            source_security
+        ):
+            raise ScannerReplayError("reusable security-master snapshot changed")
+        inherited_symbols = set(
+            _target_symbols(
+                load_security_master(source_security),
+                source_manifest["requested_dates"],
+            )
+        )
+        reusable_days = set(str(day) for day in reusable["session_dates"])
+        reusable_root = index_root(store, str(reusable["dataset_id"]))
     completed = 0
     with AlpacaBulkBarsClient(config) as client:
         for index, day in enumerate(required, 1):
             existing = root / "minute_aggs" / day[:4] / f"{day}.csv.gz"
             if max_days is not None and completed >= max_days and not existing.exists():
                 break
+            inherited_source = None
+            inherited_attestation = None
+            requested_symbols: Sequence[str] = symbols
+            if day in reusable_days:
+                if reusable_root is None:
+                    raise ScannerReplayError("reusable scanner root is missing")
+                inherited_source = (
+                    reusable_root / "minute_aggs" / day[:4] / f"{day}.csv.gz"
+                )
+                sidecar = reusable_root / "attestations" / day[:4] / f"{day}.json"
+                if not inherited_source.exists() or not sidecar.exists():
+                    raise ScannerReplayError(
+                        f"frozen reusable scanner session is missing for {day}"
+                    )
+                inherited_attestation = _read_object(sidecar)
+                requested_symbols = sorted(set(symbols) - inherited_symbols)
             result = collect_day(
-                day, symbols, client=client, store=store, index_root=root
+                day,
+                requested_symbols,
+                client=client,
+                store=store,
+                index_root=root,
+                dataset_id=dataset_id,
+                inherited_source=inherited_source,
+                inherited_attestation=inherited_attestation,
+                expected_inherited_dataset_id=(
+                    str(reusable["dataset_id"])
+                    if inherited_attestation is not None
+                    and isinstance(reusable, Mapping)
+                    else None
+                ),
+                requested_symbol_total=(
+                    len(set(symbols).union(inherited_symbols))
+                    if inherited_attestation is not None
+                    else len(symbols)
+                ),
+                target_symbol_total=len(symbols),
             )
             completed += int(result["disposition"] == "collected")
             print(
@@ -1021,7 +1245,7 @@ def build_contract(
         raise ScannerReplayError(
             "session calendar no longer matches the Alpaca contract"
         )
-    root = index_root(store)
+    root = index_root(store, str(manifest["dataset_id"]))
     flat_root = run_root / "minute_aggs"
     flat_root.mkdir(parents=True, exist_ok=True)
     for day in manifest["collection_contract"]["required_session_dates"]:
@@ -1047,7 +1271,7 @@ def build_contract(
     ]
     final = {
         **summary,
-        "dataset_id": DATASET_ID,
+        "dataset_id": str(manifest["dataset_id"]),
         "source": {
             "provider": "Alpaca",
             "feed": "sip",
@@ -1069,11 +1293,14 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--run-root", type=Path, default=DEFAULT_RUN_ROOT)
     subparsers = parser.add_subparsers(dest="command", required=True)
     freeze = subparsers.add_parser("freeze")
+    freeze.add_argument("--dataset-id", default=DATASET_ID)
     freeze.add_argument("--selection", type=Path, default=DEFAULT_SELECTION)
     freeze.add_argument("--calendar", type=Path, default=DEFAULT_CALENDAR)
     freeze.add_argument("--rules", type=Path, default=DEFAULT_RULES)
     freeze.add_argument("--security-master", type=Path, default=DEFAULT_SECURITY_MASTER)
+    freeze.add_argument("--security-source", type=Path, default=DEFAULT_SECURITY_SOURCE)
     freeze.add_argument("--output-root", type=Path, default=DEFAULT_MANIFEST_ROOT)
+    freeze.add_argument("--reuse-manifest", type=Path)
     collect = subparsers.add_parser("collect")
     collect.add_argument("manifest", type=Path)
     collect.add_argument("--max-days", type=int)
@@ -1095,12 +1322,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         store = HistoricalDayStore(config.root)
         if args.command == "freeze":
             path, manifest = freeze_contract(
+                dataset_id=args.dataset_id,
                 selection_path=args.selection,
                 calendar_path=args.calendar,
                 rules_path=args.rules,
                 security_path=args.security_master,
+                security_source_path=args.security_source,
                 output_root=args.output_root,
-                index_root=index_root(store),
+                index_root=index_root(store, args.dataset_id),
+                reuse_manifest_path=args.reuse_manifest,
             )
             result: Any = {
                 "path": str(path),

@@ -168,6 +168,29 @@ frozen and no target outcomes were read.
   direct catalyst sources, and evaluate unchanged v3 before proposing one
   preregistered revision.
 
+### 23. One-Hundred-Date Dynamic Scanner Expansion
+
+Status: in progress; the exact 100-date selection is frozen and point-in-time
+reference collection has begun. No target scanner result or strategy outcome
+exists yet.
+
+- Selected 100 H1-2026 dates with seed `20260719` after excluding all 20
+  scanner-v4 targets; substitutions remain forbidden.
+- Measured 133 required source sessions: 113 overlap the inspected v4 input
+  contract and 20 require new full-universe market data.
+- Generalized the Alpaca scanner adapter so dataset identity and security-source
+  attestation come from the new frozen campaign rather than another copied
+  collector.
+- Added hash-bound source reuse with exact new-master symbol-delta collection;
+  reuse can eliminate redundant provider work without omitting new or renamed
+  listings.
+- Explicitly disclose preexisting source rows and keep the campaign out of
+  independent-alpha claims. Direct catalyst and outcome contracts remain
+  separate future freezes.
+- Next: finish 100 Massive dated reference snapshots, build the new master,
+  freeze the market contract, collect/resume the 20 new sessions plus symbol
+  deltas, and independently inspect all 100 rankings.
+
 ## Completed 2026-07-18
 
 ### 12. Bounded Edit And Learning Loop

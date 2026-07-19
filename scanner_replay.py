@@ -148,7 +148,7 @@ def _iso_dates(value: Any, field: str) -> list[str]:
     return [item.isoformat() for item in parsed]
 
 
-def load_selection(path: Path) -> dict[str, Any]:
+def load_selection(path: Path, *, expected_count: int | None = None) -> dict[str, Any]:
     value = _read_object(path)
     selected = value.get("selected_dates")
     if not isinstance(selected, list):
@@ -163,9 +163,11 @@ def load_selection(path: Path) -> dict[str, Any]:
             raise ScannerReplayError("selected_dates contains an invalid date") from exc
     if len(normalized) != len(set(normalized)):
         raise ScannerReplayError("selected_dates must be unique")
-    if len(normalized) != 20:
+    if not normalized:
+        raise ScannerReplayError("selected_dates must not be empty")
+    if expected_count is not None and len(normalized) != expected_count:
         raise ScannerReplayError(
-            "the first scanner replay must freeze exactly 20 dates"
+            f"selection must freeze exactly {expected_count} dates"
         )
     seed = value.get("seed")
     if not isinstance(seed, int):
@@ -1323,7 +1325,7 @@ def freeze_contract(
     output_root: Path,
     minute_root: Path = DEFAULT_RUN_ROOT / "minute_aggs",
 ) -> tuple[Path, dict[str, Any]]:
-    selection = load_selection(selection_path)
+    selection = load_selection(selection_path, expected_count=20)
     calendar = load_calendar(calendar_path)
     requested_dates = sorted(selection["selected_dates"])
     required = required_sessions(requested_dates, calendar)
@@ -1477,7 +1479,10 @@ def collection_status(
     return {
         "valid": True,
         "selected_dates": selection["selected_dates"],
-        "reference_snapshots": {"ready": len(references), "required": 20},
+        "reference_snapshots": {
+            "ready": len(references),
+            "required": len(selection["selected_dates"]),
+        },
         "minute_files": {"ready": len(minutes), "required": len(required)},
         "security_master_exists": DEFAULT_SECURITY_MASTER.exists(),
         "split_actions": {

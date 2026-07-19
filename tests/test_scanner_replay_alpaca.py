@@ -242,6 +242,99 @@ class CanonicalScannerCollectionTests(unittest.TestCase):
             self.assertEqual(cached["disposition"], "cached")
             self.assertEqual(client.request_count, calls)
 
+    def test_new_campaign_reuses_attested_rows_and_collects_only_delta_symbols(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = HistoricalDayStore(root / "history")
+            day = date(2026, 3, 3)
+            client = FakeBulkClient(day)
+            inherited_index = root / "inherited"
+            collect_day(
+                day.isoformat(),
+                ["AAA"],
+                client=client,
+                store=store,
+                index_root=inherited_index,
+                dataset_id="dataset-production-scanner-replay-source",
+            )
+            inherited_source = (
+                inherited_index / "minute_aggs" / "2026" / "2026-03-03.csv.gz"
+            )
+            inherited_attestation = json.loads(
+                (
+                    inherited_index / "attestations" / "2026" / "2026-03-03.json"
+                ).read_text(encoding="utf-8")
+            )
+            requests_before = client.request_count
+
+            result = collect_day(
+                day.isoformat(),
+                ["CCC"],
+                client=client,
+                store=store,
+                index_root=root / "expanded",
+                dataset_id="dataset-production-scanner-replay-expanded",
+                inherited_source=inherited_source,
+                inherited_attestation=inherited_attestation,
+                requested_symbol_total=2,
+                target_symbol_total=2,
+            )
+
+            self.assertEqual(client.request_count - requests_before, 2)
+            self.assertEqual(result["reused_source"]["delta_symbols_requested"], 1)
+            self.assertEqual(result["target_symbol_union_count"], 2)
+            expanded = root / "expanded" / "minute_aggs" / "2026" / "2026-03-03.csv.gz"
+            with gzip.open(expanded, "rt", encoding="utf-8", newline="") as stream:
+                symbols = {row["ticker"] for row in csv.DictReader(stream)}
+            self.assertEqual(symbols, {"AAA", "CCC"})
+
+    def test_reuse_rejects_sidecar_identity_or_row_count_drift(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = HistoricalDayStore(root / "history")
+            day = date(2026, 3, 3)
+            client = FakeBulkClient(day)
+            inherited_index = root / "inherited"
+            collect_day(
+                day.isoformat(),
+                ["AAA"],
+                client=client,
+                store=store,
+                index_root=inherited_index,
+                dataset_id="dataset-production-scanner-replay-source",
+            )
+            inherited_source = (
+                inherited_index / "minute_aggs" / "2026" / "2026-03-03.csv.gz"
+            )
+            sidecar = inherited_index / "attestations" / "2026" / "2026-03-03.json"
+            attestation = json.loads(sidecar.read_text(encoding="utf-8"))
+
+            wrong_day = {**attestation, "date": "2026-03-02"}
+            with self.assertRaisesRegex(ScannerReplayError, "failed attestation"):
+                collect_day(
+                    day.isoformat(),
+                    ["CCC"],
+                    client=client,
+                    store=store,
+                    index_root=root / "wrong-day",
+                    dataset_id="dataset-production-scanner-replay-expanded",
+                    inherited_source=inherited_source,
+                    inherited_attestation=wrong_day,
+                )
+
+            wrong_count = {**attestation, "derived_rows": 999}
+            with self.assertRaisesRegex(ScannerReplayError, "row count changed"):
+                collect_day(
+                    day.isoformat(),
+                    ["CCC"],
+                    client=client,
+                    store=store,
+                    index_root=root / "wrong-count",
+                    dataset_id="dataset-production-scanner-replay-expanded",
+                    inherited_source=inherited_source,
+                    inherited_attestation=wrong_count,
+                )
+
 
 class AlpacaFreezeTests(unittest.TestCase):
     def test_hash_addressed_contract_keeps_original_dates_rules_and_master(self):
@@ -281,6 +374,41 @@ class AlpacaFreezeTests(unittest.TestCase):
             path.write_text(json.dumps(corrupted), encoding="utf-8")
             with self.assertRaisesRegex(ScannerReplayError, "mutated or renamed"):
                 load_contract(path)
+
+    def test_expansion_contract_binds_compatible_reusable_sessions(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as directory:
+            root = Path(directory)
+            common = {
+                "selection_path": Path(
+                    "historical_batches/scanner_replay/selection-2026-07-18-20-days.json"
+                ),
+                "calendar_path": Path(
+                    "historical_batches/scanner_replay/session-calendar-2025-12-through-2026-06.json"
+                ),
+                "rules_path": DEFAULT_RULES,
+                "security_path": Path("learning/SECURITY_MASTER.jsonl"),
+            }
+            source_path, _source = freeze_contract(
+                **common,
+                output_root=root / "source-manifests",
+                index_root=root / "source-index",
+            )
+
+            expanded_path, expanded = freeze_contract(
+                **common,
+                dataset_id="dataset-production-scanner-replay-test-expansion",
+                output_root=root / "expanded-manifests",
+                index_root=root / "expanded-index",
+                reuse_manifest_path=source_path,
+            )
+
+            loaded = load_contract(expanded_path)
+            reusable = loaded["collection_contract"]["reusable_source"]
+            self.assertEqual(reusable["dataset_id"], DATASET_ID)
+            self.assertEqual(reusable["session_count"], 118)
+            self.assertTrue(reusable["source_rows_existed_before_freeze"])
+            self.assertFalse(reusable["target_outcomes_observed_or_derived"])
+            self.assertEqual(expanded["manifest_sha256"], loaded["manifest_sha256"])
 
 
 if __name__ == "__main__":

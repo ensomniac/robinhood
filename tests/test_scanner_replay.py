@@ -1,6 +1,7 @@
 import csv
 import gzip
 import json
+import random
 import tempfile
 import unittest
 from datetime import date, datetime, timedelta
@@ -15,6 +16,7 @@ from scanner_replay import (
     _signed_s3_headers,
     build_scanner_replay,
     build_security_master,
+    load_calendar,
     load_selection,
     required_sessions,
     split_adjustment_factor,
@@ -74,11 +76,60 @@ class SelectionContractTests(unittest.TestCase):
 
         self.assertEqual(loaded["selected_dates"], dates)
 
+    def test_optional_expected_count_keeps_campaign_size_explicit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "selection.json"
+            path.write_text(
+                json.dumps({"seed": 7, "selected_dates": ["2026-01-02", "2026-01-05"]}),
+                encoding="utf-8",
+            )
+
+            self.assertEqual(len(load_selection(path)["selected_dates"]), 2)
+            with self.assertRaisesRegex(ScannerReplayError, "exactly 20"):
+                load_selection(path, expected_count=20)
+
     def test_required_sessions_never_substitutes_a_missing_lookback(self):
         calendar = [f"2026-01-{day:02d}" for day in range(1, 18)]
         self.assertEqual(len(required_sessions([calendar[-1]], calendar)), 16)
         with self.assertRaisesRegex(ScannerReplayError, "lacks 15"):
             required_sessions([calendar[10]], calendar)
+
+    def test_expansion_selection_is_exactly_100_new_dates(self):
+        original = load_selection(
+            Path("historical_batches/scanner_replay/selection-2026-07-18-20-days.json"),
+            expected_count=20,
+        )
+        expanded = load_selection(
+            Path(
+                "historical_batches/scanner_expansion/selection-2026-07-19-100-days.json"
+            ),
+            expected_count=100,
+        )
+        calendar = load_calendar(
+            Path(
+                "historical_batches/scanner_replay/session-calendar-2025-12-through-2026-06.json"
+            )
+        )
+        expanded_required = set(required_sessions(expanded["selected_dates"], calendar))
+        original_required = set(required_sessions(original["selected_dates"], calendar))
+        eligible = [
+            day
+            for day in calendar
+            if "2026-01-01" <= day <= "2026-06-30"
+            and day not in set(original["selected_dates"])
+        ]
+
+        self.assertFalse(
+            set(original["selected_dates"]).intersection(expanded["selected_dates"])
+        )
+        self.assertEqual(len(eligible), 103)
+        self.assertEqual(
+            expanded["selected_dates"],
+            random.Random(expanded["seed"]).sample(eligible, 100),
+        )
+        self.assertEqual(len(expanded_required), 133)
+        self.assertEqual(len(expanded_required.intersection(original_required)), 113)
+        self.assertEqual(len(expanded_required - original_required), 20)
 
 
 class SecurityMasterBuildTests(unittest.TestCase):
