@@ -174,6 +174,18 @@ deployability must be measured before alpha: define those inputs reproducibly,
 freeze new scanner dates with direct catalysts, and evaluate v3 unchanged before
 testing one preregistered revision. `CHAMPION_INPUT_READINESS.md` is authoritative.
 
+The remaining intraminute VWAP ambiguity was then closed without examining
+returns. A hash-frozen implementation of Alpaca's published tape-specific
+minute aggregation rules rebuilt all 325 crossing-minute provider bars from
+365,379 raw trades: every OHLCV and eligible-trade-count field matched exactly,
+every WAP matched within one microdollar, and no condition was unsupported. The
+WAP-eligible denominator differed from published volume in every tested minute,
+with a median eligible/reported-volume ratio of about 0.8207. Exact trigger-time
+VWAP must therefore use the condition-aware raw trade prefix; weighting bar WAP
+by published bar volume is not faithful. This closes a replay input definition,
+not an alpha question, and earns no production change. See
+`SIP_BAR_AGGREGATION.md`.
+
 ## What The Repository Had Right
 
 The original strategy already addressed several common failure modes: it banned

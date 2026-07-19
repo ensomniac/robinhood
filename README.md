@@ -352,11 +352,17 @@ remains unchanged. An outcome-blind readiness join subsequently found zero
 resolved hard-gate survivors: the only verified positive-catalyst pair failed
 spread and chase. It also corrected the engine-compatible chase count to 101
 and found zero pairs passing every measured non-catalyst proxy. Returns remain
-unread and v3 remains frozen. See
+unread and v3 remains frozen. A final input-semantics layer rebuilt all 325
+crossing-minute provider bars from 365,379 raw trades: every OHLCV/count field
+matched exactly, every WAP matched within one microdollar, and zero trade
+conditions were unsupported. Because the WAP-eligible denominator differed
+from reported volume in all 325 minutes, exact trigger-time VWAP now uses the
+condition-aware raw-trade prefix rather than a completed-bar approximation. See
 [SELECTED_CANDIDATE_JOIN.md](SELECTED_CANDIDATE_JOIN.md) and
 [SELECTED_CANDIDATE_FIDELITY.md](SELECTED_CANDIDATE_FIDELITY.md), then
 [CHAMPION_INPUT_FIDELITY.md](CHAMPION_INPUT_FIDELITY.md) and
-[CHAMPION_INPUT_READINESS.md](CHAMPION_INPUT_READINESS.md).
+[CHAMPION_INPUT_READINESS.md](CHAMPION_INPUT_READINESS.md), and
+[SIP_BAR_AGGREGATION.md](SIP_BAR_AGGREGATION.md).
 
 ```sh
 python3 historical_research.py run \

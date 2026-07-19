@@ -817,6 +817,15 @@ When Ryan selects historical mode:
    spread and chase, so no target return from these 20 dates is eligible for a
    production-policy claim. Do not loosen the 0.8% stop or 2.2% resistance-room
    rule from this result: the tested levels are explicitly diagnostic proxies.
+   `SIP_BAR_AGGREGATION.md` now closes the intraminute VWAP semantics gap. Its
+   frozen condition-aware implementation exactly rebuilt OHLCV, eligible trade
+   count, and WAP on all 325 crossing minutes from 365,379 raw trades, with zero
+   unsupported conditions. Historical trigger-time VWAP must use the raw trade
+   prefix and the documented condition matrix; never approximate it with
+   `sum(bar.wap * bar.volume) / sum(bar.volume)`, because reported volume and
+   the WAP denominator differed in every tested minute. Missing prefix coverage
+   or an unsupported condition is a blocker. This is input validation, not
+   alpha evidence or permission to change the live VWAP rule.
    First freeze exact real-time invalidation/noise and resistance definitions,
    then evaluate unchanged v3 on at least 100 previously uninspected scanner
    dates with direct catalyst evidence.

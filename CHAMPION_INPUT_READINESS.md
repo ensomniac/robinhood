@@ -74,6 +74,11 @@ Three remaining fields are deliberately labeled proxies:
   final snapshot. It avoids lookahead but cannot reproduce intraminute VWAP when
   the observation occurs inside a minute.
 
+The subsequent independently inspected contract in `SIP_BAR_AGGREGATION.md`
+closes that intraminute VWAP semantics gap for future replays. It does not
+retroactively turn this completed-bar diagnostic into an exact input or make
+these 20 dates eligible for outcome analysis.
+
 Broker-specific target-date tradability cannot be reconstructed. The dated
 common-stock identity and official no-halt join remain a historical exchange
 proxy; live execution qualification must verify the broker fact prospectively.

@@ -1,6 +1,6 @@
 # Persistent Strategy Learning Program
 
-Program version: `2026-07-19-v7`
+Program version: `2026-07-19-v8`
 
 Production champion: `2026-07-15-orb-v3`
 
@@ -68,9 +68,16 @@ rewritten or deleted.
    Fifty-three pass non-catalyst execution geometry, but zero pass all measured
    market, stop, and resistance proxies. This is readiness and falsification
    evidence, not alpha.
-9. **Registered hypothesis and experiment lifecycle:** implemented.
-10. **Three-axis champion/challenger evidence:** implemented.
-11. **Operating cadence and monitoring:** implemented.
+9. **Exact SIP bar and prefix-VWAP semantics:** independently inspected
+   `READY`. A frozen condition-aware implementation rebuilt open, high, low,
+   close, reported volume, eligible trade count, and WAP against the provider
+   oracle on all 325 crossing minutes and 365,379 raw trades with zero
+   unsupported conditions. In every minute, WAP-eligible volume differed from
+   reported volume, proving that exact intraminute/session VWAP requires the raw
+   condition-aware trade prefix rather than `bar.wap * bar.volume`.
+10. **Registered hypothesis and experiment lifecycle:** implemented.
+11. **Three-axis champion/challenger evidence:** implemented.
+12. **Operating cadence and monitoring:** implemented.
 
 ## Current Evidence Decisions
 
@@ -86,18 +93,19 @@ rewritten or deleted.
 ## Current Next Objective
 
 The first outcome-blind unchanged-champion readiness join is complete and
-independently inspected. It proves that no pair can currently enter a faithful
-v3 outcome evaluation and that the frozen stop/resistance geometry deserves
-focused definition work, not retrospective relaxation. The next objective is
-to freeze reproducible real-time structural invalidation/noise and technical
-resistance contracts, then acquire at least 100 previously uninspected scanner
-dates with direct catalyst sources. Broker-specific tradability remains a
-prospective execution-qualification requirement. Evaluate unchanged v3 first on
-that new sample; earn at most one preregistered revision only if its deployment
-capacity or net expectancy fails. See `SCANNER_REPLAY.md`,
+independently inspected. Exact intraminute VWAP semantics are now also frozen
+and source-oracle validated. No pair can currently enter a faithful v3 outcome
+evaluation, and the frozen stop/resistance geometry deserves focused definition
+work, not retrospective relaxation. The next objective is to freeze
+reproducible real-time structural invalidation/noise and technical resistance
+contracts, then acquire at least 100 previously uninspected scanner dates with
+direct catalyst sources. Broker-specific tradability remains a prospective
+execution-qualification requirement. Evaluate unchanged v3 first on that new
+sample; earn at most one preregistered revision only if its deployment capacity
+or net expectancy fails. See `SCANNER_REPLAY.md`,
 `SELECTED_CANDIDATE_JOIN.md`, `SELECTED_CANDIDATE_FIDELITY.md`,
-`CHAMPION_INPUT_FIDELITY.md`, `CHAMPION_INPUT_READINESS.md`, and
-`STRATEGY_LEARNING_EXECUTION_PLAN.md`.
+`CHAMPION_INPUT_FIDELITY.md`, `CHAMPION_INPUT_READINESS.md`,
+`SIP_BAR_AGGREGATION.md`, and `STRATEGY_LEARNING_EXECUTION_PLAN.md`.
 
 ## Bounded Iteration
 

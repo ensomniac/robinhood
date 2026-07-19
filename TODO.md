@@ -121,6 +121,27 @@ remain frozen and no target outcomes were read.
   without tuning these dates, then freeze 100+ new scanner dates with direct
   catalyst evidence and evaluate unchanged v3 first.
 
+### 21. Condition-Aware SIP Bar And Prefix VWAP Fidelity
+
+Status: `dataset-sip-bar-aggregation-validation-2026-07-19-v1` is independently
+inspected `READY` for development-only input semantics; production rules remain
+frozen and no target outcomes were read.
+
+- Froze the complete Alpaca-documented tape A/B/C minute update matrix and the
+  validation implementation before comparing outputs.
+- Rebuilt 325 provider crossing-minute bars from 365,379 raw SIP trades with
+  exact open, high, low, close, volume, and eligible-trade-count agreement;
+  all 325 WAP values matched within $0.000001.
+- Encountered zero unsupported trade conditions, then repeated the source join
+  and every aggregate in a separate independent inspector.
+- Proved that all 325 published-volume values differ from the WAP-eligible
+  denominator; the median eligible/reported-volume ratio is about 0.8207.
+- Added a fail-closed raw-prefix VWAP primitive so a future replay can compute
+  session VWAP at the exact trigger timestamp without peeking to minute end.
+- Next: freeze one reproducible structural invalidation/noise contract and one
+  point-in-time technical-resistance contract before collecting the 100+ new
+  scanner dates. Do not revisit target returns on these 20 development dates.
+
 ## Completed 2026-07-18
 
 ### 12. Bounded Edit And Learning Loop

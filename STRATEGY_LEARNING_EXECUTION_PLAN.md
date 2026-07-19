@@ -297,10 +297,15 @@ also corrected the earlier 155 upper-cap-only count to 101 engine-compatible
 passes by requiring the final ask to remain at or above the opening high.
 
 The matrix passed independent pipeline inspection but did not make the input
-contract complete: intraminute VWAP, confirmed technical resistance,
-structural invalidation/noise, sector evidence, and broker-specific tradability
-remain unresolved or prospective. Therefore the exact `2026-07-15-orb-v3`
-rules may not read outcomes on these dates. See `CHAMPION_INPUT_READINESS.md`.
+contract complete. A subsequent frozen source-oracle validation closed
+intraminute VWAP semantics: 325 of 325 raw-trade reconstructions matched the
+provider's OHLCV/count and WAP, with zero unsupported conditions. Because
+WAP-eligible volume differed from reported volume in every crossing minute,
+future trigger-time VWAP must use the condition-aware raw trade prefix described
+in `SIP_BAR_AGGREGATION.md`. Confirmed technical resistance, structural
+invalidation/noise, sector evidence, and broker-specific tradability remain
+unresolved or prospective. Therefore the exact `2026-07-15-orb-v3` rules may
+not read outcomes on these dates. See `CHAMPION_INPUT_READINESS.md`.
 
 Once those definitions are frozen on an outcome-blind basis, retain every selected candidate, every
 trigger, every production rejection reason, and a paired paper-aligned
