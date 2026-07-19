@@ -179,6 +179,7 @@ def evaluate_guard(
             fatal_actions.append("reconcile the inconsistent protective stop state")
         if (
             active_stop_orders > 1
+            or active_exit_orders > 1
             or active_stop_quantity > position_quantity
             or (active_stop_orders and active_exit_orders)
         ):
@@ -217,7 +218,9 @@ def evaluate_guard(
             ):
                 actions = []
                 if active_entry_orders:
-                    actions.append("cancel and confirm the unfilled entry remainder")
+                    actions.append(
+                        "cancel and confirm every unfilled entry remainder"
+                    )
                 if active_exit_orders:
                     actions.append("submit or confirm the prepared exit immediately")
                 elif active_stop_orders:
@@ -260,7 +263,7 @@ def evaluate_guard(
                 config,
                 ("a filled position still has an active entry remainder",),
                 (
-                    "cancel and confirm the unfilled entry remainder immediately",
+                    "cancel and confirm every unfilled entry remainder immediately",
                     "re-run the guard from fresh position, stop, and order state",
                 ),
             )
@@ -296,6 +299,18 @@ def evaluate_guard(
             ("an order has unknown outcome",),
             (
                 "query current orders and reconcile the original logical order before retrying",
+            ),
+        )
+    if active_entry_orders > 1:
+        return _decision(
+            "RECONCILE_DUPLICATE_ENTRY_ORDERS",
+            snapshot,
+            earned_maturity,
+            config,
+            ("more than one entry order is active",),
+            (
+                "cancel and confirm every active entry order",
+                "re-query position and orders before preparing one new logical entry",
             ),
         )
     if active_entry_orders:

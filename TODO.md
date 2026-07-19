@@ -244,6 +244,10 @@ version.
   undersized stop rather than instructing a second full-size stop, and an
   inconsistent stop-count/covered-quantity snapshot activates flatten and
   reconciliation.
+- Added explicit duplicate-entry and duplicate-exit states. Multiple flat-account
+  entries are all canceled before one fresh logical order can be prepared;
+  multiple exits during exposure activate the oversell kill switch. Partial-fill
+  paths now cancel every remainder rather than referring to only one.
 
 ## Completed 2026-07-18
 

@@ -478,6 +478,9 @@ must follow stop risk rather than precede it.
   ask and book. Never chase beyond the precomputed maximum entry.
 - Use one UUID for one logical order and reuse it only for a transport retry.
 - Treat unknown transport outcome as unresolved; query orders before retrying.
+- If multiple entry orders are active, cancel and confirm all of them before
+  preparing one new logical entry. Multiple independent exit orders during
+  exposure are an oversell-risk kill-switch state.
 - If an entry is not fully filled within 10 seconds or the trigger fails, cancel
   the unfilled remainder. Immediately protect any filled quantity.
 - Recompute milestone, stop, risk, and allocation from the actual average fill.

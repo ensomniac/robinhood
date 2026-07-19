@@ -574,6 +574,9 @@ Before any live order:
   placing an obsolete review. Place the logical entry once with a fresh UUID.
 - Run `session_guard.py` on the final broker snapshot. Submit only when it returns
   `ENTRY_READY` using the same current rules hash and evidence-earned maturity.
+- If more than one entry order is active, cancel and confirm every one, re-query
+  position and orders, and prepare at most one fresh logical entry. Do not choose
+  one to preserve while another can race it to a fill.
 
 After a reviewed and filled entry:
 
@@ -604,6 +607,9 @@ After a reviewed and filled entry:
   Pre-review and confirm the exit while the stop remains live; then cancel and
   confirm the stop and immediately submit the exit. If the exit submission fails,
   restore protection or flatten through the safest tool-permitted route.
+- More than one active independent exit order is an oversell-risk state during
+  exposure and follows `KILL_SWITCH_FLATTEN`; reconcile every sell order after
+  the position is confirmed flat.
 
 ## Live Monitoring And Exit Management
 

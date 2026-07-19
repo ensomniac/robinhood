@@ -142,6 +142,10 @@ class ExposureGuardTests(unittest.TestCase):
         result = evaluate_guard(snapshot, "UNVALIDATED")
 
         self.assertEqual(result.status, "CANCEL_ENTRY_REMAINDER")
+        self.assertIn(
+            "cancel and confirm every unfilled entry remainder immediately",
+            result.required_actions,
+        )
 
     def test_fresh_fill_gets_short_protect_now_window(self):
         snapshot = safe_snapshot()
@@ -153,7 +157,8 @@ class ExposureGuardTests(unittest.TestCase):
 
         self.assertEqual(result.status, "PROTECT_NOW")
         self.assertIn(
-            "cancel and confirm the unfilled entry remainder", result.required_actions
+            "cancel and confirm every unfilled entry remainder",
+            result.required_actions,
         )
 
     def test_undersized_stop_is_replaced_not_duplicated(self):
@@ -233,12 +238,35 @@ class ExposureGuardTests(unittest.TestCase):
         self.assertEqual(result.status, "RECONCILE_FLAT_ORDERS")
         self.assertFalse(result.entry_allowed)
 
+    def test_duplicate_entries_while_flat_are_all_cancelled(self):
+        snapshot = safe_snapshot()
+        snapshot["active_entry_orders"] = 2
+
+        result = evaluate_guard(snapshot, "UNVALIDATED")
+
+        self.assertEqual(result.status, "RECONCILE_DUPLICATE_ENTRY_ORDERS")
+        self.assertIn(
+            "cancel and confirm every active entry order", result.required_actions
+        )
+
     def test_independent_exit_and_stop_are_a_flatten_kill_switch(self):
         snapshot = safe_snapshot()
         snapshot["position_quantity"] = 100
         snapshot["active_stop_orders"] = 1
         snapshot["active_stop_quantity"] = 100
         snapshot["active_exit_orders"] = 1
+
+        result = evaluate_guard(snapshot, "UNVALIDATED")
+
+        self.assertTrue(result.must_flatten)
+        self.assertIn(
+            "protective orders can oversell the live position", result.reasons
+        )
+
+    def test_duplicate_exit_orders_are_a_flatten_kill_switch(self):
+        snapshot = safe_snapshot()
+        snapshot["position_quantity"] = 100
+        snapshot["active_exit_orders"] = 2
 
         result = evaluate_guard(snapshot, "UNVALIDATED")
 
