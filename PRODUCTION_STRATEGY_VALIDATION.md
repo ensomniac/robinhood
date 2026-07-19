@@ -124,6 +124,14 @@ detail, and preserve the configured 20-GiB reserve. A demonstrated need for a
 paid archive produces a vendor/tier memo and `WAITING_SUBSCRIPTION`; the agent
 does not purchase access or fabricate credentials.
 
+The first corpus has completed that ordered recovery with only three exact
+deduplicated positive pairs, so its outcomes remain locked. The active
+`DEVELOPMENT_ACQUISITION` handoff is implemented by
+`development_tranche.py` and documented in `DEVELOPMENT_TRANCHE.md`. The
+selection implementation is committed before freeze, its manifest is committed
+before reference access, and the later provider-bound scanner manifest is
+committed before market collection.
+
 ## Development, Challenger, And Confirmation Gates
 
 Outcome access starts only after an immutable contract freezes executable entry,

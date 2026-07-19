@@ -52,6 +52,13 @@ this corpus is exhausted. The current handoff is `DEVELOPMENT_ACQUISITION`:
 freeze and commit the next exact disjoint 100-session tranche, excluding every
 previously inspected target date, before collecting market or catalyst data. A
 wait, pause, or insufficient sample is progress state, not completion.
+`development_tranche.py` now implements that outcome-blind selection and
+inspection boundary. Its preflight unifies the signal ledger, archived contexts,
+prior scanner selections, and all currently inspected registered evidence; 185
+eligible 2025 sessions remain and the deterministic 100-date tranche requires
+243 target/lookback sessions. Commit and push this implementation before
+freezing the selection, then commit the frozen manifest before any provider
+access. See `DEVELOPMENT_TRANCHE.md`.
 
 ## Completed 2026-07-19
 

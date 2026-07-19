@@ -449,9 +449,13 @@ remain locked while the campaign follows same-source recovery and, if still
 needed, disjoint acquisition under
 [CATALYST_SOURCE_SEMANTICS_PLAN.md](CATALYST_SOURCE_SEMANTICS_PLAN.md); no new
 strategy variant or outcome access is permitted before sufficient unchanged-v3
-capacity is proven. The ordered SEC stage is implemented in
-[CATALYST_SOURCE_RECOVERY.md](CATALYST_SOURCE_RECOVERY.md): 24 accession-bound
-sources may be retried only after their exact recovery manifest is committed.
+capacity is proven. The ordered recovery sequence in
+[CATALYST_SOURCE_RECOVERY.md](CATALYST_SOURCE_RECOVERY.md) is now exhausted:
+exact cross-pass deduplication still leaves only three positive pairs. The next
+outcome-blind acquisition boundary is the exact disjoint 100-session selection
+in [DEVELOPMENT_TRANCHE.md](DEVELOPMENT_TRANCHE.md). Its implementation must be
+committed before selection freeze, and the resulting manifest must be committed
+before any provider access.
 
 ```sh
 python3 historical_research.py run \

@@ -114,16 +114,24 @@ The 100-date scanner expansion and its non-return execution joins are now
 independently inspected. Zero rows pass every known unchanged-v3 hard gate. The
 exact 33-pair, 33-document, 38-join source-semantics gate is also independently
 inspected: only 3 pairs are verified positive, so its 20-pair capacity gate
-closed without outcomes. The current objective is same-source recovery in the
-frozen order—SEC 403 accession endpoints, captured transport failures, then
-issuer canonical chains—followed by disjoint acquisition if capacity remains
-insufficient. Do not loosen v3. Broker-specific tradability remains a
-prospective execution-qualification requirement. See
+closed without outcomes. Accession recovery, exact transport retries, and
+canonical issuer-chain recovery are now independently inspected; exact
+cross-pass deduplication still leaves three positive pairs. The current
+objective is the outcome-blind, exact disjoint 100-session acquisition in
+`DEVELOPMENT_TRANCHE.md`. Do not loosen v3. Broker-specific tradability remains
+a prospective execution-qualification requirement. See
 `CATALYST_EVIDENCE_ACQUISITION.md`, `SCANNER_EXPANSION.md`, `SCANNER_REPLAY.md`,
 `SELECTED_CANDIDATE_JOIN.md`, `SELECTED_CANDIDATE_FIDELITY.md`,
 `CHAMPION_INPUT_FIDELITY.md`, `CHAMPION_INPUT_READINESS.md`,
 `SIP_BAR_AGGREGATION.md`, `PREENTRY_STRUCTURE.md`, and
 `STRATEGY_LEARNING_EXECUTION_PLAN.md`.
+
+`development_tranche.py` binds every previously inspected target surface,
+selects deterministically from the attested 2025 market calendar, enforces zero
+substitution and the 20-GiB reserve, and freezes only the selection layer. Its
+implementation must be committed before freeze; the selection manifest must be
+committed before reference access; and a later point-in-time scanner manifest
+must be committed before market collection.
 
 The first recovery step is executable in `catalyst_source_recovery.py` and
 documented in `CATALYST_SOURCE_RECOVERY.md`. It freezes the 26 original SEC 403

@@ -867,6 +867,13 @@ When Ryan selects historical mode:
    trigger, and outcome contracts. Evaluate v3 unchanged first. Fewer than 20
    surviving closed signals is a deployment-capacity result, not authority to
    loosen a gate on the observed sample.
+   The completed recovery passes for that expansion retain only three exact
+   deduplicated verified-positive catalyst pairs, so outcomes stay locked.
+   `DEVELOPMENT_TRANCHE.md` and `development_tranche.py` govern the next exact
+   disjoint 100-session acquisition. Freeze from the attested calendar only
+   after excluding every signal, archive, prior selection, and inspected
+   registered evidence date; commit the selection manifest before reference
+   access and a separate point-in-time scanner manifest before market access.
    Before freezing any new bulk market-data contract, measure a representative
    pilot's canonical bytes and provider requests per symbol-session, project
    both over the exact target set, and verify free space for the projection plus
