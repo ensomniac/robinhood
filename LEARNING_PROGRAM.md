@@ -1,6 +1,6 @@
 # Persistent Strategy Learning Program
 
-Program version: `2026-07-19-v9`
+Program version: `2026-07-19-v10`
 
 Production champion: `2026-07-15-orb-v3`
 
@@ -83,6 +83,12 @@ rewritten or deleted.
     inputs remain unresolved rather than favorable.
 12. **Three-axis champion/challenger evidence:** implemented.
 13. **Operating cadence and monitoring:** implemented.
+14. **Disjoint scanner expansion:** in progress. A seeded 100-date H1-2026
+    sample excludes every v4 target and permits no substitution. Its 133-session
+    acquisition graph can reuse 113 independently attested v4 inputs while
+    collecting the exact new-master symbol delta; 20 sessions require a fresh
+    full-universe pull. Reference identity collection precedes market freeze,
+    and no trigger, catalyst outcome, or strategy variant is part of this stage.
 
 ## Current Evidence Decisions
 
@@ -107,7 +113,7 @@ dates with direct catalyst sources and apply the exact input contracts there.
 Broker-specific tradability remains a prospective execution-qualification
 requirement. Evaluate unchanged v3 first on that new sample; earn at most one
 preregistered revision only if its deployment capacity or net expectancy fails.
-See `SCANNER_REPLAY.md`,
+See `SCANNER_EXPANSION.md`, `SCANNER_REPLAY.md`,
 `SELECTED_CANDIDATE_JOIN.md`, `SELECTED_CANDIDATE_FIDELITY.md`,
 `CHAMPION_INPUT_FIDELITY.md`, `CHAMPION_INPUT_READINESS.md`,
 `SIP_BAR_AGGREGATION.md`, `PREENTRY_STRUCTURE.md`, and

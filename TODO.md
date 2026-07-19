@@ -194,6 +194,21 @@ exists yet.
   freeze the market contract, collect/resume the 20 new sessions plus symbol
   deltas, and independently inspect all 100 rankings.
 
+### 24. Fail-Closed Production Evaluator Relationships
+
+Status: completed on 2026-07-19 without changing a numeric rule or strategy
+version.
+
+- Enforced the existing 0.08% A+ median-spread rule separately from the 0.10%
+  operating spread rule. A 90-plus score with a wider clean spread is only
+  `qualified`, and it is rejected while `UNVALIDATED` because pilots require A+.
+- Added configuration invariants for strategy identity/schema, ordered session
+  times, three-snapshot semantics, ordered spread limits, execution fractions,
+  risk bounds, universe minima, monotone maturity risk/allocation caps, score
+  ranges, and promotion sample ordering.
+- Added direct regression tests for the previously possible false A+
+  classification and malformed configuration relationships.
+
 ## Completed 2026-07-18
 
 ### 12. Bounded Edit And Learning Loop

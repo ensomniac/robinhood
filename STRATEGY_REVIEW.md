@@ -194,6 +194,25 @@ by published bar volume is not faithful. This closes a replay input definition,
 not an alpha question, and earns no production change. See
 `SIP_BAR_AGGREGATION.md`.
 
+The next evidence campaign is now fixed rather than aspirational. A seeded
+100-date H1-2026 selection excludes every v4 target, permits no substitutions,
+and requires 133 source sessions. One hundred thirteen may reuse compatible
+hash-attested v4 inputs only while collecting the exact new-master symbol delta;
+20 require new full-universe collection. The campaign will freeze direct
+catalyst, trigger, and outcome contracts only after the scanner rankings pass
+independent inspection. If fewer than 20 unchanged-v3 closed signals survive
+all gates, the result is inadequate deployment capacity, not permission to tune
+the observed dates. `SCANNER_EXPANSION.md` is authoritative for this sequence.
+
+An implementation audit also found that the evaluator applied the 0.10%
+operating median-spread limit but classified every 90-point setup as A+, even
+though the frozen rule requires 0.08% for A+. The engine now enforces the
+existing A+ spread condition explicitly: a wider but otherwise clean setup can
+remain `qualified` after promotion, but it cannot pass an `UNVALIDATED` A+ pilot.
+Configuration loading also fails closed on inconsistent time, spread, risk,
+maturity, and promotion relationships. This is rule fidelity and operational
+hardening, not a new alpha threshold, so v3 and its rules hash remain unchanged.
+
 ## What The Repository Had Right
 
 The original strategy already addressed several common failure modes: it banned

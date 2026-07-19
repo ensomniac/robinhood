@@ -65,6 +65,11 @@ The numeric rules live in [strategy_config.toml](strategy_config.toml).
 `session_guard.py` enforces the live entry/protection interlock; and
 `strategy_ledger.py` provides append-only signal records, reproducible metrics,
 paired exit comparison, and evidence-earned maturity.
+Configuration loading fails closed when session times, spread limits, maturity
+risk/allocation caps, or promotion sample ordering are internally inconsistent.
+The evaluator also distinguishes the 0.08% A+ median-spread limit from the
+broader 0.10% operating limit: an `UNVALIDATED` 90-point pilot is rejected when
+it cannot actually earn A+ classification.
 
 ## Public Trade Ledger
 
@@ -370,6 +375,15 @@ of 255 derivable stops fit the unchanged 0.8% cap and 89 pass both unchanged
 stop and resistance geometry. Seventy records remain explicitly unresolved.
 This closes an input-definition gap, not alpha validation, and v3 remains
 unchanged.
+
+The next campaign is now executable and in progress. It freezes 100 previously
+uninspected H1-2026 scanner dates with zero overlap against v4 and no date
+substitution. Its 133 required sessions reuse 113 compatible, hash-attested v4
+indexes plus exact symbol deltas and collect 20 new full-universe sessions. The
+campaign remains scanner-only until all rankings are independently inspected;
+direct catalyst, trigger, and outcome contracts are frozen afterward, and v3 is
+evaluated unchanged before any single revision can be proposed. See
+[SCANNER_EXPANSION.md](SCANNER_EXPANSION.md).
 
 ```sh
 python3 historical_research.py run \

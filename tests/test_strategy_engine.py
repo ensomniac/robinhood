@@ -1,5 +1,7 @@
 import copy
+import tempfile
 import unittest
+from pathlib import Path
 
 from strategy_engine import (
     StrategyInputError,
@@ -119,6 +121,30 @@ class EvaluationTests(unittest.TestCase):
         self.assertFalse(result.eligible)
         self.assertIn("snapshot 2 is stale", result.hard_rejects)
 
+    def test_a_plus_spread_is_enforced_for_unvalidated_live_pilot(self):
+        payload = qualifying_payload()
+        payload["session"]["maturity"] = "UNVALIDATED"
+        for snapshot in payload["quotes"]:
+            snapshot["bid"] = 50.0
+            snapshot["ask"] = 50.045
+
+        result = evaluate_candidate(payload)
+
+        self.assertEqual(result.score, 100)
+        self.assertFalse(result.eligible)
+        self.assertEqual(result.classification, "rejected")
+        self.assertIn(
+            "A+ median spread exceeds the 0.08% limit", result.hard_rejects
+        )
+
+        payload["session"]["maturity"] = "PROVISIONAL"
+        provisional = evaluate_candidate(payload)
+        self.assertTrue(provisional.eligible)
+        self.assertEqual(provisional.classification, "qualified")
+        self.assertIn(
+            "median spread is too wide for A+ classification", provisional.warnings
+        )
+
     def test_score_is_computed_instead_of_trusted_from_input(self):
         payload = qualifying_payload()
         payload["candidate"]["sector_relative_strength"] = False
@@ -222,6 +248,36 @@ class EvaluationTests(unittest.TestCase):
         self.assertFalse(result.eligible)
         self.assertEqual(result.opening_relative_volume, 0.0)
         self.assertIn("opening relative volume is below 1.0", result.hard_rejects)
+
+
+class ConfigValidationTests(unittest.TestCase):
+    def _invalid_config(self, old: str, new: str) -> Path:
+        self.directory = tempfile.TemporaryDirectory()
+        path = Path(self.directory.name) / "strategy.toml"
+        source = Path("strategy_config.toml").read_text(encoding="utf-8")
+        self.assertIn(old, source)
+        path.write_text(source.replace(old, new), encoding="utf-8")
+        return path
+
+    def tearDown(self):
+        directory = getattr(self, "directory", None)
+        if directory is not None:
+            directory.cleanup()
+
+    def test_rejects_inverted_spread_limits(self):
+        path = self._invalid_config(
+            "maximum_a_plus_median_spread_fraction = 0.0008",
+            "maximum_a_plus_median_spread_fraction = 0.0011",
+        )
+        with self.assertRaisesRegex(StrategyInputError, "spread limits"):
+            load_config(path)
+
+    def test_rejects_inverted_session_times(self):
+        path = self._invalid_config(
+            'entry_cutoff_et = "10:30:00"', 'entry_cutoff_et = "09:34:00"'
+        )
+        with self.assertRaisesRegex(StrategyInputError, "entry_start"):
+            load_config(path)
 
 
 if __name__ == "__main__":

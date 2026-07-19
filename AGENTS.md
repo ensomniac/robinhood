@@ -141,7 +141,10 @@ Operational MCP rules:
 - `strategy_config.toml` is the numeric rule source of truth. Use
   `strategy_engine.py` for every candidate calculation and retain its strategy
   version and rules hash in the session context. Do not substitute hand math for
-  a successful evaluator result.
+  a successful evaluator result. Configuration loading must pass the engine's
+  fail-closed relationship checks. A score of at least 90 does not earn A+
+  unless the measured median spread also satisfies the configured 0.08% A+
+  limit; while `UNVALIDATED`, failure of that spread gate blocks the live pilot.
 - Before submitting a reviewed entry and after every order-state change, run the
   current broker/account facts through `session_guard.py`. A new live entry is
   allowed only from `ENTRY_READY`. Exposure statuses take priority over research,
@@ -833,6 +836,15 @@ When Ryan selects historical mode:
    frozen contract unchanged on at least 100 previously uninspected scanner
    dates with direct catalyst evidence. This is deployability evidence, not
    alpha evidence or permission to change a production threshold.
+   `SCANNER_EXPANSION.md` freezes that next scanner campaign: 100 seeded
+   H1-2026 dates with zero overlap against v4 and no substitutions. Its 133
+   source sessions may reuse 113 compatible, independently attested v4 indexes
+   only while collecting the exact new-master symbol delta; 20 require fresh
+   full-universe input. Commit the hash-addressed manifest before market
+   collection, independently inspect every ranking, then freeze direct catalyst,
+   trigger, and outcome contracts. Evaluate v3 unchanged first. Fewer than 20
+   surviving closed signals is a deployment-capacity result, not authority to
+   loosen a gate on the observed sample.
    Before freezing any new bulk market-data contract, measure a representative
    pilot's canonical bytes and provider requests per symbol-session, project
    both over the exact target set, and verify free space for the projection plus

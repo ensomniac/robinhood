@@ -324,6 +324,35 @@ too few pairs are evaluable. That would be an evidence result, not permission to
 loosen gates. The first 20 scanner dates validate the pipeline and expose gross
 selection behavior; they are not enough for production promotion.
 
+The expansion campaign in `SCANNER_EXPANSION.md` now freezes exactly those 100
+new H1-2026 dates with seed `20260719` after excluding every v4 target. It has
+zero date overlap and no substitutions. The reference/security-master phase is
+running before market data is frozen. The 133-session graph reuses only 113
+compatible, hash-attested inputs and requests every new-universe symbol delta;
+20 sessions require fresh full-universe collection. Reuse is an acquisition
+optimization, not additional alpha evidence, and the inspector must trace each
+inherited row set back to its original artifact.
+
+After all 100 rankings pass independent reconstruction, follow this decision
+protocol without changing the order:
+
+1. Freeze the exact selected pairs and direct primary-catalyst acquisition
+   contract before trigger or return fields are read.
+2. Apply the existing clean-trigger, condition-aware prefix VWAP, stop/noise,
+   resistance, benchmark, spread, chase, halt, and conservative-capacity
+   contracts unchanged. Missing inputs block.
+3. Publish gate attrition before returns. If fewer than 20 closed unchanged-v3
+   signals survive, report inadequate deployment capacity; do not loosen a gate
+   to manufacture a backtest. A later, disjoint preregistered acquisition may
+   enlarge the sample.
+4. If at least 20 signals survive, evaluate the one-trade-per-day portfolio and
+   all-signal attribution after spread/slippage costs. Keep chronological folds,
+   daily clustering, log-equity growth, drawdown, profit factor, and bootstrap
+   uncertainty visible together.
+5. Preserve v3 when evidence is positive or inconclusive. Only a clearly
+   diagnosed failure may register one mechanism-level proposal, which must then
+   face a new disjoint confirmation contract before production consideration.
+
 ### Stage 4 - Earn at most one rule revision
 
 A rule may be tightened, removed, or otherwise revised only when the frozen

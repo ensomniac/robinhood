@@ -97,9 +97,147 @@ class EvaluationResult:
         return asdict(self)
 
 
+def _validate_config(raw: Mapping[str, Any]) -> None:
+    try:
+        strategy = raw["strategy"]
+        universe = raw["universe"]
+        execution = raw["execution"]
+        risk = raw["risk"]
+        maturities = raw["maturity"]
+        promotion = raw["promotion"]
+    except KeyError as exc:
+        raise StrategyInputError(f"strategy config lacks section {exc.args[0]}") from exc
+    sections = {
+        "strategy": strategy,
+        "universe": universe,
+        "execution": execution,
+        "risk": risk,
+        "maturity": maturities,
+        "promotion": promotion,
+    }
+    malformed = [name for name, value in sections.items() if not isinstance(value, Mapping)]
+    if malformed:
+        raise StrategyInputError(f"strategy config sections are malformed: {malformed}")
+    if strategy.get("engine_schema") != 1 or not str(strategy.get("version") or ""):
+        raise StrategyInputError("strategy config identity or engine schema is invalid")
+    entry_start = _parse_et(strategy.get("entry_start_et"), "strategy.entry_start_et")
+    entry_cutoff = _parse_et(
+        strategy.get("entry_cutoff_et"), "strategy.entry_cutoff_et"
+    )
+    force_flat = _parse_et(strategy.get("force_flat_et"), "strategy.force_flat_et")
+    if not entry_start < entry_cutoff < force_flat:
+        raise StrategyInputError(
+            "strategy times must satisfy entry_start < entry_cutoff < force_flat"
+        )
+    if (
+        _integer(
+            execution.get("quote_snapshot_count"),
+            "execution.quote_snapshot_count",
+        )
+        != 3
+    ):
+        raise StrategyInputError("execution.quote_snapshot_count must remain exactly 3")
+    a_plus_spread = _number(
+        execution.get("maximum_a_plus_median_spread_fraction"),
+        "execution.maximum_a_plus_median_spread_fraction",
+        positive=True,
+    )
+    operating_spread = _number(
+        execution.get("maximum_median_spread_fraction"),
+        "execution.maximum_median_spread_fraction",
+        positive=True,
+    )
+    single_spread = _number(
+        execution.get("maximum_single_spread_fraction"),
+        "execution.maximum_single_spread_fraction",
+        positive=True,
+    )
+    if not a_plus_spread <= operating_spread <= single_spread < 1:
+        raise StrategyInputError(
+            "spread limits must satisfy A+ <= operating <= single < 1"
+        )
+    for field in (
+        "maximum_entry_chase_fraction",
+        "maximum_depth_participation_fraction",
+        "maximum_recent_volume_participation_fraction",
+    ):
+        if not 0 < _number(execution.get(field), f"execution.{field}") <= 1:
+            raise StrategyInputError(f"execution.{field} must be in (0, 1]")
+    if not (
+        0
+        < _number(risk.get("atr_stop_fraction"), "risk.atr_stop_fraction")
+        <= 1
+        and 0
+        < _number(risk.get("maximum_stop_fraction"), "risk.maximum_stop_fraction")
+        < 1
+        and 0
+        < _number(
+            risk.get("minimum_stop_slippage_reserve_fraction"),
+            "risk.minimum_stop_slippage_reserve_fraction",
+        )
+        < 1
+        and _number(
+            risk.get("minimum_resistance_room_fraction"),
+            "risk.minimum_resistance_room_fraction",
+            positive=True,
+        )
+        and _number(
+            risk.get("minimum_reward_risk"),
+            "risk.minimum_reward_risk",
+            positive=True,
+        )
+    ):
+        raise StrategyInputError("risk fractions or reward/risk limit are invalid")
+    for field in (
+        "minimum_open_price",
+        "minimum_average_daily_volume_14",
+        "minimum_daily_atr_14",
+        "minimum_opening_relative_volume",
+    ):
+        _number(universe.get(field), f"universe.{field}", positive=True)
+    maturity_order = ("UNVALIDATED", "PROVISIONAL", "VALIDATED")
+    risk_fractions: list[float] = []
+    allocation_caps: list[float] = []
+    for name in maturity_order:
+        values = maturities.get(name)
+        if not isinstance(values, Mapping):
+            raise StrategyInputError(f"maturity.{name} is missing")
+        risk_fractions.append(
+            _number(values.get("risk_fraction"), f"maturity.{name}.risk_fraction")
+        )
+        allocation_caps.append(
+            _number(
+                values.get("allocation_cap_fraction"),
+                f"maturity.{name}.allocation_cap_fraction",
+            )
+        )
+        score = _integer(values.get("minimum_score"), f"maturity.{name}.minimum_score")
+        if not 0 <= risk_fractions[-1] < 1 or not 0 < allocation_caps[-1] <= 1:
+            raise StrategyInputError(f"maturity.{name} risk or allocation is invalid")
+        if not 0 <= score <= 100:
+            raise StrategyInputError(f"maturity.{name}.minimum_score must be <= 100")
+    if risk_fractions != sorted(risk_fractions) or allocation_caps != sorted(
+        allocation_caps
+    ):
+        raise StrategyInputError("maturity risk and allocation caps must not decrease")
+    provisional = promotion.get("provisional")
+    validated = promotion.get("validated")
+    if not isinstance(provisional, Mapping) or not isinstance(validated, Mapping):
+        raise StrategyInputError("promotion gates are incomplete")
+    if _integer(
+        validated.get("minimum_closed_signals"),
+        "promotion.validated.minimum_closed_signals",
+    ) < _integer(
+        provisional.get("minimum_closed_signals"),
+        "promotion.provisional.minimum_closed_signals",
+    ):
+        raise StrategyInputError("validated signal minimum cannot trail provisional")
+
+
 def load_config(path: Path = DEFAULT_CONFIG_PATH) -> StrategyConfig:
     contents = path.read_bytes()
     raw = tomllib.loads(contents.decode("utf-8"))
+    _validate_config(raw)
     canonical = json.dumps(raw, sort_keys=True, separators=(",", ":")).encode()
     return StrategyConfig(raw=raw, rules_hash=hashlib.sha256(canonical).hexdigest())
 
@@ -581,7 +719,20 @@ def evaluate_candidate(
         rejects.append(
             f"score {score} is below the {minimum_score}-point maturity gate"
         )
-    classification = "A+" if score >= 90 else "qualified" if score >= 85 else "rejected"
+    a_plus_spread_ok = quote_summary.median_spread_fraction <= float(
+        execution["maximum_a_plus_median_spread_fraction"]
+    )
+    if score >= 90 and not a_plus_spread_ok:
+        warnings.append("median spread is too wide for A+ classification")
+        if maturity_name == "UNVALIDATED":
+            rejects.append("A+ median spread exceeds the 0.08% limit")
+    classification = (
+        "A+"
+        if score >= 90 and a_plus_spread_ok
+        else "qualified"
+        if score >= 85
+        else "rejected"
+    )
 
     sizing = SizingResult(
         entry_limit=entry_limit,
