@@ -7,7 +7,7 @@ import unittest
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from learning_data import load_security_master, resolve_security
+from learning_data import LearningDataError, load_security_master, resolve_security
 from scanner_replay import (
     EASTERN,
     PROJECT_ROOT,
@@ -164,6 +164,100 @@ class SelectionContractTests(unittest.TestCase):
 
 
 class SecurityMasterBuildTests(unittest.TestCase):
+    def test_invalid_master_is_not_published(self):
+        with tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory:
+            root = Path(directory)
+            snapshots = root / "reference"
+            snapshots.mkdir()
+            common = {
+                "active": True,
+                "market": "stocks",
+                "locale": "us",
+                "type": "CS",
+                "primary_exchange": "XNAS",
+                "share_class_figi": "BBGTESTSHARE",
+                "cik": "1",
+            }
+            with gzip.open(
+                snapshots / "2026-04-06.json.gz", "wt", encoding="utf-8"
+            ) as target:
+                json.dump(
+                    [
+                        {**common, "ticker": "AAA", "name": "Regular"},
+                        {**common, "ticker": "AAAV", "name": "When Issued"},
+                    ],
+                    target,
+                )
+            output = root / "SECURITY_MASTER.jsonl"
+            source = root / "source.json"
+
+            with self.assertRaisesRegex(LearningDataError, "intervals overlap"):
+                build_security_master(
+                    ["2026-04-06"],
+                    snapshots_root=snapshots,
+                    output=output,
+                    source_manifest=source,
+                    recorded_at="2026-07-19T08:00:00-04:00",
+                )
+
+            self.assertFalse(output.exists())
+            self.assertFalse(source.exists())
+
+    def test_parallel_listings_use_distinct_composite_figi_identities(self):
+        with tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory:
+            root = Path(directory)
+            snapshots = root / "reference"
+            snapshots.mkdir()
+            common = {
+                "active": True,
+                "market": "stocks",
+                "locale": "us",
+                "type": "CS",
+                "primary_exchange": "XNAS",
+                "share_class_figi": "BBGTESTSHARE",
+                "cik": "1",
+            }
+            with gzip.open(
+                snapshots / "2026-04-06.json.gz", "wt", encoding="utf-8"
+            ) as target:
+                json.dump(
+                    [
+                        {
+                            **common,
+                            "ticker": "AAA",
+                            "name": "Test Corp Common Stock",
+                            "composite_figi": "BBGTESTREGULAR",
+                        },
+                        {
+                            **common,
+                            "ticker": "AAAV",
+                            "name": "Test Corp Common Stock When Issued",
+                            "composite_figi": "BBGTESTWHENISSUED",
+                        },
+                    ],
+                    target,
+                )
+            output = root / "SECURITY_MASTER.jsonl"
+            source = root / "source.json"
+
+            result = build_security_master(
+                ["2026-04-06"],
+                snapshots_root=snapshots,
+                output=output,
+                source_manifest=source,
+                recorded_at="2026-07-19T08:00:00-04:00",
+            )
+
+            self.assertEqual(result["security_master"]["records"], 2)
+            records = load_security_master(output)
+            self.assertEqual(
+                {record["instrument_id"] for record in records},
+                {
+                    "FIGI-COMPOSITE:BBGTESTREGULAR",
+                    "FIGI-COMPOSITE:BBGTESTWHENISSUED",
+                },
+            )
+
     def test_sourced_observation_dates_preserve_a_symbol_change_gap(self):
         with tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory:
             root = Path(directory)

@@ -522,9 +522,12 @@ def _security_type(value: Any) -> str:
 
 
 def _instrument_id(row: Mapping[str, Any]) -> tuple[str, str]:
+    # A share-class FIGI can intentionally span multiple simultaneously tradable
+    # listings.  Composite FIGI is the narrowest stable identity Massive exposes
+    # in this endpoint; retain share class only as a fallback.
     for field, prefix in (
-        ("share_class_figi", "FIGI-SHARE"),
         ("composite_figi", "FIGI-COMPOSITE"),
+        ("share_class_figi", "FIGI-SHARE"),
     ):
         value = str(row.get(field) or "").strip()
         if value:
@@ -638,11 +641,16 @@ def build_security_master(
             "security master already exists with different content; append a sourced revision instead"
         )
     output.parent.mkdir(parents=True, exist_ok=True)
-    if not output.exists():
+    if output.exists():
+        loaded = load_security_master(output)
+    else:
         temporary = output.with_suffix(output.suffix + ".tmp")
-        temporary.write_text(rendered, encoding="utf-8")
-        temporary.replace(output)
-    loaded = load_security_master(output)
+        try:
+            temporary.write_text(rendered, encoding="utf-8")
+            loaded = load_security_master(temporary)
+            temporary.replace(output)
+        finally:
+            temporary.unlink(missing_ok=True)
     manifest = {
         "schema_version": 1,
         "source": {

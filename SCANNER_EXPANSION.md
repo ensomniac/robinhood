@@ -2,8 +2,9 @@
 
 Planned dataset: `dataset-production-scanner-replay-2026-07-19-expansion-v1`
 
-Status: point-in-time reference collection in progress; market-data contract not
-yet frozen and no scanner result exists
+Status: all 100 point-in-time reference snapshots collected; security-master
+identity hardening validated; market-data contract not yet frozen and no scanner
+result exists
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -18,6 +19,25 @@ added after results exist.
 
 The exact selection requires 133 target/lookback sessions. Of those, 113 have
 hash-attested scanner-v4 inputs and 20 require new full-universe collection.
+
+## Reference Identity Finding
+
+All 100 Massive snapshots completed without substitutions and contain 5,225 to
+5,307 active common-stock rows apiece. They contain listing metadata only; no
+target price, scanner rank, trigger, or outcome was collected or inspected.
+
+The larger sample exposed one real identity collision on April 6: Massive
+listed both `ANAB` and temporary when-issued `ANABV` as active Nasdaq common
+stocks. They shared a share-class FIGI but had distinct composite FIGIs. This is
+valid source behavior: OpenFIGI's allocation rules state that a share-class FIGI
+can link multiple traded-venue instruments and therefore does not identify one
+listing. The builder now uses composite FIGI first and share-class FIGI only as
+a fallback, preserving separately tradable listings without weakening the
+master's overlap rejection. See
+<https://www.openfigi.com/assets/local/figi-allocation-rules.pdf>.
+
+The builder also validates a temporary master before atomically publishing it.
+An identity collision can no longer leave an invalid output that appears ready.
 
 ## Why Reuse Is Required But Not Free Evidence
 
@@ -52,6 +72,7 @@ selected-candidate targets are read.
 
 1. Collect Massive dated common-stock reference snapshots for all 100 selected
    dates. These contain identity and listing metadata, not target prices.
+   **Complete: 100/100.**
 2. Build a new ignored point-in-time security master and publish only its source
    contract, counts, hashes, and requested dates.
 3. Collect a complete Massive split-action range through June 30 and publish its

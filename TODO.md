@@ -170,9 +170,9 @@ frozen and no target outcomes were read.
 
 ### 23. One-Hundred-Date Dynamic Scanner Expansion
 
-Status: in progress; the exact 100-date selection is frozen and point-in-time
-reference collection has begun. No target scanner result or strategy outcome
-exists yet.
+Status: in progress; the exact 100-date selection is frozen and all 100
+point-in-time reference snapshots are collected. No target scanner result or
+strategy outcome exists yet.
 
 - Selected 100 H1-2026 dates with seed `20260719` after excluding all 20
   scanner-v4 targets; substitutions remain forbidden.
@@ -197,7 +197,13 @@ exists yet.
   blocker. It now reports the selected security master and splits explicitly
   and directs market collection to the frozen non-S3 Alpaca adapter; legacy
   flat files are observable but not required for this campaign.
-- Next: finish 100 Massive dated reference snapshots, build the new master,
+- Completed 100/100 Massive dated reference snapshots without substitutions or
+  target price access. The larger sample exposed simultaneous `ANAB`/`ANABV`
+  listings that share a share-class FIGI but have distinct composite FIGIs.
+- Corrected the master identity hierarchy to composite FIGI first and retained
+  share class only as a fallback. Master validation now occurs before atomic
+  publication, so a source collision cannot leave a false-ready artifact.
+- Next: build and attest the corrected master, collect and attest split actions,
   freeze the market contract, collect/resume the 20 new sessions plus symbol
   deltas, and independently inspect all 100 rankings.
 
