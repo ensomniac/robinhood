@@ -1,7 +1,8 @@
 # Catalyst Source Recovery
 
-Status: SEC recovery collector implemented and awaiting a committed frozen
-manifest before provider access
+Status: exact SEC recovery manifest frozen under hash
+`2f4258b23e2aac76529754f51e5df6618db3e655d01491bb7cb01e14a5b0d374`;
+commit it before provider access
 
 ## Purpose
 

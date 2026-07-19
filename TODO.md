@@ -15,8 +15,9 @@ verified positive, so the 20-pair capacity gate failed and returns remain
 locked. The current bounded handoff is `SOURCE_RECOVERY`, beginning with the
 frozen SEC 403 accession rows and then captured transport and issuer-chain
 recovery. The SEC-only collector and tests are implemented; its exact
-26-source, 31-pair manifest must be frozen and committed before any request. A
-wait, pause, or insufficient sample is progress state, not completion.
+26-source, 31-pair manifest `2f4258b2...5b0d374` is frozen and must be committed
+before any request. A wait, pause, or insufficient sample is progress state,
+not completion.
 
 ## Completed 2026-07-19
 
