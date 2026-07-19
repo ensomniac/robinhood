@@ -146,6 +146,12 @@ first three pages, metadata presence, date-shaped strings, and structural
 markers may be profiled. None may be accepted as publication or catalyst
 evidence.
 
+PDF profiling is `READY`: all 13 documents are readable, span 459 pages, and
+contain a month-name date candidate in the first three pages. They touch 15
+pairs with no overlap against the 18 HTML timestamp-candidate pairs, producing
+a 33-pair structural ceiling. Zero PDF or HTML dates are accepted. This supports
+one narrow source-semantics pass but still forbids returns and rule changes.
+
 ### Stage D - Classify and independently inspect
 
 - Freeze classifier rules before classification. Positive phrases never

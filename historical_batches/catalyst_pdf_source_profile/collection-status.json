@@ -1,0 +1,31 @@
+{
+  "counts": {
+    "documents_with_annual_report_marker": 6,
+    "documents_with_any_date_candidate": 13,
+    "documents_with_court_document_marker": 1,
+    "documents_with_earnings_or_results_marker": 8,
+    "documents_with_government_document_marker": 6,
+    "documents_with_iso_date_candidate": 0,
+    "documents_with_month_name_date_candidate": 13,
+    "documents_with_numeric_month_day_date_candidate": 1,
+    "documents_with_press_release_marker": 1,
+    "metadata_creation_date_present": 12,
+    "metadata_modification_date_present": 12,
+    "metadata_title_present": 8,
+    "pages_maximum": 145,
+    "pages_minimum": 1,
+    "pages_total": 459,
+    "pdf_documents": 13,
+    "text_present": 13
+  },
+  "dataset_id": "dataset-catalyst-pdf-source-profile-2026-07-19-expansion-v1",
+  "documents_text_dates_and_rows_public": false,
+  "manifest_sha256": "b1f2bff3bbc816151676a940e6547e9526a1539398c2a4afae48664896162e4c",
+  "metadata_dates_accepted": 0,
+  "primary_catalyst_verified": false,
+  "private_result_sha256": "c3f2618a87867648dc09bd0da736d1f663de6417a00533f65ac9878b24ad4b8c",
+  "schema_version": 1,
+  "status": "PROFILE_COMPLETE",
+  "target_outcomes_observed_or_derived": false,
+  "text_date_candidates_accepted": 0
+}

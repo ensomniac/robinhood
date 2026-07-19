@@ -341,6 +341,14 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   they mix issuer, SEC, court, government, weather, release, and presentation
   formats. Froze first-three-page structure profiling as manifest
   `b1f2bff3...96162e4c`; metadata and text dates remain unaccepted candidates.
+- Inspected all 13 PDFs: 459 pages total, extractable front text in every file,
+  and a month-name date candidate in every file. The PDFs touch 15 pairs with no
+  overlap against the 18 HTML timestamp candidates, raising the structural
+  ceiling to 33 pairs while accepting zero dates or catalysts.
+- Next: freeze source ownership, issuer binding, and source-type-specific date
+  semantics for those 33 structural candidates. Distinguish release dates from
+  fiscal periods, filing periods, event dates, signatures, and update dates.
+  Keep returns locked until at least 20 rows survive all unchanged-v3 inputs.
 - Full external-store audit passed with 844,904 files, 2,334,718 datasets,
   124,537 contexts, 6,605 symbols, 733 dates, and zero errors. About 79 GiB
   remains free; enforce the reserve before further bulk collection.

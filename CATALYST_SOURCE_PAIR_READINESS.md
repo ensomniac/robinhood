@@ -47,6 +47,12 @@ must be frozen separately and cannot treat document metadata as publication
 proof. The next efficient work is source-type-specific verification, not a new
 strategy variant or return calculation.
 
+Subsequent frozen PDF profiling found date-shaped front text in all 13 PDFs.
+Those documents touch 15 pairs with no overlap against the 18 HTML candidates,
+so the current structural candidate ceiling is 33 pairs. No timestamp is
+accepted; this supersedes the capacity-only conclusion above without changing
+the inspected pair-readiness counts or unlocking returns.
+
 ```sh
 python3 catalyst_source_pair_readiness.py freeze
 python3 catalyst_source_pair_readiness.py derive --manifest \
