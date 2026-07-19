@@ -274,7 +274,15 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   attributed analyst actions; do not loosen the catalyst gate or read returns.
 - Froze that exact 14-pair evaluation as manifest `3144c677...746da`, binding
   unchanged-v3 rules, source hashes, both readiness implementations, and an
-  outcome-blind boundary. Next: build and independently inspect gate attrition.
+  outcome-blind boundary.
+- Independently rebuilt the full 14-pair non-return join: nine clean crosses,
+  eight fresh three-snapshot windows, two spread passes, and zero joint
+  spread-plus-chase survivors. No pair survives the resolved hard-gate cascade;
+  none of eight stop proxies fits inside 0.8%.
+- Do not read returns or loosen execution/risk gates from this tiny SEC-only
+  slice. Next: increase direct primary-catalyst coverage for issuer releases and
+  attributed analyst actions, then preregister another unchanged-v3 capacity
+  join on disjoint evidence.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

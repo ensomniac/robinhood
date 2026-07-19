@@ -370,7 +370,12 @@ not justify weakening the catalyst gate; non-SEC direct sources remain missing.
 `CHAMPION_INPUT_READINESS_EXPANSION.md` freezes manifest
 `3144c677...746da` before evaluating those 14 SEC-positive pairs. It hash-binds
 the unchanged v3 rules and both independent non-return gate implementations;
-target returns remain inaccessible.
+target returns remain inaccessible. Independent reconstruction is now `READY`:
+14 positive inputs became nine clean crosses, eight fresh three-snapshot
+windows, two spread passes, and zero joint spread-plus-chase survivors. Returns
+must remain blocked. The small SEC-only slice cannot distinguish a valid
+execution-quality filter from excessive selectivity, so no rule revision is
+earned.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
