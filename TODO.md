@@ -251,6 +251,10 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   1,025 completed records; the frozen legacy collector aborted on its second
   cache miss. Next: freeze a resumable quote-gap-aware trigger collector that
   records missing NBBO as a blocker and continues. Do not fabricate or switch.
+- Froze that repair as manifest `44225398...e4d6ad4`. It binds the exact 1,460
+  ordered trigger identities, checkpoints every 25 rows, records provider
+  no-observation as `MISSING_TRIGGER_NBBO`, and retries only collection errors.
+  Next: collect and independently inspect it before catalyst direction or returns.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

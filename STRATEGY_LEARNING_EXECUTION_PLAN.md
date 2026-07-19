@@ -349,6 +349,10 @@ remain downstream and frozen off. `SCANNER_EXPANSION_FIDELITY.md` now freezes
 the next stage as manifest `ee9ba6f3...c780ce`: exact dated listing-to-CIK
 mapping for 656 unique CIKs, bounded SEC primary documents, and the unchanged
 condition-aware clean-cross contract, still with no outcome access.
+An explicit no-quote response exposed a batch-fatal assumption in that frozen
+collector. `CLEAN_TRIGGER_FIDELITY_EXPANSION.md` now isolates the repair under
+manifest `44225398...e4d6ad4`: every ordered trigger is checkpointed, missing
+NBBO is retained as gate attrition, and only true collection errors are retried.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
@@ -358,7 +362,7 @@ protocol without changing the order:
    direct primary-catalyst and condition-aware trigger contracts remain next.
 2. Apply the existing clean-trigger, condition-aware prefix VWAP, stop/noise,
    resistance, benchmark, spread, chase, halt, and conservative-capacity
-   contracts unchanged. Missing inputs block.
+   contracts unchanged. Missing inputs block and must not abort unrelated rows.
 3. Publish gate attrition before returns. If fewer than 20 closed unchanged-v3
    signals survive, report inadequate deployment capacity; do not loosen a gate
    to manufacture a backtest. A later, disjoint preregistered acquisition may
