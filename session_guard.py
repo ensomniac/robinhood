@@ -349,10 +349,11 @@ def evaluate_guard(
         circuit_breakers["maximum_strategy_drawdown_fraction"]
     ):
         blockers.append("strategy peak-to-trough drawdown circuit breaker is active")
-    if _integer(snapshot, "consecutive_losses") >= int(
-        circuit_breakers["maximum_consecutive_losses"]
-    ):
-        blockers.append("three-consecutive-loss circuit breaker is active")
+    consecutive_loss_limit = int(circuit_breakers["maximum_consecutive_losses"])
+    if _integer(snapshot, "consecutive_losses") >= consecutive_loss_limit:
+        blockers.append(
+            f"{consecutive_loss_limit}-consecutive-loss circuit breaker is active"
+        )
     if _boolean(snapshot, "manual_circuit_breaker_active"):
         blockers.append("manual or external circuit breaker is active")
     if stale_data:

@@ -210,12 +210,17 @@ though the frozen rule requires 0.08% for A+. The engine now enforces the
 existing A+ spread condition explicitly: a wider but otherwise clean setup can
 remain `qualified` after promotion, but it cannot pass an `UNVALIDATED` A+ pilot.
 Configuration loading also fails closed on inconsistent time, spread, risk,
-maturity, and promotion relationships. This is rule fidelity and operational
-hardening, not a new alpha threshold, so v3 remains unchanged. The rules hash
-does change to bind a normalized config: the unchanged three-loss, 2% rolling
-five-session, and 4% strategy drawdown breakers now live in the numeric source
-of truth instead of guard literals. The engine also hard-rejects a planned stop
-at or above an observed bid, enforcing the existing outside-spread requirement.
+maturity, and promotion relationships. Every promotion field consumed by the
+maturity report is now type-checked at load time; confirmation, live, and stop
+subcounts cannot exceed their parent samples; `VALIDATED` gates cannot be weaker
+than `PROVISIONAL`; and its permitted unprotected-exposure p95 cannot exceed the
+entry timeout. This is rule fidelity and operational hardening, not a new alpha
+threshold, so v3 remains unchanged. The rules hash binds the normalized config:
+the unchanged three-loss, 2% rolling-five-session, and 4% strategy drawdown
+breakers live in the numeric source of truth instead of guard literals, and the
+guard's explanation follows the configured loss count. The engine also
+hard-rejects a planned stop at or above an observed bid, enforcing the existing
+outside-spread requirement.
 The $5 universe gate now reads the validated opening-bar open rather than a
 redundant caller-supplied `opening_price`, eliminating a conflicting-input path.
 

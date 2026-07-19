@@ -310,6 +310,24 @@ class ConfigValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(StrategyInputError, "valid UTF-8 TOML"):
                 load_config(path)
 
+    def test_rejects_missing_promotion_metric_before_maturity_assessment(self):
+        path = self._invalid_config(
+            "maximum_entry_slippage_p95_bps = 15.0",
+            "maximum_entry_slippage_p95_bps_missing = 15.0",
+        )
+        with self.assertRaisesRegex(
+            StrategyInputError, "maximum_entry_slippage_p95_bps must be numeric"
+        ):
+            load_config(path)
+
+    def test_rejects_validated_gate_weaker_than_provisional(self):
+        path = self._invalid_config(
+            "minimum_profit_factor = 1.30",
+            "minimum_profit_factor = 1.10",
+        )
+        with self.assertRaisesRegex(StrategyInputError, "cannot weaken provisional"):
+            load_config(path)
+
 
 if __name__ == "__main__":
     unittest.main()

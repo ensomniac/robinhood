@@ -207,14 +207,18 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
         minimum=1,
     ) < 1:
         raise StrategyInputError("maximum consecutive losses must be positive")
-    for field in (
-        "maximum_rolling_five_session_drawdown_fraction",
-        "maximum_strategy_drawdown_fraction",
-    ):
-        if not 0 < _number(
-            circuit_breakers.get(field), f"circuit_breakers.{field}"
-        ) < 1:
-            raise StrategyInputError(f"circuit_breakers.{field} must be in (0, 1)")
+    rolling_drawdown = _number(
+        circuit_breakers.get("maximum_rolling_five_session_drawdown_fraction"),
+        "circuit_breakers.maximum_rolling_five_session_drawdown_fraction",
+    )
+    strategy_drawdown = _number(
+        circuit_breakers.get("maximum_strategy_drawdown_fraction"),
+        "circuit_breakers.maximum_strategy_drawdown_fraction",
+    )
+    if not 0 < rolling_drawdown <= strategy_drawdown < 1:
+        raise StrategyInputError(
+            "circuit-breaker drawdowns must satisfy rolling <= strategy < 1"
+        )
     for field in (
         "minimum_open_price",
         "minimum_average_daily_volume_14",
@@ -233,6 +237,7 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
     maturity_order = ("UNVALIDATED", "PROVISIONAL", "VALIDATED")
     risk_fractions: list[float] = []
     allocation_caps: list[float] = []
+    minimum_scores: list[int] = []
     for name in maturity_order:
         values = maturities.get(name)
         if not isinstance(values, Mapping):
@@ -249,6 +254,7 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
             )
         )
         score = _integer(values.get("minimum_score"), f"maturity.{name}.minimum_score")
+        minimum_scores.append(score)
         if not 0 <= risk_fractions[-1] < 1 or not 0 < allocation_caps[-1] <= 1:
             raise StrategyInputError(f"maturity.{name} risk or allocation is invalid")
         if not 0 <= score <= 100:
@@ -257,18 +263,106 @@ def _validate_config(raw: Mapping[str, Any]) -> None:
         allocation_caps
     ):
         raise StrategyInputError("maturity risk and allocation caps must not decrease")
+    if minimum_scores != sorted(minimum_scores, reverse=True):
+        raise StrategyInputError("maturity score gates must not increase after promotion")
     provisional = promotion.get("provisional")
     validated = promotion.get("validated")
     if not isinstance(provisional, Mapping) or not isinstance(validated, Mapping):
         raise StrategyInputError("promotion gates are incomplete")
-    if _integer(
-        validated.get("minimum_closed_signals"),
-        "promotion.validated.minimum_closed_signals",
-    ) < _integer(
-        provisional.get("minimum_closed_signals"),
-        "promotion.provisional.minimum_closed_signals",
+    promotion_values = {"provisional": provisional, "validated": validated}
+    for phase, fields in {
+        "provisional": (
+            "minimum_closed_signals",
+            "minimum_live_signals",
+            "maximum_rule_violations",
+        ),
+        "validated": (
+            "minimum_closed_signals",
+            "minimum_confirmation_signals",
+            "minimum_live_signals",
+            "minimum_stop_execution_signals",
+            "maximum_rule_violations",
+        ),
+    }.items():
+        values = promotion_values[phase]
+        for field in fields:
+            _integer(
+                values.get(field),
+                f"promotion.{phase}.{field}",
+                minimum=0 if field == "maximum_rule_violations" else 1,
+            )
+    for phase, fields in {
+        "provisional": (
+            "minimum_expectancy_r",
+            "minimum_profit_factor",
+            "maximum_drawdown_r",
+        ),
+        "validated": (
+            "minimum_expectancy_r",
+            "minimum_confirmation_expectancy_r",
+            "minimum_profit_factor",
+            "maximum_drawdown_r",
+            "maximum_entry_slippage_p95_bps",
+            "maximum_unprotected_p95_seconds",
+        ),
+    }.items():
+        values = promotion_values[phase]
+        for field in fields:
+            _number(values.get(field), f"promotion.{phase}.{field}")
+    confidence = _number(
+        validated.get("minimum_bootstrap_confidence"),
+        "promotion.validated.minimum_bootstrap_confidence",
+    )
+    if not 0.5 < confidence < 1:
+        raise StrategyInputError(
+            "promotion.validated.minimum_bootstrap_confidence must be in (0.5, 1)"
+        )
+    if (
+        float(provisional["minimum_profit_factor"]) <= 0
+        or float(validated["minimum_profit_factor"]) <= 0
+        or float(provisional["minimum_expectancy_r"]) < 0
+        or float(validated["minimum_expectancy_r"]) < 0
+        or float(validated["minimum_confirmation_expectancy_r"]) < 0
+        or float(provisional["maximum_drawdown_r"]) <= 0
+        or float(validated["maximum_drawdown_r"]) <= 0
+        or float(validated["maximum_entry_slippage_p95_bps"]) < 0
+        or float(validated["maximum_unprotected_p95_seconds"]) <= 0
     ):
-        raise StrategyInputError("validated signal minimum cannot trail provisional")
+        raise StrategyInputError("promotion performance limits must be positive")
+    if int(provisional["minimum_live_signals"]) > int(
+        provisional["minimum_closed_signals"]
+    ):
+        raise StrategyInputError("provisional live signals cannot exceed closed signals")
+    if not (
+        int(validated["minimum_confirmation_signals"])
+        <= int(validated["minimum_closed_signals"])
+        and int(validated["minimum_live_signals"])
+        <= int(validated["minimum_closed_signals"])
+        and int(validated["minimum_stop_execution_signals"])
+        <= int(validated["minimum_live_signals"])
+    ):
+        raise StrategyInputError("validated signal subcounts exceed their parent counts")
+    if not (
+        int(validated["minimum_closed_signals"])
+        >= int(provisional["minimum_closed_signals"])
+        and int(validated["minimum_live_signals"])
+        >= int(provisional["minimum_live_signals"])
+        and float(validated["minimum_expectancy_r"])
+        >= float(provisional["minimum_expectancy_r"])
+        and float(validated["minimum_profit_factor"])
+        >= float(provisional["minimum_profit_factor"])
+        and float(validated["maximum_drawdown_r"])
+        <= float(provisional["maximum_drawdown_r"])
+        and int(validated["maximum_rule_violations"])
+        <= int(provisional["maximum_rule_violations"])
+    ):
+        raise StrategyInputError("validated promotion gates cannot weaken provisional")
+    if float(validated["maximum_unprotected_p95_seconds"]) > float(
+        execution["entry_timeout_seconds"]
+    ):
+        raise StrategyInputError(
+            "validated unprotected exposure budget cannot exceed entry timeout"
+        )
 
 
 def load_config(path: Path = DEFAULT_CONFIG_PATH) -> StrategyConfig:

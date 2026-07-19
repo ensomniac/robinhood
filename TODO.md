@@ -212,16 +212,19 @@ version.
 - Added configuration invariants for strategy identity/schema, ordered session
   times, three-snapshot semantics, ordered spread limits, execution fractions,
   timeouts/heartbeat, risk bounds, universe minima and exact 14-session opening
-  lookback, monotone maturity risk/allocation caps, score ranges, and promotion
-  sample ordering. Malformed TOML now returns the engine's validation error
-  contract instead of escaping as an unhandled parser exception.
+  lookback, monotone maturity risk/allocation caps, score ranges, and every
+  promotion metric and subcount relationship. `VALIDATED` gates cannot weaken
+  `PROVISIONAL`, and its protection-latency budget cannot exceed the entry
+  timeout. Malformed TOML now returns the engine's validation error contract
+  instead of escaping as an unhandled parser exception.
 - Added direct regression tests for the previously possible false A+
   classification and malformed configuration relationships.
 - Promoted a planned stop at or above the observed bid from a warning to the
   existing hard outside-spread rejection promised by the strategy.
 - Moved the unchanged three-loss, 2% rolling-five-session, and 4% strategy
   drawdown breakers from guard literals into `strategy_config.toml`; the guard
-  now proves those values are its numeric source.
+  now proves those values are its numeric source and renders the configured
+  consecutive-loss limit in its blocker reason.
 - Removed the redundant `candidate.opening_price` input from the evaluator and
   historical builder. The $5 gate now uses the validated first five-minute bar
   open, so conflicting duplicate fields cannot bypass the universe rule.

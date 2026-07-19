@@ -89,6 +89,26 @@ class EntryGuardTests(unittest.TestCase):
 
         self.assertEqual(result.status, "ENTRY_READY")
 
+    def test_consecutive_loss_reason_uses_numeric_config_source(self):
+        source = Path("strategy_config.toml").read_text(encoding="utf-8")
+        source = source.replace(
+            "maximum_consecutive_losses = 3",
+            "maximum_consecutive_losses = 2",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "strategy.toml"
+            path.write_text(source, encoding="utf-8")
+            config = load_config(path)
+            snapshot = safe_snapshot()
+            snapshot["evaluation_rules_hash"] = config.rules_hash
+            snapshot["consecutive_losses"] = 2
+
+            result = evaluate_guard(snapshot, "UNVALIDATED", config)
+
+        self.assertIn(
+            "2-consecutive-loss circuit breaker is active", result.reasons
+        )
+
     def test_stale_strategy_evaluation_is_blocked(self):
         snapshot = safe_snapshot()
         snapshot["evaluation_rules_hash"] = "old-rules"
