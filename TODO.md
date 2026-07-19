@@ -349,6 +349,11 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   semantics for those 33 structural candidates. Distinguish release dates from
   fiscal periods, filing periods, event dates, signatures, and update dates.
   Keep returns locked until at least 20 rows survive all unchanged-v3 inputs.
+- Wrote the executable semantics contract in
+  `CATALYST_SOURCE_SEMANTICS_PLAN.md`: exact 33-pair, 33-document, 38-join
+  selection; source-specific ownership and issuer binding; timestamp precedence;
+  same-day cutoff failure; direction/conflict taxonomy; terminal reason codes;
+  attrition cascade; and a hard 20-row pre-return capacity gate.
 - Full external-store audit passed with 844,904 files, 2,334,718 datasets,
   124,537 contexts, 6,605 symbols, 733 dates, and zero errors. About 79 GiB
   remains free; enforce the reserve before further bulk collection.

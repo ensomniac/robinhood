@@ -152,6 +152,12 @@ pairs with no overlap against the 18 HTML timestamp-candidate pairs, producing
 a 33-pair structural ceiling. Zero PDF or HTML dates are accepted. This supports
 one narrow source-semantics pass but still forbids returns and rule changes.
 
+The required ownership, issuer-binding, causal-time, semantics, failure, and
+capacity rules for that pass are specified in
+`CATALYST_SOURCE_SEMANTICS_PLAN.md`. The next implementation must freeze the
+exact 33 pairs, 33 source documents, and 38 pair/source joins against those
+rules before derivation.
+
 ### Stage D - Classify and independently inspect
 
 - Freeze classifier rules before classification. Positive phrases never
