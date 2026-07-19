@@ -120,6 +120,9 @@ Capture is complete: 121 responses totaling 23,793,420 bytes passed hash
 inspection and 13 targets retained terminal transport errors. Parsing and
 source verification remain separately frozen work.
 
+Offline format/timestamp-candidate profiling is frozen as manifest
+`411be9d0...cb3151f` in `CATALYST_SOURCE_PROFILE.md`.
+
 ### Stage D - Classify and independently inspect
 
 - Freeze classifier rules before classification. Positive phrases never

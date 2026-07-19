@@ -317,6 +317,9 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Next: freeze parsers for the captured formats and verify source ownership,
   issuer binding, original publication time, causal availability, direction,
   and conflicts. A successful response must not default to verified evidence.
+- Froze offline HTML/header/redirect profiling as manifest
+  `411be9d0...cb3151f`. Timestamp fields and canonical links are candidate
+  structures only; none is accepted as causal or ownership evidence.
 - Full external-store audit passed with 844,904 files, 2,334,718 datasets,
   124,537 contexts, 6,605 symbols, 733 dates, and zero errors. About 79 GiB
   remains free; enforce the reserve before further bulk collection.
