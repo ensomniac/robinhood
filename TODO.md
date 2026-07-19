@@ -423,6 +423,9 @@ Status: implemented safely by `strategy_learning.py`.
   and 30 calendar days since version start or the last review, and only after
   the active catalyst-corpus research lock's required scanner dataset is
   independently inspected `READY` in its exact registered lane.
+- Proposal creation rechecks the current research lock at write time; a stale
+  previously unlocked report or fabricated `review_ready` mapping cannot race a
+  newly activated fidelity lock.
 - Generated changes are hypotheses for an evidence-backed delegated decision.
   The tool has no apply command and never edits `strategy_config.toml` or
   `AGENTS.md`.

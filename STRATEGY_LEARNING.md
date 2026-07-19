@@ -99,6 +99,10 @@ registered in the exact required lane as independently inspected `READY`, the
 report remains available but emits no hypotheses and `propose` fails with
 `research_locked`. This closes a separate proposal entrypoint that previously
 enforced cadence but not the corpus-fidelity lock.
+The proposal writer re-reads the current lock immediately before its exclusive
+file create. A report generated while unlocked cannot be written after a new
+lock activates, and a caller-supplied `review_ready` status is not trusted as
+the current authority.
 
 When both pass:
 

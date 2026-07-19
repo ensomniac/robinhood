@@ -118,7 +118,12 @@ class CadenceTests(unittest.TestCase):
                 research_lock_path=proposal_root / "missing-lock.json",
                 registry_root=proposal_root,
             )
-            path = write_proposal(report, proposal_root)
+            path = write_proposal(
+                report,
+                proposal_root,
+                research_lock_path=proposal_root / "missing-lock.json",
+                registry_root=proposal_root,
+            )
             proposal = json.loads(path.read_text(encoding="utf-8"))
 
         categories = {item["category"] for item in report["hypotheses"]}
@@ -166,6 +171,32 @@ class CadenceTests(unittest.TestCase):
             report["research_lock"]["required_dataset_id"],
             "dataset-scanner-expansion",
         )
+
+    def test_stale_unlocked_report_is_rechecked_before_write(self):
+        records = [
+            closed_signal(index, high_quality=index >= 10) for index in range(20)
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report = build_learning_report(
+                records,
+                [],
+                proposal_root=root,
+                as_of=date(2026, 8, 20),
+                research_lock_path=root / "missing-lock.json",
+                registry_root=root,
+            )
+            active_lock = {
+                "blocks_new_hypotheses": True,
+                "blocked_dataset_lane": "catalyst_falsification",
+                "reason": "new lock activated after report generation",
+            }
+            with patch(
+                "strategy_learning.research_lock_status", return_value=active_lock
+            ), self.assertRaisesRegex(LearningError, "new lock activated"):
+                write_proposal(report, root)
+
+        self.assertEqual(report["status"], "review_ready")
 
     def test_malformed_rejected_return_cannot_unlock_review(self):
         malformed = dict(closed_signal(0, high_quality=True))

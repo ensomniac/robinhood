@@ -464,13 +464,29 @@ def build_learning_report(
 
 
 def write_proposal(
-    report: Mapping[str, Any], proposal_root: Path = DEFAULT_PROPOSAL_ROOT
+    report: Mapping[str, Any],
+    proposal_root: Path = DEFAULT_PROPOSAL_ROOT,
+    *,
+    research_lock_path: Path = DEFAULT_RESEARCH_LOCK,
+    registry_root: Path = REGISTRY_ROOT,
 ) -> Path:
     if report.get("status") != "review_ready":
         blockers = report.get("cadence", {}).get("blockers", [])
         raise LearningError(
             f"strategy review proposal is blocked: status={report.get('status')}; "
             f"cadence={blockers}"
+        )
+    if report.get("source_dataset_lane") != SOURCE_DATASET_LANE:
+        raise LearningError("strategy review report has an unknown source dataset lane")
+    current_lock = research_lock_status(
+        lock_path=research_lock_path,
+        registry_root=registry_root,
+    )
+    if current_lock.get("blocks_new_hypotheses") and current_lock.get(
+        "blocked_dataset_lane"
+    ) == SOURCE_DATASET_LANE:
+        raise LearningError(
+            str(current_lock.get("reason") or "strategy research is locked")
         )
     proposal_root.mkdir(parents=True, exist_ok=True)
     generated = datetime.fromisoformat(str(report["generated_at"]))
@@ -530,7 +546,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "propose":
             report = {
                 **report,
-                "proposal_path": str(write_proposal(report, args.proposal_root)),
+                "proposal_path": str(
+                    write_proposal(
+                        report,
+                        args.proposal_root,
+                        research_lock_path=args.research_lock,
+                        registry_root=args.registry_root,
+                    )
+                ),
             }
         print(json.dumps(report, indent=2, sort_keys=True))
         return 0
