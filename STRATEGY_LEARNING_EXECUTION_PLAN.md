@@ -377,6 +377,14 @@ must remain blocked. The small SEC-only slice cannot distinguish a valid
 execution-quality filter from excessive selectivity, so no rule revision is
 earned.
 
+`CATALYST_EVIDENCE_ACQUISITION.md` is the next data plan. The existing secondary
+corpus covers 1,416 pairs and contains 7,391 unique Benzinga articles, including
+1,878 analyst-action leads, but only 4,205 summaries and no full content. Because
+all URLs resolve to one secondary publisher, the corpus cannot meet the
+analyst-action corroboration rule as stored. The plan freezes content enrichment,
+direct-source acquisition, causal timestamps, issuer binding, conflicts, and
+independent inspection before another unchanged-v3 non-return join.
+
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
 

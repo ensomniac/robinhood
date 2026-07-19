@@ -283,6 +283,16 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   slice. Next: increase direct primary-catalyst coverage for issuer releases and
   attributed analyst actions, then preregister another unchanged-v3 capacity
   join on disjoint evidence.
+- Audited the cached secondary corpus: 1,416/1,987 pairs have articles; 7,391
+  unique articles are all Benzinga URLs, 4,205 have summaries, and none retained
+  full content. The 1,878 analyst-action keyword leads are high leverage but do
+  not satisfy independent corroboration.
+- Follow `CATALYST_EVIDENCE_ACQUISITION.md`: freeze Alpaca full-content
+  enrichment, then causal direct-source and independent corroboration joins.
+  Preserve absent or uncertain evidence as unresolved.
+- Full external-store audit passed with 844,904 files, 2,334,718 datasets,
+  124,537 contexts, 6,605 symbols, 733 dates, and zero errors. About 79 GiB
+  remains free; enforce the reserve before further bulk collection.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

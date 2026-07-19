@@ -1,0 +1,20 @@
+{
+  "audited_at": "2026-07-19T10:21:08-04:00",
+  "contexts": 124537,
+  "datasets": 2334718,
+  "dates": 733,
+  "errors": [],
+  "files": 844904,
+  "free_bytes_after_audit": 84951482368,
+  "providers": {
+    "alpaca": 2138737,
+    "ibkr": 195960,
+    "massive": 1,
+    "replay_bundle": 20
+  },
+  "root_public": false,
+  "schema_version": 1,
+  "status": "READY",
+  "symbols": 6605,
+  "valid": true
+}
