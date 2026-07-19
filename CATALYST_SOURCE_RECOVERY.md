@@ -58,7 +58,10 @@ requests.
 
 The exact metadata manifest is frozen under hash
 `46864d4285439be3e61d44dc98779b288a8bdd2b6f6f436be22ba812fe385bd2`
-and must be committed before its 24 accession-detail requests.
+and is independently inspected `READY`. All 24 accession-detail pages returned
+HTTP 200; every page contains both an acceptance-datetime candidate and
+CIK-shaped identity evidence. These remain candidates until the frozen semantic
+review accepts them against each pair's 09:35 cutoff and target CIK.
 
 ## Claim Boundary
 

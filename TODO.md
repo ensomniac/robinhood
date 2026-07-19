@@ -20,8 +20,12 @@ recovery. The SEC-only collector and tests are implemented; its exact
 browse rows were not requested. The current bounded handoff is a separately
 frozen, outcome-blind SEC acceptance-metadata stage followed by document-CIK,
 relevance, direction, and financing-conflict review. The 24-accession filing
-detail collector is implemented and must be frozen and committed before it
-runs. A wait, pause, or insufficient sample is progress state, not completion.
+detail dataset is independently inspected `READY`: all 24 responses contain an
+acceptance-datetime candidate and CIK-shaped identity evidence. The current
+handoff is the frozen 37-join semantic review; 25 accession joins have a
+directory-CIK mismatch and three joins have no accession, leaving nine potential
+exact-CIK joins for timestamp and event adjudication. A wait, pause, or
+insufficient sample is progress state, not completion.
 
 ## Completed 2026-07-19
 
