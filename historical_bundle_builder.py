@@ -393,7 +393,6 @@ def _build_candidate(
         "candidate": {
             "symbol": symbol,
             "is_common_stock": evidence.get("is_common_stock") is True,
-            "opening_price": float(opening["open"]),
             "average_daily_volume_14": average_volume,
             "daily_atr_14": atr,
             "opening_bar": opening,

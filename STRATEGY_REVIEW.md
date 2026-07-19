@@ -216,6 +216,8 @@ does change to bind a normalized config: the unchanged three-loss, 2% rolling
 five-session, and 4% strategy drawdown breakers now live in the numeric source
 of truth instead of guard literals. The engine also hard-rejects a planned stop
 at or above an observed bid, enforcing the existing outside-spread requirement.
+The $5 universe gate now reads the validated opening-bar open rather than a
+redundant caller-supplied `opening_price`, eliminating a conflicting-input path.
 
 ## What The Repository Had Right
 

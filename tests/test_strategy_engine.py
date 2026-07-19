@@ -33,7 +33,6 @@ def qualifying_payload():
         "candidate": {
             "symbol": "XYZ",
             "is_common_stock": True,
-            "opening_price": 50.0,
             "average_daily_volume_14": 5000000,
             "daily_atr_14": 3.0,
             "opening_bar": {
@@ -240,6 +239,18 @@ class EvaluationTests(unittest.TestCase):
 
         with self.assertRaisesRegex(StrategyInputError, "inconsistent OHLC"):
             evaluate_candidate(payload)
+
+    def test_open_price_gate_uses_validated_opening_bar_not_duplicate_field(self):
+        payload = qualifying_payload()
+        payload["candidate"]["opening_price"] = 500.0
+        payload["candidate"]["opening_bar"].update(
+            {"open": 4.99, "high": 50.0, "low": 4.9, "close": 49.9}
+        )
+
+        result = evaluate_candidate(payload)
+
+        self.assertFalse(result.eligible)
+        self.assertIn("opening price is below the universe minimum", result.hard_rejects)
 
     def test_flat_opening_bar_is_valid_input_but_not_bullish(self):
         payload = qualifying_payload()

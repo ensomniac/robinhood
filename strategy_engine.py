@@ -472,11 +472,6 @@ def evaluate_candidate(
     opening_bar = _required(candidate, "opening_bar", "candidate")
     if not isinstance(opening_bar, Mapping):
         raise StrategyInputError("candidate.opening_bar must be an object")
-    opening_price = _number(
-        _required(candidate, "opening_price", "candidate"),
-        "candidate.opening_price",
-        positive=True,
-    )
     average_volume = _number(
         _required(candidate, "average_daily_volume_14", "candidate"),
         "candidate.average_daily_volume_14",
@@ -540,7 +535,7 @@ def evaluate_candidate(
     if ranking_scope != "full_eligible_universe":
         warnings.append("opening RVOL rank is approximate within scanner results")
 
-    if opening_price < float(universe["minimum_open_price"]):
+    if opening_open < float(universe["minimum_open_price"]):
         rejects.append("opening price is below the universe minimum")
     if average_volume < float(universe["minimum_average_daily_volume_14"]):
         rejects.append("average daily volume is below the universe minimum")

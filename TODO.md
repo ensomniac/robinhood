@@ -216,6 +216,9 @@ version.
 - Moved the unchanged three-loss, 2% rolling-five-session, and 4% strategy
   drawdown breakers from guard literals into `strategy_config.toml`; the guard
   now proves those values are its numeric source.
+- Removed the redundant `candidate.opening_price` input from the evaluator and
+  historical builder. The $5 gate now uses the validated first five-minute bar
+  open, so conflicting duplicate fields cannot bypass the universe rule.
 
 ## Completed 2026-07-18
 

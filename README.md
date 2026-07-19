@@ -75,6 +75,8 @@ The same evaluator hard-rejects a planned stop that is not below the observed
 bid. Drawdown and consecutive-loss breakers now live in the numeric config and
 are consumed by `session_guard.py`, rather than being duplicated as guard
 literals.
+The $5 universe gate reads the validated opening-bar open directly; callers do
+not supply a second authoritative `opening_price` value.
 
 ## Public Trade Ledger
 
