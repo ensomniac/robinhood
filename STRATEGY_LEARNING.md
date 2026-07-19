@@ -93,6 +93,13 @@ A written strategy review requires both:
 - At least 20 new closed, triggered, frozen-rule signals since the last review.
 - At least 30 calendar days since the current version began or the last review.
 
+It also requires `learning/RESEARCH_LOCK.json` to release the ledger's
+`catalyst_falsification` lane. While the required dynamic scanner dataset is not
+registered in the exact required lane as independently inspected `READY`, the
+report remains available but emits no hypotheses and `propose` fails with
+`research_locked`. This closes a separate proposal entrypoint that previously
+enforced cadence but not the corpus-fidelity lock.
+
 When both pass:
 
 ```sh

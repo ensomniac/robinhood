@@ -407,7 +407,7 @@ similarly non-executing:
 
 ```sh
 python3 strategy_learning.py report
-python3 strategy_learning.py propose  # only after both cadence gates pass
+python3 strategy_learning.py propose  # only after cadence and research-lock gates pass
 ```
 
 Canonical per-symbol/day observations now live outside the repository at

@@ -420,7 +420,9 @@ Status: implemented safely by `strategy_learning.py`.
 - Reports combine canonical ledger/maturity metrics, paired project-versus-EOD
   exits, archived outcome reasons, and bounded feature-cohort diagnostics.
 - A review proposal is allowed only after both 20 new closed frozen-rule signals
-  and 30 calendar days since version start or the last review.
+  and 30 calendar days since version start or the last review, and only after
+  the active catalyst-corpus research lock's required scanner dataset is
+  independently inspected `READY` in its exact registered lane.
 - Generated changes are hypotheses for an evidence-backed delegated decision.
   The tool has no apply command and never edits `strategy_config.toml` or
   `AGENTS.md`.

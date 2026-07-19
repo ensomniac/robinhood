@@ -21,9 +21,10 @@ does not activate production rules.
   failure, and disposition.
 - `learning/STRATEGIES.jsonl` records immutable strategy identities and their
   alpha, execution, operations, and production-role states.
-- `learning/RESEARCH_LOCK.json` blocks new catalyst-corpus hypothesis contracts
-  until its required scanner-replay dataset reaches the registered `READY`
-  state.
+- `learning/RESEARCH_LOCK.json` blocks both new catalyst-corpus hypothesis
+  contracts and `strategy_learning.py` proposals until its required
+  scanner-replay dataset reaches the registered, independently inspected
+  `READY` state in the exact required lane.
 - Ignored `learning_runs/<run-id>/state.json` holds resumable operational state.
 - `progress/HISTORY.jsonl` remains the durable architecture and findings log.
 - `strategy_ledger.py report` remains authoritative for earned production

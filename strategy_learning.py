@@ -21,6 +21,12 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
+from learning_experiment import (
+    DEFAULT_RESEARCH_LOCK,
+    LearningExperimentError,
+    research_lock_status,
+)
+from learning_registry import REGISTRY_ROOT
 from strategy_engine import StrategyConfig, StrategyInputError, load_config
 from strategy_ledger import (
     DEFAULT_LEDGER_PATH,
@@ -50,6 +56,7 @@ TRACKED_FEATURES = (
     "resistance_room_fraction",
     "reward_risk",
 )
+SOURCE_DATASET_LANE = "catalyst_falsification"
 DAILY_METRIC_PREFLIGHT_REASONS = frozenset(
     {
         "average daily volume is below the universe minimum",
@@ -110,6 +117,8 @@ def _closed_signals(
         if record.get("record_type") == "signal"
         and record.get("closed") is True
         and record.get("triggered") is True
+        and record.get("eligible") is True
+        and record.get("decision") in ("live", "shadow")
         and _finite(record.get("net_r")) is not None
     ]
 
@@ -376,6 +385,8 @@ def build_learning_report(
     *,
     proposal_root: Path = DEFAULT_PROPOSAL_ROOT,
     as_of: date | None = None,
+    research_lock_path: Path = DEFAULT_RESEARCH_LOCK,
+    registry_root: Path = REGISTRY_ROOT,
 ) -> dict[str, Any]:
     config = config or load_config()
     cadence = assess_review_cadence(
@@ -394,14 +405,35 @@ def build_learning_report(
         str(item.get("primary_reason")) for item in relevant_outcomes
     )
     signal_diagnostics = _signal_diagnostics(records, config)
-    hypotheses = _hypotheses(closed, strategy_report) if cadence.eligible else []
+    lock = research_lock_status(
+        lock_path=research_lock_path,
+        registry_root=registry_root,
+    )
+    hypothesis_lock_active = bool(
+        lock.get("blocks_new_hypotheses")
+        and lock.get("blocked_dataset_lane") == SOURCE_DATASET_LANE
+    )
+    hypotheses = (
+        _hypotheses(closed, strategy_report)
+        if cadence.eligible and not hypothesis_lock_active
+        else []
+    )
+    status = (
+        "cadence_blocked"
+        if not cadence.eligible
+        else "research_locked"
+        if hypothesis_lock_active
+        else "review_ready"
+    )
     return {
         "schema_version": LEARNING_SCHEMA_VERSION,
         "strategy_version": config.version,
         "rules_hash": config.rules_hash,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "automatic_application": False,
-        "status": "review_ready" if cadence.eligible else "cadence_blocked",
+        "status": status,
+        "source_dataset_lane": SOURCE_DATASET_LANE,
+        "research_lock": lock,
         "cadence": asdict(cadence),
         "performance": strategy_report,
         "terminal_outcomes": {
@@ -413,6 +445,12 @@ def build_learning_report(
         "feature_diagnostics": _feature_diagnostics(closed),
         "hypotheses": hypotheses,
         "recommendation": (
+            str(
+                lock.get("reason")
+                or "Keep the frozen rules until the required dataset is READY."
+            )
+            if hypothesis_lock_active
+            else
             "Review the listed hypotheses; any accepted change must create a new strategy version and confirmation sample."
             if hypotheses
             else (
@@ -430,7 +468,10 @@ def write_proposal(
 ) -> Path:
     if report.get("status") != "review_ready":
         blockers = report.get("cadence", {}).get("blockers", [])
-        raise LearningError(f"strategy review cadence is blocked: {blockers}")
+        raise LearningError(
+            f"strategy review proposal is blocked: status={report.get('status')}; "
+            f"cadence={blockers}"
+        )
     proposal_root.mkdir(parents=True, exist_ok=True)
     generated = datetime.fromisoformat(str(report["generated_at"]))
     filename = generated.strftime("%Y%m%dT%H%M%SZ") + "-strategy-review.json"
@@ -459,6 +500,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ledger", type=Path, default=DEFAULT_LEDGER_PATH)
     parser.add_argument("--archive-root", type=Path, default=DEFAULT_ARCHIVE_ROOT)
     parser.add_argument("--proposal-root", type=Path, default=DEFAULT_PROPOSAL_ROOT)
+    parser.add_argument("--research-lock", type=Path, default=DEFAULT_RESEARCH_LOCK)
+    parser.add_argument("--registry-root", type=Path, default=REGISTRY_ROOT)
     parser.add_argument("--as-of", type=date.fromisoformat, default=None)
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("report", help="print diagnostics without changing state")
@@ -481,6 +524,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             outcomes,
             proposal_root=args.proposal_root,
             as_of=args.as_of,
+            research_lock_path=args.research_lock,
+            registry_root=args.registry_root,
         )
         if args.command == "propose":
             report = {
@@ -493,6 +538,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         OSError,
         LedgerError,
         LifecycleError,
+        LearningExperimentError,
         LearningError,
         StrategyInputError,
     ) as exc:
