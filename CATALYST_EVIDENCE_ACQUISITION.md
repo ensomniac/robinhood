@@ -140,6 +140,12 @@ and only 18 expose any standard HTML timestamp candidate. Counts overlap. This
 18-pair surface is below the 20-signal provisional minimum even before source
 verification or unchanged-v3 attrition, so returns remain locked.
 
+The 13 successful PDFs are frozen for bounded structure profiling under
+manifest `b1f2bff3...96162e4c` in `CATALYST_PDF_SOURCE_PROFILE.md`. Only the
+first three pages, metadata presence, date-shaped strings, and structural
+markers may be profiled. None may be accepted as publication or catalyst
+evidence.
+
 ### Stage D - Classify and independently inspect
 
 - Freeze classifier rules before classification. Positive phrases never
