@@ -308,6 +308,9 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Next: freeze exact candidate URLs and fetch them with source-specific pacing.
   Verify ownership, issuer binding, causal availability, materiality, direction,
   conflicts, and corroboration before any catalyst passes.
+- Froze the exact 134 authority/exchange/potential-issuer URLs as manifest
+  `409a807f...b41ef4`, with public-address validation, redirect checks, a 10 MiB
+  response cap, per-URL checkpoints, and no classification authority.
 - Full external-store audit passed with 844,904 files, 2,334,718 datasets,
   124,537 contexts, 6,605 symbols, 733 dates, and zero errors. About 79 GiB
   remains free; enforce the reserve before further bulk collection.

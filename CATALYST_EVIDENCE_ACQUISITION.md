@@ -112,6 +112,10 @@ pairs have authority/exchange/potential-issuer routing leads and 227 have
 wire/secondary corroboration leads, after rejecting 42,836 article-level
 platform links.
 
+The exact 134 unique primary-routing URLs are frozen for bounded response
+capture as manifest `409a807f...b41ef4` in
+`CATALYST_PRIMARY_SOURCE_CAPTURE.md`.
+
 ### Stage D - Classify and independently inspect
 
 - Freeze classifier rules before classification. Positive phrases never
