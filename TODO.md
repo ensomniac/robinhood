@@ -45,9 +45,13 @@ relevance, financing-conflict, and direction gate before private semantic
 review. `catalyst_issuer_chain_semantics.py` now implements that network-free
 12-source gate, exact cross-pass private deduplication, terminal precedence, and
 outcome lock. Manifest `aba8d8fa...8cb504b6` now freezes the exact adjudication
-surface; the current handoff is to commit and push it before private extraction
-or review. A wait, pause, or insufficient sample is progress state, not
-completion.
+surface and is independently inspected `READY`. No new pair qualified; exact
+private deduplication across all source passes leaves three verified-positive
+pairs against the required 20. Outcomes remain locked and source recovery for
+this corpus is exhausted. The current handoff is `DEVELOPMENT_ACQUISITION`:
+freeze and commit the next exact disjoint 100-session tranche, excluding every
+previously inspected target date, before collecting market or catalyst data. A
+wait, pause, or insufficient sample is progress state, not completion.
 
 ## Completed 2026-07-19
 

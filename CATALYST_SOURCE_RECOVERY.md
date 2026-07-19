@@ -227,6 +227,20 @@ If the combined capacity remains below 20 after this ordered recovery is
 exhausted, outcomes remain locked and the campaign moves to a separately frozen
 disjoint 100-session acquisition tranche.
 
+Extraction, private review, and independent replay are now `READY`. The 12
+source rows produced four transport failures, one forbidden response, five
+cross-issuer binding failures, one irrelevant current index, and one same-day
+time-unresolved release. No issuer-chain pair qualified. Exact private
+deduplication across the original source pass, the SEC recovery pass, and this
+pass leaves only three verified-positive pairs—not the earlier conservative
+unduplicated ceiling of eight. The 20-pair capacity gate therefore fails,
+outcomes remain locked, and ordered source recovery for this corpus is closed.
+
+The generated review helper contains private context for adjudication. Submit a
+separate decision-only private JSON object to `--review-input`; the recursive
+outcome-key lock deliberately does not treat the contextual helper itself as a
+review submission.
+
 ## Claim Boundary
 
 Successful response recovery proves only that the exact SEC-operated filing
