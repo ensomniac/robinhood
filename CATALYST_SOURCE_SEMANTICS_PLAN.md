@@ -1,7 +1,7 @@
 # Catalyst Source Semantics Plan
 
-Status: implementation validated; formal manifest freeze is the next action and
-no evaluation or return access is authorized by this plan
+Status: formal manifest frozen under hash `dc0a36c196ec32be34a27d902144f0b56d9212d188f0cfb4b29c9b315c04bbbd`;
+commit it before extraction, and no return access is authorized by this plan
 
 ## Decision
 

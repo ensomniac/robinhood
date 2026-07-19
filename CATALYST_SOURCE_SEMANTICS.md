@@ -1,7 +1,7 @@
 # Catalyst Source Semantics
 
-Status: implementation validated; the formal manifest must be committed before
-private extraction or review
+Status: formal 33-pair manifest frozen; commit it before private extraction or
+review
 
 ## Purpose
 
