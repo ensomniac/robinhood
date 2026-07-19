@@ -240,6 +240,9 @@ version.
   group, exact candidate and trigger counts, at most one executed decision,
   consistent `trade_taken`, and matching dates, modes, phases, hashes, and
   complete-capture claims. The existing 1,166-record ledger passes unchanged.
+- Added daily ledger/archive alignment across public IDs, identity fields,
+  context roles, terminal results, candidate counts, signal features, and net R.
+  All 1,166 ledger rows and 1,166 archived contexts reconcile exactly.
 - Hardened partial protection handling: `PROTECT_NOW` replaces an existing
   undersized stop rather than instructing a second full-size stop, and an
   inconsistent stop-count/covered-quantity snapshot activates flatten and

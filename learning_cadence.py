@@ -23,8 +23,8 @@ from learning_registry import REGISTRY_ROOT, audit_registries, current_entities
 from learning_strategy import audit_strategy_evidence, build_strategy_evidence_report
 from progress_history import load_history
 from sensitive_data import audit_context_files, get_cipher
-from strategy_ledger import audit_ledger
-from trade_lifecycle import audit_lifecycle
+from strategy_ledger import audit_ledger, read_records
+from trade_lifecycle import audit_lifecycle, load_archived_outcomes
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -227,13 +227,101 @@ def complete_task(
     return state
 
 
+def audit_ledger_context_alignment(
+    records: Sequence[Mapping[str, Any]],
+    outcomes: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    ledger_by_id = {
+        str(record.get("signal_id") or record.get("session_id")): record
+        for record in records
+    }
+    outcome_by_id = {str(outcome.get("context_id")): outcome for outcome in outcomes}
+    violations: list[str] = []
+    for record_id in sorted(set(ledger_by_id) | set(outcome_by_id)):
+        record = ledger_by_id.get(record_id)
+        outcome = outcome_by_id.get(record_id)
+        if record is None:
+            violations.append(f"{record_id}: archived context has no ledger record")
+            continue
+        if outcome is None:
+            violations.append(f"{record_id}: ledger record has no archived context")
+            continue
+        for field in ("date", "mode", "strategy_version", "rules_hash"):
+            if record.get(field) != outcome.get(field):
+                violations.append(f"{record_id}: ledger/context {field} disagrees")
+        is_session = record.get("record_type") == "session"
+        expected_kind = (
+            "session"
+            if is_session
+            else "trade"
+            if record.get("decision") in ("live", "shadow")
+            else "trade_idea"
+        )
+        if outcome.get("context_kind") != expected_kind:
+            violations.append(f"{record_id}: context kind disagrees with ledger role")
+        metrics = outcome.get("metrics")
+        if not isinstance(metrics, Mapping):
+            violations.append(f"{record_id}: context metrics are missing")
+            continue
+        if is_session:
+            if metrics.get("candidate_count") != record.get("candidate_count"):
+                violations.append(
+                    f"{record_id}: context candidate_count disagrees with ledger"
+                )
+            expected_result = "completed" if record.get("trade_taken") else "no_trade"
+            if outcome.get("result") != expected_result:
+                violations.append(f"{record_id}: session terminal result disagrees")
+            continue
+        features = record.get("features")
+        if isinstance(features, Mapping):
+            for name, value in features.items():
+                if metrics.get(name) != value:
+                    violations.append(
+                        f"{record_id}: context metric {name} disagrees with ledger"
+                    )
+        if record.get("decision") in ("live", "shadow"):
+            net_r = record.get("net_r")
+            if metrics.get("net_r") != net_r:
+                violations.append(f"{record_id}: context net_r disagrees with ledger")
+            try:
+                numeric_net_r = float(net_r)
+            except (TypeError, ValueError):
+                violations.append(f"{record_id}: ledger net_r is invalid")
+                continue
+            expected_result = (
+                "success"
+                if numeric_net_r > 0
+                else "failure"
+                if numeric_net_r < 0
+                else "flat"
+            )
+            if outcome.get("result") != expected_result:
+                violations.append(f"{record_id}: trade terminal result disagrees")
+        elif outcome.get("result") not in ("rejected", "stale"):
+            violations.append(f"{record_id}: diagnostic signal has a trade result")
+    return {
+        "valid": not violations,
+        "ledger_records": len(ledger_by_id),
+        "archived_contexts": len(outcome_by_id),
+        "violations": violations,
+    }
+
+
 def _run_integrity() -> dict[str, Any]:
     ledger = audit_ledger()
     lifecycle = audit_lifecycle()
+    alignment = audit_ledger_context_alignment(
+        read_records(), load_archived_outcomes()
+    )
     privacy = audit_context_files(
         [PROJECT_ROOT / "TRADES.md", PROJECT_ROOT / "trades"], get_cipher()
     )
-    if not ledger.valid or not lifecycle.valid or privacy.violations:
+    if (
+        not ledger.valid
+        or not lifecycle.valid
+        or not alignment["valid"]
+        or privacy.violations
+    ):
         raise LearningCadenceError("daily repository integrity audit failed")
     return {
         "registries": audit_registries(),
@@ -242,6 +330,7 @@ def _run_integrity() -> dict[str, Any]:
         "strategies": audit_strategy_evidence(),
         "ledger_records": ledger.records,
         "archived_contexts": lifecycle.archived_contexts,
+        "ledger_context_alignment": alignment,
         "privacy_checked_files": privacy.checked_files,
         "progress_entries": len(load_history()),
     }

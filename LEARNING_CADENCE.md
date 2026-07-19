@@ -23,7 +23,10 @@ separate operational action; this repository does not silently install one.
 ## Task Contracts
 
 - Daily: audit public registries, data claims, hypothesis contracts, strategy
-  axes, production ledger, lifecycle, privacy, and durable progress.
+  axes, production ledger, lifecycle, privacy, and durable progress. The ledger
+  and archive must also match one-to-one by public ID, date, mode, strategy
+  version/hash, context role, terminal result, candidate count, signal features,
+  and realized R where applicable.
 - Nightly: resume only a dataset already registered as `FROZEN` or `COLLECTING`.
   The cadence surfaces the exact IDs but performs no provider calls itself.
   The current scanner pilot is registered `COLLECTING`, so this task keeps

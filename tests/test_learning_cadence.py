@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from learning_cadence import (
     LearningCadenceError,
+    audit_ledger_context_alignment,
     cadence_status,
     complete_task,
     load_state,
@@ -61,6 +62,42 @@ class CadenceStateTests(unittest.TestCase):
 
 
 class CadenceExecutionTests(unittest.TestCase):
+    def test_ledger_context_alignment_requires_matching_public_truth(self):
+        record = {
+            "record_type": "signal",
+            "signal_id": "2026-07-18-XYZ-1",
+            "date": "2026-07-18",
+            "mode": "shadow",
+            "strategy_version": "v1",
+            "rules_hash": "hash",
+            "decision": "rejected",
+            "features": {"score": 90.0},
+        }
+        outcome = {
+            "context_id": "2026-07-18-XYZ-1",
+            "date": "2026-07-18",
+            "mode": "shadow",
+            "strategy_version": "v1",
+            "rules_hash": "hash",
+            "context_kind": "trade_idea",
+            "result": "rejected",
+            "metrics": {"score": 90.0},
+        }
+
+        aligned = audit_ledger_context_alignment([record], [outcome])
+        drifted = audit_ledger_context_alignment(
+            [record], [{**outcome, "mode": "live"}]
+        )
+        orphaned = audit_ledger_context_alignment([record], [])
+
+        self.assertTrue(aligned["valid"])
+        self.assertFalse(drifted["valid"])
+        self.assertTrue(any("mode" in item for item in drifted["violations"]))
+        self.assertFalse(orphaned["valid"])
+        self.assertTrue(
+            any("no archived context" in item for item in orphaned["violations"])
+        )
+
     def test_deterministic_tasks_complete_and_agent_task_stays_due(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "learning_runs" / "cadence-state.json"
