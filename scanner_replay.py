@@ -1069,6 +1069,8 @@ def build_scanner_replay(
     split_path: Path,
     detailed_output: Path,
     summary_output: Path,
+    dataset_id: str = "dataset-production-scanner-replay-2026-07-18-v1",
+    summary_extension: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     targets = _iso_dates(sorted(selected_dates), "selected_dates")
     ordered_calendar = _iso_dates(list(calendar), "calendar")
@@ -1106,6 +1108,7 @@ def build_scanner_replay(
     positions = {day: index for index, day in enumerate(ordered_calendar)}
     detail: dict[str, Any] = {
         "schema_version": 1,
+        "dataset_id": dataset_id,
         "selection_time_et": "09:35:00",
         "information_cutoff": "TARGET_SESSION_09:35_ET",
         "scanner_rules_sha256": _sha256_json(rules),
@@ -1263,7 +1266,7 @@ def build_scanner_replay(
     _write_json(detailed_output, detail)
     summary = {
         "schema_version": 1,
-        "dataset_id": "dataset-production-scanner-replay-2026-07-18-v1",
+        "dataset_id": dataset_id,
         "status": "READY",
         "claim_boundary": (
             "Faithful dynamic 09:35 scanner-universe reconstruction only; catalyst, "
@@ -1285,6 +1288,13 @@ def build_scanner_replay(
         },
         "dates": public_dates,
     }
+    if summary_extension:
+        overlap = set(summary).intersection(summary_extension)
+        if overlap:
+            raise ScannerReplayError(
+                f"scanner summary extension cannot replace {sorted(overlap)}"
+            )
+        summary.update(summary_extension)
     _write_json(summary_output, summary)
     return summary
 

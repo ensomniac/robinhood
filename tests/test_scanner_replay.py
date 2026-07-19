@@ -272,9 +272,17 @@ class ReplayBuildTests(unittest.TestCase):
                 split_path=splits,
                 detailed_output=root / "detail.json",
                 summary_output=root / "summary.json",
+                dataset_id="dataset-production-scanner-replay-test",
+                summary_extension={"source": {"provider": "fixture"}},
             )
 
             self.assertTrue(result["complete_universe"])
+            self.assertEqual(
+                result["dataset_id"], "dataset-production-scanner-replay-test"
+            )
+            self.assertEqual(result["source"], {"provider": "fixture"})
+            detail = json.loads((root / "detail.json").read_text(encoding="utf-8"))
+            self.assertEqual(detail["dataset_id"], result["dataset_id"])
             self.assertEqual(result["dates"][0]["evaluated_count"], 1)
             self.assertEqual(result["dates"][0]["shortlist_count"], 1)
             self.assertEqual(len(result["dates"][0]["shortlist_sha256"]), 64)

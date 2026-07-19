@@ -1333,7 +1333,10 @@ def build_contract(
         if target.exists() or target.is_symlink():
             target.unlink()
         target.symlink_to(source)
-    temporary_summary = run_root / "scanner-replay-engine-summary.json"
+    source_hashes = [
+        _read_object(root / "attestations" / day[:4] / f"{day}.json")["source_sha256"]
+        for day in manifest["collection_contract"]["required_session_dates"]
+    ]
     summary = build_scanner_replay(
         selected_dates=manifest["requested_dates"],
         calendar=calendar,
@@ -1342,28 +1345,22 @@ def build_contract(
         minute_root=flat_root,
         split_path=splits_path,
         detailed_output=run_root / "scanner-replay-detail.json",
-        summary_output=temporary_summary,
-    )
-    source_hashes = [
-        _read_object(root / "attestations" / day[:4] / f"{day}.json")["source_sha256"]
-        for day in manifest["collection_contract"]["required_session_dates"]
-    ]
-    final = {
-        **summary,
-        "dataset_id": str(manifest["dataset_id"]),
-        "source": {
-            "provider": "Alpaca",
-            "feed": "sip",
-            "adjustment": "raw",
-            "contract_sha256": manifest["manifest_sha256"],
-            "session_artifact_count": len(source_hashes),
-            "session_artifacts_sha256": _sha256_json(source_hashes),
-            "canonical_per_symbol_day_store": True,
-            "derived_index_public": False,
+        summary_output=summary_output,
+        dataset_id=str(manifest["dataset_id"]),
+        summary_extension={
+            "source": {
+                "provider": "Alpaca",
+                "feed": "sip",
+                "adjustment": "raw",
+                "contract_sha256": manifest["manifest_sha256"],
+                "session_artifact_count": len(source_hashes),
+                "session_artifacts_sha256": _sha256_json(source_hashes),
+                "canonical_per_symbol_day_store": True,
+                "derived_index_public": False,
+            },
         },
-    }
-    _write_json(summary_output, final)
-    return final
+    )
+    return summary
 
 
 def _build_parser() -> argparse.ArgumentParser:

@@ -35,6 +35,12 @@ delta symbols, and merges those observations with the attested source index.
 New sessions request the complete new union. This removes redundant work
 without introducing survivorship omission.
 
+The shared scanner engine now writes the campaign dataset identity, private
+detail, and provider-bound public summary in one pass. The Alpaca adapter no
+longer writes a misleading legacy-ID intermediate summary and then replaces it;
+this removes an unused artifact and makes detail/summary identity disagreement
+an inspection failure.
+
 Some reused source rows existed before this campaign was frozen. The manifest
 must disclose that fact and state that no target outcomes were observed or
 derived. This campaign can become selection-fidelity and development evidence;

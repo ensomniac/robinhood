@@ -1193,6 +1193,10 @@ def inspect_payloads(
         )
     if summary.get("status") != "READY" or summary.get("complete_universe") is not True:
         raise ScannerInspectionError("scanner summary is not a complete built replay")
+    if detail.get("dataset_id", manifest.get("dataset_id")) != manifest.get(
+        "dataset_id"
+    ):
+        raise ScannerInspectionError("scanner detail names a different dataset")
     if summary.get("selection_is_dynamic") is not True:
         raise ScannerInspectionError("scanner summary is not dynamically selected")
     if summary.get("source", {}).get("contract_sha256") != manifest.get(
