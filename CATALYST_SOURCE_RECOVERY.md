@@ -106,6 +106,8 @@ exactly the 13 original `source request transport failure` records, their 13
 pair/source joins, and six point-in-time pairs from the frozen capture,
 discovery, and identity artifacts. Every row is an issuer-host candidate. No
 other failure, URL, article, date, symbol, or source may enter the retry set.
+Manifest `7837dd652471f90c578a829d2d59c677142ad15d75527e5af4171bb8b46261d9`
+now freezes that exact request set and collector before network access.
 
 The collector retries the same exact URL at a fixed maximum rate of two request
 starts per second. It retains the original public-address validation, redirect
@@ -115,7 +117,6 @@ checkpointed, the 20-GiB reserve is checked before requests and response writes,
 and neither provider nor secondary-source substitution is allowed.
 
 ```sh
-python3 catalyst_transport_recovery.py freeze
 python3 catalyst_transport_recovery.py collect --manifest <manifest>
 python3 catalyst_transport_recovery.py inspect --manifest <manifest>
 ```
