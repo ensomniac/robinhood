@@ -1,0 +1,51 @@
+{
+  "category_counts": {
+    "AUTHORITY_CANDIDATE": 60,
+    "EXCHANGE_CANDIDATE": 1,
+    "ISSUER_HOST_CANDIDATE": 73
+  },
+  "claim_boundary": "Offline response-structure profile only; timestamp fields and canonical links are candidates, not accepted causal or ownership evidence.",
+  "claim_scope": "DEVELOPMENT_ONLY",
+  "content_type_counts": {
+    "application/pdf": 13,
+    "application/xml": 1,
+    "text/html": 107
+  },
+  "counts": {
+    "capture_capture_error": 13,
+    "capture_response_captured": 121,
+    "final_host_changed": 2,
+    "html_200": 71,
+    "html_canonical_present": 24,
+    "html_json_ld_date_published_present": 14,
+    "html_meta_timestamp_present": 9,
+    "html_time_datetime_present": 16,
+    "html_title_present": 71,
+    "last_modified_header_present": 58,
+    "redirect_count_0": 116,
+    "redirect_count_1": 5
+  },
+  "dataset_id": "dataset-catalyst-source-profile-2026-07-19-expansion-v1",
+  "findings": {
+    "causal_availability_verified": false,
+    "format_and_timestamp_candidate_profile_complete": true,
+    "issuer_binding_verified": false,
+    "primary_catalyst_verified": false,
+    "production_rule_change_earned": false,
+    "source_ownership_verified": false,
+    "timestamp_candidates_accepted": 0
+  },
+  "http_status_counts": {
+    "200": 84,
+    "403": 35,
+    "404": 2
+  },
+  "inspected": true,
+  "manifest_sha256": "411be9d083d118d06087c73d95ad3e8de386b6a701358c29feb618800cb3151f",
+  "next_required_stage": "freeze format-specific timestamp parsing, issuer-domain binding, and source ownership verification before accepting any evidence",
+  "private_result_sha256": "c50f4a7d8ce22012140bf9e39b6e1207a3a515d7aad88106bb82deade1fdd5ed",
+  "schema_version": 1,
+  "status": "READY",
+  "symbols_articles_urls_content_and_rows_public": false,
+  "target_outcomes_observed_or_derived": false
+}

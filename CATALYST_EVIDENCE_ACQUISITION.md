@@ -122,6 +122,12 @@ source verification remain separately frozen work.
 
 Offline format/timestamp-candidate profiling is frozen as manifest
 `411be9d0...cb3151f` in `CATALYST_SOURCE_PROFILE.md`.
+Inspection is complete: only 9 of 71 successful HTML responses expose a
+recognized publication-meta candidate, 14 expose JSON-LD `datePublished`, and
+16 expose a `<time datetime>` candidate. All remain unaccepted. The next
+contract must define format-specific timestamp precedence, issuer-domain
+binding, source ownership, and failure handling before any row can become
+causal primary evidence.
 
 ### Stage D - Classify and independently inspect
 
