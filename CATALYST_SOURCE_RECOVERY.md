@@ -47,6 +47,15 @@ Exact URLs, accessions, dates, symbols, article joins, identities, responses,
 and errors remain in the external historical store. Git receives only hashes,
 counts, lifecycle state, and aggregate response dispositions.
 
+Because many recovered filing documents do not embed their EDGAR acceptance
+header, `catalyst_sec_filing_metadata.py` performs a second accession-bound
+metadata step. It freezes the same 24 accessions and retrieves only each
+accession's canonical SEC filing-detail page. That page can supply
+timestamp/CIK-shaped fields for a later review without substituting a filing,
+opening an EDGAR search, or reading outcomes. Its collector must likewise be
+committed before its manifest is frozen and its manifest committed before
+requests.
+
 ## Claim Boundary
 
 Successful response recovery proves only that the exact SEC-operated filing

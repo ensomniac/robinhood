@@ -18,9 +18,10 @@ recovery. The SEC-only collector and tests are implemented; its exact
 26-source, 31-pair manifest `2f4258b2...5b0d374` is independently inspected
 `READY`: all 24 accession-bound requests returned HTTP 200 and the two generic
 browse rows were not requested. The current bounded handoff is a separately
-frozen, outcome-blind SEC document-CIK, acceptance-time, relevance, direction,
-and financing-conflict review. A wait, pause, or insufficient sample is progress
-state, not completion.
+frozen, outcome-blind SEC acceptance-metadata stage followed by document-CIK,
+relevance, direction, and financing-conflict review. The 24-accession filing
+detail collector is implemented and must be frozen and committed before it
+runs. A wait, pause, or insufficient sample is progress state, not completion.
 
 ## Completed 2026-07-19
 
