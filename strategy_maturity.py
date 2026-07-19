@@ -135,10 +135,10 @@ def _closed_records(
     for index, record in enumerate(records):
         if record.get("strategy_version") != config.version:
             continue
+        if record.get("closed") is not True or record.get("triggered") is not True:
+            continue
         if record.get("rules_hash") != config.rules_hash:
             mismatched_rules += 1
-            continue
-        if record.get("closed") is not True or record.get("triggered") is not True:
             continue
         if record.get("session_capture_complete") is not True:
             incomplete_capture += 1

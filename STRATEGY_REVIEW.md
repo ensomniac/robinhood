@@ -223,6 +223,11 @@ hard-rejects a planned stop at or above an observed bid, enforcing the existing
 outside-spread requirement.
 The $5 universe gate now reads the validated opening-bar open rather than a
 redundant caller-supplied `opening_price`, eliminating a conflicting-input path.
+Maturity isolation now counts a rules-hash mismatch only when the record is a
+closed, triggered return observation. Older rejected signals and no-trade
+sessions remain auditable but cannot permanently poison a future current-rule
+performance sample; a closed triggered signal from another hash still blocks
+promotion, preserving the no-mixed-rules gate.
 
 ## What The Repository Had Right
 

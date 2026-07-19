@@ -228,6 +228,10 @@ version.
 - Removed the redundant `candidate.opening_price` input from the evaluator and
   historical builder. The $5 gate now uses the validated first five-minute bar
   open, so conflicting duplicate fields cannot bypass the universe rule.
+- Scoped the mixed-rules maturity blocker to closed, triggered return records.
+  Rejected and no-trade history from an older hash remains in the ledger and in
+  hash-specific diagnostics, but it cannot make later current-rule promotion
+  permanently impossible; mixed performance samples still fail closed.
 
 ## Completed 2026-07-18
 

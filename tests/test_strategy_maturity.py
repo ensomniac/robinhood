@@ -98,6 +98,27 @@ class MaturityTests(unittest.TestCase):
             result.provisional_blockers,
         )
 
+    def test_old_rule_rejection_does_not_poison_new_performance_sample(self):
+        records = [
+            record(index, 0.5 if index % 2 == 0 else -0.2, live=index < 5)
+            for index in range(20)
+        ]
+        rejected = record(20, -0.1)
+        rejected.update(
+            {
+                "rules_hash": "old-rules",
+                "closed": True,
+                "triggered": False,
+                "net_r": None,
+            }
+        )
+        records.append(rejected)
+
+        result = assess_maturity(records)
+
+        self.assertEqual(result.earned_maturity, "PROVISIONAL")
+        self.assertEqual(result.metrics.mismatched_rule_records, 0)
+
     def test_incomplete_universe_capture_blocks_promotion(self):
         records = [
             record(index, 0.5 if index % 2 == 0 else -0.2, live=index < 5)
