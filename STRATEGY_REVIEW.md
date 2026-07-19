@@ -157,6 +157,23 @@ for resistance room, structural invalidation/noise, benchmark-relative
 strength, and conservative visible liquidity. A missing value stays blocking.
 The 20 development dates cannot earn a numeric threshold or production change.
 
+The outcome-blind unchanged-champion readiness join then tested whether the
+resolved inputs could support an evaluation at all. They cannot. Only one of
+389 pairs has a verified positive primary catalyst, and that pair fails both
+the production spread and chase gates. Across the whole corpus, 53 pairs pass
+non-catalyst execution geometry, 44 also pass completed-bar market diagnostics,
+only 11 opening-low/0.10-ATR stop proxies fit inside 0.8%, and zero pass every
+measured non-catalyst proxy. The faithful engine chase interval also reduces
+the earlier 155 upper-cap-only count to 101 because a final ask below the
+opening high is no longer counted as an entry-ready breakout.
+
+This is not evidence that the stop or resistance thresholds should be loosened.
+The diagnostic invalidation and resistance levels are conservative proxies, and
+the dates are already contaminated for strategy inference. It is evidence that
+deployability must be measured before alpha: define those inputs reproducibly,
+freeze new scanner dates with direct catalysts, and evaluate v3 unchanged before
+testing one preregistered revision. `CHAMPION_INPUT_READINESS.md` is authoritative.
+
 ## What The Repository Had Right
 
 The original strategy already addressed several common failure modes: it banned

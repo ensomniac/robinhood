@@ -270,8 +270,8 @@ frozen selected pairs, benchmarks, and bounded trigger tape, while enforcing a
 
 ### Stage 3 - Qualify unchanged-champion inputs before outcomes
 
-Status: in progress on 2026-07-19; no target-session return is eligible to be
-read yet.
+Status: completed and independently inspected on 2026-07-19; no target-session
+return was read and unchanged-champion outcome evaluation remains blocked.
 
 Build one deterministic readiness matrix over the exact 389 frozen pairs. It
 must consume only source data available at the clean trigger, publish aggregate
@@ -288,8 +288,21 @@ bind every derived-input implementation hash. At minimum it must determine:
 - whether a structural invalidation and stop-noise contract can be reproduced
   without inventing new thresholds.
 
-Only after this matrix passes independent inspection may the exact
-`2026-07-15-orb-v3` rules read outcomes. Retain every selected candidate, every
+The inspected matrix found 53 non-catalyst execution-geometry passes, 44 that
+also pass completed-bar market diagnostics, only 11 opening-low/0.10-ATR stop
+proxies inside the 0.8% cap, and zero pairs passing every measured non-catalyst
+proxy. The single verified positive catalyst pair fails both spread and chase,
+so zero pairs survive the resolved hard-gate cascade. The chase reconstruction
+also corrected the earlier 155 upper-cap-only count to 101 engine-compatible
+passes by requiring the final ask to remain at or above the opening high.
+
+The matrix passed independent pipeline inspection but did not make the input
+contract complete: intraminute VWAP, confirmed technical resistance,
+structural invalidation/noise, sector evidence, and broker-specific tradability
+remain unresolved or prospective. Therefore the exact `2026-07-15-orb-v3`
+rules may not read outcomes on these dates. See `CHAMPION_INPUT_READINESS.md`.
+
+Once those definitions are frozen on an outcome-blind basis, retain every selected candidate, every
 trigger, every production rejection reason, and a paired paper-aligned
 end-of-day outcome. Report both the one-trade daily portfolio and all-signal
 gate attribution. It may still conclude that zero or too few pairs are

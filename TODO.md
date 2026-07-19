@@ -98,6 +98,29 @@ remain frozen.
   resistance, structural stop/noise, benchmark-relative strength, and
   conservative executable liquidity before exposing returns.
 
+### 20. Outcome-Blind Unchanged-Champion Readiness
+
+Status: `dataset-champion-input-readiness-2026-07-19-v1` is independently
+inspected `READY` for development-only readiness evidence; production rules
+remain frozen and no target outcomes were read.
+
+- Rejoined all 389 exact pairs against catalyst, clean-trigger, quote, spread,
+  chase, official halt, visible liquidity, completed-bar VWAP, SPY/QQQ, prior
+  split-adjusted high, and opening-range stop inputs.
+- Corrected the historical chase fidelity count from 155 upper-cap-only passes
+  to 101 engine-compatible passes that also keep the final ask at or above the
+  opening high.
+- Found 53 non-catalyst execution-geometry passes and 44 that also pass the
+  completed-bar market diagnostics.
+- Found only 11 opening-low/0.10-ATR stop proxies inside the 0.8% cap and only
+  50 known-overhead resistance proxies with at least 2.2% room; zero pairs pass
+  every measured non-catalyst proxy together.
+- Confirmed that the single verified positive primary-catalyst pair fails both
+  spread and chase, leaving zero resolved hard-gate survivors before outcomes.
+- Next: specify real-time structural invalidation/noise and technical resistance
+  without tuning these dates, then freeze 100+ new scanner dates with direct
+  catalyst evidence and evaluate unchanged v3 first.
+
 ## Completed 2026-07-18
 
 ### 12. Bounded Edit And Learning Loop

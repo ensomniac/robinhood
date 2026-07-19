@@ -1,6 +1,6 @@
 # Persistent Strategy Learning Program
 
-Program version: `2026-07-19-v6`
+Program version: `2026-07-19-v7`
 
 Production champion: `2026-07-15-orb-v3`
 
@@ -62,9 +62,15 @@ rewritten or deleted.
    and six were conflict rejects. All 325 clean-trigger windows were joined to
    966 official Nasdaq halt rows with zero overlaps. Broker-specific historical
    tradability remains unreconstructable and is explicitly prospective.
-8. **Registered hypothesis and experiment lifecycle:** implemented.
-9. **Three-axis champion/challenger evidence:** implemented.
-10. **Operating cadence and monitoring:** implemented.
+8. **Unchanged-champion input readiness:** independently inspected `READY`.
+   Zero pairs survive the resolved hard-gate cascade without outcomes. Only one
+   pair has a verified positive primary catalyst, and it fails spread and chase.
+   Fifty-three pass non-catalyst execution geometry, but zero pass all measured
+   market, stop, and resistance proxies. This is readiness and falsification
+   evidence, not alpha.
+9. **Registered hypothesis and experiment lifecycle:** implemented.
+10. **Three-axis champion/challenger evidence:** implemented.
+11. **Operating cadence and monitoring:** implemented.
 
 ## Current Evidence Decisions
 
@@ -79,18 +85,18 @@ rewritten or deleted.
 
 ## Current Next Objective
 
-The scanner, selected-candidate join, point-in-time CIK, SEC primary-source
-classification, clean-condition mechanics, and official historical halt join
-are complete. The next objective is still not a strategy variant: assemble an
-outcome-blind unchanged-champion readiness join and close or explicitly reject
-resistance room, structural invalidation/noise, benchmark-relative strength,
-and conservative executable-liquidity inputs. Broker-specific tradability is a
-prospective execution-qualification requirement, not a historical alpha field.
-Then evaluate the unchanged champion. The existing 20 dates prove pipeline
-fidelity and gate attrition only. A subsequent preregistered sample of at least
-100 previously uninspected scanner dates is required for meaningful alpha
-inference. See `SCANNER_REPLAY.md`, `SELECTED_CANDIDATE_JOIN.md`,
-`SELECTED_CANDIDATE_FIDELITY.md`, `CHAMPION_INPUT_FIDELITY.md`, and
+The first outcome-blind unchanged-champion readiness join is complete and
+independently inspected. It proves that no pair can currently enter a faithful
+v3 outcome evaluation and that the frozen stop/resistance geometry deserves
+focused definition work, not retrospective relaxation. The next objective is
+to freeze reproducible real-time structural invalidation/noise and technical
+resistance contracts, then acquire at least 100 previously uninspected scanner
+dates with direct catalyst sources. Broker-specific tradability remains a
+prospective execution-qualification requirement. Evaluate unchanged v3 first on
+that new sample; earn at most one preregistered revision only if its deployment
+capacity or net expectancy fails. See `SCANNER_REPLAY.md`,
+`SELECTED_CANDIDATE_JOIN.md`, `SELECTED_CANDIDATE_FIDELITY.md`,
+`CHAMPION_INPUT_FIDELITY.md`, `CHAMPION_INPUT_READINESS.md`, and
 `STRATEGY_LEARNING_EXECUTION_PLAN.md`.
 
 ## Bounded Iteration

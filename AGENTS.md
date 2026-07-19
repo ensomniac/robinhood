@@ -810,6 +810,16 @@ When Ryan selects historical mode:
    catalyst, quote, resistance, structural invalidation/noise, market alignment,
    or liquidity evidence defaults to reject, never eligible. The inspected 20
    dates cannot support an alpha or confirmation claim.
+   `CHAMPION_INPUT_READINESS.md` now records the first outcome-blind unchanged-v3
+   readiness join. Only 101 pairs pass the engine's full chase interval, 53 pass
+   non-catalyst execution geometry, and zero pass every measured non-catalyst
+   stop/resistance/market proxy. The only verified positive-catalyst pair fails
+   spread and chase, so no target return from these 20 dates is eligible for a
+   production-policy claim. Do not loosen the 0.8% stop or 2.2% resistance-room
+   rule from this result: the tested levels are explicitly diagnostic proxies.
+   First freeze exact real-time invalidation/noise and resistance definitions,
+   then evaluate unchanged v3 on at least 100 previously uninspected scanner
+   dates with direct catalyst evidence.
    Before freezing any new bulk market-data contract, measure a representative
    pilot's canonical bytes and provider requests per symbol-session, project
    both over the exact target set, and verify free space for the projection plus

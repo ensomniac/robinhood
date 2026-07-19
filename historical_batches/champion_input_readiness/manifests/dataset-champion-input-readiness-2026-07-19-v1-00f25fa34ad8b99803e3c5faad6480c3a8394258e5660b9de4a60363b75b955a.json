@@ -1,0 +1,77 @@
+{
+  "calculation_contract": {
+    "benchmark_reject": "both SPY and QQQ are below falling completed-bar VWAP and their last completed bar makes a five-bar low",
+    "builder_sha256": "5a52ff1664e6d45b6f9d613bfe8827e6a7e10e4fcd69dee7b8190392d792107b",
+    "candidate_relative_strength": "candidate return from open to final ask exceeds both benchmark returns from open to last completed close",
+    "invalidation_proxy": "opening-range low with the frozen 0.10 ATR floor",
+    "missing_inputs_default_favorable": false,
+    "quote_size_in_shares_effective": "2025-11-03",
+    "quote_size_source_url": "https://docs.alpaca.markets/us/v1.1/changelog?page=3",
+    "quote_snapshot_offsets_seconds": [
+      0,
+      5,
+      10
+    ],
+    "recent_volume": "last fully completed real one-minute bar at final snapshot",
+    "resistance_proxy": "nearest split-adjusted prior-15-session daily high above final ask",
+    "strategy_variant_invented": false,
+    "target_outcomes_observed_or_derived": false,
+    "vwap": "fully completed provider one-minute bars at final snapshot only"
+  },
+  "dataset_id": "dataset-champion-input-readiness-2026-07-19-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "historical_batches/champion_input_fidelity/manifests/dataset-champion-input-fidelity-2026-07-19-v2-3098b32480cc59ce0a51624a84db2c0f194a518341f12824e0e615583809b3a5.json",
+      "historical_batches/selected_candidate_fidelity/manifests/dataset-selected-candidate-fidelity-2026-07-19-v1-38f74c64c6f3f86d3cefbe656efd075345c21e7fcc22329936e5c5e78c2a7dcd.json",
+      "CHAMPION_INPUT_FIDELITY.md",
+      "STRATEGY_LEARNING_EXECUTION_PLAN.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "manifest_sha256": "00f25fa34ad8b99803e3c5faad6480c3a8394258e5660b9de4a60363b75b955a",
+  "registered_at": "2026-07-19T08:21:40.888361+00:00",
+  "requested_dates": [
+    "2026-01-02",
+    "2026-01-05",
+    "2026-01-06",
+    "2026-01-07",
+    "2026-01-20",
+    "2026-02-26",
+    "2026-03-16",
+    "2026-03-27",
+    "2026-04-02",
+    "2026-04-10",
+    "2026-04-13",
+    "2026-04-14",
+    "2026-04-17",
+    "2026-04-20",
+    "2026-05-19",
+    "2026-05-27",
+    "2026-06-09",
+    "2026-06-16",
+    "2026-06-17",
+    "2026-06-23"
+  ],
+  "schema_version": 1,
+  "selection_contract": {
+    "calendar_sha256": "f6a1d38e9924f247c047e7bfbf2f4334a3a97c1dbe1c96098daad09fbd0aea8d",
+    "clean_trigger_manifest_sha256": "38f74c64c6f3f86d3cefbe656efd075345c21e7fcc22329936e5c5e78c2a7dcd",
+    "private_selection_content_sha256": "683626856ef27deadb1c9a5577b48e7ed974575719ad13d6683241eb1743f97a",
+    "selected_pair_count": 389,
+    "source_artifacts": {
+      "champion_evidence": "a878ad26126d468da5ba81774ce51cfc588bf46b5b9010f4db6b697fcce406dc",
+      "clean_triggers": "c6e137805a10e070038ba9cadc200f4b42bfce7002b3bcf72cc0c077d3e7595f",
+      "selection": "80d21fbbc209ef1a8f2e6016e785daea6a0afa02b84c1ad74eb0f4f25b06c50b"
+    },
+    "source_dataset_id": "dataset-champion-input-fidelity-2026-07-19-v2",
+    "source_manifest_sha256": "3098b32480cc59ce0a51624a84db2c0f194a518341f12824e0e615583809b3a5",
+    "split_actions_sha256": "0be5859007884dc8ec1cbf1e1245293443da7da0fafa03c6b3bb3ce84c30cd2b",
+    "strategy_config_sha256": "f4a2006f845475d9acc97716035ba88ca2188391f8699b4a4da446ff73ce2d17",
+    "strategy_rules_hash": "1947f9d25f63f59848ff28671050fa2af96d302167e5b6f4ce8b56e37a6742cc",
+    "strategy_version": "2026-07-15-orb-v3",
+    "symbols_and_rows_public": false
+  }
+}

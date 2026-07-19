@@ -348,10 +348,15 @@ six are conflict rejects. It also joined all 325 clean-trigger windows to 966
 official Nasdaq historical halt rows with no overlaps. This closes historical
 halt state, not broker-specific tradability or the remaining resistance,
 structural-stop, benchmark-strength, and conservative-liquidity inputs. V3
-remains unchanged. See
+remains unchanged. An outcome-blind readiness join subsequently found zero
+resolved hard-gate survivors: the only verified positive-catalyst pair failed
+spread and chase. It also corrected the engine-compatible chase count to 101
+and found zero pairs passing every measured non-catalyst proxy. Returns remain
+unread and v3 remains frozen. See
 [SELECTED_CANDIDATE_JOIN.md](SELECTED_CANDIDATE_JOIN.md) and
 [SELECTED_CANDIDATE_FIDELITY.md](SELECTED_CANDIDATE_FIDELITY.md), then
-[CHAMPION_INPUT_FIDELITY.md](CHAMPION_INPUT_FIDELITY.md).
+[CHAMPION_INPUT_FIDELITY.md](CHAMPION_INPUT_FIDELITY.md) and
+[CHAMPION_INPUT_READINESS.md](CHAMPION_INPUT_READINESS.md).
 
 ```sh
 python3 historical_research.py run \
@@ -574,6 +579,7 @@ Commit messages should describe what changed, for example:
 ├── scanner_replay_inspection.py # Independent scanner/canonical-data verifier
 ├── SCANNER_REPLAY.md # Dynamic 09:35 selection contract and runbook
 ├── CHAMPION_INPUT_FIDELITY.md # SEC catalyst and official halt contract
+├── CHAMPION_INPUT_READINESS.md # Outcome-blind unchanged-v3 readiness
 ├── selected_candidate_join.py # Frozen selected-pair bar/news/tape join
 ├── SELECTED_CANDIDATE_JOIN.md # Join contract, findings, blockers, and runbook
 ├── SIGNAL_LEDGER.md  # Structured public signal-record schema and workflow
