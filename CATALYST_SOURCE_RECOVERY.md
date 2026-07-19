@@ -56,6 +56,10 @@ opening an EDGAR search, or reading outcomes. Its collector must likewise be
 committed before its manifest is frozen and its manifest committed before
 requests.
 
+The exact metadata manifest is frozen under hash
+`46864d4285439be3e61d44dc98779b288a8bdd2b6f6f436be22ba812fe385bd2`
+and must be committed before its 24 accession-detail requests.
+
 ## Claim Boundary
 
 Successful response recovery proves only that the exact SEC-operated filing
