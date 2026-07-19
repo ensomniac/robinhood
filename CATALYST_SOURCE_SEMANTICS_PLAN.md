@@ -1,7 +1,7 @@
 # Catalyst Source Semantics Plan
 
-Status: required next bounded learning slice; no evaluation or return access is
-authorized by this plan
+Status: implementation validated; formal manifest freeze is the next action and
+no evaluation or return access is authorized by this plan
 
 ## Decision
 

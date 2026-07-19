@@ -10,8 +10,10 @@ The production strategy remains `UNVALIDATED`. The completion contract,
 resumable phases, waiting states, evidence sequence, and final integrity gate are
 now machine-coordinated by `strategy_validation.py` under
 `PRODUCTION_STRATEGY_VALIDATION.md`. The current bounded handoff remains the
-exact outcome-blind 33-pair catalyst source-semantics gate. A wait, pause, or
-insufficient sample is progress state, not completion.
+exact outcome-blind 33-pair catalyst source-semantics gate. Its implementation
+and 17 focused tests are complete; freeze and commit its formal manifest before
+running extraction or private review. A wait, pause, or insufficient sample is
+progress state, not completion.
 
 ## Completed 2026-07-19
 

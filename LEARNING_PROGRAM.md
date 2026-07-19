@@ -125,6 +125,10 @@ prospective execution-qualification requirement. See
 `SIP_BAR_AGGREGATION.md`, `PREENTRY_STRUCTURE.md`, and
 `STRATEGY_LEARNING_EXECUTION_PLAN.md`.
 
+The source-semantics implementation and private review contract are documented
+in `CATALYST_SOURCE_SEMANTICS.md`. Its formal hash-addressed manifest must be
+committed before extraction; return access remains locked throughout this stage.
+
 ## Bounded Iteration
 
 Each run inventories evidence, registers or resumes one objective, freezes its
