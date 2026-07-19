@@ -111,13 +111,13 @@ rewritten or deleted.
 ## Current Next Objective
 
 The 100-date scanner expansion and its non-return execution joins are now
-independently inspected. Zero rows pass every known unchanged-v3 hard gate, and
-the direct-source pipeline accepts zero catalysts so far. The next objective is
-the exact 33-pair, 33-document, 38-join source ownership, issuer-binding,
-causal-time, and semantics gate in `CATALYST_SOURCE_SEMANTICS_PLAN.md`. If fewer
-than 20 verified positive rows survive that stage or the already frozen v3
-non-return gates, close without outcomes and acquire a disjoint sample or
-same-source recovery; do not loosen v3. Broker-specific tradability remains a
+independently inspected. Zero rows pass every known unchanged-v3 hard gate. The
+exact 33-pair, 33-document, 38-join source-semantics gate is also independently
+inspected: only 3 pairs are verified positive, so its 20-pair capacity gate
+closed without outcomes. The current objective is same-source recovery in the
+frozen order—SEC 403 accession endpoints, captured transport failures, then
+issuer canonical chains—followed by disjoint acquisition if capacity remains
+insufficient. Do not loosen v3. Broker-specific tradability remains a
 prospective execution-qualification requirement. See
 `CATALYST_EVIDENCE_ACQUISITION.md`, `SCANNER_EXPANSION.md`, `SCANNER_REPLAY.md`,
 `SELECTED_CANDIDATE_JOIN.md`, `SELECTED_CANDIDATE_FIDELITY.md`,
@@ -125,9 +125,10 @@ prospective execution-qualification requirement. See
 `SIP_BAR_AGGREGATION.md`, `PREENTRY_STRUCTURE.md`, and
 `STRATEGY_LEARNING_EXECUTION_PLAN.md`.
 
-The source-semantics implementation and private review contract are documented
-in `CATALYST_SOURCE_SEMANTICS.md`. Its formal hash-addressed manifest must be
-committed before extraction; return access remains locked throughout this stage.
+The source-semantics implementation, private review contract, and inspected
+aggregate are documented in `CATALYST_SOURCE_SEMANTICS.md`. Its formal
+hash-addressed manifest was committed before extraction, all 38 joins reconcile,
+and return access remains locked throughout recovery.
 
 ## Bounded Iteration
 

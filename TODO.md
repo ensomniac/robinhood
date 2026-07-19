@@ -9,11 +9,13 @@ item never grants live-trading authority or permission to weaken safety gates.
 The production strategy remains `UNVALIDATED`. The completion contract,
 resumable phases, waiting states, evidence sequence, and final integrity gate are
 now machine-coordinated by `strategy_validation.py` under
-`PRODUCTION_STRATEGY_VALIDATION.md`. The current bounded handoff remains the
-exact outcome-blind 33-pair catalyst source-semantics gate. Its implementation
-and focused tests are complete; manifest `dc0a36c...04bbbd` is frozen and must
-be committed before running extraction or private review. A wait, pause, or
-insufficient sample is progress state, not completion.
+`PRODUCTION_STRATEGY_VALIDATION.md`. The exact outcome-blind 33-pair catalyst
+source-semantics gate is independently inspected `READY`: only 3 pairs were
+verified positive, so the 20-pair capacity gate failed and returns remain
+locked. The current bounded handoff is `SOURCE_RECOVERY`, beginning with the
+frozen SEC 403 accession rows and then captured transport and issuer-chain
+recovery. A wait, pause, or insufficient sample is progress state, not
+completion.
 
 ## Completed 2026-07-19
 
@@ -176,9 +178,9 @@ frozen and no target outcomes were read.
 - Independently rebuilt all 325 terminal records, split factors, minute prefixes,
   aggregate counts, private hashes, and public privacy checks.
 - Completed by sections 23 and 25: the 100-date scanner expansion is `READY`
-  and direct-source acquisition reached a 33-pair structural ceiling. Current
-  next work is the frozen source-semantics gate; returns and variants stay
-  locked.
+  and direct-source acquisition reached a 33-pair structural ceiling. The
+  frozen semantics gate retained only 3 verified-positive pairs, so returns and
+  variants stay locked while source recovery proceeds.
 
 ### 23. One-Hundred-Date Dynamic Scanner Expansion
 
@@ -357,10 +359,11 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   and a month-name date candidate in every file. The PDFs touch 15 pairs with no
   overlap against the 18 HTML timestamp candidates, raising the structural
   ceiling to 33 pairs while accepting zero dates or catalysts.
-- Next: freeze source ownership, issuer binding, and source-type-specific date
-  semantics for those 33 structural candidates. Distinguish release dates from
-  fiscal periods, filing periods, event dates, signatures, and update dates.
-  Keep returns locked until at least 20 rows survive all unchanged-v3 inputs.
+- Independently inspected the exact source ownership, issuer binding, and
+  source-type-specific date semantics for those 33 structural candidates. Only
+  3 pairs are verified positive; one is verified negative, and the remainder
+  fail ownership, binding, relevance, or timestamp proof. Keep returns locked
+  while same-source recovery and disjoint acquisition seek sufficient capacity.
 - Wrote the executable semantics contract in
   `CATALYST_SOURCE_SEMANTICS_PLAN.md`: exact 33-pair, 33-document, 38-join
   selection; source-specific ownership and issuer binding; timestamp precedence;

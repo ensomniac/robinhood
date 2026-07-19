@@ -443,11 +443,13 @@ hard gate, so returns remain unread. See
 Direct-source recovery then enriched 4,205 secondary article bodies, routed 134
 potential primary URLs, captured 121 hashed responses, and measured a current
 structural ceiling of 33 selected pairs across HTML and PDF timestamp-shaped
-sources. Zero timestamps or catalysts are accepted. The next bounded step is
-the source ownership, point-in-time issuer binding, causal pre-09:35 timestamp,
-and 20-row capacity gate in
+sources. The frozen source-semantics pass independently reconciled all 38 joins
+but verified only 3 positive pairs, below its 20-pair capacity gate. Outcomes
+remain locked while the campaign follows same-source recovery and, if still
+needed, disjoint acquisition under
 [CATALYST_SOURCE_SEMANTICS_PLAN.md](CATALYST_SOURCE_SEMANTICS_PLAN.md); no new
-strategy variant or outcome access is permitted before it passes.
+strategy variant or outcome access is permitted before sufficient unchanged-v3
+capacity is proven.
 
 ```sh
 python3 historical_research.py run \

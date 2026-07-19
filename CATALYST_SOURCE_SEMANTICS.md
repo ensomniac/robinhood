@@ -1,7 +1,8 @@
 # Catalyst Source Semantics
 
-Status: formal 33-pair manifest frozen; commit it before private extraction or
-review
+Status: independently inspected `READY`; 3 of 33 pairs are verified positive,
+the 20-pair capacity gate failed, outcomes remain locked, and the campaign has
+entered `SOURCE_RECOVERY`
 
 ## Purpose
 
@@ -104,3 +105,12 @@ routes the persistent campaign to `SOURCE_RECOVERY`. At least 20 positives only
 permits the unchanged-v3 non-return survivor gate; it does not unlock outcomes
 or production changes by itself. Outcomes require a later separately frozen
 contract and at least 20 complete non-return survivors.
+
+The frozen run closed with 38 reconciled join dispositions and 33 pair
+dispositions. Only three pairs reached `VERIFIED_POSITIVE_PRIMARY`; one reached
+`VERIFIED_NEGATIVE_PRIMARY`, while the remainder failed ownership, issuer
+binding, relevance, or causal timestamp proof. Independent inspection rebuilt
+the selection, extraction, accepted timestamps, terminal counts, and private
+hash. The aggregate result is
+`research_results/2026-07-19-catalyst-source-semantics.json`; exact rows and
+review evidence remain outside Git. No target outcome was observed or derived.

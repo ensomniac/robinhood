@@ -1,7 +1,9 @@
 # Catalyst Source Semantics Plan
 
-Status: formal manifest frozen under hash `dc0a36c196ec32be34a27d902144f0b56d9212d188f0cfb4b29c9b315c04bbbd`;
-commit it before extraction, and no return access is authorized by this plan
+Status: completed and independently inspected under manifest hash
+`dc0a36c196ec32be34a27d902144f0b56d9212d188f0cfb4b29c9b315c04bbbd`;
+3 verified-positive pairs failed the 20-pair capacity gate, so outcomes remain
+locked and the next phase is `SOURCE_RECOVERY`
 
 ## Decision
 
