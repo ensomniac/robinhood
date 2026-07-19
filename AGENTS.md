@@ -593,6 +593,11 @@ After a reviewed and filled entry:
   timeout, or unknown outcome. `PROTECT_NOW` permits only the configured short
   transition window; `KILL_SWITCH_FLATTEN` requires immediate flattening and
   reconciliation.
+- When one stop covers less than the actual position, replace and confirm that
+  undersized stop so exactly one stop covers the filled shares; never add a new
+  full-size stop beside it. If the reported stop count and covered quantity are
+  internally inconsistent, treat the order state as unsafe and follow the
+  guard's flatten/reconcile instruction.
 - Robinhood does not currently provide equity bracket orders, and the MCP exposes
   no OCO operation. Do not place an independent target sell while the full-size
   protective stop remains live.

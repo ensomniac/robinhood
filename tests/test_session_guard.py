@@ -156,6 +156,39 @@ class ExposureGuardTests(unittest.TestCase):
             "cancel and confirm the unfilled entry remainder", result.required_actions
         )
 
+    def test_undersized_stop_is_replaced_not_duplicated(self):
+        snapshot = safe_snapshot()
+        snapshot["position_quantity"] = 100
+        snapshot["active_stop_orders"] = 1
+        snapshot["active_stop_quantity"] = 50
+        snapshot["protection_transition_age_seconds"] = 4
+
+        result = evaluate_guard(snapshot, "UNVALIDATED")
+
+        self.assertEqual(result.status, "PROTECT_NOW")
+        self.assertIn(
+            "replace and confirm the undersized stop so exactly one stop covers the actual filled quantity",
+            result.required_actions,
+        )
+        self.assertFalse(
+            any(action.startswith("place and confirm") for action in result.required_actions)
+        )
+
+    def test_inconsistent_stop_count_and_quantity_must_flatten(self):
+        snapshot = safe_snapshot()
+        snapshot["position_quantity"] = 100
+        snapshot["active_stop_orders"] = 1
+        snapshot["active_stop_quantity"] = 0
+
+        result = evaluate_guard(snapshot, "UNVALIDATED")
+
+        self.assertEqual(result.status, "KILL_SWITCH_FLATTEN")
+        self.assertTrue(result.must_flatten)
+        self.assertIn(
+            "protective stop count and covered quantity are inconsistent",
+            result.reasons,
+        )
+
     def test_expired_unprotected_fill_must_flatten(self):
         snapshot = safe_snapshot()
         snapshot["position_quantity"] = 100

@@ -240,6 +240,10 @@ version.
   group, exact candidate and trigger counts, at most one executed decision,
   consistent `trade_taken`, and matching dates, modes, phases, hashes, and
   complete-capture claims. The existing 1,166-record ledger passes unchanged.
+- Hardened partial protection handling: `PROTECT_NOW` replaces an existing
+  undersized stop rather than instructing a second full-size stop, and an
+  inconsistent stop-count/covered-quantity snapshot activates flatten and
+  reconciliation.
 
 ## Completed 2026-07-18
 

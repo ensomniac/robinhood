@@ -172,6 +172,11 @@ def evaluate_guard(
             fatal_reasons.append("broker connection is unavailable during exposure")
         if unknown_orders:
             fatal_reasons.append("unknown order state exists during exposure")
+        if bool(active_stop_orders) != bool(active_stop_quantity):
+            fatal_reasons.append(
+                "protective stop count and covered quantity are inconsistent"
+            )
+            fatal_actions.append("reconcile the inconsistent protective stop state")
         if (
             active_stop_orders > 1
             or active_stop_quantity > position_quantity
@@ -215,6 +220,11 @@ def evaluate_guard(
                     actions.append("cancel and confirm the unfilled entry remainder")
                 if active_exit_orders:
                     actions.append("submit or confirm the prepared exit immediately")
+                elif active_stop_orders:
+                    actions.append(
+                        "replace and confirm the undersized stop so exactly one stop "
+                        "covers the actual filled quantity"
+                    )
                 else:
                     actions.append(
                         "place and confirm a stop for the actual filled quantity immediately"

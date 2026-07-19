@@ -483,6 +483,9 @@ must follow stop risk rather than precede it.
 - Recompute milestone, stop, risk, and allocation from the actual average fill.
 - Use a broker-held, regular-hours, GFD stop-market for the filled whole shares
   after review/confirmation requirements are satisfied.
+- If one stop is undersized, replace it with one correctly sized stop instead of
+  adding another sell order. An inconsistent stop count/covered-quantity
+  snapshot is an ambiguous exposure state and activates flatten/reconcile.
 - Robinhood has no bracket/OCO order. Do not place an independent target sell
   while the full-size stop remains live.
 - Tool instructions override repository authorization. If review requires user
