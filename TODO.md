@@ -64,6 +64,10 @@ independently inspected `FROZEN_READY`: 100 dates, 227 exclusions, 185 eligible
 pool dates, 243 required target/lookback sessions, zero overlap, and no provider
 or outcome access. The current handoff is to commit and push this manifest and
 selection before collecting dated Massive reference snapshots.
+All 100 reference snapshots completed without retry or substitution. The first
+master build failed closed on 31 composite-FIGI simultaneous-alias groups; the
+listing-scoped composite repair and regression test are ready for commit before
+the master is rebuilt. Share-class and fallback ambiguity remain fatal.
 
 ## Completed 2026-07-19
 

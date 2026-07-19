@@ -96,3 +96,18 @@ Any overlap, source drift, implementation drift, date substitution, mixed
 provider row, missing provenance, reserve breach, or target-outcome access before
 the separately frozen outcome contract stops the tranche. A partial collection
 is resumable and cannot become `READY` until independent inspection passes.
+
+## Reference Identity Finding
+
+All 100 dated Massive identity snapshots completed without retry, failure,
+substitution, target-price access, or target-outcome access. The first master
+build then failed closed because 31 composite FIGIs appeared under two
+simultaneous ticker listings across 129 date groups. There were zero
+ticker/exchange listing collisions.
+
+The master builder now scopes only a composite FIGI proven to have simultaneous
+aliases by the observed ticker and exchange. Ordinary composite identities keep
+their stable ID, including non-overlapping ticker changes. Share-class and
+fallback collisions remain fatal because those identifiers cannot prove a
+listing. The derived private master records the provider FIGIs and the public
+attestation reports only collision and listing-scoped record counts.

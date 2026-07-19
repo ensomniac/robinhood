@@ -258,6 +258,58 @@ class SecurityMasterBuildTests(unittest.TestCase):
                 },
             )
 
+    def test_simultaneous_ticker_aliases_scope_the_same_composite_figi(self):
+        with tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory:
+            root = Path(directory)
+            snapshots = root / "reference"
+            snapshots.mkdir()
+            common = {
+                "active": True,
+                "market": "stocks",
+                "locale": "us",
+                "type": "CS",
+                "primary_exchange": "XNAS",
+                "share_class_figi": "BBGTESTSHARE",
+                "composite_figi": "BBGTESTCOMP",
+                "cik": "1",
+                "name": "Test Corp",
+            }
+            with gzip.open(
+                snapshots / "2025-01-02.json.gz", "wt", encoding="utf-8"
+            ) as target:
+                json.dump(
+                    [
+                        {**common, "ticker": "OLD"},
+                        {**common, "ticker": "NEW"},
+                    ],
+                    target,
+                )
+            output = root / "SECURITY_MASTER.jsonl"
+            source = root / "source.json"
+
+            result = build_security_master(
+                ["2025-01-02"],
+                snapshots_root=snapshots,
+                output=output,
+                source_manifest=source,
+                recorded_at="2026-07-19T16:30:00-04:00",
+            )
+
+            records = load_security_master(output)
+            self.assertEqual(len(records), 2)
+            self.assertEqual(len({item["instrument_id"] for item in records}), 2)
+            self.assertTrue(
+                all(":LISTING:" in item["instrument_id"] for item in records)
+            )
+            self.assertEqual(
+                {item["source"]["identity_source"] for item in records},
+                {"composite_figi_listing_scoped"},
+            )
+            self.assertEqual(
+                result["security_master"]["simultaneous_composite_aliases"], 1
+            )
+            self.assertEqual(result["security_master"]["listing_scoped_records"], 2)
+
     def test_sourced_observation_dates_preserve_a_symbol_change_gap(self):
         with tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory:
             root = Path(directory)

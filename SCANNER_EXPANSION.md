@@ -37,6 +37,14 @@ a fallback, preserving separately tradable listings without weakening the
 master's overlap rejection. See
 <https://www.openfigi.com/assets/local/figi-allocation-rules.pdf>.
 
+The later disjoint 2025 tranche exposed a second, distinct source condition:
+31 composite FIGIs were each assigned to two simultaneous ticker listings over
+129 date groups, while no ticker/exchange listing collided. The builder now
+listing-scopes only a composite FIGI that is observed with concurrent aliases.
+Ordinary composite identities retain rename continuity, and share-class or
+fallback collisions still fail closed. This is point-in-time source repair, not
+permission to merge symbols or infer trade eligibility.
+
 The builder also validates a temporary master before atomically publishing it.
 An identity collision can no longer leave an invalid output that appears ready.
 

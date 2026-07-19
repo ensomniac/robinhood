@@ -549,6 +549,32 @@ def _snapshot_key(row: Mapping[str, Any]) -> tuple[str, str, str, str]:
     )
 
 
+def _simultaneous_composite_aliases(
+    snapshots: Mapping[str, Mapping[tuple[str, str, str, str], Mapping[str, Any]]],
+) -> set[str]:
+    """Return composite FIGIs exposed as multiple listings on the same date."""
+
+    collisions: set[str] = set()
+    for snapshot in snapshots.values():
+        listings: dict[str, set[tuple[str, str]]] = defaultdict(set)
+        for instrument_id, symbol, exchange, _security_type_name in snapshot:
+            if instrument_id.startswith("FIGI-COMPOSITE:"):
+                listings[instrument_id].add((symbol, exchange))
+        collisions.update(
+            instrument_id
+            for instrument_id, aliases in listings.items()
+            if len(aliases) > 1
+        )
+    return collisions
+
+
+def _listing_scoped_instrument_id(
+    instrument_id: str, symbol: str, exchange: str
+) -> str:
+    suffix = _sha256_json({"symbol": symbol, "exchange": exchange})[:16]
+    return f"{instrument_id}:LISTING:{suffix}"
+
+
 def build_security_master(
     selected_dates: Sequence[str],
     *,
@@ -589,14 +615,21 @@ def build_security_master(
         )
 
     all_keys = sorted({key for snapshot in by_date.values() for key in snapshot})
+    simultaneous_composite_aliases = _simultaneous_composite_aliases(by_date)
     records: list[dict[str, Any]] = []
     provenance = _repo_path(source_manifest)
     stamp = recorded_at or _timestamp_now()
     for key in all_keys:
         present = [day for day in dates if key in by_date[day]]
-        instrument_id, symbol, exchange, security_type = key
+        base_instrument_id, symbol, exchange, security_type = key
         first_row = by_date[present[0]][key]
         _, identity_source = _instrument_id(first_row)
+        instrument_id = base_instrument_id
+        if base_instrument_id in simultaneous_composite_aliases:
+            instrument_id = _listing_scoped_instrument_id(
+                base_instrument_id, symbol, exchange
+            )
+            identity_source = "composite_figi_listing_scoped"
         valid_from = present[0]
         valid_to = present[-1]
         status = "ACTIVE" if valid_to == dates[-1] else "RETIRED"
@@ -674,6 +707,12 @@ def build_security_master(
             "instruments": len({item["instrument_id"] for item in loaded}),
             "fallback_identity_records": sum(
                 item.get("source", {}).get("identity_source") == "fallback"
+                for item in loaded
+            ),
+            "simultaneous_composite_aliases": len(simultaneous_composite_aliases),
+            "listing_scoped_records": sum(
+                item.get("source", {}).get("identity_source")
+                == "composite_figi_listing_scoped"
                 for item in loaded
             ),
             "sha256": security_master_sha256(output),
