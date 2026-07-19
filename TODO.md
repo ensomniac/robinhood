@@ -170,9 +170,8 @@ frozen and no target outcomes were read.
 
 ### 23. One-Hundred-Date Dynamic Scanner Expansion
 
-Status: in progress; the 100-date selection and complete outcome-blind input
-contract are frozen. No target market collection, scanner result, or strategy
-outcome exists yet.
+Status: completed on 2026-07-19 as independently inspected scanner-fidelity
+evidence; no catalyst, trigger, execution, or outcome claim was made.
 
 - Selected 100 H1-2026 dates with seed `20260719` after excluding all 20
   scanner-v4 targets; substitutions remain forbidden.
@@ -208,8 +207,18 @@ outcome exists yet.
 - Froze manifest `03a6eff...9e22b` before any new target market row. It binds a
   5,596-symbol union, 133 sessions, 113 hash-attested reuse inputs, exact symbol
   deltas, 20 new full-universe sessions, unchanged v3, and zero substitutions.
-- Next: commit the frozen contract, collect/resume market inputs, and
-  independently inspect all 100 rankings.
+- Completed 133/133 source sessions with 2,808 Alpaca requests, zero retries,
+  113 hash-attested reuse sessions, 2,147 exact delta symbols, and 20 new
+  full-universe sessions.
+- Independently recomputed all 100 dynamic rankings: 526,587 point-in-time
+  evaluations, 6,024 eligible rows, and 1,987 selected ranks. Verified 686,079
+  canonical regular/daily datasets and 628,899 exact opening datasets.
+- Tightened canonical verification to require exact scanner-collection
+  provenance when the persistent store also contains a legitimate overlapping
+  general-purpose Alpaca dataset; no data was deleted or selected by recency.
+- Next: freeze the exact 1,987 selected pairs into a separate point-in-time
+  catalyst, trigger, and outcome contract. Evaluate unchanged v3 before
+  proposing any new strategy rule.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

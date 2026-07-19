@@ -16,6 +16,7 @@ from scanner_replay_inspection import (
     _compare_independent_detail,
     _independently_recompute_detail,
     _load_independent_source_day,
+    _one_canonical_dataset,
     _verify_manifest_bound_split_actions,
     _verify_source_attestations,
     inspect_payloads,
@@ -117,6 +118,47 @@ def fixtures():
 
 
 class ScannerInspectionTests(unittest.TestCase):
+    def test_canonical_selection_is_bound_to_scanner_provenance(self):
+        fields = {
+            "kind": "bars",
+            "provider": "alpaca",
+            "timeframe": "15m",
+        }
+        generic = {
+            **fields,
+            "id": "generic",
+            "provenance": {"samples": [{"source_type": "live_provider_collection"}]},
+        }
+        scanner = {
+            **fields,
+            "id": "scanner",
+            "provenance": {
+                "samples": [
+                    {
+                        "source_type": "alpaca_multi_symbol_scanner_collection",
+                        "session_date": "2026-03-03",
+                    }
+                ]
+            },
+        }
+        document = {"datasets": [generic, scanner]}
+
+        with self.assertRaisesRegex(ScannerInspectionError, "exactly one"):
+            _one_canonical_dataset(
+                document, day="2026-03-03", symbol="AAA", fields=fields
+            )
+        selected = _one_canonical_dataset(
+            document,
+            day="2026-03-03",
+            symbol="AAA",
+            fields=fields,
+            provenance_fields={
+                "source_type": "alpaca_multi_symbol_scanner_collection",
+                "session_date": "2026-03-03",
+            },
+        )
+        self.assertEqual(selected["id"], "scanner")
+
     def test_independent_recompute_boundary_contains_only_consumed_inputs(self):
         self.assertEqual(
             set(inspect.signature(_independently_recompute_detail).parameters),

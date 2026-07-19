@@ -1,0 +1,34 @@
+{
+  "canonical_store": {
+    "outside_repository": true
+  },
+  "collection": {
+    "canonical_day_merges": 103453,
+    "delta_symbols_requested": 2147,
+    "derived_rows": 2802122,
+    "inherited_derived_rows": 2378150,
+    "provider": "Alpaca historical SIP",
+    "provider_requests": 2808,
+    "provider_retries": 0,
+    "reused_sessions": 113,
+    "sessions_ready": 133,
+    "sessions_required": 133
+  },
+  "dataset_id": "dataset-production-scanner-replay-2026-07-19-expansion-v1",
+  "inspection": {
+    "canonical_documents_verified": 686079,
+    "canonical_opening_1m_datasets_verified": 628899,
+    "canonical_regular_15m_datasets_verified": 686079,
+    "completed_dates": 100,
+    "inspection_sha256": "a061b907b2063d056dc6514fe9f6c4f9e190b7eb46470fb68d6f983a376f8214",
+    "status": "INSPECTED",
+    "summary_sha256": "505f83eaf81ab7e17eaaf480d5253d0e2ae8ba7006aba5dcaa8e4e23c79ded80",
+    "total_eligible": 6024,
+    "total_evaluated": 526587,
+    "total_selected": 1987,
+    "valid": true
+  },
+  "manifest_sha256": "03a6eff46748cb396b0a5f532d884a9532766c6e546c92afda6c2947a9a9e22b",
+  "schema_version": 1,
+  "status": "READY"
+}

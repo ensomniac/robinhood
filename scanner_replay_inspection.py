@@ -787,18 +787,46 @@ def _load_independent_source_day(path: Path, day: str) -> dict[str, dict[str, An
 
 
 def _one_canonical_dataset(
-    document: Mapping[str, Any], *, day: str, symbol: str, fields: Mapping[str, Any]
+    document: Mapping[str, Any],
+    *,
+    day: str,
+    symbol: str,
+    fields: Mapping[str, Any],
+    provenance_fields: Mapping[str, Any] | None = None,
 ) -> Mapping[str, Any]:
     matches = [
         dataset
         for dataset in document.get("datasets", [])
         if all(dataset.get(key) == value for key, value in fields.items())
+        and (
+            provenance_fields is None
+            or any(
+                isinstance(sample, Mapping)
+                and all(
+                    sample.get(key) == value
+                    for key, value in provenance_fields.items()
+                )
+                for sample in dataset.get("provenance", {}).get("samples", [])
+            )
+        )
     ]
     if len(matches) != 1:
         raise ScannerInspectionError(
             f"{day}: canonical {symbol} needs exactly one {dict(fields)} dataset"
         )
     return matches[0]
+
+
+def _scanner_collection_provenance(day: str, timeframe: str) -> dict[str, Any]:
+    return {
+        "source_type": "alpaca_multi_symbol_scanner_collection",
+        "endpoint": "https://data.alpaca.markets/v2/stocks/bars",
+        "session_date": day,
+        "feed": "sip",
+        "adjustment": "raw",
+        "asof": "-",
+        "timeframe": timeframe,
+    }
 
 
 def _canonical_bar_aggregate(
@@ -860,6 +888,7 @@ def _verify_canonical_persistence(
                     "session": "regular",
                     "scope": "full_session",
                 },
+                provenance_fields=_scanner_collection_provenance(day, "15Min"),
             )
             if (
                 regular.get("quality", {}).get("complete") is not True
@@ -897,6 +926,7 @@ def _verify_canonical_persistence(
                     "session": "regular",
                     "scope": "full_session",
                 },
+                provenance_fields=_scanner_collection_provenance(day, "15Min"),
             )
             if derived.get("quality", {}).get("complete") is not True:
                 raise ScannerInspectionError(
@@ -931,6 +961,7 @@ def _verify_canonical_persistence(
                         "session": "regular",
                         "scope": "opening_window_09_30_09_35",
                     },
+                    provenance_fields=_scanner_collection_provenance(day, "1Min"),
                 )
                 quality = opening.get("quality", {})
                 if (

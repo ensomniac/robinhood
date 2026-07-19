@@ -2,8 +2,8 @@
 
 Planned dataset: `dataset-production-scanner-replay-2026-07-19-expansion-v1`
 
-Status: outcome-blind input collection complete and market-data contract frozen;
-no target market collection or scanner result exists
+Status: independently inspected `READY`; the dynamic 09:35 scanner-fidelity gap
+is closed, while catalyst, trigger, execution, and outcome evidence remain absent
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -69,6 +69,34 @@ preexisting input rows do not by themselves make it clean independent alpha
 confirmation. Any later outcome contract must be frozen separately before its
 selected-candidate targets are read.
 
+## Inspected Result
+
+The frozen collector completed all 133/133 sessions with 2,808 Alpaca SIP
+requests and zero retries. It reused 113 hash-attested v4 sessions, requested
+2,147 exact new-union symbol deltas, and collected 20 new full-universe
+sessions. The external canonical store received 103,453 day-document merges;
+the derived replay index contains 2,802,122 rows.
+
+The independent inspector recomputed all 100 dates and verified 526,587
+point-in-time common-stock evaluations, 6,024 scanner-eligible rows, and 1,987
+selected ranks. Three dates legitimately supplied fewer than 20 eligible names;
+the pipeline retained the available qualified set rather than weakening a
+threshold or adding an ineligible substitute. It also re-read and matched
+686,079 canonical regular 15-minute datasets, 628,899 canonical five-minute
+opening datasets, and 686,079 derived daily datasets.
+
+The first independent persistence pass correctly stopped because the canonical
+store contained both scanner-specific and general-purpose Alpaca 15-minute
+datasets under the same coarse dimensions. The inspector now requires the exact
+scanner-collection provenance as well as those dimensions, then compares its
+rows independently to the frozen session index. No canonical data was deleted,
+merged by guess, or preferred by recency.
+
+This result closes only the selection-fidelity prerequisite. It contains no
+verified catalyst direction, point-in-time NBBO/depth/tradability, clean breakout
+decision, post-trigger path, return, alpha estimate, confirmation sample, or
+maturity evidence. Production remains unchanged and `UNVALIDATED`.
+
 ## Ordered Acquisition
 
 1. Collect Massive dated common-stock reference snapshots for all 100 selected
@@ -84,13 +112,13 @@ selected-candidate targets are read.
    scanner rules, immutable security-master and split snapshots, current
    collector bytes, v4 reuse manifest, 113 reusable dates, 20 new
    dates, and zero substitutions. Commit that manifest before market collection.
-   **Frozen; commit is the next gate.**
+   **Complete and committed before collection.**
 5. For each required session, import only attested compatible source rows,
    collect the new-union delta, or collect the complete union when no source
    exists. Persist every provider observation under
-   `LOCAL_HISTORICAL_DATA_ROOT`.
+   `LOCAL_HISTORICAL_DATA_ROOT`. **Complete: 133/133.**
 6. Rebuild all 100 dynamic 09:35 rankings and run an independent inspection
-   before registering `READY`.
+   before registering `READY`. **Complete: independently inspected `READY`.**
 7. Freeze the exact selected pairs into a separate catalyst/trigger/outcome
    contract. Acquire direct primary catalyst sources and evaluate unchanged v3
    before inventing or revising any strategy rule.
@@ -141,6 +169,17 @@ python3 scanner_replay_alpaca.py freeze \
   --strategy-source historical_batches/scanner_expansion/production-strategy-source.json \
   --reuse-manifest historical_batches/scanner_replay/manifests/dataset-production-scanner-replay-2026-07-19-v4-645f727fe0b596ee591a6ff32515b50883634b0e3294e83333ff6b83949b04b4.json \
   --output-root historical_batches/scanner_expansion/manifests
+
+python3 scanner_replay_alpaca.py --run-root learning_runs/scanner_expansion \
+  collect historical_batches/scanner_expansion/manifests/\
+dataset-production-scanner-replay-2026-07-19-expansion-v1-\
+03a6eff46748cb396b0a5f532d884a9532766c6e546c92afda6c2947a9a9e22b.json
+
+python3 scanner_replay_alpaca.py --run-root learning_runs/scanner_expansion \
+  build historical_batches/scanner_expansion/manifests/\
+dataset-production-scanner-replay-2026-07-19-expansion-v1-\
+03a6eff46748cb396b0a5f532d884a9532766c6e546c92afda6c2947a9a9e22b.json \
+  --summary research_results/2026-07-19-scanner-expansion.json
 ```
 
 The pre-freeze status command reports reference, security-master, and split
