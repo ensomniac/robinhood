@@ -22,12 +22,14 @@ frozen, outcome-blind SEC acceptance-metadata stage followed by document-CIK,
 relevance, direction, and financing-conflict review. The 24-accession filing
 detail dataset is independently inspected `READY`: all 24 responses contain an
 acceptance-datetime candidate and CIK-shaped identity evidence. The current
-37-join semantic contract is frozen under `db9c81e3...64e5d758` before
-extraction. Twenty-five accession joins have a directory-CIK mismatch and three
-joins have no accession, leaving nine potential exact-CIK joins for timestamp
-and event adjudication. The current handoff is private extraction and review
-under that committed manifest. A wait, pause, or insufficient sample is
-progress state, not completion.
+37-join semantic contract is independently inspected `READY` under
+`db9c81e3...64e5d758`: five joins are verified positive, two are financing
+conflicts, one is nonmaterial, one is irrelevant, 25 fail exact document-CIK
+binding, and three have no accession. The conservative combined ceiling is only
+eight positive pairs, below the required 20, so outcomes remain locked. The
+current handoff is to freeze and commit the exact captured transport-failure
+retry set before network access, then inspect it before issuer-chain recovery.
+A wait, pause, or insufficient sample is progress state, not completion.
 
 ## Completed 2026-07-19
 

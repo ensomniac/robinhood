@@ -90,6 +90,15 @@ result contains only terminal counts, hashes, a conservative maximum combined
 positive count, and the next campaign phase. This gate never unlocks target
 outcomes by itself.
 
+Independent inspection is now `READY`. Five of the 37 joins reached verified
+positive primary semantics, two reached verified financing conflict, one was
+nonmaterial, one was irrelevant, 25 failed exact document-CIK binding, and
+three had no accession. The earlier source-semantic pass retained three
+positives, so even the deliberately conservative no-deduplication ceiling is
+only eight against the required 20. The capacity gate therefore remains closed,
+no outcome contract is permitted, and the next ordered recovery step is the
+exact frozen retry of captured transport failures.
+
 ## Claim Boundary
 
 Successful response recovery proves only that the exact SEC-operated filing
@@ -104,4 +113,5 @@ The inspected recovery captured 19,719,807 response bytes. Independent
 inspection rebuilt the frozen selection and terminal counts and verified every
 private response hash. The aggregate result is
 `research_results/2026-07-19-catalyst-source-recovery-sec.json`; exact filing and
-pair rows remain outside Git.
+pair rows remain outside Git. SEC semantic inspection is published separately
+at `research_results/2026-07-19-catalyst-sec-semantics.json`.
