@@ -240,6 +240,10 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   0.08% A+ and 0.10% operating gates. Keep those gates unchanged. Next: freeze
   and run primary-catalyst plus condition-aware trigger fidelity; still do not
   read returns.
+- Froze that fidelity stage as manifest `ee9ba6f3...c780ce`, binding all 1,987
+  exact pair-to-CIK mappings, 656 unique CIKs, 100 dated reference snapshots,
+  1,460 source trigger windows, SEC cutoff rules, and validated SIP-condition
+  semantics. Next: collect and inspect it; outcomes remain blocked.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

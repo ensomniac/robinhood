@@ -345,7 +345,10 @@ completed evidence code. Its independently inspected collection completed all
 1,331 trigger windows had all three causal quote snapshots, and the observed
 median snapshot spread was about 0.153%. Primary-catalyst verification,
 condition-aware trigger inspection, gate attrition, and every return field
-remain downstream and frozen off.
+remain downstream and frozen off. `SCANNER_EXPANSION_FIDELITY.md` now freezes
+the next stage as manifest `ee9ba6f3...c780ce`: exact dated listing-to-CIK
+mapping for 656 unique CIKs, bounded SEC primary documents, and the unchanged
+condition-aware clean-cross contract, still with no outcome access.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
