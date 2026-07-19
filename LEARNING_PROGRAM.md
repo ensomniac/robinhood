@@ -1,6 +1,6 @@
 # Persistent Strategy Learning Program
 
-Program version: `2026-07-19-v10`
+Program version: `2026-07-19-v11`
 
 Production champion: `2026-07-15-orb-v3`
 
@@ -141,3 +141,10 @@ alpha evidence, shadow or live-calibrated execution evidence, and operational
 readiness all pass their frozen contracts. Applying the proposal is a separate
 production-version workflow under `AGENTS.md`; it is never an action exposed by
 the learning controller.
+
+The distinct persistent campaign in `PRODUCTION_STRATEGY_VALIDATION.md` and
+`strategy_validation.py` resumes those evidence lanes until the current
+champion earns repository validation. It composes this finite learning program;
+it does not relax its one-slice boundaries, contact providers or the broker, or
+activate a strategy. Its waits and safety pauses are resumable, and only its
+authoritative terminal audit may record campaign phase `VALIDATED`.

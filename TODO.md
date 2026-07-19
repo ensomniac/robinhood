@@ -4,6 +4,15 @@ Sparse feature ideas are expanded here into explicit acceptance criteria before
 implementation. Risk-bearing behavior must remain inside `AGENTS.md`; a backlog
 item never grants live-trading authority or permission to weaken safety gates.
 
+## Active Persistent Campaign
+
+The production strategy remains `UNVALIDATED`. The completion contract,
+resumable phases, waiting states, evidence sequence, and final integrity gate are
+now machine-coordinated by `strategy_validation.py` under
+`PRODUCTION_STRATEGY_VALIDATION.md`. The current bounded handoff remains the
+exact outcome-blind 33-pair catalyst source-semantics gate. A wait, pause, or
+insufficient sample is progress state, not completion.
+
 ## Completed 2026-07-19
 
 ### 16. Faithful Dynamic 09:35 Scanner Replay

@@ -88,6 +88,14 @@ may write a cadence-qualified proposal but may not edit or activate live rules.
 `LEARNING_LOOP.md`, but production strategy changes remain proposals subject to
 the normal evidence gates and delegated decision rules below.
 
+Persistent production validation is coordinated by `strategy_validation.py`
+under `PRODUCTION_STRATEGY_VALIDATION.md`. Its ignored hash-chained state may
+resume across bounded workflows, but the controller never contacts providers,
+accesses Robinhood, changes production rules, or performs its own handoff.
+Waiting and safety statuses are nonterminal. Only its final `audit` may append
+campaign phase `VALIDATED`, after recomputing ledger maturity, champion axes,
+integrity, reconciled-flat broker evidence, and clean pushed Git state.
+
 ## Authority Boundary
 
 - The user's (Ryan) trading preference is aggressive day trading: seek explosive

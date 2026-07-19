@@ -296,6 +296,24 @@ protection failures pause immediately; statistical degradation is reported but
 never changes production rules automatically. `strategy_ledger.py report`
 remains authoritative for production maturity.
 
+The unbudgeted production-validation campaign persists separately from each
+finite learning slice. It coordinates the frozen source, development,
+confirmation, shadow, live-pilot, and promotion gates without contacting a
+provider or broker itself:
+
+```sh
+python3 strategy_validation.py init
+python3 strategy_validation.py status
+python3 strategy_validation.py next
+python3 strategy_validation.py audit
+```
+
+Its hash-chained private state lives under ignored
+`learning_runs/production_validation/`. Waiting for market hours, provider
+access, required confirmation, subscription, or additional organic sessions is
+nonterminal. Only a clean audit can record `VALIDATED`; see
+[PRODUCTION_STRATEGY_VALIDATION.md](PRODUCTION_STRATEGY_VALIDATION.md).
+
 Run the finite persistent cadence after the close:
 
 ```sh
