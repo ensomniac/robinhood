@@ -228,6 +228,11 @@ closed, triggered return observation. Older rejected signals and no-trade
 sessions remain auditable but cannot permanently poison a future current-rule
 performance sample; a closed triggered signal from another hash still blocks
 promotion, preserving the no-mixed-rules gate.
+The ledger also rejects any claimed return unless it is an eligible, triggered,
+terminal `live` or `shadow` decision whose decision matches its session mode.
+The maturity calculator independently repeats that inclusion test, so a
+malformed rejected or missed row cannot contribute expectancy even if it
+bypasses the normal append path.
 
 ## What The Repository Had Right
 

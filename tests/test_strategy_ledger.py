@@ -109,6 +109,19 @@ class AppendAndAuditTests(unittest.TestCase):
         with self.assertRaisesRegex(LedgerError, "paper_eod_shadow_net_r"):
             append_record(payload, Path("unused.jsonl"))
 
+    def test_ineligible_or_mode_mismatched_return_is_rejected(self):
+        payload = signal_payload()
+        payload["eligible"] = False
+        payload["decision"] = "rejected"
+
+        with self.assertRaisesRegex(LedgerError, "closed triggered return"):
+            append_record(payload, Path("unused.jsonl"))
+
+        payload = signal_payload(mode="live")
+        payload["decision"] = "shadow"
+        with self.assertRaisesRegex(LedgerError, "must match mode"):
+            append_record(payload, Path("unused.jsonl"))
+
 
 class ReportTests(unittest.TestCase):
     def test_report_calculates_no_trade_and_paired_exit_metrics(self):

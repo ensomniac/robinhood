@@ -232,6 +232,10 @@ version.
   Rejected and no-trade history from an older hash remains in the ledger and in
   hash-specific diagnostics, but it cannot make later current-rule promotion
   permanently impossible; mixed performance samples still fail closed.
+- Required every performance-bearing ledger row to be eligible, triggered,
+  terminal, and a mode-matched `live` or `shadow` decision. The maturity filter
+  independently enforces the same cohort, preventing rejected, missed, or
+  malformed rows from inflating closed-signal counts or expectancy.
 
 ## Completed 2026-07-18
 

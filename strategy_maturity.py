@@ -135,7 +135,13 @@ def _closed_records(
     for index, record in enumerate(records):
         if record.get("strategy_version") != config.version:
             continue
-        if record.get("closed") is not True or record.get("triggered") is not True:
+        if not (
+            record.get("record_type") == "signal"
+            and record.get("closed") is True
+            and record.get("triggered") is True
+            and record.get("eligible") is True
+            and record.get("decision") in ("live", "shadow")
+        ):
             continue
         if record.get("rules_hash") != config.rules_hash:
             mismatched_rules += 1

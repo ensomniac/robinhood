@@ -199,6 +199,16 @@ def validate_record(
 
     if triggered and eligible and decision == "rejected":
         raise LedgerError("an eligible triggered signal cannot be rejected")
+    if decision in ("live", "shadow") and (
+        not triggered or not eligible or not closed or decision != mode
+    ):
+        raise LedgerError(
+            "a live/shadow decision must match mode and be eligible, triggered, and closed"
+        )
+    if closed and triggered and (not eligible or decision not in ("live", "shadow")):
+        raise LedgerError(
+            "a closed triggered return requires an eligible live/shadow decision"
+        )
     if decision == "missed":
         if not triggered or not eligible or closed:
             raise LedgerError(

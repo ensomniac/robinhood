@@ -7,12 +7,15 @@ from strategy_maturity import assess_maturity
 def record(index, net_r, *, live=False, confirmation=False, stopped=False):
     config = load_config()
     return {
+        "record_type": "signal",
         "signal_id": f"2026-07-{index + 1:02d}-XYZ-1",
         "date": f"2026-07-{index + 1:02d}",
         "strategy_version": config.version,
         "rules_hash": config.rules_hash,
         "closed": True,
         "triggered": True,
+        "eligible": True,
+        "decision": "live" if live else "shadow",
         "session_capture_complete": True,
         "sample_phase": "confirmation" if confirmation else "pilot",
         "mode": "live" if live else "shadow",
@@ -109,6 +112,8 @@ class MaturityTests(unittest.TestCase):
                 "rules_hash": "old-rules",
                 "closed": True,
                 "triggered": False,
+                "eligible": False,
+                "decision": "rejected",
                 "net_r": None,
             }
         )
@@ -118,6 +123,15 @@ class MaturityTests(unittest.TestCase):
 
         self.assertEqual(result.earned_maturity, "PROVISIONAL")
         self.assertEqual(result.metrics.mismatched_rule_records, 0)
+
+    def test_ineligible_return_shape_cannot_enter_maturity_metrics(self):
+        malformed = record(0, 100.0)
+        malformed.update({"eligible": False, "decision": "rejected"})
+
+        result = assess_maturity([malformed])
+
+        self.assertEqual(result.metrics.closed_signals, 0)
+        self.assertIsNone(result.metrics.expectancy_r)
 
     def test_incomplete_universe_capture_blocks_promotion(self):
         records = [
