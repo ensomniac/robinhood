@@ -125,6 +125,11 @@ prospective execution-qualification requirement. See
 `SIP_BAR_AGGREGATION.md`, `PREENTRY_STRUCTURE.md`, and
 `STRATEGY_LEARNING_EXECUTION_PLAN.md`.
 
+The first recovery step is executable in `catalyst_source_recovery.py` and
+documented in `CATALYST_SOURCE_RECOVERY.md`. It freezes the 26 original SEC 403
+sources, requests only the 24 accession-bound SEC archive endpoints, retains the
+two search pages without requesting them, and publishes no private rows.
+
 The source-semantics implementation, private review contract, and inspected
 aggregate are documented in `CATALYST_SOURCE_SEMANTICS.md`. Its formal
 hash-addressed manifest was committed before extraction, all 38 joins reconcile,

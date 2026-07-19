@@ -449,7 +449,9 @@ remain locked while the campaign follows same-source recovery and, if still
 needed, disjoint acquisition under
 [CATALYST_SOURCE_SEMANTICS_PLAN.md](CATALYST_SOURCE_SEMANTICS_PLAN.md); no new
 strategy variant or outcome access is permitted before sufficient unchanged-v3
-capacity is proven.
+capacity is proven. The ordered SEC stage is implemented in
+[CATALYST_SOURCE_RECOVERY.md](CATALYST_SOURCE_RECOVERY.md): 24 accession-bound
+sources may be retried only after their exact recovery manifest is committed.
 
 ```sh
 python3 historical_research.py run \
