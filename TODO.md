@@ -327,6 +327,9 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Next: preregister format-specific timestamp precedence, issuer-domain binding,
   source-ownership checks, and deterministic handling for the 35 forbidden,
   two not-found, and 13 transport-failure targets before source classification.
+- Froze the pair-level source-readiness join as manifest
+  `7ace3b39...568bbd0b`. Formal derivation may count response/format candidates
+  across the exact 1,987 pairs but may not accept evidence or read returns.
 - Full external-store audit passed with 844,904 files, 2,334,718 datasets,
   124,537 contexts, 6,605 symbols, 733 dates, and zero errors. About 79 GiB
   remains free; enforce the reserve before further bulk collection.

@@ -129,6 +129,11 @@ contract must define format-specific timestamp precedence, issuer-domain
 binding, source ownership, and failure handling before any row can become
 causal primary evidence.
 
+Pair-level readiness is separately frozen under manifest
+`7ace3b39...568bbd0b` in `CATALYST_SOURCE_PAIR_READINESS.md`. It rejoins the
+exact 1,987 pairs to response and format flags without accepting a timestamp,
+source, catalyst, or outcome.
+
 ### Stage D - Classify and independently inspect
 
 - Freeze classifier rules before classification. Positive phrases never
