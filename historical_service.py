@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timezone
 from pathlib import Path
 from time import monotonic
-from typing import Any, Callable, Iterator, Sequence, TypeVar
+from typing import Any, Callable, Iterator, Mapping, Sequence, TypeVar
 from zoneinfo import ZoneInfo
 
 from historical_providers import (
@@ -66,8 +66,10 @@ def _coerce(value: str | datetime) -> datetime:
 def _provider_metadata(client: HistoricalMarketDataClient) -> tuple[str, str, str]:
     provider = provider_id(str(getattr(client, "provider_name", "unknown")))
     if provider == "alpaca":
-        return provider, str(getattr(client, "feed", "unknown")), str(
-            getattr(client, "adjustment", "raw")
+        return (
+            provider,
+            str(getattr(client, "feed", "unknown")),
+            str(getattr(client, "adjustment", "raw")),
         )
     if provider == "massive":
         return provider, "sip", "split_adjusted"
@@ -108,7 +110,9 @@ class RecordingHistoricalClient:
     def __init__(self, client: HistoricalMarketDataClient, store: HistoricalDayStore):
         self.client = client
         self.store = store
-        self.provider_name = str(getattr(client, "provider_name", type(client).__name__))
+        self.provider_name = str(
+            getattr(client, "provider_name", type(client).__name__)
+        )
         self.cache_namespace = str(
             getattr(client, "cache_namespace", provider_id(self.provider_name))
         )
@@ -144,9 +148,12 @@ class RecordingHistoricalClient:
         for row in rows:
             day = str(row.get("date_et") or "")
             if not day:
-                day = datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(
-                    EASTERN
-                ).date().isoformat()
+                day = (
+                    datetime.fromtimestamp(int(row["epoch"]), UTC)
+                    .astimezone(EASTERN)
+                    .date()
+                    .isoformat()
+                )
             grouped.setdefault(day, []).append(compact_bar(row, day=day))
         request = {
             "symbol": str(symbol).upper(),
@@ -159,9 +166,7 @@ class RecordingHistoricalClient:
         captured_at = datetime.now(UTC).isoformat()
         for day, values in grouped.items():
             values.sort(key=lambda row: str(row["t"]))
-            complete = _covers_regular_session(
-                start, end, day, use_rth=use_rth
-            )
+            complete = _covers_regular_session(start, end, day, use_rth=use_rth)
             self.store.merge(
                 symbol,
                 day,
@@ -178,7 +183,11 @@ class RecordingHistoricalClient:
                         scope="full_session" if complete else "observed_window",
                         quality={
                             "complete": complete,
-                            "requested_window_complete": complete,
+                            # Provider adapters paginate to exhaustion or raise.
+                            # A successful bounded request is therefore reusable
+                            # for that exact window even when it is not a full
+                            # regular session (for example, 04:00-09:30 ET).
+                            "requested_window_complete": True,
                             "sparse_intervals_allowed": True,
                         },
                         provenance={
@@ -199,13 +208,13 @@ class RecordingHistoricalClient:
         *,
         use_rth: bool = True,
     ) -> list[dict[str, Any]]:
-        rows = self.client.fetch_bid_ask_ticks(
-            symbol, start, end, use_rth=use_rth
-        )
+        rows = self.client.fetch_bid_ask_ticks(symbol, start, end, use_rth=use_rth)
         provider, feed, adjustment = _provider_metadata(self.client)
         grouped: dict[str, list[dict[str, Any]]] = {}
         for row in rows:
-            observed = datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(EASTERN)
+            observed = datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(
+                EASTERN
+            )
             grouped.setdefault(observed.date().isoformat(), []).append(
                 compact_quote(row, day=observed.date().isoformat())
             )
@@ -260,7 +269,9 @@ class RecordingHistoricalClient:
         provider, feed, adjustment = _provider_metadata(self.client)
         grouped: dict[str, list[dict[str, Any]]] = {}
         for row in rows:
-            observed = datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(EASTERN)
+            observed = datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(
+                EASTERN
+            )
             grouped.setdefault(observed.date().isoformat(), []).append(
                 compact_trade(row, day=observed.date().isoformat())
             )
@@ -312,9 +323,7 @@ class LocalHistoricalClient:
         self.store = store
         self.cache_namespace = provider_id(provider)
         self.feed = feed or PROVIDER_FEEDS.get(self.cache_namespace)
-        self.adjustment = adjustment or PROVIDER_ADJUSTMENTS.get(
-            self.cache_namespace
-        )
+        self.adjustment = adjustment or PROVIDER_ADJUSTMENTS.get(self.cache_namespace)
         self.provider_name = PROVIDER_NAMES.get(
             self.cache_namespace, f"Local historical cache ({self.cache_namespace})"
         )
@@ -338,20 +347,26 @@ class LocalHistoricalClient:
         what: str = "TRADES",
         use_rth: bool = True,
     ) -> list[dict[str, Any]]:
-        if what.upper() != "TRADES" or not use_rth:
+        if what.upper() != "TRADES":
             raise HistoricalProviderError(
-                "local canonical cache supports regular-hours TRADES only",
+                "local canonical cache supports TRADES bars only",
                 category="local_cache_miss",
             )
         start_utc = _coerce(start)
         end_utc = _coerce(end)
-        timeframe = {"1 min": "1m", "5 mins": "5m", "1 day": "1d"}.get(
-            bar_size
-        )
+        timeframe = {"1 min": "1m", "5 mins": "5m", "1 day": "1d"}.get(bar_size)
         if timeframe is None:
             raise HistoricalProviderError(
                 f"local cache does not support bar size {bar_size}",
                 category="local_configuration",
+            )
+        if not use_rth:
+            return self._fetch_observed_window_bars(
+                symbol,
+                start_utc,
+                end_utc,
+                timeframe=timeframe,
+                requested_bar_size=bar_size,
             )
         output: list[dict[str, Any]] = []
         for day in self._days(symbol, start_utc, end_utc):
@@ -396,6 +411,93 @@ class LocalHistoricalClient:
             )
         return sorted(output, key=lambda row: int(row["epoch"]))
 
+    @staticmethod
+    def _request_covers(
+        dataset: Mapping[str, Any],
+        start_utc: datetime,
+        end_utc: datetime,
+        *,
+        requested_bar_size: str,
+    ) -> bool:
+        if dataset.get("quality", {}).get("requested_window_complete") is not True:
+            return False
+        provenance = dataset.get("provenance", {})
+        for sample in provenance.get("samples", []):
+            request = sample.get("request", {}) if isinstance(sample, Mapping) else {}
+            if (
+                request.get("use_rth") is False
+                and request.get("bar_size") == requested_bar_size
+            ):
+                try:
+                    captured_start = _coerce(str(request["start"]))
+                    captured_end = _coerce(str(request["end"]))
+                except (KeyError, TypeError, ValueError):
+                    continue
+                if captured_start <= start_utc and captured_end >= end_utc:
+                    return True
+        return False
+
+    def _fetch_observed_window_bars(
+        self,
+        symbol: str,
+        start_utc: datetime,
+        end_utc: datetime,
+        *,
+        timeframe: str,
+        requested_bar_size: str,
+    ) -> list[dict[str, Any]]:
+        """Reuse one hash-attested, fully exhausted non-RTH request window."""
+        covered = False
+        output: list[dict[str, Any]] = []
+        for day in self._days(symbol, start_utc, end_utc):
+            document = self.store.load(symbol, day)
+            if document is None:
+                continue
+            for dataset in document["datasets"]:
+                if (
+                    dataset.get("kind") != "bars"
+                    or dataset.get("channel") != "trades"
+                    or dataset.get("timeframe") != timeframe
+                    or dataset.get("session") != "all"
+                    or provider_id(str(dataset.get("provider", "")))
+                    != self.cache_namespace
+                    or (self.feed is not None and dataset.get("feed") != self.feed)
+                    or (
+                        self.adjustment is not None
+                        and dataset.get("adjustment") != self.adjustment
+                    )
+                    or not self._request_covers(
+                        dataset,
+                        start_utc,
+                        end_utc,
+                        requested_bar_size=requested_bar_size,
+                    )
+                ):
+                    continue
+                covered = True
+                for compact in dataset["rows"]:
+                    row = expand_bar(compact)
+                    epoch = int(row["epoch"])
+                    if int(start_utc.timestamp()) <= epoch < int(end_utc.timestamp()):
+                        output.append(row)
+        if not covered:
+            raise HistoricalProviderError(
+                f"canonical {self.cache_namespace} observed-window cache miss for {symbol}",
+                category="local_cache_miss",
+            )
+        deduplicated = {
+            (
+                int(row["epoch"]),
+                float(row["open"]),
+                float(row["high"]),
+                float(row["low"]),
+                float(row["close"]),
+                int(row.get("volume", 0)),
+            ): row
+            for row in output
+        }
+        return sorted(deduplicated.values(), key=lambda row: int(row["epoch"]))
+
     def fetch_bid_ask_ticks(
         self,
         symbol: str,
@@ -432,10 +534,7 @@ class LocalHistoricalClient:
                 for row in dataset["rows"]:
                     expanded = expand_quote(row)
                     observed = _coerce(
-                        str(
-                            expanded.get("source_timestamp")
-                            or expanded["time_et"]
-                        )
+                        str(expanded.get("source_timestamp") or expanded["time_et"])
                     )
                     if start_utc <= observed <= end_utc:
                         output.append(expanded)
@@ -493,10 +592,7 @@ class LocalHistoricalClient:
                 for row in dataset["rows"]:
                     expanded = expand_trade(row)
                     observed = _coerce(
-                        str(
-                            expanded.get("source_timestamp")
-                            or expanded["time_et"]
-                        )
+                        str(expanded.get("source_timestamp") or expanded["time_et"])
                     )
                     if start_utc <= observed < end_utc:
                         output.append(expanded)
@@ -545,9 +641,7 @@ def collect_with_fallback(
     clients: Sequence[HistoricalMarketDataClient],
     operation: Callable[[HistoricalMarketDataClient], T],
 ) -> tuple[T, HistoricalMarketDataClient, list[ProviderAttempt]]:
-    result, client, attempts, last_error = try_collect_with_fallback(
-        clients, operation
-    )
+    result, client, attempts, last_error = try_collect_with_fallback(clients, operation)
     if client is not None and result is not None:
         return result, client, attempts
     if last_error is None:
@@ -557,9 +651,7 @@ def collect_with_fallback(
         )
     raise HistoricalProviderError(
         "all historical providers failed; "
-        + "; ".join(
-            f"{attempt.provider}={attempt.category}" for attempt in attempts
-        ),
+        + "; ".join(f"{attempt.provider}={attempt.category}" for attempt in attempts),
         category=(
             last_error.category
             if isinstance(last_error, HistoricalProviderError)

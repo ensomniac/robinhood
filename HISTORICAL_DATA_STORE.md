@@ -183,6 +183,16 @@ incompatible feeds are never spliced together to make a candidate appear
 complete. Provider attempts and the provider that supplied the accepted data
 remain visible in collection status and replay provenance.
 
+A bounded extended-hours bar request is reusable only when one stored
+provenance sample covers the entire requested UTC interval with the same bar
+size, provider, feed, adjustment, and `use_rth=false`. The dataset remains
+`session=all`, `scope=observed_window`, and `quality.complete=false`; its
+separate `requested_window_complete=true` means only that the provider paginated
+that exact request to exhaustion. Local reads fail closed outside the attested
+window and never substitute a regular-session series. This distinction lets a
+future premarket-resistance collector reuse 04:00-09:30 ET data without calling
+an observed window a complete trading day.
+
 IBKR data is labeled with its SMART feed and provider adjustment basis because
 the API does not expose the same explicit adjustment selector as the HTTP
 providers. Massive aggregate bars are retained as split-adjusted SIP data, and
@@ -250,6 +260,13 @@ record therefore carries `requested_window_complete=true` and
 incomplete and cannot satisfy a `require_complete` cache read. Workflows with a
 sourced exchange calendar should additionally retain the actual scheduled close
 in their point-in-time source contract.
+
+The same request-exhaustion flag applies to non-RTH observed windows, but those
+windows are selected by exact provenance coverage rather than by
+`require_complete`. A 2026-07-19 live Alpaca SIP pilot fetched 322 AAPL bars for
+the 2026-07-17 04:00-09:30 ET window and reproduced the same 322 epochs from the
+local store on the immediate cache read. This is a cache-path integration test,
+not strategy evidence.
 
 The replay bundle and preflight CLIs also open the canonical store. Their
 ignored raw evidence shards remain for exact workflow resume and bundle audit,

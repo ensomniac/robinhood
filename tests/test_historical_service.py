@@ -79,8 +79,7 @@ class HistoricalServiceTests(unittest.TestCase):
     def test_full_requested_window_is_complete_without_390_populated_buckets(self):
         start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
         rows = [
-            minute_row(start + timedelta(minutes=index), index)
-            for index in range(210)
+            minute_row(start + timedelta(minutes=index), index) for index in range(210)
         ]
         client = RecordingHistoricalClient(FakeProvider(rows), self.store)
 
@@ -93,9 +92,66 @@ class HistoricalServiceTests(unittest.TestCase):
         self.assertTrue(dataset["quality"]["sparse_intervals_allowed"])
         self.assertEqual(dataset["scope"], "full_session")
 
+    def test_non_rth_window_is_recorded_and_reused_by_exact_request_coverage(self):
+        start = datetime(2026, 3, 3, 4, 0, tzinfo=EASTERN)
+        rows = [
+            minute_row(start + timedelta(minutes=index), index) for index in range(330)
+        ]
+        recording = RecordingHistoricalClient(FakeProvider(rows), self.store)
+
+        recording.fetch_bars(
+            "AAPL",
+            start,
+            start.replace(hour=9, minute=30),
+            use_rth=False,
+        )
+
+        dataset = self.store.load("AAPL", "2026-03-03")["datasets"][0]
+        self.assertEqual(dataset["session"], "all")
+        self.assertEqual(dataset["scope"], "observed_window")
+        self.assertFalse(dataset["quality"]["complete"])
+        self.assertTrue(dataset["quality"]["requested_window_complete"])
+
+        local = LocalHistoricalClient(
+            self.store, "alpaca", feed="sip", adjustment="raw"
+        )
+        cached = local.fetch_bars(
+            "AAPL",
+            start.replace(hour=8),
+            start.replace(hour=9, minute=30),
+            use_rth=False,
+        )
+        self.assertEqual(len(cached), 90)
+        self.assertEqual(cached[0]["time_et"], start.replace(hour=8).isoformat())
+
+    def test_non_rth_cache_rejects_a_query_outside_captured_window(self):
+        start = datetime(2026, 3, 3, 8, 0, tzinfo=EASTERN)
+        rows = [
+            minute_row(start + timedelta(minutes=index), index) for index in range(90)
+        ]
+        recording = RecordingHistoricalClient(FakeProvider(rows), self.store)
+        recording.fetch_bars(
+            "AAPL", start, start.replace(hour=9, minute=30), use_rth=False
+        )
+        local = LocalHistoricalClient(
+            self.store, "alpaca", feed="sip", adjustment="raw"
+        )
+
+        with self.assertRaises(HistoricalProviderError) as caught:
+            local.fetch_bars(
+                "AAPL",
+                start.replace(hour=7),
+                start.replace(hour=9, minute=30),
+                use_rth=False,
+            )
+
+        self.assertEqual(caught.exception.category, "local_cache_miss")
+
     def test_local_cache_aggregates_complete_minutes(self):
         start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
-        rows = [minute_row(start + timedelta(minutes=index), index) for index in range(390)]
+        rows = [
+            minute_row(start + timedelta(minutes=index), index) for index in range(390)
+        ]
         self.store.merge(
             "AAPL",
             "2026-03-03",
@@ -171,9 +227,7 @@ class HistoricalServiceTests(unittest.TestCase):
             self.store, "alpaca", feed="sip", adjustment="raw"
         )
 
-        quotes = client.fetch_bid_ask_ticks(
-            "AAPL", start, start + timedelta(minutes=2)
-        )
+        quotes = client.fetch_bid_ask_ticks("AAPL", start, start + timedelta(minutes=2))
 
         self.assertEqual(len(quotes), 2)
         self.assertEqual([row["bid"] for row in quotes], [10.0, 10.01])
@@ -213,15 +267,15 @@ class HistoricalServiceTests(unittest.TestCase):
             self.store, "alpaca", feed="sip", adjustment="raw"
         )
 
-        quotes = client.fetch_bid_ask_ticks(
-            "AAPL", start, start + timedelta(seconds=1)
-        )
+        quotes = client.fetch_bid_ask_ticks("AAPL", start, start + timedelta(seconds=1))
 
         self.assertEqual([row["bid"] for row in quotes], [10.0])
 
     def test_fetch_cache_hit_opens_no_live_provider(self):
         start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
-        rows = [minute_row(start + timedelta(minutes=index), index) for index in range(390)]
+        rows = [
+            minute_row(start + timedelta(minutes=index), index) for index in range(390)
+        ]
         self.store.merge(
             "AAPL",
             "2026-03-03",
@@ -257,8 +311,7 @@ class HistoricalServiceTests(unittest.TestCase):
     def test_fetch_accepts_complete_early_close_cache(self):
         start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
         rows = [
-            minute_row(start + timedelta(minutes=index), index)
-            for index in range(210)
+            minute_row(start + timedelta(minutes=index), index) for index in range(210)
         ]
         self.store.merge(
             "AAPL",
@@ -308,14 +361,18 @@ class HistoricalServiceTests(unittest.TestCase):
 
         def operation(client):
             if isinstance(client, Failure):
-                raise HistoricalProviderError("timed out", category="retryable_transport")
+                raise HistoricalProviderError(
+                    "timed out", category="retryable_transport"
+                )
             return ["ok"]
 
         rows, used, attempts = collect_with_fallback(clients, operation)
 
         self.assertEqual(rows, ["ok"])
         self.assertIsInstance(used, Success)
-        self.assertEqual([attempt.status for attempt in attempts], ["failed", "success"])
+        self.assertEqual(
+            [attempt.status for attempt in attempts], ["failed", "success"]
+        )
 
 
 if __name__ == "__main__":
