@@ -105,6 +105,10 @@ lead, and 804 do not. No record was promoted to primary evidence.
 - Store immutable responses externally and deduplicate by content hash without
   losing pair/article attribution.
 
+The prerequisite offline routing contract is frozen as manifest
+`14107372...de495a` in `CATALYST_SOURCE_LEADS.md`. It cannot contact a source or
+promote a host category to verified evidence.
+
 ### Stage D - Classify and independently inspect
 
 - Freeze classifier rules before classification. Positive phrases never

@@ -390,6 +390,9 @@ any full-content request. Collection and inspection completed all 100 dates
 without error: 4,205 articles contained 27.8 MB of full content and cover 1,183
 pairs; 804 pairs remain without a content-complete lead. This is a better
 direct-source discovery surface, not catalyst verification.
+`CATALYST_SOURCE_LEADS.md` freezes offline URL routing as manifest
+`14107372...de495a` before parsing the 4,205 bodies. Source ownership, issuer
+binding, causal availability, and corroboration remain downstream gates.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:

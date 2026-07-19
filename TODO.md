@@ -299,6 +299,9 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Next: freeze outbound-link and attributed-source extraction from the 4,205
   bodies, then collect direct issuer/regulator/analyst corroboration. Do not
   classify the Benzinga body itself as primary evidence.
+- Froze offline outbound-link routing as manifest `14107372...de495a`, binding
+  all content/source hashes, URL normalization, rejected platforms, and routing
+  categories before derivation. Next: derive and inspect aggregate lead coverage.
 - Full external-store audit passed with 844,904 files, 2,334,718 datasets,
   124,537 contexts, 6,605 symbols, 733 dates, and zero errors. About 79 GiB
   remains free; enforce the reserve before further bulk collection.
