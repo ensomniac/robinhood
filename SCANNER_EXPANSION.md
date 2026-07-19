@@ -85,6 +85,13 @@ selected-candidate targets are read.
 
 ```sh
 python3 scanner_replay.py --run-root learning_runs/scanner_expansion \
+  status \
+  historical_batches/scanner_expansion/selection-2026-07-19-100-days.json \
+  historical_batches/scanner_replay/session-calendar-2025-12-through-2026-06.json \
+  --security-master learning/security_masters/scanner-expansion-master.jsonl \
+  --splits learning_runs/scanner_expansion/splits.json.gz
+
+python3 scanner_replay.py --run-root learning_runs/scanner_expansion \
   collect-reference \
   historical_batches/scanner_expansion/selection-2026-07-19-100-days.json
 
@@ -110,3 +117,10 @@ python3 scanner_replay_alpaca.py freeze \
   --reuse-manifest historical_batches/scanner_replay/manifests/dataset-production-scanner-replay-2026-07-19-v4-645f727fe0b596ee591a6ff32515b50883634b0e3294e83333ff6b83949b04b4.json \
   --output-root historical_batches/scanner_expansion/manifests
 ```
+
+The pre-freeze status command reports reference, security-master, and split
+readiness without treating legacy Massive S3 credentials or flat files as
+requirements. Market rows must be collected only after freeze through the
+non-S3 Alpaca adapter and its manifest-aware status command. The old flat-file
+collector remains available for older contracts, but its credentials are not a
+blocker for this campaign.

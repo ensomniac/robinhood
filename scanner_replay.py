@@ -1469,6 +1469,8 @@ def collection_status(
     calendar_path: Path,
     snapshots_root: Path,
     minute_root: Path,
+    security_path: Path = DEFAULT_SECURITY_MASTER,
+    split_path: Path | None = None,
 ) -> dict[str, Any]:
     selection = load_selection(selection_path)
     calendar = load_calendar(calendar_path)
@@ -1479,13 +1481,7 @@ def collection_status(
         if (snapshots_root / f"{day}.json.gz").exists()
     ]
     minutes = [day for day in required if (minute_root / f"{day}.csv.gz").exists()]
-    split_path = minute_root.parent / "splits.json.gz"
-    try:
-        flat = MassiveFlatFileConfig.from_env(PROJECT_ROOT / ".env").public_dict()
-        blocker = None
-    except ScannerReplayError as exc:
-        flat = {"credentials_configured": False}
-        blocker = str(exc)
+    resolved_splits = split_path or minute_root.parent / "splits.json.gz"
     return {
         "valid": True,
         "selected_dates": selection["selected_dates"],
@@ -1493,14 +1489,25 @@ def collection_status(
             "ready": len(references),
             "required": len(selection["selected_dates"]),
         },
-        "minute_files": {"ready": len(minutes), "required": len(required)},
-        "security_master_exists": DEFAULT_SECURITY_MASTER.exists(),
-        "split_actions": {
-            "ready": split_path.exists(),
-            "sha256": _sha256_file(split_path) if split_path.exists() else None,
+        "security_master": {
+            "path": _repo_path(security_path),
+            "ready": security_path.exists(),
         },
-        "flat_file": flat,
-        "blocker": blocker,
+        "split_actions": {
+            "path": _repo_path(resolved_splits),
+            "ready": resolved_splits.exists(),
+            "sha256": _sha256_file(resolved_splits)
+            if resolved_splits.exists()
+            else None,
+        },
+        "market_collection": {
+            "must_follow_frozen_manifest": True,
+            "recommended_non_s3_adapter": "scanner_replay_alpaca.py",
+            "status_after_freeze": "scanner_replay_alpaca.py status <manifest>",
+            "legacy_flat_minute_files_present": len(minutes),
+            "required_session_count": len(required),
+            "legacy_flat_files_required": False,
+        },
     }
 
 
@@ -1549,6 +1556,8 @@ def _build_parser() -> argparse.ArgumentParser:
     status = subparsers.add_parser("status")
     status.add_argument("selection", type=Path)
     status.add_argument("calendar", type=Path)
+    status.add_argument("--security-master", type=Path, default=DEFAULT_SECURITY_MASTER)
+    status.add_argument("--splits", type=Path)
     return parser
 
 
@@ -1629,6 +1638,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 calendar_path=args.calendar,
                 snapshots_root=snapshots,
                 minute_root=minutes,
+                security_path=args.security_master,
+                split_path=args.splits,
             )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0

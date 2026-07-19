@@ -16,6 +16,7 @@ from scanner_replay import (
     _signed_s3_headers,
     build_scanner_replay,
     build_security_master,
+    collection_status,
     load_calendar,
     load_selection,
     required_sessions,
@@ -130,6 +131,36 @@ class SelectionContractTests(unittest.TestCase):
         self.assertEqual(len(expanded_required), 133)
         self.assertEqual(len(expanded_required.intersection(original_required)), 113)
         self.assertEqual(len(expanded_required - original_required), 20)
+
+    def test_pre_freeze_status_does_not_require_legacy_s3_credentials(self):
+        with tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory:
+            root = Path(directory)
+            security = root / "master.jsonl"
+            security.write_text("fixture\n", encoding="utf-8")
+            splits = root / "splits.json.gz"
+            with gzip.open(splits, "wt", encoding="utf-8") as target:
+                json.dump([], target)
+
+            status = collection_status(
+                selection_path=Path(
+                    "historical_batches/scanner_expansion/selection-2026-07-19-100-days.json"
+                ),
+                calendar_path=Path(
+                    "historical_batches/scanner_replay/session-calendar-2025-12-through-2026-06.json"
+                ),
+                snapshots_root=root / "reference",
+                minute_root=root / "legacy-minutes",
+                security_path=security,
+                split_path=splits,
+            )
+
+            self.assertTrue(status["security_master"]["ready"])
+            self.assertTrue(status["split_actions"]["ready"])
+            self.assertFalse(
+                status["market_collection"]["legacy_flat_files_required"]
+            )
+            self.assertNotIn("blocker", status)
+            self.assertNotIn("flat_file", status)
 
 
 class SecurityMasterBuildTests(unittest.TestCase):

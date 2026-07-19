@@ -193,6 +193,10 @@ exists yet.
 - Explicitly disclose preexisting source rows and keep the campaign out of
   independent-alpha claims. Direct catalyst and outcome contracts remain
   separate future freezes.
+- Removed the generic pre-freeze status path's stale Massive S3 credential
+  blocker. It now reports the selected security master and splits explicitly
+  and directs market collection to the frozen non-S3 Alpaca adapter; legacy
+  flat files are observable but not required for this campaign.
 - Next: finish 100 Massive dated reference snapshots, build the new master,
   freeze the market contract, collect/resume the 20 new sessions plus symbol
   deltas, and independently inspect all 100 rankings.
