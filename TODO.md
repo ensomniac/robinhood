@@ -233,6 +233,13 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Next: pilot and collect one-minute bars, secondary news discovery, raw trigger
   tapes, and trigger-time NBBO. Then freeze primary-catalyst and clean-condition
   fidelity before any unchanged-v3 return evaluation.
+- Completed that base join with zero errors: 1,987 candidate sessions, 200
+  benchmark sessions, 850,029 one-minute bars, 1,460 raw trigger tapes, 1,331
+  three-snapshot windows, and 1,279 preliminary fresh/uncrossed windows.
+- The approximately 0.153% median observed snapshot spread is wider than v3's
+  0.08% A+ and 0.10% operating gates. Keep those gates unchanged. Next: freeze
+  and run primary-catalyst plus condition-aware trigger fidelity; still do not
+  read returns.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

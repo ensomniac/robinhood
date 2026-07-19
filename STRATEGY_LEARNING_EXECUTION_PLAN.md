@@ -340,8 +340,12 @@ inspected unchanged-v3 evaluation of that contract before strategy invention.
 The base acquisition contract in `SCANNER_EXPANSION_JOIN.md` is also frozen as
 manifest `15d8baef...e2f6b`. It reuses the byte-identical, hash-bound 389-pair
 collector through a small dataset adapter instead of duplicating or modifying
-completed evidence code. Collection still precedes catalyst verification,
-condition-aware trigger inspection, gate attrition, and every return field.
+completed evidence code. Its independently inspected collection completed all
+1,987 candidate sessions and 1,460 raw trigger tapes with zero errors. Only
+1,331 trigger windows had all three causal quote snapshots, and the observed
+median snapshot spread was about 0.153%. Primary-catalyst verification,
+condition-aware trigger inspection, gate attrition, and every return field
+remain downstream and frozen off.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
