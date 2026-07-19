@@ -42,7 +42,11 @@ eight responses were retained, four ended in bounded capture errors, and no
 substitution occurred. The current handoff is to implement and commit a
 separately frozen issuer-chain ownership, target-binding, causal-time,
 relevance, financing-conflict, and direction gate before private semantic
-review. A wait, pause, or insufficient sample is progress state, not completion.
+review. `catalyst_issuer_chain_semantics.py` now implements that network-free
+12-source gate, exact cross-pass private deduplication, terminal precedence, and
+outcome lock. The current handoff is to commit and push the adjudicator before
+freezing its manifest. A wait, pause, or insufficient sample is progress state,
+not completion.
 
 ## Completed 2026-07-19
 

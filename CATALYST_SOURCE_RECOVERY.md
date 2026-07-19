@@ -186,6 +186,41 @@ response hash, official-domain redirect boundary, and no-substitution rule. The
 next stage must freeze issuer ownership, target binding, causal timestamp,
 relevance, financing conflict, and direction before reading semantics.
 
+`catalyst_issuer_chain_semantics.py` implements that final recovery adjudication
+stage. It reconstructs the six chains as 12 source rows and binds their exact
+private capture records, target identities, prior source-semantic and SEC
+semantic reviewed results, parser dependencies, timestamp precedence, event
+taxonomy, financing-first rule, and terminal precedence. The implementation is
+network-free and outcome-blind.
+
+An official domain proves neither that the source company is the selected
+security nor that a document was published in time. Verified target binding
+requires the official-domain method plus either an exact source-CIK match or a
+matching distinctive legal-company identity. An explicitly mismatched CIK
+cannot fall back to name similarity. Same-day date-only evidence fails, and
+HTTP metadata, capture time, URL dates, and PDF creation dates cannot
+independently establish causality. Each source receives exactly one derived
+terminal reason; pair results are deduplicated privately across the original,
+SEC-recovered, and issuer-chain passes before any capacity claim is published.
+
+The implementation must be committed before its manifest is frozen. Then use:
+
+```sh
+python3 catalyst_issuer_chain_semantics.py freeze
+python3 catalyst_issuer_chain_semantics.py extract --manifest <manifest>
+python3 catalyst_issuer_chain_semantics.py review --manifest <manifest>
+python3 catalyst_issuer_chain_semantics.py review --manifest <manifest> \
+  --review-input learning_runs/production_validation/issuer-chain-semantics-review.json
+python3 catalyst_issuer_chain_semantics.py inspect --manifest <manifest>
+```
+
+Exact source text, identities, URLs, timestamps, decisions, and pair hashes stay
+private. Public output is limited to aggregate terminal counts, exact
+deduplicated positive capacity, hashes, claim boundaries, and the next phase.
+If the combined capacity remains below 20 after this ordered recovery is
+exhausted, outcomes remain locked and the campaign moves to a separately frozen
+disjoint 100-session acquisition tranche.
+
 ## Claim Boundary
 
 Successful response recovery proves only that the exact SEC-operated filing
