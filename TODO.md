@@ -244,6 +244,13 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   exact pair-to-CIK mappings, 656 unique CIKs, 100 dated reference snapshots,
   1,460 source trigger windows, SEC cutoff rules, and validated SIP-condition
   semantics. Next: collect and inspect it; outcomes remain blocked.
+- SEC collection completed: 696 time-valid primary filings, 591 pairs with a
+  filing, 581 with a material candidate, and 40 dilution conflicts. Verified
+  positive remains zero until source-grounded classification.
+- Condition inspection found an explicit no-quote clean-cross window after
+  1,025 completed records; the frozen legacy collector aborted on its second
+  cache miss. Next: freeze a resumable quote-gap-aware trigger collector that
+  records missing NBBO as a blocker and continues. Do not fabricate or switch.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

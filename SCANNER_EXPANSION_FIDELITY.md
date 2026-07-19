@@ -2,7 +2,8 @@
 
 Dataset: `dataset-selected-candidate-fidelity-2026-07-19-expansion-v1`
 
-Status: frozen before SEC or additional quote collection
+Status: SEC candidate collection complete; clean-trigger batch exposed a
+recoverable missing-quote control-flow defect and remains incomplete
 
 Manifest: `ee9ba6f3a2d48f3337ee654c545ea3c02287e23f4a4db5a3fb86adf1b0c780ce`
 
@@ -44,3 +45,15 @@ Primary-document presence remains discovery evidence. A later frozen
 classification stage must establish material positive direction and conflicting
 dilution before unchanged-v3 gate attrition can be published. Returns remain
 off-limits until all non-return gates are independently inspected.
+
+SEC collection mapped all 1,987 pairs, downloaded or reused submissions for 656
+CIKs, and found 696 time-valid primary filings across 591 pairs. It identified
+581 pairs with a material primary candidate and 40 dilution conflicts, while
+correctly leaving verified-positive count at zero pending classification.
+
+The first condition-aware trigger pass stopped after an explicit Alpaca
+no-quote observation left no canonical quote dataset for one clean-cross
+window. The legacy collector raised on the second cache lookup instead of
+recording missing NBBO and continuing. No quote was fabricated and no provider
+was substituted. A separate resumable, quote-gap-aware trigger contract is now
+required; this manifest remains `COLLECTING`.
