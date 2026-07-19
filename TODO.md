@@ -261,6 +261,10 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   crosses were clean; keep condition-aware timing unchanged.
 - Next: classify SEC candidates for material positive direction and dilution
   conflicts, then join unchanged-v3 non-return gates. Returns remain blocked.
+- Froze catalyst direction plus official halt-state manifest
+  `043f21e4...a7b46a`, binding all 1,987 pair recency cutoffs and 1,460 clean
+  trigger windows to the existing conservative classifier and Nasdaq source.
+  Next: collect and inspect; non-SEC catalysts remain an explicit gap.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

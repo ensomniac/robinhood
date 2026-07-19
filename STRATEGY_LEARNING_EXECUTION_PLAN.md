@@ -358,6 +358,10 @@ zero collection errors, four missing-NBBO blockers, 1,267 preliminary
 fresh/uncrossed windows, and 726 chase-cap passes. Only 569 first raw price
 crosses were clean, confirming that condition-aware timing materially changes
 the executable trigger without earning a rule revision.
+`CHAMPION_INPUT_FIDELITY_EXPANSION.md` now freezes the next manifest
+`043f21e4...a7b46a`, combining all 1,987 SEC candidate records with the 1,460
+clean-cross windows for conservative primary-direction classification and
+official Nasdaq halt state, still before any return field.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
