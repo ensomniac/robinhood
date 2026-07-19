@@ -114,11 +114,40 @@ in [settings.toml](settings.toml):
 `trades` is the default. The sender reads the settings file on every CLI call, so
 editing the value affects the next notification without a restart.
 
-The project CLIs require Python 3.11 or newer and the declared dependencies:
+The project CLIs require Python 3.11 or newer. Install the PyPI-resolvable core
+dependencies:
 
 ```sh
 python3 -m pip install -r requirements.txt
 ```
+
+IBKR collectors additionally require the official TWS API Python client. The
+project currently expects `ibapi` 10.37.2, which is distributed in the TWS API
+bundle rather than as that version on PyPI. From the matching extracted bundle,
+install `source/pythonclient` into the same interpreter or virtual environment:
+
+```sh
+cd /path/to/IBJts/source/pythonclient
+python3 -m pip install .
+python3 -m pip show ibapi
+```
+
+See IBKR's [TWS API installation documentation](https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/)
+for the official bundle and platform instructions. Keeping `ibapi` out of
+`requirements.txt` is intentional: a nonexistent PyPI pin made every core and
+test dependency installation unsatisfiable.
+
+For repository validation, install the official client as above, then the
+development dependencies and invoke pytest through the selected interpreter:
+
+```sh
+python3 -m pip install -r requirements-dev.txt
+python3 -m pytest -q
+python3 -m ruff check .
+```
+
+Use `python3 -m pytest`, not a machine-global `pytest` launcher; the module form
+cannot silently select a different or stale Python installation.
 
 Validate configuration without sending:
 

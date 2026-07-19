@@ -115,6 +115,18 @@ Benchmark the same boundary used in Phase 2 and compare request counts as well a
 wall time. A warm-cache speedup is not evidence of a cold-path improvement, and
 removing a provider request is more durable than tuning concurrency blindly.
 
+After installing the official IBKR client and `requirements-dev.txt` into the
+same environment, the portable full-suite gate is:
+
+```sh
+python3 -m pytest -q
+python3 -m ruff check .
+```
+
+Do not rely on a bare machine-global `pytest` executable; invoke the module from
+the explicitly selected interpreter so a stale launcher cannot invalidate a
+persistent run.
+
 If validation fails, diagnose and attempt one bounded repair. If it still fails,
 stop, retain useful evidence without committing broken work, and report the
 blocker.
