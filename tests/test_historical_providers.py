@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from historical_providers import (
+    AlpacaConfig,
+    AlpacaHistoricalClient,
     EASTERN,
     HistoricalProviderError,
     MassiveConfig,
@@ -25,8 +27,8 @@ class FakeSession:
         self.responses = list(responses)
         self.calls = []
 
-    def get(self, url, *, params, timeout):
-        self.calls.append((url, dict(params), timeout))
+    def get(self, url, *, params, timeout, headers=None):
+        self.calls.append((url, dict(params), timeout, dict(headers or {})))
         return self.responses.pop(0)
 
 
@@ -63,6 +65,33 @@ class MassiveConfigTests(unittest.TestCase):
             config = MassiveConfig.optional_from_env(Path(directory) / "missing")
 
         self.assertIsNone(config)
+
+
+class AlpacaConfigTests(unittest.TestCase):
+    def test_project_key_aliases_use_official_data_host_without_exposing_secrets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / ".env"
+            path.write_text(
+                "ALPACA_KEY=key-value\n"
+                "ALPACA_SECRET=secret-value\n"
+                "ALPACA_ENDPOINT=https://paper-api.alpaca.markets\n",
+                encoding="utf-8",
+            )
+            config = AlpacaConfig.optional_from_env(path)
+
+        self.assertEqual(config.base_url, "https://data.alpaca.markets")
+        self.assertEqual(config.feed, "sip")
+        self.assertEqual(config.adjustment, "raw")
+        self.assertNotIn("key-value", str(config.public_dict()))
+        self.assertNotIn("secret-value", str(config.public_dict()))
+
+    def test_partial_credentials_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / ".env"
+            path.write_text("ALPACA_KEY=key-value\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(HistoricalProviderError, "both key and secret"):
+                AlpacaConfig.optional_from_env(path)
 
 
 class MassiveNormalizationTests(unittest.TestCase):
@@ -209,6 +238,87 @@ class MassiveNormalizationTests(unittest.TestCase):
         session = FakeSession([FakeResponse({}, status_code=429)])
         client = MassiveHistoricalClient(
             MassiveConfig(api_key="secret"), session=session
+        )
+        start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
+
+        with self.assertRaises(HistoricalProviderError) as raised:
+            client.fetch_bars("AAPL", start, start + timedelta(minutes=1))
+
+        self.assertTrue(raised.exception.retryable)
+        self.assertEqual(raised.exception.category, "retryable_provider")
+
+
+class AlpacaNormalizationTests(unittest.TestCase):
+    def test_bars_paginate_with_sip_feed_raw_adjustment_and_auth_headers(self):
+        start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
+        raw = {
+            "t": start.isoformat(),
+            "o": 10,
+            "h": 10.1,
+            "l": 9.9,
+            "c": 10.05,
+            "v": 100,
+            "n": 2,
+            "vw": 10.02,
+        }
+        session = FakeSession(
+            [
+                FakeResponse({"bars": [raw], "next_page_token": "next"}),
+                FakeResponse({"bars": [{**raw, "t": (start + timedelta(minutes=1)).isoformat()}]}),
+            ]
+        )
+        client = AlpacaHistoricalClient(
+            AlpacaConfig(api_key="key", api_secret="secret"), session=session
+        )
+
+        bars = client.fetch_bars("AAPL", start, start + timedelta(minutes=2))
+
+        self.assertEqual(len(bars), 2)
+        self.assertEqual(session.calls[0][1]["feed"], "sip")
+        self.assertEqual(session.calls[0][1]["adjustment"], "raw")
+        self.assertEqual(session.calls[1][1]["page_token"], "next")
+        self.assertEqual(session.calls[0][3]["APCA-API-KEY-ID"], "key")
+        self.assertEqual(session.calls[0][3]["APCA-API-SECRET-KEY"], "secret")
+
+    def test_quotes_preserve_exchange_condition_and_tape_context(self):
+        start = datetime(2026, 3, 3, 9, 35, tzinfo=EASTERN)
+        session = FakeSession(
+            [
+                FakeResponse(
+                    {
+                        "quotes": [
+                            {
+                                "t": start.isoformat(),
+                                "bp": 10,
+                                "ap": 10.01,
+                                "bs": 100,
+                                "as": 200,
+                                "bx": "V",
+                                "ax": "Q",
+                                "c": ["R"],
+                                "z": "C",
+                            }
+                        ]
+                    }
+                )
+            ]
+        )
+        client = AlpacaHistoricalClient(
+            AlpacaConfig(api_key="key", api_secret="secret"), session=session
+        )
+
+        quotes = client.fetch_bid_ask_ticks(
+            "AAPL", start - timedelta(seconds=1), start + timedelta(seconds=1)
+        )
+
+        self.assertEqual(quotes[0]["bid_exchange"], "V")
+        self.assertEqual(quotes[0]["conditions"], ["R"])
+        self.assertEqual(quotes[0]["tape"], "C")
+
+    def test_rate_limit_is_explicitly_retryable(self):
+        session = FakeSession([FakeResponse({}, status_code=429)])
+        client = AlpacaHistoricalClient(
+            AlpacaConfig(api_key="key", api_secret="secret"), session=session
         )
         start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
 

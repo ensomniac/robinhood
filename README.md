@@ -352,8 +352,20 @@ python3 strategy_learning.py report
 python3 strategy_learning.py propose  # only after both cadence gates pass
 ```
 
-The read-only Interactive Brokers adapter is the default required market-data
-collector for replay candidates through a locally logged-in Trader Workstation:
+Canonical per-symbol/day observations now live outside the repository at
+`LOCAL_HISTORICAL_DATA_ROOT`; see
+[HISTORICAL_DATA_STORE.md](HISTORICAL_DATA_STORE.md) for the schema, migration
+ledger, fidelity rules, and writer contract. Check the store and use the
+cache-first three-provider collector with:
+
+```sh
+python3 historical_data_cli.py check
+python3 historical_data_cli.py check-providers --symbol AAPL --date 2026-07-17
+python3 historical_data_cli.py fetch AAPL --date 2026-07-17
+```
+
+The read-only Interactive Brokers adapter remains the first live market-data
+provider for replay candidates through a locally logged-in Trader Workstation:
 
 ```sh
 python3 ibkr_historical.py check
@@ -363,6 +375,10 @@ python3 ibkr_historical.py candidate AAPL \
   --evaluation-time 09:40:00 \
   --output historical_data/ibkr/2026-05-12-AAPL.json
 ```
+
+These low-level diagnostics also record every successful bar/quote response in
+`LOCAL_HISTORICAL_DATA_ROOT`. The optional `--output` file is resumable candidate
+evidence, not the canonical observation copy.
 
 Use the collector for every candidate in the preselected historical universe.
 The adapter has no account, portfolio, or order surface. It collects regular-
@@ -444,11 +460,15 @@ complete, reserve the following minute for quote snapshots, and evaluate at that
 window's closing boundary. This keeps quote snapshots point-in-time; legacy
 schema-1 bundles remain readable without changing their recorded semantics.
 
-IBKR remains primary. If the ignored `.env` contains `MASSIVE_API_KEY`, permanent
-IBKR bar/quote gaps can fall back to adjusted Massive SIP aggregates and
-historical NBBO quotes. Transport outages never switch providers. Candidate and
-benchmark provenance is retained in the final bundle, missing intervals are not
-interpolated, and the frozen symbol/date set never changes.
+The command-line builder checks the canonical cache and then uses IBKR, Massive,
+and Alpaca in that order. Timeouts, rate limits, permission failures, and
+permanent fidelity gaps may advance to the next configured provider, but a
+candidate is recollected as a whole; incompatible feeds are never spliced.
+Candidate and benchmark provenance is retained in the final bundle, missing
+intervals are not interpolated, and the frozen symbol/date set never changes.
+Successful provider responses are written to the canonical external store while
+ignored raw evidence shards and assembled replay bundles remain available for
+exact workflow resume.
 
 `historical_learning.py run --ready-only` replays every valid date in the
 original selection, reports the rest as blocked, skips already archived dates,

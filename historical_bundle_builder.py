@@ -2,9 +2,10 @@
 
 The input manifest freezes dates, symbols, scanner ranking, and time-valid
 catalyst evidence before target-session market data is requested. This module
-uses provider-neutral read-only clients with IBKR as primary and an optional
-Massive SIP fallback, caches raw responses, derives inputs without future bars,
-and validates a complete bundle before writing it under ``historical_data/``.
+uses provider-neutral read-only clients in IBKR, Massive, then Alpaca order,
+records successful responses in the external canonical day store, derives
+inputs without future bars, and validates a complete bundle before writing the
+compact replay artifact under ``historical_data/``.
 """
 
 from __future__ import annotations
@@ -34,6 +35,8 @@ from historical_metrics import (
     average_daily_volume,
     average_true_range,
 )
+from historical_service import open_provider_set
+from historical_store import HistoricalDayStore
 from ibkr_historical import (
     DEFAULT_ENV_PATH,
     IBKRConfig,
@@ -1075,6 +1078,7 @@ def collect_manifest(
     transport_retries: int = 1,
     max_workers: int = DEFAULT_COLLECTION_WORKERS,
     confirmation_manifest_path: Path | None = None,
+    historical_store: HistoricalDayStore | None = None,
 ) -> dict[str, Any]:
     if isinstance(max_workers, bool) or max_workers < 1:
         raise HistoricalBundleBuildError("max_workers must be a positive integer")
@@ -1142,62 +1146,114 @@ def collect_manifest(
         created_at = str(status["created_at"])
 
     persist(interrupted=False)
-    config = IBKRConfig.from_env(env_file)
-    massive_config = MassiveConfig.optional_from_env(env_file)
-    fallback_client = (
-        MassiveHistoricalClient(massive_config) if massive_config is not None else None
-    )
     ibkr_request_profiles: list[dict[str, Any]] = []
+    provider_startup: list[dict[str, Any]] = []
     performance_counters: Counter[str] = Counter()
-    try:
-        attempt = 0
-        while True:
-            try:
-                with IBKRHistoricalClient(config) as client:
-                    try:
-                        _collect_manifest_dates(
-                            client,
-                            fallback_client,
-                            candidates_by_date,
-                            scanner,
-                            preflight,
-                            data_root=data_root,
-                            raw_root=raw_root,
-                            fallback_root=fallback_root,
-                            synthetic_equity=synthetic_equity,
-                            built=built,
-                            failures=failures,
-                            recoveries=recoveries,
-                            persist=persist,
-                            max_workers=max_workers,
-                            performance=performance_counters,
-                            preregistration=preregistration,
-                        )
-                    finally:
-                        telemetry = getattr(client, "request_telemetry", None)
-                        if callable(telemetry):
-                            ibkr_request_profiles.append(telemetry())
-                break
-            except (IBKRHistoricalError, HistoricalProviderError) as exc:
-                retryable = (
-                    is_retryable_historical_error(exc)
-                    if isinstance(exc, IBKRHistoricalError)
-                    else exc.retryable
+    if historical_store is not None:
+        with open_provider_set(env_file, historical_store) as providers:
+            provider_startup = [
+                attempt.public_dict() for attempt in providers.startup_attempts
+            ]
+            if not providers.live_clients:
+                raise HistoricalProviderError(
+                    "IBKR, Massive, and Alpaca are all unavailable",
+                    category="local_configuration",
                 )
-                if retryable:
-                    persist(interrupted=True)
-                if not retryable or attempt >= transport_retries:
-                    raise
-                attempt += 1
-                print(
-                    f"historical provider interrupted; reconnecting "
-                    f"({attempt}/{transport_retries})",
-                    file=sys.stderr,
-                    flush=True,
+            primary = providers.live_clients[0]
+            primary_namespace = str(
+                getattr(primary, "cache_namespace", "provider")
+            )
+            fallbacks = [
+                (
+                    candidate,
+                    data_root
+                    / str(getattr(candidate, "cache_namespace", "provider")),
                 )
-    finally:
-        if fallback_client is not None:
-            fallback_client.close()
+                for candidate in providers.live_clients[1:]
+            ]
+            _collect_manifest_dates(
+                primary,
+                fallbacks,
+                candidates_by_date,
+                scanner,
+                preflight if primary_namespace == "ibkr" else None,
+                data_root=data_root,
+                raw_root=data_root / primary_namespace,
+                fallback_root=fallback_root,
+                synthetic_equity=synthetic_equity,
+                built=built,
+                failures=failures,
+                recoveries=recoveries,
+                persist=persist,
+                max_workers=max_workers,
+                performance=performance_counters,
+                preregistration=preregistration,
+                fallback_on_retryable=True,
+            )
+            telemetry = getattr(primary, "request_telemetry", None)
+            if callable(telemetry) and primary_namespace == "ibkr":
+                ibkr_request_profiles.append(telemetry())
+    else:
+        config = IBKRConfig.from_env(env_file)
+        massive_config = MassiveConfig.optional_from_env(env_file)
+        fallback_client = (
+            MassiveHistoricalClient(massive_config)
+            if massive_config is not None
+            else None
+        )
+        try:
+            attempt = 0
+            while True:
+                try:
+                    with IBKRHistoricalClient(config) as client:
+                        try:
+                            _collect_manifest_dates(
+                                client,
+                                (
+                                    [(fallback_client, fallback_root)]
+                                    if fallback_client is not None
+                                    else []
+                                ),
+                                candidates_by_date,
+                                scanner,
+                                preflight,
+                                data_root=data_root,
+                                raw_root=raw_root,
+                                fallback_root=fallback_root,
+                                synthetic_equity=synthetic_equity,
+                                built=built,
+                                failures=failures,
+                                recoveries=recoveries,
+                                persist=persist,
+                                max_workers=max_workers,
+                                performance=performance_counters,
+                                preregistration=preregistration,
+                            )
+                        finally:
+                            telemetry = getattr(client, "request_telemetry", None)
+                            if callable(telemetry):
+                                ibkr_request_profiles.append(telemetry())
+                    break
+                except (IBKRHistoricalError, HistoricalProviderError) as exc:
+                    retryable = (
+                        is_retryable_historical_error(exc)
+                        if isinstance(exc, IBKRHistoricalError)
+                        else exc.retryable
+                    )
+                    if retryable:
+                        persist(interrupted=True)
+                    if not retryable or attempt >= transport_retries:
+                        raise
+                    attempt += 1
+                    print(
+                        f"historical provider interrupted; reconnecting "
+                        f"({attempt}/{transport_retries})",
+                        file=sys.stderr,
+                        flush=True,
+                    )
+        finally:
+            if fallback_client is not None:
+                fallback_client.close()
     result = {
         "built_dates": built,
         "blocked_dates": [day for day in selected_dates if day not in built],
@@ -1211,6 +1267,7 @@ def collect_manifest(
             "elapsed_seconds": monotonic() - collection_started,
             "max_workers": max_workers,
             "ibkr_connections": ibkr_request_profiles,
+            "provider_startup": provider_startup,
             "counters": dict(sorted(performance_counters.items())),
         },
     }
@@ -1226,7 +1283,7 @@ def collect_manifest(
 
 def _collect_manifest_dates(
     client: IBKRHistoricalClient,
-    fallback_client: MassiveHistoricalClient | None,
+    fallback_clients: Sequence[tuple[HistoricalMarketDataClient, Path]],
     candidates_by_date: Mapping[str, Any],
     scanner: Mapping[str, Any],
     preflight: Mapping[str, Any] | None,
@@ -1242,7 +1299,9 @@ def _collect_manifest_dates(
     max_workers: int,
     performance: Counter[str],
     preregistration: Mapping[str, str] | None,
+    fallback_on_retryable: bool = False,
 ) -> None:
+    active_fallbacks = list(fallback_clients)
     for day, values in candidates_by_date.items():
         if not isinstance(day, str) or not isinstance(values, list):
             raise HistoricalBundleBuildError("candidate dates must map to arrays")
@@ -1303,15 +1362,19 @@ def _collect_manifest_dates(
                     OSError,
                     KeyError,
                 ) as exc:
-                    if isinstance(
-                        exc, IBKRHistoricalError
-                    ) and is_retryable_historical_error(exc):
+                    if (
+                        isinstance(exc, IBKRHistoricalError)
+                        and is_retryable_historical_error(exc)
+                        and (not active_fallbacks or not fallback_on_retryable)
+                    ):
                         failure = _failure_row(day, symbol, "benchmark", exc)
                         failures.append(failure)
                         persist(interrupted=True)
                         raise
                     fallback_failed = False
-                    if fallback_client is not None:
+                    fallback_errors: list[dict[str, Any]] = []
+                    recovered = False
+                    for fallback_client, fallback_root in list(active_fallbacks):
                         try:
                             fallback_raw, _ = _load_or_collect_benchmark(
                                 fallback_client,
@@ -1334,11 +1397,12 @@ def _collect_manifest_dates(
                                 }
                             )
                             print(
-                                f"  {symbol} recovered by Massive",
+                                f"  {symbol} recovered by {_provider_name(fallback_client)}",
                                 file=sys.stderr,
                                 flush=True,
                             )
-                            continue
+                            recovered = True
+                            break
                         except (
                             HistoricalBundleBuildError,
                             HistoricalProviderError,
@@ -1347,21 +1411,32 @@ def _collect_manifest_dates(
                             KeyError,
                         ) as fallback_exc:
                             fallback_failed = True
-                            failure = _failure_row(
+                            fallback_failure = _failure_row(
                                 day, symbol, "benchmark_fallback", fallback_exc
                             )
-                            failure["primary_error"] = str(exc)
+                            fallback_failure["provider"] = _provider_name(
+                                fallback_client
+                            )
+                            fallback_errors.append(fallback_failure)
                             if (
                                 isinstance(fallback_exc, HistoricalProviderError)
                                 and fallback_exc.category == "permanent_permission"
                             ):
                                 print(
-                                    "  Massive fallback disabled after permission "
-                                    "failure",
+                                    f"  {_provider_name(fallback_client)} fallback "
+                                    "disabled after permission failure",
                                     file=sys.stderr,
                                     flush=True,
                                 )
-                                fallback_client = None
+                                active_fallbacks.remove(
+                                    (fallback_client, fallback_root)
+                                )
+                    if recovered:
+                        continue
+                    if fallback_errors:
+                        failure = dict(fallback_errors[-1])
+                        failure["primary_error"] = str(exc)
+                        failure["fallback_errors"] = fallback_errors
                     else:
                         failure = _failure_row(day, symbol, "benchmark", exc)
                     failures.append(failure)
@@ -1430,15 +1505,19 @@ def _collect_manifest_dates(
                     TypeError,
                     ValueError,
                 ) as exc:
-                    if isinstance(
-                        exc, IBKRHistoricalError
-                    ) and is_retryable_historical_error(exc):
+                    if (
+                        isinstance(exc, IBKRHistoricalError)
+                        and is_retryable_historical_error(exc)
+                        and (not active_fallbacks or not fallback_on_retryable)
+                    ):
                         failure = _failure_row(day, symbol, "candidate", exc)
                         failures.append(failure)
                         persist(interrupted=True)
                         raise
                     fallback_failed = False
-                    if fallback_client is not None:
+                    fallback_errors = []
+                    recovered = False
+                    for fallback_client, fallback_root in list(active_fallbacks):
                         try:
                             fallback_raw, _, _ = _load_or_collect_candidate(
                                 fallback_client,
@@ -1461,11 +1540,12 @@ def _collect_manifest_dates(
                                 }
                             )
                             print(
-                                f"  {symbol} recovered by Massive",
+                                f"  {symbol} recovered by {_provider_name(fallback_client)}",
                                 file=sys.stderr,
                                 flush=True,
                             )
-                            continue
+                            recovered = True
+                            break
                         except (
                             HistoricalBundleBuildError,
                             HistoricalProviderError,
@@ -1476,21 +1556,32 @@ def _collect_manifest_dates(
                             ValueError,
                         ) as fallback_exc:
                             fallback_failed = True
-                            failure = _failure_row(
+                            fallback_failure = _failure_row(
                                 day, symbol, "candidate_fallback", fallback_exc
                             )
-                            failure["primary_error"] = str(exc)
+                            fallback_failure["provider"] = _provider_name(
+                                fallback_client
+                            )
+                            fallback_errors.append(fallback_failure)
                             if (
                                 isinstance(fallback_exc, HistoricalProviderError)
                                 and fallback_exc.category == "permanent_permission"
                             ):
                                 print(
-                                    "  Massive fallback disabled after permission "
-                                    "failure",
+                                    f"  {_provider_name(fallback_client)} fallback "
+                                    "disabled after permission failure",
                                     file=sys.stderr,
                                     flush=True,
                                 )
-                                fallback_client = None
+                                active_fallbacks.remove(
+                                    (fallback_client, fallback_root)
+                                )
+                    if recovered:
+                        continue
+                    if fallback_errors:
+                        failure = dict(fallback_errors[-1])
+                        failure["primary_error"] = str(exc)
+                        failure["fallback_errors"] = fallback_errors
                     else:
                         failure = _failure_row(day, symbol, "candidate", exc)
                     failures.append(failure)
@@ -1588,6 +1679,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 or PROJECT_ROOT / "historical_batches" / f"{args.manifest.stem}.json"
             ),
             confirmation_manifest_path=args.confirmation_manifest,
+            historical_store=HistoricalDayStore.from_env(args.env_file),
         )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result["valid"] else 1

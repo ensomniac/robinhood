@@ -224,6 +224,9 @@ __marimo__/
 
 # Raw replay inputs can be large and provider-specific. Public replay evidence
 # is retained in SIGNALS.jsonl and archived context instead.
+# Compact replay bundles, frozen manifests, provider evidence shards, and
+# source caches remain ignored here. Canonical per-day observations must live
+# outside the repository at LOCAL_HISTORICAL_DATA_ROOT.
 historical_data/
 
 # Per-date research shards are reproducible from the ignored immutable bundles.

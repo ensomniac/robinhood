@@ -18,6 +18,7 @@ from dotenv import dotenv_values
 EASTERN = ZoneInfo("America/New_York")
 UTC = timezone.utc
 DEFAULT_BASE_URL = "https://api.massive.com"
+DEFAULT_ALPACA_DATA_URL = "https://data.alpaca.markets"
 
 
 class HistoricalProviderError(RuntimeError):
@@ -451,3 +452,387 @@ class MassiveHistoricalClient:
                 category="permanent_fidelity",
             )
         return factor
+
+
+@dataclass(frozen=True)
+class AlpacaConfig:
+    """Credentials and fidelity controls for Alpaca historical stock data."""
+
+    api_key: str
+    api_secret: str
+    base_url: str = DEFAULT_ALPACA_DATA_URL
+    timeout_seconds: float = 30.0
+    feed: str = "sip"
+    adjustment: str = "raw"
+
+    @classmethod
+    def optional_from_env(cls, path: Path) -> "AlpacaConfig | None":
+        values: dict[str, Any] = {}
+        if path.exists():
+            values.update(dotenv_values(path, interpolate=False))
+        keys = (
+            "ALPACA_KEY",
+            "ALPACA_SECRET",
+            "ALPACA_ENDPOINT",
+            "ALPACA_DATA_BASE_URL",
+            "ALPACA_FEED",
+            "ALPACA_ADJUSTMENT",
+            "ALPACA_TIMEOUT_SECONDS",
+            "APCA_API_KEY_ID",
+            "APCA_API_SECRET_KEY",
+            "APCA_API_DATA_URL",
+        )
+        for key in keys:
+            if key in os.environ:
+                values[key] = os.environ[key]
+        api_key = str(
+            values.get("ALPACA_KEY") or values.get("APCA_API_KEY_ID") or ""
+        ).strip()
+        secret = str(
+            values.get("ALPACA_SECRET")
+            or values.get("APCA_API_SECRET_KEY")
+            or ""
+        ).strip()
+        if not api_key and not secret:
+            return None
+        if not api_key or not secret:
+            raise HistoricalProviderError(
+                "Alpaca requires both key and secret",
+                category="local_configuration",
+            )
+        configured_url = str(
+            values.get("ALPACA_DATA_BASE_URL")
+            or values.get("APCA_API_DATA_URL")
+            or ""
+        ).strip()
+        if not configured_url:
+            # ALPACA_ENDPOINT is commonly a paper-trading URL. It is accepted
+            # only when it already names an Alpaca market-data host; trading
+            # credentials still authenticate against data.alpaca.markets.
+            legacy = str(values.get("ALPACA_ENDPOINT") or "").strip()
+            legacy_host = urlparse(legacy).netloc.lower() if legacy else ""
+            if legacy_host in {
+                "data.alpaca.markets",
+                "data.sandbox.alpaca.markets",
+            }:
+                configured_url = legacy
+        base_url = (configured_url or DEFAULT_ALPACA_DATA_URL).rstrip("/")
+        parsed = urlparse(base_url)
+        if (
+            parsed.scheme != "https"
+            or parsed.netloc
+            not in {"data.alpaca.markets", "data.sandbox.alpaca.markets"}
+        ):
+            raise HistoricalProviderError(
+                "Alpaca historical data URL must use an official HTTPS data host",
+                category="local_configuration",
+            )
+        feed = str(values.get("ALPACA_FEED") or "sip").strip().lower()
+        if feed not in {"sip", "iex", "otc", "boats"}:
+            raise HistoricalProviderError(
+                "ALPACA_FEED must be sip, iex, otc, or boats",
+                category="local_configuration",
+            )
+        adjustment = str(values.get("ALPACA_ADJUSTMENT") or "raw").strip().lower()
+        if adjustment not in {"raw", "split", "dividend", "spin-off", "all"}:
+            raise HistoricalProviderError(
+                "ALPACA_ADJUSTMENT is unsupported",
+                category="local_configuration",
+            )
+        try:
+            timeout = float(values.get("ALPACA_TIMEOUT_SECONDS") or 30.0)
+        except (TypeError, ValueError) as exc:
+            raise HistoricalProviderError(
+                "ALPACA_TIMEOUT_SECONDS must be numeric",
+                category="local_configuration",
+            ) from exc
+        if timeout <= 0:
+            raise HistoricalProviderError(
+                "ALPACA_TIMEOUT_SECONDS must be positive",
+                category="local_configuration",
+            )
+        return cls(
+            api_key=api_key,
+            api_secret=secret,
+            base_url=base_url,
+            timeout_seconds=timeout,
+            feed=feed,
+            adjustment=adjustment,
+        )
+
+    def public_dict(self) -> dict[str, Any]:
+        return {
+            "base_url": self.base_url,
+            "timeout_seconds": self.timeout_seconds,
+            "feed": self.feed,
+            "adjustment": self.adjustment,
+            "credentials_configured": bool(self.api_key and self.api_secret),
+        }
+
+
+class AlpacaHistoricalClient:
+    """Read-only Alpaca adapter with explicit feed and adjustment provenance."""
+
+    provider_name = "Alpaca Market Data API"
+    cache_namespace = "alpaca"
+
+    def __init__(
+        self,
+        config: AlpacaConfig,
+        *,
+        session: requests.Session | None = None,
+    ):
+        self.config = config
+        self._session = session or requests.Session()
+        self._owns_session = session is None
+
+    def __enter__(self) -> "AlpacaHistoricalClient":
+        return self
+
+    def __exit__(self, exc_type, exc, traceback_obj) -> None:
+        self.close()
+
+    def close(self) -> None:
+        if self._owns_session:
+            self._session.close()
+
+    @property
+    def feed(self) -> str:
+        return self.config.feed
+
+    @property
+    def adjustment(self) -> str:
+        return self.config.adjustment
+
+    def _request_pages(
+        self,
+        path: str,
+        *,
+        params: Mapping[str, Any],
+        result_key: str,
+    ) -> list[dict[str, Any]]:
+        url = f"{self.config.base_url}{path}"
+        request_params = dict(params)
+        rows: list[dict[str, Any]] = []
+        pages = 0
+        while True:
+            pages += 1
+            if pages > 500:
+                raise HistoricalProviderError(
+                    "Alpaca pagination exceeded 500 pages",
+                    category="permanent_fidelity",
+                )
+            try:
+                response = self._session.get(
+                    url,
+                    params=request_params,
+                    headers={
+                        "APCA-API-KEY-ID": self.config.api_key,
+                        "APCA-API-SECRET-KEY": self.config.api_secret,
+                    },
+                    timeout=self.config.timeout_seconds,
+                )
+            except (requests.Timeout, requests.ConnectionError) as exc:
+                raise HistoricalProviderError(
+                    "Alpaca request failed due to a transport error",
+                    category="retryable_transport",
+                ) from exc
+            except requests.RequestException as exc:
+                raise HistoricalProviderError(
+                    "Alpaca request failed before a response was received",
+                    category="retryable_provider",
+                ) from exc
+            if response.status_code == 429 or response.status_code >= 500:
+                raise HistoricalProviderError(
+                    f"Alpaca HTTP {response.status_code}",
+                    category="retryable_provider",
+                )
+            if response.status_code >= 400:
+                category = (
+                    "permanent_permission"
+                    if response.status_code in (401, 403)
+                    else "permanent_fidelity"
+                )
+                raise HistoricalProviderError(
+                    f"Alpaca HTTP {response.status_code}", category=category
+                )
+            try:
+                payload = response.json()
+            except ValueError as exc:
+                raise HistoricalProviderError(
+                    "Alpaca returned invalid JSON",
+                    category="retryable_provider",
+                ) from exc
+            if not isinstance(payload, Mapping):
+                raise HistoricalProviderError(
+                    "Alpaca response must be an object",
+                    category="permanent_fidelity",
+                )
+            page_rows = payload.get(result_key, [])
+            if not isinstance(page_rows, list):
+                raise HistoricalProviderError(
+                    f"Alpaca {result_key} must be an array",
+                    category="permanent_fidelity",
+                )
+            rows.extend(dict(row) for row in page_rows if isinstance(row, Mapping))
+            token = payload.get("next_page_token")
+            if not token:
+                return rows
+            request_params["page_token"] = str(token)
+
+    @staticmethod
+    def _observed(value: Any) -> datetime:
+        if not isinstance(value, str):
+            raise HistoricalProviderError(
+                "Alpaca row timestamp is missing",
+                category="permanent_fidelity",
+            )
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise HistoricalProviderError(
+                "Alpaca row timestamp is malformed",
+                category="permanent_fidelity",
+            ) from exc
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=UTC)
+        return parsed.astimezone(UTC)
+
+    def fetch_bars(
+        self,
+        symbol: str,
+        start: str | datetime,
+        end: str | datetime,
+        *,
+        bar_size: str = "1 min",
+        what: str = "TRADES",
+        use_rth: bool = True,
+    ) -> list[dict[str, Any]]:
+        if what.upper() != "TRADES":
+            raise HistoricalProviderError(
+                "Alpaca historical adapter supports TRADES bars only",
+                category="local_configuration",
+            )
+        timeframe = {"1 min": "1Min", "5 mins": "5Min", "1 day": "1Day"}.get(
+            bar_size
+        )
+        if timeframe is None:
+            raise HistoricalProviderError(
+                f"Alpaca does not support bar size {bar_size}",
+                category="local_configuration",
+            )
+        start_utc = _coerce_datetime(start)
+        end_utc = _coerce_datetime(end)
+        if end_utc <= start_utc:
+            raise HistoricalProviderError(
+                "end must be after start", category="local_configuration"
+            )
+        normalized_symbol = str(symbol).strip().upper()
+        raw = self._request_pages(
+            f"/v2/stocks/{normalized_symbol}/bars",
+            params={
+                "timeframe": timeframe,
+                "start": start_utc.isoformat(),
+                "end": end_utc.isoformat(),
+                "limit": 10000,
+                "sort": "asc",
+                "feed": self.config.feed,
+                "adjustment": self.config.adjustment,
+                "asof": end_utc.astimezone(EASTERN).date().isoformat(),
+            },
+            result_key="bars",
+        )
+        rows: list[dict[str, Any]] = []
+        for row in raw:
+            try:
+                observed = self._observed(row["t"])
+                if not start_utc <= observed < end_utc:
+                    continue
+                eastern = observed.astimezone(EASTERN)
+                if bar_size != "1 day" and use_rth and not (
+                    time(9, 30) <= eastern.time() < time(16, 0)
+                ):
+                    continue
+                rows.append(
+                    {
+                        "epoch": int(observed.timestamp()),
+                        "time_et": eastern.isoformat(),
+                        "date_et": eastern.date().isoformat(),
+                        "open": float(row["o"]),
+                        "high": float(row["h"]),
+                        "low": float(row["l"]),
+                        "close": float(row["c"]),
+                        "volume": int(float(row.get("v") or 0)),
+                        "count": int(row.get("n") or 0),
+                        "wap": float(row.get("vw") or 0),
+                        "interpolated": False,
+                    }
+                )
+            except (KeyError, TypeError, ValueError) as exc:
+                raise HistoricalProviderError(
+                    "Alpaca bar row is malformed",
+                    category="permanent_fidelity",
+                ) from exc
+        return sorted(rows, key=lambda row: int(row["epoch"]))
+
+    def fetch_bid_ask_ticks(
+        self,
+        symbol: str,
+        start: str | datetime,
+        end: str | datetime,
+        *,
+        use_rth: bool = True,
+    ) -> list[dict[str, Any]]:
+        start_utc = _coerce_datetime(start)
+        end_utc = _coerce_datetime(end)
+        if end_utc <= start_utc:
+            raise HistoricalProviderError(
+                "end must be after start", category="local_configuration"
+            )
+        normalized_symbol = str(symbol).strip().upper()
+        raw = self._request_pages(
+            f"/v2/stocks/{normalized_symbol}/quotes",
+            params={
+                "start": start_utc.isoformat(),
+                "end": end_utc.isoformat(),
+                "limit": 10000,
+                "sort": "asc",
+                "feed": self.config.feed,
+                "asof": end_utc.astimezone(EASTERN).date().isoformat(),
+            },
+            result_key="quotes",
+        )
+        rows: list[dict[str, Any]] = []
+        for row in raw:
+            try:
+                observed = self._observed(row["t"])
+                if not start_utc <= observed <= end_utc:
+                    continue
+                eastern = observed.astimezone(EASTERN)
+                if use_rth and not time(9, 30) <= eastern.time() < time(16, 0):
+                    continue
+                bid = float(row.get("bp") or 0)
+                ask = float(row.get("ap") or 0)
+                if bid <= 0 or ask <= 0:
+                    continue
+                rows.append(
+                    {
+                        "epoch": int(observed.timestamp()),
+                        "time_et": eastern.isoformat(),
+                        "bid": bid,
+                        "ask": ask,
+                        "bid_size": int(float(row.get("bs") or 0)),
+                        "ask_size": int(float(row.get("as") or 0)),
+                        "bid_exchange": row.get("bx"),
+                        "ask_exchange": row.get("ax"),
+                        "conditions": row.get("c"),
+                        "tape": row.get("z"),
+                        "source_timestamp": row.get("t"),
+                    }
+                )
+            except (KeyError, TypeError, ValueError) as exc:
+                raise HistoricalProviderError(
+                    "Alpaca quote row is malformed",
+                    category="permanent_fidelity",
+                ) from exc
+        return sorted(rows, key=lambda row: int(row["epoch"]))

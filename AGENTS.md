@@ -745,19 +745,23 @@ When Ryan selects historical mode:
    candidates, complete regular-session non-interpolated minute bars, split
    adjustment, time-valid catalysts, the exact opening-volume lookback, and
    historical quote/depth snapshots sufficient for the normal execution gates.
-   Use `ibkr_historical.py` as the default primary market-data collector for every
+   Use the cache-first canonical historical service with IBKR as the default
+   primary live market-data collector for every
    candidate. It must pull the per-symbol regular-session bars, 14-session
    opening-volume lookback, prior daily bars, and historical top-of-book bid/ask
    ticks from the logged-in local TWS session. Historical top-of-book sizes are
    the accepted depth evidence for this replay contract even though they are not
    a full depth ladder. The adapter has no broker-action surface and does not
    replace the separate point-in-time scanner-universe or catalyst evidence.
-   When the ignored `.env` has `MASSIVE_API_KEY`, the provider-neutral builder
-   may use adjusted Massive SIP aggregates and historical NBBO quotes only after
-   a permanent IBKR market-data fidelity failure. Never switch providers for a
-   disconnect, timeout, pacing failure, or other retryable outage. Reconnect
-   once by default, resume from cached raw files, and retain provider provenance
-   for every candidate and benchmark. Never interpolate a missing provider bar.
+   Every successful response must be retained under the external
+   `LOCAL_HISTORICAL_DATA_ROOT` day store described in
+   `HISTORICAL_DATA_STORE.md`. After compatible canonical cache reads, live
+   collection order is IBKR, Massive, then Alpaca. A disconnect, timeout, rate
+   limit, permission failure, or permanent fidelity gap may advance to the next
+   configured provider. Recollect the complete candidate from one provider;
+   never splice incompatible bars, lookbacks, or quotes. Retain every attempt
+   and accepted provider in status and bundle provenance. Never interpolate a
+   missing provider bar.
    Freeze every date first, then assemble a point-in-time ranked candidate pool
    with at least 20 names. Large multi-date runs should retain up to 80 names per
    date when the source supports it because the immutable ADV/ATR gates can
@@ -866,8 +870,11 @@ When Ryan selects historical mode:
 9. After the requested batch completes, ask how many additional days Ryan wants
    to simulate. Zero ends historical mode.
 
-See `HISTORICAL_LEARNING.md` for the bundle contract and CLI workflow. Raw replay
-bundles under `historical_data/` are local inputs and are Git-ignored; archived
+See `HISTORICAL_LEARNING.md` for the bundle contract and CLI workflow, and
+`HISTORICAL_DATA_STORE.md` for the canonical day schema and migration contract.
+Per-day market observations live outside Git under
+`LOCAL_HISTORICAL_DATA_ROOT`. Raw replay bundles and resumable evidence shards
+under `historical_data/` remain local ignored inputs; archived
 context, `SIGNALS.jsonl`, and privacy-safe `historical_batches/` statuses are the
 durable public evidence.
 

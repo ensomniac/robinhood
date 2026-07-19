@@ -6,7 +6,8 @@ names without requesting target-session price data. It applies immutable daily
 volume and ATR universe gates before the more expensive opening-history pull.
 Retired, unresolvable, ineligible, or pre-session-history-incomplete symbols may
 be skipped before the universe is frozen; provider-wide failures still stop the
-batch.
+batch. Successful market-data responses are also retained in the configured
+external canonical historical store.
 """
 
 from __future__ import annotations
@@ -25,6 +26,8 @@ from time import monotonic
 from typing import Any
 
 from historical_concurrency import ordered_bounded_results
+from historical_service import RecordingHistoricalClient
+from historical_store import HistoricalDayStore
 from ibkr_historical import (
     DEFAULT_CONTRACT_CACHE_ROOT,
     DEFAULT_ENV_PATH,
@@ -530,7 +533,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             config,
             contract_cache_root=args.contract_cache_root,
             refresh_contract_details=args.fresh_contracts,
-        ) as client:
+        ) as raw_client:
+            client = RecordingHistoricalClient(
+                raw_client, HistoricalDayStore.from_env(args.env_file)
+            )
             cache_root = args.cache_root.resolve()
             try:
                 cache_root_text = str(cache_root.relative_to(PROJECT_ROOT.resolve()))

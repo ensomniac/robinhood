@@ -8,6 +8,11 @@ Updated: 2026-07-18
 bundles to test several research strategies in one local batch. It is separate
 from production replay:
 
+The provider observations underlying newly built bundles are retained under
+`LOCAL_HISTORICAL_DATA_ROOT` using the contract in
+`HISTORICAL_DATA_STORE.md`. Research still consumes frozen bundles so a provider
+cache extension cannot silently change an already-bound experiment.
+
 - it makes no IBKR, Robinhood, web, or other provider requests;
 - it never writes `SIGNALS.jsonl`, `TRADES.md`, `trades/`, strategy configuration,
   or maturity state;

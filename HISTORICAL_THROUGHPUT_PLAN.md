@@ -249,34 +249,44 @@ candidates.
 
 ### B. Immutable market-data store
 
-Per-date JSON checkpoints are correct but not the final data-lake shape. Add a
-provider-neutral, content-addressed store with interval coverage indexes:
+Implemented on 2026-07-18 by `historical_store.py`,
+`historical_service.py`, `historical_data_cli.py`, and
+`HISTORICAL_DATA_STORE.md`. Per-symbol/day gzip JSON documents now retain
+provider-neutral content identities, explicit feed/adjustment/coverage, atomic
+locking, corruption audits, and local-first provider selection. Existing raw
+checkpoints remain resumable workflow evidence, not the canonical observation
+store.
 
-- identity: provider, symbol/contract, field set, bar size, adjustment, RTH,
-  start, end, schema, producer version;
+The implemented contract includes:
+
+- identity: provider, symbol/day, channel, bar size, feed, adjustment, RTH scope,
+  quality, limitations, and normalized rows;
 - payload hash and atomic write;
-- immutable historical policy and explicit current-data expiry;
-- interval lookup so a larger cached range can satisfy a smaller request;
-- single-flight locking so concurrent callers never download the same range;
-- audit, inspect, coverage, size, and prune commands;
+- immutable content policy; mutable current-data expiry remains out of scope;
+- day/time filtering so a complete cached session can satisfy a smaller request;
+- per-day locking and atomic merge so concurrent writers cannot corrupt a file;
+- store audit plus symbol/date inspection through ordinary JSON tooling;
 - no credentials, account data, or broker identifiers.
 
-For repeated strategy iterations, bundles should be rebuilt from this immutable
+For repeated strategy iterations, bundles can be rebuilt from this immutable
 store without provider calls. Strategy changes usually alter derivation and
 evaluation, not the underlying bars and quotes.
 
 ### C. Provider lane separation
 
-Keep IBKR primary under the current contract, but isolate provider lanes:
+Implemented for per-symbol replay collection. The cache/live order is IBKR,
+Massive, then Alpaca, with isolated provider lanes:
 
 - bars and daily/opening history can use longer, efficient interval pulls;
 - historical quote pages remain narrow around evaluation time;
-- permanent IBKR gaps may use the configured Massive SIP fallback;
-- transport or pacing failures never trigger a provider switch;
+- retryable or permanent IBKR gaps may advance to Massive and then Alpaca;
+- whole-candidate recollection prevents feed/adjustment splicing;
 - a bulk/flat-file provider should be evaluated for large research corpora,
   because IBKR explicitly says it is not a specialized bulk market-data source.
 
-Massive's official stock flat-file catalog is the concrete next candidate. It
+Massive's official stock flat-file catalog remains a separate candidate for the
+market-wide 09:35 scanner corpus. The canonical per-symbol/day store does not
+claim that thousands of REST calls are an efficient substitute. The catalog
 publishes one daily aggregate file and one minute aggregate file across U.S.
 equities, plus historical trade and quote files, specifically to avoid thousands
 of per-symbol REST requests. The files are unadjusted, so an integration must

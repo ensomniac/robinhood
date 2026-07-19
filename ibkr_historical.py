@@ -35,6 +35,7 @@ from historical_metrics import (
     average_daily_volume,
     average_true_range,
 )
+from historical_store import HistoricalDayStore, HistoricalStoreError
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -1782,11 +1783,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     try:
         config = IBKRConfig.from_env(args.env_file)
+        store = HistoricalDayStore.from_env(args.env_file)
         with IBKRHistoricalClient(
             config,
             contract_cache_root=args.contract_cache_root,
             refresh_contract_details=args.fresh_contracts,
-        ) as client:
+        ) as raw_client:
+            # Imported here to avoid a module cycle: the provider orchestrator
+            # also depends on this low-level read-only adapter.
+            from historical_service import RecordingHistoricalClient
+
+            client = RecordingHistoricalClient(raw_client, store)
             if args.command == "check":
                 result: Any = {
                     "connected": True,
@@ -1834,7 +1841,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
         _write_json(result, getattr(args, "output", None))
         return 0
-    except (IBKRHistoricalError, OSError, ValueError) as exc:
+    except (HistoricalStoreError, IBKRHistoricalError, OSError, ValueError) as exc:
         print(
             json.dumps(
                 {"error": str(exc), "error_type": type(exc).__name__},

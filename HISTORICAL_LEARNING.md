@@ -106,7 +106,8 @@ The agent asks how many days to simulate. For each requested day:
    evidence. The daily-first and one-chunk changes landed after that benchmark;
    measure their cold-run impact on the next new batch rather than treating the
    projected request reduction as a measured speedup.
-3. Run `python3 ibkr_historical.py check`, then use the IBKR collector for every
+3. Run `python3 historical_data_cli.py check`, then use the cache-first
+   canonical collector for every
    frozen candidate's regular-session minute bars, opening-volume lookback,
    prior daily bars, and historical top-of-book snapshots. Web sources are not
    expected to supply those market-data fields. Store the assembled replay
@@ -148,11 +149,13 @@ The agent asks how many days to simulate. For each requested day:
    This prevents an older frozen universe from being silently reused for a newer
    evidence manifest. Research replay also compares ordered symbols directly.
 
-   IBKR is primary. If `MASSIVE_API_KEY` is configured, a permanent IBKR
-   bar/quote fidelity gap may be recollected from Massive's adjusted SIP
-   aggregates and historical NBBO quotes. A connection outage never triggers a
-   provider switch. Every recovered candidate and benchmark records its actual
-   provider; no candidate is replaced and no missing bar or quote is fabricated.
+   Compatible complete canonical datasets are read first. Live provider order is
+   IBKR, Massive, then Alpaca. A timeout, rate limit, permission failure, or
+   fidelity gap may advance to the next provider, but the entire candidate is
+   recollected from that provider so bars, lookbacks, and quotes are never
+   spliced across incompatible feeds. Every response and recovery retains its
+   provider/feed/adjustment provenance; no candidate is replaced and no missing
+   bar or quote is fabricated. See `HISTORICAL_DATA_STORE.md`.
 4. Validate every bundle before replay:
 
    ```sh
@@ -340,6 +343,10 @@ data but cannot by itself attest full historical scanner capture or point-in-tim
 catalyst fidelity; obtain only those two evidence classes from independent
 point-in-time sources.
 
+All successful low-level bar and quote responses are also written to the
+canonical external store. An explicit `--output` remains a workflow evidence
+artifact and does not replace that canonical copy.
+
 When the narrow quote window is empty, the collector makes one regular-session
 lookback request and preserves the last observable quote with its actual age.
 The evaluator still hard-rejects a stale snapshot; the fallback records the
@@ -355,7 +362,7 @@ market-data blocker merely because the scanner or
 news archive lacks bars, quotes, or depth; try the IBKR collection first and
 report the exact failed IBKR fact only if the adapter cannot return it.
 
-### Optional Massive SIP fallback
+### Optional Massive and Alpaca fallbacks
 
 Set `MASSIVE_API_KEY` only in the ignored `.env` to enable the read-only
 fallback. Optional settings are `MASSIVE_BASE_URL` and
@@ -377,10 +384,17 @@ forwarded. Provider contracts: [adjusted stock aggregates](https://massive.com/d
 [historical stock NBBO quotes](https://massive.com/docs/rest/stocks/trades-quotes/quotes),
 and [split adjustment factors](https://massive.com/docs/rest/stocks/corporate-actions/splits).
 
-Fallback is limited to permanent market-data fidelity gaps after IBKR has been
-attempted. Retryable disconnects, timeouts, pacing failures, and server errors
-are retried or surfaced; they do not silently select a different provider.
-Separate point-in-time scanner and catalyst evidence is still mandatory.
+Set `ALPACA_KEY` and `ALPACA_SECRET` in the same ignored `.env` to enable the
+final read-only fallback. The adapter uses the official historical data host,
+defaults to SIP and raw adjustment, paginates with `next_page_token`, and
+retains quote exchange/condition/tape fields. IEX and SIP are not treated as
+equivalent datasets.
+
+Provider advancement is explicit in status and may follow a retryable transport
+or rate-limit failure as well as a permission or fidelity failure. Whole-
+candidate recollection prevents a superficially complete result made from
+incompatible feeds. Separate point-in-time scanner and catalyst evidence is
+still mandatory.
 
 The live OR_RVOL rule remains unchanged: all 14 prior opening volumes must be
 positive. A provider's zero-volume representation is a preflight/fallback issue,

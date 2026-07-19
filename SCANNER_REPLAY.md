@@ -2,6 +2,13 @@
 
 Status: frozen and collecting; market-wide minute files are not yet present.
 
+The external canonical day store introduced on 2026-07-18 preserves existing
+and future per-symbol observations without Git or S3. It does not close this
+dataset's distinct market-wide capture gap: issuing REST requests for every
+active listing across 118 sessions would be a different, expensive acquisition
+plan and must not be mistaken for the frozen flat-file contract. No new catalyst
+variant is authorized while this scanner dataset remains incomplete.
+
 The frozen contract is registered `COLLECTING` in `learning/DATASETS.jsonl`, so
 the persistent nightly cadence cannot lose the unfinished work. That registry
 state is not evidence suitability and does not satisfy the research lock.

@@ -249,9 +249,10 @@ Status: implemented by `ibkr_historical.py` and documented in
 - Classifies retryable transport/provider failures separately from permanent
   fidelity gaps, aborts a disconnected request stream immediately, reconnects
   once by default, and resumes from atomic per-provider caches.
-- An optional Massive SIP adapter supplies adjusted regular-session aggregates
-  and historical NBBO evidence only for permanent primary-provider gaps. It
-  retains field/provider provenance and never fills missing trade intervals.
+- Optional Massive SIP and Alpaca adapters follow IBKR in the canonical
+  provider chain. Retryable and permanent failures may advance, but each
+  candidate is recollected from one provider; field/feed/adjustment provenance
+  remains explicit and missing trade intervals are never filled.
 
 ### 9. Pre-Freeze Historical Symbol Viability
 
@@ -332,13 +333,16 @@ data contracts, acceptance tests, and publishing behavior before implementation.
 
 ### 7. Valuable Data Cache
 
-Status: partially satisfied by resumable atomic IBKR and Massive namespaces in
-`historical_bundle_builder.py`; content addressing, lifecycle tooling, and
-cross-workflow cache policy remain outstanding.
+Status: core per-symbol/day market-data scope implemented on 2026-07-18 by
+`historical_store.py`, `historical_service.py`, `historical_data_cli.py`, and
+`historical_migration.py`. See `HISTORICAL_DATA_STORE.md`. Point-in-time web/SEC
+cache lifecycle and optional pruning/reporting remain separate enhancements.
 
-Build a content-addressed cache for expensive, slow, or rate-limited public and
-market-data inputs so future work can reuse verified evidence without confusing
-old data with current truth.
+The implemented content-addressed cache for expensive, slow, or rate-limited
+market-data inputs lets future work reuse verified evidence without confusing
+provider feeds. Future web/SEC extensions should follow the same principles and
+add equivalent lifecycle handling without confusing old data with current
+truth.
 
 Acceptance criteria:
 
@@ -356,6 +360,6 @@ Acceptance criteria:
   safe to commit.
 - Never cache credentials, MFA material, session cookies, plaintext account or
   broker identifiers, or mutable live broker state.
-- Integrate the historical IBKR raw cache first, then authoritative calendars
-  and time-valid catalyst evidence, with deterministic tests for hits, expiry,
-  corruption, schema migration, and concurrent writers.
+- Extend the implemented historical market-data store to authoritative calendars
+  and time-valid catalyst evidence, with deterministic tests for expiry and
+  schema migration in those mutable/current data classes.

@@ -1,6 +1,7 @@
 import json
 import tempfile
 import unittest
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
@@ -24,6 +25,7 @@ from historical_bundle_builder import (
 from ibkr_historical import IBKRConfigurationError
 from historical_learning import validate_bundle
 from historical_providers import HistoricalProviderError, MassiveConfig
+from historical_store import HistoricalDayStore
 from ibkr_historical import IBKRRequestError
 
 
@@ -843,6 +845,104 @@ class CollectionControlTests(unittest.TestCase):
         self.assertEqual(result["failures"][0]["category"], "retryable_provider")
         self.assertFalse(persisted["interrupted"])
         self.assertIn("performance", persisted)
+
+    def test_canonical_cli_path_uses_massive_then_alpaca_without_feed_splicing(self):
+        class Client:
+            def __init__(self, name, namespace):
+                self.provider_name = name
+                self.cache_namespace = namespace
+
+        primary = Client("Interactive Brokers TWS API", "ibkr")
+        massive = Client("Massive SIP REST API", "massive")
+        alpaca = Client("Alpaca Market Data API", "alpaca")
+
+        class Startup:
+            def __init__(self, provider):
+                self.provider = provider
+
+            def public_dict(self):
+                return {"provider": self.provider, "status": "ready"}
+
+        class ProviderSet:
+            def __init__(self):
+                self.live_clients = [primary, massive, alpaca]
+                self.startup_attempts = [
+                    Startup(client.provider_name) for client in self.live_clients
+                ]
+
+        @contextmanager
+        def provider_set(*args, **kwargs):
+            yield ProviderSet()
+
+        def collect(client, symbol, day):
+            if client is primary:
+                raise IBKRRequestError("primary missing quotes")
+            if client is massive:
+                raise HistoricalProviderError(
+                    "Massive HTTP 429", category="retryable_provider"
+                )
+            return raw_candidate(symbol, day)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = self._manifest(
+                root, symbols=tuple(f"T{index:02}" for index in range(10))
+            )
+            manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+            for index, evidence in enumerate(
+                manifest_payload["candidates_by_date"]["2026-03-03"], start=1
+            ):
+                evidence.update(
+                    {
+                        "surprise_rank": index,
+                        "report_date": "2026-03-02",
+                        "report_timing": "pm",
+                        "eps_estimate": 0.1,
+                        "eps_actual": 0.2,
+                        "is_common_stock": True,
+                        "catalyst": {
+                            "source_url": f"https://example.com/{evidence['symbol']}",
+                            "published_at": "2026-03-02T21:00:00+00:00",
+                            "point_in_time": True,
+                        },
+                    }
+                )
+            manifest.write_text(json.dumps(manifest_payload), encoding="utf-8")
+            store = HistoricalDayStore(root / "canonical")
+            with (
+                patch(
+                    "historical_bundle_builder.open_provider_set",
+                    side_effect=provider_set,
+                ),
+                patch(
+                    "historical_bundle_builder._benchmark_history",
+                    side_effect=lambda client, day, symbol: {
+                        "provider": client.provider_name,
+                        "session_bars": session_bars(),
+                    },
+                ),
+                patch(
+                    "historical_bundle_builder._collect_candidate_raw",
+                    side_effect=collect,
+                ),
+            ):
+                result = collect_manifest(
+                    manifest,
+                    data_root=root / "data",
+                    env_file=root / "missing.env",
+                    status_path=root / "status.json",
+                    historical_store=store,
+                    max_workers=1,
+                )
+
+        self.assertTrue(result["valid"], result)
+        self.assertEqual(len(result["fallback_recoveries"]), 10)
+        self.assertTrue(
+            all(
+                recovery["fallback_provider"] == "Alpaca Market Data API"
+                for recovery in result["fallback_recoveries"]
+            )
+        )
 
 
 if __name__ == "__main__":
