@@ -193,6 +193,11 @@ semantic reviewed results, parser dependencies, timestamp precedence, event
 taxonomy, financing-first rule, and terminal precedence. The implementation is
 network-free and outcome-blind.
 
+Manifest `aba8d8fa80db1c1fb93f2ed9ed72c88e6d6f7e596837fc1054fa5a628cb504b6`
+now freezes those exact 12 sources, six pair identities, all 13 predecessor
+hashes, both prior private reviewed results, and the implementation/dependency
+hashes before extraction.
+
 An official domain proves neither that the source company is the selected
 security nor that a document was published in time. Verified target binding
 requires the official-domain method plus either an exact source-CIK match or a
@@ -203,7 +208,8 @@ independently establish causality. Each source receives exactly one derived
 terminal reason; pair results are deduplicated privately across the original,
 SEC-recovered, and issuer-chain passes before any capacity claim is published.
 
-The implementation must be committed before its manifest is frozen. Then use:
+The implementation is committed and the manifest is frozen. Commit the manifest
+before continuing with:
 
 ```sh
 python3 catalyst_issuer_chain_semantics.py freeze

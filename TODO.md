@@ -44,9 +44,10 @@ separately frozen issuer-chain ownership, target-binding, causal-time,
 relevance, financing-conflict, and direction gate before private semantic
 review. `catalyst_issuer_chain_semantics.py` now implements that network-free
 12-source gate, exact cross-pass private deduplication, terminal precedence, and
-outcome lock. The current handoff is to commit and push the adjudicator before
-freezing its manifest. A wait, pause, or insufficient sample is progress state,
-not completion.
+outcome lock. Manifest `aba8d8fa...8cb504b6` now freezes the exact adjudication
+surface; the current handoff is to commit and push it before private extraction
+or review. A wait, pause, or insufficient sample is progress state, not
+completion.
 
 ## Completed 2026-07-19
 
