@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "workflow": "champion_input_fidelity",
+  "contracts": [
+    {
+      "dataset_id": "dataset-champion-input-fidelity-2026-07-19-v1",
+      "manifest_sha256": "13827a2daef75932f2599c4f0530c06c2220f2b6261881e92594a55536f2a93d",
+      "status": "FAILED",
+      "failure_category": "source_shape",
+      "failure": "The official Nasdaq historical-halt table returned fractional-second clocks. The frozen v1 parser accepted only whole seconds and stopped before a result artifact was produced.",
+      "source_data_observed": true,
+      "target_outcomes_observed": false,
+      "substitution_or_rule_change": false,
+      "superseded_by": "dataset-champion-input-fidelity-2026-07-19-v2"
+    }
+  ]
+}

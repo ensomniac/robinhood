@@ -1,0 +1,41 @@
+{
+  "broker_specific_historical_tradability_reconstructed": false,
+  "counts": {
+    "conflict_pairs": 6,
+    "filing_negative_or_financing_conflict": 7,
+    "filing_stale_before_prior_close": 56,
+    "filing_unresolved_primary_source": 30,
+    "filing_verified_material_direction_unresolved": 12,
+    "filing_verified_positive_primary": 1,
+    "filings_classified": 106,
+    "halt_dates_collected": 20,
+    "official_halt_records": 966,
+    "pair_no_recent_primary": 351,
+    "pair_reject_conflict": 6,
+    "pair_unresolved_recent_primary": 20,
+    "pair_verified_material_direction_unresolved": 11,
+    "pair_verified_positive_primary": 1,
+    "selected_pairs": 389,
+    "trigger_halt_risk_pairs": 0,
+    "trigger_halt_windows_evaluated": 325,
+    "verified_material_catalysts": 12,
+    "verified_positive_directions": 1
+  },
+  "dataset_id": "dataset-champion-input-fidelity-2026-07-19-v2",
+  "halt_client": {
+    "cache_hits": 7,
+    "downloads": 13
+  },
+  "manifest_sha256": "3098b32480cc59ce0a51624a84db2c0f194a518341f12824e0e615583809b3a5",
+  "private_result_sha256": "a878ad26126d468da5ba81774ce51cfc588bf46b5b9010f4db6b697fcce406dc",
+  "schema_version": 1,
+  "sec_client": {
+    "cache_hits": 100,
+    "download_bytes": 0,
+    "downloads": 0,
+    "minimum_spacing_seconds": 0.15,
+    "workers": 4
+  },
+  "status": "COLLECTION_COMPLETE",
+  "symbols_ciks_filings_and_raw_rows_public": false
+}

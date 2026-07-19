@@ -795,14 +795,21 @@ When Ryan selects historical mode:
    `verified_catalyst=true` without the primary/direct evidence required above.
    The dated security master now maps all 389 selected pairs to point-in-time
    CIKs, and the bounded SEC lane found primary filing candidates for 81 pairs.
-   Filing presence still never proves positive direction: source-grounded
-   classification is required, and eight detected dilution conflicts remain
-   hard rejects.
-   Historical top-of-book size is not full depth, and current tradability or
-   halt facts cannot backfill a target date. Missing catalyst, depth,
-   tradability, halt, resistance, or sector evidence defaults to reject, never
-   eligible. The inspected 20 dates cannot support an alpha or confirmation
-   claim.
+   `CHAMPION_INPUT_FIDELITY.md` now governs the source-grounded classifier and
+   official halt join. Complete submissions reduced the exact corpus to 12
+   verified material recent primary-catalyst pairs, only one with verified
+   positive direction; six pairs are conflict rejects. Filing presence,
+   materiality, and secondary news still never prove positive direction.
+   All 325 clean-trigger windows were checked against official historical
+   Nasdaq halt records with no overlap. This is an exchange-state proxy, not
+   reconstructed broker-specific tradability, which remains a prospective
+   live execution check.
+   Historical top-of-book size is not full depth. It may be used only as
+   conservative visible best-price liquidity evidence when labeled exactly and
+   combined with the prior completed real one-minute-volume cap. Missing
+   catalyst, quote, resistance, structural invalidation/noise, market alignment,
+   or liquidity evidence defaults to reject, never eligible. The inspected 20
+   dates cannot support an alpha or confirmation claim.
    Before freezing any new bulk market-data contract, measure a representative
    pilot's canonical bytes and provider requests per symbol-session, project
    both over the exact target set, and verify free space for the projection plus

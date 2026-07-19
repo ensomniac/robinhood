@@ -74,6 +74,30 @@ remain frozen.
   candidates and explicit resolution of halt/tradability, resistance, sector,
   and depth inputs before champion returns or new-date alpha collection.
 
+### 19. Champion Catalyst Classification And Official Halt History
+
+Status: `dataset-champion-input-fidelity-2026-07-19-v2` is independently
+inspected `READY` for development-only pipeline fidelity; production rules
+remain frozen.
+
+- Re-read 100 SEC complete submissions and enforced exact prior-session-close
+  recency for 106 filing observations without observing target outcomes.
+- Reduced the 389-pair corpus to 12 verified material catalyst pairs: 11 remain
+  directionally unresolved and one has a high-precision positive issuer phrase.
+  Six pairs are hard conflict rejects; 351 have no recent SEC primary source.
+- Retained unrecognized filings and non-SEC event types as unresolved rather
+  than using filing presence, document materiality, or secondary news as a
+  favorable default.
+- Collected and reparsed 966 official Nasdaq historical halt rows for all 20
+  dates. None overlapped the 325 clean-trigger observation windows.
+- Explicitly separated the historical active-listing/no-halt proxy from
+  broker-specific tradability, which requires prospective broker qualification.
+- Preserved the failed v1 source-shape contract and superseded it without date,
+  pair, rule, or outcome substitution.
+- Next: build an outcome-blind unchanged-champion readiness matrix for
+  resistance, structural stop/noise, benchmark-relative strength, and
+  conservative executable liquidity before exposing returns.
+
 ## Completed 2026-07-18
 
 ### 12. Bounded Edit And Learning Loop

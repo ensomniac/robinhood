@@ -1,6 +1,6 @@
 # Persistent Strategy Learning Program
 
-Program version: `2026-07-19-v5`
+Program version: `2026-07-19-v6`
 
 Production champion: `2026-07-15-orb-v3`
 
@@ -55,9 +55,16 @@ rewritten or deleted.
    SEC primary documents produced 81 filing-covered pairs and eight dilution
    conflicts. Frozen SIP semantics rejected 197 of 325 first raw crosses; only
    155 condition-valid clean-cross windows remained inside the chase cap.
-7. **Registered hypothesis and experiment lifecycle:** implemented.
-8. **Three-axis champion/challenger evidence:** implemented.
-9. **Operating cadence and monitoring:** implemented.
+7. **Catalyst classification and official halt history:** independently
+   inspected `READY` for pipeline development. Prior-close recency reduced 106
+   filing observations to 50 recent observations; only 12 of 389 pairs had a
+   verified material primary catalyst, only one had verified positive direction,
+   and six were conflict rejects. All 325 clean-trigger windows were joined to
+   966 official Nasdaq halt rows with zero overlaps. Broker-specific historical
+   tradability remains unreconstructable and is explicitly prospective.
+8. **Registered hypothesis and experiment lifecycle:** implemented.
+9. **Three-axis champion/challenger evidence:** implemented.
+10. **Operating cadence and monitoring:** implemented.
 
 ## Current Evidence Decisions
 
@@ -73,15 +80,17 @@ rewritten or deleted.
 ## Current Next Objective
 
 The scanner, selected-candidate join, point-in-time CIK, SEC primary-source
-candidate, and clean-condition mechanics are complete. The next objective is
-still not a strategy variant: classify the 80 material primary-source candidates
-without converting filing presence into positive direction, and close or
-explicitly reject the point-in-time halt/tradability, resistance, sector, and
-depth inputs. Then evaluate the unchanged champion. The existing 20 dates prove
-pipeline fidelity and gate attrition only. A subsequent preregistered sample of
-at least 100 previously uninspected scanner dates is required for meaningful
-alpha inference. See `SCANNER_REPLAY.md`, `SELECTED_CANDIDATE_JOIN.md`,
-`SELECTED_CANDIDATE_FIDELITY.md`, and
+classification, clean-condition mechanics, and official historical halt join
+are complete. The next objective is still not a strategy variant: assemble an
+outcome-blind unchanged-champion readiness join and close or explicitly reject
+resistance room, structural invalidation/noise, benchmark-relative strength,
+and conservative executable-liquidity inputs. Broker-specific tradability is a
+prospective execution-qualification requirement, not a historical alpha field.
+Then evaluate the unchanged champion. The existing 20 dates prove pipeline
+fidelity and gate attrition only. A subsequent preregistered sample of at least
+100 previously uninspected scanner dates is required for meaningful alpha
+inference. See `SCANNER_REPLAY.md`, `SELECTED_CANDIDATE_JOIN.md`,
+`SELECTED_CANDIDATE_FIDELITY.md`, `CHAMPION_INPUT_FIDELITY.md`, and
 `STRATEGY_LEARNING_EXECUTION_PLAN.md`.
 
 ## Bounded Iteration

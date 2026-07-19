@@ -244,11 +244,20 @@ dataset mapped all 389 pairs to dated CIKs, retained 100 SEC primary documents,
 and separated minute-high eligibility from a clean continuous regular-sale
 cross. Of 325 first raw crosses, 197 failed the clean contract; condition-valid
 timing reduced chase-cap passes from 177 to 155. Eighty-one pairs had SEC filing
-candidates and eight had dilution conflicts, but positive catalyst direction
-remains unclassified. Top-of-book is not full depth, and point-in-time
-tradability, halt, resistance, and sector inputs remain absent. Missing fields
-block rather than default. See `SELECTED_CANDIDATE_JOIN.md` and
-`SELECTED_CANDIDATE_FIDELITY.md`.
+candidates and eight had dilution conflicts.
+
+The next frozen layer read the SEC complete submissions and issuer exhibits,
+enforced acceptance after the prior completed-session close, and joined official
+Nasdaq halt history. Only 12 pairs had a verified material recent primary
+catalyst; 11 remained directionally unresolved, one had verified positive
+direction, and six were conflict rejects. None of the 325 clean-trigger windows
+overlapped one of the 966 official halt records. This closes historical halt
+state but not broker-specific historical tradability, which cannot be recreated
+and must remain a prospective execution-qualification check. Top-of-book is not
+a full ladder. Resistance, structural invalidation/noise, benchmark-relative
+strength, and conservative executable-liquidity contracts remain incomplete.
+Missing fields block rather than default. See `SELECTED_CANDIDATE_JOIN.md`,
+`SELECTED_CANDIDATE_FIDELITY.md`, and `CHAMPION_INPUT_FIDELITY.md`.
 
 The storage-capacity preflight measured bytes per selected pair from a
 representative pilot, published projected incremental bytes and request count,
@@ -259,14 +268,33 @@ one-minute pull is therefore wasteful and unsafe. Stage 2 collected only the
 frozen selected pairs, benchmarks, and bounded trigger tape, while enforcing a
 10 GiB reserve and exact cache resume.
 
-### Stage 3 - Evaluate the existing champion and its attribution baseline
+### Stage 3 - Qualify unchanged-champion inputs before outcomes
 
-First finish source-grounded direction classification for the bounded primary
-candidates and resolve or explicitly reject the remaining champion inputs.
-Then run the exact `2026-07-15-orb-v3` rules first. Retain every selected candidate,
-every trigger, every production rejection reason, and a paired paper-aligned
-end-of-day outcome. Report both the one-trade daily portfolio and all-signal gate
-attribution. The first 20 scanner dates validate the pipeline and expose gross
+Status: in progress on 2026-07-19; no target-session return is eligible to be
+read yet.
+
+Build one deterministic readiness matrix over the exact 389 frozen pairs. It
+must consume only source data available at the clean trigger, publish aggregate
+attrition, preserve an unresolved value instead of a favorable default, and
+bind every derived-input implementation hash. At minimum it must determine:
+
+- recent verified catalyst disposition from the frozen primary-source layer;
+- clean trigger, three bounded snapshots, spread, and final chase distance;
+- official historical halt proxy with broker tradability kept prospective;
+- conservative quantity capacity from visible best-ask size and the prior
+  completed real one-minute volume, without calling top-of-book a full ladder;
+- candidate strength relative to SPY and QQQ using only completed bars;
+- known overhead resistance from pre-session split-adjusted history;
+- whether a structural invalidation and stop-noise contract can be reproduced
+  without inventing new thresholds.
+
+Only after this matrix passes independent inspection may the exact
+`2026-07-15-orb-v3` rules read outcomes. Retain every selected candidate, every
+trigger, every production rejection reason, and a paired paper-aligned
+end-of-day outcome. Report both the one-trade daily portfolio and all-signal
+gate attribution. It may still conclude that zero or too few pairs are
+evaluable. That would be an evidence result, not permission to loosen gates on
+these dates. The first 20 scanner dates validate the pipeline and expose gross
 selection behavior; they are not enough for production promotion. Once the
 machinery passes, freeze at least 100 previously uninspected scanner dates for
 the first meaningful alpha sample.

@@ -341,10 +341,17 @@ present, and 325 crossing windows have bounded raw trade/quote tape. Execution
 attrition is substantial. A follow-on independently inspected dataset mapped
 all pairs to dated CIKs, retained 100 SEC primary documents, and froze clean SIP
 condition semantics. It rejected 197 first raw crosses and reduced chase-cap
-passes from 177 to 155, while leaving primary direction and other production
-facts explicit blockers. V3 remains unchanged. See
+passes from 177 to 155. The next inspected layer classified the 100 SEC complete
+submissions with exact prior-close recency: only 12 of 389 pairs have a verified
+material recent primary catalyst, only one has verified positive direction, and
+six are conflict rejects. It also joined all 325 clean-trigger windows to 966
+official Nasdaq historical halt rows with no overlaps. This closes historical
+halt state, not broker-specific tradability or the remaining resistance,
+structural-stop, benchmark-strength, and conservative-liquidity inputs. V3
+remains unchanged. See
 [SELECTED_CANDIDATE_JOIN.md](SELECTED_CANDIDATE_JOIN.md) and
-[SELECTED_CANDIDATE_FIDELITY.md](SELECTED_CANDIDATE_FIDELITY.md).
+[SELECTED_CANDIDATE_FIDELITY.md](SELECTED_CANDIDATE_FIDELITY.md), then
+[CHAMPION_INPUT_FIDELITY.md](CHAMPION_INPUT_FIDELITY.md).
 
 ```sh
 python3 historical_research.py run \
@@ -566,6 +573,7 @@ Commit messages should describe what changed, for example:
 ├── scanner_replay_alpaca.py # Frozen non-S3 full-universe source collector
 ├── scanner_replay_inspection.py # Independent scanner/canonical-data verifier
 ├── SCANNER_REPLAY.md # Dynamic 09:35 selection contract and runbook
+├── CHAMPION_INPUT_FIDELITY.md # SEC catalyst and official halt contract
 ├── selected_candidate_join.py # Frozen selected-pair bar/news/tape join
 ├── SELECTED_CANDIDATE_JOIN.md # Join contract, findings, blockers, and runbook
 ├── SIGNAL_LEDGER.md  # Structured public signal-record schema and workflow

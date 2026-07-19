@@ -133,9 +133,12 @@ independent reconstruction is in
 ## Decision And Next Evidence
 
 Keep `2026-07-15-orb-v3` frozen and `UNVALIDATED`. No strategy rule was earned.
-The next bounded work is to classify the 80 primary-source candidates from
-their filings and corroborating time-valid evidence without turning filing
-presence into positivity. Point-in-time halts/tradability, resistance, sector
-alignment, and executable depth remain blockers. Only after the unchanged
-champion input contract is complete should the system freeze at least 100
-previously uninspected scanner dates for meaningful alpha inference.
+The follow-on `CHAMPION_INPUT_FIDELITY.md` layer now classifies complete SEC
+submissions with exact prior-close recency and joins official historical halts.
+It finds only 12 verified material catalyst pairs, one with verified positive
+direction, and zero halt overlaps. Broker-specific historical tradability is
+explicitly not reconstructable. Resistance, structural stop/noise,
+benchmark-relative strength, and conservative executable liquidity remain
+blockers. Only after an outcome-blind unchanged-champion readiness contract is
+complete should the system expose returns or freeze at least 100 previously
+uninspected scanner dates for meaningful alpha inference.

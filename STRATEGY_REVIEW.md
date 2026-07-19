@@ -141,6 +141,22 @@ the remaining catalyst and execution blockers more precise; it still earns no
 production-rule change. `SELECTED_CANDIDATE_FIDELITY.md` is authoritative for
 this layer.
 
+The next source-fidelity layer enforced exact prior-close recency against SEC
+complete submissions and issuer exhibits. Of 389 pairs, only 12 had a verified
+material recent primary catalyst; 11 were directionally unresolved, one had a
+verified positive issuer phrase, and six were conflict rejects. The same frozen
+layer reparsed 966 official Nasdaq historical halt rows and found no overlap in
+the 325 clean-trigger observation windows. An independent implementation
+reproduced every source hash, classification, halt interval, and canonical
+context. This closes historical halt state, not broker-specific tradability.
+`CHAMPION_INPUT_FIDELITY.md` is authoritative for this layer.
+
+The current evidence therefore argues for further fidelity, not looser entry
+rules. The unchanged champion must next be assembled without target outcomes
+for resistance room, structural invalidation/noise, benchmark-relative
+strength, and conservative visible liquidity. A missing value stays blocking.
+The 20 development dates cannot earn a numeric threshold or production change.
+
 ## What The Repository Had Right
 
 The original strategy already addressed several common failure modes: it banned

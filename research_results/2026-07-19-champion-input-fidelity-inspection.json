@@ -1,0 +1,50 @@
+{
+  "checks": {
+    "aggregate_counts_match_collector": true,
+    "canonical_contexts_reconciled": true,
+    "classifications_rebuilt": true,
+    "complete_submission_hashes_rebuilt": true,
+    "halt_intervals_rebuilt": true,
+    "official_halt_html_reparsed": true,
+    "prior_close_recency_rebuilt": true,
+    "symbols_ciks_filings_and_raw_rows_public": false
+  },
+  "claim_boundary": "Independent pipeline-fidelity inspection on already-inspected dates; not alpha, confirmation, promotion, or a strategy variant.",
+  "classifier_implementation_sha256": "89f4555d9a0747db403227f2b6aa9b93ce2400edbcf4090472264a36cb8c1f57",
+  "counts": {
+    "conflict_pairs": 6,
+    "filing_negative_or_financing_conflict": 7,
+    "filing_stale_before_prior_close": 56,
+    "filing_unresolved_primary_source": 30,
+    "filing_verified_material_direction_unresolved": 12,
+    "filing_verified_positive_primary": 1,
+    "filings_classified": 106,
+    "halt_dates_collected": 20,
+    "official_halt_records": 966,
+    "pair_no_recent_primary": 351,
+    "pair_reject_conflict": 6,
+    "pair_unresolved_recent_primary": 20,
+    "pair_verified_material_direction_unresolved": 11,
+    "pair_verified_positive_primary": 1,
+    "selected_pairs": 389,
+    "trigger_halt_risk_pairs": 0,
+    "trigger_halt_windows_evaluated": 325,
+    "verified_material_catalysts": 12,
+    "verified_positive_directions": 1
+  },
+  "dataset_id": "dataset-champion-input-fidelity-2026-07-19-v2",
+  "halt_dispositions": {
+    "evaluated_no_halt": 325,
+    "no_clean_trigger": 64
+  },
+  "halt_implementation_sha256": "fa15f59407d600252f658a192985badec173694a1671d112594533921b2327de",
+  "inspected": true,
+  "inspection_implementation_sha256": "961dedb9d2913fcb7774f277334c1eaf8899ac2c64dbb7750e239e6b2e1e65e7",
+  "manifest_sha256": "3098b32480cc59ce0a51624a84db2c0f194a518341f12824e0e615583809b3a5",
+  "private_result_sha256": "a878ad26126d468da5ba81774ce51cfc588bf46b5b9010f4db6b697fcce406dc",
+  "private_selection_content_sha256": "683626856ef27deadb1c9a5577b48e7ed974575719ad13d6683241eb1743f97a",
+  "schema_version": 1,
+  "source_dataset_id": "dataset-selected-candidate-fidelity-2026-07-19-v1",
+  "status": "READY",
+  "unique_complete_sec_submissions": 100
+}
