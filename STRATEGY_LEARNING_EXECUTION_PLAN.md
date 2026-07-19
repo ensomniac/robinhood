@@ -386,7 +386,10 @@ direct-source acquisition, causal timestamps, issuer binding, conflicts, and
 independent inspection before another unchanged-v3 non-return join.
 Stage A is now frozen in `CATALYST_NEWS_ENRICHMENT.md` as manifest
 `154e5831...4fff2e`, covering the exact 7,391-article discovery corpus before
-any full-content request.
+any full-content request. Collection and inspection completed all 100 dates
+without error: 4,205 articles contained 27.8 MB of full content and cover 1,183
+pairs; 804 pairs remain without a content-complete lead. This is a better
+direct-source discovery surface, not catalyst verification.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:

@@ -93,6 +93,10 @@ unique discovery articles are bound before provider collection.
 - Publish content availability, attribution completeness, source-link counts,
   and errors before fetching any primary page.
 
+Complete and inspected: all 7,391 unique articles returned, 4,205 contained
+27,772,306 bytes of full content, 1,183 pairs have at least one content-complete
+lead, and 804 do not. No record was promoted to primary evidence.
+
 ### Stage C - Acquire direct sources
 
 - Freeze the exact lead set and canonical-link parser before network collection.
