@@ -1,11 +1,11 @@
 {
-  "audited_at": "2026-07-19T10:21:08-04:00",
+  "audited_at": "2026-07-19T11:36:59-04:00",
   "contexts": 124537,
   "datasets": 2334718,
   "dates": 733,
   "errors": [],
   "files": 844904,
-  "free_bytes_after_audit": 84951482368,
+  "free_bytes_after_audit": 84843290624,
   "providers": {
     "alpaca": 2138737,
     "ibkr": 195960,
