@@ -384,6 +384,9 @@ all URLs resolve to one secondary publisher, the corpus cannot meet the
 analyst-action corroboration rule as stored. The plan freezes content enrichment,
 direct-source acquisition, causal timestamps, issuer binding, conflicts, and
 independent inspection before another unchanged-v3 non-return join.
+Stage A is now frozen in `CATALYST_NEWS_ENRICHMENT.md` as manifest
+`154e5831...4fff2e`, covering the exact 7,391-article discovery corpus before
+any full-content request.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:

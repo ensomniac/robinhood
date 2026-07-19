@@ -83,6 +83,9 @@ never reinterpret a lower-quality lead as a higher-quality source.
 - Checkpoint each date. A missing article body is a row-level disposition, not a
   batch-fatal error.
 
+Frozen as manifest `154e5831...4fff2e`: 1,987 pairs, 100 dates, and 7,391
+unique discovery articles are bound before provider collection.
+
 ### Stage B - Enrich secondary content
 
 - Pull `include_content=true` once per frozen date/symbol batch.

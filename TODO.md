@@ -290,6 +290,9 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Follow `CATALYST_EVIDENCE_ACQUISITION.md`: freeze Alpaca full-content
   enrichment, then causal direct-source and independent corroboration joins.
   Preserve absent or uncertain evidence as unresolved.
+- Froze full-content enrichment as manifest `154e5831...4fff2e`, binding the
+  exact 1,987 pairs, 100 dates, 7,391 articles, provider request, implementation,
+  and outcome-blind boundary. Next: collect and inspect all dates.
 - Full external-store audit passed with 844,904 files, 2,334,718 datasets,
   124,537 contexts, 6,605 symbols, 733 dates, and zero errors. About 79 GiB
   remains free; enforce the reserve before further bulk collection.
