@@ -48,7 +48,6 @@ from scanner_replay import (
 )
 from scanner_replay_alpaca import (
     CSV_FIELDS,
-    DATASET_ID,
     DEFAULT_CALENDAR,
     DEFAULT_RULES,
     DEFAULT_RUN_ROOT,
@@ -208,10 +207,20 @@ def _verify_source_attestations(
         raise ScannerInspectionError("manifest registration time is malformed") from exc
     if frozen_at.tzinfo is None:
         raise ScannerInspectionError("manifest registration time lacks a timezone")
-    expected_symbols = int(manifest["collection_contract"]["target_symbol_union_count"])
+    dataset_id = str(manifest["dataset_id"])
+    collection = manifest["collection_contract"]
+    expected_symbols = int(collection["target_symbol_union_count"])
+    reusable = collection.get("reusable_source")
+    reusable_days = (
+        set(str(day) for day in reusable["session_dates"])
+        if isinstance(reusable, Mapping)
+        else set()
+    )
     source_hashes: list[str] = []
     totals: Counter[str] = Counter()
-    for day in manifest["collection_contract"]["required_session_dates"]:
+    captured_times: list[datetime] = []
+    for day in collection["required_session_dates"]:
+        source_path = source_root / "minute_aggs" / day[:4] / f"{day}.csv.gz"
         sidecar = _read_object(
             source_root / "attestations" / day[:4] / f"{day}.json"
         )
@@ -228,14 +237,19 @@ def _verify_source_attestations(
             raise ScannerInspectionError(
                 f"{day}: source artifact does not postdate the frozen contract"
             )
+        captured_times.append(captured_at)
         if not isinstance(source, Mapping) or any(
             (
                 sidecar.get("schema_version") != 1,
-                sidecar.get("dataset_id") != DATASET_ID,
+                sidecar.get("dataset_id") != dataset_id,
                 sidecar.get("date") != day,
                 sidecar.get("status") != "READY",
                 sidecar.get("requested_symbols") != expected_symbols,
+                sidecar.get("target_symbol_union_count", expected_symbols)
+                != expected_symbols,
                 source.get("provider") != "Alpaca",
+                source.get("endpoint")
+                != "https://data.alpaca.markets/v2/stocks/bars",
                 source.get("feed") != "sip",
                 source.get("adjustment") != "raw",
                 source.get("asof") != "-",
@@ -244,6 +258,9 @@ def _verify_source_attestations(
             raise ScannerInspectionError(f"{day}: source attestation contract differs")
         try:
             daily_symbols = int(sidecar["daily_symbols"])
+            source_symbol_union = int(
+                sidecar.get("source_symbol_union_count", expected_symbols)
+            )
             opening_symbols = int(sidecar["opening_symbols"])
             exact_openings = int(sidecar["complete_opening_symbols"])
             derived_rows = int(sidecar["derived_rows"])
@@ -255,10 +272,11 @@ def _verify_source_attestations(
                 f"{day}: source attestation counts are malformed"
             ) from exc
         if not (
-            0 < daily_symbols <= expected_symbols
-            and 0 <= exact_openings <= opening_symbols <= expected_symbols
+            source_symbol_union >= expected_symbols
+            and 0 < daily_symbols <= source_symbol_union
+            and 0 <= exact_openings <= opening_symbols <= source_symbol_union
             and derived_rows >= daily_symbols
-            and provider_requests > 0
+            and provider_requests >= 0
             and provider_retries >= 0
             and canonical_merges >= 0
         ):
@@ -266,8 +284,71 @@ def _verify_source_attestations(
                 f"{day}: source attestation counts are inconsistent"
             )
         source_hash = str(sidecar.get("source_sha256") or "")
-        if not re.fullmatch(r"[0-9a-f]{64}", source_hash):
-            raise ScannerInspectionError(f"{day}: source hash is malformed")
+        if (
+            not re.fullmatch(r"[0-9a-f]{64}", source_hash)
+            or not source_path.exists()
+            or _sha256_file(source_path) != source_hash
+        ):
+            raise ScannerInspectionError(f"{day}: source hash differs")
+        reused = sidecar.get("reused_source")
+        if day in reusable_days:
+            if not isinstance(reused, Mapping):
+                raise ScannerInspectionError(
+                    f"{day}: reusable source provenance differs"
+                )
+            inherited_rows = reused.get("inherited_derived_rows")
+            delta_symbols = reused.get("delta_symbols_requested")
+            if (
+                reused.get("dataset_id") != reusable.get("dataset_id")
+                or not re.fullmatch(
+                    r"[0-9a-f]{64}", str(reused.get("source_sha256") or "")
+                )
+                or not isinstance(inherited_rows, int)
+                or inherited_rows < 0
+                or not isinstance(delta_symbols, int)
+                or delta_symbols < 0
+            ):
+                raise ScannerInspectionError(
+                    f"{day}: reusable source provenance differs"
+                )
+            reusable_root = source_root.parent / str(reusable["dataset_id"])
+            inherited_path = (
+                reusable_root / "minute_aggs" / day[:4] / f"{day}.csv.gz"
+            )
+            inherited_sidecar = _read_object(
+                reusable_root / "attestations" / day[:4] / f"{day}.json"
+            )
+            inherited_hash = str(reused["source_sha256"])
+            if any(
+                (
+                    not inherited_path.exists(),
+                    inherited_sidecar.get("schema_version") != 1,
+                    inherited_sidecar.get("dataset_id") != reusable["dataset_id"],
+                    inherited_sidecar.get("date") != day,
+                    inherited_sidecar.get("status") != "READY",
+                    inherited_sidecar.get("source_sha256") != inherited_hash,
+                    inherited_sidecar.get("derived_rows")
+                    != reused["inherited_derived_rows"],
+                )
+            ) or _sha256_file(inherited_path) != inherited_hash:
+                raise ScannerInspectionError(
+                    f"{day}: inherited source artifact differs"
+                )
+            if provider_requests == 0 and reused["delta_symbols_requested"] != 0:
+                raise ScannerInspectionError(
+                    f"{day}: nonempty symbol delta made no provider request"
+                )
+            totals.update(
+                {
+                    "reused_sessions": 1,
+                    "inherited_derived_rows": inherited_rows,
+                    "delta_symbols_requested": delta_symbols,
+                }
+            )
+        elif reused is not None or provider_requests <= 0:
+            raise ScannerInspectionError(
+                f"{day}: fresh source provenance is inconsistent"
+            )
         source_hashes.append(source_hash)
         totals.update(
             {
@@ -283,6 +364,10 @@ def _verify_source_attestations(
         "provider_retries": totals["provider_retries"],
         "canonical_day_merges": totals["canonical_day_merges"],
         "derived_rows": totals["derived_rows"],
+        "reused_sessions": totals["reused_sessions"],
+        "inherited_derived_rows": totals["inherited_derived_rows"],
+        "delta_symbols_requested": totals["delta_symbols_requested"],
+        "earliest_captured_at": min(captured_times).isoformat(),
         "all_captured_after_freeze": True,
     }
 
@@ -388,6 +473,93 @@ def _verify_pre_collection_split_attestation(
         "sha256": actual_hash,
         "events": actual_events,
         "pre_collection_commit_verified": True,
+    }
+
+
+def _verify_manifest_bound_split_actions(
+    *,
+    manifest_path: Path,
+    manifest: Mapping[str, Any],
+    split_path: Path,
+    earliest_source_capture: str,
+) -> dict[str, Any]:
+    universe = manifest["dataset_payload"]["universe_contract"]
+    attestation_path = PROJECT_ROOT / str(
+        universe["split_actions_attestation_path"]
+    )
+    attestation = _read_object(attestation_path)
+    artifact = attestation.get("artifact")
+    source = attestation.get("source")
+    query_range = source.get("query_range") if isinstance(source, Mapping) else None
+    actions = _load_independent_split_actions(split_path)
+    actual_events = sum(len(values) for values in actions.values())
+    actual_hash = _sha256_file(split_path)
+    required = manifest["collection_contract"]["required_session_dates"]
+    if (
+        attestation.get("schema_version") != 1
+        or not isinstance(artifact, Mapping)
+        or not isinstance(source, Mapping)
+        or not isinstance(query_range, Mapping)
+        or source.get("provider") != "Massive"
+        or source.get("endpoint") != "https://api.massive.com/stocks/v1/splits"
+        or str(query_range.get("execution_date_gte") or "") > required[0]
+        or str(query_range.get("execution_date_lte") or "")
+        < max(manifest["requested_dates"])
+        or artifact.get("events") != actual_events
+        or artifact.get("sha256") != actual_hash
+        or universe.get("split_actions_sha256") != actual_hash
+        or universe.get("split_actions_attestation_sha256")
+        != _sha256_file(attestation_path)
+        or (PROJECT_ROOT / str(universe["split_actions_path"])).resolve()
+        != split_path.resolve()
+    ):
+        raise ScannerInspectionError(
+            "manifest-bound split actions or attestation differ"
+        )
+    relative_manifest = manifest_path.resolve().relative_to(PROJECT_ROOT).as_posix()
+    completed = subprocess.run(
+        [
+            "git",
+            "log",
+            "--diff-filter=A",
+            "-1",
+            "--format=%H%x00%cI",
+            "--",
+            relative_manifest,
+        ],
+        cwd=PROJECT_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    try:
+        commit, committed_at_text = completed.stdout.strip().split("\x00", 1)
+        committed_at = datetime.fromisoformat(committed_at_text.replace("Z", "+00:00"))
+        captured_at = datetime.fromisoformat(
+            earliest_source_capture.replace("Z", "+00:00")
+        )
+    except ValueError as exc:
+        raise ScannerInspectionError(
+            "frozen scanner manifest lacks committed pre-collection evidence"
+        ) from exc
+    if (
+        completed.returncode != 0
+        or not re.fullmatch(r"[0-9a-f]{40}", commit)
+        or committed_at.tzinfo is None
+        or captured_at.tzinfo is None
+        or committed_at >= captured_at
+        or _historical_git_blob({"commit": commit, "path": relative_manifest})
+        != manifest_path.read_bytes()
+    ):
+        raise ScannerInspectionError(
+            "scanner manifest was not immutably committed before source collection"
+        )
+    return {
+        "sha256": actual_hash,
+        "events": actual_events,
+        "pre_collection_commit": commit,
+        "pre_collection_commit_verified": True,
+        "manifest_bound": True,
     }
 
 
@@ -1011,8 +1183,10 @@ def inspect_payloads(
     summary_sha256: str,
 ) -> dict[str, Any]:
     if (
-        manifest.get("dataset_id") != DATASET_ID
-        or summary.get("dataset_id") != DATASET_ID
+        not str(manifest.get("dataset_id") or "").startswith(
+            "dataset-production-scanner-replay-"
+        )
+        or summary.get("dataset_id") != manifest.get("dataset_id")
     ):
         raise ScannerInspectionError(
             "manifest and summary must name the active dataset"
@@ -1169,7 +1343,7 @@ def inspect_payloads(
 
     return {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": str(manifest["dataset_id"]),
         "status": "INSPECTED",
         "valid": True,
         "manifest_sha256": manifest["manifest_sha256"],
@@ -1222,7 +1396,7 @@ def inspect_replay(
     config = HistoricalStoreConfig.from_env(env_path)
     store = HistoricalDayStore(config.root)
     source_status = collection_status(manifest, store=store)
-    source_root = index_root(store)
+    source_root = index_root(store, str(manifest["dataset_id"]))
     source_attestations = _verify_source_attestations(manifest, source_root)
     source_hashes = source_attestations["source_hashes"]
     for field in (
@@ -1230,6 +1404,9 @@ def inspect_replay(
         "provider_retries",
         "canonical_day_merges",
         "derived_rows",
+        "reused_sessions",
+        "inherited_derived_rows",
+        "delta_symbols_requested",
     ):
         if source_status.get(field) != source_attestations[field]:
             raise ScannerInspectionError(
@@ -1255,9 +1432,19 @@ def inspect_replay(
         raise ScannerInspectionError("summary does not match the frozen security master")
     if summary.get("split_actions_sha256") != _sha256_file(split_path):
         raise ScannerInspectionError("summary does not match the inspected split actions")
-    split_attestation = _verify_pre_collection_split_attestation(
-        split_attestation_path, split_path
-    )
+    if "split_actions_path" in manifest["dataset_payload"]["universe_contract"]:
+        split_attestation = _verify_manifest_bound_split_actions(
+            manifest_path=manifest_path,
+            manifest=manifest,
+            split_path=split_path,
+            earliest_source_capture=str(
+                source_attestations["earliest_captured_at"]
+            ),
+        )
+    else:
+        split_attestation = _verify_pre_collection_split_attestation(
+            split_attestation_path, split_path
+        )
     strategy_attestation = _verify_pre_collection_strategy_attestation(
         strategy_attestation_path, rules
     )

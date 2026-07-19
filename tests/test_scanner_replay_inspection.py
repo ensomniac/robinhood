@@ -7,14 +7,16 @@ import tempfile
 import unittest
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
+from unittest.mock import Mock, patch
 
-from scanner_replay import EASTERN, _sha256_json
+from scanner_replay import EASTERN, _sha256_file, _sha256_json
 from scanner_replay_alpaca import CSV_FIELDS, DATASET_ID
 from scanner_replay_inspection import (
     ScannerInspectionError,
     _compare_independent_detail,
     _independently_recompute_detail,
     _load_independent_source_day,
+    _verify_manifest_bound_split_actions,
     _verify_source_attestations,
     inspect_payloads,
 )
@@ -131,6 +133,7 @@ class ScannerInspectionTests(unittest.TestCase):
     def test_source_attestation_must_match_contract_and_postdate_freeze(self):
         day = "2026-03-03"
         manifest = {
+            "dataset_id": DATASET_ID,
             "registered_at": "2026-03-01T12:00:00-05:00",
             "collection_contract": {
                 "target_symbol_union_count": 1,
@@ -144,6 +147,7 @@ class ScannerInspectionTests(unittest.TestCase):
             "status": "READY",
             "source": {
                 "provider": "Alpaca",
+                "endpoint": "https://data.alpaca.markets/v2/stocks/bars",
                 "feed": "sip",
                 "adjustment": "raw",
                 "asof": "-",
@@ -156,22 +160,150 @@ class ScannerInspectionTests(unittest.TestCase):
             "provider_requests": 2,
             "provider_retries": 0,
             "canonical_files_changed": 1,
-            "source_sha256": "a" * 64,
+            "source_sha256": "placeholder",
             "captured_at": "2026-03-02T18:00:00+00:00",
         }
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            base = Path(directory)
+            root = base / DATASET_ID
             path = root / "attestations" / "2026" / f"{day}.json"
+            source_path = root / "minute_aggs" / "2026" / f"{day}.csv.gz"
             path.parent.mkdir(parents=True)
+            source_path.parent.mkdir(parents=True)
+            with gzip.open(source_path, "wt", encoding="utf-8") as target:
+                target.write("fixture")
+            sidecar["source_sha256"] = _sha256_file(source_path)
             path.write_text(json.dumps(sidecar), encoding="utf-8")
 
             result = _verify_source_attestations(manifest, root)
             self.assertTrue(result["all_captured_after_freeze"])
 
+            manifest["collection_contract"]["reusable_source"] = {
+                "dataset_id": "dataset-production-scanner-replay-source",
+                "session_dates": [day],
+            }
+            inherited_path = (
+                base
+                / "dataset-production-scanner-replay-source"
+                / "minute_aggs"
+                / "2026"
+                / f"{day}.csv.gz"
+            )
+            inherited_sidecar = (
+                base
+                / "dataset-production-scanner-replay-source"
+                / "attestations"
+                / "2026"
+                / f"{day}.json"
+            )
+            inherited_path.parent.mkdir(parents=True)
+            inherited_sidecar.parent.mkdir(parents=True)
+            with gzip.open(inherited_path, "wt", encoding="utf-8") as target:
+                target.write("inherited fixture")
+            inherited_hash = _sha256_file(inherited_path)
+            inherited_sidecar.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "dataset_id": "dataset-production-scanner-replay-source",
+                        "date": day,
+                        "status": "READY",
+                        "source_sha256": inherited_hash,
+                        "derived_rows": 6,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            sidecar["provider_requests"] = 0
+            sidecar["reused_source"] = {
+                "dataset_id": "dataset-production-scanner-replay-source",
+                "source_sha256": inherited_hash,
+                "inherited_derived_rows": 6,
+                "delta_symbols_requested": 0,
+            }
+            path.write_text(json.dumps(sidecar), encoding="utf-8")
+            reused = _verify_source_attestations(manifest, root)
+            self.assertEqual(reused["reused_sessions"], 1)
+            self.assertEqual(reused["inherited_derived_rows"], 6)
+
             sidecar["captured_at"] = "2026-03-01T12:00:00-05:00"
             path.write_text(json.dumps(sidecar), encoding="utf-8")
             with self.assertRaisesRegex(ScannerInspectionError, "postdate"):
                 _verify_source_attestations(manifest, root)
+
+    def test_manifest_bound_splits_must_precede_source_collection(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as directory:
+            root = Path(directory)
+            split_path = root / "splits.json.gz"
+            with gzip.open(split_path, "wt", encoding="utf-8") as target:
+                json.dump(
+                    [
+                        {
+                            "ticker": "AAA",
+                            "execution_date": "2026-06-01",
+                            "split_from": 1,
+                            "split_to": 2,
+                        }
+                    ],
+                    target,
+                )
+            split_hash = _sha256_file(split_path)
+            attestation_path = root / "split-source.json"
+            attestation_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "artifact": {"events": 1, "sha256": split_hash},
+                        "source": {
+                            "provider": "Massive",
+                            "endpoint": "https://api.massive.com/stocks/v1/splits",
+                            "query_range": {
+                                "execution_date_gte": "2025-12-10",
+                                "execution_date_lte": "2026-06-30",
+                            },
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            manifest_path = root / "manifest.json"
+            manifest = {
+                "requested_dates": ["2026-06-30"],
+                "collection_contract": {
+                    "required_session_dates": ["2025-12-10", "2026-06-30"]
+                },
+                "dataset_payload": {
+                    "universe_contract": {
+                        "split_actions_sha256": split_hash,
+                        "split_actions_path": split_path.relative_to(Path.cwd()).as_posix(),
+                        "split_actions_attestation_path": attestation_path.relative_to(
+                            Path.cwd()
+                        ).as_posix(),
+                        "split_actions_attestation_sha256": _sha256_file(
+                            attestation_path
+                        ),
+                    }
+                },
+            }
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            completed = Mock(
+                returncode=0,
+                stdout=("a" * 40) + "\x002026-07-19T06:00:00-04:00\n",
+            )
+            with patch(
+                "scanner_replay_inspection.subprocess.run", return_value=completed
+            ), patch(
+                "scanner_replay_inspection._historical_git_blob",
+                return_value=manifest_path.read_bytes(),
+            ):
+                result = _verify_manifest_bound_split_actions(
+                    manifest_path=manifest_path,
+                    manifest=manifest,
+                    split_path=split_path,
+                    earliest_source_capture="2026-07-19T06:01:00-04:00",
+                )
+            self.assertTrue(result["manifest_bound"])
+            self.assertEqual(result["events"], 1)
 
     def test_independent_parser_requires_exact_opening_and_one_residual(self):
         day = "2026-03-03"
@@ -251,6 +383,21 @@ class ScannerInspectionTests(unittest.TestCase):
         self.assertEqual(result["total_evaluated"], 1)
         self.assertEqual(result["total_selected"], 1)
         self.assertTrue(result["invariants"]["denominators_recomputed"])
+
+        expanded_id = "dataset-production-scanner-replay-test-expansion"
+        manifest["dataset_id"] = expanded_id
+        summary["dataset_id"] = expanded_id
+        expanded = inspect_payloads(
+            manifest=manifest,
+            summary=summary,
+            detail=detail,
+            rules=rules,
+            source_status=source_status,
+            independent_detail=detail,
+            detail_sha256="d" * 64,
+            summary_sha256="u" * 64,
+        )
+        self.assertEqual(expanded["dataset_id"], expanded_id)
 
     def test_rejects_a_tampered_rvol_or_incomplete_source(self):
         manifest, summary, detail, rules, source_status = fixtures()

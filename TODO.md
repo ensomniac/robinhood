@@ -184,6 +184,9 @@ exists yet.
 - Added hash-bound source reuse with exact new-master symbol-delta collection;
   reuse can eliminate redundant provider work without omitting new or renamed
   listings.
+- Bound split history and its public source attestation into the frozen scanner
+  contract, and generalized the independent inspector to rehash both fresh and
+  inherited session artifacts under any frozen scanner dataset identity.
 - Explicitly disclose preexisting source rows and keep the campaign out of
   independent-alpha claims. Direct catalyst and outcome contracts remain
   separate future freezes.

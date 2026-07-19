@@ -46,12 +46,14 @@ from learning_data import (
 )
 from scanner_replay import (
     EASTERN,
+    MassiveReferenceConfig,
     PROJECT_ROOT,
     ScannerReplayError,
     _sha256_file,
     _sha256_json,
     _write_json,
     build_scanner_replay,
+    collect_split_actions,
     load_calendar,
     load_selection,
     required_sessions,
@@ -91,6 +93,12 @@ DEFAULT_MANIFEST_ROOT = (
 DEFAULT_RUN_ROOT = PROJECT_ROOT / "learning_runs" / "scanner_replay_alpaca"
 DEFAULT_SUMMARY = PROJECT_ROOT / "research_results" / "2026-07-19-scanner-replay.json"
 DEFAULT_SPLITS = PROJECT_ROOT / "learning_runs" / "scanner_replay" / "splits.json.gz"
+DEFAULT_SPLIT_SOURCE = (
+    PROJECT_ROOT
+    / "historical_batches"
+    / "scanner_replay"
+    / "split-actions-source.json"
+)
 CSV_FIELDS = (
     "ticker",
     "volume",
@@ -148,6 +156,17 @@ def _read_csv_rows(path: Path) -> list[dict[str, Any]]:
         raise ScannerReplayError(f"cannot read reusable scanner index {path}") from exc
 
 
+def _split_event_count(path: Path) -> int:
+    try:
+        with gzip.open(path, "rt", encoding="utf-8") as source:
+            rows = json.load(source)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ScannerReplayError(f"cannot read split actions {path}") from exc
+    if not isinstance(rows, list):
+        raise ScannerReplayError("split actions must contain an array")
+    return len(rows)
+
+
 def _validate_index_attestation(
     attestation: Mapping[str, Any],
     *,
@@ -171,6 +190,10 @@ def _validate_index_attestation(
         or attestation.get("source_sha256") != _sha256_file(source_path)
     ):
         raise ScannerReplayError(f"scanner index failed attestation for {day}")
+    if attestation.get("reused_source") is not None and not isinstance(
+        attestation["reused_source"], Mapping
+    ):
+        raise ScannerReplayError(f"scanner reuse provenance is malformed for {day}")
 
 
 @dataclass(frozen=True)
@@ -678,6 +701,7 @@ def collect_day(
     expected_inherited_dataset_id: str | None = None,
     requested_symbol_total: int | None = None,
     target_symbol_total: int | None = None,
+    source_symbol_union_total: int | None = None,
 ) -> dict[str, Any]:
     output = index_root / "minute_aggs" / day[:4] / f"{day}.csv.gz"
     sidecar = index_root / "attestations" / day[:4] / f"{day}.json"
@@ -803,6 +827,9 @@ def collect_day(
         },
         "requested_symbols": requested_symbol_total or len(symbols),
         "target_symbol_union_count": target_symbol_total or len(symbols),
+        "source_symbol_union_count": source_symbol_union_total
+        or target_symbol_total
+        or len(symbols),
         "daily_symbols": int((inherited_attestation or {}).get("daily_symbols", 0))
         + len(regular),
         "regular_session_symbols": int(
@@ -853,6 +880,8 @@ def freeze_contract(
     rules_path: Path,
     security_path: Path,
     security_source_path: Path = DEFAULT_SECURITY_SOURCE,
+    split_path: Path = DEFAULT_SPLITS,
+    split_source_path: Path = DEFAULT_SPLIT_SOURCE,
     output_root: Path,
     index_root: Path,
     reuse_manifest_path: Path | None = None,
@@ -873,6 +902,30 @@ def freeze_contract(
     security_source = _read_object(security_source_path)
     if security_source.get("security_master", {}).get("sha256") != snapshot_hash:
         raise ScannerReplayError("security-master source attestation does not match")
+    split_source = _read_object(split_source_path)
+    split_artifact = split_source.get("artifact")
+    split_provider = split_source.get("source")
+    split_range = (
+        split_provider.get("query_range")
+        if isinstance(split_provider, Mapping)
+        else None
+    )
+    split_hash = _sha256_file(split_path)
+    if (
+        split_source.get("schema_version") != 1
+        or not isinstance(split_artifact, Mapping)
+        or not isinstance(split_provider, Mapping)
+        or not isinstance(split_range, Mapping)
+        or split_provider.get("provider") != "Massive"
+        or split_provider.get("endpoint")
+        != "https://api.massive.com/stocks/v1/splits"
+        or split_artifact.get("sha256") != split_hash
+        or split_artifact.get("events") != _split_event_count(split_path)
+        or split_artifact.get("local_ignored_path") != _repo_path(split_path)
+        or str(split_range.get("execution_date_gte") or "") > required[0]
+        or str(split_range.get("execution_date_lte") or "") < max(requested)
+    ):
+        raise ScannerReplayError("split-actions source attestation does not cover contract")
     records = load_security_master(security_path)
     symbols = _target_symbols(records, requested)
     reusable_source: dict[str, Any] | None = None
@@ -947,6 +1000,12 @@ def freeze_contract(
                 "security_master_attestation_path": _repo_path(security_source_path),
                 "security_master_attestation_sha256": _sha256_file(
                     security_source_path
+                ),
+                "split_actions_sha256": split_hash,
+                "split_actions_path": _repo_path(split_path),
+                "split_actions_attestation_path": _repo_path(split_source_path),
+                "split_actions_attestation_sha256": _sha256_file(
+                    split_source_path
                 ),
             },
         },
@@ -1059,6 +1118,16 @@ def verify_contract_inputs(
         raise ScannerReplayError(
             "security-master source attestation no longer matches the contract"
         )
+    split_path = PROJECT_ROOT / str(universe["split_actions_path"])
+    split_source_path = PROJECT_ROOT / str(
+        universe["split_actions_attestation_path"]
+    )
+    if (
+        universe["split_actions_sha256"] != _sha256_file(split_path)
+        or universe["split_actions_attestation_sha256"]
+        != _sha256_file(split_source_path)
+    ):
+        raise ScannerReplayError("split actions no longer match the contract")
     collection = manifest["collection_contract"]
     if collection.get("scanner_engine_sha256") != _sha256_file(
         PROJECT_ROOT / "scanner_replay.py"
@@ -1120,6 +1189,17 @@ def collection_status(
         ),
         "provider_retries": sum(int(item.get("provider_retries", 0)) for item in ready),
         "derived_rows": sum(int(item.get("derived_rows", 0)) for item in ready),
+        "reused_sessions": sum(
+            int(isinstance(item.get("reused_source"), Mapping)) for item in ready
+        ),
+        "inherited_derived_rows": sum(
+            int((item.get("reused_source") or {}).get("inherited_derived_rows", 0))
+            for item in ready
+        ),
+        "delta_symbols_requested": sum(
+            int((item.get("reused_source") or {}).get("delta_symbols_requested", 0))
+            for item in ready
+        ),
         "complete": len(ready) == len(required) and not invalid,
     }
 
@@ -1203,12 +1283,11 @@ def collect_contract(
                     and isinstance(reusable, Mapping)
                     else None
                 ),
-                requested_symbol_total=(
-                    len(set(symbols).union(inherited_symbols))
-                    if inherited_attestation is not None
-                    else len(symbols)
-                ),
+                requested_symbol_total=len(symbols),
                 target_symbol_total=len(symbols),
+                source_symbol_union_total=len(
+                    set(symbols).union(inherited_symbols)
+                ),
             )
             completed += int(result["disposition"] == "collected")
             print(
@@ -1299,8 +1378,14 @@ def _build_parser() -> argparse.ArgumentParser:
     freeze.add_argument("--rules", type=Path, default=DEFAULT_RULES)
     freeze.add_argument("--security-master", type=Path, default=DEFAULT_SECURITY_MASTER)
     freeze.add_argument("--security-source", type=Path, default=DEFAULT_SECURITY_SOURCE)
+    freeze.add_argument("--splits", type=Path, default=DEFAULT_SPLITS)
+    freeze.add_argument("--split-source", type=Path, default=DEFAULT_SPLIT_SOURCE)
     freeze.add_argument("--output-root", type=Path, default=DEFAULT_MANIFEST_ROOT)
     freeze.add_argument("--reuse-manifest", type=Path)
+    splits = subparsers.add_parser("collect-splits")
+    splits.add_argument("--start", required=True)
+    splits.add_argument("--end", required=True)
+    splits.add_argument("--output", type=Path)
     collect = subparsers.add_parser("collect")
     collect.add_argument("manifest", type=Path)
     collect.add_argument("--max-days", type=int)
@@ -1310,7 +1395,7 @@ def _build_parser() -> argparse.ArgumentParser:
     build.add_argument("manifest", type=Path)
     build.add_argument("--calendar", type=Path, default=DEFAULT_CALENDAR)
     build.add_argument("--rules", type=Path, default=DEFAULT_RULES)
-    build.add_argument("--splits", type=Path, default=DEFAULT_SPLITS)
+    build.add_argument("--splits", type=Path)
     build.add_argument("--summary", type=Path, default=DEFAULT_SUMMARY)
     return parser
 
@@ -1328,6 +1413,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 rules_path=args.rules,
                 security_path=args.security_master,
                 security_source_path=args.security_source,
+                split_path=args.splits,
+                split_source_path=args.split_source,
                 output_root=args.output_root,
                 index_root=index_root(store, args.dataset_id),
                 reuse_manifest_path=args.reuse_manifest,
@@ -1336,6 +1423,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "path": str(path),
                 "manifest_sha256": manifest["manifest_sha256"],
             }
+        elif args.command == "collect-splits":
+            result = collect_split_actions(
+                start=args.start,
+                end=args.end,
+                config=MassiveReferenceConfig.from_env(args.env),
+                output=args.output or args.run_root / "splits.json.gz",
+            )
         else:
             manifest = load_contract(args.manifest)
             if args.command == "collect":
@@ -1351,11 +1445,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                 verify_contract_inputs(manifest, rules_path=DEFAULT_RULES)
                 result = collection_status(manifest, store=store)
             else:
+                split_path = args.splits or PROJECT_ROOT / str(
+                    manifest["dataset_payload"]["universe_contract"][
+                        "split_actions_path"
+                    ]
+                )
                 result = build_contract(
                     manifest,
                     calendar_path=args.calendar,
                     rules_path=args.rules,
-                    splits_path=args.splits,
+                    splits_path=split_path,
                     store=store,
                     run_root=args.run_root,
                     summary_output=args.summary,

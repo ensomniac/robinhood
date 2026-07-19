@@ -48,16 +48,19 @@ selected-candidate targets are read.
    dates. These contain identity and listing metadata, not target prices.
 2. Build a new ignored point-in-time security master and publish only its source
    contract, counts, hashes, and requested dates.
-3. Freeze the scanner manifest against the exact selection, calendar, unchanged
-   scanner rules, immutable security-master snapshot, current collector bytes,
-   v4 reuse manifest, 113 reusable dates, 20 new dates, and zero substitutions.
-4. For each required session, import only attested compatible source rows,
+3. Collect a complete Massive split-action range through June 30 and publish its
+   count, query range, local path, and content hash without target prices.
+4. Freeze the scanner manifest against the exact selection, calendar, unchanged
+   scanner rules, immutable security-master and split snapshots, current
+   collector bytes, v4 reuse manifest, 113 reusable dates, 20 new
+   dates, and zero substitutions. Commit that manifest before market collection.
+5. For each required session, import only attested compatible source rows,
    collect the new-union delta, or collect the complete union when no source
    exists. Persist every provider observation under
    `LOCAL_HISTORICAL_DATA_ROOT`.
-5. Rebuild all 100 dynamic 09:35 rankings and run an independent inspection
+6. Rebuild all 100 dynamic 09:35 rankings and run an independent inspection
    before registering `READY`.
-6. Freeze the exact selected pairs into a separate catalyst/trigger/outcome
+7. Freeze the exact selected pairs into a separate catalyst/trigger/outcome
    contract. Acquire direct primary catalyst sources and evaluate unchanged v3
    before inventing or revising any strategy rule.
 
@@ -85,12 +88,18 @@ python3 scanner_replay.py --run-root learning_runs/scanner_expansion \
   --output learning/security_masters/scanner-expansion-master.jsonl \
   --source-manifest historical_batches/scanner_expansion/security-master-source.json
 
+python3 scanner_replay_alpaca.py \
+  --run-root learning_runs/scanner_expansion collect-splits \
+  --start 2025-12-10 --end 2026-06-30
+
 python3 scanner_replay_alpaca.py freeze \
   --dataset-id dataset-production-scanner-replay-2026-07-19-expansion-v1 \
   --selection historical_batches/scanner_expansion/selection-2026-07-19-100-days.json \
   --calendar historical_batches/scanner_replay/session-calendar-2025-12-through-2026-06.json \
   --security-master learning/security_masters/scanner-expansion-master.jsonl \
   --security-source historical_batches/scanner_expansion/security-master-source.json \
+  --splits learning_runs/scanner_expansion/splits.json.gz \
+  --split-source historical_batches/scanner_expansion/split-actions-source.json \
   --reuse-manifest historical_batches/scanner_replay/manifests/dataset-production-scanner-replay-2026-07-19-v4-645f727fe0b596ee591a6ff32515b50883634b0e3294e83333ff6b83949b04b4.json \
   --output-root historical_batches/scanner_expansion/manifests
 ```
