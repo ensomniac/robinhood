@@ -255,6 +255,12 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
   ordered trigger identities, checkpoints every 25 rows, records provider
   no-observation as `MISSING_TRIGGER_NBBO`, and retries only collection errors.
   Next: collect and independently inspect it before catalyst direction or returns.
+- Completed and inspected all 1,460 windows with zero errors: 1,460 clean
+  crosses, 1,340 three-snapshot windows, 1,267 fresh/uncrossed windows, 726
+  chase-cap passes, and four explicit missing-NBBO blockers. Only 569 first raw
+  crosses were clean; keep condition-aware timing unchanged.
+- Next: classify SEC candidates for material positive direction and dilution
+  conflicts, then join unchanged-v3 non-return gates. Returns remain blocked.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

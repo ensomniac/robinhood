@@ -1,0 +1,30 @@
+{
+  "clean_trigger_shift_summary": {
+    "count": 1460,
+    "maximum_seconds": 54.028888,
+    "median_seconds": 6.6e-05,
+    "positive_shift_count": 886
+  },
+  "counts": {
+    "basic_fresh_uncrossed_windows": 1267,
+    "clean_crosses": 1460,
+    "collection_errors": 0,
+    "crossing_windows": 1460,
+    "final_ask_within_chase_cap": 726,
+    "first_raw_cross_is_clean": 569,
+    "first_raw_cross_updates_bar_high": 569,
+    "missing_trigger_nbbo": 4,
+    "status_CLEAN_CONTINUOUS_CROSS_IDENTIFIED": 1456,
+    "status_MISSING_TRIGGER_NBBO": 4,
+    "three_snapshot_windows": 1340
+  },
+  "dataset_id": "dataset-clean-trigger-fidelity-2026-07-19-expansion-v1",
+  "expected_crossing_windows": 1460,
+  "manifest_sha256": "44225398ce0fde7acf19ddb6e87a0ace0195e19fed482d3258530f479e4d6ad4",
+  "missing_nbbo_is_explicit_blocker": true,
+  "private_trigger_index_sha256": "c4b27f7b88782eeb4281b089d9979c7a9c67cc8d945ab2afb4658e2f144e981c",
+  "schema_version": 1,
+  "status": "COLLECTION_COMPLETE",
+  "symbols_and_raw_rows_public": false,
+  "target_outcomes_observed_or_derived": false
+}

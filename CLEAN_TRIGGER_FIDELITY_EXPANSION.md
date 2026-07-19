@@ -2,7 +2,8 @@
 
 Dataset: `dataset-clean-trigger-fidelity-2026-07-19-expansion-v1`
 
-Status: frozen before collection
+Status: independently inspected `READY` for clean-trigger and quote-input
+fidelity only
 
 Manifest: `44225398ce0fde7acf19ddb6e87a0ace0195e19fed482d3258530f479e4d6ad4`
 
@@ -24,6 +25,13 @@ all 1,460 ordered private identities, condition versions, missing-observation
 policy, collector hash, and 10 GiB disk reserve. It reads no return or outcome
 and cannot establish trade eligibility, alpha, maturity, a strategy variant, or
 a production change.
+
+Collection classified all 1,460 windows with zero collection errors. All had a
+clean continuous cross, but only 569 first raw price crosses were themselves
+clean; 886 shifted later, with a 54.03-second maximum. There were 1,340 complete
+three-snapshot windows, 1,267 preliminary fresh/uncrossed windows, 726 chase-cap
+passes, and four explicit `MISSING_TRIGGER_NBBO` blockers. These are input-gate
+counts, not eligible signals or returns.
 
 ```sh
 python3 clean_trigger_fidelity_expansion.py freeze

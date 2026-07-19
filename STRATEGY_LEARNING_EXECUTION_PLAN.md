@@ -353,6 +353,11 @@ An explicit no-quote response exposed a batch-fatal assumption in that frozen
 collector. `CLEAN_TRIGGER_FIDELITY_EXPANSION.md` now isolates the repair under
 manifest `44225398...e4d6ad4`: every ordered trigger is checkpointed, missing
 NBBO is retained as gate attrition, and only true collection errors are retried.
+That corpus is now independently `READY`: all 1,460 windows classified with
+zero collection errors, four missing-NBBO blockers, 1,267 preliminary
+fresh/uncrossed windows, and 726 chase-cap passes. Only 569 first raw price
+crosses were clean, confirming that condition-aware timing materially changes
+the executable trigger without earning a rule revision.
 
 After all 100 rankings pass independent reconstruction, follow this decision
 protocol without changing the order:
