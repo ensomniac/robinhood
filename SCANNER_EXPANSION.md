@@ -2,9 +2,8 @@
 
 Planned dataset: `dataset-production-scanner-replay-2026-07-19-expansion-v1`
 
-Status: all 100 point-in-time reference snapshots collected; security-master
-identity hardening validated; market-data contract not yet frozen and no scanner
-result exists
+Status: outcome-blind input collection complete and market-data contract frozen;
+no target market collection or scanner result exists
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -19,6 +18,8 @@ added after results exist.
 
 The exact selection requires 133 target/lookback sessions. Of those, 113 have
 hash-attested scanner-v4 inputs and 20 require new full-universe collection.
+The frozen contract contains 5,596 target symbols and is identified by manifest
+hash `03a6eff46748cb396b0a5f532d884a9532766c6e546c92afda6c2947a9a9e22b`.
 
 ## Reference Identity Finding
 
@@ -74,13 +75,16 @@ selected-candidate targets are read.
    dates. These contain identity and listing metadata, not target prices.
    **Complete: 100/100.**
 2. Build a new ignored point-in-time security master and publish only its source
-   contract, counts, hashes, and requested dates.
+   contract, counts, hashes, and requested dates. **Complete: 5,692 records,
+   5,620 identities, hash `3640ae1006a6c757cdd3175696e59fc9c6db311dc53b1268a7fe6dbb2f42f432`.**
 3. Collect a complete Massive split-action range through June 30 and publish its
    count, query range, local path, and content hash without target prices.
+   **Complete: 942 events, hash `5a829b5c1bc400d2cca9de3de22ddb86abd523379dcb30550a34cbdbf50f4ebc`.**
 4. Freeze the scanner manifest against the exact selection, calendar, unchanged
    scanner rules, immutable security-master and split snapshots, current
    collector bytes, v4 reuse manifest, 113 reusable dates, 20 new
    dates, and zero substitutions. Commit that manifest before market collection.
+   **Frozen; commit is the next gate.**
 5. For each required session, import only attested compatible source rows,
    collect the new-union delta, or collect the complete union when no source
    exists. Persist every provider observation under

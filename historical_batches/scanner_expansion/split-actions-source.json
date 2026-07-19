@@ -1,0 +1,16 @@
+{
+  "artifact": {
+    "events": 942,
+    "local_ignored_path": "learning_runs/scanner_expansion/splits.json.gz",
+    "sha256": "5a829b5c1bc400d2cca9de3de22ddb86abd523379dcb30550a34cbdbf50f4ebc"
+  },
+  "schema_version": 1,
+  "source": {
+    "endpoint": "https://api.massive.com/stocks/v1/splits",
+    "provider": "Massive",
+    "query_range": {
+      "execution_date_gte": "2025-12-10",
+      "execution_date_lte": "2026-06-30"
+    }
+  }
+}

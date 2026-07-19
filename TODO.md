@@ -170,9 +170,9 @@ frozen and no target outcomes were read.
 
 ### 23. One-Hundred-Date Dynamic Scanner Expansion
 
-Status: in progress; the exact 100-date selection is frozen and all 100
-point-in-time reference snapshots are collected. No target scanner result or
-strategy outcome exists yet.
+Status: in progress; the 100-date selection and complete outcome-blind input
+contract are frozen. No target market collection, scanner result, or strategy
+outcome exists yet.
 
 - Selected 100 H1-2026 dates with seed `20260719` after excluding all 20
   scanner-v4 targets; substitutions remain forbidden.
@@ -203,9 +203,13 @@ strategy outcome exists yet.
 - Corrected the master identity hierarchy to composite FIGI first and retained
   share class only as a fallback. Master validation now occurs before atomic
   publication, so a source collision cannot leave a false-ready artifact.
-- Next: build and attest the corrected master, collect and attest split actions,
-  freeze the market contract, collect/resume the 20 new sessions plus symbol
-  deltas, and independently inspect all 100 rankings.
+- Built and attested 5,692 master records across 5,620 identities, then collected
+  and attested all 942 Massive split events covering the required range.
+- Froze manifest `03a6eff...9e22b` before any new target market row. It binds a
+  5,596-symbol union, 133 sessions, 113 hash-attested reuse inputs, exact symbol
+  deltas, 20 new full-universe sessions, unchanged v3, and zero substitutions.
+- Next: commit the frozen contract, collect/resume market inputs, and
+  independently inspect all 100 rankings.
 
 ### 24. Fail-Closed Production Evaluator Relationships
 

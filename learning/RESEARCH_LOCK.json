@@ -6,6 +6,6 @@
     "reason": "No additional strategy variant may be invented on the inspected catalyst corpus until the disjoint 100-date dynamic 09:35 scanner expansion is independently inspected READY.",
     "required_dataset_id": "dataset-production-scanner-replay-2026-07-19-expansion-v1",
   "required_dataset_inspected": true,
-    "required_dataset_lane": "development",
+    "required_dataset_lane": "production_scanner_replay",
   "required_dataset_status": "READY"
 }
