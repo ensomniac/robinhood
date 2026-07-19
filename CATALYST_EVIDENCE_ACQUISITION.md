@@ -134,6 +134,12 @@ Pair-level readiness is separately frozen under manifest
 exact 1,987 pairs to response and format flags without accepting a timestamp,
 source, catalyst, or outcome.
 
+Inspection is `READY`: 1,864 pairs have no primary-routing lead; 123 have a
+lead, 84 reach HTTP 200, 70 reach successful HTML, 15 reach successful PDF,
+and only 18 expose any standard HTML timestamp candidate. Counts overlap. This
+18-pair surface is below the 20-signal provisional minimum even before source
+verification or unchanged-v3 attrition, so returns remain locked.
+
 ### Stage D - Classify and independently inspect
 
 - Freeze classifier rules before classification. Positive phrases never

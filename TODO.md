@@ -330,6 +330,13 @@ evidence; no catalyst, trigger, execution, or outcome claim was made.
 - Froze the pair-level source-readiness join as manifest
   `7ace3b39...568bbd0b`. Formal derivation may count response/format candidates
   across the exact 1,987 pairs but may not accept evidence or read returns.
+- Inspected the pair join: 1,864 pairs have no primary route, 123 have a route,
+  84 reach HTTP 200, 70 reach HTML, 15 reach PDF, and only 18 have a standard
+  HTML timestamp candidate. Zero timestamps or catalysts were accepted.
+- Keep returns locked. The 18 timestamp-candidate pairs are already below the
+  20-signal provisional minimum before ownership, causality, v3 gates, and
+  closed outcomes. Prioritize source-type-specific verification and bounded PDF
+  parsing; do not invent or loosen strategy rules to manufacture capacity.
 - Full external-store audit passed with 844,904 files, 2,334,718 datasets,
   124,537 contexts, 6,605 symbols, 733 dates, and zero errors. About 79 GiB
   remains free; enforce the reserve before further bulk collection.
