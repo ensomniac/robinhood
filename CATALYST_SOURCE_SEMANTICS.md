@@ -18,6 +18,13 @@ decisions, and row dispositions remain in the external historical store or the
 ignored review workspace. Git receives only frozen contracts and aggregate
 counts, hashes, claim boundaries, and inspection results.
 
+The point-in-time CIK dependency is the immutable 1,987-pair identity-map
+selection inside the broader selected-candidate-fidelity manifest. That exact
+selection and its attestation are complete and hash-bound even though the
+broader dataset correctly remains `COLLECTING` for an unrelated later trigger
+stage. Source semantics requires the identity-map contract, not a false `READY`
+claim for the broader dataset.
+
 ## Workflow
 
 Freeze first and commit the returned hash-addressed manifest before extraction:

@@ -137,6 +137,23 @@ class CatalystSourceSemanticsTests(unittest.TestCase):
         self.assertFalse(result["target_outcomes_observed_or_derived"])
         self.assertNotIn("outcomes", result)
 
+    def test_frozen_identity_map_does_not_require_unrelated_dataset_readiness(self):
+        manifest = {
+            "manifest_sha256": "manifest",
+            "selection_contract": {
+                "selected_pair_count": 1987,
+                "symbols_and_ciks_public": False,
+            },
+        }
+        status = {
+            "dataset_id": semantics.fidelity.DATASET_ID,
+            "manifest_sha256": "manifest",
+            "status": "SEC_COLLECTION_COMPLETE",
+            "counts": {"selected_pairs": 1987},
+        }
+        with patch.object(semantics, "_read_json", return_value=status):
+            semantics._verify_identity_source(manifest, Path("status.json"))
+
     def test_selection_rejects_identity_or_join_drift(self):
         inputs = list(self._selection_inputs())
         inputs[-1]["pairs"].pop()

@@ -79,10 +79,11 @@ SOURCE_IDENTITY_MANIFEST = (
         "ee9ba6f3a2d48f3337ee654c545ea3c02287e23f4a4db5a3fb86adf1b0c780ce.json"
     )
 )
-SOURCE_IDENTITY_RESULT = (
+SOURCE_IDENTITY_STATUS = (
     PROJECT_ROOT
-    / "research_results"
-    / "2026-07-19-selected-candidate-fidelity-expansion.json"
+    / "historical_batches"
+    / "selected_candidate_fidelity_expansion"
+    / "collection-status.json"
 )
 DEFAULT_OUTPUT_ROOT = (
     PROJECT_ROOT / "historical_batches" / "catalyst_source_semantics" / "manifests"
@@ -318,6 +319,24 @@ def _verify_ready_result(path: Path) -> None:
         )
 
 
+def _verify_identity_source(
+    manifest: Mapping[str, Any], status_path: Path = SOURCE_IDENTITY_STATUS
+) -> None:
+    status = _read_json(status_path)
+    if not (
+        status.get("dataset_id") == fidelity.DATASET_ID
+        and status.get("manifest_sha256") == manifest.get("manifest_sha256")
+        and status.get("counts", {}).get("selected_pairs") == readiness.EXPECTED_PAIRS
+        and manifest.get("selection_contract", {}).get("selected_pair_count")
+        == readiness.EXPECTED_PAIRS
+        and manifest.get("selection_contract", {}).get("symbols_and_ciks_public")
+        is False
+    ):
+        raise CatalystSourceSemanticsError(
+            "point-in-time identity-map attestation is incomplete or stale"
+        )
+
+
 def _content_type(record: Mapping[str, Any]) -> str:
     return str(record.get("headers", {}).get("content-type") or "").lower()
 
@@ -459,11 +478,12 @@ def build_selection(
 
 
 def freeze_inputs(*, env_path: Path, output_root: Path) -> tuple[Path, dict[str, Any]]:
-    for path in (SOURCE_PAIR_RESULT, SOURCE_PDF_RESULT, SOURCE_IDENTITY_RESULT):
+    for path in (SOURCE_PAIR_RESULT, SOURCE_PDF_RESULT):
         _verify_ready_result(path)
     pair_manifest = load_frozen_dataset_contract(SOURCE_PAIR_MANIFEST)
     pdf_manifest = load_frozen_dataset_contract(SOURCE_PDF_MANIFEST)
     identity_manifest = load_frozen_dataset_contract(SOURCE_IDENTITY_MANIFEST)
+    _verify_identity_source(identity_manifest)
     store = HistoricalDayStore.from_env(env_path)
     paths = _input_paths(store.root)
     selection = build_selection(
@@ -491,7 +511,7 @@ def freeze_inputs(*, env_path: Path, output_root: Path) -> tuple[Path, dict[str,
                 _repo_path(SOURCE_PDF_MANIFEST),
                 _repo_path(SOURCE_PDF_RESULT),
                 _repo_path(SOURCE_IDENTITY_MANIFEST),
-                _repo_path(SOURCE_IDENTITY_RESULT),
+                _repo_path(SOURCE_IDENTITY_STATUS),
                 "CATALYST_SOURCE_SEMANTICS_PLAN.md",
                 "PRODUCTION_STRATEGY_VALIDATION.md",
             ],
