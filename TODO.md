@@ -33,9 +33,12 @@ retry set before network access, then inspect it before issuer-chain recovery.
 and six pairs with fixed pacing, resumable checkpoints, no substitution, and
 the 20-GiB reserve. Its exact manifest `7837dd65...b46261d9` is independently
 inspected `READY`: all 13 retries remained transport failures with zero response
-bytes. The current handoff is to freeze exact canonical issuer-page and
-document-chain recovery before new requests. A wait, pause, or insufficient
-sample is progress state, not completion.
+bytes. `catalyst_issuer_chain_recovery.py` now implements the next exact six-pair,
+12-URL canonical-chain collector with a reviewed private plan, official-domain
+redirect boundaries, resumable checkpoints, no substitution, and the same disk
+reserve. The current handoff is to commit that implementation before freezing
+its manifest. A wait, pause, or insufficient sample is progress state, not
+completion.
 
 ## Completed 2026-07-19
 

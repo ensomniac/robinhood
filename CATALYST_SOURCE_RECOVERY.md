@@ -133,6 +133,44 @@ byte was received, and no substitution occurred. This rules out another direct
 retry as a useful next step. The campaign advances to canonical issuer-page and
 document-chain recovery while retaining these failures in the denominator.
 
+## Canonical Issuer Chains
+
+`catalyst_issuer_chain_recovery.py` implements that distinct recovery
+mechanism. It reconstructs the exact six affected pairs and all 13 failed source
+predecessors, then requires a reviewed private plan with exactly one canonical
+issuer-controlled index page and one official document page per pair. The
+current plan therefore contains six chains, 12 chain positions, and 12 unique
+URLs. Exact identities, URLs, domains, source joins, notes, responses, and errors
+remain outside Git.
+
+Three chains are hosted by the point-in-time target issuer. The other three are
+official pages for a different public company named by the failed source; they
+are retained without reassignment so the next semantic gate can reject target
+binding deterministically. An official host is evidence of source ownership,
+not evidence that the document belongs to the selected security.
+
+The implementation must be committed before `freeze`, and the returned manifest
+must be committed before `collect`:
+
+```sh
+python3 catalyst_issuer_chain_recovery.py plan
+python3 catalyst_issuer_chain_recovery.py freeze
+python3 catalyst_issuer_chain_recovery.py collect --manifest <manifest>
+python3 catalyst_issuer_chain_recovery.py inspect --manifest <manifest>
+```
+
+Every URL must be HTTPS and remain under its frozen official domain across all
+redirects. The collector validates public network addresses, fixes request
+starts at no more than two per second, bounds redirects, retries, response size,
+and timeouts, checkpoints each URL, and enforces the 20-GiB reserve before
+requests and writes. It cannot search, change URLs, cross to an archive or CDN
+outside the frozen domain, substitute a provider, or use secondary news.
+
+Collection only proves that official bytes were captured under the frozen
+chain. Issuer-to-target binding, causal publication time, relevance, financing
+conflict, and event direction require a separately frozen outcome-blind
+semantic review. Outcomes remain inaccessible throughout recovery.
+
 ## Claim Boundary
 
 Successful response recovery proves only that the exact SEC-operated filing
