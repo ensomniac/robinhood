@@ -36,9 +36,9 @@ inspected `READY`: all 13 retries remained transport failures with zero response
 bytes. `catalyst_issuer_chain_recovery.py` now implements the next exact six-pair,
 12-URL canonical-chain collector with a reviewed private plan, official-domain
 redirect boundaries, resumable checkpoints, no substitution, and the same disk
-reserve. The current handoff is to commit that implementation before freezing
-its manifest. A wait, pause, or insufficient sample is progress state, not
-completion.
+reserve. Its exact manifest `15f7b129...d1d2ebf` is frozen; the current handoff
+is to commit and push that manifest before requesting the 12 official URLs. A
+wait, pause, or insufficient sample is progress state, not completion.
 
 ## Completed 2026-07-19
 

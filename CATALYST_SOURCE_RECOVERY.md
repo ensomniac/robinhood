@@ -143,14 +143,20 @@ current plan therefore contains six chains, 12 chain positions, and 12 unique
 URLs. Exact identities, URLs, domains, source joins, notes, responses, and errors
 remain outside Git.
 
+Manifest `15f7b129be15389a1ad59159f75e37ea79f49c8fd8d1a85ae08a73c3fd1d2ebf`
+freezes that exact plan and collector before issuer access. It binds all 13
+predecessor hashes, both inspected transport-recovery artifacts, the private
+plan and rebuilt selection, the implementation hash, request policy, and closed
+outcome lock.
+
 Three chains are hosted by the point-in-time target issuer. The other three are
 official pages for a different public company named by the failed source; they
 are retained without reassignment so the next semantic gate can reject target
 binding deterministically. An official host is evidence of source ownership,
 not evidence that the document belongs to the selected security.
 
-The implementation must be committed before `freeze`, and the returned manifest
-must be committed before `collect`:
+The implementation is committed. The returned manifest must be committed before
+`collect`:
 
 ```sh
 python3 catalyst_issuer_chain_recovery.py plan
