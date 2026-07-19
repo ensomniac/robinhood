@@ -16,6 +16,7 @@ from scanner_replay_alpaca import (
     collect_day,
     freeze_contract,
     load_contract,
+    verify_calendar_contract,
 )
 
 
@@ -338,7 +339,7 @@ class CanonicalScannerCollectionTests(unittest.TestCase):
 
 class AlpacaFreezeTests(unittest.TestCase):
     def test_hash_addressed_contract_keeps_original_dates_rules_and_master(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as directory:
             root = Path(directory)
             output = root / "manifests"
             index = root / "index"
@@ -367,7 +368,26 @@ class AlpacaFreezeTests(unittest.TestCase):
                     "price_rows_retained_or_inspected"
                 ]
             )
+            self.assertEqual(
+                loaded["collection_contract"]["session_calendar_path"],
+                "historical_batches/scanner_replay/session-calendar-2025-12-through-2026-06.json",
+            )
+            self.assertEqual(
+                loaded["selection"]["path"],
+                "historical_batches/scanner_replay/selection-2026-07-18-20-days.json",
+            )
+            self.assertFalse(loaded["selection"]["substitution_allowed"])
             self.assertEqual(manifest["manifest_sha256"], loaded["manifest_sha256"])
+
+            calendar_copy = root / "calendar.json"
+            calendar_copy.write_text(
+                Path(
+                    "historical_batches/scanner_replay/session-calendar-2025-12-through-2026-06.json"
+                ).read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ScannerReplayError, "calendar.*contract"):
+                verify_calendar_contract(loaded, calendar_copy)
 
             corrupted = json.loads(path.read_text(encoding="utf-8"))
             corrupted["collection_contract"]["feed"] = "iex"

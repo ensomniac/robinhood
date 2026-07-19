@@ -162,6 +162,21 @@ class SelectionContractTests(unittest.TestCase):
             self.assertNotIn("blocker", status)
             self.assertNotIn("flat_file", status)
 
+    def test_calendar_accepts_attested_object_rows(self):
+        with tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory:
+            path = Path(directory) / "calendar.json"
+            path.write_text(
+                json.dumps(
+                    [
+                        {"date": "2025-01-02", "open_et": "09:30"},
+                        {"date": "2025-01-03", "open_et": "09:30"},
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            self.assertEqual(load_calendar(path), ["2025-01-02", "2025-01-03"])
+
 
 class SecurityMasterBuildTests(unittest.TestCase):
     def test_invalid_master_is_not_published(self):

@@ -1055,6 +1055,8 @@ def freeze_contract(
             "split_adjustment_basis": "target-date share basis using only execution dates at or before each target",
             "required_session_dates": required,
             "required_session_count": len(required),
+            "session_calendar_path": _repo_path(calendar_path),
+            "session_calendar_sha256": _sha256_file(calendar_path),
             "target_symbol_union_count": len(symbols),
             "scanner_engine_sha256": _sha256_file(PROJECT_ROOT / "scanner_replay.py"),
             "adapter_sha256": _sha256_file(Path(__file__)),
@@ -1084,6 +1086,9 @@ def freeze_contract(
         },
         "selection": {
             "seed": selection["seed"],
+            "path": _repo_path(selection_path),
+            "file_sha256": _sha256_file(selection_path),
+            "substitution_allowed": selection.get("substitution_allowed") is True,
             "selection_sha256": _sha256_json(
                 {
                     "seed": selection["seed"],
@@ -1167,6 +1172,18 @@ def verify_contract_inputs(
     ):
         raise ScannerReplayError("production strategy no longer matches the contract")
     collection = manifest["collection_contract"]
+    selection_contract = manifest.get("selection")
+    if isinstance(selection_contract, Mapping) and selection_contract.get("path"):
+        selection_path = PROJECT_ROOT / str(selection_contract["path"])
+        selection = load_selection(selection_path)
+        if (
+            selection_contract.get("file_sha256") != _sha256_file(selection_path)
+            or selection_contract.get("seed") != selection["seed"]
+            or list(manifest["requested_dates"])
+            != sorted(selection["selected_dates"])
+            or selection_contract.get("substitution_allowed") is not False
+        ):
+            raise ScannerReplayError("date selection no longer matches the contract")
     if collection.get("scanner_engine_sha256") != _sha256_file(
         PROJECT_ROOT / "scanner_replay.py"
     ):
@@ -1178,6 +1195,29 @@ def verify_contract_inputs(
             "Alpaca scanner adapter no longer matches the contract"
         )
     return rules, security_path
+
+
+def verify_calendar_contract(
+    manifest: Mapping[str, Any], calendar_path: Path
+) -> list[str]:
+    calendar = load_calendar(calendar_path)
+    collection = manifest["collection_contract"]
+    recorded_path = collection.get("session_calendar_path")
+    recorded_hash = collection.get("session_calendar_sha256")
+    if (recorded_path is not None or recorded_hash is not None) and (
+        recorded_path != _repo_path(calendar_path)
+        or recorded_hash != _sha256_file(calendar_path)
+    ):
+        raise ScannerReplayError(
+            "session calendar no longer matches the Alpaca contract"
+        )
+    if required_sessions(manifest["requested_dates"], calendar) != list(
+        collection["required_session_dates"]
+    ):
+        raise ScannerReplayError(
+            "session calendar no longer matches the Alpaca contract"
+        )
+    return calendar
 
 
 def index_root(store: HistoricalDayStore, dataset_id: str = DATASET_ID) -> Path:
@@ -1355,13 +1395,7 @@ def build_contract(
             f"{status['session_files']['required']}",
             category="incomplete_collection",
         )
-    calendar = load_calendar(calendar_path)
-    if required_sessions(manifest["requested_dates"], calendar) != list(
-        manifest["collection_contract"]["required_session_dates"]
-    ):
-        raise ScannerReplayError(
-            "session calendar no longer matches the Alpaca contract"
-        )
+    calendar = verify_calendar_contract(manifest, calendar_path)
     root = index_root(store, str(manifest["dataset_id"]))
     flat_root = run_root / "minute_aggs"
     flat_root.mkdir(parents=True, exist_ok=True)

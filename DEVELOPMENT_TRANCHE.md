@@ -111,3 +111,16 @@ their stable ID, including non-overlapping ticker changes. Share-class and
 fallback collisions remain fatal because those identifiers cannot prove a
 listing. The derived private master records the provider FIGIs and the public
 attestation reports only collision and listing-scoped record counts.
+
+The repaired master is now locally validated at 6,008 records and 5,889
+instruments, including 63 listing-scoped records and 1,269 fallback-identity
+records, with content hash `5afd5776...1793c5f`. The fallback records are unique
+under their frozen ticker/exchange/CIK/name basis; ambiguity still fails the
+cross-record audit. The exact December 10, 2024 through November 28, 2025 split
+query retained 1,351 events with hash `2a1f930b...2d70b7f`.
+
+The scanner adapter now accepts the attested object-row market calendar and
+binds its repository path and file hash into new market manifests. It likewise
+binds the public selection file, seed, dates, hash, and no-substitution flag.
+Legacy manifests remain readable, while every newly frozen contract gets the
+stronger lineage checks.

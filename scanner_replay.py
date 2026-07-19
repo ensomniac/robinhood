@@ -180,7 +180,12 @@ def load_calendar(path: Path) -> list[str]:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ScannerReplayError(f"cannot read calendar {path}: {exc}") from exc
-    return _iso_dates(value, "calendar")
+    if not isinstance(value, list):
+        raise ScannerReplayError("calendar must be an array")
+    normalized = [
+        item.get("date") if isinstance(item, Mapping) else item for item in value
+    ]
+    return _iso_dates(normalized, "calendar")
 
 
 def required_sessions(

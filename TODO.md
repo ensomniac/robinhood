@@ -68,6 +68,12 @@ All 100 reference snapshots completed without retry or substitution. The first
 master build failed closed on 31 composite-FIGI simultaneous-alias groups; the
 listing-scoped composite repair and regression test are ready for commit before
 the master is rebuilt. Share-class and fallback ambiguity remain fatal.
+The repaired master now validates at 6,008 records, 5,889 instruments, and hash
+`5afd5776...1793c5f`; the exact-range split artifact contains 1,351 events at
+hash `2a1f930b...2d70b7f`. The adapter now hash-binds the object-row calendar and
+public date selection. Commit and push these source attestations and lineage
+checks, then freeze and commit the provider-bound market manifest before any
+price collection.
 
 ## Completed 2026-07-19
 
