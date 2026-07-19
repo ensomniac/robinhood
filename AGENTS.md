@@ -782,11 +782,22 @@ When Ryan selects historical mode:
    a possible crossing window. Historical replay must retain raw SIP trade
    timestamp/ID/exchange/tape/condition evidence, then form quote snapshots at
    zero, five, and ten seconds after the observed cross using no future quote.
-   Do not call the break clean until frozen SIP condition semantics say so. A
+   The frozen semantics in `SELECTED_CANDIDATE_FIDELITY.md` now govern exact
+   historical triggers. First apply Alpaca's tape-specific strictest-condition
+   rule for minute-high eligibility. Then require the tape's regular-sale code
+   plus only continuous automatic-execution/intermarket-sweep modifiers before
+   calling the print a clean continuous cross. Odd lots and every special print
+   fail the clean-cross gate even when a vendor would permit that condition to
+   update a bar high. Missing or unknown conditions fail closed. A
    missing, nonpositive, crossed, or more-than-five-second-old snapshot is a
    blocker; apply the 0.15% chase cap to the final post-observation ask.
    Alpaca/Benzinga news remains secondary discovery and may never set
    `verified_catalyst=true` without the primary/direct evidence required above.
+   The dated security master now maps all 389 selected pairs to point-in-time
+   CIKs, and the bounded SEC lane found primary filing candidates for 81 pairs.
+   Filing presence still never proves positive direction: source-grounded
+   classification is required, and eight detected dilution conflicts remain
+   hard rejects.
    Historical top-of-book size is not full depth, and current tradability or
    halt facts cannot backfill a target date. Missing catalyst, depth,
    tradability, halt, resistance, or sector evidence defaults to reject, never

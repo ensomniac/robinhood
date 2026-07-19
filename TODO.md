@@ -26,9 +26,9 @@ inspected `READY`; production strategy rules remain frozen.
 - Made frozen datasets first-class resumable learning objectives, corrected
   sparse/early-close cache reuse, and removed the terminally rejected reversal's
   unused 1,135-line shadow implementation and tests.
-- Next: freeze the exact 389-pair selected-candidate join, collect detailed
-  target-session inputs plus SPY/QQQ, and run the unchanged champion before any
-  new hypothesis or threshold proposal.
+- Follow-on: the exact selected-candidate join and clean-trigger fidelity layers
+  are now complete in items 17 and 18. Unchanged-champion evaluation remains
+  blocked on the fields listed there.
 
 ### 17. Selected-Candidate Bar, News, And Trigger-Tape Join
 
@@ -47,8 +47,32 @@ frozen.
 - Hardened replay rules so bar highs, secondary news, top-of-book sizes, and
   current metadata cannot impersonate exact triggers, verified catalysts, full
   depth, or point-in-time truth.
-- Next: source primary catalysts and freeze clean trade-condition semantics,
-  then evaluate the unchanged champion before freezing 100+ new dates.
+- Follow-on: item 18 now closes dated CIK, bounded SEC primary-source candidate,
+  and clean-condition mechanics. Directional catalyst classification and the
+  remaining champion inputs are still required before 100+ new dates.
+
+### 18. Point-In-Time Primary Sources And Clean SIP Triggers
+
+Status: `dataset-selected-candidate-fidelity-2026-07-19-v1` is independently
+inspected `READY` for development-only pipeline fidelity; production rules
+remain frozen.
+
+- Mapped all 389 frozen pairs to 283 dated issuer CIKs without current-identity
+  backfill; 349 used ticker plus share-class FIGI and 40 used a unique dated
+  ticker because the source row had no usable FIGI.
+- Cached 283 SEC submissions documents and 100 unique primary filing documents
+  externally. Eighty-one pairs had a time-valid filing candidate, including 18
+  Item 2.02 candidates, and eight dilution conflicts were detected.
+- Kept every filing unclassified and `verified_positive_catalyst=false`; primary
+  source presence is not a favorable catalyst default.
+- Transcribed Alpaca's tape-specific strictest-condition minute-bar rules and
+  froze a narrower continuous-regular-cross contract with exhaustive tests.
+- Replayed all 325 crossing windows: 197 first raw crosses were invalid, 195
+  clean triggers moved later, only 155 passed the final chase cap, and median
+  usable spread remained 0.13001%.
+- Next: source-grounded directional classification for the 80 material primary
+  candidates and explicit resolution of halt/tradability, resistance, sector,
+  and depth inputs before champion returns or new-date alpha collection.
 
 ## Completed 2026-07-18
 

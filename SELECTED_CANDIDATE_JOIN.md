@@ -79,9 +79,10 @@ evidence rules now govern replay construction:
 1. A one-minute high may locate a possible crossing window only. It is not an
    exact trigger or a clean break.
 2. Exact replay must retain raw SIP trades with provider timestamp, trade ID,
-   exchange, tape, size, and condition metadata. The first observed price above
-   the range remains `UNRESOLVED_CONDITION_SEMANTICS` until the SIP condition
-   rules used by the production clean-break definition are frozen and tested.
+   exchange, tape, size, and condition metadata. The follow-on fidelity dataset
+   froze and tested separate minute-high and continuous-regular-cross semantics;
+   see `SELECTED_CANDIDATE_FIDELITY.md`. The first unfiltered price above the
+   range is not a clean break.
 3. Quote snapshots must be formed after the observed cross at zero, five, and
    ten seconds using only the latest quote available at each target. A missing,
    nonpositive, crossed, or more-than-five-second-old snapshot is a blocker.
@@ -132,8 +133,10 @@ malformed data or filled synthetically.
 
 ## Next Evidence Work
 
-Close the primary-catalyst and clean-trade-condition contracts before computing
-champion returns. Then freeze at least 100 new scanner dates, collect the same
-layers without inspecting target outcomes before registration, and evaluate the
-unchanged champion first. Only that independent sample can earn one
-preregistered production-rule proposal.
+The point-in-time CIK, SEC primary-source candidate, and clean-trade-condition
+contracts are now closed for pipeline fidelity. Next classify primary candidates
+without favorable defaults and source the remaining champion fields. Then
+freeze at least 100 new scanner dates, collect the same layers without inspecting
+target outcomes before registration, and evaluate the unchanged champion first.
+Only that independent sample can earn one preregistered production-rule
+proposal.

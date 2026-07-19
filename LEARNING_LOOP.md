@@ -59,10 +59,13 @@ small.
 For replay fidelity, a bar high locates a possible trigger window but never
 proves a clean or executable break. Preserve raw trade conditions and
 provider-ordering timestamps, form required quote snapshots only after the
-observed cross, and treat secondary news, top-of-book-only size, current
+condition-valid continuous regular-sale cross, and treat secondary news,
+unclassified primary filings, top-of-book-only size, current
 tradability, and missing halt/depth facts as blockers rather than truthy
-defaults. Keep exact licensed rows outside Git and publish hashes and aggregate
-coverage only.
+defaults. Minute-high eligibility and clean-cross eligibility are separate
+decisions: special prints may satisfy the former without satisfying the latter.
+Keep exact licensed rows outside Git and publish hashes and aggregate coverage
+only.
 
 ## Phase 3 - Improvement Candidates
 

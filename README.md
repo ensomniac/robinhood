@@ -334,14 +334,17 @@ the external symbol-first canonical store; only a private hash-attested full-
 universe index is derived for fast replay. See
 [SCANNER_REPLAY.md](SCANNER_REPLAY.md) for the exact immutable manifest, claim
 boundary, failed-contract lineage, current status, and reproduction commands.
-The fidelity lock is satisfied, but the next work remains a frozen selected-
-candidate join and unchanged-champion evaluation, not an automatic new variant.
-That join is now inspected `READY` for development plumbing: all 389 selected
+The fidelity lock is satisfied. The selected-candidate join is inspected
+`READY` for development plumbing: all 389 selected
 pairs have candidate bars and news contexts, all 40 benchmark sessions are
 present, and 325 crossing windows have bounded raw trade/quote tape. Execution
-attrition is substantial, while primary catalyst and other production facts are
-still missing, so v3 remains unchanged. See
-[SELECTED_CANDIDATE_JOIN.md](SELECTED_CANDIDATE_JOIN.md).
+attrition is substantial. A follow-on independently inspected dataset mapped
+all pairs to dated CIKs, retained 100 SEC primary documents, and froze clean SIP
+condition semantics. It rejected 197 first raw crosses and reduced chase-cap
+passes from 177 to 155, while leaving primary direction and other production
+facts explicit blockers. V3 remains unchanged. See
+[SELECTED_CANDIDATE_JOIN.md](SELECTED_CANDIDATE_JOIN.md) and
+[SELECTED_CANDIDATE_FIDELITY.md](SELECTED_CANDIDATE_FIDELITY.md).
 
 ```sh
 python3 historical_research.py run \

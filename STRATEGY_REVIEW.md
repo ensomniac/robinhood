@@ -129,6 +129,18 @@ tradability/halt, resistance, and sector evidence remain incomplete and the
 source dates were already inspected. The production rules therefore remain
 unchanged; `SELECTED_CANDIDATE_JOIN.md` defines the hardened replay boundary.
 
+The next frozen fidelity layer mapped every selected pair to a dated issuer CIK,
+retained 100 SEC primary documents, and independently reconstructed exact SIP
+condition decisions. Only 128 of 325 first raw price crosses were clean
+continuous regular-sale prints; 195 valid trigger times moved later, and only
+155 remained inside the chase cap. SEC coverage produced 81 filing-covered
+pairs and eight dilution conflicts, but no filing was allowed to become a
+positive catalyst without directional classification. Median usable spread
+remained 0.13001%. This closes CIK and clean-condition mechanics while making
+the remaining catalyst and execution blockers more precise; it still earns no
+production-rule change. `SELECTED_CANDIDATE_FIDELITY.md` is authoritative for
+this layer.
+
 ## What The Repository Had Right
 
 The original strategy already addressed several common failure modes: it banned

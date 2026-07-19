@@ -145,7 +145,7 @@ Store immutable observations or dated symbol context:
 - partial or otherwise incompatible series when they are clearly limited and
   excluded from `require_complete` reads.
 
-Do not put these in the canonical day store:
+Do not put these in a symbol/year/day document:
 
 - API keys, credentials, account identifiers, broker order identifiers, or live
   account state;
@@ -155,9 +155,17 @@ Do not put these in the canonical day store:
 - current contract metadata without a captured-at time presented as historical
   point-in-time truth.
 
-Those non-daily artifacts can remain under ignored repository paths when their
-existing workflows need them. The migration ledger hashes and accounts for them
-without pretending they are canonical daily observations.
+Raw non-daily provider sources belong under
+`LOCAL_HISTORICAL_DATA_ROOT/_sources/<source>/`; private multi-symbol indexes and
+exact frozen-pair derivatives belong under
+`LOCAL_HISTORICAL_DATA_ROOT/_derived/<workflow>/<dataset-id>/`. For example,
+SEC submissions and primary filing documents are cached in `_sources/sec/`,
+while exact CIK mappings and catalyst/trigger indexes live under `_derived/`.
+The dated symbol document may retain a hash-bound context that points to the
+source evidence, but it must not duplicate a large filing or market-wide index.
+Ignored legacy workflow artifacts may remain at their original paths for
+no-loss migration verification; new collection must use the external source and
+derived namespaces.
 
 ## Provider and cache policy
 

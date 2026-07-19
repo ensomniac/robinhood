@@ -1,0 +1,173 @@
+{
+  "capacity_contract": {
+    "minimum_free_bytes": 10737418240,
+    "observed_free_bytes_at_freeze": 90162593792
+  },
+  "collection_contract": {
+    "alpha_or_confirmation_claim_allowed": false,
+    "canonical_store_required": true,
+    "cik_mapping": "dated Massive reference snapshot matched by ticker and share-class FIGI, with unique dated-ticker fallback when the source has no FIGI",
+    "collector_sha256": "ba09e084ab5aeb3a0cd4f3b02351526aca3e56687be56ecfc736023fb5f02d7d",
+    "condition_rule_version": "alpaca-sip-minute-v1",
+    "condition_source_url": "https://docs.alpaca.markets/us/docs/market-data-faq#how-are-bars-aggregated",
+    "continuous_cross_version": "continuous-regular-cross-v1",
+    "raw_and_symbol_rows_public": false,
+    "sec_forms": [
+      "6-K",
+      "6-K/A",
+      "8-K",
+      "8-K/A"
+    ],
+    "sec_source": "SEC EDGAR submissions JSON and primary filing documents",
+    "sec_window": "4 calendar days before target through target 09:35 ET",
+    "source_corpus_already_inspected": true,
+    "trigger_contract": "first price above the frozen opening high whose conditions both update a minute high and establish a continuous regular-sale cross"
+  },
+  "dataset_id": "dataset-selected-candidate-fidelity-2026-07-19-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "historical_batches/selected_candidate_join/manifests/dataset-selected-candidate-join-2026-07-19-v1-a46ac360d3d7578757dd7ae420b6a6abe3d820d7d3c4895b083cd576ca05fba4.json",
+      "SELECTED_CANDIDATE_JOIN.md",
+      "STRATEGY_LEARNING_EXECUTION_PLAN.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "manifest_sha256": "38f74c64c6f3f86d3cefbe656efd075345c21e7fcc22329936e5c5e78c2a7dcd",
+  "registered_at": "2026-07-19T07:30:32.986403+00:00",
+  "requested_dates": [
+    "2026-01-02",
+    "2026-01-05",
+    "2026-01-06",
+    "2026-01-07",
+    "2026-01-20",
+    "2026-02-26",
+    "2026-03-16",
+    "2026-03-27",
+    "2026-04-02",
+    "2026-04-10",
+    "2026-04-13",
+    "2026-04-14",
+    "2026-04-17",
+    "2026-04-20",
+    "2026-05-19",
+    "2026-05-27",
+    "2026-06-09",
+    "2026-06-16",
+    "2026-06-17",
+    "2026-06-23"
+  ],
+  "schema_version": 1,
+  "selection_contract": {
+    "private_selection_content_sha256": "bbee9cf3c022961ccff807bc64ecd3d0269e87e8ba81d70ce7c4b9e6afd5fb58",
+    "reference_snapshots": [
+      {
+        "date": "2026-01-02",
+        "row_count": 5228,
+        "sha256": "e61327b8f77188bd0b4afd340776120cc3e36e7c39415d4c108f17ded29c5d0d"
+      },
+      {
+        "date": "2026-01-05",
+        "row_count": 5224,
+        "sha256": "ef14ff6c158b40c73d4da2a384b03a3ebf5869ace7df81d7fb2b272085cc3977"
+      },
+      {
+        "date": "2026-01-06",
+        "row_count": 5226,
+        "sha256": "8a61709c8b4278b664e53dffe4b0dffc5371e98985dc5d840eae20b8d96bfd92"
+      },
+      {
+        "date": "2026-01-07",
+        "row_count": 5223,
+        "sha256": "153c36b4f85286ff619c1acf6fd362d849f966b64a4d6a1ce1f7bcd206e91abd"
+      },
+      {
+        "date": "2026-01-20",
+        "row_count": 5227,
+        "sha256": "c813a29934e6736a1cdbb0662695e17e46bf9c9ad1134b015eb6ab540e012fd1"
+      },
+      {
+        "date": "2026-02-26",
+        "row_count": 5258,
+        "sha256": "776f9b83e0709b44ca568b11b1bcbe98dd90d5e6d773cd5152828a10f6493b88"
+      },
+      {
+        "date": "2026-03-16",
+        "row_count": 5265,
+        "sha256": "c22ad001aa97d4056c17765cdaf9b4dd851d95bd664bccff134b151a72958210"
+      },
+      {
+        "date": "2026-03-27",
+        "row_count": 5266,
+        "sha256": "2f84154b4aee9eff9c388b63a06e1e12a0d6ca133d1e794ff56b5ceb2d8dab0b"
+      },
+      {
+        "date": "2026-04-02",
+        "row_count": 5261,
+        "sha256": "841e70ca23d44bebc76e109c480d24ad0f136dee2309f17254f244162b6288ec"
+      },
+      {
+        "date": "2026-04-10",
+        "row_count": 5260,
+        "sha256": "4cdd222a951f01a9345817771d8fb4c379a2ed0c42d7edc751389a0b2fb78fc6"
+      },
+      {
+        "date": "2026-04-13",
+        "row_count": 5262,
+        "sha256": "8945adc34dba5477b2046d0ee8267f3f8ffaffe470506f6e8d7dc61a9018fa87"
+      },
+      {
+        "date": "2026-04-14",
+        "row_count": 5263,
+        "sha256": "7c5f66a589d139bf5ce6dbfd97f2cfc1cba4b68ef6139ecf436b15b9b0d32895"
+      },
+      {
+        "date": "2026-04-17",
+        "row_count": 5271,
+        "sha256": "b9bc0b2b24512b7d0e77f44afc2a476122876dbf9f490c28942ad92da543bd3a"
+      },
+      {
+        "date": "2026-04-20",
+        "row_count": 5275,
+        "sha256": "6c632049ca1e3d51b193a59bcba1cec4946cb863017398ac7fa9c8bd08ac784e"
+      },
+      {
+        "date": "2026-05-19",
+        "row_count": 5277,
+        "sha256": "249577305129d4975adb2edf32b826172fb1ac09ab78d6996b6eada38e7100b6"
+      },
+      {
+        "date": "2026-05-27",
+        "row_count": 5287,
+        "sha256": "1241b265884473052750821199c8eb86044c32be918c4cada59190f606a139d3"
+      },
+      {
+        "date": "2026-06-09",
+        "row_count": 5296,
+        "sha256": "d5e9605809c6ab8d9e162aea9bde6a08fb4b700fc82360882f0969c2b5148a52"
+      },
+      {
+        "date": "2026-06-16",
+        "row_count": 5294,
+        "sha256": "a2787fcbb5f7e5237032f74000380d0216d7105a5dec7dab8c3dc44a5a1a090c"
+      },
+      {
+        "date": "2026-06-17",
+        "row_count": 5294,
+        "sha256": "09637f0e6952ec555b0dc21e14b7cf08472e50b57bd16b086b7f5d42223c1f90"
+      },
+      {
+        "date": "2026-06-23",
+        "row_count": 5304,
+        "sha256": "e93e8c55837d580ba7084961619afa0e9ef08501f63bd69e734c83eb6ecfac8e"
+      }
+    ],
+    "selected_pair_count": 389,
+    "source_dataset_id": "dataset-selected-candidate-join-2026-07-19-v1",
+    "source_manifest_sha256": "a46ac360d3d7578757dd7ae420b6a6abe3d820d7d3c4895b083cd576ca05fba4",
+    "symbols_and_ciks_public": false,
+    "unique_cik_count": 283
+  }
+}

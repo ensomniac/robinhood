@@ -225,8 +225,9 @@ selection only; it did not earn an alpha-rule change.
 
 ### Stage 2 - Build a trade-capable selected-candidate join
 
-Status: pipeline join completed and inspected on 2026-07-19; production-input
-qualification remains blocked.
+Status: pipeline join plus primary-source/clean-trigger fidelity completed and
+independently inspected on 2026-07-19; production-input qualification remains
+blocked.
 
 The hash-frozen development manifest retained the exact 389 pairs. All candidate
 sessions and 40 SPY/QQQ sessions have raw Alpaca SIP one-minute bars, all pairs
@@ -238,15 +239,21 @@ observation interval. Median usable spread was 0.1318%, above the 0.10%
 production operating limit.
 
 This completes the reusable acquisition mechanics but not a production replay.
-Alpaca/Benzinga news is secondary evidence, clean trade-condition semantics are
-not frozen, top-of-book is not full depth, and point-in-time tradability, halt,
-resistance, and sector inputs remain absent. Missing fields block rather than
-default. See `SELECTED_CANDIDATE_JOIN.md`.
+Alpaca/Benzinga news remains secondary evidence. The follow-on frozen fidelity
+dataset mapped all 389 pairs to dated CIKs, retained 100 SEC primary documents,
+and separated minute-high eligibility from a clean continuous regular-sale
+cross. Of 325 first raw crosses, 197 failed the clean contract; condition-valid
+timing reduced chase-cap passes from 177 to 155. Eighty-one pairs had SEC filing
+candidates and eight had dilution conflicts, but positive catalyst direction
+remains unclassified. Top-of-book is not full depth, and point-in-time
+tradability, halt, resistance, and sector inputs remain absent. Missing fields
+block rather than default. See `SELECTED_CANDIDATE_JOIN.md` and
+`SELECTED_CANDIDATE_FIDELITY.md`.
 
-The required storage-capacity preflight measured bytes
-per selected pair from a representative pilot, publish the projected incremental
-bytes and request count, and require enough free space for the projection plus
-an atomic-write/audit reserve. The current volume is already 96% allocated even
+The storage-capacity preflight measured bytes per selected pair from a
+representative pilot, published projected incremental bytes and request count,
+and required enough free space for the projection plus an atomic-write/audit
+reserve. The current volume is already 96% allocated even
 though the canonical history store is only about 2.2 GB. A full-universe
 one-minute pull is therefore wasteful and unsafe. Stage 2 collected only the
 frozen selected pairs, benchmarks, and bounded trigger tape, while enforcing a
@@ -254,8 +261,9 @@ frozen selected pairs, benchmarks, and bounded trigger tape, while enforcing a
 
 ### Stage 3 - Evaluate the existing champion and its attribution baseline
 
-First close the primary-catalyst and exact clean-condition contracts. Then run
-the exact `2026-07-15-orb-v3` rules first. Retain every selected candidate,
+First finish source-grounded direction classification for the bounded primary
+candidates and resolve or explicitly reject the remaining champion inputs.
+Then run the exact `2026-07-15-orb-v3` rules first. Retain every selected candidate,
 every trigger, every production rejection reason, and a paired paper-aligned
 end-of-day outcome. Report both the one-trade daily portfolio and all-signal gate
 attribution. The first 20 scanner dates validate the pipeline and expose gross

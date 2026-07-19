@@ -213,10 +213,12 @@ end-of-day shortlist replacement, catalyst-only filtering, or provider mixing.
 The exact 389 selected pairs now feed the separately frozen development join in
 `SELECTED_CANDIDATE_JOIN.md`. That join adds selected-session and benchmark
 minute bars, time-bounded news discovery, raw crossing trades, and post-cross
-quotes without changing scanner v4. It does not expand the scanner's claim:
-primary catalysts, clean trade-condition semantics, full depth, point-in-time
+quotes without changing scanner v4. The subsequent fidelity contract in
+`SELECTED_CANDIDATE_FIDELITY.md` adds dated CIKs, bounded SEC primary-source
+candidates, and tested clean trade-condition semantics. Neither expands this
+scanner dataset's claim: catalyst direction, full depth, point-in-time
 tradability/halt state, resistance, sector evidence, and independent outcomes
-remain outside this selection dataset.
+remain outside the selection contract.
 
 ## Runbook
 
@@ -245,7 +247,8 @@ raw 15-minute series, partial opening-minute series, quality flags, and derived
 daily aggregate back to the source index. This intentionally does not trust the
 build engine or a bulk sidecar to certify its own output or persistence. Only a
 valid report may support a `READY` dataset event with `inspected=true`. That
-event now exists. The research lock's fidelity condition is satisfied, but the
-next objective remains the frozen selected-candidate join and unchanged-
-champion evaluation; READY does not authorize automatic variant invention or a
-production rule change.
+event now exists. The research lock's fidelity condition is satisfied, and the
+selected-candidate plus clean-trigger follow-ons are also inspected. The next
+objective is source-grounded catalyst classification and remaining champion
+input closure before unchanged-champion evaluation; READY never authorizes
+automatic variant invention or a production rule change.
