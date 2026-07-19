@@ -178,6 +178,47 @@ class HistoricalServiceTests(unittest.TestCase):
         self.assertEqual(len(quotes), 2)
         self.assertEqual([row["bid"] for row in quotes], [10.0, 10.01])
 
+    def test_local_quotes_apply_subsecond_source_timestamp_boundaries(self):
+        start = datetime(2026, 3, 3, 9, 35, tzinfo=EASTERN)
+        rows = []
+        for offset, bid in ((-0.5, 9.99), (0.5, 10.0)):
+            observed = start + timedelta(seconds=offset)
+            rows.append(
+                compact_quote(
+                    {
+                        "time_et": observed.isoformat(),
+                        "source_timestamp": observed.astimezone().isoformat(),
+                        "bid": bid,
+                        "ask": bid + 0.01,
+                        "bid_size": 100,
+                        "ask_size": 200,
+                    }
+                )
+            )
+        self.store.merge(
+            "AAPL",
+            "2026-03-03",
+            datasets=[
+                build_dataset(
+                    kind="quotes",
+                    provider="alpaca",
+                    rows=rows,
+                    channel="top_of_book",
+                    feed="sip",
+                    adjustment="raw",
+                )
+            ],
+        )
+        client = LocalHistoricalClient(
+            self.store, "alpaca", feed="sip", adjustment="raw"
+        )
+
+        quotes = client.fetch_bid_ask_ticks(
+            "AAPL", start, start + timedelta(seconds=1)
+        )
+
+        self.assertEqual([row["bid"] for row in quotes], [10.0])
+
     def test_fetch_cache_hit_opens_no_live_provider(self):
         start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
         rows = [minute_row(start + timedelta(minutes=index), index) for index in range(390)]

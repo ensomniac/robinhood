@@ -24,8 +24,10 @@ from historical_store import (
     build_dataset,
     compact_bar,
     compact_quote,
+    compact_trade,
     expand_bar,
     expand_quote,
+    expand_trade,
     provider_id,
 )
 from ibkr_historical import (
@@ -240,6 +242,61 @@ class RecordingHistoricalClient:
             )
         return rows
 
+    def fetch_trades(
+        self,
+        symbol: str,
+        start: str | datetime,
+        end: str | datetime,
+        *,
+        use_rth: bool = True,
+    ) -> list[dict[str, Any]]:
+        fetch = getattr(self.client, "fetch_trades", None)
+        if not callable(fetch):
+            raise HistoricalProviderError(
+                f"{self.provider_name} does not expose raw historical trades",
+                category="permanent_fidelity",
+            )
+        rows = fetch(symbol, start, end, use_rth=use_rth)
+        provider, feed, adjustment = _provider_metadata(self.client)
+        grouped: dict[str, list[dict[str, Any]]] = {}
+        for row in rows:
+            observed = datetime.fromtimestamp(int(row["epoch"]), UTC).astimezone(EASTERN)
+            grouped.setdefault(observed.date().isoformat(), []).append(
+                compact_trade(row, day=observed.date().isoformat())
+            )
+        request = {
+            "symbol": str(symbol).upper(),
+            "start": _coerce(start).isoformat(),
+            "end": _coerce(end).isoformat(),
+            "use_rth": use_rth,
+        }
+        captured_at = datetime.now(UTC).isoformat()
+        for day, values in grouped.items():
+            values.sort(key=lambda row: (str(row["t"]), str(row.get("id", ""))))
+            self.store.merge(
+                symbol,
+                day,
+                datasets=[
+                    build_dataset(
+                        kind="trades",
+                        provider=provider,
+                        rows=values,
+                        channel="sale",
+                        feed=feed,
+                        adjustment=adjustment,
+                        session="regular" if use_rth else "all",
+                        scope="observed_window",
+                        quality={"complete": True},
+                        provenance={
+                            "source_type": "live_provider_collection",
+                            "captured_at": captured_at,
+                            "request": request,
+                        },
+                    )
+                ],
+            )
+        return rows
+
 
 class LocalHistoricalClient:
     """Serve one provider's immutable observations from the canonical store."""
@@ -374,8 +431,13 @@ class LocalHistoricalClient:
                     continue
                 for row in dataset["rows"]:
                     expanded = expand_quote(row)
-                    epoch = int(expanded["epoch"])
-                    if int(start_utc.timestamp()) <= epoch <= int(end_utc.timestamp()):
+                    observed = _coerce(
+                        str(
+                            expanded.get("source_timestamp")
+                            or expanded["time_et"]
+                        )
+                    )
+                    if start_utc <= observed <= end_utc:
                         output.append(expanded)
         if not output:
             raise HistoricalProviderError(
@@ -394,6 +456,71 @@ class LocalHistoricalClient:
             for row in output
         }
         return sorted(deduplicated.values(), key=lambda row: int(row["epoch"]))
+
+    def fetch_trades(
+        self,
+        symbol: str,
+        start: str | datetime,
+        end: str | datetime,
+        *,
+        use_rth: bool = True,
+    ) -> list[dict[str, Any]]:
+        if not use_rth:
+            raise HistoricalProviderError(
+                "local canonical cache supports regular-hours trades only",
+                category="local_cache_miss",
+            )
+        start_utc = _coerce(start)
+        end_utc = _coerce(end)
+        output: list[dict[str, Any]] = []
+        for day in self._days(symbol, start_utc, end_utc):
+            document = self.store.load(symbol, day)
+            if document is None:
+                continue
+            for dataset in document["datasets"]:
+                if (
+                    dataset.get("kind") != "trades"
+                    or dataset.get("channel") != "sale"
+                    or provider_id(str(dataset.get("provider", "")))
+                    != self.cache_namespace
+                    or (self.feed is not None and dataset.get("feed") != self.feed)
+                    or (
+                        self.adjustment is not None
+                        and dataset.get("adjustment") != self.adjustment
+                    )
+                ):
+                    continue
+                for row in dataset["rows"]:
+                    expanded = expand_trade(row)
+                    observed = _coerce(
+                        str(
+                            expanded.get("source_timestamp")
+                            or expanded["time_et"]
+                        )
+                    )
+                    if start_utc <= observed < end_utc:
+                        output.append(expanded)
+        if not output:
+            raise HistoricalProviderError(
+                f"canonical {self.cache_namespace} trade cache miss for {symbol}",
+                category="local_cache_miss",
+            )
+        deduplicated = {
+            (
+                str(row.get("source_timestamp", row["time_et"])),
+                str(row.get("trade_id", "")),
+                float(row["price"]),
+                int(row["size"]),
+            ): row
+            for row in output
+        }
+        return sorted(
+            deduplicated.values(),
+            key=lambda row: (
+                str(row.get("source_timestamp", row["time_et"])),
+                str(row.get("trade_id", "")),
+            ),
+        )
 
 
 @dataclass(frozen=True, slots=True)

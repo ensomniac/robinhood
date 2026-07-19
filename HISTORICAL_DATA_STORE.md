@@ -115,6 +115,14 @@ interpolation flag. Compact quote keys are `t`, `bp`, `ap`, `bs`, `as`, `bx`,
 retained under `x`; they must not be discarded merely because another provider
 does not emit them.
 
+Compact raw-trade keys are `t`, `p`, `s`, `x`, `cnd`, `id`, `tape`, and
+`source_t` for Eastern observation time, price, size, exchange, conditions,
+provider trade ID, tape, and the exact provider timestamp. Nanosecond ordering
+uses `source_t`; the integer epoch is only a compatibility field. Additional
+trade fields are retained under `xtra`. Catalyst-discovery articles are dated
+contexts, not bar datasets, and must state whether they are secondary discovery
+or primary verified evidence.
+
 Every dataset identity includes its provider, channel, timeframe, feed,
 adjustment, session, scope, quality, limitations, and rows. Every context
 identity includes its kind, provider, observation time, and payload. Store
@@ -129,6 +137,8 @@ Store immutable observations or dated symbol context:
 - regular and extended-session OHLCV bars, with their actual timeframe;
 - historical top-of-book quotes and sizes, including provider timestamps,
   exchange codes, conditions, tape, feed, and adjustment basis;
+- bounded raw-trade tape needed to reconstruct a historical trigger, preserving
+  conditions and exact provider ordering rather than inferring from a bar high;
 - point-in-time contract/security metadata when its observation time is known;
 - point-in-time candidate, preflight, earnings, and replay context tied to one
   symbol and day;

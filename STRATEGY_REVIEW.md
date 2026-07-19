@@ -117,6 +117,18 @@ and earn at most one preregistered revision from a subsequently frozen sample.
 This sequence maximizes the chance that additional complexity improves net
 geometric growth instead of fitting a biased shortlist.
 
+The separately frozen selected-candidate join then measured the next fidelity
+layer without inventing a variant. All 389 pairs and 40 benchmark sessions have
+one-minute SIP bars; 325 had a pre-cutoff crossing window with raw trade/quote
+tape. Only 303 supplied three post-cross snapshots, 292 passed basic
+fresh/uncrossed checks, and 177 remained within the 0.15% chase cap. Median
+usable spread was 0.1318%, above the 0.10% operating gate. These measurements
+show that bar-only ORB counts materially overstate executable opportunities.
+They do not estimate returns because primary catalyst, clean-condition, depth,
+tradability/halt, resistance, and sector evidence remain incomplete and the
+source dates were already inspected. The production rules therefore remain
+unchanged; `SELECTED_CANDIDATE_JOIN.md` defines the hardened replay boundary.
+
 ## What The Repository Had Right
 
 The original strategy already addressed several common failure modes: it banned

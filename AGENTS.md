@@ -777,6 +777,21 @@ When Ryan selects historical mode:
    evidence only. Freeze a separate selected-pair join before collecting
    catalyst, quote, breakout, execution, or outcome evidence, and evaluate the
    unchanged champion before proposing any rule change.
+   The exact selected-pair join in `SELECTED_CANDIDATE_JOIN.md` is now inspected
+   `READY` for development-only pipeline fidelity. A one-minute high only locates
+   a possible crossing window. Historical replay must retain raw SIP trade
+   timestamp/ID/exchange/tape/condition evidence, then form quote snapshots at
+   zero, five, and ten seconds after the observed cross using no future quote.
+   Do not call the break clean until frozen SIP condition semantics say so. A
+   missing, nonpositive, crossed, or more-than-five-second-old snapshot is a
+   blocker; apply the 0.15% chase cap to the final post-observation ask.
+   Alpaca/Benzinga news remains secondary discovery and may never set
+   `verified_catalyst=true` without the primary/direct evidence required above.
+   Historical top-of-book size is not full depth, and current tradability or
+   halt facts cannot backfill a target date. Missing catalyst, depth,
+   tradability, halt, resistance, or sector evidence defaults to reject, never
+   eligible. The inspected 20 dates cannot support an alpha or confirmation
+   claim.
    Before freezing any new bulk market-data contract, measure a representative
    pilot's canonical bytes and provider requests per symbol-session, project
    both over the exact target set, and verify free space for the projection plus

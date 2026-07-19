@@ -14,8 +14,10 @@ from historical_store import (
     canonical_sha256,
     compact_bar,
     compact_quote,
+    compact_trade,
     expand_bar,
     expand_quote,
+    expand_trade,
 )
 
 
@@ -120,6 +122,37 @@ class HistoricalDayStoreTests(unittest.TestCase):
 
         self.assertEqual(expanded["bid"], 10)
         self.assertEqual(expanded["source_timestamp"], "raw-provider-value")
+
+    def test_trade_round_trip_preserves_provider_ordering_fields(self):
+        row = compact_trade(
+            {
+                "time_et": "2026-03-03T09:35:00.123456-05:00",
+                "price": 10.01,
+                "size": 100,
+                "exchange": "Q",
+                "conditions": ["@"],
+                "trade_id": 17,
+                "tape": "C",
+                "source_timestamp": "2026-03-03T14:35:00.123456Z",
+            }
+        )
+
+        expanded = expand_trade(row)
+
+        self.assertEqual(expanded["price"], 10.01)
+        self.assertEqual(expanded["conditions"], ["@"])
+        self.assertEqual(expanded["trade_id"], 17)
+        dataset = build_dataset(
+            kind="trades",
+            provider="alpaca",
+            rows=[row],
+            channel="sale",
+            feed="sip",
+            adjustment="raw",
+            quality={"complete": True},
+        )
+        self.store.merge("AAPL", "2026-03-03", datasets=[dataset])
+        self.assertTrue(self.store.audit()["valid"])
 
     def test_audit_detects_content_tampering(self):
         context = build_context(

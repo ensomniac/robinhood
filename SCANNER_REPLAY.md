@@ -210,6 +210,14 @@ Missing history, a symbol discontinuity, or a malformed source row is an
 explicit rejection. It never triggers current-symbol lookup, date substitution,
 end-of-day shortlist replacement, catalyst-only filtering, or provider mixing.
 
+The exact 389 selected pairs now feed the separately frozen development join in
+`SELECTED_CANDIDATE_JOIN.md`. That join adds selected-session and benchmark
+minute bars, time-bounded news discovery, raw crossing trades, and post-cross
+quotes without changing scanner v4. It does not expand the scanner's claim:
+primary catalysts, clean trade-condition semantics, full depth, point-in-time
+tradability/halt state, resistance, sector evidence, and independent outcomes
+remain outside this selection dataset.
+
 ## Runbook
 
 ```sh

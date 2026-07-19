@@ -1,6 +1,6 @@
 # Repository Learning Loop
 
-Prompt version: `2026-07-19-v3`
+Prompt version: `2026-07-19-v4`
 
 This is the public operating prompt for `learning` mode. It is subordinate to
 `AGENTS.md`, the active user request, tool requirements, privacy rules, and every
@@ -55,6 +55,14 @@ Use an already frozen local corpus before collecting more dates. New collection
 is justified only when the current data cannot answer the next decision, an
 independent confirmation sample is required, or coverage is demonstrably too
 small.
+
+For replay fidelity, a bar high locates a possible trigger window but never
+proves a clean or executable break. Preserve raw trade conditions and
+provider-ordering timestamps, form required quote snapshots only after the
+observed cross, and treat secondary news, top-of-book-only size, current
+tradability, and missing halt/depth facts as blockers rather than truthy
+defaults. Keep exact licensed rows outside Git and publish hashes and aggregate
+coverage only.
 
 ## Phase 3 - Improvement Candidates
 

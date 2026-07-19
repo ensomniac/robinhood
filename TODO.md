@@ -30,6 +30,26 @@ inspected `READY`; production strategy rules remain frozen.
   target-session inputs plus SPY/QQQ, and run the unchanged champion before any
   new hypothesis or threshold proposal.
 
+### 17. Selected-Candidate Bar, News, And Trigger-Tape Join
+
+Status: `dataset-selected-candidate-join-2026-07-19-v1` is inspected `READY`
+for development-only pipeline fidelity; production strategy rules remain
+frozen.
+
+- Froze the exact 389 scanner-selected security-date pairs privately and
+  published only hashes, dates, and aggregate counts.
+- Passed a storage pilot with a 10 GiB reserve, then collected 389 candidate
+  and 40 benchmark one-minute SIP sessions plus bounded news contexts.
+- Located 325 crossing windows and retained 365,379 raw trades and 97,949
+  quotes only around those windows; no full-session tick mirror was created.
+- Measured 303 three-snapshot windows, 292 basic fresh/uncrossed windows, 177
+  post-observation chase-cap passes, and a 0.1318% median usable spread.
+- Hardened replay rules so bar highs, secondary news, top-of-book sizes, and
+  current metadata cannot impersonate exact triggers, verified catalysts, full
+  depth, or point-in-time truth.
+- Next: source primary catalysts and freeze clean trade-condition semantics,
+  then evaluate the unchanged champion before freezing 100+ new dates.
+
 ## Completed 2026-07-18
 
 ### 12. Bounded Edit And Learning Loop

@@ -336,6 +336,12 @@ universe index is derived for fast replay. See
 boundary, failed-contract lineage, current status, and reproduction commands.
 The fidelity lock is satisfied, but the next work remains a frozen selected-
 candidate join and unchanged-champion evaluation, not an automatic new variant.
+That join is now inspected `READY` for development plumbing: all 389 selected
+pairs have candidate bars and news contexts, all 40 benchmark sessions are
+present, and 325 crossing windows have bounded raw trade/quote tape. Execution
+attrition is substantial, while primary catalyst and other production facts are
+still missing, so v3 remains unchanged. See
+[SELECTED_CANDIDATE_JOIN.md](SELECTED_CANDIDATE_JOIN.md).
 
 ```sh
 python3 historical_research.py run \
@@ -557,6 +563,8 @@ Commit messages should describe what changed, for example:
 ├── scanner_replay_alpaca.py # Frozen non-S3 full-universe source collector
 ├── scanner_replay_inspection.py # Independent scanner/canonical-data verifier
 ├── SCANNER_REPLAY.md # Dynamic 09:35 selection contract and runbook
+├── selected_candidate_join.py # Frozen selected-pair bar/news/tape join
+├── SELECTED_CANDIDATE_JOIN.md # Join contract, findings, blockers, and runbook
 ├── SIGNAL_LEDGER.md  # Structured public signal-record schema and workflow
 ├── sensitive_data.py # Fast encrypt/decrypt/audit/benchmark CLI
 ├── settings.toml      # Human-editable operational settings

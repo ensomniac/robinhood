@@ -270,6 +270,66 @@ def expand_quote(row: Mapping[str, Any]) -> dict[str, Any]:
     return result
 
 
+def compact_trade(row: Mapping[str, Any], *, day: str | None = None) -> dict[str, Any]:
+    """Normalize one raw trade while retaining provider ordering fields."""
+
+    result: dict[str, Any] = {"t": _timestamp_et(row, day)}
+    aliases = {"price": "p", "size": "s"}
+    consumed = {"t", "epoch", "time_et", "date_et"}
+    for source, target in aliases.items():
+        if source not in row:
+            continue
+        consumed.add(source)
+        number = _finite_number(row[source], source)
+        result[target] = int(number) if target == "s" else number
+    passthrough = {
+        "exchange": "x",
+        "conditions": "cnd",
+        "trade_id": "id",
+        "tape": "tape",
+        "source_timestamp": "source_t",
+    }
+    for source, target in passthrough.items():
+        if source in row:
+            result[target] = row[source]
+            consumed.add(source)
+    extra = {str(key): value for key, value in row.items() if key not in consumed}
+    if extra:
+        result["xtra"] = extra
+    return result
+
+
+def expand_trade(row: Mapping[str, Any]) -> dict[str, Any]:
+    try:
+        observed = datetime.fromisoformat(str(row["t"]))
+    except (KeyError, ValueError) as exc:
+        raise HistoricalStoreError("stored trade has an invalid timestamp") from exc
+    if observed.tzinfo is None:
+        observed = observed.replace(tzinfo=EASTERN)
+    observed = observed.astimezone(EASTERN)
+    result: dict[str, Any] = {
+        "epoch": int(observed.timestamp()),
+        "time_et": observed.isoformat(),
+        "price": float(row["p"]),
+        "size": int(row["s"]),
+    }
+    reverse = {
+        "x": "exchange",
+        "cnd": "conditions",
+        "id": "trade_id",
+        "tape": "tape",
+        "source_t": "source_timestamp",
+    }
+    for source, target in reverse.items():
+        if source in row:
+            result[target] = row[source]
+    extra = row.get("xtra")
+    if isinstance(extra, Mapping):
+        for key, value in extra.items():
+            result.setdefault(str(key), value)
+    return result
+
+
 @dataclass(frozen=True, slots=True)
 class HistoricalStoreConfig:
     root: Path
@@ -428,7 +488,7 @@ def build_dataset(
     provenance: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     normalized_kind = str(kind).strip().lower()
-    if normalized_kind not in {"bars", "quotes", "snapshots", "derived"}:
+    if normalized_kind not in {"bars", "quotes", "trades", "snapshots", "derived"}:
         raise HistoricalStoreError(f"unsupported dataset kind: {kind}")
     normalized_rows = [dict(row) for row in rows]
     normalized_quality = {

@@ -1,0 +1,22 @@
+{
+  "clean_break_status": "UNRESOLVED_CONDITION_SEMANTICS",
+  "counts": {
+    "completed_trigger_tapes": 325,
+    "quote_cache_hits": 324,
+    "quote_rows": 97949,
+    "three_snapshot_windows": 303,
+    "trade_cache_hits": 325,
+    "trade_rows": 365379
+  },
+  "dataset_id": "dataset-selected-candidate-join-2026-07-19-v1",
+  "elapsed_seconds": 10.693586874986067,
+  "error_categories": {},
+  "error_count": 0,
+  "expected_trigger_tapes": 325,
+  "manifest_sha256": "a46ac360d3d7578757dd7ae420b6a6abe3d820d7d3c4895b083cd576ca05fba4",
+  "private_tape_index_sha256": "711834b96ce9cd292bfff73396ad7c98ca4a16e217c77e6670299dacda688925",
+  "raw_rows_public": false,
+  "schema_version": 1,
+  "status": "TAPE_JOIN_COMPLETE",
+  "symbols_public": false
+}

@@ -1,0 +1,197 @@
+{
+  "capacity_contract": {
+    "minimum_free_bytes": 10737418240,
+    "observed_free_bytes_at_freeze": 90201157632,
+    "pilot_required_before_bulk_collection": true
+  },
+  "collection_contract": {
+    "adjustment": "raw",
+    "alpha_or_confirmation_claim_allowed": false,
+    "benchmark_bars": "1Min regular session 09:30-16:00 ET",
+    "benchmarks": [
+      "SPY",
+      "QQQ"
+    ],
+    "candidate_bars": "1Min regular session 09:30-16:00 ET",
+    "canonical_store_required": true,
+    "collector_sha256": "6b46667c215cba59682ad2bede8fd5119284524fda12967118fb88b8c9a10ce6",
+    "feed": "sip",
+    "news_role": "secondary catalyst discovery only; not verified catalyst",
+    "news_window": "4 calendar days before target through target 09:35 ET, created_at bounded",
+    "provider": "Alpaca Market Data API",
+    "provider_switching_allowed": false,
+    "raw_and_symbol_rows_public": false,
+    "source_corpus_already_inspected": true,
+    "substitutions_allowed": false,
+    "symbol_mapping": "asof=-; point-in-time scanner identity remains authoritative",
+    "trigger_tape": "raw SIP trades for the first 1Min bar whose high crosses the opening-range high, then SIP top-of-book around the first observed trade cross"
+  },
+  "dataset_id": "dataset-selected-candidate-join-2026-07-19-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "research_results/2026-07-19-scanner-replay.json",
+      "SCANNER_REPLAY.md",
+      "STRATEGY_LEARNING_EXECUTION_PLAN.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "manifest_sha256": "a46ac360d3d7578757dd7ae420b6a6abe3d820d7d3c4895b083cd576ca05fba4",
+  "registered_at": "2026-07-19T06:56:26.430195+00:00",
+  "requested_dates": [
+    "2026-01-02",
+    "2026-01-05",
+    "2026-01-06",
+    "2026-01-07",
+    "2026-01-20",
+    "2026-02-26",
+    "2026-03-16",
+    "2026-03-27",
+    "2026-04-02",
+    "2026-04-10",
+    "2026-04-13",
+    "2026-04-14",
+    "2026-04-17",
+    "2026-04-20",
+    "2026-05-19",
+    "2026-05-27",
+    "2026-06-09",
+    "2026-06-16",
+    "2026-06-17",
+    "2026-06-23"
+  ],
+  "schema_version": 1,
+  "selection_contract": {
+    "daily_shortlists": [
+      {
+        "date": "2026-01-02",
+        "shortlist_count": 20,
+        "shortlist_sha256": "d40854cf5533f7306d3285b83a1037d512221c38cf30f2b38620f3411fca7311"
+      },
+      {
+        "date": "2026-01-05",
+        "shortlist_count": 20,
+        "shortlist_sha256": "28d91c2b191231b238bc26e1a2e7a7647fc8fbba9f7e4536d1436ee738514123"
+      },
+      {
+        "date": "2026-01-06",
+        "shortlist_count": 20,
+        "shortlist_sha256": "ece797b9747555847db91ecb05fd35899ab3262adc10f98b1b8cc305f1af3100"
+      },
+      {
+        "date": "2026-01-07",
+        "shortlist_count": 20,
+        "shortlist_sha256": "4e021627468c87b923c167ff5f3201cb7abe18c5e129fc2910e3e98b7db7d15c"
+      },
+      {
+        "date": "2026-01-20",
+        "shortlist_count": 20,
+        "shortlist_sha256": "af6ec2c1c73ebc753ea40d7da27a54072a0d03ebfbb25e4b6a604154ae740c2c"
+      },
+      {
+        "date": "2026-02-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "28f0f6856b48f5ef0dea443b88612a5a297ff3ea4a4473c8625dc2daa20668c5"
+      },
+      {
+        "date": "2026-03-16",
+        "shortlist_count": 20,
+        "shortlist_sha256": "9985a8e877fe36f523dc4bc2395d8fcca650bff137b3f11c960fc7d280b69b6f"
+      },
+      {
+        "date": "2026-03-27",
+        "shortlist_count": 9,
+        "shortlist_sha256": "aea232ca824f42ce4ff07247ad9d600c8b962109c0c06bd74a8fd1b4cc404174"
+      },
+      {
+        "date": "2026-04-02",
+        "shortlist_count": 20,
+        "shortlist_sha256": "b549ea27f8565615051c5f4b16dc999901c39b77286368f49fa9aecc15ce3ce3"
+      },
+      {
+        "date": "2026-04-10",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e141ef4e16e7b3ab887e88d42bd490cded0f0ed1568113e4ce37d280e5992493"
+      },
+      {
+        "date": "2026-04-13",
+        "shortlist_count": 20,
+        "shortlist_sha256": "ce63687b928842e9e5b3bc97062e18dff5e1e4c5f6b852aaaeaf73e4a3d4c649"
+      },
+      {
+        "date": "2026-04-14",
+        "shortlist_count": 20,
+        "shortlist_sha256": "252873247e6a5257c04988b617d2cb0c8fdc885b6390fa18325a5a6060d4e423"
+      },
+      {
+        "date": "2026-04-17",
+        "shortlist_count": 20,
+        "shortlist_sha256": "99ed64bb2af8bbf67fca0658bf7f34338c5710dae2652b160206f15ba9ed2e05"
+      },
+      {
+        "date": "2026-04-20",
+        "shortlist_count": 20,
+        "shortlist_sha256": "2b9ca55976ed8e0a2675fc088406e5219d8bea140feaa41de7f19e669ba4de34"
+      },
+      {
+        "date": "2026-05-19",
+        "shortlist_count": 20,
+        "shortlist_sha256": "c5aee6995d925491093cb7cdea4aada663c2bf1e51b27decbd28436316f04f12"
+      },
+      {
+        "date": "2026-05-27",
+        "shortlist_count": 20,
+        "shortlist_sha256": "bc1fd3b1d8c102d1be4fbae6b8f611aad8fc4724af2aa69c102fc9764d4fbb45"
+      },
+      {
+        "date": "2026-06-09",
+        "shortlist_count": 20,
+        "shortlist_sha256": "175223b8bcde80b6d398a08fe921ac7e83421efdb91b9d4c2fb67cfa8b3b1d63"
+      },
+      {
+        "date": "2026-06-16",
+        "shortlist_count": 20,
+        "shortlist_sha256": "abd10da5d567006f27874a2df1ddeaa6f66b27e1e2781b4564368ef5a911f88b"
+      },
+      {
+        "date": "2026-06-17",
+        "shortlist_count": 20,
+        "shortlist_sha256": "11e7c5063ca7512fc25088a28a9809ee14ae8894dca290f4a18f034b339208d6"
+      },
+      {
+        "date": "2026-06-23",
+        "shortlist_count": 20,
+        "shortlist_sha256": "4a9902c75c267e33a07757aa7b51bbf6239b557459d05bf8ff9a9fc21f50b798"
+      }
+    ],
+    "private_selection_content_sha256": "8313946f04520209ec85a63d58eda0e19cf439d627acfb207b423d59f7a165b4",
+    "requested_dates": [
+      "2026-01-02",
+      "2026-01-05",
+      "2026-01-06",
+      "2026-01-07",
+      "2026-01-20",
+      "2026-02-26",
+      "2026-03-16",
+      "2026-03-27",
+      "2026-04-02",
+      "2026-04-10",
+      "2026-04-13",
+      "2026-04-14",
+      "2026-04-17",
+      "2026-04-20",
+      "2026-05-19",
+      "2026-05-27",
+      "2026-06-09",
+      "2026-06-16",
+      "2026-06-17",
+      "2026-06-23"
+    ],
+    "selected_pair_count": 389,
+    "source_dataset_id": "dataset-production-scanner-replay-2026-07-19-v4",
+    "source_detail_sha256": "102ef9cf15146e55a3ebdc3a95c4672862911c6379f2f7b691f6d036fcdc4af1",
+    "source_summary_sha256": "2aa8a45e6b17c88dd1fca5eb396a04444176699c06c131dc2b79c40eebbf5538"
+  }
+}

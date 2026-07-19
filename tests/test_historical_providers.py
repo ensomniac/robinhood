@@ -249,6 +249,19 @@ class MassiveNormalizationTests(unittest.TestCase):
 
 
 class AlpacaNormalizationTests(unittest.TestCase):
+    def test_null_observation_collection_is_an_empty_success(self):
+        start = datetime(2026, 3, 3, 9, 35, tzinfo=EASTERN)
+        session = FakeSession([FakeResponse({"quotes": None})])
+        client = AlpacaHistoricalClient(
+            AlpacaConfig(api_key="key", api_secret="secret"), session=session
+        )
+
+        quotes = client.fetch_bid_ask_ticks(
+            "AAPL", start, start + timedelta(seconds=10)
+        )
+
+        self.assertEqual(quotes, [])
+
     def test_bars_paginate_with_sip_feed_raw_adjustment_and_auth_headers(self):
         start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
         raw = {
@@ -276,6 +289,7 @@ class AlpacaNormalizationTests(unittest.TestCase):
         self.assertEqual(len(bars), 2)
         self.assertEqual(session.calls[0][1]["feed"], "sip")
         self.assertEqual(session.calls[0][1]["adjustment"], "raw")
+        self.assertEqual(session.calls[0][1]["asof"], "-")
         self.assertEqual(session.calls[1][1]["page_token"], "next")
         self.assertEqual(session.calls[0][3]["APCA-API-KEY-ID"], "key")
         self.assertEqual(session.calls[0][3]["APCA-API-SECRET-KEY"], "secret")
@@ -327,6 +341,72 @@ class AlpacaNormalizationTests(unittest.TestCase):
 
         self.assertTrue(raised.exception.retryable)
         self.assertEqual(raised.exception.category, "retryable_provider")
+
+    def test_raw_trades_preserve_sip_ordering_and_conditions(self):
+        start = datetime(2026, 3, 3, 9, 35, tzinfo=EASTERN)
+        session = FakeSession(
+            [
+                FakeResponse(
+                    {
+                        "trades": [
+                            {
+                                "t": start.isoformat(),
+                                "p": 10.01,
+                                "s": 100,
+                                "x": "Q",
+                                "c": ["@"],
+                                "i": 17,
+                                "z": "C",
+                            }
+                        ]
+                    }
+                )
+            ]
+        )
+        client = AlpacaHistoricalClient(
+            AlpacaConfig(api_key="key", api_secret="secret"), session=session
+        )
+
+        trades = client.fetch_trades("AAPL", start, start + timedelta(minutes=1))
+
+        self.assertEqual(trades[0]["price"], 10.01)
+        self.assertEqual(trades[0]["conditions"], ["@"])
+        self.assertEqual(trades[0]["trade_id"], 17)
+        self.assertEqual(session.calls[0][1]["asof"], "-")
+
+    def test_news_is_time_bounded_and_marked_with_source(self):
+        start = datetime(2026, 3, 2, 0, 0, tzinfo=EASTERN)
+        created = datetime(2026, 3, 3, 8, 0, tzinfo=EASTERN)
+        session = FakeSession(
+            [
+                FakeResponse(
+                    {
+                        "news": [
+                            {
+                                "id": 9,
+                                "created_at": created.isoformat(),
+                                "updated_at": created.isoformat(),
+                                "headline": "Issuer reports results",
+                                "summary": "Summary",
+                                "source": "benzinga",
+                                "url": "https://example.test/article",
+                                "symbols": ["AAPL"],
+                                "content": "not requested",
+                            }
+                        ]
+                    }
+                )
+            ]
+        )
+        client = AlpacaHistoricalClient(
+            AlpacaConfig(api_key="key", api_secret="secret"), session=session
+        )
+
+        news = client.fetch_news(["AAPL"], start, created + timedelta(hours=2))
+
+        self.assertEqual(news[0]["source"], "benzinga")
+        self.assertNotIn("content", news[0])
+        self.assertEqual(session.calls[0][1]["include_content"], "false")
 
 
 if __name__ == "__main__":

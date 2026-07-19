@@ -1,6 +1,6 @@
 # Persistent Strategy Learning Program
 
-Program version: `2026-07-19-v3`
+Program version: `2026-07-19-v4`
 
 Production champion: `2026-07-15-orb-v3`
 
@@ -45,9 +45,14 @@ rewritten or deleted.
    session indexes, 20 dynamic rankings, 105,261 point-in-time evaluations, 389
    selected pairs, and 608,386 canonical documents passed independent source,
    metric, rank, and persistence verification.
-5. **Registered hypothesis and experiment lifecycle:** implemented.
-6. **Three-axis champion/challenger evidence:** implemented.
-7. **Operating cadence and monitoring:** implemented.
+5. **Selected-candidate join:** inspected `READY` for pipeline development. All
+   389 exact pairs and 40 benchmark sessions have one-minute bars; 325 crossing
+   windows have bounded raw trade/quote tape, and all pairs have time-bounded
+   news-discovery contexts. Primary catalyst, clean-condition, depth,
+   tradability, halt, resistance, and sector contracts remain explicit blockers.
+6. **Registered hypothesis and experiment lifecycle:** implemented.
+7. **Three-axis champion/challenger evidence:** implemented.
+8. **Operating cadence and monitoring:** implemented.
 
 ## Current Evidence Decisions
 
@@ -62,18 +67,15 @@ rewritten or deleted.
 
 ## Current Next Objective
 
-The scanner fidelity objective is complete and its resumable dataset run closed
-successfully. The research lock condition is satisfied, but the next objective
-is not a new strategy variant. Freeze a selected-candidate join over the replay's exact
-date-symbol pairs, then collect target-session one-minute trades, time-valid
-catalysts, historical quotes when available, benchmark context, and outcome
-inputs into the canonical external store. Evaluate the unchanged champion and a
-paired paper-aligned exit baseline before estimating any production gate's
-marginal value. The 20-date dataset proves pipeline fidelity; a subsequent
-preregistered sample of at least 100 previously uninspected scanner dates is
-required for meaningful alpha inference. The ordered stages and decision gates
-are maintained in `STRATEGY_LEARNING_EXECUTION_PLAN.md`. See
-`SCANNER_REPLAY.md` for the completed source and inspection counts.
+The scanner and selected-candidate pipeline objectives are complete. The next
+objective is still not a strategy variant: source primary point-in-time catalyst
+evidence and freeze exact clean-trade condition semantics, then evaluate the
+unchanged champion without favorable defaults for missing depth, tradability,
+halt, resistance, or sector inputs. The existing 20 dates prove pipeline
+fidelity and execution-gate attrition only. A subsequent preregistered sample of
+at least 100 previously uninspected scanner dates is required for meaningful
+alpha inference. See `SCANNER_REPLAY.md`, `SELECTED_CANDIDATE_JOIN.md`, and
+`STRATEGY_LEARNING_EXECUTION_PLAN.md`.
 
 ## Bounded Iteration
 

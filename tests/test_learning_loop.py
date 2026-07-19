@@ -22,7 +22,7 @@ class LearningPromptTests(unittest.TestCase):
     def test_public_prompt_is_versioned_ordered_and_bounded(self):
         contract = load_prompt()
 
-        self.assertEqual(contract["version"], "2026-07-19-v3")
+        self.assertEqual(contract["version"], "2026-07-19-v4")
         self.assertEqual(contract["max_apply_rounds"], 1)
         self.assertEqual(len(contract["phases"]), 8)
 

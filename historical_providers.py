@@ -669,6 +669,11 @@ class AlpacaHistoricalClient:
                     category="permanent_fidelity",
                 )
             page_rows = payload.get(result_key, [])
+            # Alpaca uses null as an explicit no-observations response for
+            # some historical symbols/windows. Preserve that as an empty
+            # successful result so callers can record the fidelity gap.
+            if page_rows is None:
+                page_rows = []
             if not isinstance(page_rows, list):
                 raise HistoricalProviderError(
                     f"Alpaca {result_key} must be an array",
@@ -738,7 +743,10 @@ class AlpacaHistoricalClient:
                 "sort": "asc",
                 "feed": self.config.feed,
                 "adjustment": self.config.adjustment,
-                "asof": end_utc.astimezone(EASTERN).date().isoformat(),
+                # Point-in-time security identity is resolved by the sourced
+                # local security master. Do not let the provider remap an old
+                # ticker to a later underlying entity.
+                "asof": "-",
             },
             result_key="bars",
         )
@@ -798,7 +806,7 @@ class AlpacaHistoricalClient:
                 "limit": 10000,
                 "sort": "asc",
                 "feed": self.config.feed,
-                "asof": end_utc.astimezone(EASTERN).date().isoformat(),
+                "asof": "-",
             },
             result_key="quotes",
         )
@@ -836,3 +844,156 @@ class AlpacaHistoricalClient:
                     category="permanent_fidelity",
                 ) from exc
         return sorted(rows, key=lambda row: int(row["epoch"]))
+
+    def fetch_trades(
+        self,
+        symbol: str,
+        start: str | datetime,
+        end: str | datetime,
+        *,
+        use_rth: bool = True,
+    ) -> list[dict[str, Any]]:
+        """Return raw historical SIP trades without inventing bar semantics."""
+
+        start_utc = _coerce_datetime(start)
+        end_utc = _coerce_datetime(end)
+        if end_utc <= start_utc:
+            raise HistoricalProviderError(
+                "end must be after start", category="local_configuration"
+            )
+        normalized_symbol = str(symbol).strip().upper()
+        raw = self._request_pages(
+            f"/v2/stocks/{normalized_symbol}/trades",
+            params={
+                "start": start_utc.isoformat(),
+                "end": end_utc.isoformat(),
+                "limit": 10000,
+                "sort": "asc",
+                "feed": self.config.feed,
+                # Keep ticker changes explicit. The scanner security master is
+                # the identity authority for each historical date.
+                "asof": "-",
+            },
+            result_key="trades",
+        )
+        rows: list[dict[str, Any]] = []
+        for row in raw:
+            try:
+                observed = self._observed(row["t"])
+                if not start_utc <= observed < end_utc:
+                    continue
+                eastern = observed.astimezone(EASTERN)
+                if use_rth and not time(9, 30) <= eastern.time() < time(16, 0):
+                    continue
+                price = float(row["p"])
+                size = int(float(row["s"]))
+                if price <= 0 or size <= 0:
+                    continue
+                rows.append(
+                    {
+                        "epoch": int(observed.timestamp()),
+                        "time_et": eastern.isoformat(),
+                        "price": price,
+                        "size": size,
+                        "exchange": row.get("x"),
+                        "conditions": row.get("c"),
+                        "trade_id": row.get("i"),
+                        "tape": row.get("z"),
+                        "source_timestamp": row.get("t"),
+                    }
+                )
+            except (KeyError, TypeError, ValueError) as exc:
+                raise HistoricalProviderError(
+                    "Alpaca trade row is malformed",
+                    category="permanent_fidelity",
+                ) from exc
+        return sorted(
+            rows,
+            key=lambda row: (
+                str(row.get("source_timestamp", "")),
+                str(row.get("trade_id", "")),
+            ),
+        )
+
+    def fetch_news(
+        self,
+        symbols: Sequence[str],
+        start: str | datetime,
+        end: str | datetime,
+        *,
+        include_content: bool = False,
+    ) -> list[dict[str, Any]]:
+        """Return time-bounded Benzinga articles supplied by Alpaca.
+
+        This is discovery evidence only. Callers must not equate an article
+        returned here with the strategy's verified-primary-catalyst gate.
+        """
+
+        normalized_symbols = sorted(
+            {str(symbol).strip().upper() for symbol in symbols if str(symbol).strip()}
+        )
+        if not normalized_symbols:
+            raise HistoricalProviderError(
+                "news symbols must be non-empty", category="local_configuration"
+            )
+        start_utc = _coerce_datetime(start)
+        end_utc = _coerce_datetime(end)
+        if end_utc <= start_utc:
+            raise HistoricalProviderError(
+                "end must be after start", category="local_configuration"
+            )
+        raw = self._request_pages(
+            "/v1beta1/news",
+            params={
+                "symbols": ",".join(normalized_symbols),
+                "start": start_utc.isoformat(),
+                "end": end_utc.isoformat(),
+                "limit": 50,
+                "sort": "asc",
+                "include_content": str(bool(include_content)).lower(),
+            },
+            result_key="news",
+        )
+        rows: list[dict[str, Any]] = []
+        for row in raw:
+            try:
+                created = self._observed(row["created_at"])
+                if not start_utc <= created <= end_utc:
+                    continue
+                article_symbols = sorted(
+                    {
+                        str(symbol).strip().upper()
+                        for symbol in row.get("symbols", [])
+                        if str(symbol).strip()
+                    }
+                )
+                rows.append(
+                    {
+                        "article_id": row.get("id"),
+                        "created_at": created.isoformat(),
+                        "updated_at": row.get("updated_at"),
+                        "headline": str(row.get("headline") or ""),
+                        "summary": str(row.get("summary") or ""),
+                        "author": row.get("author"),
+                        "source": row.get("source"),
+                        "url": row.get("url"),
+                        "symbols": article_symbols,
+                        **(
+                            {"content": str(row.get("content") or "")}
+                            if include_content
+                            else {}
+                        ),
+                    }
+                )
+            except (KeyError, TypeError, ValueError) as exc:
+                raise HistoricalProviderError(
+                    "Alpaca news row is malformed",
+                    category="permanent_fidelity",
+                ) from exc
+        return sorted(
+            rows,
+            key=lambda row: (
+                str(row["created_at"]),
+                str(row.get("article_id", "")),
+            ),
+        )

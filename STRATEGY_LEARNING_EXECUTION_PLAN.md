@@ -225,28 +225,37 @@ selection only; it did not earn an alpha-rule change.
 
 ### Stage 2 - Build a trade-capable selected-candidate join
 
-Freeze a new manifest over only the selected date-symbol pairs before collecting
-additional target-session data. For each pair, add canonical one-minute trades,
-time-valid catalyst evidence, historical SIP quotes where available, SPY/QQQ
-context, and the inputs needed for VWAP, resistance, trigger, stop, chase, and
-paired end-of-day outcomes. Missing quote, catalyst, or tradability evidence is
-an explicit blocker, never a substituted symbol or current fact. Provider
-fallback may accelerate acquisition, but a metric must not blend providers
-within a session.
+Status: pipeline join completed and inspected on 2026-07-19; production-input
+qualification remains blocked.
 
-Run a storage-capacity preflight before freezing that acquisition: measure bytes
+The hash-frozen development manifest retained the exact 389 pairs. All candidate
+sessions and 40 SPY/QQQ sessions have raw Alpaca SIP one-minute bars, all pairs
+have bounded news-discovery contexts, and all 325 pre-cutoff crossing windows
+have raw SIP trade tape plus bounded quote collection. The tape contains 365,379
+trades and 97,949 quotes. Only 303 crossings had three snapshots, 292 had basic
+fresh/uncrossed snapshots, and 177 remained inside the 0.15% chase cap after the
+observation interval. Median usable spread was 0.1318%, above the 0.10%
+production operating limit.
+
+This completes the reusable acquisition mechanics but not a production replay.
+Alpaca/Benzinga news is secondary evidence, clean trade-condition semantics are
+not frozen, top-of-book is not full depth, and point-in-time tradability, halt,
+resistance, and sector inputs remain absent. Missing fields block rather than
+default. See `SELECTED_CANDIDATE_JOIN.md`.
+
+The required storage-capacity preflight measured bytes
 per selected pair from a representative pilot, publish the projected incremental
 bytes and request count, and require enough free space for the projection plus
 an atomic-write/audit reserve. The current volume is already 96% allocated even
 though the canonical history store is only about 2.2 GB. A full-universe
-one-minute pull is therefore wasteful and unsafe; Stage 2 collects only the
-frozen selected pairs and benchmarks. Stop cleanly before the reserve is
-exhausted, retain the exact manifest, and resume without date or symbol
-substitution after capacity is restored.
+one-minute pull is therefore wasteful and unsafe. Stage 2 collected only the
+frozen selected pairs, benchmarks, and bounded trigger tape, while enforcing a
+10 GiB reserve and exact cache resume.
 
 ### Stage 3 - Evaluate the existing champion and its attribution baseline
 
-Run the exact `2026-07-15-orb-v3` rules first. Retain every selected candidate,
+First close the primary-catalyst and exact clean-condition contracts. Then run
+the exact `2026-07-15-orb-v3` rules first. Retain every selected candidate,
 every trigger, every production rejection reason, and a paired paper-aligned
 end-of-day outcome. Report both the one-trade daily portfolio and all-signal gate
 attribution. The first 20 scanner dates validate the pipeline and expose gross
