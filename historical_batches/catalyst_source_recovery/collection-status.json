@@ -1,0 +1,25 @@
+{
+  "capture_status_counts": {
+    "NO_ACCESSION": 2,
+    "RESPONSE_CAPTURED": 24
+  },
+  "dataset_id": "dataset-catalyst-source-recovery-sec-2026-07-19-expansion-v1",
+  "http_status_counts": {
+    "200": 24
+  },
+  "manifest_sha256": "2f4258b23e2aac76529754f51e5df6618db3e655d01491bb7cb01e14a5b0d374",
+  "response_bytes": 19719807,
+  "schema_version": 1,
+  "selection_counts": {
+    "accession_bound_urls": 24,
+    "non_accession_urls": 2,
+    "pair_source_joins": 37,
+    "pairs": 31,
+    "sec_403_urls": 26
+  },
+  "source_semantics_classified": false,
+  "status": "COLLECTION_COMPLETE",
+  "symbols_dates_urls_articles_responses_and_rows_public": false,
+  "target_outcomes_observed_or_derived": false,
+  "terminal_sources": 26
+}

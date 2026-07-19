@@ -1,8 +1,9 @@
 # Catalyst Source Recovery
 
-Status: exact SEC recovery manifest frozen under hash
+Status: independently inspected `READY` under manifest hash
 `2f4258b23e2aac76529754f51e5df6618db3e655d01491bb7cb01e14a5b0d374`;
-commit it before provider access
+all 24 accession-bound sources returned HTTP 200, the two generic pages were not
+requested, and SEC semantics remain unclassified
 
 ## Purpose
 
@@ -55,3 +56,9 @@ before 09:35 ET, that it is relevant or directionally positive, or that it
 supports alpha. Those decisions require a separately frozen, outcome-blind SEC
 semantics review. Secondary news never replaces a missing primary source, and
 target outcomes remain inaccessible.
+
+The inspected recovery captured 19,719,807 response bytes. Independent
+inspection rebuilt the frozen selection and terminal counts and verified every
+private response hash. The aggregate result is
+`research_results/2026-07-19-catalyst-source-recovery-sec.json`; exact filing and
+pair rows remain outside Git.
