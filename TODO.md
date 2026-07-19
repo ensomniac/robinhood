@@ -164,9 +164,10 @@ frozen and no target outcomes were read.
   error path; v2 changed no dates, identities, thresholds, or semantics.
 - Independently rebuilt all 325 terminal records, split factors, minute prefixes,
   aggregate counts, private hashes, and public privacy checks.
-- Next: freeze at least 100 previously uninspected dynamic scanner dates, acquire
-  direct catalyst sources, and evaluate unchanged v3 before proposing one
-  preregistered revision.
+- Completed by sections 23 and 25: the 100-date scanner expansion is `READY`
+  and direct-source acquisition reached a 33-pair structural ceiling. Current
+  next work is the frozen source-semantics gate; returns and variants stay
+  locked.
 
 ### 23. One-Hundred-Date Dynamic Scanner Expansion
 

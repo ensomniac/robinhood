@@ -84,12 +84,18 @@ rewritten or deleted.
     inputs remain unresolved rather than favorable.
 12. **Three-axis champion/challenger evidence:** implemented.
 13. **Operating cadence and monitoring:** implemented.
-14. **Disjoint scanner expansion:** in progress. A seeded 100-date H1-2026
-    sample excludes every v4 target and permits no substitution. Its 133-session
-    acquisition graph can reuse 113 independently attested v4 inputs while
-    collecting the exact new-master symbol delta; 20 sessions require a fresh
-    full-universe pull. Reference identity collection precedes market freeze,
-    and no trigger, catalyst outcome, or strategy variant is part of this stage.
+14. **Disjoint scanner expansion:** independently inspected `READY`. The seeded
+    100-date H1-2026 sample excludes every v4 target and permitted no
+    substitution. Its 133-session graph produced 526,587 point-in-time
+    evaluations, 6,024 eligible rows, and 1,987 exact selected pairs under
+    unchanged v3. Downstream non-return inspection found zero known hard-gate
+    survivors and kept outcomes locked.
+15. **Direct catalyst source readiness:** independently inspected `READY` for
+    development-only structure claims. The exact 1,987-pair join has 123
+    primary-routing leads; bounded capture retained 121 hashed responses. HTML
+    and visually inspected PDF profiles produce a 33-pair, 33-document,
+    38-pair/source structural ceiling. Zero source timestamps or catalysts are
+    accepted, and no strategy change is earned.
 
 ## Current Evidence Decisions
 
@@ -104,17 +110,16 @@ rewritten or deleted.
 
 ## Current Next Objective
 
-The first outcome-blind unchanged-champion readiness join, exact intraminute
-VWAP semantics, and deterministic stop/noise and resistance contracts are now
-independently inspected. The structure layer replaces misleading proxies but
-does not change v3 or expose outcomes: 89 of 255 derivable trigger records pass
-both unchanged geometry gates, while 70 fail closed before derivation. The next
-objective is to acquire at least 100 previously uninspected dynamic scanner
-dates with direct catalyst sources and apply the exact input contracts there.
-Broker-specific tradability remains a prospective execution-qualification
-requirement. Evaluate unchanged v3 first on that new sample; earn at most one
-preregistered revision only if its deployment capacity or net expectancy fails.
-See `SCANNER_EXPANSION.md`, `SCANNER_REPLAY.md`,
+The 100-date scanner expansion and its non-return execution joins are now
+independently inspected. Zero rows pass every known unchanged-v3 hard gate, and
+the direct-source pipeline accepts zero catalysts so far. The next objective is
+the exact 33-pair, 33-document, 38-join source ownership, issuer-binding,
+causal-time, and semantics gate in `CATALYST_SOURCE_SEMANTICS_PLAN.md`. If fewer
+than 20 verified positive rows survive that stage or the already frozen v3
+non-return gates, close without outcomes and acquire a disjoint sample or
+same-source recovery; do not loosen v3. Broker-specific tradability remains a
+prospective execution-qualification requirement. See
+`CATALYST_EVIDENCE_ACQUISITION.md`, `SCANNER_EXPANSION.md`, `SCANNER_REPLAY.md`,
 `SELECTED_CANDIDATE_JOIN.md`, `SELECTED_CANDIDATE_FIDELITY.md`,
 `CHAMPION_INPUT_FIDELITY.md`, `CHAMPION_INPUT_READINESS.md`,
 `SIP_BAR_AGGREGATION.md`, `PREENTRY_STRUCTURE.md`, and

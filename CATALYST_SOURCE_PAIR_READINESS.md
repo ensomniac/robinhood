@@ -40,12 +40,12 @@ source-response joins remain in the external historical store.
   availability, materiality, direction, conflict, catalyst verification,
   outcomes, and production-rule authority remain false.
 
-The 18-pair timestamp-candidate surface is already below the 20-signal
-`PROVISIONAL` minimum before issuer verification, v3 trigger/execution gates,
-or closed outcomes. PDF-specific parsing could expand the evidence surface, but
-must be frozen separately and cannot treat document metadata as publication
-proof. The next efficient work is source-type-specific verification, not a new
-strategy variant or return calculation.
+Before PDF profiling, the 18-pair timestamp-candidate surface was below the
+20-signal `PROVISIONAL` minimum before issuer verification, v3 trigger/execution
+gates, or closed outcomes. PDF-specific parsing could expand the evidence
+surface, but had to be frozen separately and could not treat document metadata
+as publication proof. The next efficient work remains source-type-specific
+verification, not a new strategy variant or return calculation.
 
 Subsequent frozen PDF profiling found date-shaped front text in all 13 PDFs.
 Those documents touch 15 pairs with no overlap against the 18 HTML candidates,

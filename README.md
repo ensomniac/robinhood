@@ -412,14 +412,24 @@ stop and resistance geometry. Seventy records remain explicitly unresolved.
 This closes an input-definition gap, not alpha validation, and v3 remains
 unchanged.
 
-The next campaign is now executable and in progress. It freezes 100 previously
-uninspected H1-2026 scanner dates with zero overlap against v4 and no date
-substitution. Its 133 required sessions reuse 113 compatible, hash-attested v4
-indexes plus exact symbol deltas and collect 20 new full-universe sessions. The
-campaign remains scanner-only until all rankings are independently inspected;
-direct catalyst, trigger, and outcome contracts are frozen afterward, and v3 is
-evaluated unchanged before any single revision can be proposed. See
-[SCANNER_EXPANSION.md](SCANNER_EXPANSION.md).
+The disjoint 100-date expansion is now independently inspected `READY`. It
+evaluated 526,587 point-in-time security/date rows, retained 6,024 eligible
+rows, and selected 1,987 exact pairs without changing v3. The frozen downstream
+join found 1,460 raw SIP trigger tapes; clean-trigger inspection retained 1,267
+basic fresh/uncrossed windows and 726 chase-cap passes. Only 14 pairs had a
+verified positive recent SEC catalyst, and zero passed every known unchanged-v3
+hard gate, so returns remain unread. See
+[SCANNER_EXPANSION.md](SCANNER_EXPANSION.md) and
+[SCANNER_SELECTED_PAIRS.md](SCANNER_SELECTED_PAIRS.md).
+
+Direct-source recovery then enriched 4,205 secondary article bodies, routed 134
+potential primary URLs, captured 121 hashed responses, and measured a current
+structural ceiling of 33 selected pairs across HTML and PDF timestamp-shaped
+sources. Zero timestamps or catalysts are accepted. The next bounded step is
+the source ownership, point-in-time issuer binding, causal pre-09:35 timestamp,
+and 20-row capacity gate in
+[CATALYST_SOURCE_SEMANTICS_PLAN.md](CATALYST_SOURCE_SEMANTICS_PLAN.md); no new
+strategy variant or outcome access is permitted before it passes.
 
 ```sh
 python3 historical_research.py run \
@@ -442,8 +452,10 @@ python3 strategy_learning.py propose  # only after cadence and research-lock gat
 Canonical per-symbol/day observations now live outside the repository at
 `LOCAL_HISTORICAL_DATA_ROOT`; see
 [HISTORICAL_DATA_STORE.md](HISTORICAL_DATA_STORE.md) for the schema, migration
-ledger, fidelity rules, and writer contract. Check the store and use the
-cache-first three-provider collector with:
+ledger, fidelity rules, and writer contract. The writer leaves at least
+`LOCAL_HISTORICAL_MIN_FREE_GIB` free (20 GiB by default) before every atomic
+day-file replacement. Check the store and use the cache-first three-provider
+collector with:
 
 ```sh
 python3 historical_data_cli.py check

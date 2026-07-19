@@ -4,6 +4,8 @@ import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from historical_store import (
     EASTERN,
@@ -66,6 +68,35 @@ class HistoricalDayStoreTests(unittest.TestCase):
         )
         self.assertEqual(expand_bar(row)["provider_flag"], "preserved")
         self.assertTrue(self.store.audit()["valid"])
+
+    def test_write_fails_before_disk_reserve_is_breached(self):
+        store = HistoricalDayStore(self.root / "reserved", min_free_bytes=100)
+        context = build_context(kind="test", provider="ibkr", payload={"value": 1})
+
+        with patch(
+            "historical_store.shutil.disk_usage",
+            return_value=SimpleNamespace(free=100),
+        ):
+            with self.assertRaisesRegex(
+                HistoricalStoreError, "disk reserve would be breached"
+            ):
+                store.merge("AAPL", "2026-03-03", contexts=[context])
+
+        self.assertFalse(store.path_for("AAPL", "2026-03-03").exists())
+        self.assertEqual(list((self.root / "reserved").rglob("*.tmp")), [])
+
+    def test_idempotent_merge_does_not_require_new_disk_capacity(self):
+        store = HistoricalDayStore(self.root / "idempotent", min_free_bytes=100)
+        context = build_context(kind="test", provider="ibkr", payload={"value": 1})
+        store.merge("AAPL", "2026-03-03", contexts=[context])
+
+        with patch(
+            "historical_store.shutil.disk_usage",
+            return_value=SimpleNamespace(free=0),
+        ):
+            result = store.merge("AAPL", "2026-03-03", contexts=[context])
+
+        self.assertFalse(result["changed"])
 
     def test_provider_series_are_not_overwritten_and_selection_is_ordered(self):
         observed = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)

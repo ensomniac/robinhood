@@ -19,6 +19,7 @@ import json
 import math
 import os
 import re
+import shutil
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import date, datetime, time, timezone
@@ -37,6 +38,7 @@ STORE_SCHEMA_VERSION = 1
 STORE_KIND = "us_equity_daily_history"
 SYMBOL_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9.-]{0,31}$")
 PROVENANCE_SAMPLE_LIMIT = 8
+DEFAULT_MIN_FREE_BYTES = 20 * 1024**3
 
 
 class HistoricalStoreError(RuntimeError):
@@ -339,6 +341,7 @@ def expand_trade(row: Mapping[str, Any]) -> dict[str, Any]:
 @dataclass(frozen=True, slots=True)
 class HistoricalStoreConfig:
     root: Path
+    min_free_bytes: int = DEFAULT_MIN_FREE_BYTES
 
     @classmethod
     def from_env(
@@ -353,6 +356,10 @@ class HistoricalStoreConfig:
         if "LOCAL_HISTORICAL_DATA_ROOT" in os.environ:
             values["LOCAL_HISTORICAL_DATA_ROOT"] = os.environ[
                 "LOCAL_HISTORICAL_DATA_ROOT"
+            ]
+        if "LOCAL_HISTORICAL_MIN_FREE_GIB" in os.environ:
+            values["LOCAL_HISTORICAL_MIN_FREE_GIB"] = os.environ[
+                "LOCAL_HISTORICAL_MIN_FREE_GIB"
             ]
         raw = str(values.get("LOCAL_HISTORICAL_DATA_ROOT") or "").strip()
         if not raw:
@@ -371,10 +378,28 @@ class HistoricalStoreConfig:
             raise HistoricalStoreError(
                 "LOCAL_HISTORICAL_DATA_ROOT must be outside the public repository"
             )
-        return cls(root=resolved_root)
+        raw_reserve = str(values.get("LOCAL_HISTORICAL_MIN_FREE_GIB") or "20").strip()
+        try:
+            reserve_gib = float(raw_reserve)
+        except ValueError as exc:
+            raise HistoricalStoreError(
+                "LOCAL_HISTORICAL_MIN_FREE_GIB must be numeric"
+            ) from exc
+        if not math.isfinite(reserve_gib) or reserve_gib < 1:
+            raise HistoricalStoreError(
+                "LOCAL_HISTORICAL_MIN_FREE_GIB must be at least 1"
+            )
+        return cls(
+            root=resolved_root,
+            min_free_bytes=math.ceil(reserve_gib * 1024**3),
+        )
 
     def public_dict(self) -> dict[str, Any]:
-        return {"root": str(self.root), "outside_repository": True}
+        return {
+            "root": str(self.root),
+            "outside_repository": True,
+            "min_free_bytes": self.min_free_bytes,
+        }
 
 
 def _new_document(symbol: str, day: str) -> dict[str, Any]:
@@ -561,14 +586,35 @@ def build_context(
 class HistoricalDayStore:
     """Atomic, append-by-content storage for canonical day documents."""
 
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, *, min_free_bytes: int = DEFAULT_MIN_FREE_BYTES):
         self.root = Path(root).expanduser().resolve()
+        if isinstance(min_free_bytes, bool) or int(min_free_bytes) < 0:
+            raise HistoricalStoreError("min_free_bytes must be a nonnegative integer")
+        self.min_free_bytes = int(min_free_bytes)
         self.root.mkdir(parents=True, exist_ok=True)
         self._ensure_metadata()
 
     @classmethod
     def from_env(cls, path: Path = DEFAULT_ENV_PATH) -> "HistoricalDayStore":
-        return cls(HistoricalStoreConfig.from_env(path).root)
+        config = HistoricalStoreConfig.from_env(path)
+        return cls(config.root, min_free_bytes=config.min_free_bytes)
+
+    def _write_document(self, path: Path, document: Mapping[str, Any]) -> None:
+        encoded = _gzip_json_bytes(document)
+        free_bytes = shutil.disk_usage(self.root).free
+        if free_bytes - len(encoded) < self.min_free_bytes:
+            raise HistoricalStoreError(
+                "historical store disk reserve would be breached: "
+                f"free={free_bytes} write={len(encoded)} "
+                f"reserve={self.min_free_bytes}"
+            )
+        temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_bytes(encoded)
+            os.replace(temporary, path)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
 
     def _ensure_metadata(self) -> None:
         path = self.root / "_store.json"
@@ -751,9 +797,7 @@ class HistoricalDayStore:
                 changed = self._merge_item(document["contexts"], context) or changed
             if changed or not path.exists():
                 path.parent.mkdir(parents=True, exist_ok=True)
-                temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
-                temporary.write_bytes(_gzip_json_bytes(document))
-                os.replace(temporary, path)
+                self._write_document(path, document)
             return {
                 "path": str(path),
                 "changed": changed,
@@ -958,9 +1002,7 @@ class HistoricalDayStore:
                     document[field] = normalized_items
                 if changed:
                     self._validate_document(document)
-                    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
-                    temporary.write_bytes(_gzip_json_bytes(document))
-                    os.replace(temporary, path)
+                    self._write_document(path, document)
                     changed_files += 1
         return {
             "files_scanned": len(files),

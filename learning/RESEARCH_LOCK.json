@@ -3,7 +3,7 @@
   "active": true,
   "blocked_dataset_lane": "catalyst_falsification",
   "evidence_path": "SCANNER_SELECTED_PAIRS.md",
-  "reason": "The scanner gap is closed, but no additional strategy variant may be invented until the exact 1,987-pair expansion is independently evaluated under unchanged v3 with point-in-time catalyst, trigger, and outcome evidence.",
+    "reason": "The scanner gap is closed, but no additional strategy variant may be invented on the inspected 1,987-pair expansion. Source semantics must first establish at least 20 verified positive rows for unchanged-v3 non-return gates; otherwise this campaign closes without outcomes and a disjoint sample or same-source recovery is required.",
   "required_dataset_id": "dataset-selected-candidate-contract-2026-07-19-expansion-v1",
   "required_dataset_inspected": true,
   "required_dataset_lane": "development",

@@ -136,9 +136,10 @@ source, catalyst, or outcome.
 
 Inspection is `READY`: 1,864 pairs have no primary-routing lead; 123 have a
 lead, 84 reach HTTP 200, 70 reach successful HTML, 15 reach successful PDF,
-and only 18 expose any standard HTML timestamp candidate. Counts overlap. This
-18-pair surface is below the 20-signal provisional minimum even before source
-verification or unchanged-v3 attrition, so returns remain locked.
+and only 18 expose any standard HTML timestamp candidate. Counts overlap. At
+this HTML-only stage, the 18-pair surface was below the 20-signal provisional
+minimum; the later PDF profile raises the structural ceiling but accepts no
+evidence, so returns remain locked.
 
 The 13 successful PDFs are frozen for bounded structure profiling under
 manifest `b1f2bff3...96162e4c` in `CATALYST_PDF_SOURCE_PROFILE.md`. Only the

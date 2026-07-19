@@ -24,7 +24,13 @@ series in explicit priority order.
 ## Required layout
 
 The environment setting must be an absolute directory outside this public
-repository:
+repository. `LOCAL_HISTORICAL_MIN_FREE_GIB` is an optional fail-closed reserve;
+it defaults to 20 GiB and must be at least 1 GiB:
+
+```dotenv
+LOCAL_HISTORICAL_DATA_ROOT=/absolute/private/path/to/historical_data
+LOCAL_HISTORICAL_MIN_FREE_GIB=20
+```
 
 ```text
 LOCAL_HISTORICAL_DATA_ROOT/
@@ -128,7 +134,11 @@ adjustment, session, scope, quality, limitations, and rows. Every context
 identity includes its kind, provider, observation time, and payload. Store
 audits recompute both hashes and IDs. Writes use per-day file locks, a temporary
 file, and atomic replacement, so concurrent collectors cannot expose a partial
-document.
+document. Immediately before each day-document write, the canonical writer
+requires enough free space for the complete temporary file while leaving the
+configured reserve untouched. A capacity failure leaves the existing day file
+unchanged and does not fall through to another provider because provider
+fallback cannot repair local disk exhaustion.
 
 ## What belongs here
 
@@ -337,4 +347,5 @@ All new historical collection features must use `HistoricalDayStore` and either
 8. add tests for normalization, retry classification, pagination, idempotence,
    corruption detection, and fallback order;
 9. keep raw credentials and bulky daily observations out of Git;
-10. run `historical_data_cli.py check` before treating a collection as ready.
+10. preserve `LOCAL_HISTORICAL_MIN_FREE_GIB` during every atomic write;
+11. run `historical_data_cli.py check` before treating a collection as ready.
