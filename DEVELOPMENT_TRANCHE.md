@@ -166,6 +166,12 @@ Independent inspection now rebuilds semantics manifest `b1241f33...10531` as
 privacy, and outcome-lock binding intact. No extraction or review artifact
 exists. Commit and push this status before parsing any frozen document text.
 
+Frozen extraction, review, and independent inspection now reconcile all 583
+joins and all 1,871 pairs. Only 19 pairs are verified positive, alongside 44
+conflicts, seven negatives, 52 nonmaterial pairs, 377 unresolved source-bearing
+pairs, and 1,372 no-source pairs. Because 19 is below the immutable 20-positive
+gate, the campaign returns to `SOURCE_RECOVERY`; outcomes remain locked.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated

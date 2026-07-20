@@ -201,6 +201,15 @@ verified-positive count remains an explicit zero placeholder rather than a
 classification claim. Commit and push this status before running `extract` or
 `review`.
 
+Frozen extraction, review, and independent inspection now reconcile all 583
+joins and all 1,871 pairs. The aggregate result contains 19 verified-positive
+pairs, 44 verified-conflict pairs, seven verified negatives, 52 nonmaterial
+pairs, 377 unresolved source-bearing pairs, and 1,372 no-source pairs. The
+private reviewed-result hash is `e655574a...59c931`; exact rows, text, identities,
+URLs, timestamps, and decisions remain outside Git. Nineteen is below the
+mandatory 20-positive source-capacity gate, so this corpus returns to
+`SOURCE_RECOVERY`. Outcomes and non-return acquisition remain locked.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
