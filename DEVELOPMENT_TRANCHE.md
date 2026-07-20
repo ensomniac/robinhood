@@ -2,8 +2,9 @@
 
 Planned dataset: `dataset-development-tranche-2026-07-20-v3`
 
-Status: the network-free v3 selection freezer is implementation-ready; no v3
-date selection, reference request, provider request, or target outcome exists
+Status: v3 selection manifest `792e3e53...7d8305` is independently inspected
+`FROZEN_READY`; no v3 reference request, provider request, or target outcome
+exists
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -26,11 +27,14 @@ must be committed and pushed before `freeze`; its date selection and manifest
 must then be independently inspected, committed, and pushed before any dated
 reference access.
 
-A read-only preflight against the current exclusion registry finds 327 distinct
-excluded dates and 102 eligible sessions, enough for the exact 100-date freeze;
-the resulting graph would require 262 target/lookback sessions. These are
-capacity counts only. The exact dates are not persisted until the implementation
-is committed and pushed.
+The pushed implementation froze exactly 100 sessions from 102 eligible dates
+after 327 distinct exclusions, requiring 262 target/lookback sessions. Manifest
+`792e3e53...7d8305` binds seed `2026072003`, selected-date hash
+`f4eb3325...2ce25`, required-session hash `a4722258...5a24d`, the current
+registry/exclusion hashes, the v2 acquisition-exit hash, the implementation,
+provider order, reserve projection, and zero substitution. Independent
+inspection rebuilt the selection and all exclusion surfaces without overlap or
+target-outcome access.
 
 ## Prior V2 Selection
 
