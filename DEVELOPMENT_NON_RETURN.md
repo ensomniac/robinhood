@@ -218,6 +218,17 @@ repaired inspector. Zero v2 private artifacts existed at freeze, and outcomes
 remain locked until the manifest is committed, pushed, evaluated, and then
 independently inspected.
 
+V2 qualification is now independently `QUALIFICATION_INSPECTED`, with zero
+survivors from the 102-pair denominator and zero outcome access. Terminal
+attrition is 27 `NO_CLEAN_CROSS_BEFORE_CUTOFF`, 23 `INPUT_UNRESOLVED`, 38
+`QUOTE_GATE_FAILED`, four `A_PLUS_SPREAD_FAILED`, one `CHASE_GATE_FAILED`, and
+nine `RESISTANCE_GATE_FAILED`. The cascade reaches nine records after every
+gate through structure, then zero after resistance. Because unchanged v3 has no
+complete non-return survivor in this source-verified corpus, no outcome contract
+is legal and the exact champion is recorded as deployability-falsified for this
+corpus. It may not be tuned on these records; the campaign moves to the bounded
+challenger loop with hard portfolio and safety constraints unchanged.
+
 ```sh
 python3 development_non_return_qualification_v3.py freeze
 python3 development_non_return_qualification_v3_inspection.py inspect-contract \

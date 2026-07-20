@@ -215,6 +215,14 @@ V2 manifest `0140ac92...7c4f0` now independently rebuilds as
 qualification contract; evaluation is prohibited until this exact manifest and
 its aggregate contract status are committed and pushed.
 
+Independent v2 qualification rebuilds every one of the 102 pair records and
+confirms zero unchanged-v3 survivors without post-entry access. The terminal
+counts are 27 no-cross, 23 unresolved-input, 38 quote, four A+-spread, one
+chase, and nine resistance failures. The result fails the minimum 20-survivor
+gate, keeps outcomes locked, and falsifies unchanged v3 deployability on this
+source-verified corpus. V3 is not tuned on the failed evidence; the next phase
+is `CHALLENGER_REVIEW` under the frozen weekly mechanism-family limits.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
