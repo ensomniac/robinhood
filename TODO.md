@@ -120,6 +120,11 @@ shared-cache-first six-file collection, atomic terminal wrappers, idempotent
 resume, top-level columnar parsing, precise pair-window joins, private document
 derivation, and independent raw-byte inspection. Commit and push the collector
 and tests before running the six frozen requests.
+All six supplemental files are now independently inspected with zero failures,
+seven additional candidate documents, seven joins, four affected pairs, no
+substitution, and no document or outcome access. Commit and push the result,
+then implement and freeze the exact deduplicated accession-bound document graph
+before requesting any primary document.
 
 ## Completed 2026-07-19
 

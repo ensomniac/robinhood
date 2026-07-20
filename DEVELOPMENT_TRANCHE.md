@@ -186,3 +186,9 @@ Supplemental manifest `1e2900ae...bc558a` independently proves that six of the
 outside all windows. It freezes the exact private six-request graph with zero
 target responses, no substitution, and primary-document/outcome locks. Commit
 and push this zero-state before any supplemental request.
+
+All six frozen supplemental requests then completed and independently rebuilt
+with zero failures, 2,113,173 retained bytes, seven additional candidate
+documents, seven joins, and four affected pairs. Candidate presence is not
+semantic verification. Freeze and commit the exact deduplicated union of main
+and supplemental accession-bound documents before requesting any document body.

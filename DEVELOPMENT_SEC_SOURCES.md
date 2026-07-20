@@ -137,6 +137,17 @@ The collector derives but cannot fetch primary documents, and it cannot access
 outcomes. Commit and push the collector and tests before the six-file provider
 pass.
 
+The committed supplemental collector completed all six requests as SEC
+downloads with zero failures, zero pending requests, and zero substitutions. It
+retained and independently rehashed 2,113,173 bytes, adding seven time-window
+candidate documents and seven pair/filing joins across four pairs. These remain
+unclassified candidates. No primary document or outcome was accessed.
+
+The next network-free stage must union and deduplicate the 590 main-submissions
+candidates with these seven supplemental candidates, preserve every pair join,
+and freeze the exact accession-bound document graph before requesting a document
+body.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 
