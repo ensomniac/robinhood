@@ -3,7 +3,8 @@
 Planned dataset: `dataset-development-tranche-2026-07-19-v2`
 
 Status: exact selection manifest `6bc3d685...ad4f82` is independently inspected
-`FROZEN_READY`; no provider or target-outcome access has occurred
+`FROZEN_READY`, and scanner manifest `e500cf2a...85a3643` is independently
+inspected `READY`; no target outcome has been accessed or derived
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -130,5 +131,25 @@ sessions, a 5,797-symbol point-in-time union, raw Alpaca SIP 15-minute regular
 bars and exact 09:30-09:34 minute bars, the calendar, selection, master, splits,
 unchanged v3 rules, canonical store, provider fidelity, and zero substitution.
 Its pre-freeze status independently reports zero target artifacts, requests,
-retries, derived rows, or canonical merges. Commit and push this manifest before
-running its `collect` command.
+retries, derived rows, or canonical merges. The manifest was committed and
+pushed before its first market request.
+
+## Inspected Scanner Result
+
+The frozen collection completed all 243 required sessions with 30,075 Alpaca
+SIP requests, zero retries, zero reused sessions, 5,012,355 derived rows, and
+1,245,715 canonical day-document merges. The independent inspector rebuilt all
+100 rankings and verified 516,335 point-in-time common-stock evaluations, 4,355
+eligible rows, and 1,906 selected ranks.
+
+It also re-read 1,245,715 canonical documents, including 1,148,154 exact
+opening-minute datasets, and matched every ranking, rejection disposition,
+split adjustment, source hash, strategy rule, and shortlist hash. The calendar
+attestation binds the exact 394-session file committed before collection and a
+separate Alpaca comparison that matched every date, open, close, and early close.
+
+This closes scanner selection fidelity for this disjoint tranche only. Catalyst
+ownership, issuer binding, causal timestamp, direction, conflict, quote/book,
+tradability, clean-trigger, execution, and outcome evidence remain absent or
+locked. The next acquisition layer must freeze the exact 1,906 selected
+date/symbol pairs and their primary-source semantics before reading any outcome.

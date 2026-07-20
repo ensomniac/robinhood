@@ -74,10 +74,12 @@ hash `2a1f930b...2d70b7f`. The adapter now hash-binds the object-row calendar an
 public date selection. Commit and push these source attestations and lineage
 checks, then freeze and commit the provider-bound market manifest before any
 price collection.
-Market manifest `e500cf2a...85a3643` is now frozen with 243 sessions and a
-5,797-symbol union; its pre-freeze audit reports zero target artifacts and zero
-provider requests. Commit and push the manifest, status, registry event, and
-progress record before starting Alpaca collection.
+Market manifest `e500cf2a...85a3643` is independently inspected `READY`: all
+243 sessions completed with 30,075 Alpaca SIP requests, zero retries, and zero
+substitution; the inspector rebuilt 100 rankings across 516,335 evaluations and
+verified 1,245,715 canonical documents. No target outcome was accessed or
+derived. Next: freeze the exact 1,906 selected date/symbol pairs and their
+primary-source catalyst contract before any detailed or outcome access.
 
 ## Completed 2026-07-19
 
