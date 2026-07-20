@@ -278,3 +278,9 @@ private positive-selection hash is `0a4679fd...bad80` and its fully causal
 request-graph hash is `651a0bd6...e2e5a`. The separate collector must bind this
 exact manifest, then be frozen, inspected, committed, and pushed before the
 first selected-symbol provider request.
+
+V4 was also retired before provider access because its inherited split-action
+artifact begins in December 2024, after the earliest bars in the required
+252-session history. V5 adds one exact Massive split-action query over the
+frozen 2023-12-01 through 2025-11-30 calendar range and fails resistance closed
+unless every raw historical high has a complete target-date split basis.

@@ -33,7 +33,7 @@ from strategy_engine import load_config
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DATASET_ID = "dataset-development-non-return-qualification-2026-07-20-v4"
+DATASET_ID = "dataset-development-non-return-qualification-2026-07-20-v5"
 SELECTED_PAIR_MANIFEST = source_contract.SOURCE_MANIFEST
 SEMANTICS_MANIFEST = (
     PROJECT_ROOT
@@ -392,6 +392,14 @@ def build_request_graph(selection: Mapping[str, Any]) -> dict[str, Any]:
             "end": CALENDAR_QUERY_END,
             "purpose": "derive exact prior-252-session windows only",
         },
+        "split_action_query": {
+            "provider": "Massive",
+            "endpoint": "https://api.massive.com/stocks/v1/splits",
+            "execution_date_gte": CALENDAR_QUERY_START,
+            "execution_date_lte": CALENDAR_QUERY_END,
+            "purpose": "split-adjust every raw prior-session high onto the target-date basis",
+            "substitution_allowed": False,
+        },
         "candidate_opening_bar_prefixes": candidate_opening_prefixes,
         "conditional_completed_bar_prefixes": conditional_completed_prefixes,
         "candidate_premarket_prefixes": premarket,
@@ -428,6 +436,7 @@ def build_request_graph(selection: Mapping[str, Any]) -> dict[str, Any]:
         "provider_policy": {
             "local_exact_alpaca_cache_first": True,
             "network_provider": "alpaca",
+            "corporate_action_provider": "massive",
             "whole_provider_fidelity": True,
             "provider_switching_allowed": False,
             "reason": (
@@ -447,6 +456,7 @@ def build_request_graph(selection: Mapping[str, Any]) -> dict[str, Any]:
             "candidate_premarket_prefixes": len(premarket),
             "candidate_history_prefixes": len(history),
             "official_halt_dates": len(halts),
+            "split_action_queries": 1,
         },
         "positive_date_identity_sha256": _sha256_json(dates),
         "request_graph_sha256": _sha256_json(graph),
@@ -534,6 +544,7 @@ def _implementation_contract() -> dict[str, Any]:
         "sip_trade_conditions.py",
         "nasdaq_halts.py",
         "strategy_engine.py",
+        "scanner_replay.py",
     )
     return {
         "files": {
@@ -615,6 +626,7 @@ def _expected_contract(
             "intraminute_vwap_uses_condition_eligible_trade_prefix": True,
             "three_fresh_uncrossed_snapshots_required": True,
             "spread_chase_liquidity_halt_market_structure_and_score_gates_required": True,
+            "complete_split_action_basis_required_for_resistance": True,
             "broker_specific_historical_tradability": "PROSPECTIVE_ONLY_UNRECONSTRUCTABLE",
             "outcome_contract_permitted_at_this_stage": False,
         },

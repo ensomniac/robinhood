@@ -1,10 +1,10 @@
 # Development Non-Return Qualification
 
 Planned dataset:
-`dataset-development-non-return-qualification-2026-07-20-v4`
+`dataset-development-non-return-qualification-2026-07-20-v5`
 
-Status: v4 manifest `1a3f4abd...97147` independently rebuilt `FROZEN_READY`;
-zero selected-symbol market requests or target artifacts have occurred
+Status: v5 implementation ready; superseded v2-v4 manifests made zero provider
+requests and are retained as failed evidence contracts
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -31,6 +31,8 @@ The private graph permits only:
   opening range;
 - candidate premarket bars through 09:30 ET and prior-session history ending
   before the target open for the frozen structure contract;
+- one exact Massive split-action query spanning the complete frozen calendar
+  range so every raw prior-session high can be put on the target-date basis;
 - official Nasdaq halt records for the privately selected dates;
 - every chronological one-second raw-trade window from 09:35, stopping at the
   first condition-valid continuous regular-sale cross or the 10:30 cutoff;
@@ -77,7 +79,7 @@ survivors are required before a separately frozen outcome contract is legal.
 Fewer survivors returns the campaign to disjoint `DEVELOPMENT_ACQUISITION`; it
 does not permit a gate change or outcome access.
 
-## Frozen V4 Result
+## Superseded V4 Result
 
 Manifest `1a3f4abd...97147` independently rejoins all 1,906 source pair hashes
 to the scanner selection and retains exactly 21 verified-positive pairs on 21
@@ -92,7 +94,11 @@ zero-target state. The graph freezes 21 opening-range bar prefixes, 21
 premarket prefixes, 21 prior-history prefixes, 21 official halt dates, and 63
 conditional fully-completed candidate/benchmark prefixes. Trigger discovery is
 raw one-second SIP tape in chronological order and stops at the first clean
-cross. It authorizes no provider access by itself and still forbids outcomes.
+cross. It authorized no provider access by itself and still forbids outcomes.
+Inspection then found that its inherited split-action artifact began too late
+to adjust the complete 252-session history. V5 adds one exact full-range
+Massive split query and requires a complete split basis before resistance can
+be resolved.
 
 ## Superseded V3 Result
 

@@ -92,6 +92,7 @@ class DevelopmentNonReturnTests(unittest.TestCase):
                 "candidate_premarket_prefixes": 3,
                 "candidate_history_prefixes": 3,
                 "official_halt_dates": 2,
+                "split_action_queries": 1,
             },
         )
         rendered = json.dumps(result["graph"], sort_keys=True)
@@ -127,6 +128,13 @@ class DevelopmentNonReturnTests(unittest.TestCase):
             "CLEAN_CROSS_PLUS_10_SECONDS_INCLUSIVE",
         )
         self.assertFalse(result["graph"]["target_outcomes_observed_or_derived"])
+        self.assertEqual(
+            result["graph"]["split_action_query"]["execution_date_gte"],
+            non_return.CALENDAR_QUERY_START,
+        )
+        self.assertFalse(
+            result["graph"]["split_action_query"]["substitution_allowed"]
+        )
         self.assertFalse(
             result["graph"]["provider_policy"]["provider_switching_allowed"]
         )
