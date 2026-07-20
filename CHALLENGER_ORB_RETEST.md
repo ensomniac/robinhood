@@ -119,3 +119,11 @@ python3 challenger_orb_retest_tranche.py freeze
 python3 challenger_orb_retest_tranche_inspection.py \
   historical_batches/challenger_orb_retest_v1/selection_manifests/<manifest>.json
 ```
+
+Selection manifest `c1c51924...ec7dae` is now independently `FROZEN_READY`.
+It binds seed `2026072005`, 427 exclusions, a 445-date eligible pool, exactly
+100 disjoint selected sessions, and 474 required sessions including lookbacks.
+The selected-date hash is `8712bb4d...84d187`; the required-session hash is
+`31afb1ff...bc54a`. Substitution and outcomes remain forbidden. This exact
+selection and manifest must be committed and pushed before dated reference
+identity access.
