@@ -59,6 +59,7 @@ DEFAULT_OUTPUT_ROOT = (
 DEFAULT_PUBLIC_STATUS = (
     PROJECT_ROOT / "historical_batches/development_tranche_v2/sec-contract-status.json"
 )
+DEFAULT_SOURCE_CONTRACT_DOC = PROJECT_ROOT / "DEVELOPMENT_CATALYST_CONTRACT.md"
 PRIVATE_NAMESPACE = "_derived/development_sec_sources"
 PRIVATE_IDENTITY_FILE = "identity-and-query-map.json.gz"
 TARGET_RESPONSE_NAMESPACE = "responses"
@@ -274,7 +275,10 @@ def _normalize_cik(value: Any) -> str | None:
 
 
 def _resolve_pairs(
-    pairs: Sequence[Mapping[str, Any]], records: Sequence[Mapping[str, Any]]
+    pairs: Sequence[Mapping[str, Any]],
+    records: Sequence[Mapping[str, Any]],
+    *,
+    dataset_id: str = DATASET_ID,
 ) -> dict[str, Any]:
     indexed: dict[tuple[str, str, str], list[Mapping[str, Any]]] = defaultdict(list)
     for record in records:
@@ -364,7 +368,7 @@ def _resolve_pairs(
     ]
     return {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "selected_pair_count": len(resolved),
         "mapped_pair_count": len(resolved),
         "cik_present_pair_count": sum(row["cik"] is not None for row in resolved),
@@ -405,7 +409,12 @@ def _strategy_contract(strategy_source_path: Path) -> dict[str, Any]:
     }
 
 
-def _request_contract(env_path: Path, private: Mapping[str, Any]) -> dict[str, Any]:
+def _request_contract(
+    env_path: Path,
+    private: Mapping[str, Any],
+    *,
+    dataset_id: str = DATASET_ID,
+) -> dict[str, Any]:
     config = SecConfig.from_env(
         env_path,
         Path("unused-network-free-cache-root"),
@@ -454,7 +463,7 @@ def _request_contract(env_path: Path, private: Mapping[str, Any]) -> dict[str, A
             "shared_cache_may_predate_this_dataset": True,
             "target_response_namespace": (
                 "LOCAL_HISTORICAL_DATA_ROOT/"
-                f"{PRIVATE_NAMESPACE}/{DATASET_ID}/{TARGET_RESPONSE_NAMESPACE}/"
+                f"{PRIVATE_NAMESPACE}/{dataset_id}/{TARGET_RESPONSE_NAMESPACE}/"
             ),
             "target_specific_provenance_required_for_every_request": True,
         },
@@ -498,7 +507,10 @@ def _stable_contract(
     master_source_path: Path,
     strategy_source_path: Path,
     env_path: Path,
+    dataset_id: str = DATASET_ID,
 ) -> tuple[dict[str, Any], HistoricalStoreConfig, dict[str, Any]]:
+    if not dataset_id.startswith("dataset-development-sec-primary-sources-"):
+        raise DevelopmentSecSourceError("SEC source dataset namespace is invalid")
     config = HistoricalStoreConfig.from_env(env_path)
     if config.min_free_bytes < MINIMUM_RESERVE_BYTES:
         raise DevelopmentSecSourceError("historical-store reserve is below 20 GiB")
@@ -512,8 +524,8 @@ def _stable_contract(
         master_source_path=master_source_path,
         requested_dates=[str(item) for item in selected["requested_dates"]],
     )
-    private = _resolve_pairs(pairs, records)
-    response_count = _target_response_artifact_count(config.root)
+    private = _resolve_pairs(pairs, records, dataset_id=dataset_id)
+    response_count = _target_response_artifact_count(config.root, dataset_id)
     if response_count:
         raise DevelopmentSecSourceError(
             "target SEC responses exist before the submissions contract freeze"
@@ -564,10 +576,12 @@ def _stable_contract(
             "private_identity_content_sha256": _sha256_json(private),
             "private_identity_path": (
                 "LOCAL_HISTORICAL_DATA_ROOT/"
-                f"{PRIVATE_NAMESPACE}/{DATASET_ID}/{PRIVATE_IDENTITY_FILE}"
+                f"{PRIVATE_NAMESPACE}/{dataset_id}/{PRIVATE_IDENTITY_FILE}"
             ),
         },
-        "request_contract": _request_contract(env_path, private),
+        "request_contract": _request_contract(
+            env_path, private, dataset_id=dataset_id
+        ),
         "outcome_lock": {
             "target_sources_accessed": False,
             "selected_symbol_detail_accessed": False,
@@ -583,9 +597,13 @@ def _stable_contract(
 
 
 def _verify_or_write_private(
-    *, store_root: Path, private: Mapping[str, Any], write: bool
+    *,
+    store_root: Path,
+    private: Mapping[str, Any],
+    write: bool,
+    dataset_id: str = DATASET_ID,
 ) -> None:
-    path = _private_identity_path(store_root)
+    path = _private_identity_path(store_root, dataset_id)
     expected = _sha256_json(private)
     if path.exists():
         if _sha256_json(_read_gzip_object(path)) != expected:
@@ -605,6 +623,8 @@ def freeze_contract(
     strategy_source_path: Path = STRATEGY_SOURCE,
     env_path: Path = PROJECT_ROOT / ".env",
     output_root: Path = DEFAULT_OUTPUT_ROOT,
+    dataset_id: str = DATASET_ID,
+    source_contract_doc_path: Path = DEFAULT_SOURCE_CONTRACT_DOC,
 ) -> tuple[Path, dict[str, Any]]:
     stable, config, private = _stable_contract(
         source_contract_path=source_contract_path,
@@ -613,9 +633,15 @@ def freeze_contract(
         master_source_path=master_source_path,
         strategy_source_path=strategy_source_path,
         env_path=env_path,
+        dataset_id=dataset_id,
     )
-    _verify_or_write_private(store_root=config.root, private=private, write=True)
-    matches = sorted(output_root.glob(f"{DATASET_ID}-*.json"))
+    _verify_or_write_private(
+        store_root=config.root,
+        private=private,
+        write=True,
+        dataset_id=dataset_id,
+    )
+    matches = sorted(output_root.glob(f"{dataset_id}-*.json"))
     if len(matches) > 1:
         raise DevelopmentSecSourceError("SEC contract has multiple manifests")
     if matches:
@@ -628,7 +654,7 @@ def freeze_contract(
         raise DevelopmentSecSourceError("historical-store reserve is unavailable")
     contract = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "registered_at": datetime.now(UTC).isoformat(),
         "requested_dates": [
             row["date"]
@@ -639,7 +665,7 @@ def freeze_contract(
             "claim_scope": "DEVELOPMENT_ONLY",
             "status": "COLLECTING",
             "evidence_paths": [
-                "DEVELOPMENT_CATALYST_CONTRACT.md",
+                _repo_path(source_contract_doc_path),
                 _repo_path(source_contract_path),
                 _repo_path(selected_manifest_path),
                 _repo_path(master_source_path),
@@ -672,9 +698,10 @@ def inspect_contract(
     strategy_source_path: Path = STRATEGY_SOURCE,
     env_path: Path = PROJECT_ROOT / ".env",
     status_path: Path = DEFAULT_PUBLIC_STATUS,
+    dataset_id: str = DATASET_ID,
 ) -> dict[str, Any]:
     manifest = load_frozen_dataset_contract(manifest_path)
-    if manifest.get("dataset_id") != DATASET_ID:
+    if manifest.get("dataset_id") != dataset_id:
         raise DevelopmentSecSourceError("unexpected SEC contract dataset")
     stable, config, private = _stable_contract(
         source_contract_path=source_contract_path,
@@ -683,11 +710,17 @@ def inspect_contract(
         master_source_path=master_source_path,
         strategy_source_path=strategy_source_path,
         env_path=env_path,
+        dataset_id=dataset_id,
     )
     for key, value in stable.items():
         if manifest.get(key) != value:
             raise DevelopmentSecSourceError(f"SEC contract {key} drifted")
-    _verify_or_write_private(store_root=config.root, private=private, write=False)
+    _verify_or_write_private(
+        store_root=config.root,
+        private=private,
+        write=False,
+        dataset_id=dataset_id,
+    )
     capacity = manifest.get("capacity_contract")
     if not isinstance(capacity, Mapping) or any(
         (
@@ -704,7 +737,7 @@ def inspect_contract(
     strategy = stable["lineage_contract"]["strategy"]
     status = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "status": "FROZEN_READY",
         "manifest_sha256": manifest["manifest_sha256"],
         "strategy_version": strategy["strategy_version"],
@@ -739,6 +772,7 @@ def inspect_contract(
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--env", type=Path, default=PROJECT_ROOT / ".env")
+    parser.add_argument("--dataset-id", default=DATASET_ID)
     parser.add_argument(
         "--source-contract", type=Path, default=SOURCE_CONTRACT
     )
@@ -750,6 +784,9 @@ def _build_parser() -> argparse.ArgumentParser:
         "--security-master-source", type=Path, default=SECURITY_MASTER_SOURCE
     )
     parser.add_argument("--strategy-source", type=Path, default=STRATEGY_SOURCE)
+    parser.add_argument(
+        "--source-contract-doc", type=Path, default=DEFAULT_SOURCE_CONTRACT_DOC
+    )
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("freeze")
@@ -769,11 +806,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             "master_source_path": args.security_master_source,
             "strategy_source_path": args.strategy_source,
             "env_path": args.env,
+            "dataset_id": args.dataset_id,
         }
         if args.command == "freeze":
-            path, manifest = freeze_contract(output_root=args.output_root, **common)
+            path, manifest = freeze_contract(
+                output_root=args.output_root,
+                source_contract_doc_path=args.source_contract_doc,
+                **common,
+            )
             value = {
-                "dataset_id": DATASET_ID,
+                "dataset_id": args.dataset_id,
                 "manifest_sha256": manifest["manifest_sha256"],
                 "path": str(path),
                 "selected_pair_count": manifest["identity_contract"][

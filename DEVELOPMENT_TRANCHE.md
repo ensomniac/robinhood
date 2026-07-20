@@ -85,6 +85,11 @@ implementation, privacy, capacity, and outcome lock rebuilt. It authorizes only
 the next network-free source identity and request-graph freeze; target source
 access still requires that graph to be committed and pushed.
 
+The SEC identity/request-graph adapter is now parameterized for the v3 source
+contract, selected-pair manifest, security master, strategy attestation, and
+dataset-scoped private namespaces. Its implementation must be committed and
+pushed before resolving the private CIK graph.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated

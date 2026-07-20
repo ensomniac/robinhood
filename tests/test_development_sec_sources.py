@@ -294,6 +294,66 @@ class DevelopmentSecSourceTests(unittest.TestCase):
         with self.assertRaisesRegex(DevelopmentSecSourceError, "exactly once"):
             _resolve_pairs([pair], [record, {**record, "record_id": "two"}])
 
+    def test_custom_dataset_identity_scopes_private_map_and_requests(self):
+        with tempfile.TemporaryDirectory(
+            dir=PROJECT_ROOT
+        ) as directory, tempfile.TemporaryDirectory() as external:
+            paths = self._fixture(Path(directory), Path(external))
+            dataset_id = "dataset-development-sec-primary-sources-fixture-v3"
+            manifest_path, manifest = freeze_contract(
+                source_contract_path=paths["source"],
+                selected_manifest_path=paths["selected"],
+                master_path=paths["master"],
+                master_source_path=paths["master_source"],
+                strategy_source_path=STRATEGY_SOURCE,
+                env_path=paths["env"],
+                output_root=paths["output"],
+                dataset_id=dataset_id,
+            )
+            self.assertEqual(manifest["dataset_id"], dataset_id)
+            self.assertTrue(
+                manifest["identity_contract"]["private_identity_path"].endswith(
+                    f"/{dataset_id}/identity-and-query-map.json.gz"
+                )
+            )
+            self.assertTrue(
+                manifest["request_contract"]["cache_policy"][
+                    "target_response_namespace"
+                ].endswith(f"/{dataset_id}/responses/")
+            )
+            self.assertTrue(
+                _private_identity_path(paths["store"], dataset_id).is_file()
+            )
+            status = inspect_contract(
+                manifest_path=manifest_path,
+                source_contract_path=paths["source"],
+                selected_manifest_path=paths["selected"],
+                master_path=paths["master"],
+                master_source_path=paths["master_source"],
+                strategy_source_path=STRATEGY_SOURCE,
+                env_path=paths["env"],
+                status_path=paths["status"],
+                dataset_id=dataset_id,
+            )
+            self.assertEqual(status["dataset_id"], dataset_id)
+
+    def test_custom_dataset_identity_rejects_wrong_namespace(self):
+        with tempfile.TemporaryDirectory(
+            dir=PROJECT_ROOT
+        ) as directory, tempfile.TemporaryDirectory() as external:
+            paths = self._fixture(Path(directory), Path(external))
+            with self.assertRaisesRegex(DevelopmentSecSourceError, "namespace"):
+                freeze_contract(
+                    source_contract_path=paths["source"],
+                    selected_manifest_path=paths["selected"],
+                    master_path=paths["master"],
+                    master_source_path=paths["master_source"],
+                    strategy_source_path=STRATEGY_SOURCE,
+                    env_path=paths["env"],
+                    output_root=paths["output"],
+                    dataset_id="unsafe-dataset",
+                )
+
     def test_preexisting_target_response_blocks_freeze(self):
         with tempfile.TemporaryDirectory(
             dir=PROJECT_ROOT
