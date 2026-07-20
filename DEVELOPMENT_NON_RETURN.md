@@ -86,6 +86,10 @@ boundary for v5. Its source must be committed and pushed before `freeze`; the
 resulting collector manifest must then be inspected, committed, and pushed
 before `collect` can contact a provider.
 
+Collector status: manifest `b3645a88...fb8438` independently rebuilt
+`FROZEN_READY`; its 69,300-window maximum, provider settings, implementation
+hashes, privacy boundary, 20-GiB reserve, and zero-target state all reconcile.
+
 The collector checks the local exact cache first, preserves whole-provider raw
 Alpaca SIP fidelity, checkpoints every one-second search window atomically, and
 stops before requesting the second after the first clean cross. Candidate and

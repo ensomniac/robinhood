@@ -1,0 +1,235 @@
+{
+  "capacity_contract": {
+    "historical_deletion_allowed": false,
+    "minimum_free_bytes": 21474836480,
+    "observed_free_bytes_at_freeze": 445604663296
+  },
+  "collection_contract": {
+    "atomic_pair_checkpoints": true,
+    "calendar_query": {
+      "end": "2025-11-30",
+      "provider": "Alpaca Market Calendar API",
+      "start": "2023-12-01"
+    },
+    "candidate_opening_bars_end_at_09_35": true,
+    "conditional_bars_fully_completed_before_final_decision_minute": true,
+    "decision_trade_prefix_end_exclusive_at_plus_10_seconds": true,
+    "later_search_windows_after_clean_cross_allowed": false,
+    "local_exact_cache_first": true,
+    "maximum_one_second_trade_windows": 69300,
+    "one_second_windows_checkpointed": true,
+    "pair_count": 21,
+    "provider_rows_after_final_decision_allowed": false,
+    "provider_switching_allowed": false,
+    "quote_size_shares_effective": "2025-11-03",
+    "quote_size_source_url": "https://docs.alpaca.markets/us/v1.1/changelog?page=3",
+    "quote_window_end_inclusive_at_plus_10_seconds": true,
+    "search_stops_at_first_clean_cross": true,
+    "split_query_count": 1,
+    "symbol_or_date_substitution_allowed": false,
+    "whole_provider_market_fidelity": "ALPACA_RAW_SIP"
+  },
+  "dataset_id": "dataset-development-non-return-preentry-collection-2026-07-20-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "historical_batches/development_tranche_v2/non_return_manifests/dataset-development-non-return-qualification-2026-07-20-v5-bd4425a033feb6fc54ab4d6d4130f78beaa6d77ecc805d4ce627babbfcf7571e.json",
+      "historical_batches/development_tranche_v2/non-return-contract-status.json",
+      "DEVELOPMENT_NON_RETURN.md",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "implementation_contract": {
+    "collector_must_be_committed_and_pushed_before_provider_access": true,
+    "files": {
+      "development_non_return.py": {
+        "path": "development_non_return.py",
+        "sha256": "a3a13deb247488b97e87b4374057820b5faf8d88135656682fead84d3514481b"
+      },
+      "development_non_return_collection.py": {
+        "path": "development_non_return_collection.py",
+        "sha256": "168d17dd1a233c6ccf14b775a41cc64e177f0ca16ac600f3849d8111b86aca23"
+      },
+      "historical_providers.py": {
+        "path": "historical_providers.py",
+        "sha256": "2e5ac0266cfe7c295248990340c0e2a02ad54de8b1a2bd0a614a888642fd92ff"
+      },
+      "historical_service.py": {
+        "path": "historical_service.py",
+        "sha256": "49fb07d453302e1b7f566369dfecde828514ba7d937fa63b8c83679d2e221241"
+      },
+      "historical_store.py": {
+        "path": "historical_store.py",
+        "sha256": "6937d707de1b480d65d11638813af21a5d1dd180fb444d30ab7f8623b483c281"
+      },
+      "nasdaq_halts.py": {
+        "path": "nasdaq_halts.py",
+        "sha256": "fa15f59407d600252f658a192985badec173694a1671d112594533921b2327de"
+      },
+      "scanner_replay.py": {
+        "path": "scanner_replay.py",
+        "sha256": "201beec2f0787a6e9be55ac5df2384b95532d767a32619983b7782a9f83b86c4"
+      },
+      "sip_bar_aggregation.py": {
+        "path": "sip_bar_aggregation.py",
+        "sha256": "fb13f18fd9d929f009c5a6cfa66e2f261f3ac7b2a099fdcd89795f9ca416ea49"
+      },
+      "sip_trade_conditions.py": {
+        "path": "sip_trade_conditions.py",
+        "sha256": "cddd60610cd36e144f5a5950f4a14543e1373129c80c0da41ba5fbfd5e8948f1"
+      }
+    },
+    "manifest_must_be_committed_and_pushed_before_provider_access": true
+  },
+  "lineage_contract": {
+    "base_manifest": {
+      "manifest_sha256": "bd4425a033feb6fc54ab4d6d4130f78beaa6d77ecc805d4ce627babbfcf7571e",
+      "path": "historical_batches/development_tranche_v2/non_return_manifests/dataset-development-non-return-qualification-2026-07-20-v5-bd4425a033feb6fc54ab4d6d4130f78beaa6d77ecc805d4ce627babbfcf7571e.json",
+      "sha256": "e9ed2af702cda4c2fb5d371a60241817b6106eb4a383d85d67f0f0b4279ecc83"
+    },
+    "base_public_status": {
+      "path": "historical_batches/development_tranche_v2/non-return-contract-status.json",
+      "sha256": "ba917acea44a0aefb7a1d754c34b7d51084abadd9ea03fe9e9cb7ccb4945d4ad"
+    },
+    "positive_pair_identity_sha256": "4de0c32b2502aebdbbe59d14758b3f450ad6e2e99713a0c63e0fd4bd1cbc2b09",
+    "positive_pairs": 21,
+    "private_base_contract_sha256": "f7f2ba054184c6d7b74086008c9be104a7878c4ad96825fb65dba88817811783",
+    "private_request_graph_sha256": "133765c4d019cbd6d4b94ee17c1b4d0049143882e97bcd67a8b1fad885b77c5f"
+  },
+  "manifest_sha256": "b3645a88c07a949a1e183178a9668073d7d14ff953f084144351c82e19fb8438",
+  "outcome_lock": {
+    "outcome_fields_allowed": false,
+    "post_entry_data_access_allowed": false,
+    "separate_inspected_qualification_required": true,
+    "target_outcomes_observed_or_derived": false,
+    "target_returns_prices_after_decision_and_outcomes_allowed": false
+  },
+  "privacy_contract": {
+    "private_root": "LOCAL_HISTORICAL_DATA_ROOT/_derived/development_non_return_collection/dataset-development-non-return-preentry-collection-2026-07-20-v1/",
+    "public_aggregates_and_hashes_only": true,
+    "symbols_dates_instrument_ids_raw_rows_and_requests_public": false
+  },
+  "provider_contract": {
+    "alpaca": {
+      "adjustment": "raw",
+      "base_url": "https://data.alpaca.markets",
+      "credentials_configured": true,
+      "feed": "sip",
+      "minimum_interval_seconds": 0.35,
+      "timeout_seconds": 30.0
+    },
+    "massive": {
+      "api_key_configured": true,
+      "base_url": "https://api.massive.com",
+      "minimum_interval_seconds": 12.5,
+      "timeout_seconds": 30.0
+    }
+  },
+  "registered_at": "2026-07-20T04:24:49.129279+00:00",
+  "requested_dates": [
+    "2025-01-02",
+    "2025-01-03",
+    "2025-01-06",
+    "2025-01-08",
+    "2025-01-10",
+    "2025-01-14",
+    "2025-01-15",
+    "2025-01-17",
+    "2025-01-22",
+    "2025-01-27",
+    "2025-01-28",
+    "2025-01-29",
+    "2025-02-04",
+    "2025-02-07",
+    "2025-02-20",
+    "2025-02-21",
+    "2025-02-24",
+    "2025-02-25",
+    "2025-02-28",
+    "2025-03-03",
+    "2025-03-04",
+    "2025-03-07",
+    "2025-03-10",
+    "2025-03-12",
+    "2025-03-19",
+    "2025-03-24",
+    "2025-03-25",
+    "2025-03-28",
+    "2025-04-01",
+    "2025-04-02",
+    "2025-04-03",
+    "2025-04-04",
+    "2025-04-09",
+    "2025-04-11",
+    "2025-04-14",
+    "2025-04-16",
+    "2025-04-21",
+    "2025-04-28",
+    "2025-04-29",
+    "2025-04-30",
+    "2025-05-02",
+    "2025-05-08",
+    "2025-05-12",
+    "2025-05-19",
+    "2025-05-21",
+    "2025-05-23",
+    "2025-05-29",
+    "2025-05-30",
+    "2025-06-03",
+    "2025-06-04",
+    "2025-06-17",
+    "2025-06-25",
+    "2025-06-26",
+    "2025-06-30",
+    "2025-07-01",
+    "2025-07-07",
+    "2025-07-08",
+    "2025-07-09",
+    "2025-07-14",
+    "2025-07-16",
+    "2025-07-22",
+    "2025-07-28",
+    "2025-07-30",
+    "2025-07-31",
+    "2025-08-07",
+    "2025-08-12",
+    "2025-08-14",
+    "2025-08-15",
+    "2025-08-18",
+    "2025-08-19",
+    "2025-08-26",
+    "2025-08-29",
+    "2025-09-03",
+    "2025-09-05",
+    "2025-09-08",
+    "2025-09-11",
+    "2025-09-16",
+    "2025-09-17",
+    "2025-09-18",
+    "2025-09-22",
+    "2025-10-08",
+    "2025-10-14",
+    "2025-10-15",
+    "2025-10-17",
+    "2025-10-22",
+    "2025-10-23",
+    "2025-10-24",
+    "2025-10-27",
+    "2025-10-29",
+    "2025-10-31",
+    "2025-11-03",
+    "2025-11-05",
+    "2025-11-07",
+    "2025-11-11",
+    "2025-11-14",
+    "2025-11-17",
+    "2025-11-21",
+    "2025-11-24",
+    "2025-11-25",
+    "2025-11-28"
+  ],
+  "schema_version": 1
+}

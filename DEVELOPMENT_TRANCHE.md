@@ -299,3 +299,8 @@ raw observations only under the ignored historical root, and independently
 rebuilds pair hashes and final-decision boundaries. No provider call is legal
 until the collector source and then its inspected zero-state manifest are each
 committed and pushed.
+
+Collector manifest `b3645a88...fb8438` independently rebuilt `FROZEN_READY`.
+It binds the exact v5 base hash, 21 private pairs, a maximum 69,300 one-second
+windows, raw SIP and Massive provider semantics, dependency hashes, the 20-GiB
+reserve, and zero target artifacts. Commit and push it before collection.
