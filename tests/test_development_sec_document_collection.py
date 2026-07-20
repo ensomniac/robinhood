@@ -9,6 +9,7 @@ import development_sec_sources as source_contract
 from development_sec_document_collection import (
     DevelopmentSecDocumentCollectionError,
     _index_path,
+    _response_root,
     _sha256_json,
     _transport_integrity,
     _wrapper_path,
@@ -176,6 +177,55 @@ class DevelopmentSecDocumentCollectionTests(unittest.TestCase):
                         output_path=root / "inspection.json",
                         require_published=False,
                     )
+
+    def test_explicit_datasets_scope_every_private_collection_artifact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest, config, private, publication = self._surface(root)
+            dataset_id = "dataset-development-sec-primary-documents-test-v3"
+            source_dataset_id = "dataset-development-sec-primary-sources-test-v3"
+            private["dataset_id"] = dataset_id
+            responses = {
+                request["source_url"]: b"<html>source</html>"
+                for request in private["document_requests"]
+            }
+            status_path = root / "status.json"
+            inspection_path = root / "inspection.json"
+            with patch(
+                "development_sec_document_collection._load_contract",
+                return_value=(manifest, config, private, publication),
+            ):
+                status = collect(
+                    dataset_id=dataset_id,
+                    source_dataset_id=source_dataset_id,
+                    status_path=status_path,
+                    client=FakeClient(responses),
+                    require_published=False,
+                )
+                inspection = inspect(
+                    dataset_id=dataset_id,
+                    source_dataset_id=source_dataset_id,
+                    status_path=status_path,
+                    output_path=inspection_path,
+                    require_published=False,
+                )
+            self.assertEqual(status["dataset_id"], dataset_id)
+            self.assertEqual(inspection["dataset_id"], dataset_id)
+            self.assertTrue(_index_path(root, source_dataset_id).is_file())
+            self.assertTrue(
+                _wrapper_path(
+                    root, private["document_requests"][0], source_dataset_id
+                ).is_file()
+            )
+            self.assertFalse(_index_path(root).exists())
+
+    def test_unsafe_source_dataset_is_rejected_before_response_path_use(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(
+                DevelopmentSecDocumentCollectionError,
+                "dataset ID is unsafe",
+            ):
+                _response_root(Path(directory), "../cross-tranche")
 
 
 if __name__ == "__main__":

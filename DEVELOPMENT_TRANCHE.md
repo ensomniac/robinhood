@@ -132,6 +132,14 @@ requests, 583 joins, 499 affected pairs, and zero responses. Only a separately
 committed and pushed collector may access document bodies; semantics and outcomes
 remain locked.
 
+The manifest-bound raw-document collector is now parameterized for the exact v3
+document and source datasets. It validates their lineage and private namespace,
+isolates every wrapper and index beneath the v3 source response root, and
+preserves the frozen 557-request denominator with shared-cache-first access,
+bounded SEC pacing, failure isolation, resume, and independent raw-byte
+rehashing. Its zero-response preflight remains outcome blind. Commit and push
+the implementation before collecting the graph.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated

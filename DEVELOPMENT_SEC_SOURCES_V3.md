@@ -153,6 +153,17 @@ source lineage, implementation hashes, capacity, privacy, and outcome locks.
 The v3 document response namespace remains empty. Provider access still requires
 a separately committed and pushed raw-document collector.
 
+`development_sec_document_collection.py` now accepts the exact document and
+source dataset identities, verifies the bound v3 source manifest and private
+namespace before provider access, and scopes every terminal wrapper and private
+index beneath the v3 source response root. It retains shared-cache-first SEC
+access, bounded pacing, failure isolation, transport-denial detection,
+idempotent resume, atomic records, and independent raw-byte rehashing. A live
+read-only preflight rebuilds all 557 requests as pending with zero response
+artifacts. Commit and push this collector and its isolation tests before any
+document request; collection remains transport-only and cannot classify a
+source or access an outcome.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
@@ -232,4 +243,24 @@ python3 development_sec_supplemental_collection.py \
   inspect \
   --status historical_batches/development_tranche_v3/sec-supplemental-status.json \
   --output research_results/2026-07-20-development-sec-supplemental-inspection.json
+```
+
+After committing and pushing the document collector, collect and independently
+inspect only the frozen 557-request graph:
+
+```sh
+python3 development_sec_document_collection.py \
+  --dataset-id dataset-development-sec-primary-documents-2026-07-20-v3 \
+  --source-dataset-id dataset-development-sec-primary-sources-2026-07-20-v3 \
+  --manifest historical_batches/development_tranche_v3/sec_document_manifests/dataset-development-sec-primary-documents-2026-07-20-v3-1116213925b51a0ad033f77dcffc295fb02f8337013dc0b7574b996c1f986daf.json \
+  collect \
+  --status historical_batches/development_tranche_v3/sec-documents-status.json
+
+python3 development_sec_document_collection.py \
+  --dataset-id dataset-development-sec-primary-documents-2026-07-20-v3 \
+  --source-dataset-id dataset-development-sec-primary-sources-2026-07-20-v3 \
+  --manifest historical_batches/development_tranche_v3/sec_document_manifests/dataset-development-sec-primary-documents-2026-07-20-v3-1116213925b51a0ad033f77dcffc295fb02f8337013dc0b7574b996c1f986daf.json \
+  inspect \
+  --status historical_batches/development_tranche_v3/sec-documents-status.json \
+  --output research_results/2026-07-20-development-sec-documents-inspection.json
 ```
