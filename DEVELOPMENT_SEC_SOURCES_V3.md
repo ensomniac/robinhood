@@ -96,6 +96,13 @@ provably cannot intersect any frozen pair window. Commit and push this
 implementation before writing the private graph or manifest; the nine-request
 manifest must then be independently inspected and pushed before provider access.
 
+Manifest `78827454...39bc9d` now freezes those nine requests and all 677 exact
+descriptor decisions from the pushed implementation. It binds private contract
+hash `89eceaf1...5377d4`, request-graph hash `896f6b8d...64c3e4`, decision hash
+`cdb5647a...e89a1`, unchanged source and strategy lineage, the 20-GiB reserve,
+and zero target supplemental responses. It must be committed and pushed before
+independent inspection; inspection still does not authorize provider access.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:

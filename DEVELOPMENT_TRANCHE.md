@@ -105,6 +105,12 @@ historical supplemental descriptors require an exact window-overlap manifest,
 and no supplemental file, primary document, source semantics, selected-symbol
 detail, or outcome has been accessed.
 
+Supplemental manifest `78827454...39bc9d` now freezes nine exact pair-window
+overlaps and 668 exclusions across all 677 descriptors, with invalid ranges
+conservatively included and zero target responses. Commit and push this manifest
+before its separate network-free inspection; no supplemental provider access is
+authorized until the inspected zero-response state is also pushed.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated
