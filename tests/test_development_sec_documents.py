@@ -84,7 +84,9 @@ class DevelopmentSecDocumentsTests(unittest.TestCase):
         }
         supplemental_manifest = {
             "manifest_sha256": "s" * 64,
-            "lineage_contract": {"strategy": main_manifest["lineage_contract"]["strategy"]},
+            "lineage_contract": {
+                "strategy": main_manifest["lineage_contract"]["strategy"]
+            },
         }
         config = HistoricalStoreConfig(root=root, min_free_bytes=MINIMUM_RESERVE_BYTES)
         return main_manifest, supplemental_manifest, config, main, supplemental
@@ -117,14 +119,17 @@ class DevelopmentSecDocumentsTests(unittest.TestCase):
             state = self._source_state(root)
             output = root / "manifests"
             status_path = root / "status.json"
-            with patch(
-                "development_sec_documents._load_source_state", return_value=state
-            ), patch(
-                "development_sec_documents.load_frozen_dataset_contract",
-                side_effect=lambda path: (
-                    json.loads(path.read_text())
-                    if path.is_relative_to(output)
-                    else {"requested_dates": ["2025-01-02"]}
+            with (
+                patch(
+                    "development_sec_documents._load_source_state", return_value=state
+                ),
+                patch(
+                    "development_sec_documents.load_frozen_dataset_contract",
+                    side_effect=lambda path: (
+                        json.loads(path.read_text())
+                        if path.is_relative_to(output)
+                        else {"requested_dates": ["2025-01-02"]}
+                    ),
                 ),
             ):
                 first_path, first = freeze_contract(
@@ -163,16 +168,77 @@ class DevelopmentSecDocumentsTests(unittest.TestCase):
             response.parent.mkdir(parents=True)
             response.write_bytes(b"response")
             state = self._source_state(root)
-            with patch(
-                "development_sec_documents._load_source_state", return_value=state
-            ), self.assertRaisesRegex(
-                DevelopmentSecDocumentsError, "responses exist before"
+            with (
+                patch(
+                    "development_sec_documents._load_source_state", return_value=state
+                ),
+                self.assertRaisesRegex(
+                    DevelopmentSecDocumentsError, "responses exist before"
+                ),
             ):
                 freeze_contract(
                     main_manifest_path=MAIN_MANIFEST,
                     supplemental_manifest_path=SUPPLEMENTAL_MANIFEST,
                     output_root=root / "manifests",
                     require_published_implementation=False,
+                )
+
+    def test_explicit_datasets_scope_private_contract_and_response_preflight(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            state = self._source_state(root)
+            dataset_id = "dataset-development-sec-primary-documents-test-v3"
+            source_dataset_id = "dataset-development-sec-primary-sources-test-v3"
+            supplemental_dataset_id = "dataset-development-sec-supplemental-test-v3"
+            output = root / "manifests"
+            status_path = root / "status.json"
+            with (
+                patch(
+                    "development_sec_documents._load_source_state", return_value=state
+                ),
+                patch(
+                    "development_sec_documents.load_frozen_dataset_contract",
+                    side_effect=lambda path: (
+                        json.loads(path.read_text())
+                        if path.is_relative_to(output)
+                        else {"requested_dates": ["2025-01-02"]}
+                    ),
+                ),
+            ):
+                manifest_path, manifest = freeze_contract(
+                    dataset_id=dataset_id,
+                    source_dataset_id=source_dataset_id,
+                    supplemental_dataset_id=supplemental_dataset_id,
+                    main_manifest_path=MAIN_MANIFEST,
+                    supplemental_manifest_path=SUPPLEMENTAL_MANIFEST,
+                    output_root=output,
+                    require_published_implementation=False,
+                )
+                status = inspect_contract(
+                    manifest_path=manifest_path,
+                    dataset_id=dataset_id,
+                    source_dataset_id=source_dataset_id,
+                    supplemental_dataset_id=supplemental_dataset_id,
+                    main_manifest_path=MAIN_MANIFEST,
+                    supplemental_manifest_path=SUPPLEMENTAL_MANIFEST,
+                    status_path=status_path,
+                    require_published_implementation=False,
+                )
+            self.assertEqual(manifest["dataset_id"], dataset_id)
+            self.assertEqual(status["dataset_id"], dataset_id)
+            self.assertTrue(
+                _private_contract_path(root, source_dataset_id, dataset_id).is_file()
+            )
+            self.assertFalse(_private_contract_path(root).exists())
+            self.assertFalse(_target_response_root(root, source_dataset_id).exists())
+
+    def test_unsafe_source_dataset_is_rejected_before_private_path_use(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(
+                DevelopmentSecDocumentsError, "dataset ID is unsafe"
+            ):
+                _private_contract_path(
+                    Path(directory), "../cross-tranche", "dataset-safe"
                 )
 
 

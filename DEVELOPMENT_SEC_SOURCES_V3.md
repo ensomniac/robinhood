@@ -129,6 +129,17 @@ detail, or outcome was accessed. The next network-free stage must union these
 with the 546 main-submissions candidates, preserve every pair join, and freeze
 the exact accession-bound document graph before any document request.
 
+`development_sec_documents.py` now accepts explicit document, source, and
+supplemental dataset identities plus all six exact published manifest/status/
+inspection inputs. It independently rebuilds both private collection indexes,
+validates every CIK/accession/primary-document tuple against its SEC-operated
+URL, fails closed on conflicting duplicates, preserves every source-specific
+pair join, and scopes its private graph and empty response preflight to v3.
+A read-only preflight produces 557 unique document requests from 557 candidate
+observations, 583 source-specific joins, and 499 affected pairs, with zero
+target responses. Commit and push this implementation before writing or
+freezing that graph.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:

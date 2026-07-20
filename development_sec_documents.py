@@ -42,6 +42,7 @@ DEFAULT_PUBLIC_STATUS = (
     PROJECT_ROOT
     / "historical_batches/development_tranche_v2/sec-documents-contract-status.json"
 )
+DEFAULT_SOURCE_CONTRACT_DOC = PROJECT_ROOT / "DEVELOPMENT_SEC_SOURCES.md"
 PRIVATE_NAMESPACE = "_derived/development_sec_sources"
 PRIVATE_CONTRACT_FILE = "primary-document-request-map.json.gz"
 TARGET_RESPONSE_NAMESPACE = "responses/documents"
@@ -148,28 +149,46 @@ def _repo_path(path: Path) -> str:
         ) from exc
 
 
-def _private_contract_path(store_root: Path) -> Path:
+def _validated_dataset_id(dataset_id: str) -> str:
+    if (
+        not dataset_id
+        or Path(dataset_id).name != dataset_id
+        or dataset_id in {".", ".."}
+    ):
+        raise DevelopmentSecDocumentsError("dataset ID is unsafe")
+    return dataset_id
+
+
+def _private_contract_path(
+    store_root: Path,
+    source_dataset_id: str = source_contract.DATASET_ID,
+    dataset_id: str = DATASET_ID,
+) -> Path:
     return (
         store_root
         / PRIVATE_NAMESPACE
-        / source_contract.DATASET_ID
+        / _validated_dataset_id(source_dataset_id)
         / "document_contracts"
-        / DATASET_ID
+        / _validated_dataset_id(dataset_id)
         / PRIVATE_CONTRACT_FILE
     )
 
 
-def _target_response_root(store_root: Path) -> Path:
+def _target_response_root(
+    store_root: Path, source_dataset_id: str = source_contract.DATASET_ID
+) -> Path:
     return (
         store_root
         / PRIVATE_NAMESPACE
-        / source_contract.DATASET_ID
+        / _validated_dataset_id(source_dataset_id)
         / TARGET_RESPONSE_NAMESPACE
     )
 
 
-def _target_response_count(store_root: Path) -> int:
-    root = _target_response_root(store_root)
+def _target_response_count(
+    store_root: Path, source_dataset_id: str = source_contract.DATASET_ID
+) -> int:
+    root = _target_response_root(store_root, source_dataset_id)
     return sum(1 for path in root.rglob("*") if path.is_file()) if root.exists() else 0
 
 
@@ -189,8 +208,7 @@ def _recorded_public(
     if (
         inspection.get("status") != expected_status
         or inspection.get("valid") is not True
-        or inspection.get("private_collection_content_sha256")
-        != _sha256_json(rebuilt)
+        or inspection.get("private_collection_content_sha256") != _sha256_json(rebuilt)
         or int(rebuilt.get("counts", {}).get("pending_requests", -1)) != 0
         or int(rebuilt.get("counts", {}).get("failed_requests", -1)) != 0
         or rebuilt.get("primary_documents_requested") is not False
@@ -204,8 +222,14 @@ def _recorded_public(
 
 def _load_source_state(
     *,
+    source_dataset_id: str,
+    supplemental_dataset_id: str,
     main_manifest_path: Path,
+    main_status_path: Path,
+    main_inspection_path: Path,
     supplemental_manifest_path: Path,
+    supplemental_status_path: Path,
+    supplemental_inspection_path: Path,
     env_path: Path,
 ) -> tuple[
     dict[str, Any],
@@ -214,32 +238,51 @@ def _load_source_state(
     dict[str, Any],
     dict[str, Any],
 ]:
+    source_dataset_id = _validated_dataset_id(source_dataset_id)
+    supplemental_dataset_id = _validated_dataset_id(supplemental_dataset_id)
+    for path in (
+        Path(main_collection.__file__),
+        main_manifest_path,
+        main_status_path,
+        main_inspection_path,
+        Path(supplemental_collection.__file__),
+        supplemental_manifest_path,
+        supplemental_status_path,
+        supplemental_inspection_path,
+    ):
+        main_collection._published_source(path)
     main_manifest, main_config, main_private, _ = main_collection._load_contract(
+        dataset_id=source_dataset_id,
         manifest_path=main_manifest_path,
         env_path=env_path,
         require_published=False,
     )
     main_index = main_collection._build_collection_index(
+        dataset_id=source_dataset_id,
         manifest=main_manifest,
         private=main_private,
         store_root=main_config.root,
     )
     if main_index != _read_gzip_object(
-        main_collection._collection_index_path(main_config.root)
+        main_collection._collection_index_path(main_config.root, source_dataset_id)
     ):
         raise DevelopmentSecDocumentsError("main submissions private index drifted")
     _recorded_public(
-        path=MAIN_STATUS,
+        path=main_status_path,
         rebuilt=main_index,
         render=lambda index, publication: main_collection._public_status(
-            index=index, publication=publication
+            dataset_id=source_dataset_id,
+            index=index,
+            publication=publication,
         ),
         expected_status="SUBMISSIONS_INSPECTED",
-        inspection_path=MAIN_INSPECTION,
+        inspection_path=main_inspection_path,
     )
 
     supplemental_manifest, supplemental_config, supplemental_private, _ = (
         supplemental_collection._load_contract(
+            dataset_id=supplemental_dataset_id,
+            source_dataset_id=source_dataset_id,
             manifest_path=supplemental_manifest_path,
             env_path=env_path,
             require_published=False,
@@ -248,20 +291,24 @@ def _load_source_state(
     if supplemental_config.root.resolve() != main_config.root.resolve():
         raise DevelopmentSecDocumentsError("source collections use different stores")
     supplemental_index = supplemental_collection._build_index(
+        dataset_id=supplemental_dataset_id,
+        source_dataset_id=source_dataset_id,
         manifest=supplemental_manifest,
         private=supplemental_private,
         store_root=supplemental_config.root,
     )
     if supplemental_index != _read_gzip_object(
-        supplemental_collection._index_path(supplemental_config.root)
+        supplemental_collection._index_path(supplemental_config.root, source_dataset_id)
     ):
         raise DevelopmentSecDocumentsError("supplemental private index drifted")
     _recorded_public(
-        path=SUPPLEMENTAL_STATUS,
+        path=supplemental_status_path,
         rebuilt=supplemental_index,
-        render=supplemental_collection._public,
+        render=lambda index, publication: supplemental_collection._public(
+            supplemental_dataset_id, index, publication
+        ),
         expected_status="SUPPLEMENTAL_INSPECTED",
-        inspection_path=SUPPLEMENTAL_INSPECTION,
+        inspection_path=supplemental_inspection_path,
     )
     return (
         main_manifest,
@@ -317,7 +364,9 @@ def _normalize_join(
     value: Mapping[str, Any], *, candidate: Mapping[str, Any], origin: str
 ) -> dict[str, Any]:
     filing = value.get("filing")
-    if not isinstance(filing, Mapping) or any(field not in value for field in PAIR_FIELDS):
+    if not isinstance(filing, Mapping) or any(
+        field not in value for field in PAIR_FIELDS
+    ):
         raise DevelopmentSecDocumentsError("pair/document join is incomplete")
     joined_document = _normalize_document({"cik": candidate["cik"], **filing})
     if joined_document != candidate:
@@ -325,13 +374,19 @@ def _normalize_join(
     return {
         **{field: value[field] for field in PAIR_FIELDS},
         "source_origin": origin,
-        "filing": {field: candidate[field] for field in DOCUMENT_FIELDS if field != "cik"},
+        "filing": {
+            field: candidate[field] for field in DOCUMENT_FIELDS if field != "cik"
+        },
     }
 
 
 def _build_request_graph(
-    *, main_index: Mapping[str, Any], supplemental_index: Mapping[str, Any]
+    *,
+    main_index: Mapping[str, Any],
+    supplemental_index: Mapping[str, Any],
+    dataset_id: str = DATASET_ID,
 ) -> dict[str, Any]:
+    dataset_id = _validated_dataset_id(dataset_id)
     sources = (
         ("MAIN_SUBMISSIONS", main_index),
         ("SUPPLEMENTAL_SUBMISSIONS", supplemental_index),
@@ -367,7 +422,9 @@ def _build_request_graph(
             documents[url] = document
             origins.setdefault(url, set()).add(origin)
         for value in join_values:
-            if not isinstance(value, Mapping) or not isinstance(value.get("filing"), Mapping):
+            if not isinstance(value, Mapping) or not isinstance(
+                value.get("filing"), Mapping
+            ):
                 raise DevelopmentSecDocumentsError("pair/document join is malformed")
             url = str(value["filing"].get("source_url") or "")
             candidate = origin_documents.get(url)
@@ -412,9 +469,7 @@ def _build_request_graph(
         "duplicate_document_observations": sum(source_candidates.values())
         - len(requests),
         "main_pair_document_joins": source_joins["MAIN_SUBMISSIONS"],
-        "supplemental_pair_document_joins": source_joins[
-            "SUPPLEMENTAL_SUBMISSIONS"
-        ],
+        "supplemental_pair_document_joins": source_joins["SUPPLEMENTAL_SUBMISSIONS"],
         "pair_document_joins": len(joins),
         "unique_pairs_with_document": len(
             {(str(row["date"]), str(row["instrument_id"])) for row in joins}
@@ -422,7 +477,7 @@ def _build_request_graph(
     }
     return {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "counts": counts,
         "document_requests": requests,
         "document_request_graph_sha256": _sha256_json(requests),
@@ -458,11 +513,21 @@ def _implementation_contract() -> dict[str, Any]:
 
 def _stable_contract(
     *,
+    dataset_id: str,
+    source_dataset_id: str,
+    supplemental_dataset_id: str,
     main_manifest_path: Path,
+    main_status_path: Path,
+    main_inspection_path: Path,
     supplemental_manifest_path: Path,
+    supplemental_status_path: Path,
+    supplemental_inspection_path: Path,
     env_path: Path,
     require_published_implementation: bool,
 ) -> tuple[dict[str, Any], HistoricalStoreConfig, dict[str, Any]]:
+    dataset_id = _validated_dataset_id(dataset_id)
+    source_dataset_id = _validated_dataset_id(source_dataset_id)
+    supplemental_dataset_id = _validated_dataset_id(supplemental_dataset_id)
     if require_published_implementation:
         main_collection._published_source(Path(__file__))
     (
@@ -472,14 +537,22 @@ def _stable_contract(
         main_index,
         supplemental_index,
     ) = _load_source_state(
+        source_dataset_id=source_dataset_id,
+        supplemental_dataset_id=supplemental_dataset_id,
         main_manifest_path=main_manifest_path,
+        main_status_path=main_status_path,
+        main_inspection_path=main_inspection_path,
         supplemental_manifest_path=supplemental_manifest_path,
+        supplemental_status_path=supplemental_status_path,
+        supplemental_inspection_path=supplemental_inspection_path,
         env_path=env_path,
     )
     graph = _build_request_graph(
-        main_index=main_index, supplemental_index=supplemental_index
+        main_index=main_index,
+        supplemental_index=supplemental_index,
+        dataset_id=dataset_id,
     )
-    response_count = _target_response_count(config.root)
+    response_count = _target_response_count(config.root, source_dataset_id)
     if response_count:
         raise DevelopmentSecDocumentsError(
             "target primary-document responses exist before contract freeze"
@@ -497,12 +570,12 @@ def _stable_contract(
                 "manifest_sha256": main_manifest["manifest_sha256"],
             },
             "main_submissions_status": {
-                "path": _repo_path(MAIN_STATUS),
-                "sha256": _sha256_file(MAIN_STATUS),
+                "path": _repo_path(main_status_path),
+                "sha256": _sha256_file(main_status_path),
             },
             "main_submissions_inspection": {
-                "path": _repo_path(MAIN_INSPECTION),
-                "sha256": _sha256_file(MAIN_INSPECTION),
+                "path": _repo_path(main_inspection_path),
+                "sha256": _sha256_file(main_inspection_path),
             },
             "main_private_collection_content_sha256": _sha256_json(main_index),
             "supplemental_manifest": {
@@ -511,12 +584,12 @@ def _stable_contract(
                 "manifest_sha256": supplemental_manifest["manifest_sha256"],
             },
             "supplemental_status": {
-                "path": _repo_path(SUPPLEMENTAL_STATUS),
-                "sha256": _sha256_file(SUPPLEMENTAL_STATUS),
+                "path": _repo_path(supplemental_status_path),
+                "sha256": _sha256_file(supplemental_status_path),
             },
             "supplemental_inspection": {
-                "path": _repo_path(SUPPLEMENTAL_INSPECTION),
-                "sha256": _sha256_file(SUPPLEMENTAL_INSPECTION),
+                "path": _repo_path(supplemental_inspection_path),
+                "sha256": _sha256_file(supplemental_inspection_path),
             },
             "supplemental_private_collection_content_sha256": _sha256_json(
                 supplemental_index
@@ -525,20 +598,14 @@ def _stable_contract(
         },
         "selection_contract": {
             **graph["counts"],
-            "document_request_graph_sha256": graph[
-                "document_request_graph_sha256"
-            ],
-            "pair_document_join_graph_sha256": graph[
-                "pair_document_join_graph_sha256"
-            ],
-            "source_candidate_graph_sha256": graph[
-                "source_candidate_graph_sha256"
-            ],
+            "document_request_graph_sha256": graph["document_request_graph_sha256"],
+            "pair_document_join_graph_sha256": graph["pair_document_join_graph_sha256"],
+            "source_candidate_graph_sha256": graph["source_candidate_graph_sha256"],
             "private_contract_content_sha256": _sha256_json(graph),
             "private_contract_path": (
                 "LOCAL_HISTORICAL_DATA_ROOT/"
-                f"{PRIVATE_NAMESPACE}/{source_contract.DATASET_ID}/"
-                f"document_contracts/{DATASET_ID}/{PRIVATE_CONTRACT_FILE}"
+                f"{PRIVATE_NAMESPACE}/{source_dataset_id}/"
+                f"document_contracts/{dataset_id}/{PRIVATE_CONTRACT_FILE}"
             ),
             "symbols_ciks_accessions_urls_and_joins_public": False,
             "deduplication_key": "exact SEC accession-bound source URL",
@@ -550,9 +617,7 @@ def _stable_contract(
             "provider": "SEC_EDGAR",
             "provider_operated_accession_bound_endpoints_only": True,
             "request_count": graph["counts"]["unique_document_requests"],
-            "private_request_graph_sha256": graph[
-                "document_request_graph_sha256"
-            ],
+            "private_request_graph_sha256": graph["document_request_graph_sha256"],
             "user_agent_sha256": main_request["user_agent_sha256"],
             "workers": main_request["workers"],
             "global_minimum_spacing_seconds": main_request[
@@ -583,39 +648,61 @@ def _stable_contract(
 
 
 def _verify_or_write_private(
-    *, config: HistoricalStoreConfig, graph: Mapping[str, Any], write: bool
+    *,
+    dataset_id: str,
+    source_dataset_id: str,
+    config: HistoricalStoreConfig,
+    graph: Mapping[str, Any],
+    write: bool,
 ) -> None:
-    path = _private_contract_path(config.root)
+    path = _private_contract_path(config.root, source_dataset_id, dataset_id)
     expected = _sha256_json(graph)
     if path.exists():
         if _sha256_json(_read_gzip_object(path)) != expected:
-            raise DevelopmentSecDocumentsError(
-                "private primary-document graph drifted"
-            )
+            raise DevelopmentSecDocumentsError("private primary-document graph drifted")
     elif write:
         _write_gzip_json(path, graph)
     else:
-        raise DevelopmentSecDocumentsError(
-            "private primary-document graph is missing"
-        )
+        raise DevelopmentSecDocumentsError("private primary-document graph is missing")
 
 
 def freeze_contract(
     *,
+    dataset_id: str = DATASET_ID,
+    source_dataset_id: str = source_contract.DATASET_ID,
+    supplemental_dataset_id: str = supplemental_collection.supplemental_contract.DATASET_ID,
     main_manifest_path: Path = MAIN_MANIFEST,
+    main_status_path: Path = MAIN_STATUS,
+    main_inspection_path: Path = MAIN_INSPECTION,
     supplemental_manifest_path: Path = SUPPLEMENTAL_MANIFEST,
+    supplemental_status_path: Path = SUPPLEMENTAL_STATUS,
+    supplemental_inspection_path: Path = SUPPLEMENTAL_INSPECTION,
+    source_contract_doc: Path = DEFAULT_SOURCE_CONTRACT_DOC,
     env_path: Path = PROJECT_ROOT / ".env",
     output_root: Path = DEFAULT_OUTPUT_ROOT,
     require_published_implementation: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
     stable, config, graph = _stable_contract(
+        dataset_id=dataset_id,
+        source_dataset_id=source_dataset_id,
+        supplemental_dataset_id=supplemental_dataset_id,
         main_manifest_path=main_manifest_path,
+        main_status_path=main_status_path,
+        main_inspection_path=main_inspection_path,
         supplemental_manifest_path=supplemental_manifest_path,
+        supplemental_status_path=supplemental_status_path,
+        supplemental_inspection_path=supplemental_inspection_path,
         env_path=env_path,
         require_published_implementation=require_published_implementation,
     )
-    _verify_or_write_private(config=config, graph=graph, write=True)
-    matches = sorted(output_root.glob(f"{DATASET_ID}-*.json"))
+    _verify_or_write_private(
+        dataset_id=dataset_id,
+        source_dataset_id=source_dataset_id,
+        config=config,
+        graph=graph,
+        write=True,
+    )
+    matches = sorted(output_root.glob(f"{dataset_id}-*.json"))
     if len(matches) > 1:
         raise DevelopmentSecDocumentsError(
             "primary-document contract has multiple manifests"
@@ -632,7 +719,7 @@ def freeze_contract(
         raise DevelopmentSecDocumentsError("historical-store reserve is unavailable")
     contract = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "registered_at": datetime.now(UTC).isoformat(),
         "requested_dates": load_frozen_dataset_contract(main_manifest_path)[
             "requested_dates"
@@ -642,13 +729,13 @@ def freeze_contract(
             "claim_scope": "DEVELOPMENT_ONLY",
             "status": "COLLECTING",
             "evidence_paths": [
-                "DEVELOPMENT_SEC_SOURCES.md",
+                _repo_path(source_contract_doc),
                 _repo_path(main_manifest_path),
-                _repo_path(MAIN_STATUS),
-                _repo_path(MAIN_INSPECTION),
+                _repo_path(main_status_path),
+                _repo_path(main_inspection_path),
                 _repo_path(supplemental_manifest_path),
-                _repo_path(SUPPLEMENTAL_STATUS),
-                _repo_path(SUPPLEMENTAL_INSPECTION),
+                _repo_path(supplemental_status_path),
+                _repo_path(supplemental_inspection_path),
                 "PRODUCTION_STRATEGY_VALIDATION.md",
             ],
             "inspected": False,
@@ -671,18 +758,33 @@ def freeze_contract(
 def inspect_contract(
     *,
     manifest_path: Path,
+    dataset_id: str = DATASET_ID,
+    source_dataset_id: str = source_contract.DATASET_ID,
+    supplemental_dataset_id: str = supplemental_collection.supplemental_contract.DATASET_ID,
     main_manifest_path: Path = MAIN_MANIFEST,
+    main_status_path: Path = MAIN_STATUS,
+    main_inspection_path: Path = MAIN_INSPECTION,
     supplemental_manifest_path: Path = SUPPLEMENTAL_MANIFEST,
+    supplemental_status_path: Path = SUPPLEMENTAL_STATUS,
+    supplemental_inspection_path: Path = SUPPLEMENTAL_INSPECTION,
     env_path: Path = PROJECT_ROOT / ".env",
     status_path: Path = DEFAULT_PUBLIC_STATUS,
     require_published_implementation: bool = True,
 ) -> dict[str, Any]:
+    dataset_id = _validated_dataset_id(dataset_id)
     manifest = load_frozen_dataset_contract(manifest_path)
-    if manifest.get("dataset_id") != DATASET_ID:
+    if manifest.get("dataset_id") != dataset_id:
         raise DevelopmentSecDocumentsError("unexpected primary-document dataset")
     stable, config, graph = _stable_contract(
+        dataset_id=dataset_id,
+        source_dataset_id=source_dataset_id,
+        supplemental_dataset_id=supplemental_dataset_id,
         main_manifest_path=main_manifest_path,
+        main_status_path=main_status_path,
+        main_inspection_path=main_inspection_path,
         supplemental_manifest_path=supplemental_manifest_path,
+        supplemental_status_path=supplemental_status_path,
+        supplemental_inspection_path=supplemental_inspection_path,
         env_path=env_path,
         require_published_implementation=require_published_implementation,
     )
@@ -691,7 +793,13 @@ def inspect_contract(
             raise DevelopmentSecDocumentsError(
                 f"primary-document contract {key} drifted"
             )
-    _verify_or_write_private(config=config, graph=graph, write=False)
+    _verify_or_write_private(
+        dataset_id=dataset_id,
+        source_dataset_id=source_dataset_id,
+        config=config,
+        graph=graph,
+        write=False,
+    )
     capacity = manifest.get("capacity_contract")
     if not isinstance(capacity, Mapping) or any(
         (
@@ -707,7 +815,7 @@ def inspect_contract(
     selection = stable["selection_contract"]
     status = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "status": "FROZEN_READY",
         "manifest_sha256": manifest["manifest_sha256"],
         "counts": {
@@ -724,15 +832,9 @@ def inspect_contract(
                 "unique_pairs_with_document",
             )
         },
-        "document_request_graph_sha256": selection[
-            "document_request_graph_sha256"
-        ],
-        "pair_document_join_graph_sha256": selection[
-            "pair_document_join_graph_sha256"
-        ],
-        "private_contract_content_sha256": selection[
-            "private_contract_content_sha256"
-        ],
+        "document_request_graph_sha256": selection["document_request_graph_sha256"],
+        "pair_document_join_graph_sha256": selection["pair_document_join_graph_sha256"],
+        "private_contract_content_sha256": selection["private_contract_content_sha256"],
         "pre_freeze_target_response_artifact_count": 0,
         "primary_documents_requested": False,
         "source_semantics_observed_or_derived": False,
@@ -749,9 +851,24 @@ def inspect_contract(
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--env", type=Path, default=PROJECT_ROOT / ".env")
+    parser.add_argument("--dataset-id", default=DATASET_ID)
+    parser.add_argument("--source-dataset-id", default=source_contract.DATASET_ID)
+    parser.add_argument(
+        "--supplemental-dataset-id",
+        default=supplemental_collection.supplemental_contract.DATASET_ID,
+    )
     parser.add_argument("--main-manifest", type=Path, default=MAIN_MANIFEST)
+    parser.add_argument("--main-status", type=Path, default=MAIN_STATUS)
+    parser.add_argument("--main-inspection", type=Path, default=MAIN_INSPECTION)
     parser.add_argument(
         "--supplemental-manifest", type=Path, default=SUPPLEMENTAL_MANIFEST
+    )
+    parser.add_argument("--supplemental-status", type=Path, default=SUPPLEMENTAL_STATUS)
+    parser.add_argument(
+        "--supplemental-inspection", type=Path, default=SUPPLEMENTAL_INSPECTION
+    )
+    parser.add_argument(
+        "--source-contract-doc", type=Path, default=DEFAULT_SOURCE_CONTRACT_DOC
     )
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -767,13 +884,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "freeze":
             path, manifest = freeze_contract(
+                dataset_id=args.dataset_id,
+                source_dataset_id=args.source_dataset_id,
+                supplemental_dataset_id=args.supplemental_dataset_id,
                 main_manifest_path=args.main_manifest,
+                main_status_path=args.main_status,
+                main_inspection_path=args.main_inspection,
                 supplemental_manifest_path=args.supplemental_manifest,
+                supplemental_status_path=args.supplemental_status,
+                supplemental_inspection_path=args.supplemental_inspection,
+                source_contract_doc=args.source_contract_doc,
                 env_path=args.env,
                 output_root=args.output_root,
             )
             value = {
-                "dataset_id": DATASET_ID,
+                "dataset_id": args.dataset_id,
                 "manifest_sha256": manifest["manifest_sha256"],
                 "path": str(path),
                 "unique_document_requests": manifest["selection_contract"][
@@ -786,8 +911,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             value = inspect_contract(
                 manifest_path=args.manifest,
+                dataset_id=args.dataset_id,
+                source_dataset_id=args.source_dataset_id,
+                supplemental_dataset_id=args.supplemental_dataset_id,
                 main_manifest_path=args.main_manifest,
+                main_status_path=args.main_status,
+                main_inspection_path=args.main_inspection,
                 supplemental_manifest_path=args.supplemental_manifest,
+                supplemental_status_path=args.supplemental_status,
+                supplemental_inspection_path=args.supplemental_inspection,
                 env_path=args.env,
                 status_path=args.status,
             )
