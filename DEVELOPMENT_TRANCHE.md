@@ -284,3 +284,10 @@ artifact begins in December 2024, after the earliest bars in the required
 252-session history. V5 adds one exact Massive split-action query over the
 frozen 2023-12-01 through 2025-11-30 calendar range and fails resistance closed
 unless every raw historical high has a complete target-date split basis.
+
+V5 manifest `bd4425a0...f7571e` independently rebuilt `FROZEN_READY` with the
+same exact 21 source-positive pairs on 21 dates and zero target artifacts. Its
+private positive-selection hash is `f7f2ba05...11783` and complete request-graph
+hash is `133765c4...77c5f`. A collector must bind this exact manifest and its
+split, calendar, tape, quote, bar, halt, privacy, and outcome-lock rules before
+provider access.
