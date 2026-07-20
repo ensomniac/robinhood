@@ -33,7 +33,7 @@ from strategy_engine import load_config
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DATASET_ID = "dataset-development-non-return-qualification-2026-07-20-v3"
+DATASET_ID = "dataset-development-non-return-qualification-2026-07-20-v4"
 SELECTED_PAIR_MANIFEST = source_contract.SOURCE_MANIFEST
 SEMANTICS_MANIFEST = (
     PROJECT_ROOT
@@ -311,7 +311,8 @@ def build_request_graph(selection: Mapping[str, Any]) -> dict[str, Any]:
 
     pairs = selection["positive_pairs"]
     dates = sorted({str(row["date"]) for row in pairs})
-    candidate_prefixes = []
+    candidate_opening_prefixes = []
+    conditional_completed_prefixes = []
     premarket = []
     history = []
     for row in pairs:
@@ -320,7 +321,7 @@ def build_request_graph(selection: Mapping[str, Any]) -> dict[str, Any]:
             "symbol": row["symbol"],
             "instrument_id": row["instrument_id"],
         }
-        candidate_prefixes.append(
+        candidate_opening_prefixes.append(
             {
                 **identity,
                 "provider": "alpaca",
@@ -329,9 +330,26 @@ def build_request_graph(selection: Mapping[str, Any]) -> dict[str, Any]:
                 "bar_size": "1 min",
                 "use_rth": True,
                 "start_local": "TARGET_DATE_09:30_ET",
-                "end_local": "TARGET_DATE_10:30_ET",
+                "end_local": "TARGET_DATE_09:35_ET",
                 "end_exclusive": True,
             }
+        )
+        conditional_completed_prefixes.extend(
+            {
+                **identity,
+                "requested_symbol": requested_symbol,
+                "provider": "alpaca",
+                "feed": "sip",
+                "adjustment": "raw",
+                "bar_size": "1 min",
+                "use_rth": True,
+                "when": "a condition-valid continuous regular-sale cross exists",
+                "start_local": "TARGET_DATE_09:30_ET",
+                "end_local": "FINAL_DECISION_MINUTE_START_ET",
+                "end_exclusive": True,
+                "only_fully_completed_minutes": True,
+            }
+            for requested_symbol in ("CANDIDATE", "QQQ", "SPY")
         )
         premarket.append(
             {
@@ -358,22 +376,6 @@ def build_request_graph(selection: Mapping[str, Any]) -> dict[str, Any]:
                 "calendar_source": "FROZEN_ALPACA_CALENDAR_QUERY",
             }
         )
-    benchmarks = [
-        {
-            "date": day,
-            "symbol": symbol,
-            "provider": "alpaca",
-            "feed": "sip",
-            "adjustment": "raw",
-            "bar_size": "1 min",
-            "use_rth": True,
-            "start_local": "TARGET_DATE_09:30_ET",
-            "end_local": "TARGET_DATE_10:30_ET",
-            "end_exclusive": True,
-        }
-        for day in dates
-        for symbol in ("QQQ", "SPY")
-    ]
     halts = [
         {
             "date": day,
@@ -390,20 +392,22 @@ def build_request_graph(selection: Mapping[str, Any]) -> dict[str, Any]:
             "end": CALENDAR_QUERY_END,
             "purpose": "derive exact prior-252-session windows only",
         },
-        "candidate_bar_prefixes": candidate_prefixes,
-        "benchmark_bar_prefixes": benchmarks,
+        "candidate_opening_bar_prefixes": candidate_opening_prefixes,
+        "conditional_completed_bar_prefixes": conditional_completed_prefixes,
         "candidate_premarket_prefixes": premarket,
         "candidate_history_prefixes": history,
         "official_halt_dates": halts,
         "conditional_clean_cross_search": {
-            "when": "an aggregate 1-minute high is above the frozen opening high from 09:35 through before 10:30",
+            "when": "the complete 09:30-09:35 opening range is available",
             "provider": "alpaca",
             "feed": "sip",
             "window_seconds": 1,
-            "order": "chronological aggregate crossing minutes then chronological one-second windows",
+            "start": "TARGET_DATE_09:35_ET",
+            "end": "TARGET_DATE_10:30_ET_EXCLUSIVE",
+            "order": "every one-second window in strict chronological order",
             "stop": "FIRST_CONDITION_VALID_CONTINUOUS_REGULAR_SALE_CROSS_OR_10:30_ET",
             "later_windows_after_clean_cross_allowed": False,
-            "purpose": "find the first condition-valid continuous regular-sale cross without reading later tape",
+            "purpose": "find the first condition-valid continuous regular-sale cross without aggregate-minute or later-tape lookahead",
         },
         "conditional_decision_trade_prefix": {
             "when": "a condition-valid continuous regular-sale cross exists",
@@ -438,8 +442,8 @@ def build_request_graph(selection: Mapping[str, Any]) -> dict[str, Any]:
         "counts": {
             "positive_pairs": len(pairs),
             "positive_dates": len(dates),
-            "candidate_bar_prefixes": len(candidate_prefixes),
-            "benchmark_bar_prefixes": len(benchmarks),
+            "candidate_opening_bar_prefixes": len(candidate_opening_prefixes),
+            "conditional_completed_bar_prefixes": len(conditional_completed_prefixes),
             "candidate_premarket_prefixes": len(premarket),
             "candidate_history_prefixes": len(history),
             "official_halt_dates": len(halts),
@@ -526,6 +530,7 @@ def _implementation_contract() -> dict[str, Any]:
     files = (
         "development_non_return.py",
         "preentry_structure.py",
+        "sip_bar_aggregation.py",
         "sip_trade_conditions.py",
         "nasdaq_halts.py",
         "strategy_engine.py",

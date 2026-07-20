@@ -1,10 +1,10 @@
 # Development Non-Return Qualification
 
 Planned dataset:
-`dataset-development-non-return-qualification-2026-07-20-v3`
+`dataset-development-non-return-qualification-2026-07-20-v4`
 
-Status: v3 manifest `9b1fefa...81c5b` independently rebuilt `FROZEN_READY`;
-zero selected-symbol market requests or target artifacts have occurred
+Status: v4 implementation ready; superseded v2 and v3 manifests made zero
+provider requests and are retained as failed lookahead contracts
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -27,14 +27,15 @@ inaccessible.
 
 The private graph permits only:
 
-- raw Alpaca SIP candidate and SPY/QQQ one-minute bars from 09:30 through the
-  10:30 ET entry cutoff, end-exclusive;
+- raw Alpaca SIP candidate one-minute bars only for the complete 09:30-09:35
+  opening range;
 - candidate premarket bars through 09:30 ET and prior-session history ending
   before the target open for the frozen structure contract;
 - official Nasdaq halt records for the privately selected dates;
-- chronological one-second raw-trade windows only inside aggregate crossing
-  minutes, stopping at the first condition-valid continuous regular-sale cross
-  or the 10:30 cutoff;
+- every chronological one-second raw-trade window from 09:35, stopping at the
+  first condition-valid continuous regular-sale cross or the 10:30 cutoff;
+- candidate and SPY/QQQ one-minute bars ending before the minute containing the
+  final decision snapshot, so only fully completed bars are visible;
 - a condition-aware raw-trade prefix ending exactly at the final +10-second
   decision snapshot for session VWAP; and
 - one bounded quote window from one second before the clean cross through the
@@ -76,7 +77,7 @@ survivors are required before a separately frozen outcome contract is legal.
 Fewer survivors returns the campaign to disjoint `DEVELOPMENT_ACQUISITION`; it
 does not permit a gate change or outcome access.
 
-## Frozen V3 Result
+## Superseded V3 Result
 
 Manifest `9b1fefa...81c5b` independently rejoins all 1,906 source pair hashes to
 the scanner selection and retains exactly 21 verified-positive pairs on 21
@@ -90,7 +91,12 @@ source selection, coarse scanner gates, request graph, privacy boundary, and
 zero-target state. The graph freezes 21 candidate bar prefixes, 42 benchmark
 prefixes, 21 premarket prefixes, 21 prior-history prefixes, and 21 official
 halt dates plus only the causal conditional tape and quote derivations. It
-authorizes no provider access by itself and still forbids outcomes.
+authorized no provider access by itself and still forbids outcomes. A second
+pre-provider review found that its full 09:30-10:30 aggregate bar prefixes could
+expose later bars and the remainder of an early crossing minute. V4 removes
+aggregate bars from trigger discovery, searches every raw second in order, and
+requests only fully completed candidate and benchmark bars once the final
+decision time is known.
 
 ## Superseded V2 Result
 

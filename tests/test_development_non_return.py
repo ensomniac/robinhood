@@ -87,8 +87,8 @@ class DevelopmentNonReturnTests(unittest.TestCase):
             {
                 "positive_pairs": 3,
                 "positive_dates": 2,
-                "candidate_bar_prefixes": 3,
-                "benchmark_bar_prefixes": 4,
+                "candidate_opening_bar_prefixes": 3,
+                "conditional_completed_bar_prefixes": 9,
                 "candidate_premarket_prefixes": 3,
                 "candidate_history_prefixes": 3,
                 "official_halt_dates": 2,
@@ -98,9 +98,24 @@ class DevelopmentNonReturnTests(unittest.TestCase):
         self.assertIn("10:30_ET", rendered)
         self.assertNotIn("15:50", rendered)
         self.assertNotIn("PLUS_11", rendered)
+        self.assertNotIn("aggregate crossing minute", rendered.lower())
+        self.assertTrue(
+            all(
+                item["end_local"] == "TARGET_DATE_09:35_ET"
+                for item in result["graph"]["candidate_opening_bar_prefixes"]
+            )
+        )
         self.assertEqual(
             result["graph"]["conditional_clean_cross_search"]["window_seconds"],
             1,
+        )
+        self.assertEqual(
+            result["graph"]["conditional_clean_cross_search"]["start"],
+            "TARGET_DATE_09:35_ET",
+        )
+        self.assertEqual(
+            result["graph"]["conditional_clean_cross_search"]["order"],
+            "every one-second window in strict chronological order",
         )
         self.assertFalse(
             result["graph"]["conditional_clean_cross_search"][

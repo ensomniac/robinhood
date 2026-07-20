@@ -263,3 +263,11 @@ private positive-selection hash is `1b81562b...bcb575` and its repaired request
 graph hash is `913ae6f6...2810c`. The provider collector must bind this exact
 manifest and be separately frozen, inspected, committed, and pushed before any
 selected-symbol request.
+
+A second pre-provider review retired v3 as well. Although its raw-tape search
+stopped at the first clean cross, the preceding full-session aggregate-bar
+prefix could still expose bars after an early decision and the rest of its
+crossing minute. V4 limits unconditional bars to the completed opening range,
+searches every raw second from 09:35 chronologically, and conditionally requests
+only bars fully completed before the final decision minute. V3 made zero
+provider requests and remains public as failed evidence infrastructure.
