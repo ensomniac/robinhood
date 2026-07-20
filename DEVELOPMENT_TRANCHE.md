@@ -241,3 +241,10 @@ prefixes, and bounded quote windows. Exact identities and requests remain
 private. Commit and push the implementation before freezing; the resulting
 zero-target manifest must itself be inspected, committed, and pushed before any
 selected-symbol market request.
+
+Manifest `6b5b24cb...8210c` now independently rebuilds `FROZEN_READY`. It binds
+the exact 21 source-positive pairs on 21 dates, all unchanged scanner and
+strategy gates, private selection and request hashes, the 20-GiB reserve, and
+zero detailed target artifacts. Commit and push this manifest, aggregate
+status, registry event, and durable finding before implementing or running the
+provider collector.

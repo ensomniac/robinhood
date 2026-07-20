@@ -3,9 +3,9 @@
 Planned dataset:
 `dataset-development-non-return-qualification-2026-07-19-v2`
 
-Status: implementation ready; the exact source-positive acquisition manifest
-must be frozen, inspected, committed, and pushed before any selected-symbol
-minute, tape, quote, premarket, long-history, halt, or calendar request
+Status: manifest `6b5b24cb...8210c` independently rebuilt `FROZEN_READY`;
+zero selected-symbol minute, tape, quote, premarket, long-history, halt, or
+calendar requests have occurred
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -74,3 +74,18 @@ or running provider collection. At least 20 complete unchanged-v3 non-return
 survivors are required before a separately frozen outcome contract is legal.
 Fewer survivors returns the campaign to disjoint `DEVELOPMENT_ACQUISITION`; it
 does not permit a gate change or outcome access.
+
+## Frozen Result
+
+Manifest `6b5b24cb...8210c` independently rejoins all 1,906 source pair hashes to
+the scanner selection and retains exactly 21 verified-positive pairs on 21
+distinct dates. It rechecks the unchanged coarse scanner gates, strategy
+version, rules hash, implementation hashes, private/public boundary, and zero
+target artifacts.
+
+The private positive-selection hash is `7e42d22d...75a0c0`, pair-identity hash
+is `4de0c32b...bc2b09`, positive-date hash is `304134d8...b5cf24`, and request
+graph hash is `4b4dd86d...db816b`. The graph freezes 21 candidate bar prefixes,
+42 benchmark prefixes, 21 premarket prefixes, 21 prior-history prefixes, and 21
+official halt dates plus the conditional trade and quote derivations. It
+authorizes no provider access by itself and still forbids outcomes.

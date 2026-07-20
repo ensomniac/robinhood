@@ -1,0 +1,40 @@
+{
+  "dataset_id": "dataset-development-non-return-qualification-2026-07-19-v2",
+  "inspected": true,
+  "inspection": {
+    "coarse_scanner_gates_rechecked": true,
+    "implementation_hashes_rebuilt": true,
+    "positive_pair_hash_join_rebuilt": true,
+    "private_public_boundary_rechecked": true,
+    "request_graph_rebuilt": true,
+    "source_selection_rebuilt": true,
+    "strategy_version_and_rules_hash_rebuilt": true,
+    "valid": true,
+    "zero_target_artifacts_rechecked": true
+  },
+  "manifest_sha256": "6b5b24cbe049a789ea888a5250975c9f99497be16ee13d72173b2dbab308210c",
+  "minimum_non_return_survivors_before_outcomes": 20,
+  "outcome_contract_permitted": false,
+  "positive_date_identity_sha256": "304134d8e9a328edfa0efb4bc1d5f004dc16e3cf5d9982d5d64eca1d23b5cf24",
+  "positive_pair_identity_sha256": "4de0c32b2502aebdbbe59d14758b3f450ad6e2e99713a0c63e0fd4bd1cbc2b09",
+  "post_entry_requests_allowed": false,
+  "private_contract_file_sha256": "75b8b0ecb036ff716d98b64652a45b6d7e66f4318a4ac4ac78a0755a2d4bc3db",
+  "private_positive_selection_sha256": "7e42d22dac524b37380b727fbe8ff1e0a74bc95fc58a9c477ba4274e8975a0c0",
+  "private_request_graph_sha256": "4b4dd86d21324c7eb608953a0246600e4c1226890863b9b88307e35256db816b",
+  "request_counts": {
+    "benchmark_bar_prefixes": 42,
+    "candidate_bar_prefixes": 21,
+    "candidate_history_prefixes": 21,
+    "candidate_premarket_prefixes": 21,
+    "official_halt_dates": 21,
+    "positive_dates": 21,
+    "positive_pairs": 21
+  },
+  "schema_version": 1,
+  "source_selected_pairs": 1906,
+  "status": "FROZEN_READY",
+  "symbols_dates_rows_requests_and_raw_inputs_public": false,
+  "target_artifacts": 0,
+  "target_outcomes_observed_or_derived": false,
+  "verified_positive_pairs": 21
+}
