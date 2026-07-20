@@ -53,6 +53,18 @@ Its independently checked zero-state has no ready market session, request,
 retry, derived row, canonical merge, or target outcome. This manifest must be
 committed and pushed before the first market request.
 
+The manifest-bound run is now independently inspected `READY`. All 262 sessions
+completed with 240 exact-compatible reuses, 11,040 delta-symbol requests, 3,205
+provider requests, zero retries, and no substitution. Separate inspection
+recomputed 516,990 point-in-time common-stock evaluations, 4,840 eligible rows,
+1,871 selected ranks, every disposition and shortlist hash, and 159 split-
+adjusted evaluations. It also rehashed 1,344,419 canonical documents and
+1,238,600 exact opening datasets. Summary hash
+`2426a905...7363cbf9` and inspection hash `aeceb297...c5f8e83` bind
+the public aggregate evidence. This closes scanner-selection fidelity only;
+catalyst, quote/book, tradability, trigger, execution, return, alpha,
+confirmation, maturity, and production claims remain locked.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated

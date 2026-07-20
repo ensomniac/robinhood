@@ -1,27 +1,35 @@
 {
+  "canonical_store": {
+    "outside_repository": true
+  },
   "collection": {
-    "canonical_day_merges": 0,
-    "delta_symbols_requested": 0,
-    "derived_rows": 0,
-    "inherited_derived_rows": 0,
+    "canonical_day_merges": 113999,
+    "delta_symbols_requested": 11040,
+    "derived_rows": 5405301,
+    "inherited_derived_rows": 4952539,
     "provider": "Alpaca historical SIP",
-    "provider_requests": 0,
+    "provider_requests": 3205,
     "provider_retries": 0,
-    "reused_sessions": 0,
-    "sessions_ready": 0,
+    "reused_sessions": 240,
+    "sessions_ready": 262,
     "sessions_required": 262
   },
-  "contract": {
-    "manifest_sha256": "1a37bc3d141dff3741bc965303e490eaa59d8f76071b9e5d1bd2b301eb878926",
-    "provider_switching_allowed": false,
-    "reusable_sessions": 240,
-    "substitutions_allowed": false,
-    "target_symbol_union_count": 5826
-  },
   "dataset_id": "dataset-production-scanner-replay-2026-07-20-development-v3",
-  "inspected_zero_state": true,
+  "inspection": {
+    "canonical_documents_verified": 1344419,
+    "canonical_opening_1m_datasets_verified": 1238600,
+    "canonical_regular_15m_datasets_verified": 1344419,
+    "completed_dates": 100,
+    "inspection_sha256": "aeceb297422cfea3d5d29edb4c55844ae8bcf44943a0b54430701bbabc5f8e83",
+    "status": "INSPECTED",
+    "summary_sha256": "2426a9057b5f3072ea4a8d8aa0b41dc4f440d038297f58867b6ca2eb7363cbf9",
+    "total_eligible": 4840,
+    "total_evaluated": 516990,
+    "total_selected": 1871,
+    "valid": true
+  },
+  "manifest_sha256": "1a37bc3d141dff3741bc965303e490eaa59d8f76071b9e5d1bd2b301eb878926",
   "schema_version": 1,
-  "status": "FROZEN_READY",
-  "target_outcomes_observed_or_derived": false,
-  "valid": true
+  "status": "READY",
+  "target_outcomes_observed_or_derived": false
 }

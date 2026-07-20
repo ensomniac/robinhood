@@ -1,0 +1,886 @@
+{
+  "aggregate_rejection_counts": {
+    "below_minimum_atr": 7726,
+    "below_minimum_average_daily_volume": 489,
+    "below_minimum_open_price": 8989,
+    "below_minimum_opening_rvol": 26559,
+    "eligible": 4840,
+    "incomplete_prior_opening_history": 111520,
+    "incomplete_prior_session_history": 1029,
+    "incomplete_target_opening_bar": 347778,
+    "non_bullish_opening_candle": 6578,
+    "non_positive_opening_return": 1482
+  },
+  "canonical_persistence": {
+    "derived_1d_datasets_verified": 1344419,
+    "documents_verified": 1344419,
+    "opening_1m_datasets_verified": 1238600,
+    "regular_15m_datasets_verified": 1344419,
+    "valid": true
+  },
+  "claim_boundary": "Faithful dynamic 09:35 scanner-universe reconstruction only; catalyst, NBBO spread, depth, tradability, breakout, and outcomes are not trade eligible.",
+  "completed_dates": 100,
+  "dataset_id": "dataset-production-scanner-replay-2026-07-20-development-v3",
+  "date_evidence": [
+    {
+      "date": "2025-01-07",
+      "eligible": 59,
+      "evaluated": 5155,
+      "selected": 20,
+      "shortlist_sha256": "da86c36f0afb80b29b090e2175d1bbfe28d65ac59259326bb3926dc08924dac8",
+      "valid": true
+    },
+    {
+      "date": "2025-01-13",
+      "eligible": 26,
+      "evaluated": 5155,
+      "selected": 20,
+      "shortlist_sha256": "bf11850c927c82cbf3cbfd13f09aa9ac785c7dcc9a3a3b8d8cb07bbe8bd0f9df",
+      "valid": true
+    },
+    {
+      "date": "2025-01-16",
+      "eligible": 44,
+      "evaluated": 5156,
+      "selected": 20,
+      "shortlist_sha256": "2802a71b9bf72d008e9aab9bc6b55cc34ee4d3c52bbcb1ec6ae988b6cddf02db",
+      "valid": true
+    },
+    {
+      "date": "2025-01-23",
+      "eligible": 25,
+      "evaluated": 5135,
+      "selected": 20,
+      "shortlist_sha256": "318378b32f3f7da63d4f72b41fd2c499076eea1e3ce7c3c83adb3c99f8c4a021",
+      "valid": true
+    },
+    {
+      "date": "2025-01-30",
+      "eligible": 44,
+      "evaluated": 5135,
+      "selected": 20,
+      "shortlist_sha256": "ebef110492f45416c3fbc2f8aab3864a0aa3cfb77e1455cd1d0474f29a9b4e6a",
+      "valid": true
+    },
+    {
+      "date": "2025-02-03",
+      "eligible": 17,
+      "evaluated": 5136,
+      "selected": 17,
+      "shortlist_sha256": "3d01d0a2cf3e0091bd41f70dae670ac984199d1248b5005a8a4616628a49aa27",
+      "valid": true
+    },
+    {
+      "date": "2025-02-05",
+      "eligible": 23,
+      "evaluated": 5134,
+      "selected": 20,
+      "shortlist_sha256": "ec6c9d15f5739c2c02d2dbeca9f3eda52fa97ab11c77b74cfcd52f33a3ac25af",
+      "valid": true
+    },
+    {
+      "date": "2025-02-06",
+      "eligible": 46,
+      "evaluated": 5136,
+      "selected": 20,
+      "shortlist_sha256": "b4bb52e46660056684b87b57de0e011f113f5c31a652ff259332bd5cf3b2af25",
+      "valid": true
+    },
+    {
+      "date": "2025-02-10",
+      "eligible": 60,
+      "evaluated": 5136,
+      "selected": 20,
+      "shortlist_sha256": "d96846e9cc83863cc9b669bd3f3e72a3c582d8b6017ef52d132aad0397409cb0",
+      "valid": true
+    },
+    {
+      "date": "2025-02-14",
+      "eligible": 54,
+      "evaluated": 5139,
+      "selected": 20,
+      "shortlist_sha256": "05c675765733ba098eba8198a75236020494aef3e4e1afecb9c8d1239ce83bc6",
+      "valid": true
+    },
+    {
+      "date": "2025-02-18",
+      "eligible": 87,
+      "evaluated": 5138,
+      "selected": 20,
+      "shortlist_sha256": "f84b2c034d2a70f4efce49554c2cb5883025518ca41c372301c22755ea8a1d3e",
+      "valid": true
+    },
+    {
+      "date": "2025-02-19",
+      "eligible": 34,
+      "evaluated": 5138,
+      "selected": 20,
+      "shortlist_sha256": "72de1832f32edccc708232d3acef7b561ebe550a4f65e9f601f4ef520dd761aa",
+      "valid": true
+    },
+    {
+      "date": "2025-02-26",
+      "eligible": 38,
+      "evaluated": 5139,
+      "selected": 20,
+      "shortlist_sha256": "4cd897107e671dc11ae522988a206f7c5d7309234ef1b32caa95e50b889dea20",
+      "valid": true
+    },
+    {
+      "date": "2025-02-27",
+      "eligible": 34,
+      "evaluated": 5141,
+      "selected": 20,
+      "shortlist_sha256": "5243374f260acf24cd918de3452769b77a501c52a1f9a5e61b1c667b5b4576e8",
+      "valid": true
+    },
+    {
+      "date": "2025-03-05",
+      "eligible": 24,
+      "evaluated": 5133,
+      "selected": 20,
+      "shortlist_sha256": "8b0373d691d10c8cb0503dbf223210f7f9e936d8ac88641ee3c90f1408309033",
+      "valid": true
+    },
+    {
+      "date": "2025-03-06",
+      "eligible": 11,
+      "evaluated": 5137,
+      "selected": 11,
+      "shortlist_sha256": "2830a24a987f99d9321e55dbfc003d9e5eb47421ff097ec04efa5b78181ff9f3",
+      "valid": true
+    },
+    {
+      "date": "2025-03-14",
+      "eligible": 52,
+      "evaluated": 5138,
+      "selected": 20,
+      "shortlist_sha256": "665f3f92e0cbeb9de50a0b782fc4888f132c1e0d4cda6ec3fa3645aefa0d1e2f",
+      "valid": true
+    },
+    {
+      "date": "2025-03-17",
+      "eligible": 59,
+      "evaluated": 5137,
+      "selected": 20,
+      "shortlist_sha256": "3e200637541d07f73784a2bdd3e2ef7b17a449ad635bd9fa63f46cc8a6de63f9",
+      "valid": true
+    },
+    {
+      "date": "2025-03-18",
+      "eligible": 12,
+      "evaluated": 5138,
+      "selected": 12,
+      "shortlist_sha256": "c92df839e8839eb9a1e34195fb18c654b633136c29f774489be4438bc12bf642",
+      "valid": true
+    },
+    {
+      "date": "2025-03-27",
+      "eligible": 7,
+      "evaluated": 5136,
+      "selected": 7,
+      "shortlist_sha256": "46cd7ce66e2756c6fc34fc7d08e9dfced762359e7e07d18db3b7d17702848b0e",
+      "valid": true
+    },
+    {
+      "date": "2025-03-31",
+      "eligible": 22,
+      "evaluated": 5137,
+      "selected": 20,
+      "shortlist_sha256": "ddbf0e38889d16d0f9099f10e3461a19b752d62ce80ea61b787f7a388cdd2f33",
+      "valid": true
+    },
+    {
+      "date": "2025-04-07",
+      "eligible": 3,
+      "evaluated": 5129,
+      "selected": 3,
+      "shortlist_sha256": "b9c98501c0c3cd045d85e64968ab7ddfad9ed7514d9cf37ce53d9b1bbce9b097",
+      "valid": true
+    },
+    {
+      "date": "2025-04-08",
+      "eligible": 83,
+      "evaluated": 5132,
+      "selected": 20,
+      "shortlist_sha256": "6e44ca1fcc37036d82df84442ddba12502f539826b6ab0869c2706530ce0353c",
+      "valid": true
+    },
+    {
+      "date": "2025-04-10",
+      "eligible": 6,
+      "evaluated": 5133,
+      "selected": 6,
+      "shortlist_sha256": "79bd5126adb3f30e1e5090d65251540e9601b7a4fc587a62c162fbe986d8f793",
+      "valid": true
+    },
+    {
+      "date": "2025-04-15",
+      "eligible": 17,
+      "evaluated": 5130,
+      "selected": 17,
+      "shortlist_sha256": "b27ef9e66426bf1403c6b4174a443c60a9d5f18a0daa4530a9924a1877336220",
+      "valid": true
+    },
+    {
+      "date": "2025-04-17",
+      "eligible": 106,
+      "evaluated": 5125,
+      "selected": 20,
+      "shortlist_sha256": "e7161665fdff6da1519bcf6b8a0f4d5b3001516d3555bb766ce81f9206dd6b2f",
+      "valid": true
+    },
+    {
+      "date": "2025-04-23",
+      "eligible": 136,
+      "evaluated": 5059,
+      "selected": 20,
+      "shortlist_sha256": "b80f08c51d0e62f5409fce5ef05f22da124ddfdf161fb409cfae3d1b013299df",
+      "valid": true
+    },
+    {
+      "date": "2025-04-24",
+      "eligible": 31,
+      "evaluated": 5121,
+      "selected": 20,
+      "shortlist_sha256": "f025afacae04de58d0452cf085e72781147f57f298153e1a49c22b482daf7308",
+      "valid": true
+    },
+    {
+      "date": "2025-04-25",
+      "eligible": 16,
+      "evaluated": 5121,
+      "selected": 16,
+      "shortlist_sha256": "55d02aaee72244ccd994fafffe0f3e68b23984f1aa71187fffe7c1006d18276e",
+      "valid": true
+    },
+    {
+      "date": "2025-05-01",
+      "eligible": 35,
+      "evaluated": 5119,
+      "selected": 20,
+      "shortlist_sha256": "94674fcd3e33c216682653fa8fdb46bdb7dac7c196ad576ef6e895f7fe10482a",
+      "valid": true
+    },
+    {
+      "date": "2025-05-06",
+      "eligible": 28,
+      "evaluated": 5119,
+      "selected": 20,
+      "shortlist_sha256": "09fd415523474a93444981a16a31cfa215227f1f60b959d4f25ec81e9c51e60c",
+      "valid": true
+    },
+    {
+      "date": "2025-05-09",
+      "eligible": 46,
+      "evaluated": 5117,
+      "selected": 20,
+      "shortlist_sha256": "b7f7ad5bfa24125ecf59d0afeb520467e419a32494e58ef68559115e5829ad7f",
+      "valid": true
+    },
+    {
+      "date": "2025-05-14",
+      "eligible": 69,
+      "evaluated": 5063,
+      "selected": 20,
+      "shortlist_sha256": "37f7240b667b7a7c7f1871376e7e6b1546c5a57dc932ba2cd352d1c1e8f845f1",
+      "valid": true
+    },
+    {
+      "date": "2025-05-15",
+      "eligible": 47,
+      "evaluated": 5058,
+      "selected": 20,
+      "shortlist_sha256": "7087fed404fca61f06a4d889d851d9b17e0034432e6b6d9ec13fb58fba250ad1",
+      "valid": true
+    },
+    {
+      "date": "2025-05-16",
+      "eligible": 39,
+      "evaluated": 5121,
+      "selected": 20,
+      "shortlist_sha256": "0f1c4e3691452419ae48f76e79e122d59857cdacabe82a181f8eb9e765126e38",
+      "valid": true
+    },
+    {
+      "date": "2025-05-20",
+      "eligible": 16,
+      "evaluated": 5116,
+      "selected": 16,
+      "shortlist_sha256": "e8b9cfcfbef73b0548e41a9eb8d0acbc561874f55db195984ae106b5200ce375",
+      "valid": true
+    },
+    {
+      "date": "2025-05-27",
+      "eligible": 43,
+      "evaluated": 5117,
+      "selected": 20,
+      "shortlist_sha256": "e687f00b19b85da63b14116a555a720335a24266a49276d334cd5551f476bdf2",
+      "valid": true
+    },
+    {
+      "date": "2025-05-28",
+      "eligible": 26,
+      "evaluated": 5061,
+      "selected": 20,
+      "shortlist_sha256": "2e1aaf01dd26d23dc08f560328e5a3788ce1b47ad93cd434d1e67c8441f789dd",
+      "valid": true
+    },
+    {
+      "date": "2025-06-02",
+      "eligible": 41,
+      "evaluated": 5119,
+      "selected": 20,
+      "shortlist_sha256": "04f1cc7cebf8825dd54e14d73fcdc8c2b194399c4664896af2aa73c1f92d7fdd",
+      "valid": true
+    },
+    {
+      "date": "2025-06-05",
+      "eligible": 44,
+      "evaluated": 5061,
+      "selected": 20,
+      "shortlist_sha256": "1f11cbb00f9fdada61355c422ca3fc76fcfa44fb958cde01e4ed5077df0b4161",
+      "valid": true
+    },
+    {
+      "date": "2025-06-09",
+      "eligible": 39,
+      "evaluated": 5126,
+      "selected": 20,
+      "shortlist_sha256": "a2fcd3aa31151a94ab446e9ca499585ce26aad41f41d4bd2ba6199c979af08df",
+      "valid": true
+    },
+    {
+      "date": "2025-06-10",
+      "eligible": 57,
+      "evaluated": 5127,
+      "selected": 20,
+      "shortlist_sha256": "64651c8d6d3538262767938de7158270e48c648d97f8870cfb23f9c6c09e2ed3",
+      "valid": true
+    },
+    {
+      "date": "2025-06-11",
+      "eligible": 41,
+      "evaluated": 5072,
+      "selected": 20,
+      "shortlist_sha256": "bd9c5086d1d1b6255146a4fad9606ddf2a1125d53e5c5756a5cc2c6322d3c157",
+      "valid": true
+    },
+    {
+      "date": "2025-06-13",
+      "eligible": 36,
+      "evaluated": 5134,
+      "selected": 20,
+      "shortlist_sha256": "b40a1817977dd29a42f39fcd41f4ddedfdbfb27d399b74a9218b6106b1e283da",
+      "valid": true
+    },
+    {
+      "date": "2025-06-16",
+      "eligible": 98,
+      "evaluated": 5134,
+      "selected": 20,
+      "shortlist_sha256": "343bae2c87e677258dc6abbe11423e54a505ce76c5395428bc7ba74ece8a6799",
+      "valid": true
+    },
+    {
+      "date": "2025-06-20",
+      "eligible": 147,
+      "evaluated": 5138,
+      "selected": 20,
+      "shortlist_sha256": "5f674494b3d4768c79e8e6a907088390ec98b0e938c7b466508115524a6eb0f8",
+      "valid": true
+    },
+    {
+      "date": "2025-06-23",
+      "eligible": 26,
+      "evaluated": 5085,
+      "selected": 20,
+      "shortlist_sha256": "047c0ed569d22ee66b1ab8c1f3320fee51d9f5e06f8081d32df17f1c744334a1",
+      "valid": true
+    },
+    {
+      "date": "2025-06-27",
+      "eligible": 27,
+      "evaluated": 5086,
+      "selected": 20,
+      "shortlist_sha256": "61af9c1e555c55c525d70328a38aeb305c8a6746e88442117d473883e3cdcc12",
+      "valid": true
+    },
+    {
+      "date": "2025-07-03",
+      "eligible": 46,
+      "evaluated": 5078,
+      "selected": 20,
+      "shortlist_sha256": "13a3d799d2ea83925ad708608cbc27ae908bf32adcff448532e56edf15875f33",
+      "valid": true
+    },
+    {
+      "date": "2025-07-10",
+      "eligible": 26,
+      "evaluated": 5077,
+      "selected": 20,
+      "shortlist_sha256": "75212852dfe1d75fe320bead1fe0eb495b0e545caf2236ff25f47010f9b27ebc",
+      "valid": true
+    },
+    {
+      "date": "2025-07-15",
+      "eligible": 30,
+      "evaluated": 5152,
+      "selected": 20,
+      "shortlist_sha256": "143d83f49db6b06087737ae0e4adacd35ff589a0a62d1a19e634bf6300b8544a",
+      "valid": true
+    },
+    {
+      "date": "2025-07-23",
+      "eligible": 72,
+      "evaluated": 5158,
+      "selected": 20,
+      "shortlist_sha256": "612a6f647d401970f2c82fa5b7644e373d970fd47df4070454ae2d1d995036bc",
+      "valid": true
+    },
+    {
+      "date": "2025-07-24",
+      "eligible": 35,
+      "evaluated": 5159,
+      "selected": 20,
+      "shortlist_sha256": "19d5448492aaef173b05e7e9f09f2f1236d58d9a182944bd3478b0dbcb48a749",
+      "valid": true
+    },
+    {
+      "date": "2025-07-25",
+      "eligible": 27,
+      "evaluated": 5159,
+      "selected": 20,
+      "shortlist_sha256": "029f58b208d95f7e4aa57e2c43475691d89dd786beafb241a72d01572c8ada15",
+      "valid": true
+    },
+    {
+      "date": "2025-08-01",
+      "eligible": 20,
+      "evaluated": 5199,
+      "selected": 20,
+      "shortlist_sha256": "1b0b9e7d0c90a77c68bd0dbbb9b1c1031cb0799feb334c0c524f7dd573fc17ab",
+      "valid": true
+    },
+    {
+      "date": "2025-08-05",
+      "eligible": 36,
+      "evaluated": 5198,
+      "selected": 20,
+      "shortlist_sha256": "cd20d073cb6be53493d43a216bda9208eaba9fdf0ca79b7e30fb5c256dec1dbd",
+      "valid": true
+    },
+    {
+      "date": "2025-08-08",
+      "eligible": 42,
+      "evaluated": 5206,
+      "selected": 20,
+      "shortlist_sha256": "ea37ae2e07638d2d9843ee5aee6e414300e71e6f303f706478acb2f78be7161d",
+      "valid": true
+    },
+    {
+      "date": "2025-08-11",
+      "eligible": 60,
+      "evaluated": 5206,
+      "selected": 20,
+      "shortlist_sha256": "58ad2fea89cfd9f700a1a3f143db795230373905ff9cd61629fe4813d5b26ae2",
+      "valid": true
+    },
+    {
+      "date": "2025-08-13",
+      "eligible": 49,
+      "evaluated": 5208,
+      "selected": 20,
+      "shortlist_sha256": "7bb0cae3a634a43164d3609bc7e352aa860e46141810bc019ace20a70cc0bf97",
+      "valid": true
+    },
+    {
+      "date": "2025-08-20",
+      "eligible": 23,
+      "evaluated": 5211,
+      "selected": 20,
+      "shortlist_sha256": "bbfbc2d6ea827ed20d15e3b570d22a6f418613c21cbc989505b0388352852094",
+      "valid": true
+    },
+    {
+      "date": "2025-08-21",
+      "eligible": 7,
+      "evaluated": 5210,
+      "selected": 7,
+      "shortlist_sha256": "b7f2d59d18d7728829b675b8b041792839f3ed94112f2d347537d4e49473f57a",
+      "valid": true
+    },
+    {
+      "date": "2025-08-22",
+      "eligible": 18,
+      "evaluated": 5211,
+      "selected": 18,
+      "shortlist_sha256": "dfd7ad9b69fce7265241ecd134177d5dc32a2bad225ee8e1760922c7f53808b5",
+      "valid": true
+    },
+    {
+      "date": "2025-08-25",
+      "eligible": 30,
+      "evaluated": 5212,
+      "selected": 20,
+      "shortlist_sha256": "b61d62f76fdf2dc0161ed59424ae3d622a379c4c75e34cc43f5c2eb4fca15f25",
+      "valid": true
+    },
+    {
+      "date": "2025-08-28",
+      "eligible": 50,
+      "evaluated": 5214,
+      "selected": 20,
+      "shortlist_sha256": "9cffcaa8f7855fcf203ff6df460b114bbc3f0f57361a18ee56a9b65f1abd0fde",
+      "valid": true
+    },
+    {
+      "date": "2025-09-02",
+      "eligible": 28,
+      "evaluated": 5213,
+      "selected": 20,
+      "shortlist_sha256": "8a0c75b15763e97524b9d1efe336d5e7c2327134c0858a3aa2e0e0f578478f66",
+      "valid": true
+    },
+    {
+      "date": "2025-09-09",
+      "eligible": 47,
+      "evaluated": 5107,
+      "selected": 20,
+      "shortlist_sha256": "2593818d52b02908bb5ea2ab775ab636e7ab9f3cb9a061d6eedcfc2211519284",
+      "valid": true
+    },
+    {
+      "date": "2025-09-12",
+      "eligible": 32,
+      "evaluated": 5222,
+      "selected": 20,
+      "shortlist_sha256": "bba1533e6b3fd7a82d311ab4ab58301ad3c676dc38b897b000ac4b63702e67f5",
+      "valid": true
+    },
+    {
+      "date": "2025-09-15",
+      "eligible": 78,
+      "evaluated": 5222,
+      "selected": 20,
+      "shortlist_sha256": "89d0e68b2de7dccf50e47dc5d1ab6f7f3bdae4fca6df6b1f5cfb13e350e05adb",
+      "valid": true
+    },
+    {
+      "date": "2025-09-19",
+      "eligible": 93,
+      "evaluated": 5227,
+      "selected": 20,
+      "shortlist_sha256": "55b4c26541422cdbd2f393d75ff880e90823eeeaf342f2d611ae8ca3c58236c0",
+      "valid": true
+    },
+    {
+      "date": "2025-09-23",
+      "eligible": 53,
+      "evaluated": 5226,
+      "selected": 20,
+      "shortlist_sha256": "ae3d26318eaf6322a44218882ec66ad15a91566cc084b25b3158a511ecafdf43",
+      "valid": true
+    },
+    {
+      "date": "2025-09-24",
+      "eligible": 39,
+      "evaluated": 5226,
+      "selected": 20,
+      "shortlist_sha256": "9c5cb51d73e3ab76c960dfc5d86f949f1641d56ed6416cc2b4827b05e6d7dc90",
+      "valid": true
+    },
+    {
+      "date": "2025-09-26",
+      "eligible": 28,
+      "evaluated": 5226,
+      "selected": 20,
+      "shortlist_sha256": "e85b4ed465ffa4339f3f931dfe2b53a0104beb9598b37a514cb9e820f67a1d18",
+      "valid": true
+    },
+    {
+      "date": "2025-09-30",
+      "eligible": 29,
+      "evaluated": 5226,
+      "selected": 20,
+      "shortlist_sha256": "c6088c9098cb3c758d34b8204ba0335605e2a74db0b3c0a5473218b3054e8add",
+      "valid": true
+    },
+    {
+      "date": "2025-10-01",
+      "eligible": 51,
+      "evaluated": 5228,
+      "selected": 20,
+      "shortlist_sha256": "0e43f65958cf1868e662f4707bef51f32322391ebdcbdccb2f49c8fadd69a9ff",
+      "valid": true
+    },
+    {
+      "date": "2025-10-02",
+      "eligible": 62,
+      "evaluated": 5231,
+      "selected": 20,
+      "shortlist_sha256": "2263f326354ffaa45dbe6bc419c553d4f07ed09c133733b8d42890ebbd2aca87",
+      "valid": true
+    },
+    {
+      "date": "2025-10-06",
+      "eligible": 76,
+      "evaluated": 5230,
+      "selected": 20,
+      "shortlist_sha256": "82e5906a0d107e56058f1f27d7ce9c914ce7c33a9332b57b60355e9dfd7a3c75",
+      "valid": true
+    },
+    {
+      "date": "2025-10-09",
+      "eligible": 54,
+      "evaluated": 5231,
+      "selected": 20,
+      "shortlist_sha256": "0e8ca808601395479409f7fd80fd63fbe18ae60041a7315c46687082f047d86a",
+      "valid": true
+    },
+    {
+      "date": "2025-10-13",
+      "eligible": 139,
+      "evaluated": 5225,
+      "selected": 20,
+      "shortlist_sha256": "50abc56a4122f73a9a2a0477bf8cbce267dd8f8eac558e57243c79918a194a0e",
+      "valid": true
+    },
+    {
+      "date": "2025-10-16",
+      "eligible": 63,
+      "evaluated": 5227,
+      "selected": 20,
+      "shortlist_sha256": "3713baa08817916af4154e4c75edf131254890229afc20b7f4f10d8095073e3d",
+      "valid": true
+    },
+    {
+      "date": "2025-10-21",
+      "eligible": 27,
+      "evaluated": 5229,
+      "selected": 20,
+      "shortlist_sha256": "ee1eb80112388f662fd1c014746edfa4859849b74f734f2fa6a93b5adde01ca0",
+      "valid": true
+    },
+    {
+      "date": "2025-10-28",
+      "eligible": 32,
+      "evaluated": 5233,
+      "selected": 20,
+      "shortlist_sha256": "eeecda16c9f2a64fc6437ceeb2c9c2b8bc9fb777130595e227f25e6334c8413b",
+      "valid": true
+    },
+    {
+      "date": "2025-11-04",
+      "eligible": 30,
+      "evaluated": 5231,
+      "selected": 20,
+      "shortlist_sha256": "0dc1155d6a30ddc8aa38c79e44c1a8b454765d07f7de017493d1baba8a005f26",
+      "valid": true
+    },
+    {
+      "date": "2025-11-10",
+      "eligible": 90,
+      "evaluated": 5236,
+      "selected": 20,
+      "shortlist_sha256": "baf0322586cc62b1c7befd00b0389ff7221dd0758c1d700db33ee4b1db6feac3",
+      "valid": true
+    },
+    {
+      "date": "2025-11-13",
+      "eligible": 34,
+      "evaluated": 5238,
+      "selected": 20,
+      "shortlist_sha256": "dcd6e4fb818e0306c03f8a0abc67ff2d4ffeb0e895cbe880999c94a77b7bbfac",
+      "valid": true
+    },
+    {
+      "date": "2025-11-20",
+      "eligible": 123,
+      "evaluated": 5244,
+      "selected": 20,
+      "shortlist_sha256": "d5b2f7c3fe62c1353d33f27d761e317b9ef55adda36d69fb7ceb3af2355eb1b3",
+      "valid": true
+    },
+    {
+      "date": "2025-12-02",
+      "eligible": 44,
+      "evaluated": 5238,
+      "selected": 20,
+      "shortlist_sha256": "6bd01ebe0e29ee4a9bfbce1b1909d046ad4f9e7fb2bda5682e2923b1da8b99d0",
+      "valid": true
+    },
+    {
+      "date": "2025-12-05",
+      "eligible": 46,
+      "evaluated": 5245,
+      "selected": 20,
+      "shortlist_sha256": "d8e341d3c0d700622cbe93563eb67ace62d82a0f0b531ade5198c24d6e22b675",
+      "valid": true
+    },
+    {
+      "date": "2025-12-08",
+      "eligible": 65,
+      "evaluated": 5246,
+      "selected": 20,
+      "shortlist_sha256": "1d9cb31b73ccbff1955505e811da6619e27835faf26539a20bcb20f45e7ff9a2",
+      "valid": true
+    },
+    {
+      "date": "2025-12-09",
+      "eligible": 49,
+      "evaluated": 5245,
+      "selected": 20,
+      "shortlist_sha256": "38c57586e87c1d650f6293c06cfbc2bb38df65d13ba2d8a60debc86ff6666781",
+      "valid": true
+    },
+    {
+      "date": "2025-12-11",
+      "eligible": 72,
+      "evaluated": 5242,
+      "selected": 20,
+      "shortlist_sha256": "e1d0d26a7eed6efca54901d116d2936c2bb3a02352ecb2fea5df2b9ad54e6c4e",
+      "valid": true
+    },
+    {
+      "date": "2025-12-12",
+      "eligible": 57,
+      "evaluated": 5240,
+      "selected": 20,
+      "shortlist_sha256": "15ea4e102bb72644d062afac58921df5be4744c7b0daeec276488209a3d085bc",
+      "valid": true
+    },
+    {
+      "date": "2025-12-15",
+      "eligible": 87,
+      "evaluated": 5243,
+      "selected": 20,
+      "shortlist_sha256": "06b4562adc6171d14cba20929a3d74176da7ce0dc8381865f9aa4428eaae78e1",
+      "valid": true
+    },
+    {
+      "date": "2025-12-16",
+      "eligible": 56,
+      "evaluated": 5242,
+      "selected": 20,
+      "shortlist_sha256": "0c198902db5bdaca75498e90d0d241cf04796fd8aad215939fb5d0d8299bbb2a",
+      "valid": true
+    },
+    {
+      "date": "2025-12-18",
+      "eligible": 138,
+      "evaluated": 5243,
+      "selected": 20,
+      "shortlist_sha256": "c55e7ce0286f6f09380861af6e8c76296e434d8989a4d5039b6e516e2aad3174",
+      "valid": true
+    },
+    {
+      "date": "2025-12-19",
+      "eligible": 220,
+      "evaluated": 5243,
+      "selected": 20,
+      "shortlist_sha256": "613b7205a1cb2282b08f60139bbe72f7ce209a239f5284063486fda7904df695",
+      "valid": true
+    },
+    {
+      "date": "2025-12-22",
+      "eligible": 102,
+      "evaluated": 5241,
+      "selected": 20,
+      "shortlist_sha256": "669d3dc735a8ae2644e4346f13848e4b30a9916ef05222dba1760bfe3de2495f",
+      "valid": true
+    },
+    {
+      "date": "2025-12-23",
+      "eligible": 23,
+      "evaluated": 5238,
+      "selected": 20,
+      "shortlist_sha256": "6c8fa36d344abdc084410839ae6ab44bd3061d14e5544a3ecef8908125e30c2b",
+      "valid": true
+    },
+    {
+      "date": "2025-12-26",
+      "eligible": 3,
+      "evaluated": 5234,
+      "selected": 3,
+      "shortlist_sha256": "778b05bdf0cb8e21dee4135ab4f1dba872470e95204068f02aa275ad3fd5d195",
+      "valid": true
+    },
+    {
+      "date": "2025-12-30",
+      "eligible": 13,
+      "evaluated": 5231,
+      "selected": 13,
+      "shortlist_sha256": "abb6e0671915f2b0449243566bcc4449c1926c517ddca20daea6a7a39604deed",
+      "valid": true
+    },
+    {
+      "date": "2025-12-31",
+      "eligible": 5,
+      "evaluated": 5231,
+      "selected": 5,
+      "shortlist_sha256": "a915b41ff7950b9236ced2a032bca23e52d4f169cf50fb6fa4de6d56c4433f2d",
+      "valid": true
+    }
+  ],
+  "detail_sha256": "332cf47e88353659c433e8fcfdea58612eb93fa0feabcbe1fa0f495eccf7a5de",
+  "invariants": {
+    "broker_actions_allowed": false,
+    "canonical_source_observations_verified": true,
+    "denominators_recomputed": true,
+    "frozen_dates_unchanged": true,
+    "production_strategy_pre_collection_attested": true,
+    "rankings_recomputed": true,
+    "raw_source_metrics_recomputed": true,
+    "security_master_population_recomputed": true,
+    "session_calendar_pre_collection_attested": true,
+    "shortlist_hashes_recomputed": true,
+    "source_artifacts_rehashed": true,
+    "source_collection_post_freeze_attested": true,
+    "split_actions_pre_collection_attested": true,
+    "split_adjustments_recomputed": true,
+    "strategy_rules_changed": false,
+    "summary_source_collection_bound": true,
+    "threshold_dispositions_recomputed": true
+  },
+  "manifest_sha256": "1a37bc3d141dff3741bc965303e490eaa59d8f76071b9e5d1bd2b301eb878926",
+  "production_strategy": {
+    "canonical_rules_hash": "00c3aa83754f880ec67d29b7446e43ffccb23c2fb0c939bc4927909f8b4b5867",
+    "pre_collection_commit_verified": true,
+    "scanner_fields_match": true,
+    "strategy_version": "2026-07-15-orb-v3"
+  },
+  "schema_version": 1,
+  "session_calendar": {
+    "pre_collection_commit_verified": true,
+    "provider_dates_verified": true,
+    "sessions": 394,
+    "sha256": "f01f8afa9cf0ee1ca072011ccc411d820338a6a9902f7d152a4539a96c32d3fd"
+  },
+  "source_collection": {
+    "all_captured_after_freeze": true,
+    "canonical_day_merges": 113999,
+    "delta_symbols_requested": 11040,
+    "derived_rows": 5405301,
+    "earliest_captured_at": "2026-07-20T08:12:45.005857+00:00",
+    "inherited_derived_rows": 4952539,
+    "provider_requests": 3205,
+    "provider_retries": 0,
+    "reused_sessions": 240
+  },
+  "source_sessions_verified": 262,
+  "split_actions": {
+    "events": 1528,
+    "manifest_bound": true,
+    "pre_collection_commit": "7db33b0aeb555b590c73a7c1a7eeeba397437a4e",
+    "pre_collection_commit_verified": true,
+    "sha256": "fa8d79e0396d6c1c2e4f792b5948d70054f80f325c2f1e76a8e1b61ec3f8e091"
+  },
+  "split_adjusted_evaluations": 159,
+  "status": "INSPECTED",
+  "summary_sha256": "2426a9057b5f3072ea4a8d8aa0b41dc4f440d038297f58867b6ca2eb7363cbf9",
+  "total_eligible": 4840,
+  "total_evaluated": 516990,
+  "total_selected": 1871,
+  "valid": true
+}
