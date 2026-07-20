@@ -96,6 +96,14 @@ immutable shared-rule bytes, implementation and dependency versions, the
 20-GiB reserve, and zero extraction or review artifacts. Commit and push this
 zero-state before parsing any source text.
 
+The frozen extraction and deterministic review are now independently rebuilt.
+They produce 21 verified-positive pairs, 52 verified-conflict pairs, seven
+verified-negative pairs, 67 nonmaterial pairs, 365 unresolved source-bearing
+pairs, and 1,394 no-source pairs. All 627 joins and 1,906 pair dispositions
+reconcile exactly. The positive-source gate passes, so the machine transition is
+DEVELOPMENT_ACQUISITION; the outcome contract remains forbidden because zero
+complete unchanged-v3 non-return survivors have yet been independently proven.
+
 ## Frozen Result
 
 Manifest `04cb2640...164c2b` binds all 100 dates and 1,906 selected pairs to

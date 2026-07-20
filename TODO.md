@@ -157,6 +157,11 @@ Manifest 1fa8b20e...05d81c is now FROZEN_READY for all 1,906 pairs, 597
 documents, and 627 joins with zero extraction or review artifacts. Commit and
 push the manifest, aggregate status, registry event, and durable finding before
 running extract, review, and independent inspection.
+The inspected frozen review now has 21 verified-positive pairs and transitions
+to DEVELOPMENT_ACQUISITION with outcomes still locked. Commit and push the
+aggregate semantics result, then freeze and run the remaining unchanged-v3
+non-return qualification for those exact positives. Require at least 20 complete
+survivors before any outcome contract.
 
 ## Completed 2026-07-19
 
