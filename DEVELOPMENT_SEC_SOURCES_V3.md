@@ -147,6 +147,12 @@ from the pushed implementation. It binds private graph hash
 reserve, and zero target document responses. Commit and push the manifest before
 its separate network-free inspection; it authorizes no document request yet.
 
+Independent inspection now rebuilds manifest `11162139...86daf` as
+`FROZEN_READY` with the same 557 requests, 583 joins, 499 pairs, private hashes,
+source lineage, implementation hashes, capacity, privacy, and outcome locks.
+The v3 document response namespace remains empty. Provider access still requires
+a separately committed and pushed raw-document collector.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:

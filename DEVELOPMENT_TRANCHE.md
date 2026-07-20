@@ -127,6 +127,11 @@ accession-bound requests and all 583 source-specific joins across 499 pairs,
 with zero duplicate observations and zero target responses. Commit and push the
 manifest before its network-free inspection; document access remains blocked.
 
+Independent inspection now rebuilds that manifest `FROZEN_READY` with all 557
+requests, 583 joins, 499 affected pairs, and zero responses. Only a separately
+committed and pushed collector may access document bodies; semantics and outcomes
+remain locked.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated
