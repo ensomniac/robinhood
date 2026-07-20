@@ -164,3 +164,10 @@ cache behavior, private request rows, per-CIK failures, staged accession-bound
 documents, and a zero-response preflight. The implementation must be committed
 before freezing the exact request graph, and that manifest must be committed
 before any SEC target request.
+
+SEC manifest `ecabc373...83d264` now independently resolves all 1,906 pairs,
+including seven listing-scoped observations, retains one missing-CIK terminal
+row, and freezes 605 unique submissions requests. The private identity and
+request hashes rebuild exactly and the dataset-specific response namespace is
+empty. Commit and push this manifest and public zero-state before collecting
+the first submissions response.

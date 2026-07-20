@@ -91,7 +91,10 @@ network-free boundary: exact point-in-time master matching, retained missing
 CIKs, a private SEC submissions graph, frozen forms/window/pacing/cache/error
 semantics, staged document manifests, and zero target responses. Commit and push
 this implementation before freezing and publishing the exact SEC request
-manifest; do not contact SEC before that second commit.
+manifest. Manifest `ecabc373...83d264` now rebuilds all 1,906 master matches,
+1,905 CIK-bearing pairs, one missing-CIK row, seven listing-scoped observations,
+and 605 unique submissions requests with zero target responses. Commit and push
+the manifest, status, registry event, and documentation before contacting SEC.
 
 ## Completed 2026-07-19
 

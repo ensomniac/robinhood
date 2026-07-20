@@ -3,8 +3,8 @@
 Planned dataset:
 `dataset-development-sec-primary-sources-2026-07-19-v2`
 
-Status: identity/query freezer and independent inspector implemented; no SEC
-target response has been requested or read by this dataset
+Status: manifest `ecabc373...83d264` independently rebuilt `FROZEN_READY`; no
+SEC target response has been requested or read by this dataset
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -64,3 +64,19 @@ result for every unique CIK, and keep all response bodies outside Git.
 
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
+
+## Frozen Result
+
+Manifest `ecabc373...83d264` resolves all 1,906 selected pairs exactly against
+the attested point-in-time master. It retains 1,905 pairs with a CIK, one
+explicit missing-CIK row, seven listing-scoped pair observations, and a private
+605-request SEC submissions graph. Independent inspection rebuilt private
+identity hash `3dcd96ea...7bc7f6`, request-graph hash
+`5a48af6c...c31653`, and daily aggregate hash
+`370ca3e3...a93d95e` under unchanged v3 rules hash
+`00c3aa83...b5867`.
+
+The dataset-specific response namespace remains empty. No submissions,
+supplementary submissions file, primary document, selected-symbol detail, or
+outcome was requested or read. The manifest and zero-state must be committed
+and pushed before stage-one SEC submissions collection begins.
