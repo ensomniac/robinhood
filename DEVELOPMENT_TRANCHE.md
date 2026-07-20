@@ -2,9 +2,9 @@
 
 Planned dataset: `dataset-development-tranche-2026-07-20-v3`
 
-Status: v3 selection manifest `792e3e53...7d8305` is independently inspected
-`FROZEN_READY`; no v3 reference request, provider request, or target outcome
-exists
+Status: all 611 v3 SEC submissions requests are independently inspected with
+zero failures; supplemental files, primary documents, semantics, and outcomes
+remain locked
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -95,6 +95,15 @@ CIK-present pairs, nine retained missing-CIK rows, 611 unique submissions
 requests, and zero target responses. Independent inspection rebuilt the graph
 `FROZEN_READY`; provider access remains gated on a separately committed and
 pushed manifest-bound collector.
+
+That pushed collector has now completed and independently rebuilt all 611
+requests: 552 shared-cache hits, 59 SEC downloads, zero failures, zero pending
+requests, and zero substitutions over 92,605,384 bytes. Precise acceptance-time
+filtering retained 546 candidate documents, 572 pair/filing joins, and 490 pairs
+with at least one candidate. These are source-discovery results only. The 677
+historical supplemental descriptors require an exact window-overlap manifest,
+and no supplemental file, primary document, source semantics, selected-symbol
+detail, or outcome has been accessed.
 
 ## Prior V2 Selection
 

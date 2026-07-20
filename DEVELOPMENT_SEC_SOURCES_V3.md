@@ -2,8 +2,8 @@
 
 Planned dataset: `dataset-development-sec-primary-sources-2026-07-20-v3`
 
-Status: manifest `8dc5996b...464628` is independently inspected
-`FROZEN_READY`; no SEC target response has been requested or read
+Status: all 611 frozen SEC submissions requests are independently inspected;
+supplemental files, primary documents, semantics, and outcomes remain locked
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -71,6 +71,20 @@ requests. Its inspector independently reparses and rehashes every successful
 raw response and rebuilds aggregate request, filing, join, and failure counts.
 It cannot fetch supplemental files or primary documents, publish private source
 identity, classify catalyst semantics, or access outcomes.
+
+The pushed collector completed all 611 frozen requests with 552 shared-cache
+hits, 59 SEC downloads, zero failures, zero pending requests, and zero
+substitutions. Independent inspection rehashed and reparsed 92,605,384 source
+bytes and rebuilt 546 candidate-document requests, 572 pair/filing joins, and
+490 pairs with at least one time-window candidate. The payloads expose 677
+historical supplemental-file descriptors; they are discovery inputs, not
+authorized requests. No supplemental file, primary document, source semantic,
+selected-symbol detail, or outcome was accessed or asserted.
+
+The next stage must independently reduce those 677 descriptors to exact frozen
+pair-window overlap and commit that request graph before any supplemental SEC
+access. Candidate documents remain unclassified until their exact union is
+separately frozen, collected, and reviewed under the source-semantics contract.
 
 ## Runbook
 
