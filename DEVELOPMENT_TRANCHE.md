@@ -36,6 +36,23 @@ provider order, reserve projection, and zero substitution. Independent
 inspection rebuilt the selection and all exclusion surfaces without overlap or
 target-outcome access.
 
+All 100 frozen Massive dated identity snapshots then completed without retry,
+failure, substitution, target-price access, or target-outcome access. The v3
+point-in-time master contains 6,064 records across 5,923 instruments, including
+48 listing-scoped records and 1,303 fallback identities, with hash
+`110210d2...c3ab1`. The exact 2024-12-10 through 2025-12-31 split query retained
+1,528 events with hash `fa8d79e0...f8e091`.
+
+Scanner manifest `1a37bc3d...878926` freezes all 100 targets, 262 required
+sessions, a 5,826-symbol point-in-time union, raw Alpaca SIP 15-minute regular
+bars and exact 09:30-09:34 minute bars, the attested calendar, v3 selection,
+master, splits, unchanged production rules, canonical store, whole-provider
+fidelity, and zero substitution. It binds exact-compatible reuse of 240 v2
+sessions while requiring delta-symbol acquisition and 22 additional sessions.
+Its independently checked zero-state has no ready market session, request,
+retry, derived row, canonical merge, or target outcome. This manifest must be
+committed and pushed before the first market request.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated
