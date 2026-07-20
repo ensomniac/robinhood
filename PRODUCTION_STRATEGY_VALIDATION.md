@@ -168,6 +168,16 @@ manifest `cded09e9...e48b6` now independently rebuilds that exact boundary as
 `FROZEN_READY`; provider access remains false until the manifest is committed
 and pushed.
 
+Provider collection and independent inspection are now complete for that
+manifest. All 102 pairs reached one terminal pre-entry disposition through
+109,217 chronological one-second windows: 75 have complete raw pre-entry
+inputs and 27 have no clean cross before 10:30. The inspector rebuilt every
+pair hash, chronological cursor, final-decision boundary, implementation and
+manifest binding, privacy boundary, and outcome lock. No post-decision row or
+target outcome was accessed. These 75 records are input-ready only; a separate
+frozen network-free qualification must still prove at least 20 complete
+unchanged-v3 survivors before any outcome contract is legal.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

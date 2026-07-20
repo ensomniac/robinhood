@@ -12,9 +12,10 @@ Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 Second-tranche dataset:
 `dataset-development-non-return-qualification-2026-07-20-tranche-v3-v1`
 
-Second-tranche status: manifest `7d5be928...db829` independently rebuilt
-`FROZEN_READY`; the exact 102 combined source-positive pairs across 52 dates
-remain outcome-blind with zero target artifacts and no post-entry access
+Second-tranche status: collector manifest `cded09e9...e48b6` independently
+rebuilt `COLLECTION_INSPECTED`; all 102 combined source-positive pairs reached a
+terminal pre-entry disposition through 109,217 chronological one-second
+windows, with 75 complete raw input records and 27 no-cross paths
 
 ## Purpose
 
@@ -152,6 +153,22 @@ zero artifacts, and its frozen maximum is 336,600 chronological one-second
 windows. Collector manifest `cded09e9...e48b6` now independently rebuilds that
 boundary as `FROZEN_READY`, with no provider access, target artifact, post-entry
 access, or outcome. Commit and push this inspected manifest before collection.
+
+That collection is now independently `COLLECTION_INSPECTED`. All 102 pairs
+reached one terminal disposition through 109,217 chronological one-second
+windows: 75 `PREENTRY_INPUTS_COLLECTED` and 27
+`NO_CLEAN_CROSS_BEFORE_CUTOFF`. Inspection rebuilt every pair hash, search
+cursor, final-decision boundary, implementation and manifest identity, privacy
+boundary, and outcome lock. No provider row after a final decision and no
+target outcome was observed or derived. The private index hash is
+`a99ae96f...e3c59`.
+
+The 75 complete records are raw input readiness, not unchanged-v3 survivors.
+A separately frozen network-free qualification must still reconstruct every
+historically available production gate and independently inspect aggregate
+attrition. Outcomes remain inaccessible until that stage proves at least 20
+complete unchanged-v3 survivors; otherwise the campaign remains in disjoint
+`DEVELOPMENT_ACQUISITION`.
 
 Collector status: manifest `b3645a88...fb8438` independently rebuilt
 `COLLECTION_INSPECTED`. All 21 pairs reached one terminal disposition through
