@@ -244,6 +244,14 @@ rebuild and publish that zero-response state after this manifest is committed
 and pushed; SEC access remains prohibited until the inspected state is also
 committed and pushed.
 
+The separate inspector now rebuilds manifest `dd47c424...f97603` as
+`FROZEN_READY`: all 377 pairs, 436 joins, 417 requests, three graph hashes,
+upstream private lineage, pushed implementation, request and review rules,
+capacity, privacy, and outcome locks match. The private target namespace still
+contains one frozen selection and zero terminal wrappers, collection indexes,
+or reviewed results. Commit and push this inspected aggregate and registry
+transition before running `collect`.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
