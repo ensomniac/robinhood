@@ -116,6 +116,12 @@ nine/668/677 counts, exact private graph hashes, and zero responses. Only a
 separately committed and pushed nine-request collector may contact SEC; primary
 documents, semantics, selected-symbol detail, and outcomes remain locked.
 
+That collector has now completed and independently rebuilt all nine requests:
+three cache hits, six downloads, zero failures, and 3,090,677 rehashed bytes. It
+adds 11 time-window document candidates and 11 joins across nine pairs. Candidate
+presence is not a verified catalyst; no primary document, semantic classification,
+selected-symbol detail, or outcome has been accessed.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated

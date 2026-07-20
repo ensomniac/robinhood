@@ -120,6 +120,15 @@ Primary documents, semantic classification, private identities, and outcomes
 remain inaccessible. Commit and push the collector and tests before provider
 access.
 
+The pushed collector completed all nine requests with three shared-cache hits,
+six SEC downloads, zero failures, zero pending requests, and zero substitutions.
+Independent inspection rehashed 3,090,677 raw bytes and retained 11 additional
+time-window document candidates and 11 joins across nine pairs. These candidates
+remain unclassified; no primary document, source semantic, selected-symbol
+detail, or outcome was accessed. The next network-free stage must union these
+with the 546 main-submissions candidates, preserve every pair join, and freeze
+the exact accession-bound document graph before any document request.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
