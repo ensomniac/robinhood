@@ -149,7 +149,9 @@ and all provider/market-data dependencies. A read-only preflight proves the
 base manifest `7d5be928...db829` is `FROZEN_READY`, the private selection has
 102 pairs at request graph `d1f13baf...12f00`, the new collector namespace has
 zero artifacts, and its frozen maximum is 336,600 chronological one-second
-windows. Commit and push the adapter before freezing its provider contract.
+windows. Collector manifest `cded09e9...e48b6` now independently rebuilds that
+boundary as `FROZEN_READY`, with no provider access, target artifact, post-entry
+access, or outcome. Commit and push this inspected manifest before collection.
 
 Collector status: manifest `b3645a88...fb8438` independently rebuilt
 `COLLECTION_INSPECTED`. All 21 pairs reached one terminal disposition through

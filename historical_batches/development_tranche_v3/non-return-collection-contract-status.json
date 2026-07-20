@@ -1,0 +1,23 @@
+{
+  "dataset_id": "dataset-development-non-return-preentry-collection-2026-07-20-tranche-v3-v1",
+  "inspected": true,
+  "inspection": {
+    "base_lineage_rebuilt": true,
+    "implementation_hashes_rebuilt": true,
+    "privacy_and_outcome_locks_rebuilt": true,
+    "provider_configuration_rebuilt": true,
+    "request_boundaries_rebuilt": true,
+    "valid": true,
+    "zero_target_artifacts_rechecked": true
+  },
+  "manifest_sha256": "cded09e9d21e5bc84aae56b3fb764c003d9e4e2c6e7e4d510977d1b253ee48b6",
+  "maximum_one_second_trade_windows": 336600,
+  "positive_pairs": 102,
+  "post_entry_data_access_allowed": false,
+  "provider_access_performed": false,
+  "schema_version": 1,
+  "status": "FROZEN_READY",
+  "symbols_dates_instrument_ids_raw_rows_and_requests_public": false,
+  "target_artifacts": 0,
+  "target_outcomes_observed_or_derived": false
+}

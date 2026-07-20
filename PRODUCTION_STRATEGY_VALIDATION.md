@@ -163,7 +163,10 @@ binds both collector implementations, the v3 source contract, exact 102-pair
 lineage, private namespace, tranche-v3 outputs, raw Alpaca SIP fidelity, full
 calendar and split basis, 20-GiB reserve, aggregate privacy, and the closed
 outcome lock. Read-only preflight finds zero target artifacts; the adapter must
-be committed and pushed before its own manifest can be frozen.
+be committed and pushed before its own manifest can be frozen. Collector
+manifest `cded09e9...e48b6` now independently rebuilds that exact boundary as
+`FROZEN_READY`; provider access remains false until the manifest is committed
+and pushed.
 
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
