@@ -52,6 +52,13 @@ trades, and positive 10- and 20-bps stress results with profit factor at least
 1.20 and drawdown at most 6R. Rule, capture, or evidence violations must be zero.
 Every no-trade, missed fill, unavailable row, and reject stays in denominators.
 
+`challenger_orb_retest.py` is the outcome-blind trigger implementation. It
+requires complete causal trade and completed-bar windows, excludes the initial
+break minute from retest eligibility, treats the first later touch as the only
+hold test, requires condition-valid continuous-sale prints for both breaks, and
+requires the +10-second decision snapshot to finish by 10:30. Interpolation or
+an incomplete window fails closed.
+
 Failure retires this exact challenger without repair on the sample. Passing
 development only earns an untouched confirmation contract; it does not change
 production rules or maturity.

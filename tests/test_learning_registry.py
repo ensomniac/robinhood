@@ -71,6 +71,8 @@ class LearningRegistryTests(unittest.TestCase):
     def test_repository_registries_audit(self):
         result = audit_registries()
         datasets = current_entities("datasets")
+        experiments = current_entities("experiments")
+        strategies = current_entities("strategies")
 
         self.assertTrue(result["valid"])
         self.assertEqual(result["datasets"]["entities"], len(datasets))
@@ -82,8 +84,10 @@ class LearningRegistryTests(unittest.TestCase):
                 "dataset-production-scanner-replay-2026-07-19-v4",
             }.issubset(datasets)
         )
-        self.assertEqual(result["experiments"]["entities"], 2)
-        self.assertEqual(result["strategies"]["entities"], 2)
+        self.assertEqual(result["experiments"]["entities"], len(experiments))
+        self.assertIn("experiment-catalyst-orb-retest-v1", experiments)
+        self.assertEqual(result["strategies"]["entities"], len(strategies))
+        self.assertIn("strategy-catalyst-orb-retest-v1", strategies)
 
 
 if __name__ == "__main__":
