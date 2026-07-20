@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 
 import challenger_orb_retest_acquisition as acquisition
+import challenger_orb_retest_acquisition_inspection as acquisition_inspection
+from learning_data import security_master_sha256
 
 
 def test_source_rules_lock_primary_semantics():
@@ -81,6 +83,110 @@ def test_split_attestation_rebuilds_exact_frozen_range(tmp_path, monkeypatch):
         "execution_date_gte": "2023-01-04",
         "execution_date_lte": "2024-12-24",
     }
+
+
+def test_independent_input_inspection_rehashes_private_artifacts(tmp_path, monkeypatch):
+    day = "2024-01-02"
+    reference_root = tmp_path / "reference"
+    reference_root.mkdir()
+    snapshot = reference_root / f"{day}.json.gz"
+    with gzip.open(snapshot, "wt", encoding="utf-8") as target:
+        json.dump([{"ticker": "ABC"}], target)
+    master = tmp_path / "security-master.jsonl"
+    master.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "record_id": "record-one",
+                "instrument_id": "instrument-one",
+                "symbol": "ABC",
+                "primary_exchange": "NASDAQ",
+                "security_type": "COMMON",
+                "valid_from": day,
+                "valid_to": day,
+                "observed_dates": [day],
+                "status": "ACTIVE",
+                "recorded_at": "2026-07-20T00:00:00+00:00",
+                "provenance_paths": ["historical_batches/test.json"],
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    master_source = tmp_path / "security-master-source.json"
+    master_source.write_text(
+        json.dumps(
+            {
+                "requested_dates": [day],
+                "snapshots": [
+                    {
+                        "date": day,
+                        "rows": 1,
+                        "sha256": acquisition._sha256_file(snapshot),
+                    }
+                ],
+                "security_master": {
+                    "sha256": security_master_sha256(master),
+                    "records": 1,
+                    "instruments": 1,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    splits = tmp_path / "splits.json.gz"
+    with gzip.open(splits, "wt", encoding="utf-8") as target:
+        json.dump(
+            [
+                {
+                    "execution_date": "2023-06-01",
+                    "ticker": "ABC",
+                    "split_from": 1,
+                    "split_to": 2,
+                }
+            ],
+            target,
+        )
+    split_source = tmp_path / "split-source.json"
+    split_source.write_text(
+        json.dumps(
+            {
+                "source": {
+                    "provider": "Massive",
+                    "endpoint": "https://api.massive.com/stocks/v1/splits",
+                    "query_range": {
+                        "execution_date_gte": "2023-01-04",
+                        "execution_date_lte": "2024-12-24",
+                    },
+                },
+                "artifact": {
+                    "events": 1,
+                    "sha256": acquisition._sha256_file(splits),
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    store_root = tmp_path / "store"
+    monkeypatch.setattr(acquisition, "_selection", lambda: {"selected_dates": [day]})
+    monkeypatch.setattr(acquisition, "REFERENCE_ROOT", reference_root)
+    monkeypatch.setattr(acquisition, "SECURITY_MASTER", master)
+    monkeypatch.setattr(acquisition, "SECURITY_SOURCE", master_source)
+    monkeypatch.setattr(acquisition, "SPLITS", splits)
+    monkeypatch.setattr(acquisition, "SPLIT_SOURCE", split_source)
+    monkeypatch.setattr(
+        acquisition_inspection.HistoricalStoreConfig,
+        "from_env",
+        lambda _path: type("Config", (), {"root": store_root, "min_free_bytes": 0})(),
+    )
+
+    result = acquisition_inspection.inspect_inputs(env_path=tmp_path / ".env")
+    assert result["snapshot_count"] == 1
+    assert result["security_master_records"] == 1
+    assert result["split_action_events"] == 1
+    assert result["pre_freeze_target_market_artifacts"] == 0
 
 
 def test_binding_rejects_drift_and_unsafe_path(tmp_path, monkeypatch):

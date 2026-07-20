@@ -440,15 +440,28 @@ def audit_inputs(*, env_path: Path) -> dict[str, Any]:
     source = _read_object(SECURITY_SOURCE)
     selection = _selection()
     expected_dates = sorted(selection["selected_dates"])
+    snapshot_rows = source.get("snapshots")
     if (
         source.get("requested_dates") != expected_dates
+        or source.get("source", {}).get("provider") != "Massive"
+        or source.get("source", {}).get("endpoint")
+        != scanner_replay.MASSIVE_REFERENCE_URL
+        or source.get("source", {}).get("query_contract")
+        != {
+            "market": "stocks",
+            "locale": "us",
+            "type": "CS",
+            "active": True,
+            "point_in_time_parameter": "date",
+        }
         or source.get("security_master", {}).get("path") != _repo_path(SECURITY_MASTER)
         or source.get("security_master", {}).get("sha256")
         != scanner_replay.security_master_sha256(SECURITY_MASTER)
-        or len(source.get("snapshots", [])) != len(expected_dates)
+        or not isinstance(snapshot_rows, list)
+        or [str(row.get("date") or "") for row in snapshot_rows] != expected_dates
     ):
         raise ChallengerAcquisitionError("security-master attestation differs")
-    for row in source["snapshots"]:
+    for row in snapshot_rows:
         day = str(row.get("date") or "")
         path = REFERENCE_ROOT / f"{day}.json.gz"
         if (
@@ -497,6 +510,7 @@ def freeze_scanner(*, env_path: Path) -> tuple[Path, dict[str, Any]]:
     _published(SECURITY_MASTER)
     _published(SECURITY_SOURCE)
     _published(SPLIT_SOURCE)
+    _published(INPUT_STATUS)
     audit_inputs(env_path=env_path)
     config = HistoricalStoreConfig.from_env(env_path)
     store = HistoricalDayStore(config.root)

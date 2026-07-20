@@ -136,8 +136,11 @@ outer challenger manifest additionally binds the one-trial hypothesis, causal
 retest trigger, primary-source ownership/timestamp/conflict rules, selected-name
 detail limits, provider priority, capacity reserve, and outcome lock. Its
 separate inspector independently rebuilds every binding and refuses a nonzero
-pre-freeze market state. Both manifests and their inspected status must be
-committed and pushed before `collect-scanner` can contact Alpaca.
+pre-freeze market state. It also reopens all 100 private identity snapshots,
+the public master, and the ignored split artifact to rebuild counts and hashes
+without trusting the controller's aggregate. Both manifests and their inspected
+status must be committed and pushed before `collect-scanner` can contact
+Alpaca.
 
 The dated reference collector is resumable under the frozen Massive query and
 pacing contract. After all 100 exact snapshots complete, build the challenger

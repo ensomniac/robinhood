@@ -13,7 +13,12 @@ from typing import Any
 
 import challenger_orb_retest_acquisition as acquisition
 from historical_store import HistoricalDayStore, HistoricalStoreConfig
-from learning_data import LearningDataError, load_frozen_dataset_contract
+from learning_data import (
+    LearningDataError,
+    load_frozen_dataset_contract,
+    load_security_master,
+    security_master_sha256,
+)
 from scanner_replay import ScannerReplayError
 
 
@@ -21,9 +26,124 @@ class ChallengerAcquisitionInspectionError(RuntimeError):
     """Independent acquisition reconstruction found a mismatch."""
 
 
+def inspect_inputs(*, env_path: Path) -> dict[str, Any]:
+    selection = acquisition._selection()
+    expected_dates = sorted(selection["selected_dates"])
+    source = acquisition._read_object(acquisition.SECURITY_SOURCE)
+    snapshot_rows = source.get("snapshots")
+    if (
+        source.get("requested_dates") != expected_dates
+        or not isinstance(snapshot_rows, list)
+        or [str(row.get("date") or "") for row in snapshot_rows] != expected_dates
+    ):
+        raise ChallengerAcquisitionInspectionError(
+            "security-master source dates differ"
+        )
+    snapshot_hashes: list[dict[str, Any]] = []
+    for public in snapshot_rows:
+        day = str(public["date"])
+        path = acquisition.REFERENCE_ROOT / f"{day}.json.gz"
+        rows = acquisition._read_gzip_array(path)
+        symbols = [str(row.get("ticker") or "").strip().upper() for row in rows]
+        observed = {
+            "date": day,
+            "rows": len(rows),
+            "sha256": acquisition._sha256_file(path),
+        }
+        if (
+            observed != public
+            or not rows
+            or any(not symbol for symbol in symbols)
+            or len(symbols) != len(set(symbols))
+        ):
+            raise ChallengerAcquisitionInspectionError(
+                f"reference snapshot differs: {day}"
+            )
+        snapshot_hashes.append(observed)
+
+    master = load_security_master(acquisition.SECURITY_MASTER)
+    master_public = source.get("security_master")
+    if not isinstance(master_public, Mapping) or any(
+        (
+            master_public.get("sha256")
+            != security_master_sha256(acquisition.SECURITY_MASTER),
+            master_public.get("records") != len(master),
+            master_public.get("instruments")
+            != len({str(row["instrument_id"]) for row in master}),
+        )
+    ):
+        raise ChallengerAcquisitionInspectionError("security master differs")
+
+    split_source = acquisition._read_object(acquisition.SPLIT_SOURCE)
+    split_rows = acquisition._read_gzip_array(acquisition.SPLITS)
+    split_artifact = split_source.get("artifact")
+    split_provider = split_source.get("source")
+    ordered: list[tuple[str, str]] = []
+    for row in split_rows:
+        execution = str(row.get("execution_date") or "")
+        ticker = str(row.get("ticker") or "").strip().upper()
+        try:
+            split_from = float(row["split_from"])
+            split_to = float(row["split_to"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ChallengerAcquisitionInspectionError(
+                "split action is malformed"
+            ) from exc
+        if (
+            not "2023-01-04" <= execution <= "2024-12-24"
+            or not ticker
+            or split_from <= 0
+            or split_to <= 0
+        ):
+            raise ChallengerAcquisitionInspectionError(
+                "split action is outside the frozen query"
+            )
+        ordered.append((execution, ticker))
+    if (
+        not split_rows
+        or ordered != sorted(ordered)
+        or not isinstance(split_artifact, Mapping)
+        or not isinstance(split_provider, Mapping)
+        or split_artifact.get("events") != len(split_rows)
+        or split_artifact.get("sha256") != acquisition._sha256_file(acquisition.SPLITS)
+        or split_provider.get("provider") != "Massive"
+        or split_provider.get("endpoint") != "https://api.massive.com/stocks/v1/splits"
+        or split_provider.get("query_range")
+        != {
+            "execution_date_gte": "2023-01-04",
+            "execution_date_lte": "2024-12-24",
+        }
+    ):
+        raise ChallengerAcquisitionInspectionError("split actions differ")
+
+    config = HistoricalStoreConfig.from_env(env_path)
+    store = HistoricalDayStore(config.root)
+    market_root = acquisition.alpaca.index_root(store, acquisition.SCANNER_DATASET_ID)
+    market_artifacts = (
+        sum(1 for path in market_root.rglob("*") if path.is_file())
+        if market_root.exists()
+        else 0
+    )
+    if market_artifacts or shutil.disk_usage(config.root).free < config.min_free_bytes:
+        raise ChallengerAcquisitionInspectionError(
+            "market zero-state or reserve differs"
+        )
+    return {
+        "snapshot_count": len(snapshot_hashes),
+        "snapshot_set_sha256": acquisition._sha256_json(snapshot_hashes),
+        "security_master_sha256": master_public["sha256"],
+        "security_master_records": len(master),
+        "split_actions_sha256": split_artifact["sha256"],
+        "split_action_events": len(split_rows),
+        "pre_freeze_target_market_artifacts": market_artifacts,
+        "capacity_ready": True,
+    }
+
+
 def inspect(
     *, manifest_path: Path, scanner_manifest_path: Path, env_path: Path
 ) -> dict[str, Any]:
+    input_evidence = inspect_inputs(env_path=env_path)
     manifest = load_frozen_dataset_contract(manifest_path)
     if manifest.get("dataset_id") != acquisition.DATASET_ID:
         raise ChallengerAcquisitionInspectionError(
@@ -124,6 +244,7 @@ def inspect(
         "requested_dates": len(requested),
         "required_sessions": market["required_session_count"],
         "pre_freeze_target_market_artifacts": sum(zero_state.values()),
+        "input_evidence": input_evidence,
         "source_rules_sha256": expected_source["rules_sha256"],
         "substitutions_allowed": False,
         "target_outcomes_observed_or_derived": False,
