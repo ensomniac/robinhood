@@ -101,6 +101,12 @@ idempotent resume, private filing/supplemental/document derivation, and an
 independent raw-response rebuild. Commit and push it before running the 605
 frozen submissions requests; primary documents and supplemental files remain
 forbidden until separately frozen.
+All 605 requests are now independently inspected: 456 cache hits, 149 SEC
+downloads, zero failures, 590 candidate documents, 620 pair/filing joins, and
+508 pairs with candidates. The main payloads exposed 689 historical
+supplemental descriptors, most outside the frozen four-day windows. Commit and
+push this inspected result, then implement, freeze, and commit an exact
+window-overlap supplemental manifest before requesting any supplemental file.
 
 ## Completed 2026-07-19
 

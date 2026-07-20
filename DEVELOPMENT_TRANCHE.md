@@ -171,3 +171,12 @@ row, and freezes 605 unique submissions requests. The private identity and
 request hashes rebuild exactly and the dataset-specific response namespace is
 empty. Commit and push this manifest and public zero-state before collecting
 the first submissions response.
+
+The committed submissions collector then completed and independently rebuilt
+all 605 CIK requests with 456 cache hits, 149 SEC downloads, zero failures,
+92,978,985 retained source bytes, 590 candidate documents, 620 pair/filing
+joins, and 508 pairs with at least one candidate. Primary-catalyst direction and
+materiality remain unclassified. The responses expose 689 historical
+supplemental descriptors; freeze only the exact target-window overlap before
+requesting any of them. No supplemental file, primary document, selected-market
+detail, or outcome was accessed.

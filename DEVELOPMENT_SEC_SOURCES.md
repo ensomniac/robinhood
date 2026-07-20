@@ -87,6 +87,21 @@ python3 development_sec_submissions.py inspect
 The derived supplemental and document graphs still require their own committed
 manifests before any additional provider request.
 
+## Inspected Submissions Result
+
+The committed collector completed all 605 frozen submissions requests: 456
+shared-cache hits, 149 SEC downloads, zero failures, zero pending requests, and
+zero substitutions. It retained and independently rehashed 92,978,985 source
+bytes. Precise acceptance-time filtering identified 590 unique candidate
+primary documents, 620 pair/filing joins, and 508 pairs with at least one
+candidate. These are discovery candidates, not verified positive catalysts.
+
+The main submissions responses also exposed 689 historical supplemental-file
+descriptors. A private preflight shows most are outside every target's four-day
+window; a separate network-free freezer must independently apply those frozen
+windows and commit the exact reduced supplemental graph before any such file is
+requested. No supplemental file, primary document, or outcome has been read.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 
