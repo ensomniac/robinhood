@@ -291,3 +291,11 @@ private positive-selection hash is `f7f2ba05...11783` and complete request-graph
 hash is `133765c4...77c5f`. A collector must bind this exact manifest and its
 split, calendar, tape, quote, bar, halt, privacy, and outcome-lock rules before
 provider access.
+
+The provider implementation is `development_non_return_collection.py`. It
+adds a second immutable manifest, requires both its source and that manifest at
+the pushed `HEAD`, checkpoints every one-second request for resumability, stores
+raw observations only under the ignored historical root, and independently
+rebuilds pair hashes and final-decision boundaries. No provider call is legal
+until the collector source and then its inspected zero-state manifest are each
+committed and pushed.

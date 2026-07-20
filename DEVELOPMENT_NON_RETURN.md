@@ -79,6 +79,33 @@ survivors are required before a separately frozen outcome contract is legal.
 Fewer survivors returns the campaign to disjoint `DEVELOPMENT_ACQUISITION`; it
 does not permit a gate change or outcome access.
 
+## Manifest-Bound Collector
+
+`development_non_return_collection.py` is the separately frozen provider
+boundary for v5. Its source must be committed and pushed before `freeze`; the
+resulting collector manifest must then be inspected, committed, and pushed
+before `collect` can contact a provider.
+
+The collector checks the local exact cache first, preserves whole-provider raw
+Alpaca SIP fidelity, checkpoints every one-second search window atomically, and
+stops before requesting the second after the first clean cross. Candidate and
+benchmark bars end before the final-decision minute; the decision tape is
+end-exclusive at +10 seconds; the quote window is inclusive only through the
++10-second snapshot. Calendar, full-range splits, and official halt evidence
+are separately hash-bound. Pair rows and requests remain private; public status
+contains only counts, hashes, terminal classes, and claim boundaries.
+
+```sh
+python3 development_non_return_collection.py freeze
+python3 development_non_return_collection.py inspect-contract \
+  historical_batches/development_tranche_v2/non_return_collection_manifests/<manifest>.json
+# Commit and push the inspected collector manifest before either command below.
+python3 development_non_return_collection.py collect \
+  historical_batches/development_tranche_v2/non_return_collection_manifests/<manifest>.json
+python3 development_non_return_collection.py inspect \
+  historical_batches/development_tranche_v2/non_return_collection_manifests/<manifest>.json
+```
+
 ## Frozen V5 Result
 
 Manifest `bd4425a0...f7571e` independently rejoins all 1,906 source pair hashes
