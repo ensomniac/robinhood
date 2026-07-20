@@ -1,11 +1,10 @@
 # Development Non-Return Qualification
 
 Planned dataset:
-`dataset-development-non-return-qualification-2026-07-19-v2`
+`dataset-development-non-return-qualification-2026-07-20-v3`
 
-Status: manifest `6b5b24cb...8210c` independently rebuilt `FROZEN_READY`;
-zero selected-symbol minute, tape, quote, premarket, long-history, halt, or
-calendar requests have occurred
+Status: v3 implementation ready; superseded v2 manifest `6b5b24cb...8210c`
+made zero provider requests and is retained as a failed lookahead contract
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -33,11 +32,13 @@ The private graph permits only:
 - candidate premarket bars through 09:30 ET and prior-session history ending
   before the target open for the frozen structure contract;
 - official Nasdaq halt records for the privately selected dates;
-- a conditionally derived raw-trade prefix ending at the first aggregate
-  crossing minute, used to reconstruct condition-aware VWAP and the first
-  continuous regular-sale cross; and
-- one bounded quote window from one second before that clean cross through 11
-  seconds afterward, producing the frozen 0/5/10-second snapshots.
+- chronological one-second raw-trade windows only inside aggregate crossing
+  minutes, stopping at the first condition-valid continuous regular-sale cross
+  or the 10:30 cutoff;
+- a condition-aware raw-trade prefix ending exactly at the final +10-second
+  decision snapshot for session VWAP; and
+- one bounded quote window from one second before the clean cross through the
+  +10-second decision snapshot, producing the frozen 0/5/10-second snapshots.
 
 The exact compatible local Alpaca cache is checked first. The network provider
 remains Alpaca because the validated SIP trade-condition and quote semantics are
@@ -75,7 +76,7 @@ survivors are required before a separately frozen outcome contract is legal.
 Fewer survivors returns the campaign to disjoint `DEVELOPMENT_ACQUISITION`; it
 does not permit a gate change or outcome access.
 
-## Frozen Result
+## Superseded V2 Result
 
 Manifest `6b5b24cb...8210c` independently rejoins all 1,906 source pair hashes to
 the scanner selection and retains exactly 21 verified-positive pairs on 21
@@ -88,4 +89,10 @@ is `4de0c32b...bc2b09`, positive-date hash is `304134d8...b5cf24`, and request
 graph hash is `4b4dd86d...db816b`. The graph freezes 21 candidate bar prefixes,
 42 benchmark prefixes, 21 premarket prefixes, 21 prior-history prefixes, and 21
 official halt dates plus the conditional trade and quote derivations. It
-authorizes no provider access by itself and still forbids outcomes.
+authorized no provider access by itself and still forbids outcomes. A
+pre-provider adversarial review found that its single crossing-minute tape
+request could expose trades later than the final decision snapshot and its
+quote request extended one second beyond +10. No provider request had occurred,
+so v2 is retired without contaminated data. V3 changes only the causal request
+boundary: it searches one-second tape windows chronologically, stops at the
+first clean cross, and ends both VWAP and quote evidence at +10 seconds.

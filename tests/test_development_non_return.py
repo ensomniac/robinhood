@@ -97,6 +97,20 @@ class DevelopmentNonReturnTests(unittest.TestCase):
         rendered = json.dumps(result["graph"], sort_keys=True)
         self.assertIn("10:30_ET", rendered)
         self.assertNotIn("15:50", rendered)
+        self.assertNotIn("PLUS_11", rendered)
+        self.assertEqual(
+            result["graph"]["conditional_clean_cross_search"]["window_seconds"],
+            1,
+        )
+        self.assertFalse(
+            result["graph"]["conditional_clean_cross_search"][
+                "later_windows_after_clean_cross_allowed"
+            ]
+        )
+        self.assertEqual(
+            result["graph"]["conditional_quote_window"]["end"],
+            "CLEAN_CROSS_PLUS_10_SECONDS_INCLUSIVE",
+        )
         self.assertFalse(result["graph"]["target_outcomes_observed_or_derived"])
         self.assertFalse(
             result["graph"]["provider_policy"]["provider_switching_allowed"]

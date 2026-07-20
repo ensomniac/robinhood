@@ -248,3 +248,11 @@ strategy gates, private selection and request hashes, the 20-GiB reserve, and
 zero detailed target artifacts. Commit and push this manifest, aggregate
 status, registry event, and durable finding before implementing or running the
 provider collector.
+
+A pre-provider adversarial review retired that v2 manifest before any target
+request. Its tape template could read the remainder of a crossing minute after
+the final decision boundary, and its quote range extended one second beyond the
+frozen +10-second snapshot. The v3 implementation corrects only this causal
+boundary: one-second tape windows are searched chronologically and stop at the
+first clean cross, while decision-prefix and quote evidence end exactly at +10
+seconds. Freeze, inspect, commit, and push v3 before collection.

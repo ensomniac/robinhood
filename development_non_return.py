@@ -33,7 +33,7 @@ from strategy_engine import load_config
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DATASET_ID = "dataset-development-non-return-qualification-2026-07-19-v2"
+DATASET_ID = "dataset-development-non-return-qualification-2026-07-20-v3"
 SELECTED_PAIR_MANIFEST = source_contract.SOURCE_MANIFEST
 SEMANTICS_MANIFEST = (
     PROJECT_ROOT
@@ -395,20 +395,30 @@ def build_request_graph(selection: Mapping[str, Any]) -> dict[str, Any]:
         "candidate_premarket_prefixes": premarket,
         "candidate_history_prefixes": history,
         "official_halt_dates": halts,
-        "conditional_trigger_trade_prefix": {
-            "when": "first aggregate 1-minute high above frozen opening high from 09:35 through before 10:30",
+        "conditional_clean_cross_search": {
+            "when": "an aggregate 1-minute high is above the frozen opening high from 09:35 through before 10:30",
+            "provider": "alpaca",
+            "feed": "sip",
+            "window_seconds": 1,
+            "order": "chronological aggregate crossing minutes then chronological one-second windows",
+            "stop": "FIRST_CONDITION_VALID_CONTINUOUS_REGULAR_SALE_CROSS_OR_10:30_ET",
+            "later_windows_after_clean_cross_allowed": False,
+            "purpose": "find the first condition-valid continuous regular-sale cross without reading later tape",
+        },
+        "conditional_decision_trade_prefix": {
+            "when": "a condition-valid continuous regular-sale cross exists",
             "provider": "alpaca",
             "feed": "sip",
             "start": "TARGET_DATE_09:30_ET",
-            "end": "FIRST_AGGREGATE_CROSSING_MINUTE_END_EXCLUSIVE",
-            "purpose": "condition-aware opening VWAP and first continuous regular-sale cross",
+            "end": "CLEAN_CROSS_PLUS_10_SECONDS_EXCLUSIVE",
+            "purpose": "condition-aware session VWAP at the final decision snapshot",
         },
         "conditional_quote_window": {
             "when": "a condition-valid continuous regular-sale cross exists",
             "provider": "alpaca",
             "feed": "sip",
             "start": "CLEAN_CROSS_MINUS_1_SECOND",
-            "end": "CLEAN_CROSS_PLUS_11_SECONDS_EXCLUSIVE",
+            "end": "CLEAN_CROSS_PLUS_10_SECONDS_INCLUSIVE",
             "snapshot_offsets_seconds": [0, 5, 10],
         },
         "provider_policy": {
@@ -588,6 +598,7 @@ def _expected_contract(
             "post_entry_requests_allowed": False,
             "outcome_fields_allowed": False,
             "conditional_requests_are_derived_only_from_pre_entry_inputs": True,
+            "provider_rows_after_final_decision_snapshot_allowed": False,
         },
         "evaluation_contract": {
             "unchanged_strategy_required": True,
@@ -595,6 +606,7 @@ def _expected_contract(
             "missing_inputs_default_favorable": False,
             "no_cross_before_cutoff_is_terminal_reject": True,
             "condition_aware_continuous_regular_sale_cross_required": True,
+            "chronological_one_second_tape_search_stops_at_first_clean_cross": True,
             "intraminute_vwap_uses_condition_eligible_trade_prefix": True,
             "three_fresh_uncrossed_snapshots_required": True,
             "spread_chase_liquidity_halt_market_structure_and_score_gates_required": True,
