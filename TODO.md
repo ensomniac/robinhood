@@ -125,6 +125,13 @@ seven additional candidate documents, seven joins, four affected pairs, no
 substitution, and no document or outcome access. Commit and push the result,
 then implement and freeze the exact deduplicated accession-bound document graph
 before requesting any primary document.
+`development_sec_documents.py` now independently rebuilds both metadata
+collections, validates exact SEC accession identities and URLs, rejects
+conflicting duplicates, preserves all source-specific pair joins, and enforces
+an empty document-response namespace. Its current aggregate rebuild yields 597
+unique document requests, 627 joins, and 512 affected pairs. Commit and push the
+freezer and tests, then freeze, inspect, register, commit, and push the exact
+zero-response document manifest before provider access.
 
 ## Completed 2026-07-19
 

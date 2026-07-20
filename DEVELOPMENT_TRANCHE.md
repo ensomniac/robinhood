@@ -192,3 +192,10 @@ with zero failures, 2,113,173 retained bytes, seven additional candidate
 documents, seven joins, and four affected pairs. Candidate presence is not
 semantic verification. Freeze and commit the exact deduplicated union of main
 and supplemental accession-bound documents before requesting any document body.
+
+`development_sec_documents.py` performs this final network-free union. Its
+current rebuild validates 597 exact SEC accession-bound requests, retains all
+627 source-specific pair/document joins across 512 pairs, and observes no
+cross-source duplicate document URL. The freezer must be committed and pushed
+before it can persist the private request graph or a public zero-response
+manifest.

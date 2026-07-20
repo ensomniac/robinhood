@@ -148,6 +148,21 @@ candidates with these seven supplemental candidates, preserve every pair join,
 and freeze the exact accession-bound document graph before requesting a document
 body.
 
+`development_sec_documents.py` now implements that network-free gate. It
+independently rebuilds and rehashes both inspected collection indexes, requires
+zero source failures, validates each CIK/accession/primary-document tuple against
+its SEC-operated URL, fails closed on conflicting duplicates, and preserves each
+source-specific pair join in the private graph. The current rebuild contains 597
+unique document requests, 627 pair/document joins, and 512 pairs with at least
+one candidate; the main and supplemental graphs have no overlapping document
+URL in this corpus.
+
+Exact source identities, joins, request paths, and later raw document bytes stay
+outside Git. The public contract contains only counts, hashes, locks, and claim
+boundaries. Commit and push the freezer and tests before it writes the private
+graph or frozen manifest; then commit and push the inspected zero-response
+manifest before any primary document request.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 
