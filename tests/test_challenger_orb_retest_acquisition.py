@@ -1,4 +1,5 @@
 import json
+import gzip
 from pathlib import Path
 
 import pytest
@@ -30,6 +31,56 @@ def test_scanner_manifest_path_requires_exactly_one(tmp_path):
     )
     with pytest.raises(acquisition.ChallengerAcquisitionError, match="exactly one"):
         acquisition._scanner_manifest_path(tmp_path)
+
+
+def test_reference_status_is_resumable_and_hashes_only_ready_dates(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(
+        acquisition,
+        "_selection",
+        lambda: {"selected_dates": ["2024-01-02", "2024-01-03"]},
+    )
+    monkeypatch.setattr(acquisition, "REFERENCE_ROOT", tmp_path)
+    with gzip.open(tmp_path / "2024-01-02.json.gz", "wt", encoding="utf-8") as target:
+        json.dump([{"ticker": "ABC"}], target)
+
+    partial = acquisition.reference_status()
+    assert partial["ready"] == 1
+    assert partial["missing"] == 1
+    assert partial["complete"] is False
+
+    with gzip.open(tmp_path / "2024-01-03.json.gz", "wt", encoding="utf-8") as target:
+        json.dump([{"ticker": "XYZ"}], target)
+    complete = acquisition.reference_status()
+    assert complete["ready"] == 2
+    assert complete["missing"] == 0
+    assert complete["complete"] is True
+    assert complete["target_market_data_accessed"] is False
+
+
+def test_split_attestation_rebuilds_exact_frozen_range(tmp_path, monkeypatch):
+    split_path = tmp_path / "splits.json.gz"
+    rows = [
+        {
+            "execution_date": "2023-06-01",
+            "ticker": "ABC",
+            "split_from": 1,
+            "split_to": 2,
+        }
+    ]
+    with gzip.open(split_path, "wt", encoding="utf-8") as target:
+        json.dump(rows, target)
+    monkeypatch.setattr(acquisition, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(acquisition, "SPLITS", split_path)
+
+    attestation = acquisition._split_attestation()
+    assert attestation["artifact"]["events"] == 1
+    assert attestation["artifact"]["sha256"] == acquisition._sha256_file(split_path)
+    assert attestation["source"]["query_range"] == {
+        "execution_date_gte": "2023-01-04",
+        "execution_date_lte": "2024-12-24",
+    }
 
 
 def test_binding_rejects_drift_and_unsafe_path(tmp_path, monkeypatch):

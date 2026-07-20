@@ -145,21 +145,17 @@ security master and split attestation, freeze the inner scanner manifest, then
 freeze and independently inspect the outer contract:
 
 ```sh
-python3 scanner_replay.py \
-  --run-root learning_runs/challenger_orb_retest_v1/scanner_replay \
-  build-master \
-  historical_batches/challenger_orb_retest_v1/selection-2026-07-20-100-days.json \
-  --output historical_batches/challenger_orb_retest_v1/security-master.jsonl \
-  --source-manifest historical_batches/challenger_orb_retest_v1/security-master-source.json
+python3 challenger_orb_retest_acquisition.py reference-status
+python3 challenger_orb_retest_acquisition.py build-master
+python3 challenger_orb_retest_acquisition.py collect-splits
+python3 challenger_orb_retest_acquisition.py audit-inputs
 
-python3 scanner_replay_alpaca.py \
-  --run-root learning_runs/challenger_orb_retest_v1/scanner_replay \
-  collect-splits --start 2023-01-04 --end 2024-12-24 \
-  --output learning_runs/challenger_orb_retest_v1/scanner_replay/splits.json.gz
+# Commit and push the master, source attestations, input status, and durable
+# finding before freezing the target market request graph.
+python3 challenger_orb_retest_acquisition.py freeze-scanner
 
-# Write and audit the split-actions source attestation, then freeze the inner
-# scanner manifest with the exact challenger paths and the compatible v3 reuse
-# manifest. Commit and push it before freezing the outer contract.
+# Commit and push the inner scanner manifest and zero-state status before the
+# outer mechanism/source-rules contract is frozen.
 python3 challenger_orb_retest_acquisition.py freeze
 python3 challenger_orb_retest_acquisition_inspection.py \
   historical_batches/challenger_orb_retest_v1/acquisition_manifests/<outer-manifest>.json \

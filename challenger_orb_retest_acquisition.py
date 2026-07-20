@@ -9,6 +9,7 @@ contacts a broker.
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import importlib.metadata
 import json
@@ -66,6 +67,36 @@ DEFAULT_OUTPUT_ROOT = (
 DEFAULT_STATUS = (
     PROJECT_ROOT
     / "historical_batches/challenger_orb_retest_v1/acquisition-contract-status.json"
+)
+RUN_ROOT = PROJECT_ROOT / "learning_runs/challenger_orb_retest_v1/scanner_replay"
+REFERENCE_ROOT = RUN_ROOT / "reference"
+SECURITY_MASTER = (
+    PROJECT_ROOT / "historical_batches/challenger_orb_retest_v1/security-master.jsonl"
+)
+SECURITY_SOURCE = (
+    PROJECT_ROOT
+    / "historical_batches/challenger_orb_retest_v1/security-master-source.json"
+)
+SPLITS = RUN_ROOT / "splits.json.gz"
+SPLIT_SOURCE = (
+    PROJECT_ROOT
+    / "historical_batches/challenger_orb_retest_v1/split-actions-source.json"
+)
+INPUT_STATUS = (
+    PROJECT_ROOT
+    / "historical_batches/challenger_orb_retest_v1/reference-and-split-status.json"
+)
+SCANNER_CONTRACT_STATUS = (
+    PROJECT_ROOT
+    / "historical_batches/challenger_orb_retest_v1/scanner-contract-status.json"
+)
+REUSE_SCANNER_MANIFEST = (
+    PROJECT_ROOT
+    / "historical_batches/development_tranche_v3/scanner_manifests"
+    / (
+        "dataset-production-scanner-replay-2026-07-20-development-v3-"
+        "1a37bc3d141dff3741bc965303e490eaa59d8f76071b9e5d1bd2b301eb878926.json"
+    )
 )
 INSPECTOR = PROJECT_ROOT / "challenger_orb_retest_acquisition_inspection.py"
 
@@ -125,6 +156,19 @@ def _write_json(path: Path, value: Any) -> None:
         os.replace(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)
+
+
+def _read_gzip_array(path: Path) -> list[dict[str, Any]]:
+    try:
+        with gzip.open(path, "rt", encoding="utf-8") as source:
+            value = json.load(source)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ChallengerAcquisitionError(f"cannot read {path}: {exc}") from exc
+    if not isinstance(value, list) or any(
+        not isinstance(row, Mapping) for row in value
+    ):
+        raise ChallengerAcquisitionError(f"{path} must contain an object array")
+    return [dict(row) for row in value]
 
 
 def _binding(path: Path) -> dict[str, str]:
@@ -252,6 +296,251 @@ def _provider_config_contract(env_path: Path) -> dict[str, Any]:
             "credentials_configured": bool(market.api_key and market.api_secret),
         },
     }
+
+
+def reference_status() -> dict[str, Any]:
+    selection = _selection()
+    snapshots: list[dict[str, Any]] = []
+    missing = 0
+    for day in sorted(selection["selected_dates"]):
+        path = REFERENCE_ROOT / f"{day}.json.gz"
+        if not path.is_file():
+            missing += 1
+            continue
+        rows = _read_gzip_array(path)
+        symbols = [str(row.get("ticker") or "").strip().upper() for row in rows]
+        if (
+            not rows
+            or any(not symbol for symbol in symbols)
+            or len(symbols) != len(set(symbols))
+        ):
+            raise ChallengerAcquisitionError(
+                f"reference snapshot is empty or ambiguous: {day}"
+            )
+        snapshots.append({"date": day, "rows": len(rows), "sha256": _sha256_file(path)})
+    return {
+        "schema_version": 1,
+        "dataset_id": tranche.DATASET_ID,
+        "provider": "Massive dated ticker reference",
+        "requested": len(selection["selected_dates"]),
+        "ready": len(snapshots),
+        "missing": missing,
+        "complete": missing == 0,
+        "snapshot_set_sha256": _sha256_json(snapshots),
+        "date_substitution_allowed": False,
+        "target_market_data_accessed": False,
+        "target_outcomes_observed_or_derived": False,
+    }
+
+
+def build_master() -> dict[str, Any]:
+    _published(Path(__file__))
+    status = reference_status()
+    if status["complete"] is not True:
+        raise ChallengerAcquisitionError("dated reference collection is incomplete")
+    selection = _selection()
+    if SECURITY_MASTER.exists() != SECURITY_SOURCE.exists():
+        raise ChallengerAcquisitionError(
+            "security master and source attestation are only partially present"
+        )
+    recorded_at = None
+    if SECURITY_SOURCE.exists():
+        recorded_at = str(_read_object(SECURITY_SOURCE).get("captured_at") or "")
+        if not recorded_at:
+            raise ChallengerAcquisitionError(
+                "existing security-master attestation lacks captured_at"
+            )
+    result = scanner_replay.build_security_master(
+        selection["selected_dates"],
+        snapshots_root=REFERENCE_ROOT,
+        output=SECURITY_MASTER,
+        source_manifest=SECURITY_SOURCE,
+        recorded_at=recorded_at,
+    )
+    return {
+        "schema_version": 1,
+        "dataset_id": tranche.DATASET_ID,
+        "status": "SECURITY_MASTER_READY",
+        "reference": status,
+        "security_master": result["security_master"],
+        "target_market_data_accessed": False,
+        "target_outcomes_observed_or_derived": False,
+    }
+
+
+def _split_attestation() -> dict[str, Any]:
+    rows = _read_gzip_array(SPLITS)
+    if not rows:
+        raise ChallengerAcquisitionError("split action result is unexpectedly empty")
+    start, end = "2023-01-04", "2024-12-24"
+    ordered: list[tuple[str, str]] = []
+    for row in rows:
+        execution = str(row.get("execution_date") or "")
+        ticker = str(row.get("ticker") or "").strip().upper()
+        try:
+            split_from = float(row["split_from"])
+            split_to = float(row["split_to"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ChallengerAcquisitionError("split row is malformed") from exc
+        if (
+            not start <= execution <= end
+            or not ticker
+            or split_from <= 0
+            or split_to <= 0
+        ):
+            raise ChallengerAcquisitionError("split row is outside the frozen query")
+        ordered.append((execution, ticker))
+    if ordered != sorted(ordered):
+        raise ChallengerAcquisitionError(
+            "split actions are not deterministically sorted"
+        )
+    return {
+        "schema_version": 1,
+        "source": {
+            "provider": "Massive",
+            "endpoint": "https://api.massive.com/stocks/v1/splits",
+            "query_range": {
+                "execution_date_gte": start,
+                "execution_date_lte": end,
+            },
+        },
+        "artifact": {
+            "local_ignored_path": _repo_path(SPLITS),
+            "events": len(rows),
+            "sha256": _sha256_file(SPLITS),
+        },
+    }
+
+
+def collect_splits(*, env_path: Path) -> dict[str, Any]:
+    _published(Path(__file__))
+    result = scanner_replay.collect_split_actions(
+        start="2023-01-04",
+        end="2024-12-24",
+        config=scanner_replay.MassiveReferenceConfig.from_env(env_path),
+        output=SPLITS,
+    )
+    attestation = _split_attestation()
+    _write_json(SPLIT_SOURCE, attestation)
+    return {
+        "schema_version": 1,
+        "dataset_id": tranche.DATASET_ID,
+        "status": "SPLIT_ACTIONS_READY",
+        "collection": result,
+        "attestation": attestation,
+        "target_market_data_accessed": False,
+        "target_outcomes_observed_or_derived": False,
+    }
+
+
+def audit_inputs(*, env_path: Path) -> dict[str, Any]:
+    reference = reference_status()
+    if reference["complete"] is not True:
+        raise ChallengerAcquisitionError("dated reference collection is incomplete")
+    source = _read_object(SECURITY_SOURCE)
+    selection = _selection()
+    expected_dates = sorted(selection["selected_dates"])
+    if (
+        source.get("requested_dates") != expected_dates
+        or source.get("security_master", {}).get("path") != _repo_path(SECURITY_MASTER)
+        or source.get("security_master", {}).get("sha256")
+        != scanner_replay.security_master_sha256(SECURITY_MASTER)
+        or len(source.get("snapshots", [])) != len(expected_dates)
+    ):
+        raise ChallengerAcquisitionError("security-master attestation differs")
+    for row in source["snapshots"]:
+        day = str(row.get("date") or "")
+        path = REFERENCE_ROOT / f"{day}.json.gz"
+        if (
+            day not in expected_dates
+            or row.get("sha256") != _sha256_file(path)
+            or row.get("rows") != len(_read_gzip_array(path))
+        ):
+            raise ChallengerAcquisitionError("reference snapshot attestation differs")
+    expected_split = _split_attestation()
+    if _read_object(SPLIT_SOURCE) != expected_split:
+        raise ChallengerAcquisitionError("split-actions attestation differs")
+    config = HistoricalStoreConfig.from_env(env_path)
+    store = HistoricalDayStore(config.root)
+    market_root = alpaca.index_root(store, SCANNER_DATASET_ID)
+    pre_freeze_market_artifacts = (
+        sum(1 for path in market_root.rglob("*") if path.is_file())
+        if market_root.exists()
+        else 0
+    )
+    if pre_freeze_market_artifacts:
+        raise ChallengerAcquisitionError(
+            "target scanner artifacts exist before scanner freeze"
+        )
+    result = {
+        "schema_version": 1,
+        "dataset_id": tranche.DATASET_ID,
+        "status": "INPUTS_READY",
+        "reference": reference,
+        "security_master": source["security_master"],
+        "split_actions": expected_split["artifact"],
+        "pre_freeze_target_market_artifacts": pre_freeze_market_artifacts,
+        "capacity_ready": shutil.disk_usage(config.root).free >= config.min_free_bytes,
+        "reserve_bytes": config.min_free_bytes,
+        "date_symbol_or_provider_substitution_allowed": False,
+        "target_market_data_accessed": False,
+        "target_outcomes_observed_or_derived": False,
+    }
+    if result["capacity_ready"] is not True:
+        raise ChallengerAcquisitionError("historical-store reserve is unavailable")
+    _write_json(INPUT_STATUS, result)
+    return result
+
+
+def freeze_scanner(*, env_path: Path) -> tuple[Path, dict[str, Any]]:
+    _published(Path(__file__))
+    _published(SECURITY_MASTER)
+    _published(SECURITY_SOURCE)
+    _published(SPLIT_SOURCE)
+    audit_inputs(env_path=env_path)
+    config = HistoricalStoreConfig.from_env(env_path)
+    store = HistoricalDayStore(config.root)
+    path, manifest = alpaca.freeze_contract(
+        dataset_id=SCANNER_DATASET_ID,
+        selection_path=tranche.DEFAULT_SELECTION,
+        calendar_path=tranche.CALENDAR,
+        rules_path=RULES,
+        security_path=SECURITY_MASTER,
+        security_source_path=SECURITY_SOURCE,
+        split_path=SPLITS,
+        split_source_path=SPLIT_SOURCE,
+        strategy_source_path=STRATEGY_SOURCE,
+        output_root=DEFAULT_SCANNER_MANIFEST_ROOT,
+        index_root=alpaca.index_root(store, SCANNER_DATASET_ID),
+        reuse_manifest_path=REUSE_SCANNER_MANIFEST,
+    )
+    status = alpaca.collection_status(manifest, store=store)
+    if any(
+        (
+            status["session_files"]["ready"] != 0,
+            status["provider_requests"] != 0,
+            status["provider_retries"] != 0,
+            status["derived_rows"] != 0,
+            status["canonical_day_merges"] != 0,
+        )
+    ):
+        raise ChallengerAcquisitionError("scanner zero-state differs after freeze")
+    public = {
+        "schema_version": 1,
+        "dataset_id": SCANNER_DATASET_ID,
+        "status": "FROZEN_READY",
+        "manifest_path": _repo_path(path),
+        "manifest_sha256": manifest["manifest_sha256"],
+        "required_sessions": manifest["collection_contract"]["required_session_count"],
+        "target_symbol_union_count": manifest["collection_contract"][
+            "target_symbol_union_count"
+        ],
+        "pre_freeze_target_market_artifacts": 0,
+        "substitutions_allowed": False,
+        "target_outcomes_observed_or_derived": False,
+    }
+    _write_json(SCANNER_CONTRACT_STATUS, public)
+    return path, public
 
 
 def _expected_contract(
@@ -531,6 +820,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--env", type=Path, default=PROJECT_ROOT / ".env")
     parser.add_argument("--scanner-manifest", type=Path)
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("reference-status")
+    sub.add_parser("build-master")
+    sub.add_parser("collect-splits")
+    sub.add_parser("audit-inputs")
+    sub.add_parser("freeze-scanner")
     sub.add_parser("freeze")
     inspect_parser = sub.add_parser("inspect")
     inspect_parser.add_argument("manifest", type=Path)
@@ -545,8 +839,18 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
-        scanner_path = args.scanner_manifest or _scanner_manifest_path()
-        if args.command == "freeze":
+        if args.command == "reference-status":
+            result = reference_status()
+        elif args.command == "build-master":
+            result = build_master()
+        elif args.command == "collect-splits":
+            result = collect_splits(env_path=args.env)
+        elif args.command == "audit-inputs":
+            result = audit_inputs(env_path=args.env)
+        elif args.command == "freeze-scanner":
+            _path, result = freeze_scanner(env_path=args.env)
+        elif args.command == "freeze":
+            scanner_path = args.scanner_manifest or _scanner_manifest_path()
             path, manifest = freeze_contract(
                 scanner_manifest_path=scanner_path, env_path=args.env
             )
@@ -561,6 +865,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             }
             _write_json(DEFAULT_STATUS, result)
         elif args.command == "inspect":
+            scanner_path = args.scanner_manifest or _scanner_manifest_path()
             result = inspect_contract(
                 manifest_path=args.manifest,
                 scanner_manifest_path=scanner_path,
