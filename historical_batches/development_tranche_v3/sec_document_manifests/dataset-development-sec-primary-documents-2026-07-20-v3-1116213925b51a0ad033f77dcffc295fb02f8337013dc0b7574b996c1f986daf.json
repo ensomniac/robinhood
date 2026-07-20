@@ -1,0 +1,246 @@
+{
+  "capacity_contract": {
+    "capacity_ready": true,
+    "free_bytes_at_freeze": 445116882944,
+    "historical_deletion_allowed": false,
+    "historical_store_outside_repository": true,
+    "minimum_required_reserve_bytes": 21474836480,
+    "reserve_bytes": 21474836480
+  },
+  "dataset_id": "dataset-development-sec-primary-documents-2026-07-20-v3",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "DEVELOPMENT_SEC_SOURCES_V3.md",
+      "historical_batches/development_tranche_v3/sec_manifests/dataset-development-sec-primary-sources-2026-07-20-v3-8dc5996b6b88d52fc8e08efc9932c6a1db30a3ec61a2ef09d7f22346bb464628.json",
+      "historical_batches/development_tranche_v3/sec-submissions-status.json",
+      "research_results/2026-07-20-development-sec-submissions-inspection.json",
+      "historical_batches/development_tranche_v3/sec_supplemental_manifests/dataset-development-sec-supplemental-2026-07-20-v3-7882745425690f2436ceaada8efdd937f137caeedb784c2c0bf3c6ded839bc9d.json",
+      "historical_batches/development_tranche_v3/sec-supplemental-status.json",
+      "research_results/2026-07-20-development-sec-supplemental-inspection.json",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "implementation_contract": {
+    "files": {
+      "document_contract": {
+        "path": "development_sec_documents.py",
+        "sha256": "6fde2d9047decdb6234ee7ed1a394382f805aeb97b602efc9219e69b31680494"
+      },
+      "main_submissions_collector": {
+        "path": "development_sec_submissions.py",
+        "sha256": "c4db7ec33e1fbcfc676517c2f61d3aea62484c88ae026501fbc36268050b85e2"
+      },
+      "sec_source_contract": {
+        "path": "development_sec_sources.py",
+        "sha256": "9f1816df37882982e5ccad5fa9539e8c1fcc0690a7af6b02979722905f9fc939"
+      },
+      "supplemental_collector": {
+        "path": "development_sec_supplemental_collection.py",
+        "sha256": "694e23877ef556d92c4d98583ecc8e09aed0655f5ec4f6b38d12103e4132c217"
+      }
+    },
+    "python": "3.14.2"
+  },
+  "lineage_contract": {
+    "main_private_collection_content_sha256": "ab5f2021d790916c235e10aed94586c522ddf58d58501daa23c4080dfa8ac869",
+    "main_submissions_inspection": {
+      "path": "research_results/2026-07-20-development-sec-submissions-inspection.json",
+      "sha256": "f7af6f7b55178880dada075a339a68009bc3c455804121a79ebdf00c81a3dd97"
+    },
+    "main_submissions_manifest": {
+      "manifest_sha256": "8dc5996b6b88d52fc8e08efc9932c6a1db30a3ec61a2ef09d7f22346bb464628",
+      "path": "historical_batches/development_tranche_v3/sec_manifests/dataset-development-sec-primary-sources-2026-07-20-v3-8dc5996b6b88d52fc8e08efc9932c6a1db30a3ec61a2ef09d7f22346bb464628.json",
+      "sha256": "ab4baaa8a4b0e6e5da8008ead45b1702dd2cfad747c0f9a3dc6143662dc7637c"
+    },
+    "main_submissions_status": {
+      "path": "historical_batches/development_tranche_v3/sec-submissions-status.json",
+      "sha256": "b9cebbf7fd85211111ab3d7b1f0c058cddcd9edd5b0d346fce21d758426c0cbf"
+    },
+    "strategy": {
+      "attestation_path": "historical_batches/scanner_expansion/production-strategy-source.json",
+      "attestation_sha256": "3c07c051bb54612b1e172085a01e330f33a05c65e4a2c8cc274b8006d09c1fc8",
+      "config_path": "strategy_config.toml",
+      "config_sha256": "975e06a981156421a1c6a52cbcbcfeef286016f7c958d40d08b4bdb9ac6ad547",
+      "rules_hash": "00c3aa83754f880ec67d29b7446e43ffccb23c2fb0c939bc4927909f8b4b5867",
+      "strategy_version": "2026-07-15-orb-v3"
+    },
+    "supplemental_inspection": {
+      "path": "research_results/2026-07-20-development-sec-supplemental-inspection.json",
+      "sha256": "d4c28f7aa59d5592b7e4a19b2b72c3640641d11411ffd71264f942d61c6943ce"
+    },
+    "supplemental_manifest": {
+      "manifest_sha256": "7882745425690f2436ceaada8efdd937f137caeedb784c2c0bf3c6ded839bc9d",
+      "path": "historical_batches/development_tranche_v3/sec_supplemental_manifests/dataset-development-sec-supplemental-2026-07-20-v3-7882745425690f2436ceaada8efdd937f137caeedb784c2c0bf3c6ded839bc9d.json",
+      "sha256": "95c3960de20ab62a53952611e96ec3ddabe5ffe21015b45afe888c255a36b02e"
+    },
+    "supplemental_private_collection_content_sha256": "77a55190a53269859d263114f316ac852bd69e0f5a2cc56e9969751f0e0d8c93",
+    "supplemental_status": {
+      "path": "historical_batches/development_tranche_v3/sec-supplemental-status.json",
+      "sha256": "56f51dd77d78be22f1f08a1b7f1e5afce881479d08e62b20a280916ba976a7d5"
+    }
+  },
+  "manifest_sha256": "1116213925b51a0ad033f77dcffc295fb02f8337013dc0b7574b996c1f986daf",
+  "outcome_lock": {
+    "post_entry_data_access_allowed": false,
+    "primary_documents_requested": false,
+    "separate_semantics_review_required": true,
+    "source_semantics_observed_or_derived": false,
+    "substitutions_allowed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "pre_freeze_target_response_artifact_count": 0,
+  "registered_at": "2026-07-20T09:36:24.293135+00:00",
+  "request_contract": {
+    "global_minimum_spacing_seconds": 0.15,
+    "maximum_attempts": 4,
+    "one_failure_cannot_abort_unrelated_requests": true,
+    "per_request_terminal_result_required": true,
+    "private_request_graph_sha256": "fd68d14afa7c22ad22507dc41bed9ef986254233b007286372c30d90a4a1bac5",
+    "provider": "SEC_EDGAR",
+    "provider_operated_accession_bound_endpoints_only": true,
+    "raw_source_bytes_retained_outside_git": true,
+    "request_count": 557,
+    "retry_backoff_seconds": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "shared_cache_first": true,
+    "source_semantic_classification_allowed": false,
+    "stage": "SEC_PRIMARY_DOCUMENTS_ONLY",
+    "substitution_allowed": false,
+    "timeout_seconds": 30.0,
+    "user_agent_sha256": "87a6c495709e93e1101e1f4dadba98eb371897c9355d2f6a06dae7d809032b4d",
+    "workers": 4
+  },
+  "requested_dates": [
+    "2025-01-07",
+    "2025-01-13",
+    "2025-01-16",
+    "2025-01-23",
+    "2025-01-30",
+    "2025-02-03",
+    "2025-02-05",
+    "2025-02-06",
+    "2025-02-10",
+    "2025-02-14",
+    "2025-02-18",
+    "2025-02-19",
+    "2025-02-26",
+    "2025-02-27",
+    "2025-03-05",
+    "2025-03-06",
+    "2025-03-14",
+    "2025-03-17",
+    "2025-03-18",
+    "2025-03-27",
+    "2025-03-31",
+    "2025-04-07",
+    "2025-04-08",
+    "2025-04-10",
+    "2025-04-15",
+    "2025-04-17",
+    "2025-04-23",
+    "2025-04-24",
+    "2025-04-25",
+    "2025-05-01",
+    "2025-05-06",
+    "2025-05-09",
+    "2025-05-14",
+    "2025-05-15",
+    "2025-05-16",
+    "2025-05-20",
+    "2025-05-27",
+    "2025-05-28",
+    "2025-06-02",
+    "2025-06-05",
+    "2025-06-09",
+    "2025-06-10",
+    "2025-06-11",
+    "2025-06-13",
+    "2025-06-16",
+    "2025-06-20",
+    "2025-06-23",
+    "2025-06-27",
+    "2025-07-03",
+    "2025-07-10",
+    "2025-07-15",
+    "2025-07-23",
+    "2025-07-24",
+    "2025-07-25",
+    "2025-08-01",
+    "2025-08-05",
+    "2025-08-08",
+    "2025-08-11",
+    "2025-08-13",
+    "2025-08-20",
+    "2025-08-21",
+    "2025-08-22",
+    "2025-08-25",
+    "2025-08-28",
+    "2025-09-02",
+    "2025-09-09",
+    "2025-09-12",
+    "2025-09-15",
+    "2025-09-19",
+    "2025-09-23",
+    "2025-09-24",
+    "2025-09-26",
+    "2025-09-30",
+    "2025-10-01",
+    "2025-10-02",
+    "2025-10-06",
+    "2025-10-09",
+    "2025-10-13",
+    "2025-10-16",
+    "2025-10-21",
+    "2025-10-28",
+    "2025-11-04",
+    "2025-11-10",
+    "2025-11-13",
+    "2025-11-20",
+    "2025-12-02",
+    "2025-12-05",
+    "2025-12-08",
+    "2025-12-09",
+    "2025-12-11",
+    "2025-12-12",
+    "2025-12-15",
+    "2025-12-16",
+    "2025-12-18",
+    "2025-12-19",
+    "2025-12-22",
+    "2025-12-23",
+    "2025-12-26",
+    "2025-12-30",
+    "2025-12-31"
+  ],
+  "schema_version": 1,
+  "selection_contract": {
+    "candidate_document_observations": 557,
+    "conflicting_duplicate_policy": "fail closed",
+    "deduplication_key": "exact SEC accession-bound source URL",
+    "document_request_graph_sha256": "fd68d14afa7c22ad22507dc41bed9ef986254233b007286372c30d90a4a1bac5",
+    "duplicate_document_observations": 0,
+    "every_source_pair_join_preserved": true,
+    "main_candidate_documents": 546,
+    "main_pair_document_joins": 572,
+    "pair_document_join_graph_sha256": "14febc5954d420ad2167210a27296f8cb9f11a4915e9762e1fbe22c52d567af6",
+    "pair_document_joins": 583,
+    "private_contract_content_sha256": "6c7e5fddd061480a2347dafc0ff4721f24b19b81a6013e94eec8733b904d48e7",
+    "private_contract_path": "LOCAL_HISTORICAL_DATA_ROOT/_derived/development_sec_sources/dataset-development-sec-primary-sources-2026-07-20-v3/document_contracts/dataset-development-sec-primary-documents-2026-07-20-v3/primary-document-request-map.json.gz",
+    "source_candidate_graph_sha256": {
+      "MAIN_SUBMISSIONS": "78db29a25d838acd080e9ef621f298b26dd5ced65b66195fb2d0ff2875bf5564",
+      "SUPPLEMENTAL_SUBMISSIONS": "593bdd9aac99a889dc5fe3b3d4cf1943e547e9b966ab1cc055089754e6eef8d0"
+    },
+    "supplemental_candidate_documents": 11,
+    "supplemental_pair_document_joins": 11,
+    "symbols_ciks_accessions_urls_and_joins_public": false,
+    "unique_document_requests": 557,
+    "unique_pairs_with_document": 499
+  }
+}

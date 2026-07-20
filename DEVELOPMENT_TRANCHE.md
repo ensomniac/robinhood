@@ -122,6 +122,11 @@ adds 11 time-window document candidates and 11 joins across nine pairs. Candidat
 presence is not a verified catalyst; no primary document, semantic classification,
 selected-symbol detail, or outcome has been accessed.
 
+Primary-document manifest `11162139...86daf` now freezes the exact union of 557
+accession-bound requests and all 583 source-specific joins across 499 pairs,
+with zero duplicate observations and zero target responses. Commit and push the
+manifest before its network-free inspection; document access remains blocked.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated

@@ -140,6 +140,13 @@ observations, 583 source-specific joins, and 499 affected pairs, with zero
 target responses. Commit and push this implementation before writing or
 freezing that graph.
 
+Manifest `11162139...86daf` now freezes the exact 557-request, 583-join graph
+from the pushed implementation. It binds private graph hash
+`6c7e5fdd...4d48e7`, request graph `fd68d14a...a1bac5`, join graph
+`14febc59...567af6`, all six source inputs, implementation hashes, the 20-GiB
+reserve, and zero target document responses. Commit and push the manifest before
+its separate network-free inspection; it authorizes no document request yet.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
