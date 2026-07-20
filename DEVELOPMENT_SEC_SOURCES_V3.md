@@ -164,6 +164,16 @@ artifacts. Commit and push this collector and its isolation tests before any
 document request; collection remains transport-only and cannot classify a
 source or access an outcome.
 
+The pushed collector completed all 557 frozen requests with 45 shared-cache
+hits, 512 SEC downloads, zero failures, zero pending requests, and zero
+substitutions. Independent inspection rehashed 20,203,874 retained raw bytes,
+rebuilt every terminal wrapper, and reproduced private aggregate hash
+`a60036b0...b1980`. Exact identities, joins, URLs, bodies, and provider details
+remain outside Git. This transport result establishes no verified catalyst or
+alpha claim; the next stage must separately freeze, extract, review, and inspect
+source semantics across the complete pair denominator while outcomes remain
+locked.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:

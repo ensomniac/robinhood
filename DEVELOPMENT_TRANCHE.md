@@ -140,6 +140,13 @@ bounded SEC pacing, failure isolation, resume, and independent raw-byte
 rehashing. Its zero-response preflight remains outcome blind. Commit and push
 the implementation before collecting the graph.
 
+All 557 frozen v3 document requests have now completed and independently
+rehashed: 45 shared-cache hits, 512 downloads, zero failures, zero pending
+requests, zero substitutions, and 20,203,874 retained bytes. Raw transport is
+not semantic evidence. The next stage must use a separately frozen complete
+source-semantics contract, keep exact rows private, reconcile every pair to one
+terminal reason, and preserve the outcome lock.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated
