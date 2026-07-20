@@ -103,6 +103,13 @@ hash `89eceaf1...5377d4`, request-graph hash `896f6b8d...64c3e4`, decision hash
 and zero target supplemental responses. It must be committed and pushed before
 independent inspection; inspection still does not authorize provider access.
 
+Independent inspection now rebuilds manifest `78827454...39bc9d` as
+`FROZEN_READY`: all 677 decisions, nine selected requests, 668 exclusions,
+private hashes, source lineage, implementation hashes, capacity, privacy, and
+outcome locks match, and the response namespace remains empty. The aggregate
+status is `historical_batches/development_tranche_v3/sec-supplemental-contract-status.json`.
+Provider access still requires a separately committed and pushed collector.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:

@@ -111,6 +111,11 @@ conservatively included and zero target responses. Commit and push this manifest
 before its separate network-free inspection; no supplemental provider access is
 authorized until the inspected zero-response state is also pushed.
 
+Independent inspection now rebuilds that manifest `FROZEN_READY` with the same
+nine/668/677 counts, exact private graph hashes, and zero responses. Only a
+separately committed and pushed nine-request collector may contact SEC; primary
+documents, semantics, selected-symbol detail, and outcomes remain locked.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated
