@@ -193,6 +193,14 @@ review artifacts. Commit and push the manifest, dataset registration, and this
 freeze finding before independently inspecting the contract; document text
 remains unparsed.
 
+Independent inspection now rebuilds manifest `b1241f33...10531` as
+`FROZEN_READY` with the same complete denominator, four private graph hashes,
+implementation and parser bindings, source/terminal rules, capacity, privacy,
+and outcome locks. The v3 extraction and review artifacts remain absent, and
+verified-positive count remains an explicit zero placeholder rather than a
+classification claim. Commit and push this status before running `extract` or
+`review`.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:

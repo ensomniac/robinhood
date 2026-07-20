@@ -161,6 +161,11 @@ parser dependencies, the 20-GiB reserve, and zero extraction or review
 artifacts. Commit and push this zero-text state before its independent contract
 inspection.
 
+Independent inspection now rebuilds semantics manifest `b1241f33...10531` as
+`FROZEN_READY` with every selection, lineage, rules, implementation, capacity,
+privacy, and outcome-lock binding intact. No extraction or review artifact
+exists. Commit and push this status before parsing any frozen document text.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated
