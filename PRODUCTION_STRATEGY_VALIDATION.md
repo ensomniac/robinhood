@@ -157,6 +157,14 @@ privacy boundary, and outcome lock. It authorizes only a separately frozen
 provider collector, which must be committed, inspected, and pushed before
 collection.
 
+`development_non_return_collection_v3.py` supplies that isolated provider
+boundary without editing the completed 21-pair collector. Its scoped adapter
+binds both collector implementations, the v3 source contract, exact 102-pair
+lineage, private namespace, tranche-v3 outputs, raw Alpaca SIP fidelity, full
+calendar and split basis, 20-GiB reserve, aggregate privacy, and the closed
+outcome lock. Read-only preflight finds zero target artifacts; the adapter must
+be committed and pushed before its own manifest can be frozen.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

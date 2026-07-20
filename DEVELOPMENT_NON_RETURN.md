@@ -139,6 +139,18 @@ boundary for v5. Its source must be committed and pushed before `freeze`; the
 resulting collector manifest must then be inspected, committed, and pushed
 before `collect` can contact a provider.
 
+`development_non_return_collection_v3.py` is the isolated provider adapter for
+the 102-pair second tranche. It leaves the hash-bound 21-pair implementation
+unchanged and installs the new source contract, exact manifest and status,
+102-pair count, private dataset identity, and tranche-v3 public paths only for
+the duration of each command. It restores every base-module value afterward.
+The collector contract binds the adapter, base collector, v3 non-return source,
+and all provider/market-data dependencies. A read-only preflight proves the
+base manifest `7d5be928...db829` is `FROZEN_READY`, the private selection has
+102 pairs at request graph `d1f13baf...12f00`, the new collector namespace has
+zero artifacts, and its frozen maximum is 336,600 chronological one-second
+windows. Commit and push the adapter before freezing its provider contract.
+
 Collector status: manifest `b3645a88...fb8438` independently rebuilt
 `COLLECTION_INSPECTED`. All 21 pairs reached one terminal disposition through
 13,219 chronological one-second windows: 19 `PREENTRY_INPUTS_COLLECTED` and two
@@ -171,6 +183,20 @@ python3 development_non_return_collection.py collect \
   historical_batches/development_tranche_v2/non_return_collection_manifests/<manifest>.json
 python3 development_non_return_collection.py inspect \
   historical_batches/development_tranche_v2/non_return_collection_manifests/<manifest>.json
+```
+
+For the second tranche, use only the scoped v3 adapter and its tranche-v3
+paths:
+
+```sh
+python3 development_non_return_collection_v3.py freeze
+python3 development_non_return_collection_v3.py inspect-contract \
+  historical_batches/development_tranche_v3/non_return_collection_manifests/<manifest>.json
+# Commit and push the inspected collector manifest before provider access.
+python3 development_non_return_collection_v3.py collect \
+  historical_batches/development_tranche_v3/non_return_collection_manifests/<manifest>.json
+python3 development_non_return_collection_v3.py inspect \
+  historical_batches/development_tranche_v3/non_return_collection_manifests/<manifest>.json
 ```
 
 ## Frozen V5 Result
