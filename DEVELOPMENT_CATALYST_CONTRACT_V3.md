@@ -3,9 +3,9 @@
 Planned dataset:
 `dataset-primary-source-semantics-contract-2026-07-20-development-v3`
 
-Status: manifest `412efc72...5043b8` is frozen and awaiting independent
-zero-state inspection; no target source, selected-symbol detail, or outcome
-access is authorized
+Status: manifest `412efc72...5043b8` is independently inspected
+`FROZEN_READY`; no target source, selected-symbol detail, or outcome access has
+occurred
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -41,10 +41,16 @@ hash `fc601a15...d530b1`, private selection hash
 freeze against the immutable 21,474,836,480-byte reserve. The target source
 namespace contained zero artifacts.
 
-This freeze is not yet an inspected source-acquisition authorization. The
-manifest, registration, documentation, and durable finding must be committed
-and pushed before `inspect`; the resulting zero-state must be committed and
-pushed separately before the first target source request.
+Independent inspection rebuilt all 1,871 private pair rows, 100 daily
+partitions, upstream hashes, implementation and dependency versions, source
+rules, acquisition order, capacity, privacy boundary, and outcome lock. It
+confirmed zero target source artifacts, zero selected-symbol detail, zero
+substitution, and zero outcomes. The resulting public status is
+`historical_batches/development_tranche_v3/catalyst-contract-status.json`.
+
+This permits only the next network-free source identity and request-graph
+contract. That graph must be committed and pushed before its first target
+source request.
 
 ## Runbook
 

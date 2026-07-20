@@ -80,8 +80,10 @@ before the first target source request.
 
 Source-semantics manifest `412efc72...5043b8` is now frozen from the pushed
 implementation with all 1,871 pairs and zero target source artifacts. It remains
-pending independent zero-state inspection and does not yet authorize target
-source acquisition.
+independently inspected `FROZEN_READY` with every upstream, rule,
+implementation, privacy, capacity, and outcome lock rebuilt. It authorizes only
+the next network-free source identity and request-graph freeze; target source
+access still requires that graph to be committed and pushed.
 
 ## Prior V2 Selection
 
