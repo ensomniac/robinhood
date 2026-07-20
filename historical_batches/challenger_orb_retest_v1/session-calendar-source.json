@@ -1,0 +1,18 @@
+{
+  "calendar_path": "historical_batches/challenger_orb_retest_v1/session-calendar-2023-01-through-2026-07.json",
+  "calendar_sha256": "0ef459092d53f8dcf101e9625d5cde6e5614cfca9e8b872c34dbd1d25f938ebb",
+  "dataset_id": "dataset-challenger-orb-retest-calendar-2026-07-20-v1",
+  "endpoint": "https://api.alpaca.markets/v2/calendar",
+  "first_session": "2023-01-03",
+  "last_session": "2026-07-17",
+  "manifest_sha256": "d0991e14bfd0658cb5b19f57e19873f0e7a3b2c19bd51d4102c3126bc2710c60",
+  "provider": "Alpaca Market Calendar API",
+  "query": {
+    "end": "2026-07-17",
+    "start": "2023-01-01"
+  },
+  "retrieved_at": "2026-07-20T22:32:38.283232+00:00",
+  "schema_version": 1,
+  "sessions": 887,
+  "target_outcomes_observed_or_derived": false
+}

@@ -95,3 +95,9 @@ It binds both published implementations, the exact Alpaca endpoint and
 2023-01-01/2026-07-17 query bounds, validation rules, output paths, and zero
 pre-freeze output artifacts. It must be committed and pushed before the single
 read-only calendar request.
+
+The request is now independently `COLLECTION_INSPECTED`: 887 sessions from
+2023-01-03 through 2026-07-17, calendar hash
+`0ef45909...938ebb`. Every row, query field, hour, ordering constraint, count,
+and hash rebuilds. No target session has yet been selected and no target market
+or outcome data was accessed.
