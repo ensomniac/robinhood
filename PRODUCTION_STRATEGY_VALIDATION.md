@@ -132,6 +132,13 @@ selection implementation is committed before freeze, its manifest is committed
 before reference access, and the later provider-bound scanner manifest is
 committed before market collection.
 
+The first disjoint tranche later produced 21 source-verified positives, but its
+independently inspected causal pre-entry collection retained only 19 complete
+inputs; two pairs had no clean cross before 10:30 across 13,219 exact
+one-second windows. No target outcome was accessed. Because the 20-survivor
+gate is impossible for that frozen corpus, the active handoff remains
+`DEVELOPMENT_ACQUISITION` for another exact disjoint 100-session tranche.
+
 ## Development, Challenger, And Confirmation Gates
 
 Outcome access starts only after an immutable contract freezes executable entry,

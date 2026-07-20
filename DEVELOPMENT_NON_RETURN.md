@@ -3,8 +3,9 @@
 Planned dataset:
 `dataset-development-non-return-qualification-2026-07-20-v5`
 
-Status: v5 manifest `bd4425a0...f7571e` independently rebuilt `FROZEN_READY`;
-zero selected-symbol market requests or target artifacts have occurred
+Status: collector manifest `b3645a88...fb8438` independently rebuilt
+`COLLECTION_INSPECTED`; 19 of 21 pairs have complete pre-entry inputs, two
+have no clean cross before 10:30, and no target outcome has been accessed
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -87,8 +88,18 @@ resulting collector manifest must then be inspected, committed, and pushed
 before `collect` can contact a provider.
 
 Collector status: manifest `b3645a88...fb8438` independently rebuilt
-`FROZEN_READY`; its 69,300-window maximum, provider settings, implementation
-hashes, privacy boundary, 20-GiB reserve, and zero-target state all reconcile.
+`COLLECTION_INSPECTED`. All 21 pairs reached one terminal disposition through
+13,219 chronological one-second windows: 19 `PREENTRY_INPUTS_COLLECTED` and two
+`NO_CLEAN_CROSS_BEFORE_CUTOFF`. Inspection rebuilt every pair hash, cursor,
+final-decision boundary, implementation/manifest identity, privacy boundary,
+and outcome lock. No provider row after a final decision and no target outcome
+was observed or derived.
+
+The exact tranche therefore cannot meet the minimum 20-survivor gate even
+before later non-return rejects are evaluated. Its outcomes remain locked. The
+campaign stays in `DEVELOPMENT_ACQUISITION` and must freeze another disjoint
+100-session tranche; neither missing capacity nor the two no-cross paths permit
+a rule change, substitution, or favorable outcome access.
 
 The collector checks the local exact cache first, preserves whole-provider raw
 Alpaca SIP fidelity, checkpoints every one-second search window atomically, and

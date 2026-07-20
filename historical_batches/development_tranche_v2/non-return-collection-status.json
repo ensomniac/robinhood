@@ -1,0 +1,29 @@
+{
+  "blocker": null,
+  "dataset_id": "dataset-development-non-return-preentry-collection-2026-07-20-v1",
+  "inspected": true,
+  "inspection": {
+    "chronological_search_cursors_reconciled": true,
+    "final_decision_boundaries_rechecked": true,
+    "manifest_and_implementation_rebuilt": true,
+    "pair_hashes_rebuilt": true,
+    "privacy_and_outcome_locks_rechecked": true,
+    "valid": true
+  },
+  "manifest_sha256": "b3645a88c07a949a1e183178a9668073d7d14ff953f084144351c82e19fb8438",
+  "one_second_windows_complete": 13219,
+  "pairs_expected": 21,
+  "pairs_recorded": 21,
+  "pairs_terminal": 21,
+  "post_entry_data_access_allowed": false,
+  "private_index_sha256": "858cd3258827ac48b85809247e22a535248284b3a506296f6011f1e55be98a37",
+  "provider_rows_after_final_decision": false,
+  "schema_version": 1,
+  "status": "COLLECTION_INSPECTED",
+  "symbols_dates_instrument_ids_raw_rows_and_requests_public": false,
+  "target_outcomes_observed_or_derived": false,
+  "terminal_counts": {
+    "NO_CLEAN_CROSS_BEFORE_CUTOFF": 2,
+    "PREENTRY_INPUTS_COLLECTED": 19
+  }
+}

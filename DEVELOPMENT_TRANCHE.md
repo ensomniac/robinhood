@@ -2,13 +2,22 @@
 
 Planned dataset: `dataset-development-tranche-2026-07-19-v2`
 
-Status: exact selection manifest `6bc3d685...ad4f82` is independently inspected
-`FROZEN_READY`, and scanner manifest `e500cf2a...85a3643` is independently
-inspected `READY`; no target outcome has been accessed or derived
+Status: the v2 acquisition chain is independently inspected through its
+manifest-bound pre-entry collector; 19 of 21 source-positive pairs retained
+complete pre-entry inputs and two had no clean cross before 10:30, so the
+20-survivor capacity gate failed and no target outcome was accessed or derived
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
 ## Why Another Tranche Is Required
+
+The completed v2 pre-entry collection traversed 13,219 exact one-second windows
+and independently rebuilt every cursor, pair hash, final-decision boundary,
+privacy lock, and zero-outcome claim. Its terminal aggregate is 19
+`PREENTRY_INPUTS_COLLECTED` and two `NO_CLEAN_CROSS_BEFORE_CUTOFF`. Because no
+more than 19 pairs can survive the remaining unchanged-v3 non-return gates, the
+v2 corpus closes outcome-blind and a new exact 100-session disjoint tranche is
+required.
 
 The completed source-recovery sequence leaves only three exact, deduplicated
 verified-positive catalyst pairs in the prior 100-date expansion. That is below
