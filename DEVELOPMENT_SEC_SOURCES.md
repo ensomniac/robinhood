@@ -163,6 +163,13 @@ boundaries. Commit and push the freezer and tests before it writes the private
 graph or frozen manifest; then commit and push the inspected zero-response
 manifest before any primary document request.
 
+Primary-document manifest `73d7223a...ab8538` is now independently rebuilt
+`FROZEN_READY`. It binds all 597 exact requests, 627 source-specific joins, 512
+affected pairs, private contract hash `279cd141...f309dc`, request graph hash
+`09a8bb48...aea5d`, join graph hash `bb9cae08...ff6a`, unchanged strategy and
+source lineage, the 20-GiB reserve, and zero target responses. Commit and push
+this zero-state before implementing or running the document collector.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 

@@ -1,0 +1,28 @@
+{
+  "counts": {
+    "candidate_document_observations": 597,
+    "duplicate_document_observations": 0,
+    "main_candidate_documents": 590,
+    "main_pair_document_joins": 620,
+    "pair_document_joins": 627,
+    "supplemental_candidate_documents": 7,
+    "supplemental_pair_document_joins": 7,
+    "unique_document_requests": 597,
+    "unique_pairs_with_document": 512
+  },
+  "dataset_id": "dataset-development-sec-primary-documents-2026-07-19-v2",
+  "document_request_graph_sha256": "09a8bb486e3dd6940ee8f70b466ab4148abd7523400bf3d15ace37569f2aea5d",
+  "manifest_sha256": "73d7223add12925324b585f226214095cf32909eeda08bc856a0e8c759ab8538",
+  "pair_document_join_graph_sha256": "bb9cae086da093530d552b43f118b267346f52bc0301a272d3886f1e5bb8ff6a",
+  "pre_freeze_target_response_artifact_count": 0,
+  "primary_documents_requested": false,
+  "private_contract_content_sha256": "279cd1417010735db88d17252f54dec33406de33ba6fa1afb9d8d03934f309dc",
+  "schema_version": 1,
+  "source_semantics_observed_or_derived": false,
+  "status": "FROZEN_READY",
+  "substitutions_allowed": false,
+  "symbols_ciks_accessions_urls_and_joins_public": false,
+  "target_outcomes_observed_or_derived": false,
+  "valid": true,
+  "verified_positive_catalyst_count": 0
+}

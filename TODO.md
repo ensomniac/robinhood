@@ -132,6 +132,11 @@ an empty document-response namespace. Its current aggregate rebuild yields 597
 unique document requests, 627 joins, and 512 affected pairs. Commit and push the
 freezer and tests, then freeze, inspect, register, commit, and push the exact
 zero-response document manifest before provider access.
+Manifest `73d7223a...ab8538` now independently rebuilds all 597 requests and 627
+joins with zero responses, no semantics, and no outcomes. Commit and push this
+zero-state, then implement and publish a manifest-bound, failure-isolated,
+resumable raw-document collector and independent inspector before accessing any
+document body.
 
 ## Completed 2026-07-19
 

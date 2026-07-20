@@ -199,3 +199,8 @@ current rebuild validates 597 exact SEC accession-bound requests, retains all
 cross-source duplicate document URL. The freezer must be committed and pushed
 before it can persist the private request graph or a public zero-response
 manifest.
+
+Manifest `73d7223a...ab8538` now freezes that exact union with private graph hash
+`279cd141...f309dc`, document-request hash `09a8bb48...aea5d`, join hash
+`bb9cae08...ff6a`, and zero document responses. Commit and push the manifest,
+aggregate status, registry event, and durable finding before document access.
