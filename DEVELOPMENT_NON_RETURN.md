@@ -9,6 +9,13 @@ have no clean cross before 10:30, and no target outcome has been accessed
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
+Second-tranche dataset:
+`dataset-development-non-return-qualification-2026-07-20-v3`
+
+Second-tranche status: the exact 102 combined source-positive pairs across 52
+dates rebuild outcome-blind with zero target artifacts; the v3 adapter is ready
+to commit before freeze
+
 ## Purpose
 
 `development_non_return.py` is the network-free boundary between the inspected
@@ -23,6 +30,29 @@ later observations remain under `LOCAL_HISTORICAL_DATA_ROOT`. The public
 manifest retains the complete 100-date source surface plus only counts and
 identity hashes for the positive subset. Post-entry prices and returns remain
 inaccessible.
+
+## Second-Tranche V3 Boundary
+
+`development_non_return_v3.py` isolates the second tranche without changing
+the completed 21-pair v5 evidence or its hash-bound implementation. It verifies
+the independently inspected 19-positive primary-document review and 83-positive
+accession recovery, requires every recovery decision to replace only a formerly
+unresolved pair, and rejoins the exact 102 disjoint positive hashes to all 1,871
+scanner-selected rows. A live read-only rebuild produces 102 positive pairs on
+52 dates, positive identity hash `af5c68f7...795478`, date hash
+`2c28e055...271cf2`, and request graph `d1f13baf...12f00`, with zero target
+artifacts.
+
+The adapter reuses the previously validated causal request shape while extending
+the frozen calendar and split-action window through 2025-12-31. It freezes 102
+opening prefixes, 102 premarket prefixes, 102 prior-history prefixes, 306
+conditional fully completed candidate/SPY/QQQ prefixes, 52 official halt dates,
+one split query, chronological one-second clean-cross discovery, a condition-
+eligible trade prefix, and the exact 0/5/10-second quote window. The current
+strategy remains `2026-07-15-orb-v3` at rules hash
+`00c3aa83...b4b5867`. Post-decision provider rows, missing-input optimism,
+substitution, and target outcomes remain forbidden. Commit and push the adapter,
+tests, documentation, and progress finding before freezing its private graph.
 
 ## Frozen Acquisition Boundary
 
@@ -64,6 +94,14 @@ Commit and push this implementation and its tests before freezing:
 
 ```sh
 python3 development_non_return.py freeze
+```
+
+For the second-tranche combined positive set, use the isolated adapter instead:
+
+```sh
+python3 development_non_return_v3.py freeze
+python3 development_non_return_v3.py inspect \
+  historical_batches/development_tranche_v3/non_return_manifests/<manifest>.json
 ```
 
 Then independently rebuild the private selection, source lineage, strategy
