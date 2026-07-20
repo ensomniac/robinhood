@@ -196,6 +196,15 @@ target artifacts. This contract authorizes only the network-free qualification
 pass after the manifest is committed and pushed; it does not authorize
 post-entry data, outcome derivation, alpha claims, or promotion.
 
+The v1 network-free builder completed, but independent inspection rejected its
+persisted result before publication. The first mismatch was representation-only:
+the evaluator returned tuples in memory while deterministic gzip JSON stored
+the same values as arrays, and the inspector compared those Python container
+types directly. The aggregate is therefore not accepted even though the
+underlying values matched. The immutable v1 artifact remains retained and
+outcome-locked. A separately versioned v2 contract must hash-bind a tested
+canonical-JSON comparison before the qualification can be rerun.
+
 ```sh
 python3 development_non_return_qualification_v3.py freeze
 python3 development_non_return_qualification_v3_inspection.py inspect-contract \

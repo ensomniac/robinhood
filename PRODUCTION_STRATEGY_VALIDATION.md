@@ -198,6 +198,13 @@ closed outcome lock. No qualification result or target artifact existed at
 freeze. Evaluation remains prohibited until this manifest and its public
 aggregate status are committed and pushed.
 
+The v1 builder result failed independent inspection because its persisted JSON
+arrays were compared directly with semantically identical in-memory evaluator
+tuples. No gate value or terminal reason was accepted from that failed result,
+and outcomes remain locked. The v1 artifact is retained as failed evidence; a
+new v2 qualification dataset will freeze the canonical JSON comparison repair
+before reevaluation.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
