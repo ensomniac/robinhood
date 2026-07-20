@@ -78,8 +78,9 @@ Market manifest `e500cf2a...85a3643` is independently inspected `READY`: all
 243 sessions completed with 30,075 Alpaca SIP requests, zero retries, and zero
 substitution; the inspector rebuilt 100 rankings across 516,335 evaluations and
 verified 1,245,715 canonical documents. No target outcome was accessed or
-derived. Next: freeze the exact 1,906 selected date/symbol pairs and their
-primary-source catalyst contract before any detailed or outcome access.
+derived. Selected-pair manifest `a1362e19...9c834f` now freezes all 1,906 exact
+date/symbol pairs outside Git with no substitutions or downstream access. Commit
+and push that manifest before freezing the primary-source catalyst contract.
 
 ## Completed 2026-07-19
 

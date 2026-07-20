@@ -151,5 +151,7 @@ separate Alpaca comparison that matched every date, open, close, and early close
 This closes scanner selection fidelity for this disjoint tranche only. Catalyst
 ownership, issuer binding, causal timestamp, direction, conflict, quote/book,
 tradability, clean-trigger, execution, and outcome evidence remain absent or
-locked. The next acquisition layer must freeze the exact 1,906 selected
-date/symbol pairs and their primary-source semantics before reading any outcome.
+locked. Selected-pair manifest `a1362e19...9c834f` now freezes the exact 1,906
+date/symbol pairs outside Git with zero substitution and no downstream access.
+The next acquisition layer must commit their primary-source semantics before
+requesting any target source, selected-symbol detail, or outcome.

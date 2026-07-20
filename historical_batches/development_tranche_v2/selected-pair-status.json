@@ -1,0 +1,20 @@
+{
+  "dataset_id": "dataset-selected-candidate-contract-2026-07-19-development-v2",
+  "dates_below_20": 12,
+  "manifest_sha256": "a1362e198a6a6f05adf0da966236d5f2bec6bb82a395703255aa13f8299c834f",
+  "minimum_shortlist_count": 6,
+  "private_selection_content_sha256": "c09a4ede0cfec098eb7d27ed8d8c1ba96d88eb2d2a51d83ada6d747c04adafc8",
+  "private_selection_outside_repository": true,
+  "requested_dates": 100,
+  "schema_version": 1,
+  "selected_pair_count": 1906,
+  "source_dataset_id": "dataset-production-scanner-replay-2026-07-19-development-v2",
+  "source_detail_sha256": "e78ac8271bcb5197a8b203823736eb766854011d41f4150553fcf9f5a7ac583b",
+  "source_manifest_sha256": "e500cf2a9a3f63f97496b76d31ffaf98d7e849696835c707fb7daf4fe85a3643",
+  "source_outcomes_observed_or_derived": false,
+  "source_summary_sha256": "909a12e6f5638450f5a9c673b022f5ca2ce5a03d8045e5b04d087b378106bcc8",
+  "status": "FROZEN_WAITING_SOURCE_CONTRACT",
+  "substitutions_allowed": false,
+  "target_catalyst_or_detailed_inputs_accessed": false,
+  "target_outcomes_observed_or_derived": false
+}
