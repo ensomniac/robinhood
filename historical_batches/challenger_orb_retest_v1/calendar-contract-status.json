@@ -1,0 +1,10 @@
+{
+  "dataset_id": "dataset-challenger-orb-retest-calendar-2026-07-20-v1",
+  "implementation_and_query_rebuilt": true,
+  "inspected": true,
+  "manifest_sha256": "d0991e14bfd0658cb5b19f57e19873f0e7a3b2c19bd51d4102c3126bc2710c60",
+  "pre_freeze_output_artifacts": 0,
+  "schema_version": 1,
+  "status": "FROZEN_READY",
+  "target_outcomes_observed_or_derived": false
+}

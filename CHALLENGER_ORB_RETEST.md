@@ -89,3 +89,9 @@ python3 challenger_orb_retest_calendar.py collect \
 python3 challenger_orb_retest_calendar_inspection.py inspect \
   historical_batches/challenger_orb_retest_v1/calendar_manifests/<manifest>.json
 ```
+
+Calendar manifest `d0991e14...710c60` is now independently `FROZEN_READY`.
+It binds both published implementations, the exact Alpaca endpoint and
+2023-01-01/2026-07-17 query bounds, validation rules, output paths, and zero
+pre-freeze output artifacts. It must be committed and pushed before the single
+read-only calendar request.
