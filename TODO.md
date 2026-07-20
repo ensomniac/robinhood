@@ -86,8 +86,12 @@ independent rebuild against the existing source-semantics rules, upstream
 hashes, privacy boundary, recovery order, zero-artifact preflight, and outcome
 lock. Manifest `04cb2640...164c2b` now independently rebuilds `FROZEN_READY`
 with all 1,906 pairs, zero target-source artifacts, zero downstream detail, and
-no outcome access. Commit and push the manifest and zero-state before the first
-target-source request.
+no outcome access. `development_sec_sources.py` now implements the next
+network-free boundary: exact point-in-time master matching, retained missing
+CIKs, a private SEC submissions graph, frozen forms/window/pacing/cache/error
+semantics, staged document manifests, and zero target responses. Commit and push
+this implementation before freezing and publishing the exact SEC request
+manifest; do not contact SEC before that second commit.
 
 ## Completed 2026-07-19
 

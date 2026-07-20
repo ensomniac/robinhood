@@ -155,3 +155,12 @@ locked. Selected-pair manifest `a1362e19...9c834f` now freezes the exact 1,906
 date/symbol pairs outside Git with zero substitution and no downstream access.
 The next acquisition layer must commit their primary-source semantics before
 requesting any target source, selected-symbol detail, or outcome.
+
+Primary-source manifest `04cb2640...164c2b` now freezes those semantics and its
+zero-source state. `development_sec_sources.py` implements the next network-free
+boundary: exact instrument/symbol/exchange/date identity resolution, explicit
+missing-CIK retention, SEC submissions forms and cutoff, frozen pacing and
+cache behavior, private request rows, per-CIK failures, staged accession-bound
+documents, and a zero-response preflight. The implementation must be committed
+before freezing the exact request graph, and that manifest must be committed
+before any SEC target request.
