@@ -31,7 +31,9 @@ from learning_data import (
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DATASET_ID = "dataset-development-non-return-qualification-2026-07-20-v3"
+DATASET_ID = (
+    "dataset-development-non-return-qualification-2026-07-20-tranche-v3-v1"
+)
 SELECTED_PAIR_MANIFEST = (
     PROJECT_ROOT
     / "historical_batches/development_tranche_v3/selected_pair_manifests"

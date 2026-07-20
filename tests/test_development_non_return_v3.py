@@ -118,5 +118,15 @@ def test_v3_private_namespace_isolated_from_completed_v2() -> None:
     assert non_return._private_root(root) == (
         root
         / "_derived/development_non_return"
+        / "dataset-development-non-return-qualification-2026-07-20-tranche-v3-v1"
+    )
+
+
+def test_v3_private_namespace_cannot_alias_superseded_contract() -> None:
+    root = non_return.Path("/historical")
+    old = (
+        root
+        / "_derived/development_non_return"
         / "dataset-development-non-return-qualification-2026-07-20-v3"
     )
+    assert non_return._private_root(root) != old

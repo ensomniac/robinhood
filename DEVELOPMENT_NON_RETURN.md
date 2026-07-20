@@ -10,7 +10,7 @@ have no clean cross before 10:30, and no target outcome has been accessed
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
 Second-tranche dataset:
-`dataset-development-non-return-qualification-2026-07-20-v3`
+`dataset-development-non-return-qualification-2026-07-20-tranche-v3-v1`
 
 Second-tranche status: the exact 102 combined source-positive pairs across 52
 dates rebuild outcome-blind with zero target artifacts; the v3 adapter is ready
@@ -53,6 +53,10 @@ strategy remains `2026-07-15-orb-v3` at rules hash
 `00c3aa83...b4b5867`. Post-decision provider rows, missing-input optimism,
 substitution, and target outcomes remain forbidden. Commit and push the adapter,
 tests, documentation, and progress finding before freezing its private graph.
+The first freeze attempt correctly failed before writing because the shorter
+`...-v3` identifier already belongs to a superseded first-tranche contract.
+The explicit `...-tranche-v3-v1` identity prevents that cross-tranche alias and
+leaves the older private evidence unchanged.
 
 ## Frozen Acquisition Boundary
 
