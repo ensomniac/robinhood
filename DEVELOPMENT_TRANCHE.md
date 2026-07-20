@@ -180,3 +180,9 @@ materiality remain unclassified. The responses expose 689 historical
 supplemental descriptors; freeze only the exact target-window overlap before
 requesting any of them. No supplemental file, primary document, selected-market
 detail, or outcome was accessed.
+
+Supplemental manifest `1e2900ae...bc558a` independently proves that six of the
+689 descriptors overlap at least one frozen pair source window and 683 are
+outside all windows. It freezes the exact private six-request graph with zero
+target responses, no substitution, and primary-document/outcome locks. Commit
+and push this zero-state before any supplemental request.

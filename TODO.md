@@ -111,7 +111,10 @@ window-overlap supplemental manifest before requesting any supplemental file.
 retains six exact window-overlap requests while excluding 683 older-history
 descriptors. Invalid ranges fail toward conservative inclusion. Commit and push
 the freezer and tests, then freeze, inspect, register, commit, and push its
-zero-response manifest before requesting any of the six files.
+zero-response manifest before requesting any of the six files. Manifest
+`1e2900ae...bc558a` now independently rebuilds six overlap requests, 683
+exclusions, and zero responses. Commit and push its status, registry event,
+documentation, and durable finding before supplemental collection.
 
 ## Completed 2026-07-19
 

@@ -1,0 +1,22 @@
+{
+  "dataset_id": "dataset-development-sec-supplemental-2026-07-19-v2",
+  "decision_graph_sha256": "6c1a78b792f27eab81484dfeeec92860ae962b9e7e65297d858c759664fa7785",
+  "descriptor_count": 689,
+  "disposition_counts": {
+    "EXCLUDED_OUTSIDE_WINDOWS": 683,
+    "SELECTED_WINDOW_OVERLAP": 6
+  },
+  "excluded_request_count": 683,
+  "manifest_sha256": "1e2900aedffd20e0c465e0c9e4b8236aa6693711806abd3351c34e4044bc558a",
+  "pre_freeze_target_response_artifact_count": 0,
+  "primary_documents_requested": false,
+  "private_contract_content_sha256": "a6d5cc957fc65a21dacdc9e6ae5353cb0745390842fac9bdd9bda96910915df6",
+  "schema_version": 1,
+  "selected_request_count": 6,
+  "selected_request_graph_sha256": "2baf6c43312f603e36458ed868728219ec4629de8b768da911b21533315a6a4f",
+  "status": "FROZEN_READY",
+  "substitutions_allowed": false,
+  "supplemental_files_requested": false,
+  "target_outcomes_observed_or_derived": false,
+  "valid": true
+}

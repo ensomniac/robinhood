@@ -116,6 +116,14 @@ not mistaken for the original collector commit, while the collector bytes must
 still match their recorded hash and pushed source. Commit and push this
 implementation before freezing the six-request manifest.
 
+Supplemental manifest `1e2900ae...bc558a` now independently rebuilds
+`FROZEN_READY`. It binds all 689 descriptor decisions, exactly six overlap
+requests, 683 exclusions, private contract hash `a6d5cc95...915df6`, request
+graph hash `2baf6c43...15a6a4f`, decision hash
+`6c1a78b7...fa7785`, unchanged source/strategy lineage, and zero target
+supplemental responses. Commit and push the manifest and status before
+requesting any of the six files.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 
