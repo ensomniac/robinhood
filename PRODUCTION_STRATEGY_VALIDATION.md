@@ -137,6 +137,14 @@ conflicts, the original no-source denominator, aggregate privacy, and every
 outcome lock. Provider access requires the implementation and then its exact
 manifest to be committed and pushed in separate slices.
 
+That accession-chain collection is now independently inspected: 417/417 exact
+requests succeeded with no substitution, 577 `EX-99` source rows rebuilt, and
+83 additional pairs reached verified positive under the frozen rules. Exact
+deduplication with the prior 19 produces 102 combined positive pairs. This
+passes the source-capacity gate only. Outcomes remain locked while a separately
+frozen `DEVELOPMENT_ACQUISITION` contract applies every unchanged-v3 non-return
+gate and proves at least 20 complete survivors.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

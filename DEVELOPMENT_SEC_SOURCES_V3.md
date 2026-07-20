@@ -2,9 +2,9 @@
 
 Planned dataset: `dataset-development-sec-primary-sources-2026-07-20-v3`
 
-Status: the primary-document semantics review is independently inspected at 19
-verified-positive pairs; accession-chain recovery is ready to freeze, and
-outcomes remain locked
+Status: accession-chain recovery is independently inspected at 102 combined
+verified-positive pairs; the campaign advances to non-return development
+acquisition, and outcomes remain locked
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -251,6 +251,19 @@ capacity, privacy, and outcome locks match. The private target namespace still
 contains one frozen selection and zero terminal wrappers, collection indexes,
 or reviewed results. Commit and push this inspected aggregate and registry
 transition before running `collect`.
+
+Collection and review are now independently `READY`. All 417 exact requests
+succeeded with zero failures or substitutions and retained 1,050,292,649 raw
+bytes outside Git. Inspection rehashed those bytes, rebuilt 577 issuer-filed
+`EX-99` source rows, and reconciled all 377 pairs. Recovery adds 83 verified
+positive pairs, while 98 are conflicts, 16 are negative, and 180 remain
+unresolved; exact private deduplication lifts combined positive capacity from
+19 to 102. Private result hash `b1943d15...e92de` matches the public aggregate.
+This passes the 20-positive source-capacity gate and moves the campaign to
+`DEVELOPMENT_ACQUISITION`, but it does not permit outcomes. The next contract
+must freeze and apply every unchanged-v3 non-return gate to the exact combined
+positive set and retain at least 20 complete survivors before any outcome
+contract can be considered.
 
 ## Runbook
 
