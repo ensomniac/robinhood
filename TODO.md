@@ -95,6 +95,12 @@ manifest. Manifest `ecabc373...83d264` now rebuilds all 1,906 master matches,
 1,905 CIK-bearing pairs, one missing-CIK row, seven listing-scoped observations,
 and 605 unique submissions requests with zero target responses. Commit and push
 the manifest, status, registry event, and documentation before contacting SEC.
+`development_sec_submissions.py` now implements a pushed-source gate, shared-
+cache-first per-CIK collection, atomic terminal wrappers, failure isolation,
+idempotent resume, private filing/supplemental/document derivation, and an
+independent raw-response rebuild. Commit and push it before running the 605
+frozen submissions requests; primary documents and supplemental files remain
+forbidden until separately frozen.
 
 ## Completed 2026-07-19
 

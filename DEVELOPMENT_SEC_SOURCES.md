@@ -62,6 +62,31 @@ Commit and push the inspected manifest and public status before contacting SEC.
 The later collector must consume only that committed manifest, record a terminal
 result for every unique CIK, and keep all response bodies outside Git.
 
+`development_sec_submissions.py` implements that bounded collector and its
+independent inspector. It refuses provider access unless its own bytes and the
+frozen manifest are present at a clean path in `HEAD` and `HEAD` equals the
+pushed upstream. Each CIK receives an atomic private success or failure wrapper;
+one failure does not stop other CIKs, and a resumed run skips only wrappers that
+revalidate against the request, manifest, collector, and retained source hash.
+
+The collector reads the shared SEC cache before downloading, records target-
+specific cache provenance, rehashes raw response bytes, requires the response
+CIK to match, and applies the frozen precise acceptance-time window. It derives
+candidate accession-bound document requests and supplementary submissions
+requests but cannot fetch them. Independent inspection re-reads every raw
+success, rebuilds every join and aggregate, reconciles failures and the missing-
+CIK row, and verifies the public/private boundary.
+
+After the collector implementation is committed and pushed, stage one runs as:
+
+```sh
+python3 development_sec_submissions.py collect
+python3 development_sec_submissions.py inspect
+```
+
+The derived supplemental and document graphs still require their own committed
+manifests before any additional provider request.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 
