@@ -124,6 +124,19 @@ graph hash `2baf6c43...15a6a4f`, decision hash
 supplemental responses. Commit and push the manifest and status before
 requesting any of the six files.
 
+`development_sec_supplemental_collection.py` implements the corresponding
+pushed-source collector and independent inspector. It consumes only the six
+private frozen requests, uses the shared SEC cache first, isolates every
+provider or parser failure, and resumes from revalidated atomic wrappers. SEC
+supplemental files are parsed as top-level columnar filing metadata; precise
+acceptance time and the original 09:35 ET pair cutoff are re-applied before any
+new accession-bound document candidate is retained.
+
+Raw supplemental bytes, CIKs, symbols, accessions, and URLs remain outside Git.
+The collector derives but cannot fetch primary documents, and it cannot access
+outcomes. Commit and push the collector and tests before the six-file provider
+pass.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 

@@ -115,6 +115,11 @@ zero-response manifest before requesting any of the six files. Manifest
 `1e2900ae...bc558a` now independently rebuilds six overlap requests, 683
 exclusions, and zero responses. Commit and push its status, registry event,
 documentation, and durable finding before supplemental collection.
+`development_sec_supplemental_collection.py` now adds a pushed-source gate,
+shared-cache-first six-file collection, atomic terminal wrappers, idempotent
+resume, top-level columnar parsing, precise pair-window joins, private document
+derivation, and independent raw-byte inspection. Commit and push the collector
+and tests before running the six frozen requests.
 
 ## Completed 2026-07-19
 
