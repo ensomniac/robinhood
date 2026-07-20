@@ -1,5 +1,5 @@
 {
-  "dataset_id": "dataset-development-non-return-qualification-2026-07-19-v2",
+  "dataset_id": "dataset-development-non-return-qualification-2026-07-20-v3",
   "inspected": true,
   "inspection": {
     "coarse_scanner_gates_rechecked": true,
@@ -12,15 +12,15 @@
     "valid": true,
     "zero_target_artifacts_rechecked": true
   },
-  "manifest_sha256": "6b5b24cbe049a789ea888a5250975c9f99497be16ee13d72173b2dbab308210c",
+  "manifest_sha256": "9b1fefade98f9d3e01416cbe8a1f60c7afb47df87384c4e238670591bca81c5b",
   "minimum_non_return_survivors_before_outcomes": 20,
   "outcome_contract_permitted": false,
   "positive_date_identity_sha256": "304134d8e9a328edfa0efb4bc1d5f004dc16e3cf5d9982d5d64eca1d23b5cf24",
   "positive_pair_identity_sha256": "4de0c32b2502aebdbbe59d14758b3f450ad6e2e99713a0c63e0fd4bd1cbc2b09",
   "post_entry_requests_allowed": false,
-  "private_contract_file_sha256": "75b8b0ecb036ff716d98b64652a45b6d7e66f4318a4ac4ac78a0755a2d4bc3db",
-  "private_positive_selection_sha256": "7e42d22dac524b37380b727fbe8ff1e0a74bc95fc58a9c477ba4274e8975a0c0",
-  "private_request_graph_sha256": "4b4dd86d21324c7eb608953a0246600e4c1226890863b9b88307e35256db816b",
+  "private_contract_file_sha256": "929c3826da96229f6a59d10ba627f64f09038e8d3e5a249e834213ac151a97cc",
+  "private_positive_selection_sha256": "1b81562b75eff2318ff008e880684a9463adb0e088f626fd9dd933e64cbcb575",
+  "private_request_graph_sha256": "913ae6f6dfe58b7d2c5e528ef5e79dad480954268a3667a927ed33df8f92810c",
   "request_counts": {
     "benchmark_bar_prefixes": 42,
     "candidate_bar_prefixes": 21,

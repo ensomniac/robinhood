@@ -256,3 +256,10 @@ frozen +10-second snapshot. The v3 implementation corrects only this causal
 boundary: one-second tape windows are searched chronologically and stop at the
 first clean cross, while decision-prefix and quote evidence end exactly at +10
 seconds. Freeze, inspect, commit, and push v3 before collection.
+
+V3 manifest `9b1fefa...81c5b` independently rebuilt `FROZEN_READY` with the
+same exact 21 source-positive pairs on 21 dates and zero target artifacts. Its
+private positive-selection hash is `1b81562b...bcb575` and its repaired request
+graph hash is `913ae6f6...2810c`. The provider collector must bind this exact
+manifest and be separately frozen, inspected, committed, and pushed before any
+selected-symbol request.
