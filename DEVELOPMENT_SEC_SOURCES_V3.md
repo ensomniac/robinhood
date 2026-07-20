@@ -2,8 +2,9 @@
 
 Planned dataset: `dataset-development-sec-primary-sources-2026-07-20-v3`
 
-Status: all 611 frozen SEC submissions requests are independently inspected;
-supplemental files, primary documents, semantics, and outcomes remain locked
+Status: the primary-document semantics review is independently inspected at 19
+verified-positive pairs; accession-chain recovery is ready to freeze, and
+outcomes remain locked
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -210,6 +211,27 @@ URLs, timestamps, and decisions remain outside Git. Nineteen is below the
 mandatory 20-positive source-capacity gate, so this corpus returns to
 `SOURCE_RECOVERY`. Outcomes and non-return acquisition remain locked.
 
+`development_sec_accession_chain_recovery.py` implements the next bounded
+recovery surface without changing the frozen v3 classifier. The 377 unresolved
+source-bearing pairs map to 436 prior pair/source joins and 417 unique SEC
+accessions. Most primary 8-K/6-K documents are Item 9.01 stubs; the exact SEC
+complete-submission endpoint can retain their issuer-filed `EX-99` exhibits.
+The recovery selects the entire unresolved source-bearing set before access,
+not a favorable subset, and excludes the 1,372 no-source pairs without erasing
+them from the original denominator.
+
+The freezer binds the prior inspected result and private hash, exact pair,
+request, and join graphs, pushed implementation, SEC pacing and user-agent
+hash, 100-MiB response bound, 20-GiB reserve, unchanged positive, negative,
+nonmaterial, financing-first, and terminal rules, and the closed outcome lock.
+Collection is shared-cache-first, accession-checkpointed, failure-isolated, and
+resumable. Review is network-free, classifies only `EX-99` blocks, preserves
+failed and no-exhibit accessions as terminal rows, and independently rebuilds
+both source and complete 377-pair aggregates. No secondary source, provider
+substitution, post-entry data, or production-rule change is permitted. Commit
+and push the implementation before freezing the exact manifest; commit and
+push that manifest before any of the 417 requests.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
@@ -333,3 +355,27 @@ the same identities and inputs plus `--manifest <frozen-manifest>` and
 `--public-status historical_batches/development_tranche_v3/sec-semantics-status.json`.
 Extraction and review remain prohibited until that independent zero-artifact
 status is separately committed and pushed.
+
+After the accession-chain implementation is committed and pushed, freeze its
+complete outcome-blind request and review contract:
+
+```sh
+python3 development_sec_accession_chain_recovery.py freeze
+```
+
+Commit and push the returned hash-addressed manifest and public `FROZEN_READY`
+status before provider access. Then run the exact graph, review only under the
+frozen rules, and independently rebuild it:
+
+```sh
+python3 development_sec_accession_chain_recovery.py collect \
+  --manifest <frozen-manifest>
+python3 development_sec_accession_chain_recovery.py review \
+  --manifest <frozen-manifest>
+python3 development_sec_accession_chain_recovery.py inspect \
+  --manifest <frozen-manifest>
+```
+
+Even if the combined verified-positive count reaches 20, this stage only moves
+the campaign to `DEVELOPMENT_ACQUISITION`; a separately frozen unchanged-v3
+non-return survivor contract remains mandatory before any outcome access.

@@ -124,6 +124,19 @@ detail, and preserve the configured 20-GiB reserve. A demonstrated need for a
 paid archive produces a vendor/tier memo and `WAITING_SUBSCRIPTION`; the agent
 does not purchase access or fabricate credentials.
 
+For the second disjoint tranche, all 557 primary-document requests succeeded,
+but the frozen review retained 19 verified-positive pairs and 377 causal,
+exact-CIK-bound pairs whose filing document was semantically unresolved. The
+complete unresolved surface contains 436 joins to 417 unique accessions, mostly
+8-K/6-K Item 9.01 stubs. `development_sec_accession_chain_recovery.py`
+therefore freezes each exact SEC complete-submission endpoint before access and
+applies the unchanged v3 rules only to issuer-filed `EX-99` exhibits. This is a
+primary accession document-chain recovery, not a new mechanism or favorable
+symbol selection. It preserves capture failures, missing exhibits, financing
+conflicts, the original no-source denominator, aggregate privacy, and every
+outcome lock. Provider access requires the implementation and then its exact
+manifest to be committed and pushed in separate slices.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
