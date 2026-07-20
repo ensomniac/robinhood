@@ -211,6 +211,13 @@ canonical JSON bytes, which is the persisted evidence representation, while
 still rebuilding every pair and aggregate separately. The original v1 manifest,
 status, and private result remain unchanged.
 
+V2 manifest `0140ac92...7c4f0` is independently `FROZEN_READY`. It
+rebinds the same exact 102-pair denominator, 75 input-ready records, v3 rules,
+upstream hashes, terminal order, privacy contract, and 20-survivor gate to the
+repaired inspector. Zero v2 private artifacts existed at freeze, and outcomes
+remain locked until the manifest is committed, pushed, evaluated, and then
+independently inspected.
+
 ```sh
 python3 development_non_return_qualification_v3.py freeze
 python3 development_non_return_qualification_v3_inspection.py inspect-contract \

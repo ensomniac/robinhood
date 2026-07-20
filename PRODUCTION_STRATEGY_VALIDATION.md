@@ -210,6 +210,11 @@ artifact from v1. Its only intended semantic change is canonical persisted-JSON
 comparison during independent inspection; all v3 gates, upstream inputs,
 terminal precedence, privacy boundaries, and outcome locks remain unchanged.
 
+V2 manifest `0140ac92...7c4f0` now independently rebuilds as
+`FROZEN_READY` with zero v2 target artifacts. It is the only active
+qualification contract; evaluation is prohibited until this exact manifest and
+its aggregate contract status are committed and pushed.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
