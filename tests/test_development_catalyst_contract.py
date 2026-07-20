@@ -8,6 +8,7 @@ from development_catalyst_contract import (
     DATASET_ID,
     DevelopmentCatalystContractError,
     PROJECT_ROOT,
+    _acquisition_contract,
     _rebuild_selection,
     _sha256_json,
     _source_rules,
@@ -175,6 +176,54 @@ class DevelopmentCatalystContractTests(unittest.TestCase):
                 json.dump(value, target)
             with self.assertRaises(DevelopmentCatalystContractError):
                 _rebuild_selection(source, store)
+
+    def test_custom_dataset_identity_scopes_private_sources_and_inspection(self):
+        with tempfile.TemporaryDirectory(
+            dir=PROJECT_ROOT
+        ) as directory, tempfile.TemporaryDirectory() as store_directory:
+            root = Path(directory)
+            env, source_path, _store = self._fixture(root, Path(store_directory))
+            dataset_id = "dataset-primary-source-semantics-contract-fixture-v3"
+            output = root / "manifests"
+            manifest_path, manifest = freeze_contract(
+                source_manifest_path=source_path,
+                env_path=env,
+                output_root=output,
+                dataset_id=dataset_id,
+            )
+            self.assertEqual(manifest["dataset_id"], dataset_id)
+            self.assertEqual(
+                manifest["acquisition_contract"]["target_source_namespace"],
+                "LOCAL_HISTORICAL_DATA_ROOT/"
+                f"_derived/development_catalyst_sources/{dataset_id}/",
+            )
+            self.assertEqual(
+                _acquisition_contract(dataset_id)["target_source_namespace"],
+                manifest["acquisition_contract"]["target_source_namespace"],
+            )
+            status = inspect_contract(
+                manifest_path=manifest_path,
+                source_manifest_path=source_path,
+                env_path=env,
+                status_path=root / "status.json",
+                dataset_id=dataset_id,
+            )
+            self.assertEqual(status["dataset_id"], dataset_id)
+            self.assertEqual(status["status"], "FROZEN_READY")
+
+    def test_custom_dataset_identity_rejects_wrong_namespace(self):
+        with tempfile.TemporaryDirectory(
+            dir=PROJECT_ROOT
+        ) as directory, tempfile.TemporaryDirectory() as store_directory:
+            root = Path(directory)
+            env, source_path, _store = self._fixture(root, Path(store_directory))
+            with self.assertRaises(DevelopmentCatalystContractError):
+                freeze_contract(
+                    source_manifest_path=source_path,
+                    env_path=env,
+                    output_root=root / "manifests",
+                    dataset_id="unsafe-dataset",
+                )
 
     def test_preexisting_target_source_artifact_blocks_freeze(self):
         with tempfile.TemporaryDirectory(

@@ -72,6 +72,12 @@ and the minimum is three without substitution. The exact pair identities remain
 outside Git, and source, selected-symbol detail, and outcome access are still
 forbidden pending the next pushed contract.
 
+The primary-source contract builder is now version-parameterized for this exact
+pair surface and scanner lineage without changing the established source rules.
+Its implementation must be tested, committed, and pushed before the v3 source
+contract is frozen; the frozen zero-state must then be inspected and pushed
+before the first target source request.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated

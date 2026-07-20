@@ -69,6 +69,7 @@ DEFAULT_PUBLIC_STATUS = (
     PROJECT_ROOT
     / "historical_batches/development_tranche_v2/catalyst-contract-status.json"
 )
+DEFAULT_SELECTION_DOC = PROJECT_ROOT / "DEVELOPMENT_SELECTED_PAIRS.md"
 PRIVATE_NAMESPACE = "_derived/development_catalyst_sources"
 
 
@@ -280,7 +281,7 @@ def _source_rules() -> dict[str, Any]:
     }
 
 
-def _acquisition_contract() -> dict[str, Any]:
+def _acquisition_contract(dataset_id: str = DATASET_ID) -> dict[str, Any]:
     return {
         "recovery_order": [
             "accession-bound SEC-operated endpoints with a compliant user agent",
@@ -293,7 +294,7 @@ def _acquisition_contract() -> dict[str, Any]:
         "paid_archive_policy": "decision memo and WAITING_SUBSCRIPTION; no automatic purchase or fabricated credential",
         "target_source_namespace": (
             "LOCAL_HISTORICAL_DATA_ROOT/"
-            f"{PRIVATE_NAMESPACE}/{DATASET_ID}/"
+            f"{PRIVATE_NAMESPACE}/{dataset_id}/"
         ),
     }
 
@@ -311,14 +312,22 @@ def _outcome_lock() -> dict[str, Any]:
     }
 
 
-def _upstream_contract(source_manifest_path: Path) -> dict[str, Any]:
+def _upstream_contract(
+    source_manifest_path: Path,
+    *,
+    scanner_manifest_path: Path = SCANNER_MANIFEST,
+    scanner_summary_path: Path = SCANNER_SUMMARY,
+    scanner_inspection_path: Path = SCANNER_INSPECTION,
+    security_master_source_path: Path = SECURITY_MASTER_SOURCE,
+    strategy_source_path: Path = STRATEGY_SOURCE,
+) -> dict[str, Any]:
     paths = {
         "selected_pair_manifest": source_manifest_path,
-        "scanner_manifest": SCANNER_MANIFEST,
-        "scanner_summary": SCANNER_SUMMARY,
-        "scanner_inspection": SCANNER_INSPECTION,
-        "security_master_source": SECURITY_MASTER_SOURCE,
-        "strategy_source": STRATEGY_SOURCE,
+        "scanner_manifest": scanner_manifest_path,
+        "scanner_summary": scanner_summary_path,
+        "scanner_inspection": scanner_inspection_path,
+        "security_master_source": security_master_source_path,
+        "strategy_source": strategy_source_path,
     }
     return {
         name: {"path": _repo_path(path), "sha256": _sha256_file(path)}
@@ -346,12 +355,24 @@ def _implementation_contract() -> dict[str, Any]:
 
 
 def _stable_contract(
-    *, source_manifest_path: Path, env_path: Path
+    *,
+    source_manifest_path: Path,
+    env_path: Path,
+    dataset_id: str = DATASET_ID,
+    scanner_manifest_path: Path = SCANNER_MANIFEST,
+    scanner_summary_path: Path = SCANNER_SUMMARY,
+    scanner_inspection_path: Path = SCANNER_INSPECTION,
+    security_master_source_path: Path = SECURITY_MASTER_SOURCE,
+    strategy_source_path: Path = STRATEGY_SOURCE,
 ) -> tuple[dict[str, Any], HistoricalStoreConfig]:
+    if not dataset_id.startswith("dataset-primary-source-semantics-contract-"):
+        raise DevelopmentCatalystContractError(
+            "source-semantics dataset namespace is invalid"
+        )
     config = HistoricalStoreConfig.from_env(env_path)
     source_manifest = load_frozen_dataset_contract(source_manifest_path)
     selection = _rebuild_selection(source_manifest, config.root)
-    artifact_count = _target_artifact_count(config.root, DATASET_ID)
+    artifact_count = _target_artifact_count(config.root, dataset_id)
     if artifact_count:
         raise DevelopmentCatalystContractError(
             "target source artifacts exist before the source contract freeze"
@@ -359,9 +380,16 @@ def _stable_contract(
     return (
         {
             "selection_contract": selection,
-            "upstream_contract": _upstream_contract(source_manifest_path),
+            "upstream_contract": _upstream_contract(
+                source_manifest_path,
+                scanner_manifest_path=scanner_manifest_path,
+                scanner_summary_path=scanner_summary_path,
+                scanner_inspection_path=scanner_inspection_path,
+                security_master_source_path=security_master_source_path,
+                strategy_source_path=strategy_source_path,
+            ),
             "source_rules": _source_rules(),
-            "acquisition_contract": _acquisition_contract(),
+            "acquisition_contract": _acquisition_contract(dataset_id),
             "private_record_contract": {
                 "exact_rows_outside_git": True,
                 "required_fields": [
@@ -385,12 +413,29 @@ def _stable_contract(
 
 
 def freeze_contract(
-    *, source_manifest_path: Path, env_path: Path, output_root: Path
+    *,
+    source_manifest_path: Path,
+    env_path: Path,
+    output_root: Path,
+    dataset_id: str = DATASET_ID,
+    scanner_manifest_path: Path = SCANNER_MANIFEST,
+    scanner_summary_path: Path = SCANNER_SUMMARY,
+    scanner_inspection_path: Path = SCANNER_INSPECTION,
+    security_master_source_path: Path = SECURITY_MASTER_SOURCE,
+    strategy_source_path: Path = STRATEGY_SOURCE,
+    selection_doc_path: Path = DEFAULT_SELECTION_DOC,
 ) -> tuple[Path, dict[str, Any]]:
     stable, config = _stable_contract(
-        source_manifest_path=source_manifest_path, env_path=env_path
+        source_manifest_path=source_manifest_path,
+        env_path=env_path,
+        dataset_id=dataset_id,
+        scanner_manifest_path=scanner_manifest_path,
+        scanner_summary_path=scanner_summary_path,
+        scanner_inspection_path=scanner_inspection_path,
+        security_master_source_path=security_master_source_path,
+        strategy_source_path=strategy_source_path,
     )
-    matches = sorted(output_root.glob(f"{DATASET_ID}-*.json"))
+    matches = sorted(output_root.glob(f"{dataset_id}-*.json"))
     if len(matches) > 1:
         raise DevelopmentCatalystContractError("source contract has multiple manifests")
     if matches:
@@ -403,7 +448,7 @@ def freeze_contract(
         raise DevelopmentCatalystContractError("historical-store reserve is unavailable")
     contract = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "registered_at": datetime.now(UTC).isoformat(),
         "requested_dates": [
             row["date"] for row in stable["selection_contract"]["daily_shortlists"]
@@ -413,9 +458,9 @@ def freeze_contract(
             "claim_scope": "DEVELOPMENT_ONLY",
             "status": "COLLECTING",
             "evidence_paths": [
-                "DEVELOPMENT_SELECTED_PAIRS.md",
+                _repo_path(selection_doc_path),
                 _repo_path(source_manifest_path),
-                _repo_path(SCANNER_INSPECTION),
+                _repo_path(scanner_inspection_path),
                 "PRODUCTION_STRATEGY_VALIDATION.md",
             ],
             "inspected": False,
@@ -440,12 +485,25 @@ def inspect_contract(
     source_manifest_path: Path,
     env_path: Path,
     status_path: Path,
+    dataset_id: str = DATASET_ID,
+    scanner_manifest_path: Path = SCANNER_MANIFEST,
+    scanner_summary_path: Path = SCANNER_SUMMARY,
+    scanner_inspection_path: Path = SCANNER_INSPECTION,
+    security_master_source_path: Path = SECURITY_MASTER_SOURCE,
+    strategy_source_path: Path = STRATEGY_SOURCE,
 ) -> dict[str, Any]:
     manifest = load_frozen_dataset_contract(manifest_path)
-    if manifest.get("dataset_id") != DATASET_ID:
+    if manifest.get("dataset_id") != dataset_id:
         raise DevelopmentCatalystContractError("unexpected source-contract dataset")
     stable, config = _stable_contract(
-        source_manifest_path=source_manifest_path, env_path=env_path
+        source_manifest_path=source_manifest_path,
+        env_path=env_path,
+        dataset_id=dataset_id,
+        scanner_manifest_path=scanner_manifest_path,
+        scanner_summary_path=scanner_summary_path,
+        scanner_inspection_path=scanner_inspection_path,
+        security_master_source_path=security_master_source_path,
+        strategy_source_path=strategy_source_path,
     )
     for key, value in stable.items():
         if manifest.get(key) != value:
@@ -463,7 +521,7 @@ def inspect_contract(
     selection = stable["selection_contract"]
     status = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "status": "FROZEN_READY",
         "manifest_sha256": manifest["manifest_sha256"],
         "requested_dates": selection["requested_date_count"],
@@ -491,7 +549,16 @@ def inspect_contract(
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--env", type=Path, default=PROJECT_ROOT / ".env")
+    parser.add_argument("--dataset-id", default=DATASET_ID)
     parser.add_argument("--source-manifest", type=Path, default=SOURCE_MANIFEST)
+    parser.add_argument("--scanner-manifest", type=Path, default=SCANNER_MANIFEST)
+    parser.add_argument("--scanner-summary", type=Path, default=SCANNER_SUMMARY)
+    parser.add_argument("--scanner-inspection", type=Path, default=SCANNER_INSPECTION)
+    parser.add_argument(
+        "--security-master-source", type=Path, default=SECURITY_MASTER_SOURCE
+    )
+    parser.add_argument("--strategy-source", type=Path, default=STRATEGY_SOURCE)
+    parser.add_argument("--selection-doc", type=Path, default=DEFAULT_SELECTION_DOC)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("freeze")
@@ -509,9 +576,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source_manifest_path=args.source_manifest,
                 env_path=args.env,
                 output_root=args.output_root,
+                dataset_id=args.dataset_id,
+                scanner_manifest_path=args.scanner_manifest,
+                scanner_summary_path=args.scanner_summary,
+                scanner_inspection_path=args.scanner_inspection,
+                security_master_source_path=args.security_master_source,
+                strategy_source_path=args.strategy_source,
+                selection_doc_path=args.selection_doc,
             )
             value = {
-                "dataset_id": DATASET_ID,
+                "dataset_id": args.dataset_id,
                 "manifest_sha256": manifest["manifest_sha256"],
                 "path": str(path),
                 "selected_pair_count": manifest["selection_contract"][
@@ -524,6 +598,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source_manifest_path=args.source_manifest,
                 env_path=args.env,
                 status_path=args.status,
+                dataset_id=args.dataset_id,
+                scanner_manifest_path=args.scanner_manifest,
+                scanner_summary_path=args.scanner_summary,
+                scanner_inspection_path=args.scanner_inspection,
+                security_master_source_path=args.security_master_source,
+                strategy_source_path=args.strategy_source,
             )
         print(json.dumps(value, indent=2, sort_keys=True))
         return 0
