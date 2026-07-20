@@ -170,6 +170,19 @@ affected pairs, private contract hash `279cd141...f309dc`, request graph hash
 source lineage, the 20-GiB reserve, and zero target responses. Commit and push
 this zero-state before implementing or running the document collector.
 
+development_sec_document_collection.py implements the corresponding
+pushed-source collection and inspection gate. It consumes only the 597 private
+frozen requests, uses exact URL-hash cache paths, preserves raw bytes outside
+Git, rejects empty or SEC automated-access denial bodies, isolates failures,
+and resumes from revalidated atomic wrappers. Independent inspection rehashes
+every successful raw source; neither collection nor inspection extracts or
+classifies document semantics.
+
+The public collection surface contains aggregate terminal, cache, download,
+failure, and byte counts plus graph and implementation hashes. CIKs, symbols,
+accessions, URLs, joins, raw bodies, and provider errors remain private. Commit
+and push the collector and tests before the first document request.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 

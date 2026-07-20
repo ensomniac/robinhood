@@ -137,6 +137,11 @@ joins with zero responses, no semantics, and no outcomes. Commit and push this
 zero-state, then implement and publish a manifest-bound, failure-isolated,
 resumable raw-document collector and independent inspector before accessing any
 document body.
+development_sec_document_collection.py now adds the pushed-source and manifest
+gates, exact URL-hash caching, SEC denial-page detection, atomic terminal
+wrappers, failure isolation, idempotent resume, privacy-safe public status, and
+independent raw-byte rehashing. Commit and push the collector and tests before
+collecting the 597 frozen documents.
 
 ## Completed 2026-07-19
 

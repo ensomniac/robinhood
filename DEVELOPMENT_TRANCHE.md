@@ -204,3 +204,9 @@ Manifest `73d7223a...ab8538` now freezes that exact union with private graph has
 `279cd141...f309dc`, document-request hash `09a8bb48...aea5d`, join hash
 `bb9cae08...ff6a`, and zero document responses. Commit and push the manifest,
 aggregate status, registry event, and durable finding before document access.
+
+The manifest-bound development_sec_document_collection.py now provides
+shared-cache-first collection, per-request terminal wrappers, bounded SEC
+pacing, transport-denial detection, idempotent resume, and independent raw-byte
+rehashing for exactly those 597 requests. It performs no semantic extraction or
+outcome access. Commit and push the collector before running it.
