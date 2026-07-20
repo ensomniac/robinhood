@@ -223,6 +223,14 @@ gate, keeps outcomes locked, and falsifies unchanged v3 deployability on this
 source-verified corpus. V3 is not tuned on the failed evidence; the next phase
 is `CHALLENGER_REVIEW` under the frozen weekly mechanism-family limits.
 
+The sole active challenger is now the preregistered catalyst ORB retest family
+in `CHALLENGER_ORB_RETEST.md`, contract `b766000b...6d105`. It contains one
+trial and changes only the causal entry mechanism: observe the first clean ORB,
+then require a completed retest hold and rebreak. Champion v3 remains unchanged;
+all portfolio, risk, stop, liquidity, protection, session, cost-stress, and
+outcome-lock constraints remain in force. Every previously inspected target
+date is excluded from its future development and confirmation samples.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
