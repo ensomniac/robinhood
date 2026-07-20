@@ -6,9 +6,12 @@ from unittest.mock import patch
 
 from development_sec_sources import MINIMUM_RESERVE_BYTES
 from development_sec_submissions import (
+    DevelopmentSecSubmissionsError,
     _collection_index_path,
     _derive_response,
+    _load_contract,
     _sha256_json,
+    _submissions_root,
     _wrapper_path,
     collect_submissions,
     inspect_submissions,
@@ -237,6 +240,67 @@ class DevelopmentSecSubmissionTests(unittest.TestCase):
             self.assertEqual(status["counts"]["failed_requests"], 1)
             self.assertEqual(status["counts"]["successful_requests"], 1)
             self.assertEqual(status["counts"]["terminal_requests"], 2)
+
+    def test_explicit_dataset_scopes_every_private_artifact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest, config, private, publication = self._surface(root)
+            dataset_id = "dataset-development-sec-primary-sources-test-v3"
+            private["dataset_id"] = dataset_id
+            client = FakeSecClient(
+                {
+                    private["submission_requests"][0]["url"]: self._payload(),
+                    private["submission_requests"][1]["url"]: {
+                        "cik": "2",
+                        "filings": {"recent": {}, "files": []},
+                    },
+                }
+            )
+            status_path = root / "status.json"
+            inspection_path = root / "inspection.json"
+            with patch(
+                "development_sec_submissions._load_contract",
+                return_value=(manifest, config, private, publication),
+            ):
+                status = collect_submissions(
+                    dataset_id=dataset_id,
+                    public_status_path=status_path,
+                    client=client,
+                    require_published=False,
+                )
+                inspection = inspect_submissions(
+                    dataset_id=dataset_id,
+                    public_status_path=status_path,
+                    inspection_path=inspection_path,
+                    require_published=False,
+                )
+            self.assertEqual(status["dataset_id"], dataset_id)
+            self.assertEqual(inspection["dataset_id"], dataset_id)
+            self.assertTrue(_collection_index_path(root, dataset_id).is_file())
+            self.assertTrue(_wrapper_path(root, "0000000001", dataset_id).is_file())
+            self.assertFalse(_collection_index_path(root).exists())
+
+    def test_unsafe_dataset_id_is_rejected_before_private_path_use(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(
+                DevelopmentSecSubmissionsError, "dataset ID is unsafe"
+            ):
+                _submissions_root(Path(directory), "../cross-tranche")
+
+    def test_manifest_dataset_must_match_explicit_dataset(self):
+        with patch(
+            "development_sec_submissions.load_frozen_dataset_contract",
+            return_value={"dataset_id": "dataset-other"},
+        ):
+            with self.assertRaisesRegex(
+                DevelopmentSecSubmissionsError, "unexpected SEC source dataset"
+            ):
+                _load_contract(
+                    dataset_id="dataset-expected",
+                    manifest_path=Path("unused.json"),
+                    env_path=Path("unused.env"),
+                    require_published=False,
+                )
 
 
 if __name__ == "__main__":

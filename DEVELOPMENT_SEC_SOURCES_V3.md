@@ -61,6 +61,17 @@ This authorizes only a separately committed and pushed manifest-bound SEC
 submissions collector. Supplemental submissions files and primary documents
 remain inaccessible until their own later contracts are frozen and pushed.
 
+`development_sec_submissions.py` accepts the explicit second-tranche dataset
+identity and scopes every terminal wrapper and collection index beneath that
+dataset's frozen private response namespace. It verifies that the manifest
+dataset and target namespace agree, requires the collector and manifest to be
+committed and pushed before provider access, uses the shared SEC cache first,
+and preserves a terminal success or failure row for every one of the 611 exact
+requests. Its inspector independently reparses and rehashes every successful
+raw response and rebuilds aggregate request, filing, join, and failure counts.
+It cannot fetch supplemental files or primary documents, publish private source
+identity, classify catalyst semantics, or access outcomes.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
@@ -83,3 +94,21 @@ The frozen manifest must be committed and pushed before its separate
 historical_batches/development_tranche_v3/sec-contract-status.json` pass. The
 inspected zero-response state must then be committed and pushed before any SEC
 request. This stage cannot establish a verified catalyst or alpha result.
+
+After the collector implementation is committed and pushed, run the exact
+submissions-only graph with:
+
+```sh
+python3 development_sec_submissions.py \
+  --dataset-id dataset-development-sec-primary-sources-2026-07-20-v3 \
+  --manifest historical_batches/development_tranche_v3/sec_manifests/dataset-development-sec-primary-sources-2026-07-20-v3-8dc5996b6b88d52fc8e08efc9932c6a1db30a3ec61a2ef09d7f22346bb464628.json \
+  collect \
+  --status historical_batches/development_tranche_v3/sec-submissions-status.json
+
+python3 development_sec_submissions.py \
+  --dataset-id dataset-development-sec-primary-sources-2026-07-20-v3 \
+  --manifest historical_batches/development_tranche_v3/sec_manifests/dataset-development-sec-primary-sources-2026-07-20-v3-8dc5996b6b88d52fc8e08efc9932c6a1db30a3ec61a2ef09d7f22346bb464628.json \
+  inspect \
+  --status historical_batches/development_tranche_v3/sec-submissions-status.json \
+  --output research_results/2026-07-20-development-sec-submissions-inspection.json
+```

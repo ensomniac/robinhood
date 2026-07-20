@@ -135,20 +135,45 @@ def _repo_path(path: Path) -> str:
         ) from exc
 
 
-def _private_identity_path(store_root: Path) -> Path:
-    return contract_source._private_identity_path(store_root)
+def _validated_dataset_id(dataset_id: str) -> str:
+    if (
+        not dataset_id
+        or Path(dataset_id).name != dataset_id
+        or dataset_id in {".", ".."}
+    ):
+        raise DevelopmentSecSubmissionsError("dataset ID is unsafe")
+    return dataset_id
 
 
-def _submissions_root(store_root: Path) -> Path:
-    return contract_source._target_response_root(store_root) / "submissions"
+def _private_identity_path(
+    store_root: Path, dataset_id: str = contract_source.DATASET_ID
+) -> Path:
+    return contract_source._private_identity_path(
+        store_root, _validated_dataset_id(dataset_id)
+    )
 
 
-def _wrapper_path(store_root: Path, cik: str) -> Path:
-    return _submissions_root(store_root) / f"CIK{cik}.json.gz"
+def _submissions_root(
+    store_root: Path, dataset_id: str = contract_source.DATASET_ID
+) -> Path:
+    return (
+        contract_source._target_response_root(
+            store_root, _validated_dataset_id(dataset_id)
+        )
+        / "submissions"
+    )
 
 
-def _collection_index_path(store_root: Path) -> Path:
-    return _submissions_root(store_root) / COLLECTION_INDEX_FILE
+def _wrapper_path(
+    store_root: Path, cik: str, dataset_id: str = contract_source.DATASET_ID
+) -> Path:
+    return _submissions_root(store_root, dataset_id) / f"CIK{cik}.json.gz"
+
+
+def _collection_index_path(
+    store_root: Path, dataset_id: str = contract_source.DATASET_ID
+) -> Path:
+    return _submissions_root(store_root, dataset_id) / COLLECTION_INDEX_FILE
 
 
 def _shared_cache_path(store_root: Path, request: Mapping[str, Any]) -> Path:
@@ -183,7 +208,9 @@ def _published_source(path: Path) -> dict[str, str]:
         text=True,
     ).stdout
     if status.strip():
-        raise DevelopmentSecSubmissionsError(f"provider input is not committed: {relative}")
+        raise DevelopmentSecSubmissionsError(
+            f"provider input is not committed: {relative}"
+        )
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=PROJECT_ROOT,
@@ -214,17 +241,29 @@ def _published_source(path: Path) -> dict[str, str]:
 
 
 def _load_contract(
-    *, manifest_path: Path, env_path: Path, require_published: bool
+    *,
+    dataset_id: str,
+    manifest_path: Path,
+    env_path: Path,
+    require_published: bool,
 ) -> tuple[dict[str, Any], HistoricalStoreConfig, dict[str, Any], dict[str, Any]]:
+    dataset_id = _validated_dataset_id(dataset_id)
     manifest = load_frozen_dataset_contract(manifest_path)
-    if manifest.get("dataset_id") != contract_source.DATASET_ID:
+    if manifest.get("dataset_id") != dataset_id:
         raise DevelopmentSecSubmissionsError("unexpected SEC source dataset")
     identity = manifest.get("identity_contract")
     request = manifest.get("request_contract")
     outcome = manifest.get("outcome_lock")
     capacity = manifest.get("capacity_contract")
-    if not all(isinstance(value, Mapping) for value in (identity, request, outcome, capacity)):
+    if not all(
+        isinstance(value, Mapping) for value in (identity, request, outcome, capacity)
+    ):
         raise DevelopmentSecSubmissionsError("SEC source manifest is incomplete")
+    cache_policy = request.get("cache_policy")
+    expected_response_namespace = (
+        "LOCAL_HISTORICAL_DATA_ROOT/_derived/development_sec_sources/"
+        f"{dataset_id}/responses/"
+    )
     if (
         request.get("stage") != "SEC_SUBMISSIONS_ONLY"
         or request.get("provider") != "SEC_EDGAR"
@@ -237,6 +276,10 @@ def _load_contract(
         or request.get("retry_backoff_seconds")
         != list(contract_source.SEC_RETRY_BACKOFF_SECONDS)
         or request.get("failure_policy", {}).get("substitution_allowed") is not False
+        or not isinstance(cache_policy, Mapping)
+        or cache_policy.get("target_response_namespace") != expected_response_namespace
+        or cache_policy.get("target_specific_provenance_required_for_every_request")
+        is not True
         or request.get("staging", {}).get(
             "accession_bound_document_manifest_required_before_request"
         )
@@ -293,9 +336,10 @@ def _load_contract(
         or config.root.resolve().is_relative_to(PROJECT_ROOT.resolve())
     ):
         raise DevelopmentSecSubmissionsError("historical-store capacity is unsafe")
-    private = _read_gzip_object(_private_identity_path(config.root))
+    private = _read_gzip_object(_private_identity_path(config.root, dataset_id))
     if (
-        _sha256_json(private) != identity.get("private_identity_content_sha256")
+        private.get("dataset_id") != dataset_id
+        or _sha256_json(private) != identity.get("private_identity_content_sha256")
         or private.get("submission_request_graph_sha256")
         != identity.get("submission_request_graph_sha256")
         or len(private.get("submission_requests", []))
@@ -434,11 +478,15 @@ def _derive_response(
 
 
 def _validate_wrapper(
-    wrapper: Mapping[str, Any], *, request: Mapping[str, Any], manifest_sha256: str
+    wrapper: Mapping[str, Any],
+    *,
+    dataset_id: str,
+    request: Mapping[str, Any],
+    manifest_sha256: str,
 ) -> None:
     if (
         wrapper.get("schema_version") != COLLECTOR_SCHEMA_VERSION
-        or wrapper.get("dataset_id") != contract_source.DATASET_ID
+        or wrapper.get("dataset_id") != dataset_id
         or wrapper.get("manifest_sha256") != manifest_sha256
         or wrapper.get("request_sha256") != _sha256_json(request)
         or wrapper.get("collector_sha256") != _sha256_file(Path(__file__))
@@ -449,12 +497,15 @@ def _validate_wrapper(
         wrapper.get("derived"), Mapping
     ):
         raise DevelopmentSecSubmissionsError("successful wrapper lacks derived data")
-    if wrapper.get("status") == "FAILED" and not isinstance(wrapper.get("error"), Mapping):
+    if wrapper.get("status") == "FAILED" and not isinstance(
+        wrapper.get("error"), Mapping
+    ):
         raise DevelopmentSecSubmissionsError("failed wrapper lacks terminal error")
 
 
 def _successful_wrapper(
     *,
+    dataset_id: str,
     request: Mapping[str, Any],
     manifest_sha256: str,
     payload: Mapping[str, Any],
@@ -465,7 +516,7 @@ def _successful_wrapper(
     raw = raw_path.read_bytes()
     return {
         "schema_version": COLLECTOR_SCHEMA_VERSION,
-        "dataset_id": contract_source.DATASET_ID,
+        "dataset_id": dataset_id,
         "manifest_sha256": manifest_sha256,
         "collector_sha256": _sha256_file(Path(__file__)),
         "request_sha256": _sha256_json(request),
@@ -481,11 +532,15 @@ def _successful_wrapper(
 
 
 def _failed_wrapper(
-    *, request: Mapping[str, Any], manifest_sha256: str, error: Exception
+    *,
+    dataset_id: str,
+    request: Mapping[str, Any],
+    manifest_sha256: str,
+    error: Exception,
 ) -> dict[str, Any]:
     return {
         "schema_version": COLLECTOR_SCHEMA_VERSION,
-        "dataset_id": contract_source.DATASET_ID,
+        "dataset_id": dataset_id,
         "manifest_sha256": manifest_sha256,
         "collector_sha256": _sha256_file(Path(__file__)),
         "request_sha256": _sha256_json(request),
@@ -501,6 +556,7 @@ def _failed_wrapper(
 
 def _load_and_rederive_wrapper(
     *,
+    dataset_id: str,
     wrapper_path: Path,
     request: Mapping[str, Any],
     manifest_sha256: str,
@@ -508,7 +564,12 @@ def _load_and_rederive_wrapper(
     pairs: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     wrapper = _read_gzip_object(wrapper_path)
-    _validate_wrapper(wrapper, request=request, manifest_sha256=manifest_sha256)
+    _validate_wrapper(
+        wrapper,
+        dataset_id=dataset_id,
+        request=request,
+        manifest_sha256=manifest_sha256,
+    )
     if wrapper["status"] == "SUCCESS":
         raw_path = _shared_cache_path(store_root, request)
         try:
@@ -525,12 +586,18 @@ def _load_and_rederive_wrapper(
             or _derive_response(cik=str(request["cik"]), payload=payload, pairs=pairs)
             != wrapper.get("derived")
         ):
-            raise DevelopmentSecSubmissionsError("submission response derivation drifted")
+            raise DevelopmentSecSubmissionsError(
+                "submission response derivation drifted"
+            )
     return wrapper
 
 
 def _build_collection_index(
-    *, manifest: Mapping[str, Any], private: Mapping[str, Any], store_root: Path
+    *,
+    dataset_id: str,
+    manifest: Mapping[str, Any],
+    private: Mapping[str, Any],
+    store_root: Path,
 ) -> dict[str, Any]:
     pairs_by_cik: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
     missing_pairs: list[dict[str, Any]] = []
@@ -547,10 +614,11 @@ def _build_collection_index(
     counts: Counter[str] = Counter()
     for request in private["submission_requests"]:
         cik = str(request["cik"])
-        path = _wrapper_path(store_root, cik)
+        path = _wrapper_path(store_root, cik, dataset_id)
         if not path.exists():
             continue
         wrapper = _load_and_rederive_wrapper(
+            dataset_id=dataset_id,
             wrapper_path=path,
             request=request,
             manifest_sha256=str(manifest["manifest_sha256"]),
@@ -589,7 +657,9 @@ def _build_collection_index(
                 documents[row["source_url"]] = {"cik": cik, **row}
         request_records.append(record)
     counts["expected_requests"] = len(private["submission_requests"])
-    counts["pending_requests"] = counts["expected_requests"] - counts["terminal_requests"]
+    counts["pending_requests"] = (
+        counts["expected_requests"] - counts["terminal_requests"]
+    )
     counts["missing_cik_pairs"] = len(missing_pairs)
     counts["selected_pairs"] = len(private["pairs"])
     counts["pairs_with_candidate_filing"] = len(
@@ -599,7 +669,7 @@ def _build_collection_index(
     document_rows = sorted(documents.values(), key=lambda row: row["source_url"])
     return {
         "schema_version": COLLECTOR_SCHEMA_VERSION,
-        "dataset_id": contract_source.DATASET_ID,
+        "dataset_id": dataset_id,
         "manifest_sha256": manifest["manifest_sha256"],
         "collector_sha256": _sha256_file(Path(__file__)),
         "status": (
@@ -632,12 +702,15 @@ def _build_collection_index(
 
 
 def _public_status(
-    *, index: Mapping[str, Any], publication: Mapping[str, Any]
+    *,
+    dataset_id: str,
+    index: Mapping[str, Any],
+    publication: Mapping[str, Any],
 ) -> dict[str, Any]:
     counts = index["counts"]
     return {
         "schema_version": 1,
-        "dataset_id": contract_source.DATASET_ID,
+        "dataset_id": dataset_id,
         "manifest_sha256": index["manifest_sha256"],
         "status": index["status"],
         "counts": counts,
@@ -645,12 +718,8 @@ def _public_status(
             index["supplemental_submission_requests"]
         ),
         "unique_candidate_document_count": len(index["candidate_document_requests"]),
-        "supplemental_request_graph_sha256": index[
-            "supplemental_request_graph_sha256"
-        ],
-        "candidate_document_graph_sha256": index[
-            "candidate_document_graph_sha256"
-        ],
+        "supplemental_request_graph_sha256": index["supplemental_request_graph_sha256"],
+        "candidate_document_graph_sha256": index["candidate_document_graph_sha256"],
         "private_collection_content_sha256": _sha256_json(index),
         "collector_sha256": index["collector_sha256"],
         "collector_commit": publication.get("collector", {}).get("commit"),
@@ -669,6 +738,7 @@ def _public_status(
 
 def collect_submissions(
     *,
+    dataset_id: str = contract_source.DATASET_ID,
     manifest_path: Path = MANIFEST,
     env_path: Path = PROJECT_ROOT / ".env",
     public_status_path: Path = DEFAULT_PUBLIC_STATUS,
@@ -676,6 +746,7 @@ def collect_submissions(
     require_published: bool = True,
 ) -> dict[str, Any]:
     manifest, config, private, publication = _load_contract(
+        dataset_id=dataset_id,
         manifest_path=manifest_path,
         env_path=env_path,
         require_published=require_published,
@@ -694,10 +765,12 @@ def collect_submissions(
     pending = [
         request
         for request in private["submission_requests"]
-        if not _wrapper_path(config.root, str(request["cik"])).exists()
+        if not _wrapper_path(config.root, str(request["cik"]), dataset_id).exists()
     ]
 
-    def load(request: Mapping[str, Any]) -> tuple[Mapping[str, Any], Mapping[str, Any], Path, bool]:
+    def load(
+        request: Mapping[str, Any],
+    ) -> tuple[Mapping[str, Any], Mapping[str, Any], Path, bool]:
         raw_path = _shared_cache_path(config.root, request)
         cache_hit = raw_path.exists()
         payload = sec_client.json(str(request["url"]), raw_path)
@@ -714,6 +787,7 @@ def collect_submissions(
             returned_request, payload, raw_path, cache_hit = outcome.unwrap()
             try:
                 wrapper = _successful_wrapper(
+                    dataset_id=dataset_id,
                     request=returned_request,
                     manifest_sha256=str(manifest["manifest_sha256"]),
                     payload=payload,
@@ -723,17 +797,21 @@ def collect_submissions(
                 )
             except Exception as exc:
                 wrapper = _failed_wrapper(
+                    dataset_id=dataset_id,
                     request=request,
                     manifest_sha256=str(manifest["manifest_sha256"]),
                     error=exc,
                 )
         else:
             wrapper = _failed_wrapper(
+                dataset_id=dataset_id,
                 request=request,
                 manifest_sha256=str(manifest["manifest_sha256"]),
                 error=outcome.error,
             )
-        _write_gzip_json(_wrapper_path(config.root, str(request["cik"])), wrapper)
+        _write_gzip_json(
+            _wrapper_path(config.root, str(request["cik"]), dataset_id), wrapper
+        )
         completed += 1
         if completed % 25 == 0 or completed == len(private["submission_requests"]):
             print(
@@ -747,16 +825,20 @@ def collect_submissions(
                 flush=True,
             )
     index = _build_collection_index(
-        manifest=manifest, private=private, store_root=config.root
+        dataset_id=dataset_id,
+        manifest=manifest,
+        private=private,
+        store_root=config.root,
     )
-    _write_gzip_json(_collection_index_path(config.root), index)
-    public = _public_status(index=index, publication=publication)
+    _write_gzip_json(_collection_index_path(config.root, dataset_id), index)
+    public = _public_status(dataset_id=dataset_id, index=index, publication=publication)
     _write_json(public_status_path, public)
     return public
 
 
 def inspect_submissions(
     *,
+    dataset_id: str = contract_source.DATASET_ID,
     manifest_path: Path = MANIFEST,
     env_path: Path = PROJECT_ROOT / ".env",
     public_status_path: Path = DEFAULT_PUBLIC_STATUS,
@@ -764,17 +846,23 @@ def inspect_submissions(
     require_published: bool = True,
 ) -> dict[str, Any]:
     manifest, config, private, publication = _load_contract(
+        dataset_id=dataset_id,
         manifest_path=manifest_path,
         env_path=env_path,
         require_published=require_published,
     )
     rebuilt = _build_collection_index(
-        manifest=manifest, private=private, store_root=config.root
+        dataset_id=dataset_id,
+        manifest=manifest,
+        private=private,
+        store_root=config.root,
     )
-    stored = _read_gzip_object(_collection_index_path(config.root))
+    stored = _read_gzip_object(_collection_index_path(config.root, dataset_id))
     if rebuilt != stored:
         raise DevelopmentSecSubmissionsError("private submissions index drifted")
-    public = _public_status(index=rebuilt, publication=publication)
+    public = _public_status(
+        dataset_id=dataset_id, index=rebuilt, publication=publication
+    )
     if _read_object(public_status_path) != public:
         raise DevelopmentSecSubmissionsError("public submissions status drifted")
     if rebuilt["counts"]["pending_requests"]:
@@ -797,6 +885,7 @@ def inspect_submissions(
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--env", type=Path, default=PROJECT_ROOT / ".env")
+    parser.add_argument("--dataset-id", default=contract_source.DATASET_ID)
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     subparsers = parser.add_subparsers(dest="command", required=True)
     collect = subparsers.add_parser("collect")
@@ -812,12 +901,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "collect":
             value = collect_submissions(
+                dataset_id=args.dataset_id,
                 manifest_path=args.manifest,
                 env_path=args.env,
                 public_status_path=args.status,
             )
         else:
             value = inspect_submissions(
+                dataset_id=args.dataset_id,
                 manifest_path=args.manifest,
                 env_path=args.env,
                 public_status_path=args.status,
