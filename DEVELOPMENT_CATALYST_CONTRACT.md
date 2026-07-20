@@ -66,6 +66,28 @@ python3 development_catalyst_contract.py inspect \
 The inspected manifest and public zero-state must be committed and pushed before
 target-source acquisition begins.
 
+## Development SEC Semantics Adapter
+
+The original catalyst_source_semantics.py remains immutable because this
+contract binds its exact rule and parser bytes. The development-specific
+development_catalyst_source_semantics.py adapter reuses those frozen timestamp,
+issuer-binding, taxonomy, financing-first, validation, and terminal-precedence
+functions for the complete new SEC corpus.
+
+Its network-free preflight reconciles all 1,906 selected pairs, 597 inspected
+SEC documents, 627 pair/source joins, 512 pairs with a source, and 1,394
+explicit no-source pairs. It freezes deterministic direction patterns, exact
+SEC ownership and CIK binding, official SEC acceptance-time treatment, complete
+pair denominators, private storage, and the outcome lock before parsing text.
+Financing or dilution matches precede positive patterns; simultaneous positive
+and negative matches are contradictory; unsupported direction remains
+unresolved.
+
+Commit and push the adapter and tests first. Then freeze and publish its exact
+zero-extraction manifest before running extract, review, or inspect. Those
+commands retain source text and decisions outside Git and expose only aggregate
+terminal counts and hashes.
+
 ## Frozen Result
 
 Manifest `04cb2640...164c2b` binds all 100 dates and 1,906 selected pairs to

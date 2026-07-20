@@ -216,3 +216,9 @@ and independently rehashed 30,392,463 retained bytes. Raw collection alone
 earns no verified catalyst. Commit and push the aggregate result, then implement
 the separately frozen private source-semantics extraction, review, and
 inspection workflow without accessing outcomes.
+
+development_catalyst_source_semantics.py provides that workflow while preserving
+the already hash-bound shared source rules. It reconciles the full 1,906-pair
+denominator, freezes 597 source documents and 627 joins, and explicitly carries
+1,394 pairs without a source into pair-level terminal counts. Commit and push
+the adapter and tests before freezing or parsing source text.

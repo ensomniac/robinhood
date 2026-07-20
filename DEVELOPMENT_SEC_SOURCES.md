@@ -194,6 +194,13 @@ It must extract and review private per-join source rows under the existing
 ownership, issuer-binding, causal-timestamp, financing-first, direction,
 materiality, and one-terminal-reason rules, while keeping outcomes inaccessible.
 
+development_catalyst_source_semantics.py now implements that development adapter
+without changing the frozen shared semantics module. Its preflight binds all
+1,906 pairs, 597 documents, 627 joins, 512 source-bearing pairs, 1,394 no-source
+pairs, deterministic evidence patterns, official SEC acceptance time, and exact
+CIK binding before text extraction. Commit and push the implementation and
+tests before freezing its zero-extraction manifest.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 

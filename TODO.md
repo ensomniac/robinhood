@@ -147,6 +147,12 @@ All 597 documents are now independently rehashed with zero failures,
 outcome access. Commit and push the aggregate result, then implement the frozen
 catalyst-source semantics extract, review, and inspection workflow over the
 private corpus.
+development_catalyst_source_semantics.py now reuses the immutable shared source
+rules while binding the new 597-document, 627-join corpus and all 1,906 pair
+denominators. Its deterministic review is financing-first, exact-CIK-bound,
+official-SEC-time-aware, privacy-safe, and outcome-blind. Commit and push the
+adapter and seven focused tests, then freeze and publish the zero-extraction
+semantics manifest before parsing source text.
 
 ## Completed 2026-07-19
 
