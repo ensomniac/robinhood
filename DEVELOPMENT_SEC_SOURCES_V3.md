@@ -2,8 +2,8 @@
 
 Planned dataset: `dataset-development-sec-primary-sources-2026-07-20-v3`
 
-Status: manifest `8dc5996b...464628` is frozen and awaiting independent
-zero-response inspection; no SEC target response has been requested or read
+Status: manifest `8dc5996b...464628` is independently inspected
+`FROZEN_READY`; no SEC target response has been requested or read
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -50,9 +50,16 @@ hash `1df8d19c...59dd90`, daily aggregate hash
 `f27d3761...6615d2c` bind the result. The dataset-specific target response
 namespace contained zero artifacts at freeze.
 
-This manifest remains pending independent inspection. It must be committed and
-pushed before the zero-response inspector runs, and the resulting status must
-be committed and pushed separately before any SEC request.
+Independent inspection rebuilt all point-in-time joins, the exact private
+identity and request graph, daily aggregates, strategy and source lineage,
+pacing and cache rules, private namespace, capacity, and outcome lock. It
+confirmed the same 1,871/1,862/9/611 counts and zero responses, substitutions,
+or outcomes. The aggregate status is
+`historical_batches/development_tranche_v3/sec-contract-status.json`.
+
+This authorizes only a separately committed and pushed manifest-bound SEC
+submissions collector. Supplemental submissions files and primary documents
+remain inaccessible until their own later contracts are frozen and pushed.
 
 ## Runbook
 

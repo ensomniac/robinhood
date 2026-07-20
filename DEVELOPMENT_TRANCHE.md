@@ -92,8 +92,9 @@ pushed before resolving the private CIK graph.
 
 SEC manifest `8dc5996b...464628` now freezes 1,871 exact pair mappings, 1,862
 CIK-present pairs, nine retained missing-CIK rows, 611 unique submissions
-requests, and zero target responses. It remains pending independent inspection
-and does not authorize provider access.
+requests, and zero target responses. Independent inspection rebuilt the graph
+`FROZEN_READY`; provider access remains gated on a separately committed and
+pushed manifest-bound collector.
 
 ## Prior V2 Selection
 
