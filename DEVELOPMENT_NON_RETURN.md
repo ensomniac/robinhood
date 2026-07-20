@@ -12,9 +12,9 @@ Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 Second-tranche dataset:
 `dataset-development-non-return-qualification-2026-07-20-tranche-v3-v1`
 
-Second-tranche status: the exact 102 combined source-positive pairs across 52
-dates rebuild outcome-blind with zero target artifacts; the v3 adapter is ready
-to commit before freeze
+Second-tranche status: manifest `7d5be928...db829` independently rebuilt
+`FROZEN_READY`; the exact 102 combined source-positive pairs across 52 dates
+remain outcome-blind with zero target artifacts and no post-entry access
 
 ## Purpose
 
@@ -51,12 +51,22 @@ one split query, chronological one-second clean-cross discovery, a condition-
 eligible trade prefix, and the exact 0/5/10-second quote window. The current
 strategy remains `2026-07-15-orb-v3` at rules hash
 `00c3aa83...b4b5867`. Post-decision provider rows, missing-input optimism,
-substitution, and target outcomes remain forbidden. Commit and push the adapter,
-tests, documentation, and progress finding before freezing its private graph.
+substitution, and target outcomes remain forbidden. The adapter, tests, and
+namespace repair were committed and pushed before freezing its private graph.
 The first freeze attempt correctly failed before writing because the shorter
 `...-v3` identifier already belongs to a superseded first-tranche contract.
 The explicit `...-tranche-v3-v1` identity prevents that cross-tranche alias and
 leaves the older private evidence unchanged.
+
+Manifest `7d5be928...db829` now freezes that exact boundary. Independent
+inspection rebuilt the 1,871-row source join, the disjoint 19-plus-83 positive
+selection, positive pair and date identities, complete causal request graph,
+strategy version, rules hash, implementation hashes, aggregate privacy, and
+zero-target state. Its private contract hash is `51a964a6...783c1`, private
+positive-selection hash is `649a2927...7ab00`, and request-graph hash is
+`d1f13baf...12f00`. This authorizes only a separately frozen provider
+collector; outcomes remain inaccessible until at least 20 complete unchanged-v3
+non-return survivors are independently inspected.
 
 ## Frozen Acquisition Boundary
 

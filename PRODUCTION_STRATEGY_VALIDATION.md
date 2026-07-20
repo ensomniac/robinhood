@@ -150,9 +150,12 @@ the exact 102 combined positives. It privately deduplicates the 19 prior and 83
 recovered positive hashes, rejoins them to the full 1,871-pair scanner surface,
 rechecks coarse unchanged-v3 gates, and freezes only causal pre-entry request
 classes through the final +10-second decision snapshot. The resulting graph
-covers 102 pairs on 52 dates and retains zero target artifacts before freeze.
-Its implementation must be committed and pushed before the contract is frozen;
-that manifest must then be independently inspected and pushed before collection.
+covers 102 pairs on 52 dates and retains zero target artifacts. Manifest
+`7d5be928...db829` independently rebuilds that frozen graph, its private
+selection, strategy and rules hashes, implementation bindings, aggregate
+privacy boundary, and outcome lock. It authorizes only a separately frozen
+provider collector, which must be committed, inspected, and pushed before
+collection.
 
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
