@@ -107,6 +107,11 @@ downloads, zero failures, 590 candidate documents, 620 pair/filing joins, and
 supplemental descriptors, most outside the frozen four-day windows. Commit and
 push this inspected result, then implement, freeze, and commit an exact
 window-overlap supplemental manifest before requesting any supplemental file.
+`development_sec_supplemental.py` now performs that independent rebuild and
+retains six exact window-overlap requests while excluding 683 older-history
+descriptors. Invalid ranges fail toward conservative inclusion. Commit and push
+the freezer and tests, then freeze, inspect, register, commit, and push its
+zero-response manifest before requesting any of the six files.
 
 ## Completed 2026-07-19
 

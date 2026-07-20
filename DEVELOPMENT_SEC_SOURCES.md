@@ -102,6 +102,20 @@ window; a separate network-free freezer must independently apply those frozen
 windows and commit the exact reduced supplemental graph before any such file is
 requested. No supplemental file, primary document, or outcome has been read.
 
+`development_sec_supplemental.py` implements that freezer. It independently
+rebuilds all main-submission wrappers and source hashes, then intersects each
+descriptor's `filingFrom`/`filingTo` range with the exact private pair windows.
+An invalid or missing descriptor range is included conservatively; a provably
+non-overlapping range is excluded. The real preflight retains six exact requests
+and excludes 683 older-history descriptors, with zero target supplemental
+artifacts.
+
+The freezer also anchors the submissions collector to the immutable collector
+commit recorded in the inspected result. A later documentation/result commit is
+not mistaken for the original collector commit, while the collector bytes must
+still match their recorded hash and pushed source. Commit and push this
+implementation before freezing the six-request manifest.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 
