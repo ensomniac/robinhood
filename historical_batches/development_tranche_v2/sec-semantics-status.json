@@ -1,0 +1,25 @@
+{
+  "counts": {
+    "pair_source_joins": 627,
+    "pairs_with_source": 512,
+    "pairs_without_source": 1394,
+    "selected_pairs": 1906,
+    "source_documents": 597
+  },
+  "dataset_id": "dataset-development-sec-source-semantics-2026-07-19-v2",
+  "manifest_sha256": "1fa8b20e14727f4de78344fbada0e7633a91f99fcc747a17bddfebd8f705d81c",
+  "no_source_pair_sha256": "7880f187aa01ce0c754ac24c60d064889467ce799cdca39a052b4892d65397fe",
+  "outcome_contract_permitted": false,
+  "pair_identity_sha256": "56dfc18c38a55e4734e285726a215333e829ffced3e019731b22cb5ad495415b",
+  "pair_source_join_sha256": "4e028f19952946783d663a2cb4d2d15831b1d2e8cd0ab238a347b1bfe5a4df42",
+  "pre_freeze_target_artifact_count": 0,
+  "private_selection_content_sha256": "42be4357c82c0247a5253ce31ae9a5d58229bb3d8fc57017687b4817322eb80e",
+  "schema_version": 1,
+  "source_document_sha256": "bd67080ade7f13e659a331154902c482ae302eee0bdf6a34bd32f3935fbe918b",
+  "source_text_or_semantics_observed_or_derived": false,
+  "status": "FROZEN_READY",
+  "symbols_ciks_accessions_urls_sources_text_and_rows_public": false,
+  "target_outcomes_observed_or_derived": false,
+  "valid": true,
+  "verified_positive_pairs": 0
+}

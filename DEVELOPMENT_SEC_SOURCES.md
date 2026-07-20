@@ -201,6 +201,10 @@ pairs, deterministic evidence patterns, official SEC acceptance time, and exact
 CIK binding before text extraction. Commit and push the implementation and
 tests before freezing its zero-extraction manifest.
 
+Manifest 1fa8b20e...05d81c now freezes that exact review surface with private
+selection hash 42be4357...2eb80e and zero extraction or review artifacts. Commit
+and push its aggregate zero-state before running extract.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 

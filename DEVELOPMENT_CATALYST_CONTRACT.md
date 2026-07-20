@@ -88,6 +88,14 @@ zero-extraction manifest before running extract, review, or inspect. Those
 commands retain source text and decisions outside Git and expose only aggregate
 terminal counts and hashes.
 
+Development semantics manifest 1fa8b20e...05d81c now independently rebuilds
+FROZEN_READY. It binds all 1,906 pairs, 597 source documents, 627 joins, 512
+source-bearing pairs, 1,394 no-source pairs, private selection hash
+42be4357...2eb80e, pair/join/source hashes, exact classification patterns,
+immutable shared-rule bytes, implementation and dependency versions, the
+20-GiB reserve, and zero extraction or review artifacts. Commit and push this
+zero-state before parsing any source text.
+
 ## Frozen Result
 
 Manifest `04cb2640...164c2b` binds all 100 dates and 1,906 selected pairs to

@@ -222,3 +222,7 @@ the already hash-bound shared source rules. It reconciles the full 1,906-pair
 denominator, freezes 597 source documents and 627 joins, and explicitly carries
 1,394 pairs without a source into pair-level terminal counts. Commit and push
 the adapter and tests before freezing or parsing source text.
+
+Manifest 1fa8b20e...05d81c independently rebuilds the complete semantics surface,
+classification contract, frozen shared rules, private selection, and zero
+derived artifacts. Commit and push this manifest and status before extraction.

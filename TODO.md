@@ -153,6 +153,10 @@ denominators. Its deterministic review is financing-first, exact-CIK-bound,
 official-SEC-time-aware, privacy-safe, and outcome-blind. Commit and push the
 adapter and seven focused tests, then freeze and publish the zero-extraction
 semantics manifest before parsing source text.
+Manifest 1fa8b20e...05d81c is now FROZEN_READY for all 1,906 pairs, 597
+documents, and 627 joins with zero extraction or review artifacts. Commit and
+push the manifest, aggregate status, registry event, and durable finding before
+running extract, review, and independent inspection.
 
 ## Completed 2026-07-19
 
