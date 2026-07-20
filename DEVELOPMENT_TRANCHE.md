@@ -154,6 +154,13 @@ pair/source joins, 499 source-bearing pairs, and 1,372 no-source pairs, while
 the v3 extraction/review namespace remains empty and isolated from v2. Commit
 and push the adapter before freezing this exact zero-extraction surface.
 
+Semantics manifest `b1241f33...10531` now freezes that complete surface from
+the pushed adapter, including private selection hash `136250c3...ce854`, all
+pair/document/join/no-source graph hashes, unchanged source and terminal rules,
+parser dependencies, the 20-GiB reserve, and zero extraction or review
+artifacts. Commit and push this zero-text state before its independent contract
+inspection.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated

@@ -184,6 +184,15 @@ paths are isolated from the completed v2 run; a live read-only preflight finds
 zero v3 target artifacts. Commit and push this adapter and its namespace tests
 before freezing the exact zero-extraction review contract.
 
+Manifest `b1241f33...10531` now freezes that exact surface from the pushed
+adapter. It binds private selection hash `136250c3...ce854`, pair identity
+`5d6edd30...ab6610`, document graph `a0f0dbf0...4fca9`, join graph
+`beeacbc0...cfbff`, no-source graph `70979786...0798c`, unchanged source and
+terminal rules, parser dependencies, the 20-GiB reserve, and zero extraction or
+review artifacts. Commit and push the manifest, dataset registration, and this
+freeze finding before independently inspecting the contract; document text
+remains unparsed.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
