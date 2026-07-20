@@ -231,6 +231,17 @@ all portfolio, risk, stop, liquidity, protection, session, cost-stress, and
 outcome-lock constraints remain in force. Every previously inspected target
 date is excluded from its future development and confirmation samples.
 
+Its exact development selection is now frozen and independently rebuilt:
+100 disjoint sessions from 2023-01-26 through 2024-12-24, 474 required
+target/lookback sessions, selected-date hash `8712bb4d...84d187`, and no
+substitution or outcome access. The active controller phase is
+`DEVELOPMENT_ACQUISITION`. `challenger_orb_retest_acquisition.py` supplies the
+next outer freeze: it binds the unchanged full-universe scanner engine to the
+retest trigger, primary-source semantic rules, selected-symbol detail limits,
+capacity reserve, and outcome lock. Its independent inspector requires zero
+target market artifacts. The inner scanner manifest and outer acquisition
+manifest must both be committed and pushed before target Alpaca collection.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

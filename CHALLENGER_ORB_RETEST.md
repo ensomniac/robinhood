@@ -127,3 +127,46 @@ The selected-date hash is `8712bb4d...84d187`; the required-session hash is
 `31afb1ff...bc54a`. Substitution and outcomes remain forbidden. This exact
 selection and manifest must be committed and pushed before dated reference
 identity access.
+
+`challenger_orb_retest_acquisition.py` now implements the next two-layer market
+boundary without modifying the hash-bound scanner engine. The inner generic
+manifest freezes the point-in-time security master, split history, exact Alpaca
+SIP full-universe queries, compatible-cache reuse, and zero market state. The
+outer challenger manifest additionally binds the one-trial hypothesis, causal
+retest trigger, primary-source ownership/timestamp/conflict rules, selected-name
+detail limits, provider priority, capacity reserve, and outcome lock. Its
+separate inspector independently rebuilds every binding and refuses a nonzero
+pre-freeze market state. Both manifests and their inspected status must be
+committed and pushed before `collect-scanner` can contact Alpaca.
+
+The dated reference collector is resumable under the frozen Massive query and
+pacing contract. After all 100 exact snapshots complete, build the challenger
+security master and split attestation, freeze the inner scanner manifest, then
+freeze and independently inspect the outer contract:
+
+```sh
+python3 scanner_replay.py \
+  --run-root learning_runs/challenger_orb_retest_v1/scanner_replay \
+  build-master \
+  historical_batches/challenger_orb_retest_v1/selection-2026-07-20-100-days.json \
+  --output historical_batches/challenger_orb_retest_v1/security-master.jsonl \
+  --source-manifest historical_batches/challenger_orb_retest_v1/security-master-source.json
+
+python3 scanner_replay_alpaca.py \
+  --run-root learning_runs/challenger_orb_retest_v1/scanner_replay \
+  collect-splits --start 2023-01-04 --end 2024-12-24 \
+  --output learning_runs/challenger_orb_retest_v1/scanner_replay/splits.json.gz
+
+# Write and audit the split-actions source attestation, then freeze the inner
+# scanner manifest with the exact challenger paths and the compatible v3 reuse
+# manifest. Commit and push it before freezing the outer contract.
+python3 challenger_orb_retest_acquisition.py freeze
+python3 challenger_orb_retest_acquisition_inspection.py \
+  historical_batches/challenger_orb_retest_v1/acquisition_manifests/<outer-manifest>.json \
+  historical_batches/challenger_orb_retest_v1/scanner_manifests/<scanner-manifest>.json
+```
+
+This stage authorizes coarse scanner collection only after publication. It does
+not authorize selected-symbol detail, catalyst requests, returns, outcomes,
+production changes, maturity credit, or broker actions. The exact selected-pair
+and causal detail request graph remains a separate post-scanner freeze.
