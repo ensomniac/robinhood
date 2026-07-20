@@ -9,6 +9,7 @@ contacts a broker.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import gzip
 import hashlib
 import importlib.metadata
@@ -17,6 +18,7 @@ import os
 import shutil
 import subprocess
 import sys
+from contextlib import contextmanager
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
@@ -70,6 +72,7 @@ DEFAULT_STATUS = (
 )
 RUN_ROOT = PROJECT_ROOT / "learning_runs/challenger_orb_retest_v1/scanner_replay"
 REFERENCE_ROOT = RUN_ROOT / "reference"
+ACQUISITION_LOCK = RUN_ROOT / "provider-acquisition.lock"
 SECURITY_MASTER = (
     PROJECT_ROOT / "historical_batches/challenger_orb_retest_v1/security-master.jsonl"
 )
@@ -169,6 +172,39 @@ def _read_gzip_array(path: Path) -> list[dict[str, Any]]:
     ):
         raise ChallengerAcquisitionError(f"{path} must contain an object array")
     return [dict(row) for row in value]
+
+
+@contextmanager
+def _exclusive_run_lock(path: Path, *, operation: str = "challenger acquisition"):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a+", encoding="utf-8") as handle:
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise ChallengerAcquisitionError(
+                "challenger acquisition is already running"
+            ) from exc
+        try:
+            handle.seek(0)
+            handle.truncate()
+            handle.write(
+                json.dumps(
+                    {
+                        "operation": operation,
+                        "pid": os.getpid(),
+                        "started_at": datetime.now(UTC).isoformat(),
+                    },
+                    sort_keys=True,
+                )
+                + "\n"
+            )
+            handle.flush()
+            yield
+        finally:
+            handle.seek(0)
+            handle.truncate()
+            handle.flush()
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
 def _binding(path: Path) -> dict[str, str]:
@@ -301,6 +337,7 @@ def _provider_config_contract(env_path: Path) -> dict[str, Any]:
 def reference_status() -> dict[str, Any]:
     selection = _selection()
     snapshots: list[dict[str, Any]] = []
+    logical_snapshots: list[dict[str, Any]] = []
     missing = 0
     for day in sorted(selection["selected_dates"]):
         path = REFERENCE_ROOT / f"{day}.json.gz"
@@ -317,7 +354,14 @@ def reference_status() -> dict[str, Any]:
             raise ChallengerAcquisitionError(
                 f"reference snapshot is empty or ambiguous: {day}"
             )
-        snapshots.append({"date": day, "rows": len(rows), "sha256": _sha256_file(path)})
+        raw = {"date": day, "rows": len(rows), "sha256": _sha256_file(path)}
+        logical = {
+            "date": day,
+            "rows": len(rows),
+            "content_sha256": _sha256_json(rows),
+        }
+        snapshots.append(raw)
+        logical_snapshots.append(logical)
     return {
         "schema_version": 1,
         "dataset_id": tranche.DATASET_ID,
@@ -327,6 +371,30 @@ def reference_status() -> dict[str, Any]:
         "missing": missing,
         "complete": missing == 0,
         "snapshot_set_sha256": _sha256_json(snapshots),
+        "logical_snapshot_set_sha256": _sha256_json(logical_snapshots),
+        "date_substitution_allowed": False,
+        "target_market_data_accessed": False,
+        "target_outcomes_observed_or_derived": False,
+    }
+
+
+def collect_reference(*, env_path: Path) -> dict[str, Any]:
+    _published(Path(__file__))
+    selection = _selection()
+    with _exclusive_run_lock(
+        ACQUISITION_LOCK, operation="dated-reference collection"
+    ):
+        result = scanner_replay.collect_reference_snapshots(
+            selection["selected_dates"],
+            config=scanner_replay.MassiveReferenceConfig.from_env(env_path),
+            output_root=REFERENCE_ROOT,
+        )
+    return {
+        "schema_version": 1,
+        "dataset_id": tranche.DATASET_ID,
+        "status": "REFERENCE_COLLECTION_COMPLETE",
+        "collection": result,
+        "reference": reference_status(),
         "date_substitution_allowed": False,
         "target_market_data_accessed": False,
         "target_outcomes_observed_or_derived": False,
@@ -335,28 +403,31 @@ def reference_status() -> dict[str, Any]:
 
 def build_master() -> dict[str, Any]:
     _published(Path(__file__))
-    status = reference_status()
-    if status["complete"] is not True:
-        raise ChallengerAcquisitionError("dated reference collection is incomplete")
-    selection = _selection()
-    if SECURITY_MASTER.exists() != SECURITY_SOURCE.exists():
-        raise ChallengerAcquisitionError(
-            "security master and source attestation are only partially present"
-        )
-    recorded_at = None
-    if SECURITY_SOURCE.exists():
-        recorded_at = str(_read_object(SECURITY_SOURCE).get("captured_at") or "")
-        if not recorded_at:
+    with _exclusive_run_lock(ACQUISITION_LOCK, operation="security-master build"):
+        status = reference_status()
+        if status["complete"] is not True:
             raise ChallengerAcquisitionError(
-                "existing security-master attestation lacks captured_at"
+                "dated reference collection is incomplete"
             )
-    result = scanner_replay.build_security_master(
-        selection["selected_dates"],
-        snapshots_root=REFERENCE_ROOT,
-        output=SECURITY_MASTER,
-        source_manifest=SECURITY_SOURCE,
-        recorded_at=recorded_at,
-    )
+        selection = _selection()
+        if SECURITY_MASTER.exists() != SECURITY_SOURCE.exists():
+            raise ChallengerAcquisitionError(
+                "security master and source attestation are only partially present"
+            )
+        recorded_at = None
+        if SECURITY_SOURCE.exists():
+            recorded_at = str(_read_object(SECURITY_SOURCE).get("captured_at") or "")
+            if not recorded_at:
+                raise ChallengerAcquisitionError(
+                    "existing security-master attestation lacks captured_at"
+                )
+        result = scanner_replay.build_security_master(
+            selection["selected_dates"],
+            snapshots_root=REFERENCE_ROOT,
+            output=SECURITY_MASTER,
+            source_manifest=SECURITY_SOURCE,
+            recorded_at=recorded_at,
+        )
     return {
         "schema_version": 1,
         "dataset_id": tranche.DATASET_ID,
@@ -414,14 +485,15 @@ def _split_attestation() -> dict[str, Any]:
 
 def collect_splits(*, env_path: Path) -> dict[str, Any]:
     _published(Path(__file__))
-    result = scanner_replay.collect_split_actions(
-        start="2023-01-04",
-        end="2024-12-24",
-        config=scanner_replay.MassiveReferenceConfig.from_env(env_path),
-        output=SPLITS,
-    )
-    attestation = _split_attestation()
-    _write_json(SPLIT_SOURCE, attestation)
+    with _exclusive_run_lock(ACQUISITION_LOCK, operation="split-action collection"):
+        result = scanner_replay.collect_split_actions(
+            start="2023-01-04",
+            end="2024-12-24",
+            config=scanner_replay.MassiveReferenceConfig.from_env(env_path),
+            output=SPLITS,
+        )
+        attestation = _split_attestation()
+        _write_json(SPLIT_SOURCE, attestation)
     return {
         "schema_version": 1,
         "dataset_id": tranche.DATASET_ID,
@@ -834,6 +906,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--env", type=Path, default=PROJECT_ROOT / ".env")
     parser.add_argument("--scanner-manifest", type=Path)
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("collect-reference")
     sub.add_parser("reference-status")
     sub.add_parser("build-master")
     sub.add_parser("collect-splits")
@@ -853,7 +926,9 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
-        if args.command == "reference-status":
+        if args.command == "collect-reference":
+            result = collect_reference(env_path=args.env)
+        elif args.command == "reference-status":
             result = reference_status()
         elif args.command == "build-master":
             result = build_master()

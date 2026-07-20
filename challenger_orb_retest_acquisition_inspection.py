@@ -26,6 +26,87 @@ class ChallengerAcquisitionInspectionError(RuntimeError):
     """Independent acquisition reconstruction found a mismatch."""
 
 
+def inspect_reference() -> dict[str, Any]:
+    selection = acquisition._selection()
+    expected_dates = sorted(selection["selected_dates"])
+    expected_names = {f"{day}.json.gz" for day in expected_dates}
+    all_files = sorted(
+        path for path in acquisition.REFERENCE_ROOT.rglob("*") if path.is_file()
+    )
+    temporary = sorted(
+        path.relative_to(acquisition.REFERENCE_ROOT).as_posix()
+        for path in all_files
+        if path.suffix == ".tmp"
+    )
+    observed_paths = sorted(
+        path
+        for path in all_files
+        if path.parent == acquisition.REFERENCE_ROOT and path.name in expected_names
+    )
+    unexpected = sorted(
+        path.relative_to(acquisition.REFERENCE_ROOT).as_posix()
+        for path in all_files
+        if path not in observed_paths and path.suffix != ".tmp"
+    )
+    if unexpected or temporary:
+        raise ChallengerAcquisitionInspectionError(
+            "reference cache contains unexpected or temporary artifacts"
+        )
+
+    raw_snapshots: list[dict[str, Any]] = []
+    logical_snapshots: list[dict[str, Any]] = []
+    ready_dates: set[str] = set()
+    for path in observed_paths:
+        day = path.name.removesuffix(".json.gz")
+        rows = acquisition._read_gzip_array(path)
+        symbols = [str(row.get("ticker") or "").strip().upper() for row in rows]
+        if (
+            not rows
+            or any(not symbol for symbol in symbols)
+            or len(symbols) != len(set(symbols))
+        ):
+            raise ChallengerAcquisitionInspectionError(
+                f"reference snapshot is empty or ambiguous: {day}"
+            )
+        ready_dates.add(day)
+        raw_snapshots.append(
+            {"date": day, "rows": len(rows), "sha256": acquisition._sha256_file(path)}
+        )
+        logical_snapshots.append(
+            {
+                "date": day,
+                "rows": len(rows),
+                "content_sha256": acquisition._sha256_json(rows),
+            }
+        )
+
+    missing = sorted(set(expected_dates) - ready_dates)
+    controller = acquisition.reference_status()
+    rebuilt = {
+        "ready": len(raw_snapshots),
+        "missing": len(missing),
+        "snapshot_set_sha256": acquisition._sha256_json(raw_snapshots),
+        "logical_snapshot_set_sha256": acquisition._sha256_json(logical_snapshots),
+    }
+    if any(controller.get(key) != value for key, value in rebuilt.items()):
+        raise ChallengerAcquisitionInspectionError(
+            "controller reference aggregate does not independently rebuild"
+        )
+    return {
+        "schema_version": 1,
+        "dataset_id": acquisition.tranche.DATASET_ID,
+        "status": "REFERENCE_READY" if not missing else "REFERENCE_PARTIAL",
+        "requested": len(expected_dates),
+        **rebuilt,
+        "unexpected_snapshots": 0,
+        "temporary_artifacts": 0,
+        "date_substitution_allowed": False,
+        "target_market_data_accessed": False,
+        "target_outcomes_observed_or_derived": False,
+        "valid": True,
+    }
+
+
 def inspect_inputs(*, env_path: Path) -> dict[str, Any]:
     selection = acquisition._selection()
     expected_dates = sorted(selection["selected_dates"])
@@ -40,6 +121,7 @@ def inspect_inputs(*, env_path: Path) -> dict[str, Any]:
             "security-master source dates differ"
         )
     snapshot_hashes: list[dict[str, Any]] = []
+    logical_snapshot_hashes: list[dict[str, Any]] = []
     for public in snapshot_rows:
         day = str(public["date"])
         path = acquisition.REFERENCE_ROOT / f"{day}.json.gz"
@@ -60,6 +142,13 @@ def inspect_inputs(*, env_path: Path) -> dict[str, Any]:
                 f"reference snapshot differs: {day}"
             )
         snapshot_hashes.append(observed)
+        logical_snapshot_hashes.append(
+            {
+                "date": day,
+                "rows": len(rows),
+                "content_sha256": acquisition._sha256_json(rows),
+            }
+        )
 
     master = load_security_master(acquisition.SECURITY_MASTER)
     master_public = source.get("security_master")
@@ -131,6 +220,9 @@ def inspect_inputs(*, env_path: Path) -> dict[str, Any]:
     return {
         "snapshot_count": len(snapshot_hashes),
         "snapshot_set_sha256": acquisition._sha256_json(snapshot_hashes),
+        "logical_snapshot_set_sha256": acquisition._sha256_json(
+            logical_snapshot_hashes
+        ),
         "security_master_sha256": master_public["sha256"],
         "security_master_records": len(master),
         "split_actions_sha256": split_artifact["sha256"],
@@ -254,21 +346,33 @@ def inspect(
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("manifest", type=Path)
-    parser.add_argument("scanner_manifest", type=Path)
+    parser.add_argument("manifest", type=Path, nargs="?")
+    parser.add_argument("scanner_manifest", type=Path, nargs="?")
     parser.add_argument("--env", type=Path, default=acquisition.PROJECT_ROOT / ".env")
+    parser.add_argument("--reference-only", action="store_true")
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
-        result = inspect(
-            manifest_path=args.manifest,
-            scanner_manifest_path=args.scanner_manifest,
-            env_path=args.env,
-        )
-        acquisition._write_json(acquisition.DEFAULT_STATUS, result)
+        if args.reference_only:
+            if args.manifest is not None or args.scanner_manifest is not None:
+                raise ChallengerAcquisitionInspectionError(
+                    "reference-only inspection does not accept manifests"
+                )
+            result = inspect_reference()
+        else:
+            if args.manifest is None or args.scanner_manifest is None:
+                raise ChallengerAcquisitionInspectionError(
+                    "outer and scanner manifests are required"
+                )
+            result = inspect(
+                manifest_path=args.manifest,
+                scanner_manifest_path=args.scanner_manifest,
+                env_path=args.env,
+            )
+            acquisition._write_json(acquisition.DEFAULT_STATUS, result)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (

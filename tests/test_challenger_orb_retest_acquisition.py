@@ -58,7 +58,70 @@ def test_reference_status_is_resumable_and_hashes_only_ready_dates(
     assert complete["ready"] == 2
     assert complete["missing"] == 0
     assert complete["complete"] is True
+    assert len(complete["logical_snapshot_set_sha256"]) == 64
     assert complete["target_market_data_accessed"] is False
+
+
+def test_reference_collector_lock_rejects_a_competing_process(tmp_path):
+    lock = tmp_path / "reference.lock"
+    with acquisition._exclusive_run_lock(lock):
+        with pytest.raises(
+            acquisition.ChallengerAcquisitionError, match="already running"
+        ):
+            with acquisition._exclusive_run_lock(lock):
+                pass
+
+    with acquisition._exclusive_run_lock(lock):
+        assert json.loads(lock.read_text(encoding="utf-8"))["pid"] > 0
+    assert lock.read_text(encoding="utf-8") == ""
+
+
+def test_logical_reference_hash_ignores_gzip_container_metadata(tmp_path, monkeypatch):
+    day = "2024-01-02"
+    path = tmp_path / f"{day}.json.gz"
+    rows = [{"ticker": "ABC", "name": "Example"}]
+    monkeypatch.setattr(acquisition, "_selection", lambda: {"selected_dates": [day]})
+    monkeypatch.setattr(acquisition, "REFERENCE_ROOT", tmp_path)
+
+    def write_snapshot(mtime):
+        with path.open("wb") as raw:
+            with gzip.GzipFile(fileobj=raw, mode="wb", mtime=mtime) as target:
+                target.write(json.dumps(rows).encode("utf-8"))
+
+    write_snapshot(1)
+    first = acquisition.reference_status()
+    write_snapshot(2)
+    second = acquisition.reference_status()
+
+    assert first["snapshot_set_sha256"] != second["snapshot_set_sha256"]
+    assert (
+        first["logical_snapshot_set_sha256"]
+        == second["logical_snapshot_set_sha256"]
+    )
+
+
+def test_reference_inspector_rebuilds_partial_cache(tmp_path, monkeypatch):
+    days = ["2024-01-02", "2024-01-03"]
+    with gzip.open(tmp_path / f"{days[0]}.json.gz", "wt", encoding="utf-8") as target:
+        json.dump([{"ticker": "ABC"}], target)
+    monkeypatch.setattr(acquisition, "_selection", lambda: {"selected_dates": days})
+    monkeypatch.setattr(acquisition, "REFERENCE_ROOT", tmp_path)
+
+    inspected = acquisition_inspection.inspect_reference()
+
+    assert inspected["status"] == "REFERENCE_PARTIAL"
+    assert inspected["ready"] == 1
+    assert inspected["missing"] == 1
+    assert inspected["unexpected_snapshots"] == 0
+    assert inspected["temporary_artifacts"] == 0
+
+    with gzip.open(tmp_path / "2024-01-04.json.gz", "wt", encoding="utf-8") as target:
+        json.dump([{"ticker": "XYZ"}], target)
+    with pytest.raises(
+        acquisition_inspection.ChallengerAcquisitionInspectionError,
+        match="unexpected",
+    ):
+        acquisition_inspection.inspect_reference()
 
 
 def test_split_attestation_rebuilds_exact_frozen_range(tmp_path, monkeypatch):

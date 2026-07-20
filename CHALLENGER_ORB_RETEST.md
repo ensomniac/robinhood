@@ -143,12 +143,19 @@ status must be committed and pushed before `collect-scanner` can contact
 Alpaca.
 
 The dated reference collector is resumable under the frozen Massive query and
-pacing contract. After all 100 exact snapshots complete, build the challenger
-security master and split attestation, freeze the inner scanner manifest, then
-freeze and independently inspect the outer contract:
+pacing contract. Use only the challenger controller entrypoint: its
+repository-native single-writer lock serializes dated-reference collection,
+master construction, and split retrieval. The independent reference inspection
+rehashes both the raw gzip containers and their parsed logical rows, rejects
+unexpected or temporary files, and therefore distinguishes harmless gzip
+metadata changes from content drift. After all 100 exact snapshots complete,
+build the challenger security master and split attestation, freeze the inner
+scanner manifest, then freeze and independently inspect the outer contract:
 
 ```sh
+python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status
+python3 challenger_orb_retest_acquisition_inspection.py --reference-only
 python3 challenger_orb_retest_acquisition.py build-master
 python3 challenger_orb_retest_acquisition.py collect-splits
 python3 challenger_orb_retest_acquisition.py audit-inputs

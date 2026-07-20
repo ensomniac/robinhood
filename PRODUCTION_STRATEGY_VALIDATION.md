@@ -241,6 +241,10 @@ retest trigger, primary-source semantic rules, selected-symbol detail limits,
 capacity reserve, and outcome lock. Its independent inspector requires zero
 target market artifacts. The inner scanner manifest and outer acquisition
 manifest must both be committed and pushed before target Alpaca collection.
+All challenger Massive operations now pass through one repository-native
+single-writer lock. A separate partial-cache inspector independently rebuilds
+raw and logical snapshot hashes and rejects unexpected or temporary files
+before those identities can become a security master.
 
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
