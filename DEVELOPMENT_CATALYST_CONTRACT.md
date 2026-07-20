@@ -3,8 +3,8 @@
 Planned dataset:
 `dataset-primary-source-semantics-contract-2026-07-19-development-v2`
 
-Status: implementation validated; manifest not yet frozen; no target source,
-selected-symbol detail, or outcome access has occurred
+Status: manifest `04cb2640...164c2b` independently rebuilt `FROZEN_READY`;
+no target source, selected-symbol detail, or outcome access has occurred
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -65,3 +65,16 @@ python3 development_catalyst_contract.py inspect \
 
 The inspected manifest and public zero-state must be committed and pushed before
 target-source acquisition begins.
+
+## Frozen Result
+
+Manifest `04cb2640...164c2b` binds all 100 dates and 1,906 selected pairs to
+private content hash `c09a4ede...adafc8`, daily-shortlist aggregate hash
+`cecce28c...94143b`, source-rules hash `99843372...1b4dc`, and implementation
+contract hash `002b44b8...221d`. Independent inspection rebuilt those inputs and
+confirmed zero pre-freeze target artifacts, primary-only evidence, zero
+substitution, and no source, selected-symbol detail, or outcome access.
+
+Commit and push this manifest and zero-state before source acquisition. A
+`FROZEN_READY` source contract is not source evidence and does not advance
+catalyst capacity, alpha, maturity, or production readiness by itself.

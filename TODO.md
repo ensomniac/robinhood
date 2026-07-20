@@ -84,7 +84,10 @@ and push that manifest before freezing the primary-source catalyst contract.
 `development_catalyst_contract.py` now implements that network-free freeze and
 independent rebuild against the existing source-semantics rules, upstream
 hashes, privacy boundary, recovery order, zero-artifact preflight, and outcome
-lock. Commit and push the implementation before freezing its first manifest.
+lock. Manifest `04cb2640...164c2b` now independently rebuilds `FROZEN_READY`
+with all 1,906 pairs, zero target-source artifacts, zero downstream detail, and
+no outcome access. Commit and push the manifest and zero-state before the first
+target-source request.
 
 ## Completed 2026-07-19
 
