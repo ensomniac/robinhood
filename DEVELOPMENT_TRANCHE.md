@@ -65,6 +65,13 @@ the public aggregate evidence. This closes scanner-selection fidelity only;
 catalyst, quote/book, tradability, trigger, execution, return, alpha,
 confirmation, maturity, and production claims remain locked.
 
+Selected-pair manifest `f00e8393...c8897` now freezes all 1,871 exact scanner
+selections before downstream access. An independent reconstruction verified the
+private content and daily shortlist hashes; 14 dates retain fewer than 20 names
+and the minimum is three without substitution. The exact pair identities remain
+outside Git, and source, selected-symbol detail, and outcome access are still
+forbidden pending the next pushed contract.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated
