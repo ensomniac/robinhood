@@ -110,6 +110,16 @@ outcome locks match, and the response namespace remains empty. The aggregate
 status is `historical_batches/development_tranche_v3/sec-supplemental-contract-status.json`.
 Provider access still requires a separately committed and pushed collector.
 
+`development_sec_supplemental_collection.py` now accepts the explicit v3
+supplemental and source dataset identities, verifies their manifest relationship
+and private namespace, and scopes every response wrapper and index beneath the
+v3 source response root. It consumes only the nine selected requests, uses the
+shared SEC cache first, isolates provider and parser failures, resumes from
+revalidated atomic wrappers, and independently reparses each raw response.
+Primary documents, semantic classification, private identities, and outcomes
+remain inaccessible. Commit and push the collector and tests before provider
+access.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
@@ -170,3 +180,23 @@ arguments and `--status
 historical_batches/development_tranche_v3/sec-supplemental-contract-status.json`.
 Inspection is still network free and does not authorize a supplemental request
 until its aggregate zero-response state is separately committed and pushed.
+
+After committing and pushing the collector, run and inspect only the frozen
+nine-request graph:
+
+```sh
+python3 development_sec_supplemental_collection.py \
+  --dataset-id dataset-development-sec-supplemental-2026-07-20-v3 \
+  --source-dataset-id dataset-development-sec-primary-sources-2026-07-20-v3 \
+  --manifest historical_batches/development_tranche_v3/sec_supplemental_manifests/dataset-development-sec-supplemental-2026-07-20-v3-7882745425690f2436ceaada8efdd937f137caeedb784c2c0bf3c6ded839bc9d.json \
+  collect \
+  --status historical_batches/development_tranche_v3/sec-supplemental-status.json
+
+python3 development_sec_supplemental_collection.py \
+  --dataset-id dataset-development-sec-supplemental-2026-07-20-v3 \
+  --source-dataset-id dataset-development-sec-primary-sources-2026-07-20-v3 \
+  --manifest historical_batches/development_tranche_v3/sec_supplemental_manifests/dataset-development-sec-supplemental-2026-07-20-v3-7882745425690f2436ceaada8efdd937f137caeedb784c2c0bf3c6ded839bc9d.json \
+  inspect \
+  --status historical_batches/development_tranche_v3/sec-supplemental-status.json \
+  --output research_results/2026-07-20-development-sec-supplemental-inspection.json
+```
