@@ -232,6 +232,18 @@ substitution, post-entry data, or production-rule change is permitted. Commit
 and push the implementation before freezing the exact manifest; commit and
 push that manifest before any of the 417 requests.
 
+Manifest `dd47c424...f97603` now freezes the complete 377-pair, 436-join,
+417-accession surface from pushed implementation `114171a`. It binds private
+selection hash `429d4c46...1e8fd3`, pair identity `4d65b6a3...be428`, request
+graph `b41dd961...fefb3`, join graph `5cff4f30...0ff3`, the unchanged source
+review, provider rules, capacity, privacy, and every outcome lock. The target
+namespace contains only the frozen selection and zero response wrappers,
+collection indexes, or reviewed results. The separately implemented
+`development_sec_accession_chain_contract_inspection.py` must independently
+rebuild and publish that zero-response state after this manifest is committed
+and pushed; SEC access remains prohibited until the inspected state is also
+committed and pushed.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:

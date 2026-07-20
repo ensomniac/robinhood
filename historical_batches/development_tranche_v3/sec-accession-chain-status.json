@@ -1,0 +1,19 @@
+{
+  "counts": {
+    "candidate_pairs": 377,
+    "prior_pair_source_joins": 436,
+    "unique_accessions": 417
+  },
+  "dataset_id": "dataset-development-sec-accession-chain-recovery-2026-07-20-v3",
+  "join_graph_sha256": "5cff4f30edc2bea3821cea15d8f196bd4578f2fc38af764b13a8e63994e60ff3",
+  "manifest_sha256": "dd47c42489dd0b894fb5d2d9960c344a1ceb7f85483e32ab3a767669eaf97603",
+  "outcome_contract_permitted": false,
+  "pair_identity_sha256": "4d65b6a39b3cbba0551f89a63b352ab319f652102977b6b8676c4cc96b4be428",
+  "pre_freeze_target_artifact_count": 0,
+  "request_graph_sha256": "b41dd961b0b25c4ed33039751c67e9383d7d183f12ceccc98e7e812181dfefb3",
+  "schema_version": 1,
+  "source_semantics_classified": false,
+  "status": "FROZEN_READY",
+  "target_outcomes_observed_or_derived": false,
+  "valid": true
+}
