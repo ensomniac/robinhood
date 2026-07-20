@@ -2,8 +2,8 @@
 
 Planned dataset: `dataset-development-sec-primary-sources-2026-07-20-v3`
 
-Status: identity/request-graph implementation ready; no v3 CIK graph is frozen
-and no SEC target response has been requested or read
+Status: manifest `8dc5996b...464628` is frozen and awaiting independent
+zero-response inspection; no SEC target response has been requested or read
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -39,6 +39,20 @@ namespace, preventing cross-tranche reads or writes.
   frozen and pushed manifests before access.
 - Exact identities and requests remain outside Git. Provider/date/source
   substitution, selected-symbol detail, and outcomes remain forbidden.
+
+## Frozen Identity Graph
+
+Manifest `8dc5996b...464628` resolves all 1,871 pairs exactly. It retains 1,862
+CIK-present pairs and nine explicit missing-CIK rows, producing 611 unique SEC
+submissions requests. Private identity hash `896d2830...0c45b0`, request-graph
+hash `1df8d19c...59dd90`, daily aggregate hash
+`9ef85ec3...75f74b`, and implementation hash
+`f27d3761...6615d2c` bind the result. The dataset-specific target response
+namespace contained zero artifacts at freeze.
+
+This manifest remains pending independent inspection. It must be committed and
+pushed before the zero-response inspector runs, and the resulting status must
+be committed and pushed separately before any SEC request.
 
 ## Runbook
 

@@ -1,0 +1,1069 @@
+{
+  "capacity_contract": {
+    "capacity_ready": true,
+    "free_bytes_at_freeze": 445014654976,
+    "historical_deletion_allowed": false,
+    "historical_store_outside_repository": true,
+    "minimum_required_reserve_bytes": 21474836480,
+    "reserve_bytes": 21474836480
+  },
+  "dataset_id": "dataset-development-sec-primary-sources-2026-07-20-v3",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "DEVELOPMENT_CATALYST_CONTRACT_V3.md",
+      "historical_batches/development_tranche_v3/catalyst_manifests/dataset-primary-source-semantics-contract-2026-07-20-development-v3-412efc72a74d337d161c8f672c6692cbc1a86fa7befecacf31e3e605a75043b8.json",
+      "historical_batches/development_tranche_v3/selected_pair_manifests/dataset-selected-candidate-contract-2026-07-20-development-v3-f00e8393391d8daee026e326d98643d8f07e2f38f847e4b257c6caa1b73c8897.json",
+      "historical_batches/development_tranche_v3/security-master-source.json",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "identity_contract": {
+    "ambiguous_or_missing_master_match_allowed": false,
+    "cik_missing_pair_count": 9,
+    "cik_present_pair_count": 1862,
+    "daily_identity_aggregates": [
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-01-07",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "001d127bcc93f834b62b0a13d8bca579a41503d45d0bd37e7ee95c6f577d8cdd"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-01-13",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "2942c6394699e9b46f26f8e23911e7a4cc64e215a23620b7f4a003f0d9efd5eb"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-01-16",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "3ad84de597e6fa7d809f92e387614a9342f5a632d148742c546ffb8de588fc9b"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-01-23",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "0005913f80105b185f731347c00075bd1b8c57fceb71c01453a58c669d4e4690"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-01-30",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "8994a86c46f5ee0adcb4ba2903b40dbaae236c185dfc328c784b480aa042be89"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 17,
+        "date": "2025-02-03",
+        "mapped_count": 17,
+        "pair_count": 17,
+        "private_rows_sha256": "0b80961667b6ce5f1953a68b9783e0864ab21bfd6d8cba1c3e90ecd42120bc9f"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-02-05",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "0dd0bf76eea170bc5e0ba28ce6574d95159a0d9261124a102d427fa7926e0351"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-02-06",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "dc6bdca0c687743119334a41b380b72c63e8b668cf0804917f4f5cd91f907645"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-02-10",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "493c90473f2e010d3decf09463aae47f2849a38aacd34c298eb9eb69b3306a78"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-02-14",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "4f9c8bf2899883ec4af700f5f675450e43ef4a17e9b62e89287e7b7bd65f08f6"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-02-18",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "2da964b0464c738d4a682e9a58d9cc3afc79d4e24fdd04dc56829c28fda2af4b"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-02-19",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "e1de6223705bae3d5ff7fb519e50d79455ed627c50aad475615afa788d89573d"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-02-26",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "f2ae59eb5cb1dc9ab4f0f3522ecb3de812cbfec6fa408f89209fe0d719ffd5e3"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-02-27",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "343675c71eca8a86fe94cade1611f888540f9ad88eade9c935a79b95f84f862c"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-03-05",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "19646ac4bd420dc469f709d3655fd6b08fb52534c097cd1c0df262309173c9cd"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 11,
+        "date": "2025-03-06",
+        "mapped_count": 11,
+        "pair_count": 11,
+        "private_rows_sha256": "41a4cea8512ed63af493bedad4c6cbfd354638b3fee6837232334c4cca45c40a"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-03-14",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "ae0d2fc5ec337ca6b4ddf1a22a4c42265e48269176e19170c6b74395a0ca5cb5"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-03-17",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "b607f2ed20c3cbf6014359dba374eae9c7de24a130afee785da47a198fff6e35"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 12,
+        "date": "2025-03-18",
+        "mapped_count": 12,
+        "pair_count": 12,
+        "private_rows_sha256": "7a92e140e4b3ecef8afcb598a280f5e2664df2ab6e3b67ca5f0e6db217a77553"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 7,
+        "date": "2025-03-27",
+        "mapped_count": 7,
+        "pair_count": 7,
+        "private_rows_sha256": "8092c9232dea4fbeef0c78f4eb64d61244b52a10bd5b37066d89e84a472c5fc3"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-03-31",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "160127391983a5880d79cbceb0ed5bc0bc53a15ac9c4dedbbeb3c51fbbb6b959"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 3,
+        "date": "2025-04-07",
+        "mapped_count": 3,
+        "pair_count": 3,
+        "private_rows_sha256": "010ef36486bed7787129dc51d13cc6cb222c15a5685248277bf4e889be970204"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-04-08",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "cff1f32823d8281c03d8ee3361412619499b20132e8fa0d273137be3872537cb"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 6,
+        "date": "2025-04-10",
+        "mapped_count": 6,
+        "pair_count": 6,
+        "private_rows_sha256": "e92e64cc827b89e643a1833add2c96d7e840ab7a1c714e847e507f732614ad29"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 17,
+        "date": "2025-04-15",
+        "mapped_count": 17,
+        "pair_count": 17,
+        "private_rows_sha256": "285ef456ce57c3276910f39459ce96eb4200e311fca25bd211ad5a4a4517639a"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-04-17",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "7d48d9850d15e24d26cc19eb93aedd860bb8753db16d15433a6bfb036aedcdab"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-04-23",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "33ff275b90cfe61ddf9562fda56697aaba1868950d432d0d9e4c9b6742f17377"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-04-24",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "a0d62cc991facd6348f43a4aeb265ad7c00e475eedd4bf1c9be6bbdee90fb6ef"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 16,
+        "date": "2025-04-25",
+        "mapped_count": 16,
+        "pair_count": 16,
+        "private_rows_sha256": "156261391049006119959ea95012962936df8e059af572ceb15972f80c22a613"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-05-01",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "a94ce0071c2c6361c96e0e4f85d1235bbd491ad0015927baf0d702b6cd1300ba"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-05-06",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "ca3a4bed06b3a2fc06fada5660a06124e81be3c456bbf3dcdbd57399e8e31a80"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-05-09",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "68807c576973a99b810c090a1e8300983d0c2c93ba4672f9ed0a4c4319b040a1"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-05-14",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "4fae14564272f4734cdcaf2bff955fb97116c91bcf60c88ca7f6a4e923d3622f"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-05-15",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "4fd614c40a164bf4ee80735482434605262e73f24410518bfb271b14def5aa77"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-05-16",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "a7da566b9206388fe8891be8d15e20f72f06a643a3601538a806d271ad9baa94"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 16,
+        "date": "2025-05-20",
+        "mapped_count": 16,
+        "pair_count": 16,
+        "private_rows_sha256": "e7efe2171a3a2d7fb4f097ca1bc7719dcb0a966f93fa99708e06cf9a9020dabf"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-05-27",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "6f596a770b41eb5da2026ce297196ffd575e2970c1d2b854750a003381df4ba0"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-05-28",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "4468d41da7bf15acacd46ed3b1eb9ee1ed68576b4e68c1fc7c43cc57de7907bd"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-06-02",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "c613b0954c92daedace8054ec693e45b90cffd352ac6e17ddbdc061ddcb98a1b"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-06-05",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "41c9a301b571a8ed2f93cace3514536179b4442f8fd6023703ab75b11bc43164"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-06-09",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "9103bbf6c7c3b4b4ef44b6aae2a3342a90f872b1816e9df88db87ab81a9fff85"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-06-10",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "50eac6c9d3013a5a6217a8f9efa5485e54cacda7e9805ca98c04842a881ecb2b"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-06-11",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "a40a8cef0e4f3f88d2353280e7e7ec65f6e16ed822814617679b031b02a9a83f"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2025-06-13",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "09b0d7aaa51f8d37c0720d8859a9c8101042f7bea1c5b38f13df4da32fbd7ba5"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-06-16",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "9791caa1decf23623b6e37c8047cf9aa84573a12bd4a12d042b83b24eb35eac4"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-06-20",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "e93086d28a27edfd6b07505f755868b13283f3230fc219e74da9ed38962791ed"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-06-23",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "7dfba433b31761312e627ec42b30aa51bf836432aee15460fe56632fb2ac67ce"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-06-27",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "ab1d416931145e9a6a2d0e37916e209b54a8ba5125013a1bea5a0d8683c834c0"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-07-03",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "32cfda946caf9f5f70518df58a9fa001903b0f23f9b20606752159f811f2c47b"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-07-10",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "7c27ed5e5acf9a295ac9700d2e221e94fdd69d15d7b99bb4c7782aa58d0e74f1"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-07-15",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "d1670da3b723f4ed7748e8f0c8dfe46eaf27b3b3f3bcc7ef82ff45a8864dceb5"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-07-23",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "d7f6fc864db941dfb503b536ff00638d8b3ba7263dfb0a93b961b6bf3761fe55"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-07-24",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "b3173d5e4c132b73d3cc5ceb3f5fefbe25323274c4087639750ed110bd1aa7df"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-07-25",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "9060be7edd351645902eb14bfcfd7bc5d2e85744133eccd9b09e768f2752671c"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-08-01",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "05518843f8e8e5cee7e38669a83454bc68fc2ef0d33e39fbb0fd8eafc193c2ef"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2025-08-05",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "15d409f21445c856f193a6f9581cf450823b9d6f13e80b5e8a4ae39909212b81"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2025-08-08",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "82c408d771d19d7394e72dc4d03a562cb2b03765219f813611ef3c35705ec515"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-08-11",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "3ecbd01a0b68dc2ad547dde7b11323dd2d55a99cf33664f1b404028e9245fdec"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-08-13",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "53a0febb2a9940bbd786882dd3915a2f6078d7ea23d6c37866b8dc0d0d23a207"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-08-20",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "181e31b48226e5204d2a03f8db21c0fa3bdf7c078d5d1c6ee3b658af7f5a77b8"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 7,
+        "date": "2025-08-21",
+        "mapped_count": 7,
+        "pair_count": 7,
+        "private_rows_sha256": "c225081631cd5c0586387b22b1370761274f577b2cf141befb831026e8fd0d6e"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 18,
+        "date": "2025-08-22",
+        "mapped_count": 18,
+        "pair_count": 18,
+        "private_rows_sha256": "56bf26d5551469623b275196d17c67c494270cf5dd7cc9240155481786700697"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2025-08-25",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "c34a42bca566e0095a53ec0044ac99798b7ec1ad443b9db62da9eb2cd8724ac2"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-08-28",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "72a782abe443cd783e9049d9e89580df67cbb09dc40ec47bc18a4ea8b8c574ad"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-09-02",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "6238f2545db30533f7629f9bd78cc68d4e89a082ccb1a8d95b05c1322c755d3a"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-09-09",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "c1c51ab65d7e6c96dab4f18c5fa71ef884d7ea502d29803034feabe7436d5d98"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-09-12",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "3eb8393e0f33db70f940c81885c496c0f876adcfb4229ec0c7afa8c20ba97b2f"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-09-15",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "da70bceeee144b5e29572017c29cf1a321a7f970e4eb73c024b3261ccfe9d277"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-09-19",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "cbf2a750ef75fd2e177c09c5403d44729653467a6ad9f58937e5c5deaabfc1f6"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-09-23",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "79e9401d65cfd232132f25dc50e80b0a9df6e2326bf8a9dc6457fa4a54f694de"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-09-24",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "f7aad19d4f01f3ffd38ed4be330babc441d005e68231d9f1b81e2ab8210aa74a"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-09-26",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "8556fe4abbc743ea4f99248c00f1d3357e5e60878617b4d4aca35a0334af6dbe"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-09-30",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "f5e34d01736621c47e352fbc8886950071a13e065670914999d39c7d3655f21e"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-10-01",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "533c7da3f1fd89e3130cb92c45cc1f06f683ecdea6e74597a2b28020a23f67e0"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2025-10-02",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "0a214fe4f72a0dda1205674bde291b516dbdf0597f701421cfeb40cd56d71097"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2025-10-06",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "25a0c0d4e6aa2b99936f609c179708c545fe3b4ee5cddece7da9f4a600760a72"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-10-09",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "95ade09d0cf8bf7bb10562b2e15b1c041c03ab92ef9973f283884167dd1e199d"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2025-10-13",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "0779e608d06f9114b0a2fd6f2be7a2b281e8b0b8250b2abc37a3bc3c90227560"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-10-16",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "300520f5ce3aaf3f43e1d82f72287cf76ec6b0a562f5671648a7cbaff09c81a7"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-10-21",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "72da46fb85a7f4194af8ec085f466f8b4a05d8d12bdcc84a9520176cdd8c5c3d"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-10-28",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "b1ecb9de89943ab96b700832705fb0e6025e33b2543bf1eb14ad2a75935e4e0d"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-11-04",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "f518a800441c004e965b22bf7e6d66396563ec30e7ff8d51cac2cd110bf262e2"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2025-11-10",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "e27cdcd4ff6a3c9d724eb61023ec44e5e5a0efcd4606ead48b5b415712033461"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-11-13",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "86083c413f96542653b9d3ae49c9f59fa2d844ab44410d43bfdfdfeec3b7779d"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-11-20",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "11fd9f0c6951d0040b5f0fd9bbd89ab48c8761fc38d8b8ab17dc6fb308716ae3"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-02",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "288cd3d55bd422bf1ff2792288fcea68f257c1f171c7be06e9d2ad349063e7ff"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-05",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "c51819e5c8a1044c153fa9f55003f54d8ca8a8f3ce5f94ef574679c7baf93ec9"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2025-12-08",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "10c2d721c4c1b57b846af5253c8cd636028c044d2518bcf1bd75b039b78f9833"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-09",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "539dfafbe21e86ab9f34e55ea1afb8027657d3c5e38dd4c10552b259d46d0173"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-11",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "4bab383f346ba067ddf3e354b5b6aa67de662faef99c36ca86d77c0c36b0bab9"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-12",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "0f2918892a2e6372b6b6705ca658c202428b941d26c5376fd88abfc55b4b4334"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-15",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "146a30c681a11d6a6e6d38ca2e9295a7d3381c2e557cfdc91813dda85b08d4f7"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-16",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "8f0e549645d4ebe28ae792ece4aa5fb90f620dae2c86ec76a34fc086cb9dcb53"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-18",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "03ddf26409fd272933c1d3815fb4214c75d1b44a5547a0a77a9cb262c64d10ad"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-19",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "179a4a72ae11ff9943e627a7fb79e1c0d7ca3441a34fa9b83ab777d0c4ecfeef"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-22",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "a632d3077e945a7cbd37d7ee1a44c19c2abb3448eddd6f73a6dbc1d312ee3991"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2025-12-23",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "c4ac94bc58cbb4e649e2459c843c6fa9962cbd7edc35b9695149ecea8f1450a5"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 3,
+        "date": "2025-12-26",
+        "mapped_count": 3,
+        "pair_count": 3,
+        "private_rows_sha256": "4c60516b6b37cff6918af9c993f83d70dbd4e2465ba40e9f81715cc6a5dc0193"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 13,
+        "date": "2025-12-30",
+        "mapped_count": 13,
+        "pair_count": 13,
+        "private_rows_sha256": "e749de479467b0d6b4c629968a1c4be8e3fc180a02c033bdc92b509b6e6553db"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 5,
+        "date": "2025-12-31",
+        "mapped_count": 5,
+        "pair_count": 5,
+        "private_rows_sha256": "da2002c490e74f936f87806b9643112545fc909459fd015ffe170ef7e44d7a43"
+      }
+    ],
+    "daily_identity_aggregates_sha256": "9ef85ec3c362cc490f91586993383a3a571fe54aa24cef67d93153c99a75f74b",
+    "exact_match_fields": [
+      "instrument_id",
+      "symbol",
+      "primary_exchange",
+      "point_in_time_coverage"
+    ],
+    "listing_scoped_pair_count": 0,
+    "mapped_pair_count": 1871,
+    "missing_cik_rows_retained": true,
+    "private_identity_content_sha256": "896d28304accda780d2339d44592bc1d1cd42b3a4ef17f75ac7ecd1f0c0c45b0",
+    "private_identity_path": "LOCAL_HISTORICAL_DATA_ROOT/_derived/development_sec_sources/dataset-development-sec-primary-sources-2026-07-20-v3/identity-and-query-map.json.gz",
+    "selected_pair_count": 1871,
+    "submission_request_graph_sha256": "1df8d19cf7e314792cd47d1ac7d024aa886f916f14677406ad7b1915ca59dd90",
+    "symbols_ciks_and_requests_public": false,
+    "unique_cik_count": 611
+  },
+  "implementation_contract": {
+    "files": {
+      "catalyst_contract": {
+        "path": "development_catalyst_contract.py",
+        "sha256": "75ba45ee45260a21a5ddd11925cd9ddbce787b3eb2c5ff4986a63c90c962ddba"
+      },
+      "historical_discovery": {
+        "path": "historical_discovery.py",
+        "sha256": "7e4e605d17a8b499307a59fa519ac2c647aeef18b11d28754fb5e6c287a464d0"
+      },
+      "learning_data": {
+        "path": "learning_data.py",
+        "sha256": "202bd6698a17b33e8f30c453fcf519cd4199db2cffbc622ffdeece3248d87f6d"
+      },
+      "sec_contract": {
+        "path": "development_sec_sources.py",
+        "sha256": "9f1816df37882982e5ccad5fa9539e8c1fcc0690a7af6b02979722905f9fc939"
+      }
+    },
+    "python": "3.14.2"
+  },
+  "lineage_contract": {
+    "private_selection_content_sha256": "d795f0090accea36d04eeedada4f4a10840e623042f507abf16fb310a7c0f343",
+    "security_master": {
+      "attestation_path": "historical_batches/development_tranche_v3/security-master-source.json",
+      "attestation_sha256": "ee6eae1dc4058a612ecb018d5334ec5e33a02aed933c5054cae1c046e920cc0f",
+      "canonical_sha256": "110210d22abe936e0977e8530ca393f09304f4b250d2c0363cf01113a95c3ab1",
+      "file_sha256": "c33d712fd4b0ce12beb370a3ee390bd7a261fa81e62259549f4a4e8103fde576",
+      "instrument_count": 5923,
+      "path": "historical_batches/development_tranche_v3/security-master.jsonl",
+      "record_count": 6064
+    },
+    "selected_pair_manifest": {
+      "manifest_sha256": "f00e8393391d8daee026e326d98643d8f07e2f38f847e4b257c6caa1b73c8897",
+      "path": "historical_batches/development_tranche_v3/selected_pair_manifests/dataset-selected-candidate-contract-2026-07-20-development-v3-f00e8393391d8daee026e326d98643d8f07e2f38f847e4b257c6caa1b73c8897.json",
+      "sha256": "7b90273a39191768a8f4216061c85d7c60bf30ef54a460e278ca2a38bf72bf16"
+    },
+    "source_semantics_manifest": {
+      "manifest_sha256": "412efc72a74d337d161c8f672c6692cbc1a86fa7befecacf31e3e605a75043b8",
+      "path": "historical_batches/development_tranche_v3/catalyst_manifests/dataset-primary-source-semantics-contract-2026-07-20-development-v3-412efc72a74d337d161c8f672c6692cbc1a86fa7befecacf31e3e605a75043b8.json",
+      "sha256": "879173d865841f48f6488c0c2cdc00bb3bf87edc5a096839585711f4a5780614"
+    },
+    "strategy": {
+      "attestation_path": "historical_batches/scanner_expansion/production-strategy-source.json",
+      "attestation_sha256": "3c07c051bb54612b1e172085a01e330f33a05c65e4a2c8cc274b8006d09c1fc8",
+      "config_path": "strategy_config.toml",
+      "config_sha256": "975e06a981156421a1c6a52cbcbcfeef286016f7c958d40d08b4bdb9ac6ad547",
+      "rules_hash": "00c3aa83754f880ec67d29b7446e43ffccb23c2fb0c939bc4927909f8b4b5867",
+      "strategy_version": "2026-07-15-orb-v3"
+    }
+  },
+  "manifest_sha256": "8dc5996b6b88d52fc8e08efc9932c6a1db30a3ec61a2ef09d7f22346bb464628",
+  "outcome_lock": {
+    "post_entry_data_access_allowed": false,
+    "selected_symbol_detail_accessed": false,
+    "separate_outcome_contract_required": true,
+    "substitutions_allowed": false,
+    "target_outcomes_observed_or_derived": false,
+    "target_sources_accessed": false
+  },
+  "pre_freeze_target_response_artifact_count": 0,
+  "registered_at": "2026-07-20T09:04:13.841669+00:00",
+  "request_contract": {
+    "cache_policy": {
+      "shared_cache_first": true,
+      "shared_cache_may_predate_this_dataset": true,
+      "shared_cache_namespace": "LOCAL_HISTORICAL_DATA_ROOT/_sources/sec/",
+      "target_response_namespace": "LOCAL_HISTORICAL_DATA_ROOT/_derived/development_sec_sources/dataset-development-sec-primary-sources-2026-07-20-v3/responses/",
+      "target_specific_provenance_required_for_every_request": true
+    },
+    "failure_policy": {
+      "empty_or_failed_response_is_not_no_filings": true,
+      "missing_cik_remains_terminal_unresolved": true,
+      "one_failed_cik_cannot_abort_unrelated_requests": true,
+      "per_cik_terminal_result_required": true,
+      "substitution_allowed": false
+    },
+    "forms": [
+      "6-K",
+      "6-K/A",
+      "8-K",
+      "8-K/A"
+    ],
+    "global_minimum_spacing_seconds": 0.15,
+    "maximum_attempts": 4,
+    "primary_document_endpoint_template": "https://www.sec.gov/Archives/edgar/data/{cik_unpadded}/{accession_without_dashes}/{primary_document}",
+    "private_request_graph_sha256": "1df8d19cf7e314792cd47d1ac7d024aa886f916f14677406ad7b1915ca59dd90",
+    "provider": "SEC_EDGAR",
+    "provider_operated_endpoints_only": true,
+    "request_count": 611,
+    "retry_backoff_seconds": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "retryable_http_status": "429 or 5xx",
+    "retryable_transport_failures": true,
+    "stage": "SEC_SUBMISSIONS_ONLY",
+    "staging": {
+      "accession_bound_document_manifest_required_before_request": true,
+      "candidate_documents_may_be_derived_but_not_requested": true,
+      "supplemental_request_manifest_required_before_request": true,
+      "supplemental_submission_files_may_be_discovered_but_not_requested": true
+    },
+    "submissions_endpoint_template": "https://data.sec.gov/submissions/CIK{cik_10}.json",
+    "timeout_seconds": 30.0,
+    "user_agent_identifies_application_and_contact": true,
+    "user_agent_public": false,
+    "user_agent_sha256": "87a6c495709e93e1101e1f4dadba98eb371897c9355d2f6a06dae7d809032b4d",
+    "window": {
+      "accepted_timestamp_field": "acceptanceDateTime",
+      "calendar_lookback_days": 4,
+      "cutoff": "TARGET_DATE_09:35_AMERICA_NEW_YORK_INCLUSIVE",
+      "filing_date_alone_is_not_causal_time": true,
+      "precise_acceptance_timestamp_required": true,
+      "start": "TARGET_DATE_MINUS_4_CALENDAR_DAYS_00:00_AMERICA_NEW_YORK"
+    },
+    "workers": 4
+  },
+  "requested_dates": [
+    "2025-01-07",
+    "2025-01-13",
+    "2025-01-16",
+    "2025-01-23",
+    "2025-01-30",
+    "2025-02-03",
+    "2025-02-05",
+    "2025-02-06",
+    "2025-02-10",
+    "2025-02-14",
+    "2025-02-18",
+    "2025-02-19",
+    "2025-02-26",
+    "2025-02-27",
+    "2025-03-05",
+    "2025-03-06",
+    "2025-03-14",
+    "2025-03-17",
+    "2025-03-18",
+    "2025-03-27",
+    "2025-03-31",
+    "2025-04-07",
+    "2025-04-08",
+    "2025-04-10",
+    "2025-04-15",
+    "2025-04-17",
+    "2025-04-23",
+    "2025-04-24",
+    "2025-04-25",
+    "2025-05-01",
+    "2025-05-06",
+    "2025-05-09",
+    "2025-05-14",
+    "2025-05-15",
+    "2025-05-16",
+    "2025-05-20",
+    "2025-05-27",
+    "2025-05-28",
+    "2025-06-02",
+    "2025-06-05",
+    "2025-06-09",
+    "2025-06-10",
+    "2025-06-11",
+    "2025-06-13",
+    "2025-06-16",
+    "2025-06-20",
+    "2025-06-23",
+    "2025-06-27",
+    "2025-07-03",
+    "2025-07-10",
+    "2025-07-15",
+    "2025-07-23",
+    "2025-07-24",
+    "2025-07-25",
+    "2025-08-01",
+    "2025-08-05",
+    "2025-08-08",
+    "2025-08-11",
+    "2025-08-13",
+    "2025-08-20",
+    "2025-08-21",
+    "2025-08-22",
+    "2025-08-25",
+    "2025-08-28",
+    "2025-09-02",
+    "2025-09-09",
+    "2025-09-12",
+    "2025-09-15",
+    "2025-09-19",
+    "2025-09-23",
+    "2025-09-24",
+    "2025-09-26",
+    "2025-09-30",
+    "2025-10-01",
+    "2025-10-02",
+    "2025-10-06",
+    "2025-10-09",
+    "2025-10-13",
+    "2025-10-16",
+    "2025-10-21",
+    "2025-10-28",
+    "2025-11-04",
+    "2025-11-10",
+    "2025-11-13",
+    "2025-11-20",
+    "2025-12-02",
+    "2025-12-05",
+    "2025-12-08",
+    "2025-12-09",
+    "2025-12-11",
+    "2025-12-12",
+    "2025-12-15",
+    "2025-12-16",
+    "2025-12-18",
+    "2025-12-19",
+    "2025-12-22",
+    "2025-12-23",
+    "2025-12-26",
+    "2025-12-30",
+    "2025-12-31"
+  ],
+  "schema_version": 1
+}

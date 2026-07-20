@@ -90,6 +90,11 @@ contract, selected-pair manifest, security master, strategy attestation, and
 dataset-scoped private namespaces. Its implementation must be committed and
 pushed before resolving the private CIK graph.
 
+SEC manifest `8dc5996b...464628` now freezes 1,871 exact pair mappings, 1,862
+CIK-present pairs, nine retained missing-CIK rows, 611 unique submissions
+requests, and zero target responses. It remains pending independent inspection
+and does not authorize provider access.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated
