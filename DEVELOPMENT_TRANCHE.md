@@ -147,6 +147,13 @@ not semantic evidence. The next stage must use a separately frozen complete
 source-semantics contract, keep exact rows private, reconcile every pair to one
 terminal reason, and preserve the outcome lock.
 
+The source-semantics adapter is now parameterized across the v3 review run,
+source-rules contract, SEC identity graph, and document corpus. Its read-only
+rebuild preserves the complete 1,871-pair denominator, 557 documents, 583
+pair/source joins, 499 source-bearing pairs, and 1,372 no-source pairs, while
+the v3 extraction/review namespace remains empty and isolated from v2. Commit
+and push the adapter before freezing this exact zero-extraction surface.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated

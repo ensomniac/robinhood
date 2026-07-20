@@ -174,6 +174,16 @@ alpha claim; the next stage must separately freeze, extract, review, and inspect
 source semantics across the complete pair denominator while outcomes remain
 locked.
 
+`development_catalyst_source_semantics.py` now accepts explicit review-run,
+source-rules, SEC identity, and document-corpus dataset identities plus the
+exact published document manifest, status, inspection, source-contract doc,
+and output paths. It independently rebuilds the complete v3 surface as 1,871
+pairs, 557 documents, 583 pair/source joins, 499 source-bearing pairs, and
+1,372 no-source pairs. Its private selection, extraction, and reviewed-result
+paths are isolated from the completed v2 run; a live read-only preflight finds
+zero v3 target artifacts. Commit and push this adapter and its namespace tests
+before freezing the exact zero-extraction review contract.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
@@ -274,3 +284,26 @@ python3 development_sec_document_collection.py \
   --status historical_batches/development_tranche_v3/sec-documents-status.json \
   --output research_results/2026-07-20-development-sec-documents-inspection.json
 ```
+
+After committing and pushing the semantics adapter, freeze its complete private
+selection without parsing document text:
+
+```sh
+python3 development_catalyst_source_semantics.py freeze \
+  --dataset-id dataset-development-sec-source-semantics-2026-07-20-v3 \
+  --source-semantics-dataset-id dataset-primary-source-semantics-contract-2026-07-20-development-v3 \
+  --document-dataset-id dataset-development-sec-primary-documents-2026-07-20-v3 \
+  --source-dataset-id dataset-development-sec-primary-sources-2026-07-20-v3 \
+  --source-semantics-manifest historical_batches/development_tranche_v3/catalyst_manifests/dataset-primary-source-semantics-contract-2026-07-20-development-v3-412efc72a74d337d161c8f672c6692cbc1a86fa7befecacf31e3e605a75043b8.json \
+  --document-manifest historical_batches/development_tranche_v3/sec_document_manifests/dataset-development-sec-primary-documents-2026-07-20-v3-1116213925b51a0ad033f77dcffc295fb02f8337013dc0b7574b996c1f986daf.json \
+  --document-status historical_batches/development_tranche_v3/sec-documents-status.json \
+  --document-inspection research_results/2026-07-20-development-sec-documents-inspection.json \
+  --source-contract-doc DEVELOPMENT_CATALYST_CONTRACT_V3.md \
+  --output-root historical_batches/development_tranche_v3/sec_semantics_manifests
+```
+
+Commit and push the resulting manifest before running `inspect-contract` with
+the same identities and inputs plus `--manifest <frozen-manifest>` and
+`--public-status historical_batches/development_tranche_v3/sec-semantics-status.json`.
+Extraction and review remain prohibited until that independent zero-artifact
+status is separately committed and pushed.

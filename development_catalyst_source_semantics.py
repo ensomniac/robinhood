@@ -34,6 +34,8 @@ from learning_data import (
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATASET_ID = "dataset-development-sec-source-semantics-2026-07-19-v2"
+SOURCE_SEMANTICS_DATASET_ID = source_semantics_contract.DATASET_ID
+SOURCE_DATASET_ID = sec_source_contract.DATASET_ID
 SOURCE_SEMANTICS_MANIFEST = sec_source_contract.SOURCE_CONTRACT
 DOCUMENT_MANIFEST = document_collection.MANIFEST
 DOCUMENT_STATUS = document_collection.DEFAULT_PUBLIC_STATUS
@@ -48,6 +50,7 @@ DEFAULT_PUBLIC_RESULT = (
     PROJECT_ROOT
     / "research_results/2026-07-19-development-sec-source-semantics-inspection.json"
 )
+DEFAULT_SOURCE_CONTRACT_DOC = PROJECT_ROOT / "DEVELOPMENT_CATALYST_CONTRACT.md"
 PRIVATE_NAMESPACE = "_derived/development_catalyst_sources"
 PARSER_VERSION = "development-sec-source-semantics-v1"
 TEXT_LIMIT = 250_000
@@ -273,32 +276,71 @@ def _repo_path(path: Path) -> str:
         ) from exc
 
 
-def _private_root(store_root: Path) -> Path:
+def _validated_dataset_id(dataset_id: str) -> str:
+    if (
+        not dataset_id
+        or Path(dataset_id).name != dataset_id
+        or dataset_id in {".", ".."}
+    ):
+        raise DevelopmentCatalystSourceSemanticsError("dataset ID is unsafe")
+    return dataset_id
+
+
+def _private_root(
+    store_root: Path,
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+    dataset_id: str = DATASET_ID,
+) -> Path:
     return (
         store_root
         / PRIVATE_NAMESPACE
-        / source_semantics_contract.DATASET_ID
+        / _validated_dataset_id(source_semantics_dataset_id)
         / "semantics_runs"
-        / DATASET_ID
+        / _validated_dataset_id(dataset_id)
     )
 
 
-def _selection_path(store_root: Path) -> Path:
-    return _private_root(store_root) / "frozen-selection.json.gz"
+def _selection_path(
+    store_root: Path,
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+    dataset_id: str = DATASET_ID,
+) -> Path:
+    return _private_root(
+        store_root, source_semantics_dataset_id, dataset_id
+    ) / "frozen-selection.json.gz"
 
 
-def _extraction_path(store_root: Path) -> Path:
-    return _private_root(store_root) / "extraction.json.gz"
+def _extraction_path(
+    store_root: Path,
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+    dataset_id: str = DATASET_ID,
+) -> Path:
+    return _private_root(
+        store_root, source_semantics_dataset_id, dataset_id
+    ) / "extraction.json.gz"
 
 
-def _reviewed_path(store_root: Path) -> Path:
-    return _private_root(store_root) / "reviewed-result.json.gz"
+def _reviewed_path(
+    store_root: Path,
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+    dataset_id: str = DATASET_ID,
+) -> Path:
+    return _private_root(
+        store_root, source_semantics_dataset_id, dataset_id
+    ) / "reviewed-result.json.gz"
 
 
-def _target_artifact_count(store_root: Path) -> int:
+def _target_artifact_count(
+    store_root: Path,
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+    dataset_id: str = DATASET_ID,
+) -> int:
     return sum(
         path.exists()
-        for path in (_extraction_path(store_root), _reviewed_path(store_root))
+        for path in (
+            _extraction_path(store_root, source_semantics_dataset_id, dataset_id),
+            _reviewed_path(store_root, source_semantics_dataset_id, dataset_id),
+        )
     )
 
 
@@ -337,8 +379,13 @@ def _expected_source_rules() -> dict[str, Any]:
     }
 
 
-def _verify_source_semantics_manifest(manifest: Mapping[str, Any]) -> None:
-    if manifest.get("dataset_id") != source_semantics_contract.DATASET_ID:
+def _verify_source_semantics_manifest(
+    manifest: Mapping[str, Any],
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+) -> None:
+    if manifest.get("dataset_id") != _validated_dataset_id(
+        source_semantics_dataset_id
+    ):
         raise DevelopmentCatalystSourceSemanticsError(
             "unexpected frozen source-semantics contract"
         )
@@ -395,8 +442,13 @@ def _verify_source_semantics_manifest(manifest: Mapping[str, Any]) -> None:
 
 def _load_inputs(
     *,
+    source_semantics_dataset_id: str,
+    document_dataset_id: str,
+    source_dataset_id: str,
     source_semantics_manifest_path: Path,
     document_manifest_path: Path,
+    document_status_path: Path,
+    document_inspection_path: Path,
     env_path: Path,
 ) -> tuple[
     dict[str, Any],
@@ -406,33 +458,48 @@ def _load_inputs(
     dict[str, Any],
     dict[str, Any],
 ]:
+    source_semantics_dataset_id = _validated_dataset_id(
+        source_semantics_dataset_id
+    )
+    document_dataset_id = _validated_dataset_id(document_dataset_id)
+    source_dataset_id = _validated_dataset_id(source_dataset_id)
     source_manifest = load_frozen_dataset_contract(source_semantics_manifest_path)
-    _verify_source_semantics_manifest(source_manifest)
+    _verify_source_semantics_manifest(
+        source_manifest, source_semantics_dataset_id
+    )
     document_manifest, config, document_private, _ = (
         document_collection._load_contract(
+            dataset_id=document_dataset_id,
+            source_dataset_id=source_dataset_id,
             manifest_path=document_manifest_path,
             env_path=env_path,
             require_published=False,
         )
     )
     document_index = document_collection._build_index(
+        dataset_id=document_dataset_id,
+        source_dataset_id=source_dataset_id,
         manifest=document_manifest,
         private=document_private,
         store_root=config.root,
     )
-    if document_index != _read_gzip_object(document_collection._index_path(config.root)):
+    if document_index != _read_gzip_object(
+        document_collection._index_path(config.root, source_dataset_id)
+    ):
         raise DevelopmentCatalystSourceSemanticsError(
             "primary-document collection index drifted"
         )
-    recorded_status = _read_object(DOCUMENT_STATUS)
+    recorded_status = _read_object(document_status_path)
     publication = {
         "collector": {"commit": recorded_status.get("collector_commit")}
     }
-    if recorded_status != document_collection._public(document_index, publication):
+    if recorded_status != document_collection._public(
+        document_dataset_id, document_index, publication
+    ):
         raise DevelopmentCatalystSourceSemanticsError(
             "primary-document public status drifted"
         )
-    inspection = _read_object(DOCUMENT_INSPECTION)
+    inspection = _read_object(document_inspection_path)
     if (
         inspection.get("status") != "DOCUMENTS_INSPECTED"
         or inspection.get("valid") is not True
@@ -445,8 +512,12 @@ def _load_inputs(
             "primary-document inspection is incomplete"
         )
     identities = sec_source_contract._read_gzip_object(
-        sec_source_contract._private_identity_path(config.root)
+        sec_source_contract._private_identity_path(config.root, source_dataset_id)
     )
+    if identities.get("dataset_id") != source_dataset_id:
+        raise DevelopmentCatalystSourceSemanticsError(
+            "private SEC identity dataset differs"
+        )
     return (
         source_manifest,
         document_manifest,
@@ -488,7 +559,9 @@ def build_selection(
     document_private: Mapping[str, Any],
     document_index: Mapping[str, Any],
     identities: Mapping[str, Any],
+    dataset_id: str = DATASET_ID,
 ) -> dict[str, Any]:
+    dataset_id = _validated_dataset_id(dataset_id)
     pair_values = identities.get("pairs")
     request_values = document_private.get("document_requests")
     join_values = document_private.get("pair_document_joins")
@@ -631,7 +704,7 @@ def build_selection(
         )
     return {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "status": "FROZEN_SELECTION",
         "counts": counts,
         "rows": rows,
@@ -710,11 +783,23 @@ def _classification_contract() -> dict[str, Any]:
 
 def _stable_contract(
     *,
+    dataset_id: str,
+    source_semantics_dataset_id: str,
+    document_dataset_id: str,
+    source_dataset_id: str,
     source_semantics_manifest_path: Path,
     document_manifest_path: Path,
+    document_status_path: Path,
+    document_inspection_path: Path,
     env_path: Path,
     require_published_implementation: bool,
 ) -> tuple[dict[str, Any], HistoricalStoreConfig, dict[str, Any]]:
+    dataset_id = _validated_dataset_id(dataset_id)
+    source_semantics_dataset_id = _validated_dataset_id(
+        source_semantics_dataset_id
+    )
+    document_dataset_id = _validated_dataset_id(document_dataset_id)
+    source_dataset_id = _validated_dataset_id(source_dataset_id)
     if require_published_implementation:
         document_collection._published_artifact(Path(__file__))
     (
@@ -725,8 +810,13 @@ def _stable_contract(
         document_index,
         identities,
     ) = _load_inputs(
+        source_semantics_dataset_id=source_semantics_dataset_id,
+        document_dataset_id=document_dataset_id,
+        source_dataset_id=source_dataset_id,
         source_semantics_manifest_path=source_semantics_manifest_path,
         document_manifest_path=document_manifest_path,
+        document_status_path=document_status_path,
+        document_inspection_path=document_inspection_path,
         env_path=env_path,
     )
     selection = build_selection(
@@ -734,6 +824,7 @@ def _stable_contract(
         document_private=document_private,
         document_index=document_index,
         identities=identities,
+        dataset_id=dataset_id,
     )
     stable = {
         "lineage_contract": {
@@ -748,12 +839,12 @@ def _stable_contract(
                 "manifest_sha256": document_manifest["manifest_sha256"],
             },
             "document_status": {
-                "path": _repo_path(DOCUMENT_STATUS),
-                "sha256": _sha256_file(DOCUMENT_STATUS),
+                "path": _repo_path(document_status_path),
+                "sha256": _sha256_file(document_status_path),
             },
             "document_inspection": {
-                "path": _repo_path(DOCUMENT_INSPECTION),
-                "sha256": _sha256_file(DOCUMENT_INSPECTION),
+                "path": _repo_path(document_inspection_path),
+                "sha256": _sha256_file(document_inspection_path),
             },
             "private_document_collection_sha256": _sha256_json(document_index),
             "strategy": source_manifest["upstream_contract"]["strategy_source"],
@@ -767,8 +858,8 @@ def _stable_contract(
             "private_selection_content_sha256": _sha256_json(selection),
             "private_selection_path": (
                 "LOCAL_HISTORICAL_DATA_ROOT/"
-                f"{PRIVATE_NAMESPACE}/{source_semantics_contract.DATASET_ID}/"
-                f"semantics_runs/{DATASET_ID}/frozen-selection.json.gz"
+                f"{PRIVATE_NAMESPACE}/{source_semantics_dataset_id}/"
+                f"semantics_runs/{dataset_id}/frozen-selection.json.gz"
             ),
             "symbols_ciks_accessions_urls_sources_text_and_rows_public": False,
         },
@@ -787,9 +878,16 @@ def _stable_contract(
 
 
 def _verify_or_write_selection(
-    *, config: HistoricalStoreConfig, selection: Mapping[str, Any], write: bool
+    *,
+    dataset_id: str,
+    source_semantics_dataset_id: str,
+    config: HistoricalStoreConfig,
+    selection: Mapping[str, Any],
+    write: bool,
 ) -> None:
-    path = _selection_path(config.root)
+    path = _selection_path(
+        config.root, source_semantics_dataset_id, dataset_id
+    )
     expected = _sha256_json(selection)
     if path.exists():
         if _sha256_json(_read_gzip_object(path)) != expected:
@@ -806,24 +904,45 @@ def _verify_or_write_selection(
 
 def freeze_contract(
     *,
+    dataset_id: str = DATASET_ID,
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+    document_dataset_id: str = document_contract.DATASET_ID,
+    source_dataset_id: str = SOURCE_DATASET_ID,
     source_semantics_manifest_path: Path = SOURCE_SEMANTICS_MANIFEST,
     document_manifest_path: Path = DOCUMENT_MANIFEST,
+    document_status_path: Path = DOCUMENT_STATUS,
+    document_inspection_path: Path = DOCUMENT_INSPECTION,
+    source_contract_doc: Path = DEFAULT_SOURCE_CONTRACT_DOC,
     env_path: Path = PROJECT_ROOT / ".env",
     output_root: Path = DEFAULT_OUTPUT_ROOT,
     require_published_implementation: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
     stable, config, selection = _stable_contract(
+        dataset_id=dataset_id,
+        source_semantics_dataset_id=source_semantics_dataset_id,
+        document_dataset_id=document_dataset_id,
+        source_dataset_id=source_dataset_id,
         source_semantics_manifest_path=source_semantics_manifest_path,
         document_manifest_path=document_manifest_path,
+        document_status_path=document_status_path,
+        document_inspection_path=document_inspection_path,
         env_path=env_path,
         require_published_implementation=require_published_implementation,
     )
-    matches = sorted(output_root.glob(f"{DATASET_ID}-*.json"))
-    if not matches and _target_artifact_count(config.root):
+    matches = sorted(output_root.glob(f"{dataset_id}-*.json"))
+    if not matches and _target_artifact_count(
+        config.root, source_semantics_dataset_id, dataset_id
+    ):
         raise DevelopmentCatalystSourceSemanticsError(
             "target semantics artifacts exist before contract freeze"
         )
-    _verify_or_write_selection(config=config, selection=selection, write=True)
+    _verify_or_write_selection(
+        dataset_id=dataset_id,
+        source_semantics_dataset_id=source_semantics_dataset_id,
+        config=config,
+        selection=selection,
+        write=True,
+    )
     if len(matches) > 1:
         raise DevelopmentCatalystSourceSemanticsError(
             "source-semantics contract has multiple manifests"
@@ -842,7 +961,7 @@ def freeze_contract(
         )
     contract = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "registered_at": datetime.now(UTC).isoformat(),
         "requested_dates": load_frozen_dataset_contract(
             source_semantics_manifest_path
@@ -852,10 +971,10 @@ def freeze_contract(
             "claim_scope": "DEVELOPMENT_ONLY",
             "status": "COLLECTING",
             "evidence_paths": [
-                "DEVELOPMENT_CATALYST_CONTRACT.md",
+                _repo_path(source_contract_doc),
                 _repo_path(source_semantics_manifest_path),
                 _repo_path(document_manifest_path),
-                _repo_path(DOCUMENT_INSPECTION),
+                _repo_path(document_inspection_path),
                 "PRODUCTION_STRATEGY_VALIDATION.md",
             ],
             "inspected": False,
@@ -877,19 +996,32 @@ def freeze_contract(
 
 def _verify_contract(
     *,
+    dataset_id: str,
+    source_semantics_dataset_id: str,
+    document_dataset_id: str,
+    source_dataset_id: str,
     manifest_path: Path,
     source_semantics_manifest_path: Path,
     document_manifest_path: Path,
+    document_status_path: Path,
+    document_inspection_path: Path,
     env_path: Path,
 ) -> tuple[dict[str, Any], HistoricalStoreConfig, dict[str, Any]]:
+    dataset_id = _validated_dataset_id(dataset_id)
     manifest = load_frozen_dataset_contract(manifest_path)
-    if manifest.get("dataset_id") != DATASET_ID:
+    if manifest.get("dataset_id") != dataset_id:
         raise DevelopmentCatalystSourceSemanticsError(
             "unexpected development source-semantics dataset"
         )
     stable, config, selection = _stable_contract(
+        dataset_id=dataset_id,
+        source_semantics_dataset_id=source_semantics_dataset_id,
+        document_dataset_id=document_dataset_id,
+        source_dataset_id=source_dataset_id,
         source_semantics_manifest_path=source_semantics_manifest_path,
         document_manifest_path=document_manifest_path,
+        document_status_path=document_status_path,
+        document_inspection_path=document_inspection_path,
         env_path=env_path,
         require_published_implementation=True,
     )
@@ -898,7 +1030,13 @@ def _verify_contract(
             raise DevelopmentCatalystSourceSemanticsError(
                 f"source-semantics contract {key} drifted"
             )
-    _verify_or_write_selection(config=config, selection=selection, write=False)
+    _verify_or_write_selection(
+        dataset_id=dataset_id,
+        source_semantics_dataset_id=source_semantics_dataset_id,
+        config=config,
+        selection=selection,
+        write=False,
+    )
     capacity = manifest.get("capacity_contract")
     if not isinstance(capacity, Mapping) or any(
         (
@@ -916,21 +1054,33 @@ def _verify_contract(
 
 def inspect_contract(
     *,
+    dataset_id: str = DATASET_ID,
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+    document_dataset_id: str = document_contract.DATASET_ID,
+    source_dataset_id: str = SOURCE_DATASET_ID,
     manifest_path: Path,
     source_semantics_manifest_path: Path = SOURCE_SEMANTICS_MANIFEST,
     document_manifest_path: Path = DOCUMENT_MANIFEST,
+    document_status_path: Path = DOCUMENT_STATUS,
+    document_inspection_path: Path = DOCUMENT_INSPECTION,
     env_path: Path = PROJECT_ROOT / ".env",
     status_path: Path = DEFAULT_PUBLIC_STATUS,
 ) -> dict[str, Any]:
     manifest, _config, selection = _verify_contract(
+        dataset_id=dataset_id,
+        source_semantics_dataset_id=source_semantics_dataset_id,
+        document_dataset_id=document_dataset_id,
+        source_dataset_id=source_dataset_id,
         manifest_path=manifest_path,
         source_semantics_manifest_path=source_semantics_manifest_path,
         document_manifest_path=document_manifest_path,
+        document_status_path=document_status_path,
+        document_inspection_path=document_inspection_path,
         env_path=env_path,
     )
     status = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "manifest_sha256": manifest["manifest_sha256"],
         "status": "FROZEN_READY",
         "counts": selection["counts"],
@@ -979,8 +1129,12 @@ def _extract_document(raw: bytes) -> dict[str, Any]:
 
 
 def build_extraction(
-    *, selection: Mapping[str, Any], store_root: Path
+    *,
+    selection: Mapping[str, Any],
+    store_root: Path,
+    dataset_id: str = DATASET_ID,
 ) -> dict[str, Any]:
+    dataset_id = _validated_dataset_id(dataset_id)
     document_cache: dict[str, dict[str, Any]] = {}
     rows: list[dict[str, Any]] = []
     for row in selection["rows"]:
@@ -1040,7 +1194,7 @@ def build_extraction(
         )
     return {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "status": "EXTRACTION_COMPLETE",
         "counts": dict(selection["counts"]),
         "rows": rows,
@@ -1053,25 +1207,41 @@ def build_extraction(
 
 def extract(
     *,
+    dataset_id: str = DATASET_ID,
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+    document_dataset_id: str = document_contract.DATASET_ID,
+    source_dataset_id: str = SOURCE_DATASET_ID,
     manifest_path: Path,
     source_semantics_manifest_path: Path = SOURCE_SEMANTICS_MANIFEST,
     document_manifest_path: Path = DOCUMENT_MANIFEST,
+    document_status_path: Path = DOCUMENT_STATUS,
+    document_inspection_path: Path = DOCUMENT_INSPECTION,
     env_path: Path = PROJECT_ROOT / ".env",
     public_status_path: Path = DEFAULT_PUBLIC_STATUS,
 ) -> dict[str, Any]:
     manifest, config, selection = _verify_contract(
+        dataset_id=dataset_id,
+        source_semantics_dataset_id=source_semantics_dataset_id,
+        document_dataset_id=document_dataset_id,
+        source_dataset_id=source_dataset_id,
         manifest_path=manifest_path,
         source_semantics_manifest_path=source_semantics_manifest_path,
         document_manifest_path=document_manifest_path,
+        document_status_path=document_status_path,
+        document_inspection_path=document_inspection_path,
         env_path=env_path,
     )
-    extraction = build_extraction(selection=selection, store_root=config.root)
+    extraction = build_extraction(
+        selection=selection, store_root=config.root, dataset_id=dataset_id
+    )
     extraction["manifest_sha256"] = manifest["manifest_sha256"]
-    private_path = _extraction_path(config.root)
+    private_path = _extraction_path(
+        config.root, source_semantics_dataset_id, dataset_id
+    )
     _write_gzip_json(private_path, extraction)
     public = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "manifest_sha256": manifest["manifest_sha256"],
         "status": "EXTRACTION_COMPLETE",
         "counts": extraction["counts"],
@@ -1174,7 +1344,10 @@ def _automatic_decision(row: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_review(extraction: Mapping[str, Any]) -> dict[str, Any]:
+def build_review(
+    extraction: Mapping[str, Any], dataset_id: str = DATASET_ID
+) -> dict[str, Any]:
+    dataset_id = _validated_dataset_id(dataset_id)
     reviewed_rows: list[dict[str, Any]] = []
     for row in extraction["rows"]:
         decision = _automatic_decision(row)
@@ -1215,7 +1388,7 @@ def build_review(extraction: Mapping[str, Any]) -> dict[str, Any]:
     verified_positive_pairs = pair_counts["VERIFIED_POSITIVE_PRIMARY"]
     return {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "manifest_sha256": extraction["manifest_sha256"],
         "status": "REVIEW_COMPLETE",
         "counts": dict(extraction["counts"]),
@@ -1245,19 +1418,33 @@ def build_review(extraction: Mapping[str, Any]) -> dict[str, Any]:
 
 def review(
     *,
+    dataset_id: str = DATASET_ID,
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+    document_dataset_id: str = document_contract.DATASET_ID,
+    source_dataset_id: str = SOURCE_DATASET_ID,
     manifest_path: Path,
     source_semantics_manifest_path: Path = SOURCE_SEMANTICS_MANIFEST,
     document_manifest_path: Path = DOCUMENT_MANIFEST,
+    document_status_path: Path = DOCUMENT_STATUS,
+    document_inspection_path: Path = DOCUMENT_INSPECTION,
     env_path: Path = PROJECT_ROOT / ".env",
     public_status_path: Path = DEFAULT_PUBLIC_STATUS,
 ) -> dict[str, Any]:
     manifest, config, _selection = _verify_contract(
+        dataset_id=dataset_id,
+        source_semantics_dataset_id=source_semantics_dataset_id,
+        document_dataset_id=document_dataset_id,
+        source_dataset_id=source_dataset_id,
         manifest_path=manifest_path,
         source_semantics_manifest_path=source_semantics_manifest_path,
         document_manifest_path=document_manifest_path,
+        document_status_path=document_status_path,
+        document_inspection_path=document_inspection_path,
         env_path=env_path,
     )
-    extraction = _read_gzip_object(_extraction_path(config.root))
+    extraction = _read_gzip_object(
+        _extraction_path(config.root, source_semantics_dataset_id, dataset_id)
+    )
     if (
         extraction.get("manifest_sha256") != manifest["manifest_sha256"]
         or extraction.get("status") != "EXTRACTION_COMPLETE"
@@ -1266,12 +1453,14 @@ def review(
         raise DevelopmentCatalystSourceSemanticsError(
             "private source extraction is incomplete or stale"
         )
-    reviewed = build_review(extraction)
-    private_path = _reviewed_path(config.root)
+    reviewed = build_review(extraction, dataset_id)
+    private_path = _reviewed_path(
+        config.root, source_semantics_dataset_id, dataset_id
+    )
     _write_gzip_json(private_path, reviewed)
     public = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "manifest_sha256": manifest["manifest_sha256"],
         "status": "REVIEW_COMPLETE",
         "counts": reviewed["counts"],
@@ -1290,12 +1479,17 @@ def review(
 
 
 def _public_result(
-    *, manifest: Mapping[str, Any], reviewed: Mapping[str, Any], private_path: Path
+    *,
+    manifest: Mapping[str, Any],
+    reviewed: Mapping[str, Any],
+    private_path: Path,
+    dataset_id: str = DATASET_ID,
 ) -> dict[str, Any]:
+    dataset_id = _validated_dataset_id(dataset_id)
     positive = int(reviewed["verified_positive_pairs"])
     return {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "manifest_sha256": manifest["manifest_sha256"],
         "status": "READY",
         "inspected": True,
@@ -1343,30 +1537,46 @@ def _public_result(
 
 def inspect(
     *,
+    dataset_id: str = DATASET_ID,
+    source_semantics_dataset_id: str = SOURCE_SEMANTICS_DATASET_ID,
+    document_dataset_id: str = document_contract.DATASET_ID,
+    source_dataset_id: str = SOURCE_DATASET_ID,
     manifest_path: Path,
     source_semantics_manifest_path: Path = SOURCE_SEMANTICS_MANIFEST,
     document_manifest_path: Path = DOCUMENT_MANIFEST,
+    document_status_path: Path = DOCUMENT_STATUS,
+    document_inspection_path: Path = DOCUMENT_INSPECTION,
     env_path: Path = PROJECT_ROOT / ".env",
     public_result_path: Path = DEFAULT_PUBLIC_RESULT,
 ) -> dict[str, Any]:
     manifest, config, selection = _verify_contract(
+        dataset_id=dataset_id,
+        source_semantics_dataset_id=source_semantics_dataset_id,
+        document_dataset_id=document_dataset_id,
+        source_dataset_id=source_dataset_id,
         manifest_path=manifest_path,
         source_semantics_manifest_path=source_semantics_manifest_path,
         document_manifest_path=document_manifest_path,
+        document_status_path=document_status_path,
+        document_inspection_path=document_inspection_path,
         env_path=env_path,
     )
-    extraction = _read_gzip_object(_extraction_path(config.root))
-    reviewed_path = _reviewed_path(config.root)
+    extraction = _read_gzip_object(
+        _extraction_path(config.root, source_semantics_dataset_id, dataset_id)
+    )
+    reviewed_path = _reviewed_path(
+        config.root, source_semantics_dataset_id, dataset_id
+    )
     reviewed = _read_gzip_object(reviewed_path)
     rebuilt_extraction = build_extraction(
-        selection=selection, store_root=config.root
+        selection=selection, store_root=config.root, dataset_id=dataset_id
     )
     rebuilt_extraction["manifest_sha256"] = manifest["manifest_sha256"]
     if extraction != rebuilt_extraction:
         raise DevelopmentCatalystSourceSemanticsError(
             "independent source extraction rebuild differs"
         )
-    rebuilt_review = build_review(rebuilt_extraction)
+    rebuilt_review = build_review(rebuilt_extraction, dataset_id)
     if reviewed != rebuilt_review:
         raise DevelopmentCatalystSourceSemanticsError(
             "independent source review rebuild differs"
@@ -1376,7 +1586,10 @@ def inspect(
             "reviewed source result outcome lock is open"
         )
     result = _public_result(
-        manifest=manifest, reviewed=reviewed, private_path=reviewed_path
+        manifest=manifest,
+        reviewed=reviewed,
+        private_path=reviewed_path,
+        dataset_id=dataset_id,
     )
     _write_json(public_result_path, result)
     return result
@@ -1388,6 +1601,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "command", choices=("freeze", "extract", "review", "inspect", "inspect-contract")
     )
     parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--dataset-id", default=DATASET_ID)
+    parser.add_argument(
+        "--source-semantics-dataset-id", default=SOURCE_SEMANTICS_DATASET_ID
+    )
+    parser.add_argument(
+        "--document-dataset-id", default=document_contract.DATASET_ID
+    )
+    parser.add_argument("--source-dataset-id", default=SOURCE_DATASET_ID)
     parser.add_argument(
         "--source-semantics-manifest",
         type=Path,
@@ -1395,6 +1616,15 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--document-manifest", type=Path, default=DOCUMENT_MANIFEST
+    )
+    parser.add_argument(
+        "--document-status", type=Path, default=DOCUMENT_STATUS
+    )
+    parser.add_argument(
+        "--document-inspection", type=Path, default=DOCUMENT_INSPECTION
+    )
+    parser.add_argument(
+        "--source-contract-doc", type=Path, default=DEFAULT_SOURCE_CONTRACT_DOC
     )
     parser.add_argument("--env-file", type=Path, default=PROJECT_ROOT / ".env")
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
@@ -1408,13 +1638,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "freeze":
             path, manifest = freeze_contract(
+                dataset_id=args.dataset_id,
+                source_semantics_dataset_id=args.source_semantics_dataset_id,
+                document_dataset_id=args.document_dataset_id,
+                source_dataset_id=args.source_dataset_id,
                 source_semantics_manifest_path=args.source_semantics_manifest,
                 document_manifest_path=args.document_manifest,
+                document_status_path=args.document_status,
+                document_inspection_path=args.document_inspection,
+                source_contract_doc=args.source_contract_doc,
                 env_path=args.env_file,
                 output_root=args.output_root,
             )
             output = {
-                "dataset_id": DATASET_ID,
+                "dataset_id": args.dataset_id,
                 "manifest_sha256": manifest["manifest_sha256"],
                 "path": str(path),
                 "counts": {
@@ -1434,33 +1671,57 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         elif args.command == "inspect-contract":
             output = inspect_contract(
+                dataset_id=args.dataset_id,
+                source_semantics_dataset_id=args.source_semantics_dataset_id,
+                document_dataset_id=args.document_dataset_id,
+                source_dataset_id=args.source_dataset_id,
                 manifest_path=args.manifest,
                 source_semantics_manifest_path=args.source_semantics_manifest,
                 document_manifest_path=args.document_manifest,
+                document_status_path=args.document_status,
+                document_inspection_path=args.document_inspection,
                 env_path=args.env_file,
                 status_path=args.public_status,
             )
         elif args.command == "extract":
             output = extract(
+                dataset_id=args.dataset_id,
+                source_semantics_dataset_id=args.source_semantics_dataset_id,
+                document_dataset_id=args.document_dataset_id,
+                source_dataset_id=args.source_dataset_id,
                 manifest_path=args.manifest,
                 source_semantics_manifest_path=args.source_semantics_manifest,
                 document_manifest_path=args.document_manifest,
+                document_status_path=args.document_status,
+                document_inspection_path=args.document_inspection,
                 env_path=args.env_file,
                 public_status_path=args.public_status,
             )
         elif args.command == "review":
             output = review(
+                dataset_id=args.dataset_id,
+                source_semantics_dataset_id=args.source_semantics_dataset_id,
+                document_dataset_id=args.document_dataset_id,
+                source_dataset_id=args.source_dataset_id,
                 manifest_path=args.manifest,
                 source_semantics_manifest_path=args.source_semantics_manifest,
                 document_manifest_path=args.document_manifest,
+                document_status_path=args.document_status,
+                document_inspection_path=args.document_inspection,
                 env_path=args.env_file,
                 public_status_path=args.public_status,
             )
         else:
             output = inspect(
+                dataset_id=args.dataset_id,
+                source_semantics_dataset_id=args.source_semantics_dataset_id,
+                document_dataset_id=args.document_dataset_id,
+                source_dataset_id=args.source_dataset_id,
                 manifest_path=args.manifest,
                 source_semantics_manifest_path=args.source_semantics_manifest,
                 document_manifest_path=args.document_manifest,
+                document_status_path=args.document_status,
+                document_inspection_path=args.document_inspection,
                 env_path=args.env_file,
                 public_result_path=args.public_result,
             )

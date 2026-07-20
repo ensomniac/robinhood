@@ -265,6 +265,44 @@ class DevelopmentCatalystSourceSemanticsTests(unittest.TestCase):
         self.assertTrue(result["inspection"]["complete_pair_denominator_reconciled"])
         self.assertFalse(result["outcome_contract_permitted"])
 
+    def test_explicit_dataset_ids_scope_every_private_semantics_artifact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_semantics_dataset_id = (
+                "dataset-primary-source-semantics-contract-test-v3"
+            )
+            dataset_id = "dataset-development-sec-source-semantics-test-v3"
+            selection_path = semantics._selection_path(
+                root, source_semantics_dataset_id, dataset_id
+            )
+            extraction_path = semantics._extraction_path(
+                root, source_semantics_dataset_id, dataset_id
+            )
+            reviewed_path = semantics._reviewed_path(
+                root, source_semantics_dataset_id, dataset_id
+            )
+            semantics._write_gzip_json(extraction_path, {"stage": "extract"})
+            semantics._write_gzip_json(reviewed_path, {"stage": "review"})
+            self.assertIn(source_semantics_dataset_id, selection_path.parts)
+            self.assertIn(dataset_id, selection_path.parts)
+            self.assertEqual(
+                semantics._target_artifact_count(
+                    root, source_semantics_dataset_id, dataset_id
+                ),
+                2,
+            )
+            self.assertEqual(semantics._target_artifact_count(root), 0)
+
+    def test_unsafe_dataset_id_is_rejected_before_private_path_use(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(
+                semantics.DevelopmentCatalystSourceSemanticsError,
+                "dataset ID is unsafe",
+            ):
+                semantics._private_root(
+                    Path(directory), "../cross-tranche", "safe-run"
+                )
+
 
 if __name__ == "__main__":
     unittest.main()
