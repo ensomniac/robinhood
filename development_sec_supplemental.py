@@ -39,6 +39,7 @@ DEFAULT_PUBLIC_STATUS = (
     PROJECT_ROOT
     / "historical_batches/development_tranche_v2/sec-supplemental-contract-status.json"
 )
+DEFAULT_SOURCE_CONTRACT_DOC = PROJECT_ROOT / "DEVELOPMENT_SEC_SOURCES.md"
 PRIVATE_NAMESPACE = "_derived/development_sec_sources"
 PRIVATE_CONTRACT_FILE = "supplemental-request-map.json.gz"
 TARGET_RESPONSE_NAMESPACE = "responses/supplemental"
@@ -126,28 +127,46 @@ def _repo_path(path: Path) -> str:
         ) from exc
 
 
-def _private_contract_path(store_root: Path) -> Path:
+def _validated_dataset_id(dataset_id: str) -> str:
+    if (
+        not dataset_id
+        or Path(dataset_id).name != dataset_id
+        or dataset_id in {".", ".."}
+    ):
+        raise DevelopmentSecSupplementalError("dataset ID is unsafe")
+    return dataset_id
+
+
+def _private_contract_path(
+    store_root: Path,
+    source_dataset_id: str = source_contract.DATASET_ID,
+    dataset_id: str = DATASET_ID,
+) -> Path:
     return (
         store_root
         / PRIVATE_NAMESPACE
-        / source_contract.DATASET_ID
+        / _validated_dataset_id(source_dataset_id)
         / "supplemental_contracts"
-        / DATASET_ID
+        / _validated_dataset_id(dataset_id)
         / PRIVATE_CONTRACT_FILE
     )
 
 
-def _target_response_root(store_root: Path) -> Path:
+def _target_response_root(
+    store_root: Path, source_dataset_id: str = source_contract.DATASET_ID
+) -> Path:
     return (
         store_root
         / PRIVATE_NAMESPACE
-        / source_contract.DATASET_ID
+        / _validated_dataset_id(source_dataset_id)
         / TARGET_RESPONSE_NAMESPACE
     )
 
 
-def _target_response_count(store_root: Path) -> int:
-    root = _target_response_root(store_root)
+def _target_response_count(
+    store_root: Path, source_dataset_id: str = source_contract.DATASET_ID
+) -> int:
+    root = _target_response_root(store_root, source_dataset_id)
     return sum(1 for path in root.rglob("*") if path.is_file()) if root.exists() else 0
 
 
@@ -164,7 +183,9 @@ def _select_requests(
     *,
     descriptors: Sequence[Mapping[str, Any]],
     pairs: Sequence[Mapping[str, Any]],
+    dataset_id: str = DATASET_ID,
 ) -> dict[str, Any]:
+    dataset_id = _validated_dataset_id(dataset_id)
     windows: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for pair in pairs:
         cik = pair.get("cik")
@@ -231,7 +252,9 @@ def _select_requests(
                     "matching_windows": matches,
                     "selection_disposition": disposition,
                     "target_response_relative_path": (
-                        "supplemental/" + hashlib.sha256(url.encode()).hexdigest() + ".json"
+                        "supplemental/"
+                        + hashlib.sha256(url.encode()).hexdigest()
+                        + ".json"
                     ),
                 }
             )
@@ -239,7 +262,7 @@ def _select_requests(
     decisions.sort(key=lambda row: row["descriptor"]["url"])
     return {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "descriptor_count": len(descriptors),
         "selected_request_count": len(selected),
         "excluded_request_count": len(descriptors) - len(selected),
@@ -252,40 +275,53 @@ def _select_requests(
 
 
 def _load_source_state(
-    *, manifest_path: Path, env_path: Path
+    *,
+    source_dataset_id: str,
+    manifest_path: Path,
+    source_status_path: Path,
+    source_inspection_path: Path,
+    env_path: Path,
 ) -> tuple[dict[str, Any], HistoricalStoreConfig, dict[str, Any], dict[str, Any]]:
+    source_dataset_id = _validated_dataset_id(source_dataset_id)
     submissions._published_source(Path(submissions.__file__))
     submissions._published_source(manifest_path)
+    submissions._published_source(source_status_path)
+    submissions._published_source(source_inspection_path)
     manifest, config, private, _publication = submissions._load_contract(
+        dataset_id=source_dataset_id,
         manifest_path=manifest_path,
         env_path=env_path,
         require_published=False,
     )
     rebuilt = submissions._build_collection_index(
+        dataset_id=source_dataset_id,
         manifest=manifest,
         private=private,
         store_root=config.root,
     )
-    stored = _read_gzip_object(submissions._collection_index_path(config.root))
+    stored = _read_gzip_object(
+        submissions._collection_index_path(config.root, source_dataset_id)
+    )
     if rebuilt != stored:
         raise DevelopmentSecSupplementalError("submissions private index drifted")
-    recorded_public = _read_object(SOURCE_STATUS)
+    recorded_public = _read_object(source_status_path)
     if recorded_public.get("collector_sha256") != _sha256_file(
         Path(submissions.__file__)
     ):
         raise DevelopmentSecSupplementalError("submissions collector drifted")
-    publication = {
-        "collector": {"commit": recorded_public.get("collector_commit")}
-    }
-    public = submissions._public_status(index=rebuilt, publication=publication)
+    publication = {"collector": {"commit": recorded_public.get("collector_commit")}}
+    public = submissions._public_status(
+        dataset_id=source_dataset_id,
+        index=rebuilt,
+        publication=publication,
+    )
     if recorded_public != public:
         raise DevelopmentSecSupplementalError("submissions public status drifted")
-    inspection = _read_object(SOURCE_INSPECTION)
+    inspection = _read_object(source_inspection_path)
     if (
         inspection.get("status") != "SUBMISSIONS_INSPECTED"
         or inspection.get("valid") is not True
-        or inspection.get("private_collection_content_sha256")
-        != _sha256_json(rebuilt)
+        or inspection.get("private_collection_content_sha256") != _sha256_json(rebuilt)
         or rebuilt["counts"].get("pending_requests") != 0
     ):
         raise DevelopmentSecSupplementalError("submissions inspection is incomplete")
@@ -309,20 +345,31 @@ def _implementation_contract() -> dict[str, Any]:
 
 def _stable_contract(
     *,
+    dataset_id: str,
+    source_dataset_id: str,
     manifest_path: Path,
+    source_status_path: Path,
+    source_inspection_path: Path,
     env_path: Path,
     require_published_implementation: bool,
 ) -> tuple[dict[str, Any], HistoricalStoreConfig, dict[str, Any]]:
+    dataset_id = _validated_dataset_id(dataset_id)
+    source_dataset_id = _validated_dataset_id(source_dataset_id)
     if require_published_implementation:
         submissions._published_source(Path(__file__))
     source_manifest, config, private, collection = _load_source_state(
-        manifest_path=manifest_path, env_path=env_path
+        source_dataset_id=source_dataset_id,
+        manifest_path=manifest_path,
+        source_status_path=source_status_path,
+        source_inspection_path=source_inspection_path,
+        env_path=env_path,
     )
     selection = _select_requests(
         descriptors=collection["supplemental_submission_requests"],
         pairs=private["pairs"],
+        dataset_id=dataset_id,
     )
-    response_count = _target_response_count(config.root)
+    response_count = _target_response_count(config.root, source_dataset_id)
     if response_count:
         raise DevelopmentSecSupplementalError(
             "target supplemental responses exist before contract freeze"
@@ -336,12 +383,12 @@ def _stable_contract(
                 "manifest_sha256": source_manifest["manifest_sha256"],
             },
             "submissions_status": {
-                "path": _repo_path(SOURCE_STATUS),
-                "sha256": _sha256_file(SOURCE_STATUS),
+                "path": _repo_path(source_status_path),
+                "sha256": _sha256_file(source_status_path),
             },
             "submissions_inspection": {
-                "path": _repo_path(SOURCE_INSPECTION),
-                "sha256": _sha256_file(SOURCE_INSPECTION),
+                "path": _repo_path(source_inspection_path),
+                "sha256": _sha256_file(source_inspection_path),
             },
             "private_collection_content_sha256": _sha256_json(collection),
             "source_descriptor_graph_sha256": collection[
@@ -354,15 +401,13 @@ def _stable_contract(
             "selected_request_count": selection["selected_request_count"],
             "excluded_request_count": selection["excluded_request_count"],
             "disposition_counts": selection["disposition_counts"],
-            "selected_request_graph_sha256": selection[
-                "selected_request_graph_sha256"
-            ],
+            "selected_request_graph_sha256": selection["selected_request_graph_sha256"],
             "decision_graph_sha256": selection["decision_graph_sha256"],
             "private_contract_content_sha256": _sha256_json(selection),
             "private_contract_path": (
                 "LOCAL_HISTORICAL_DATA_ROOT/"
-                f"{PRIVATE_NAMESPACE}/{source_contract.DATASET_ID}/"
-                f"supplemental_contracts/{DATASET_ID}/{PRIVATE_CONTRACT_FILE}"
+                f"{PRIVATE_NAMESPACE}/{source_dataset_id}/"
+                f"supplemental_contracts/{dataset_id}/{PRIVATE_CONTRACT_FILE}"
             ),
             "symbols_ciks_filenames_urls_and_windows_public": False,
             "invalid_or_missing_descriptor_range_policy": (
@@ -375,9 +420,7 @@ def _stable_contract(
             "provider": "SEC_EDGAR",
             "provider_operated_endpoints_only": True,
             "request_count": selection["selected_request_count"],
-            "private_request_graph_sha256": selection[
-                "selected_request_graph_sha256"
-            ],
+            "private_request_graph_sha256": selection["selected_request_graph_sha256"],
             "user_agent_sha256": request_contract["user_agent_sha256"],
             "workers": request_contract["workers"],
             "global_minimum_spacing_seconds": request_contract[
@@ -406,9 +449,14 @@ def _stable_contract(
 
 
 def _verify_or_write_private(
-    *, config: HistoricalStoreConfig, selection: Mapping[str, Any], write: bool
+    *,
+    dataset_id: str,
+    source_dataset_id: str,
+    config: HistoricalStoreConfig,
+    selection: Mapping[str, Any],
+    write: bool,
 ) -> None:
-    path = _private_contract_path(config.root)
+    path = _private_contract_path(config.root, source_dataset_id, dataset_id)
     expected = _sha256_json(selection)
     if path.exists():
         if _sha256_json(_read_gzip_object(path)) != expected:
@@ -425,18 +473,33 @@ def _verify_or_write_private(
 
 def freeze_contract(
     *,
+    dataset_id: str = DATASET_ID,
+    source_dataset_id: str = source_contract.DATASET_ID,
     manifest_path: Path = SOURCE_MANIFEST,
+    source_status_path: Path = SOURCE_STATUS,
+    source_inspection_path: Path = SOURCE_INSPECTION,
+    source_contract_doc: Path = DEFAULT_SOURCE_CONTRACT_DOC,
     env_path: Path = PROJECT_ROOT / ".env",
     output_root: Path = DEFAULT_OUTPUT_ROOT,
     require_published_implementation: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
     stable, config, selection = _stable_contract(
+        dataset_id=dataset_id,
+        source_dataset_id=source_dataset_id,
         manifest_path=manifest_path,
+        source_status_path=source_status_path,
+        source_inspection_path=source_inspection_path,
         env_path=env_path,
         require_published_implementation=require_published_implementation,
     )
-    _verify_or_write_private(config=config, selection=selection, write=True)
-    matches = sorted(output_root.glob(f"{DATASET_ID}-*.json"))
+    _verify_or_write_private(
+        dataset_id=dataset_id,
+        source_dataset_id=source_dataset_id,
+        config=config,
+        selection=selection,
+        write=True,
+    )
+    matches = sorted(output_root.glob(f"{dataset_id}-*.json"))
     if len(matches) > 1:
         raise DevelopmentSecSupplementalError(
             "supplemental contract has multiple manifests"
@@ -453,7 +516,7 @@ def freeze_contract(
         raise DevelopmentSecSupplementalError("historical-store reserve is unavailable")
     contract = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "registered_at": datetime.now(UTC).isoformat(),
         "requested_dates": load_frozen_dataset_contract(manifest_path)[
             "requested_dates"
@@ -463,10 +526,10 @@ def freeze_contract(
             "claim_scope": "DEVELOPMENT_ONLY",
             "status": "COLLECTING",
             "evidence_paths": [
-                "DEVELOPMENT_SEC_SOURCES.md",
+                _repo_path(source_contract_doc),
                 _repo_path(manifest_path),
-                _repo_path(SOURCE_STATUS),
-                _repo_path(SOURCE_INSPECTION),
+                _repo_path(source_status_path),
+                _repo_path(source_inspection_path),
                 "PRODUCTION_STRATEGY_VALIDATION.md",
             ],
             "inspected": False,
@@ -489,16 +552,26 @@ def freeze_contract(
 def inspect_contract(
     *,
     manifest_path: Path,
+    dataset_id: str = DATASET_ID,
+    source_dataset_id: str = source_contract.DATASET_ID,
     source_manifest_path: Path = SOURCE_MANIFEST,
+    source_status_path: Path = SOURCE_STATUS,
+    source_inspection_path: Path = SOURCE_INSPECTION,
     env_path: Path = PROJECT_ROOT / ".env",
     status_path: Path = DEFAULT_PUBLIC_STATUS,
     require_published_implementation: bool = True,
 ) -> dict[str, Any]:
+    dataset_id = _validated_dataset_id(dataset_id)
+    source_dataset_id = _validated_dataset_id(source_dataset_id)
     manifest = load_frozen_dataset_contract(manifest_path)
-    if manifest.get("dataset_id") != DATASET_ID:
+    if manifest.get("dataset_id") != dataset_id:
         raise DevelopmentSecSupplementalError("unexpected supplemental dataset")
     stable, config, selection = _stable_contract(
+        dataset_id=dataset_id,
+        source_dataset_id=source_dataset_id,
         manifest_path=source_manifest_path,
+        source_status_path=source_status_path,
+        source_inspection_path=source_inspection_path,
         env_path=env_path,
         require_published_implementation=require_published_implementation,
     )
@@ -507,7 +580,13 @@ def inspect_contract(
             raise DevelopmentSecSupplementalError(
                 f"supplemental contract {key} drifted"
             )
-    _verify_or_write_private(config=config, selection=selection, write=False)
+    _verify_or_write_private(
+        dataset_id=dataset_id,
+        source_dataset_id=source_dataset_id,
+        config=config,
+        selection=selection,
+        write=False,
+    )
     capacity = manifest.get("capacity_contract")
     if not isinstance(capacity, Mapping) or any(
         (
@@ -517,24 +596,22 @@ def inspect_contract(
             int(capacity.get("reserve_bytes", -1)) != config.min_free_bytes,
         )
     ):
-        raise DevelopmentSecSupplementalError("supplemental capacity contract is invalid")
+        raise DevelopmentSecSupplementalError(
+            "supplemental capacity contract is invalid"
+        )
     public = stable["selection_contract"]
     status = {
         "schema_version": 1,
-        "dataset_id": DATASET_ID,
+        "dataset_id": dataset_id,
         "status": "FROZEN_READY",
         "manifest_sha256": manifest["manifest_sha256"],
         "descriptor_count": public["descriptor_count"],
         "selected_request_count": public["selected_request_count"],
         "excluded_request_count": public["excluded_request_count"],
         "disposition_counts": public["disposition_counts"],
-        "selected_request_graph_sha256": public[
-            "selected_request_graph_sha256"
-        ],
+        "selected_request_graph_sha256": public["selected_request_graph_sha256"],
         "decision_graph_sha256": public["decision_graph_sha256"],
-        "private_contract_content_sha256": public[
-            "private_contract_content_sha256"
-        ],
+        "private_contract_content_sha256": public["private_contract_content_sha256"],
         "pre_freeze_target_response_artifact_count": 0,
         "supplemental_files_requested": False,
         "primary_documents_requested": False,
@@ -549,7 +626,14 @@ def inspect_contract(
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--env", type=Path, default=PROJECT_ROOT / ".env")
+    parser.add_argument("--dataset-id", default=DATASET_ID)
+    parser.add_argument("--source-dataset-id", default=source_contract.DATASET_ID)
     parser.add_argument("--source-manifest", type=Path, default=SOURCE_MANIFEST)
+    parser.add_argument("--source-status", type=Path, default=SOURCE_STATUS)
+    parser.add_argument("--source-inspection", type=Path, default=SOURCE_INSPECTION)
+    parser.add_argument(
+        "--source-contract-doc", type=Path, default=DEFAULT_SOURCE_CONTRACT_DOC
+    )
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("freeze")
@@ -564,17 +648,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "freeze":
             path, manifest = freeze_contract(
+                dataset_id=args.dataset_id,
+                source_dataset_id=args.source_dataset_id,
                 manifest_path=args.source_manifest,
+                source_status_path=args.source_status,
+                source_inspection_path=args.source_inspection,
+                source_contract_doc=args.source_contract_doc,
                 env_path=args.env,
                 output_root=args.output_root,
             )
             value = {
-                "dataset_id": DATASET_ID,
+                "dataset_id": args.dataset_id,
                 "manifest_sha256": manifest["manifest_sha256"],
                 "path": str(path),
-                "descriptor_count": manifest["selection_contract"][
-                    "descriptor_count"
-                ],
+                "descriptor_count": manifest["selection_contract"]["descriptor_count"],
                 "selected_request_count": manifest["selection_contract"][
                     "selected_request_count"
                 ],
@@ -582,7 +669,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             value = inspect_contract(
                 manifest_path=args.manifest,
+                dataset_id=args.dataset_id,
+                source_dataset_id=args.source_dataset_id,
                 source_manifest_path=args.source_manifest,
+                source_status_path=args.source_status,
+                source_inspection_path=args.source_inspection,
                 env_path=args.env,
                 status_path=args.status,
             )

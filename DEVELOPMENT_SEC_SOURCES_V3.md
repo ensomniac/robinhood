@@ -86,6 +86,16 @@ pair-window overlap and commit that request graph before any supplemental SEC
 access. Candidate documents remain unclassified until their exact union is
 separately frozen, collected, and reviewed under the source-semantics contract.
 
+`development_sec_supplemental.py` now accepts explicit source and supplemental
+dataset identities plus exact published source status and inspection paths. It
+independently rebuilds the v3 submissions index, scopes its private decision
+graph and empty-response preflight to the v3 source namespace, and retains
+invalid descriptor ranges conservatively. A read-only preflight selects nine
+exact window-overlap requests and excludes 668 descriptors whose filing ranges
+provably cannot intersect any frozen pair window. Commit and push this
+implementation before writing the private graph or manifest; the nine-request
+manifest must then be independently inspected and pushed before provider access.
+
 ## Runbook
 
 Commit and push the implementation before freezing the identity graph:
@@ -126,3 +136,23 @@ python3 development_sec_submissions.py \
   --status historical_batches/development_tranche_v3/sec-submissions-status.json \
   --output research_results/2026-07-20-development-sec-submissions-inspection.json
 ```
+
+After committing and pushing the supplemental freezer, freeze its exact graph:
+
+```sh
+python3 development_sec_supplemental.py \
+  --dataset-id dataset-development-sec-supplemental-2026-07-20-v3 \
+  --source-dataset-id dataset-development-sec-primary-sources-2026-07-20-v3 \
+  --source-manifest historical_batches/development_tranche_v3/sec_manifests/dataset-development-sec-primary-sources-2026-07-20-v3-8dc5996b6b88d52fc8e08efc9932c6a1db30a3ec61a2ef09d7f22346bb464628.json \
+  --source-status historical_batches/development_tranche_v3/sec-submissions-status.json \
+  --source-inspection research_results/2026-07-20-development-sec-submissions-inspection.json \
+  --source-contract-doc DEVELOPMENT_SEC_SOURCES_V3.md \
+  --output-root historical_batches/development_tranche_v3/sec_supplemental_manifests \
+  freeze
+```
+
+Commit and push the resulting manifest before running `inspect` with the same
+arguments and `--status
+historical_batches/development_tranche_v3/sec-supplemental-contract-status.json`.
+Inspection is still network free and does not authorize a supplemental request
+until its aggregate zero-response state is separately committed and pushed.

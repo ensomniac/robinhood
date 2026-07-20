@@ -139,17 +139,62 @@ class DevelopmentSecSupplementalTests(unittest.TestCase):
             response.parent.mkdir(parents=True)
             response.write_text("{}", encoding="utf-8")
             state = self._source_state(root)
-            with patch(
-                "development_sec_supplemental._load_source_state",
-                return_value=state,
-            ), self.assertRaisesRegex(
-                DevelopmentSecSupplementalError, "responses exist before"
+            with (
+                patch(
+                    "development_sec_supplemental._load_source_state",
+                    return_value=state,
+                ),
+                self.assertRaisesRegex(
+                    DevelopmentSecSupplementalError, "responses exist before"
+                ),
             ):
                 freeze_contract(
                     manifest_path=SOURCE_MANIFEST,
                     output_root=root / "manifests",
                     require_published_implementation=False,
                 )
+
+    def test_explicit_datasets_scope_private_contract_and_response_preflight(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            state = self._source_state(root)
+            dataset_id = "dataset-development-sec-supplemental-test-v3"
+            source_dataset_id = "dataset-development-sec-primary-sources-test-v3"
+            output = root / "manifests"
+            status_path = root / "status.json"
+            with patch(
+                "development_sec_supplemental._load_source_state",
+                return_value=state,
+            ):
+                manifest_path, manifest = freeze_contract(
+                    dataset_id=dataset_id,
+                    source_dataset_id=source_dataset_id,
+                    manifest_path=SOURCE_MANIFEST,
+                    output_root=output,
+                    require_published_implementation=False,
+                )
+                status = inspect_contract(
+                    manifest_path=manifest_path,
+                    dataset_id=dataset_id,
+                    source_dataset_id=source_dataset_id,
+                    source_manifest_path=SOURCE_MANIFEST,
+                    status_path=status_path,
+                    require_published_implementation=False,
+                )
+            self.assertEqual(manifest["dataset_id"], dataset_id)
+            self.assertEqual(status["dataset_id"], dataset_id)
+            self.assertTrue(
+                _private_contract_path(root, source_dataset_id, dataset_id).is_file()
+            )
+            self.assertFalse(_private_contract_path(root).exists())
+            self.assertFalse(_target_response_root(root, source_dataset_id).exists())
+
+    def test_unsafe_dataset_id_is_rejected_before_private_path_use(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(
+                DevelopmentSecSupplementalError, "dataset ID is unsafe"
+            ):
+                _private_contract_path(Path(directory), "../source", "dataset-safe")
 
 
 if __name__ == "__main__":
