@@ -101,3 +101,21 @@ The request is now independently `COLLECTION_INSPECTED`: 887 sessions from
 `0ef45909...938ebb`. Every row, query field, hour, ordering constraint, count,
 and hash rebuilds. No target session has yet been selected and no target market
 or outcome data was accessed.
+
+`challenger_orb_retest_tranche.py` and its separate inspector now adapt the
+proven disjoint selector without modifying its frozen base implementation. They
+use seed `2026072005`, exclude all four earlier selections plus every signal,
+archived context, and currently inspected evidence date, and bind the extended
+calendar, v3 falsification, hypothesis, trigger, capacity projection, and
+private exclusion snapshot. Preflight finds 445 eligible dates; the exact
+100-date selection needs 474 sessions including lookbacks and projects about
+1.88 GB of private storage. This is capacity only: the implementation must be
+committed and pushed before `freeze`, and the resulting selection and manifest
+must be independently inspected and published before any dated reference or
+market request.
+
+```sh
+python3 challenger_orb_retest_tranche.py freeze
+python3 challenger_orb_retest_tranche_inspection.py \
+  historical_batches/challenger_orb_retest_v1/selection_manifests/<manifest>.json
+```
