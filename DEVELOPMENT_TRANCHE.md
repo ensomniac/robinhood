@@ -78,6 +78,11 @@ Its implementation must be tested, committed, and pushed before the v3 source
 contract is frozen; the frozen zero-state must then be inspected and pushed
 before the first target source request.
 
+Source-semantics manifest `412efc72...5043b8` is now frozen from the pushed
+implementation with all 1,871 pairs and zero target source artifacts. It remains
+pending independent zero-state inspection and does not yet authorize target
+source acquisition.
+
 ## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated

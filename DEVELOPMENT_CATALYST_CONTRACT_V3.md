@@ -3,8 +3,9 @@
 Planned dataset:
 `dataset-primary-source-semantics-contract-2026-07-20-development-v3`
 
-Status: implementation ready; the v3 contract is not yet frozen and no target
-source, selected-symbol detail, or outcome access is authorized
+Status: manifest `412efc72...5043b8` is frozen and awaiting independent
+zero-state inspection; no target source, selected-symbol detail, or outcome
+access is authorized
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -29,6 +30,21 @@ Freeze fails if any target source artifact already exists for the new dataset.
 Inspection independently rebuilds the private selected-pair surface, upstream
 hashes, implementation and dependency versions, source rules, recovery order,
 capacity contract, privacy boundary, and outcome lock.
+
+## Frozen Contract
+
+Manifest `412efc72...5043b8` binds all 1,871 pairs on 100 dates, daily-shortlist
+hash `fc601a15...d530b1`, private selection hash
+`d795f009...c0f343`, unchanged source-rules hash
+`99843372...31b4dc`, and implementation-contract hash
+`82098c21...204342`. The historical store had 445,025,214,464 free bytes at
+freeze against the immutable 21,474,836,480-byte reserve. The target source
+namespace contained zero artifacts.
+
+This freeze is not yet an inspected source-acquisition authorization. The
+manifest, registration, documentation, and durable finding must be committed
+and pushed before `inspect`; the resulting zero-state must be committed and
+pushed separately before the first target source request.
 
 ## Runbook
 
