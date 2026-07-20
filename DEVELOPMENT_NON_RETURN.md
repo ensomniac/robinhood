@@ -170,6 +170,33 @@ attrition. Outcomes remain inaccessible until that stage proves at least 20
 complete unchanged-v3 survivors; otherwise the campaign remains in disjoint
 `DEVELOPMENT_ACQUISITION`.
 
+`development_non_return_qualification_v3.py` and its separate inspector now
+implement that outcome-blind boundary. The contract binds the inspected
+collector index and every pair-file hash, the exact SIP VWAP rules, the frozen
+252-session split-adjusted stop/noise/resistance contract, the production
+evaluator and strategy rules, terminal-gate precedence, aggregate privacy, and
+the outcome lock. It uses a disclosed normalized shadow account only to isolate
+candidate scoring and sizing behavior; it does not claim historical broker or
+account state. Broker-specific tradability remains prospective-only.
+
+The builder cannot declare an inspected result or unlock outcomes. Only
+`development_non_return_qualification_v3_inspection.py` independently rebuilds
+every private pair record, terminal reason, gate count, and cascade from the raw
+decision-bounded source. The implementation and focused tests must be committed
+and pushed before `freeze`; the exact manifest must then be independently
+inspected, committed, and pushed before `qualify`.
+
+```sh
+python3 development_non_return_qualification_v3.py freeze
+python3 development_non_return_qualification_v3_inspection.py inspect-contract \
+  historical_batches/development_tranche_v3/non_return_qualification_manifests/<manifest>.json
+# Commit and push the inspected manifest before the commands below.
+python3 development_non_return_qualification_v3.py qualify \
+  historical_batches/development_tranche_v3/non_return_qualification_manifests/<manifest>.json
+python3 development_non_return_qualification_v3_inspection.py inspect \
+  historical_batches/development_tranche_v3/non_return_qualification_manifests/<manifest>.json
+```
+
 Collector status: manifest `b3645a88...fb8438` independently rebuilt
 `COLLECTION_INSPECTED`. All 21 pairs reached one terminal disposition through
 13,219 chronological one-second windows: 19 `PREENTRY_INPUTS_COLLECTED` and two

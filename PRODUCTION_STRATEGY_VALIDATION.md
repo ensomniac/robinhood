@@ -178,6 +178,18 @@ target outcome was accessed. These 75 records are input-ready only; a separate
 frozen network-free qualification must still prove at least 20 complete
 unchanged-v3 survivors before any outcome contract is legal.
 
+That qualification boundary is now implemented in
+`development_non_return_qualification_v3.py` with a separate per-pair
+reconstruction in `development_non_return_qualification_v3_inspection.py`. It
+binds the inspected raw collection, exact SIP VWAP, unchanged quote/spread/chase
+and market gates, frozen stop/noise/resistance structure, the production
+evaluator, terminal precedence, aggregate privacy, and the outcome lock. Its
+normalized shadow reference session isolates candidate evaluation without
+claiming broker facts; broker-specific tradability remains a prospective gate.
+The implementation must be committed and pushed before its contract can be
+frozen, and only the independent inspector may authorize a later outcome
+contract after at least 20 survivors.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
