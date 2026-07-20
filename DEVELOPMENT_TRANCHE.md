@@ -232,3 +232,12 @@ reconciling all 627 joins and all 1,906 pair terminal dispositions. This clears
 source capacity and transitions to DEVELOPMENT_ACQUISITION. Outcomes remain
 locked until at least 20 of those positives pass every unchanged-v3 non-return
 gate under a separately inspected acquisition result.
+
+`development_non_return.py` now implements the next network-free boundary. It
+rejoins the exact 21 positive pair hashes to the frozen scanner rows, rechecks
+their coarse gates, and freezes only causal candidate/benchmark prefixes,
+premarket and prior-history inputs, official halt dates, condition-aware trade
+prefixes, and bounded quote windows. Exact identities and requests remain
+private. Commit and push the implementation before freezing; the resulting
+zero-target manifest must itself be inspected, committed, and pushed before any
+selected-symbol market request.
