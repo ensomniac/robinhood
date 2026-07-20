@@ -3,8 +3,8 @@
 Planned dataset:
 `dataset-development-non-return-qualification-2026-07-20-v4`
 
-Status: v4 implementation ready; superseded v2 and v3 manifests made zero
-provider requests and are retained as failed lookahead contracts
+Status: v4 manifest `1a3f4abd...97147` independently rebuilt `FROZEN_READY`;
+zero selected-symbol market requests or target artifacts have occurred
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -76,6 +76,23 @@ or running provider collection. At least 20 complete unchanged-v3 non-return
 survivors are required before a separately frozen outcome contract is legal.
 Fewer survivors returns the campaign to disjoint `DEVELOPMENT_ACQUISITION`; it
 does not permit a gate change or outcome access.
+
+## Frozen V4 Result
+
+Manifest `1a3f4abd...97147` independently rejoins all 1,906 source pair hashes
+to the scanner selection and retains exactly 21 verified-positive pairs on 21
+distinct dates. The private positive-selection hash is
+`0a4679fd...bad80`, pair-identity hash is `4de0c32b...bc2b09`,
+positive-date hash is `304134d8...b5cf24`, and request-graph hash is
+`651a0bd6...e2e5a`.
+
+Inspection rebuilt the strategy version, rules hash, implementation hashes,
+source selection, coarse scanner gates, request graph, privacy boundary, and
+zero-target state. The graph freezes 21 opening-range bar prefixes, 21
+premarket prefixes, 21 prior-history prefixes, 21 official halt dates, and 63
+conditional fully-completed candidate/benchmark prefixes. Trigger discovery is
+raw one-second SIP tape in chronological order and stops at the first clean
+cross. It authorizes no provider access by itself and still forbids outcomes.
 
 ## Superseded V3 Result
 

@@ -271,3 +271,10 @@ crossing minute. V4 limits unconditional bars to the completed opening range,
 searches every raw second from 09:35 chronologically, and conditionally requests
 only bars fully completed before the final decision minute. V3 made zero
 provider requests and remains public as failed evidence infrastructure.
+
+V4 manifest `1a3f4abd...97147` independently rebuilt `FROZEN_READY` with the
+same exact 21 source-positive pairs on 21 dates and zero target artifacts. Its
+private positive-selection hash is `0a4679fd...bad80` and its fully causal
+request-graph hash is `651a0bd6...e2e5a`. The separate collector must bind this
+exact manifest, then be frozen, inspected, committed, and pushed before the
+first selected-symbol provider request.
