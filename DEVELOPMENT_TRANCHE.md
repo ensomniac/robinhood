@@ -210,3 +210,9 @@ shared-cache-first collection, per-request terminal wrappers, bounded SEC
 pacing, transport-denial detection, idempotent resume, and independent raw-byte
 rehashing for exactly those 597 requests. It performs no semantic extraction or
 outcome access. Commit and push the collector before running it.
+
+All 597 frozen document requests then completed as downloads with zero failures
+and independently rehashed 30,392,463 retained bytes. Raw collection alone
+earns no verified catalyst. Commit and push the aggregate result, then implement
+the separately frozen private source-semantics extraction, review, and
+inspection workflow without accessing outcomes.

@@ -183,6 +183,17 @@ failure, and byte counts plus graph and implementation hashes. CIKs, symbols,
 accessions, URLs, joins, raw bodies, and provider errors remain private. Commit
 and push the collector and tests before the first document request.
 
+The pushed collector completed all 597 frozen documents as SEC downloads with
+zero failures, zero pending requests, and zero substitutions. Independent
+inspection rehashed 30,392,463 retained bytes and rebuilt every terminal wrapper
+and aggregate. The raw corpus remains outside Git and still contains no semantic
+classification or market outcome.
+
+The next stage must implement the separately frozen source-semantics contract.
+It must extract and review private per-join source rows under the existing
+ownership, issuer-binding, causal-timestamp, financing-first, direction,
+materiality, and one-terminal-reason rules, while keeping outcomes inaccessible.
+
 An inspected identity/request contract adds no verified catalyst, alpha,
 confirmation, maturity, promotion, or production readiness by itself.
 

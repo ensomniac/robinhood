@@ -1,0 +1,29 @@
+{
+  "classification_boundary": "Raw accession-bound SEC documents are transport evidence only; ownership, issuer binding, timing, direction, materiality, conflicts, and terminal semantics remain unclassified.",
+  "collector_commit": "b7c0285e0cbfe56506c8fd1103fddad24f337083",
+  "collector_sha256": "9773d99a355ece70dc38cc1842e32b84a4aeb395bd6a269fd7ccf1baaf0f9c20",
+  "counts": {
+    "cache_hits": 0,
+    "downloads": 597,
+    "expected_requests": 597,
+    "failed_requests": 0,
+    "pending_requests": 0,
+    "source_bytes": 30392463,
+    "successful_requests": 597,
+    "terminal_requests": 597
+  },
+  "dataset_id": "dataset-development-sec-primary-documents-2026-07-19-v2",
+  "manifest_sha256": "73d7223add12925324b585f226214095cf32909eeda08bc856a0e8c759ab8538",
+  "primary_documents_requested": true,
+  "private_collection_content_sha256": "bfa4dd8948d5ac53334ad66b7e35f3b672180b5f4e2900d6124c50f040c5cfad",
+  "raw_source_bytes_retained_outside_git": true,
+  "schema_version": 1,
+  "source_document_request_graph_sha256": "09a8bb486e3dd6940ee8f70b466ab4148abd7523400bf3d15ace37569f2aea5d",
+  "source_pair_document_join_graph_sha256": "bb9cae086da093530d552b43f118b267346f52bc0301a272d3886f1e5bb8ff6a",
+  "source_semantics_observed_or_derived": false,
+  "status": "DOCUMENT_COLLECTION_COMPLETE",
+  "substitutions_used": 0,
+  "symbols_ciks_accessions_urls_joins_and_bodies_public": false,
+  "target_outcomes_observed_or_derived": false,
+  "verified_positive_catalyst_count": 0
+}

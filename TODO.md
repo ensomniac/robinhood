@@ -142,6 +142,11 @@ gates, exact URL-hash caching, SEC denial-page detection, atomic terminal
 wrappers, failure isolation, idempotent resume, privacy-safe public status, and
 independent raw-byte rehashing. Commit and push the collector and tests before
 collecting the 597 frozen documents.
+All 597 documents are now independently rehashed with zero failures,
+30,392,463 retained bytes, no substitutions, no semantic classification, and no
+outcome access. Commit and push the aggregate result, then implement the frozen
+catalyst-source semantics extract, review, and inspection workflow over the
+private corpus.
 
 ## Completed 2026-07-19
 
