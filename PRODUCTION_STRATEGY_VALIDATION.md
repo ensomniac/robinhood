@@ -205,6 +205,11 @@ and outcomes remain locked. The v1 artifact is retained as failed evidence; a
 new v2 qualification dataset will freeze the canonical JSON comparison repair
 before reevaluation.
 
+V2 isolates its manifest, private result, aggregate status, and inspection
+artifact from v1. Its only intended semantic change is canonical persisted-JSON
+comparison during independent inspection; all v3 gates, upstream inputs,
+terminal precedence, privacy boundaries, and outcome locks remain unchanged.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

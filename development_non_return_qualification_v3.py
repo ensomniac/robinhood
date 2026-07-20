@@ -32,7 +32,7 @@ from strategy_engine import StrategyInputError, evaluate_candidate, load_config
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DATASET_ID = "dataset-development-non-return-gate-evaluation-2026-07-20-tranche-v3-v1"
+DATASET_ID = "dataset-development-non-return-gate-evaluation-2026-07-20-tranche-v3-v2"
 COLLECTION_DATASET_ID = collection_v3.DATASET_ID
 COLLECTION_MANIFEST = (
     PROJECT_ROOT
@@ -53,11 +53,11 @@ DEFAULT_MANIFEST_ROOT = (
 )
 DEFAULT_CONTRACT_STATUS = (
     PROJECT_ROOT
-    / "historical_batches/development_tranche_v3/non-return-qualification-contract-status.json"
+    / "historical_batches/development_tranche_v3/non-return-qualification-v2-contract-status.json"
 )
 DEFAULT_QUALIFICATION_STATUS = (
     PROJECT_ROOT
-    / "historical_batches/development_tranche_v3/non-return-qualification-status.json"
+    / "historical_batches/development_tranche_v3/non-return-qualification-v2-status.json"
 )
 PRIVATE_NAMESPACE = "_derived/development_non_return_qualification_v3"
 EXPECTED_PAIRS = 102

@@ -209,3 +209,14 @@ def test_contract_locks_outcomes_and_substitution(monkeypatch):
 def test_dataset_identity_does_not_alias_collection_contract():
     assert qualification.DATASET_ID != qualification.COLLECTION_DATASET_ID
     assert "gate-evaluation" in qualification.DATASET_ID
+    assert qualification.DATASET_ID.endswith("-v2")
+
+
+def test_independent_record_comparison_uses_persisted_json_semantics():
+    rebuilt = [{"evaluator": {"warnings": ("one", "two")}}]
+    persisted = [{"evaluator": {"warnings": ["one", "two"]}}]
+
+    assert rebuilt != persisted
+    assert qualification._canonical_bytes(rebuilt) == qualification._canonical_bytes(
+        persisted
+    )

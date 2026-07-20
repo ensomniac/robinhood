@@ -21,7 +21,7 @@ from strategy_engine import StrategyInputError, evaluate_candidate, load_config
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_RESULT = (
     PROJECT_ROOT
-    / "research_results/2026-07-20-development-non-return-qualification-v3-inspection.json"
+    / "research_results/2026-07-20-development-non-return-qualification-v3-v2-inspection.json"
 )
 
 
@@ -233,7 +233,9 @@ def inspect_result(
         _independent_record(qualification._read_gzip(path), split_actions)
         for path in pair_paths
     ]
-    if rebuilt != observed:
+    if qualification._canonical_bytes(rebuilt) != qualification._canonical_bytes(
+        observed
+    ):
         raise QualificationInspectionError("independent per-pair gate rebuild differs")
     aggregate = qualification._aggregate(rebuilt)
     for key, value in aggregate.items():

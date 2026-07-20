@@ -205,6 +205,12 @@ underlying values matched. The immutable v1 artifact remains retained and
 outcome-locked. A separately versioned v2 contract must hash-bind a tested
 canonical-JSON comparison before the qualification can be rerun.
 
+The v2 implementation uses a distinct dataset, private result path, aggregate
+status path, and inspection artifact. Its independent equality check compares
+canonical JSON bytes, which is the persisted evidence representation, while
+still rebuilding every pair and aggregate separately. The original v1 manifest,
+status, and private result remain unchanged.
+
 ```sh
 python3 development_non_return_qualification_v3.py freeze
 python3 development_non_return_qualification_v3_inspection.py inspect-contract \
