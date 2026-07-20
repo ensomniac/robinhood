@@ -58,7 +58,11 @@ def test_contract_freezes_zero_output_and_both_implementations(tmp_path, monkeyp
     ):
         calendar.freeze_contract(output_root=tmp_path)
     contract = freeze.call_args.args[0]
+    assert contract["requested_dates"] == [calendar.CALENDAR_START, calendar.CALENDAR_END]
     assert contract["output_contract"]["pre_freeze_output_artifacts"] == 0
+    assert contract["output_contract"]["requested_dates_semantics"] == (
+        "calendar_query_bounds_not_target_sessions"
+    )
     assert set(contract["implementation_contract"]) == {"collector", "inspector"}
     assert contract["output_contract"]["target_outcomes_observed_or_derived"] is False
 

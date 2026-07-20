@@ -154,6 +154,7 @@ def _expected_contract() -> dict[str, Any]:
             "source_path": _repo_path(DEFAULT_SOURCE),
             "pre_freeze_output_artifacts": int(DEFAULT_CALENDAR.exists())
             + int(DEFAULT_SOURCE.exists()),
+            "requested_dates_semantics": "calendar_query_bounds_not_target_sessions",
             "target_outcomes_observed_or_derived": False,
         },
     }
@@ -166,7 +167,7 @@ def freeze_contract(*, output_root: Path) -> tuple[Path, dict[str, Any]]:
         "schema_version": 1,
         "dataset_id": DATASET_ID,
         "registered_at": datetime.now(UTC).isoformat(),
-        "requested_dates": [],
+        "requested_dates": [CALENDAR_START, CALENDAR_END],
         "dataset_payload": {
             "lane": "development",
             "claim_scope": "DEVELOPMENT_ONLY",
