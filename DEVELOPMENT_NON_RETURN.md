@@ -186,6 +186,16 @@ decision-bounded source. The implementation and focused tests must be committed
 and pushed before `freeze`; the exact manifest must then be independently
 inspected, committed, and pushed before `qualify`.
 
+Qualification manifest `558001a2...214e2` is now independently
+`FROZEN_READY`. It binds all 102 collected-pair dispositions, the 75 complete
+pre-entry input records, private collection index `a99ae96f...e3c59`, unchanged
+strategy rules hash `00c3aa83...5867`, exact implementation hashes, ordered
+terminal gates, the 20-survivor minimum, aggregate-only publication, and a
+closed outcome lock. The qualification private namespace still contains zero
+target artifacts. This contract authorizes only the network-free qualification
+pass after the manifest is committed and pushed; it does not authorize
+post-entry data, outcome derivation, alpha claims, or promotion.
+
 ```sh
 python3 development_non_return_qualification_v3.py freeze
 python3 development_non_return_qualification_v3_inspection.py inspect-contract \

@@ -190,6 +190,14 @@ The implementation must be committed and pushed before its contract can be
 frozen, and only the independent inspector may authorize a later outcome
 contract after at least 20 survivors.
 
+That qualification contract is now independently frozen in manifest
+`558001a2...214e2`. It fixes the exact upstream collection hashes, 102-pair
+denominator, 75 input-ready records, unchanged v3 rules and implementations,
+ordered attrition, 20-survivor threshold, private gate-record boundary, and
+closed outcome lock. No qualification result or target artifact existed at
+freeze. Evaluation remains prohibited until this manifest and its public
+aggregate status are committed and pushed.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

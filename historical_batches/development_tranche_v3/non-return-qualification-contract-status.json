@@ -1,0 +1,17 @@
+{
+  "dataset_id": "dataset-development-non-return-gate-evaluation-2026-07-20-tranche-v3-v1",
+  "inspected": true,
+  "inspection": {
+    "implementation_and_rules_rebuilt": true,
+    "privacy_and_outcome_locks_rebuilt": true,
+    "source_collection_rebuilt": true,
+    "valid": true
+  },
+  "manifest_sha256": "558001a2bd8d1a4b5dfbd8d69fe37d85190828eb6ba28b3de193b5f9ee7214e2",
+  "minimum_survivors_before_outcomes": 20,
+  "pairs_expected": 102,
+  "preentry_inputs_collected": 75,
+  "schema_version": 1,
+  "status": "FROZEN_READY",
+  "target_outcomes_observed_or_derived": false
+}
