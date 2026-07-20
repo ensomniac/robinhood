@@ -1,11 +1,9 @@
 # Disjoint Production-Development Tranche
 
-Planned dataset: `dataset-development-tranche-2026-07-19-v2`
+Planned dataset: `dataset-development-tranche-2026-07-20-v3`
 
-Status: the v2 acquisition chain is independently inspected through its
-manifest-bound pre-entry collector; 19 of 21 source-positive pairs retained
-complete pre-entry inputs and two had no clean cross before 10:30, so the
-20-survivor capacity gate failed and no target outcome was accessed or derived
+Status: the network-free v3 selection freezer is implementation-ready; no v3
+date selection, reference request, provider request, or target outcome exists
 
 Production champion: `2026-07-15-orb-v3`, unchanged and `UNVALIDATED`
 
@@ -18,6 +16,23 @@ privacy lock, and zero-outcome claim. Its terminal aggregate is 19
 more than 19 pairs can survive the remaining unchanged-v3 non-return gates, the
 v2 corpus closes outcome-blind and a new exact 100-session disjoint tranche is
 required.
+
+The v3 freezer expands the attested eligible range only through June 30, 2026,
+the last session in the already committed calendar. It adds the complete v2
+selection to the explicit prior-selection exclusions, binds the inspected
+19-survivor acquisition exit, uses seed `2026072003`, and retains the exact
+100-session, 15-prior-session, zero-substitution contract. The implementation
+must be committed and pushed before `freeze`; its date selection and manifest
+must then be independently inspected, committed, and pushed before any dated
+reference access.
+
+A read-only preflight against the current exclusion registry finds 327 distinct
+excluded dates and 102 eligible sessions, enough for the exact 100-date freeze;
+the resulting graph would require 262 target/lookback sessions. These are
+capacity counts only. The exact dates are not persisted until the implementation
+is committed and pushed.
+
+## Prior V2 Selection
 
 The completed source-recovery sequence leaves only three exact, deduplicated
 verified-positive catalyst pairs in the prior 100-date expansion. That is below
@@ -94,7 +109,7 @@ The freeze and inspection commands are:
 python3 development_tranche.py freeze
 
 python3 development_tranche.py inspect \
-  --manifest historical_batches/development_tranche_v2/manifests/<manifest>.json
+  --manifest historical_batches/development_tranche_v3/manifests/<manifest>.json
 ```
 
 Commit and push the public selection and hash-addressed manifest before running

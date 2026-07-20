@@ -29,11 +29,11 @@ from scanner_replay import load_selection, required_sessions
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DATASET_ID = "dataset-development-tranche-2026-07-19-v2"
-SEED = 2026071902
+DATASET_ID = "dataset-development-tranche-2026-07-20-v3"
+SEED = 2026072003
 TARGET_COUNT = 100
 ELIGIBLE_START = "2025-01-02"
-ELIGIBLE_END = "2025-11-28"
+ELIGIBLE_END = "2026-06-30"
 PRIOR_SESSIONS = 15
 CALENDAR = (
     PROJECT_ROOT
@@ -59,6 +59,10 @@ PRIOR_SELECTIONS = (
     / "historical_batches"
     / "scanner_expansion"
     / "selection-2026-07-19-100-days.json",
+    PROJECT_ROOT
+    / "historical_batches"
+    / "development_tranche_v2"
+    / "selection-2026-07-19-100-days.json",
 )
 PRIOR_SCANNER_STATUS = (
     PROJECT_ROOT / "historical_batches" / "scanner_expansion" / "collection-status.json"
@@ -71,21 +75,22 @@ PRIOR_DERIVED_ROOT = (
     / "scanner_replay"
     / "dataset-production-scanner-replay-2026-07-19-expansion-v1"
 )
-SOURCE_SEMANTICS_RESULT = (
+ACQUISITION_EXIT_RESULT = (
     PROJECT_ROOT
-    / "research_results"
-    / "2026-07-19-catalyst-issuer-chain-semantics.json"
+    / "historical_batches"
+    / "development_tranche_v2"
+    / "non-return-collection-status.json"
 )
 DEFAULT_SELECTION = (
     PROJECT_ROOT
     / "historical_batches"
-    / "development_tranche_v2"
-    / "selection-2026-07-19-100-days.json"
+    / "development_tranche_v3"
+    / "selection-2026-07-20-100-days.json"
 )
 DEFAULT_OUTPUT_ROOT = (
-    PROJECT_ROOT / "historical_batches" / "development_tranche_v2" / "manifests"
+    PROJECT_ROOT / "historical_batches" / "development_tranche_v3" / "manifests"
 )
-PRIVATE_ROOT_NAME = "development_tranche_v2"
+PRIVATE_ROOT_NAME = "development_tranche_v3"
 DATE_PATTERN = re.compile(r"(?<!\d)(20\d{2})[-_]([01]\d)[-_]([0-3]\d)(?!\d)")
 
 
@@ -163,6 +168,22 @@ def _read_gzip(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise DevelopmentTrancheError(f"{path} must contain an object")
     return value
+
+
+def _validate_acquisition_exit(value: Mapping[str, Any]) -> None:
+    terminals = value.get("terminal_counts")
+    if not (
+        value.get("status") == "COLLECTION_INSPECTED"
+        and value.get("inspected") is True
+        and value.get("pairs_expected") == 21
+        and value.get("pairs_terminal") == 21
+        and isinstance(terminals, Mapping)
+        and terminals.get("PREENTRY_INPUTS_COLLECTED") == 19
+        and terminals.get("NO_CLEAN_CROSS_BEFORE_CUTOFF") == 2
+        and value.get("provider_rows_after_final_decision") is False
+        and value.get("target_outcomes_observed_or_derived") is False
+    ):
+        raise DevelopmentTrancheError("prior acquisition exit evidence differs")
 
 
 def _repo_path(path: Path) -> str:
@@ -504,16 +525,8 @@ def _capacity_projection(
 def freeze_inputs(
     *, env_path: Path, selection_path: Path, output_root: Path
 ) -> tuple[Path, dict[str, Any]]:
-    source_semantics = _read_json(SOURCE_SEMANTICS_RESULT)
-    if not (
-        source_semantics.get("status") == "READY"
-        and source_semantics.get("inspected") is True
-        and source_semantics.get("combined_exact_deduplicated_verified_positive_pairs")
-        == 3
-        and source_semantics.get("capacity_gate_passed") is False
-        and source_semantics.get("target_outcomes_observed_or_derived") is False
-    ):
-        raise DevelopmentTrancheError("source-recovery exit evidence differs")
+    acquisition_exit = _read_json(ACQUISITION_EXIT_RESULT)
+    _validate_acquisition_exit(acquisition_exit)
     calendar = _calendar_dates()
     calendar_source = _read_json(CALENDAR_SOURCE)
     if not (
@@ -543,7 +556,7 @@ def freeze_inputs(
             "claim_scope": "DEVELOPMENT_ONLY",
             "status": "COLLECTING",
             "evidence_paths": [
-                _repo_path(SOURCE_SEMANTICS_RESULT),
+                _repo_path(ACQUISITION_EXIT_RESULT),
                 _repo_path(CALENDAR),
                 _repo_path(CALENDAR_SOURCE),
                 _repo_path(selection_path),
@@ -554,7 +567,9 @@ def freeze_inputs(
         },
         "selection_contract": {
             "implementation_sha256": _sha256_file(Path(__file__)),
-            "source_semantics_result_sha256": _sha256_file(SOURCE_SEMANTICS_RESULT),
+            "prior_acquisition_exit_sha256": _sha256_file(
+                ACQUISITION_EXIT_RESULT
+            ),
             "calendar_sha256": _sha256_file(CALENDAR),
             "calendar_source_sha256": _sha256_file(CALENDAR_SOURCE),
             "signals_sha256": exclusions["signal_ledger"]["sha256"],

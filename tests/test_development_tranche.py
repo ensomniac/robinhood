@@ -12,6 +12,26 @@ import development_tranche as tranche
 
 
 class DevelopmentTrancheSelectionTests(unittest.TestCase):
+    def test_prior_acquisition_exit_requires_inspected_19_pair_capacity(self) -> None:
+        value = {
+            "status": "COLLECTION_INSPECTED",
+            "inspected": True,
+            "pairs_expected": 21,
+            "pairs_terminal": 21,
+            "provider_rows_after_final_decision": False,
+            "target_outcomes_observed_or_derived": False,
+            "terminal_counts": {
+                "PREENTRY_INPUTS_COLLECTED": 19,
+                "NO_CLEAN_CROSS_BEFORE_CUTOFF": 2,
+            },
+        }
+        tranche._validate_acquisition_exit(value)
+        value["target_outcomes_observed_or_derived"] = True
+        with self.assertRaisesRegex(
+            tranche.DevelopmentTrancheError, "exit evidence differs"
+        ):
+            tranche._validate_acquisition_exit(value)
+
     def test_selection_is_exact_disjoint_and_deterministic(self) -> None:
         start = date(2024, 12, 1)
         calendar = [(start + timedelta(days=index)).isoformat() for index in range(400)]
