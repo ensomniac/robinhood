@@ -69,3 +69,23 @@ Freeze another exact disjoint 100-session selection before provider or outcome
 access. Reuse the point-in-time security-master, primary-source catalyst, SIP
 tape/quote, split, halt, and capacity controls already proven by the v3 pipeline,
 but bind the new retest evaluator and exclude every inspected target date.
+
+The current 2025-2026 calendar has only two eligible disjoint sessions after
+the v3 selection. `challenger_orb_retest_calendar.py` therefore freezes an exact
+Alpaca calendar request for 2023-01-01 through the last completed session on
+2026-07-17 before provider access. Its separate inspector independently rebuilds
+the provider query, session ordering, uniqueness, hours, hashes, and outcome
+lock. Calendar output is public reference data, not target market or outcome
+data. The implementation and zero-output manifest must each be committed and
+pushed before collection.
+
+```sh
+python3 challenger_orb_retest_calendar.py freeze
+python3 challenger_orb_retest_calendar_inspection.py inspect-contract \
+  historical_batches/challenger_orb_retest_v1/calendar_manifests/<manifest>.json
+# Commit and push the inspected zero-output manifest before the commands below.
+python3 challenger_orb_retest_calendar.py collect \
+  historical_batches/challenger_orb_retest_v1/calendar_manifests/<manifest>.json
+python3 challenger_orb_retest_calendar_inspection.py inspect \
+  historical_batches/challenger_orb_retest_v1/calendar_manifests/<manifest>.json
+```
