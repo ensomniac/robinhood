@@ -259,6 +259,14 @@ The inner Alpaca scanner graph is now frozen as manifest `8d1f67bb...c30e41`:
 derived rows, or canonical merges. It remains a zero-state contract only and
 must be published before the outer challenger trigger/source-rules freeze.
 
+Outer acquisition manifest `b4d49ce7...c9102` now independently rebuilds the
+published scanner-lock implementation, inner scanner graph, one-trial retest
+trigger, primary-source semantic rules, selected-symbol-only detail boundary,
+provider priority, storage reserve, and outcome lock. Its zero-state inspection
+covers all 100 dates and 474 sessions without substitution or target-market
+artifacts. The scanner dataset is publicly registered as `COLLECTING`; target
+Alpaca access begins only after this outer slice is committed and pushed.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

@@ -169,6 +169,15 @@ row, or canonical merge. Substitution and outcome access remain forbidden.
 This manifest and its public status must be committed and pushed before the
 outer challenger mechanism/source contract is frozen.
 
+Outer acquisition manifest `b4d49ce7...c9102` is now independently
+`FROZEN_READY`. It binds inner manifest `8d1f67bb...c30e41`, the published shared
+scanner lock, one-trial retest mechanism, source-semantics hash
+`99843372...b4dc`, selected-symbol-only detail, provider priority, the 20-GiB
+reserve, and the no-outcome lock. Inspection rebuilds all 100 dates and 474
+sessions with zero target-market artifact or substitution. The scanner dataset
+is registered as `COLLECTING`, not `READY`. This outer slice must be committed
+and pushed before `collect-scanner` may contact Alpaca.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

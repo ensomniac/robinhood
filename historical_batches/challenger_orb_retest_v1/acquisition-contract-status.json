@@ -1,0 +1,14 @@
+{
+  "dataset_id": "dataset-challenger-orb-retest-acquisition-2026-07-20-v1",
+  "inspected": true,
+  "manifest_sha256": "b4d49ce78d482940a5b146730d5ef51a341348ab346fdbb82a036e40853c9102",
+  "pre_freeze_target_market_artifacts": 0,
+  "requested_dates": 100,
+  "required_sessions": 474,
+  "schema_version": 1,
+  "source_rules_sha256": "998433724e8dfc26be129fb7c105a7f11a949641fbcef9032dd751e3a731b4dc",
+  "status": "FROZEN_READY",
+  "substitutions_allowed": false,
+  "target_outcomes_observed_or_derived": false,
+  "valid": true
+}
