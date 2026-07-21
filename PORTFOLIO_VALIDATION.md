@@ -653,8 +653,15 @@ access. Independent inspection
 `6f2619090a6312763d16ab9f3e01f63047c59b7fae1907803aea78b0ffa74f58`
 rebuilt the taxonomy and verified all 23 evidence files with zero provider or
 broker calls and zero return computations. The second wave is open; its six
-exact variants still require a frozen and inspected slate before any outcome
-access.
+exact variants are frozen in manifest
+`4c513f9de6417a48dccae5bf5ce1e5c59d68a1d2d0b6e65bba41a3f4a5cac822`.
+The manifest binds the fixed order, XNYS evaluation windows, ETF and dated
+point-in-time equity universes, whole-provider inputs, next-bar entries,
+gap-aware protective stops, stop-first ambiguity, one-to-five-session exits,
+5/10/20-bps costs, and the unchanged Stage 0 gate. It forbids substitutions,
+parameter repair, maturity inheritance, provider calls, or outcome access
+before independent slate inspection. The funnel exposes the raw slate but
+keeps `outcome_access_open=false` until that inspection is published.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live

@@ -64,6 +64,9 @@ class PortfolioFunnelTests(unittest.TestCase):
         status = funnel.build_funnel_status(maturity.build_report())
         self.assertTrue(status["second_wave"]["required"])
         self.assertTrue(status["second_wave"]["open"])
+        self.assertFalse(status["second_wave"]["outcome_access_open"])
+        self.assertEqual(len(status["second_wave"]["slate_paths"]), 1)
+        self.assertEqual(status["second_wave"]["slate_inspection_paths"], [])
         self.assertEqual(len(status["second_wave"]["candidate_queue"]), 6)
         self.assertEqual(
             [

@@ -636,6 +636,78 @@ def load_failure_taxonomy_status(
     }
 
 
+def load_second_wave_slate_status(*, root: Path = PROJECT_ROOT) -> dict[str, Any]:
+    manifest_paths = sorted(
+        (root / "strategy_tournament" / "second_wave" / "manifests").glob(
+            "portfolio-stage0-second-wave-slate-*.json"
+        )
+    )
+    if len(manifest_paths) > 1:
+        raise PortfolioFunnelError("multiple second-wave Stage 0 slates exist")
+    inspection_paths = sorted(
+        (root / "strategy_tournament" / "second_wave" / "inspections").glob(
+            "portfolio-stage0-second-wave-slate-*.json"
+        )
+    )
+    if len(inspection_paths) > 1:
+        raise PortfolioFunnelError("multiple second-wave slate inspections exist")
+    if not manifest_paths:
+        if inspection_paths:
+            raise PortfolioFunnelError("second-wave slate inspection has no manifest")
+        return {"manifest_paths": [], "inspection_paths": [], "inspected": False}
+    manifest_path = manifest_paths[0]
+    manifest = _read_json(manifest_path)
+    if manifest.get("manifest_sha256") != _self_hash(manifest, "manifest_sha256"):
+        raise PortfolioFunnelError("second-wave slate content hash is invalid")
+    if manifest.get("manifest_kind") != "portfolio-stage0-second-wave-slate":
+        raise PortfolioFunnelError("second-wave slate kind drifted")
+    if manifest.get("ordered_variant_ids") != [item[0] for item in SECOND_WAVE]:
+        raise PortfolioFunnelError("second-wave slate order drifted")
+    variants = manifest.get("variants")
+    if not isinstance(variants, list) or [
+        (item.get("variant_id"), item.get("mechanism_family")) for item in variants
+    ] != list(SECOND_WAVE):
+        raise PortfolioFunnelError("second-wave slate variants drifted")
+    if manifest.get("maturity_effect") != "NONE":
+        raise PortfolioFunnelError("second-wave slate cannot affect maturity")
+    if manifest.get("return_evaluation_authorized_before_inspection") is not False:
+        raise PortfolioFunnelError("second-wave slate bypasses input inspection")
+    if not inspection_paths:
+        return {
+            "manifest_paths": [str(manifest_path.relative_to(root))],
+            "inspection_paths": [],
+            "inspected": False,
+        }
+    inspection_path = inspection_paths[0]
+    inspection = _read_json(inspection_path)
+    if inspection.get("inspection_sha256") != _self_hash(
+        inspection, "inspection_sha256"
+    ):
+        raise PortfolioFunnelError("second-wave slate inspection hash is invalid")
+    required = {
+        "inspection_kind": "portfolio-stage0-second-wave-slate-inspection",
+        "manifest_sha256": manifest["manifest_sha256"],
+        "manifest_file_sha256": _file_hash(manifest_path),
+        "variant_count": len(SECOND_WAVE),
+        "ordered_variant_ids": manifest["ordered_variant_ids"],
+        "outcomes_accessed": 0,
+        "returns_computed": 0,
+        "provider_requests": 0,
+        "broker_actions": 0,
+        "maturity_effect": "NONE",
+        "return_evaluation_authorized": True,
+        "valid": True,
+    }
+    for field, expected in required.items():
+        if inspection.get(field) != expected:
+            raise PortfolioFunnelError(f"second-wave slate inspection {field} drifted")
+    return {
+        "manifest_paths": [str(manifest_path.relative_to(root))],
+        "inspection_paths": [str(inspection_path.relative_to(root))],
+        "inspected": True,
+    }
+
+
 def build_funnel_status(
     maturity_report: Mapping[str, Any], *, root: Path = PROJECT_ROOT
 ) -> dict[str, Any]:
@@ -711,10 +783,14 @@ def build_funnel_status(
     ]
     first_wave_complete = len(dispositions) == len(FIRST_WAVE_ORDER)
     taxonomy_status = load_failure_taxonomy_status(maturity_report, root=root)
+    second_wave_slate = load_second_wave_slate_status(root=root)
     second_wave_required = first_wave_complete and len(survivors) < int(
         maturity_report.get("target_pilot_ready_strategies", 3)
     )
     second_wave_open = second_wave_required and taxonomy_status["inspected"]
+    second_wave_outcome_access_open = (
+        second_wave_open and second_wave_slate["inspected"]
+    )
     notification_reasons: list[str] = []
     if dispositions and len(dispositions) % 3 == 0:
         notification_reasons.append("three Stage 0 dispositions completed")
@@ -731,6 +807,10 @@ def build_funnel_status(
         blockers.append("confirmation or shadow lane is vacant")
     if second_wave_required and not second_wave_open:
         blockers.append("first-wave failure taxonomy is required before wave two")
+    if second_wave_open and not second_wave_outcome_access_open:
+        blockers.append(
+            "inspected second-wave slate is required before outcome access"
+        )
     return {
         "schema_version": SCHEMA_VERSION,
         "valid": True,
@@ -745,12 +825,15 @@ def build_funnel_status(
         "second_wave": {
             "required": second_wave_required,
             "open": second_wave_open,
+            "outcome_access_open": second_wave_outcome_access_open,
             "failure_taxonomy_paths": [
                 *taxonomy_status["taxonomy_paths"]
             ],
             "failure_taxonomy_inspection_paths": [
                 *taxonomy_status["inspection_paths"]
             ],
+            "slate_paths": [*second_wave_slate["manifest_paths"]],
+            "slate_inspection_paths": [*second_wave_slate["inspection_paths"]],
             "candidate_queue": [
                 {"variant_id": variant_id, "mechanism_family": family}
                 for variant_id, family in SECOND_WAVE
