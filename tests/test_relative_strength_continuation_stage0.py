@@ -114,6 +114,27 @@ class RelativeStrengthContinuationStage0Tests(unittest.TestCase):
         self.assertEqual(status["broker_actions"], 0)
         self.assertEqual(status["status"], "READY")
 
+    def test_prefix_inspection_freezes_leaders_before_outcomes(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "relative-strength-continuation-v1-prefix-554a3e4678175f32140642ad98ea9959a5bd87ab65aca5636ba92119a8fe6e9e.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["target_dates"], 80)
+        self.assertEqual(inspection["member_symbol_sessions"], 395_316)
+        self.assertEqual(inspection["qualifying_leader_symbol_sessions"], 8_729)
+        self.assertEqual(inspection["dates_without_leaders"], 0)
+        self.assertEqual(inspection["provider_requests_during_inspection"], 0)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["target_outcome_collection_authorized"])
+
     def test_manifest_freezes_new_full_cross_sectional_dates(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)

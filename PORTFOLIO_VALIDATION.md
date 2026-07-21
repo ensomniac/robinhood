@@ -517,6 +517,14 @@ The benchmark repair is complete at
 all 80 requested prior sessions returned one SPY daily bar in exactly 80
 provider calls. It requested zero target-date daily bars, computed zero returns,
 and made no broker action.
+Prefix inspection
+`554a3e4678175f32140642ad98ea9959a5bd87ab65aca5636ba92119a8fe6e9e`
+rebuilds all 395,316 member dispositions and freezes 8,729 qualifying leader
+symbol-sessions across all 80 dates. It records 322,183 incomplete prefixes,
+52,131 below-threshold members, 12,163 names at or below $5, 84 missing stock
+prior closes, and 26 target-day splits. The inspection made zero provider or
+broker calls, computed zero returns, and now authorizes full-session collection
+only for the frozen leaders.
 
 ## Active discovery funnel
 

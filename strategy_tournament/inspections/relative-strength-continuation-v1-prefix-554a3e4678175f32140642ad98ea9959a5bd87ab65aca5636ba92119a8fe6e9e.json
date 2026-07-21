@@ -1,0 +1,29 @@
+{
+  "activation_inspection_sha256": "7bfe5fddcbaaba26be35eba3cf35dea00d617a6654464998cc499f62f161f992",
+  "broker_actions": 0,
+  "dates_without_leaders": 0,
+  "inspection_kind": "stage0-relative-strength-prefix-inspection",
+  "inspection_sha256": "554a3e4678175f32140642ad98ea9959a5bd87ab65aca5636ba92119a8fe6e9e",
+  "manifest_file_sha256": "bf143440a07551a9608986a68231fcf8beecc43b6906d920f99fed522e73126f",
+  "manifest_sha256": "269dcb726208e7f364709a65ed51158c05ccefd02ecc005def0ffb460cc17c8a",
+  "member_symbol_sessions": 395316,
+  "prefix_status_sha256": "54d610efbb744c5054bd41c5bef4ff781424e83941cf4847941e694594457570",
+  "prior_close_status_sha256": "486ab930ff93d2bec84a5d0e24bb0c9b3d98f134a30d803a1ddf78626ed672c2",
+  "private_candidate_index_sha256": "c5881a20e762decb81f1e210fe3d05b249a95c36bb568b7aae92a72245efabda",
+  "provider_requests_during_inspection": 0,
+  "qualifying_leader_symbol_sessions": 8729,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "status_counts": {
+    "below_relative_strength": 52131,
+    "incomplete_prefix": 322183,
+    "leader": 8729,
+    "missing_prior_close": 84,
+    "price_not_above_5": 12163,
+    "split_on_target_date": 26
+  },
+  "target_dates": 80,
+  "target_outcome_collection_authorized": true,
+  "valid": true,
+  "variant_id": "relative-strength-continuation-v1"
+}
