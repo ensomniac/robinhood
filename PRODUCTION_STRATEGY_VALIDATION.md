@@ -287,6 +287,14 @@ provider-bound sessions, zero substitutions, and closed outcome lock rebuild
 from the manifest and external zero-state status. It must be committed and
 pushed before the v2 outer acquisition contract is frozen.
 
+The v2 outer acquisition contract is now independently frozen as manifest
+`b580483b...9d8e9` and registered `COLLECTING`. Independent inspection
+rebuilds the 100 exact target dates, all 474 sessions, the 466/8 reusable versus
+provider-bound partition, every implementation and upstream hash, primary
+source semantics, shared scanner lock, storage reserve, zero substitutions,
+zero v2 target-market artifacts, and the closed outcome lock. This slice must
+be committed and pushed before coarse scanner collection resumes.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

@@ -205,6 +205,15 @@ ready target session, request, retry, derived row, or canonical merge. This
 inner manifest and status must be committed and pushed before the v2 outer
 mechanism/source contract is frozen.
 
+V2 outer acquisition manifest `b580483b...9d8e9` is now independently
+`FROZEN_READY` and registered as `COLLECTING`. Inspection rebuilds the exact
+100 selected dates, 474-session graph, 6,525-symbol scanner contract, 466
+attested reusable sessions, eight provider-bound sessions, source-semantics
+rules, shared lock, 20-GiB reserve, and zero-substitution and outcome locks.
+It finds zero v2 target-market artifact and authorizes coarse scanner
+collection only after this outer contract, status, registry event, and durable
+finding are committed and pushed.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

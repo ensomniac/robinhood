@@ -1,0 +1,340 @@
+{
+  "capacity_contract": {
+    "capacity_ready": true,
+    "free_bytes_at_freeze": 424836435968,
+    "historical_deletion_allowed": false,
+    "historical_store_outside_repository": true,
+    "reserve_bytes": 21474836480
+  },
+  "dataset_id": "dataset-challenger-orb-retest-acquisition-2026-07-21-v2",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "CHALLENGER_ORB_RETEST.md",
+      "learning/hypotheses/experiment-catalyst-orb-retest-v1-b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105.json",
+      "historical_batches/challenger_orb_retest_v1/selection_manifests/dataset-challenger-orb-retest-development-2026-07-20-v1-c1c51924d1bca16797a60e9f92503d36c53700a2e3c102a905900c9ca4ec7dae.json",
+      "historical_batches/challenger_orb_retest_v1/scanner_manifests/dataset-production-scanner-replay-2026-07-21-challenger-orb-retest-v2-77dc80b560b67aaf3ab3991e7a67ffef0cb344ab79ece4e79e868d4b50b96640.json",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "full_universe_market_contract": {
+    "adjustment": "raw",
+    "canonical_store_required": true,
+    "complete_universe": true,
+    "endpoint": "https://data.alpaca.markets/v2/stocks/bars",
+    "feed": "sip",
+    "opening_query": "1Min from 09:30:00 through 09:34:59.999999 ET",
+    "pre_freeze_canonical_day_merges": 0,
+    "pre_freeze_derived_rows": 0,
+    "pre_freeze_provider_requests": 0,
+    "pre_freeze_provider_retries": 0,
+    "pre_freeze_ready_sessions": 0,
+    "provider": "Alpaca historical SIP raw regular-session 15-minute and opening-minute bars",
+    "provider_config": {
+      "base_url": "https://data.alpaca.markets",
+      "batch_size": 500,
+      "credentials_configured": true,
+      "max_attempts": 8,
+      "minimum_interval_seconds": 0.32,
+      "timeout_seconds": 60.0
+    },
+    "regular_session_query": "15Min from 09:30:00 through 15:59:59.999999 ET",
+    "required_session_count": 474,
+    "required_sessions_sha256": "31afb1ff917375a9415a92ae0443d10b24c5be5f2cd21f4ccca5ef60579bc54a",
+    "scanner_dataset_id": "dataset-production-scanner-replay-2026-07-21-challenger-orb-retest-v2",
+    "scanner_manifest_sha256": "77dc80b560b67aaf3ab3991e7a67ffef0cb344ab79ece4e79e868d4b50b96640",
+    "substitutions_allowed": false,
+    "whole_provider_fidelity_per_symbol_session": true
+  },
+  "implementation_contract": {
+    "controller": {
+      "path": "challenger_orb_retest_acquisition.py",
+      "sha256": "30258a2589e4fe430542b81fc81b26319d0ff53528dd2e433ac1bcbcf4f5b679"
+    },
+    "inspector": {
+      "path": "challenger_orb_retest_acquisition_inspection.py",
+      "sha256": "8d1d3987fb8ef4560da8b70540f06bcdd38e97dc89e63450479902a518d52b7f"
+    },
+    "scanner_adapter": {
+      "path": "scanner_replay_alpaca.py",
+      "sha256": "161004e20645fb370548b50a01568837e2c331802b1255a47c8ffb8515b101a7"
+    },
+    "scanner_engine": {
+      "path": "scanner_replay.py",
+      "sha256": "201beec2f0787a6e9be55ac5df2384b95532d767a32619983b7782a9f83b86c4"
+    },
+    "scanner_inspector": {
+      "path": "scanner_replay_inspection.py",
+      "sha256": "d1601fe02bfe80202b55130908829813a1b4ec4f51ee6d4d0ce8dc5a789806e6"
+    },
+    "source_rules_builder": {
+      "path": "development_catalyst_contract.py",
+      "sha256": "75ba45ee45260a21a5ddd11925cd9ddbce787b3eb2c5ff4986a63c90c962ddba"
+    },
+    "source_semantics": {
+      "path": "catalyst_source_semantics.py",
+      "sha256": "463f17c33a823b6e98c881a4c90734082d83916a14cb3f6c1dd867f3f99524b3"
+    },
+    "trigger": {
+      "path": "challenger_orb_retest.py",
+      "sha256": "84290bdc98aca16fd6d3b13d788445aff75af36b77af658fddebed1fe6974682"
+    }
+  },
+  "manifest_sha256": "b580483bc8150725018edb74534a2884d248108737fcd83c5af6e63269f9d8e9",
+  "outcome_lock": {
+    "date_symbol_provider_or_missing_input_substitution_allowed": false,
+    "outcome_contract_must_be_separately_frozen": true,
+    "post_entry_data_access_allowed": false,
+    "return_fields_allowed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "primary_source_contract": {
+    "parser_version": "source-semantics-parser-v1",
+    "pypdf_version": "6.14.2",
+    "python_version": "3.14.2",
+    "requests_version": "2.34.2",
+    "rules": {
+      "event_taxonomy": [
+        "DIRECT_POSITIVE",
+        "DIRECT_NEGATIVE",
+        "FINANCING_OR_DILUTION_CONFLICT",
+        "MIXED_OR_CONTRADICTORY",
+        "NON_MATERIAL_OR_CONTEXT_ONLY",
+        "UNRESOLVED"
+      ],
+      "financing_or_dilution_conflicts_classified_before_positive": true,
+      "issuer_binding_methods": [
+        "exchange_symbol_and_listing_identity",
+        "issuer_controlled_footer_or_identity",
+        "issuer_owned_canonical_domain",
+        "legal_company_name",
+        "point_in_time_ticker",
+        "security_master_cik_to_document_cik",
+        "unique_subsidiary_or_product_binding"
+      ],
+      "issuer_binding_required": true,
+      "metadata_headers_capture_url_and_pdf_dates_cannot_independently_prove_publication": true,
+      "one_terminal_disposition_per_pair_source_join": true,
+      "primary_evidence_only": true,
+      "same_day_date_only_fails": true,
+      "secondary_news_may_route_but_cannot_verify": true,
+      "selection_or_source_substitution_allowed": false,
+      "source_ownership_required": true,
+      "terminal_precedence": [
+        "CAPTURE_TRANSPORT_ERROR",
+        "CAPTURE_FORBIDDEN",
+        "CAPTURE_NOT_FOUND",
+        "CAPTURE_HTTP_ERROR",
+        "SOURCE_OWNERSHIP_UNRESOLVED",
+        "ISSUER_BINDING_UNRESOLVED",
+        "PRIMARY_SOURCE_IRRELEVANT",
+        "TIMESTAMP_MISSING",
+        "TIMESTAMP_CONFLICT",
+        "SAME_DAY_TIME_UNRESOLVED",
+        "PUBLISHED_AFTER_0935",
+        "DOCUMENT_SEMANTICS_UNRESOLVED",
+        "NON_MATERIAL_OR_CONTEXT_ONLY",
+        "VERIFIED_CONFLICT",
+        "VERIFIED_NEGATIVE_PRIMARY",
+        "VERIFIED_POSITIVE_PRIMARY"
+      ],
+      "timestamp_precedence": [
+        "SOURCE_CONTROLLED_EXPLICIT_DATETIME",
+        "JSON_LD_AND_VISIBLE_DATETIME",
+        "META_AND_VISIBLE_DATETIME",
+        "CONTEXTUAL_TIME_DATETIME",
+        "PDF_DATELINE_AND_REFERRER_CORROBORATION"
+      ]
+    },
+    "rules_sha256": "998433724e8dfc26be129fb7c105a7f11a949641fbcef9032dd751e3a731b4dc"
+  },
+  "reference_identity_contract": {
+    "endpoint": "https://api.massive.com/v3/reference/tickers",
+    "provider": "Massive dated ticker reference",
+    "provider_config": {
+      "api_key_configured": true,
+      "base_url": "https://api.massive.com",
+      "minimum_interval_seconds": 12.5,
+      "timeout_seconds": 30.0
+    },
+    "query": {
+      "active": true,
+      "limit": 1000,
+      "locale": "us",
+      "market": "stocks",
+      "order": "asc",
+      "point_in_time_parameter": "date",
+      "sort": "ticker",
+      "type": "CS"
+    },
+    "requested_date_count": 100,
+    "requested_dates_sha256": "8712bb4d8abbabf1e786b1647819010efe0b9c2c5e738c009cdeaa167e84d187"
+  },
+  "registered_at": "2026-07-21T14:37:13.714629+00:00",
+  "requested_dates": [
+    "2023-01-26",
+    "2023-02-02",
+    "2023-02-14",
+    "2023-03-03",
+    "2023-03-22",
+    "2023-03-24",
+    "2023-03-28",
+    "2023-03-29",
+    "2023-04-03",
+    "2023-04-11",
+    "2023-04-17",
+    "2023-04-18",
+    "2023-04-24",
+    "2023-05-02",
+    "2023-05-04",
+    "2023-05-09",
+    "2023-05-10",
+    "2023-05-26",
+    "2023-06-01",
+    "2023-06-07",
+    "2023-06-14",
+    "2023-06-15",
+    "2023-06-16",
+    "2023-06-23",
+    "2023-07-05",
+    "2023-07-07",
+    "2023-07-12",
+    "2023-07-19",
+    "2023-08-04",
+    "2023-08-15",
+    "2023-08-21",
+    "2023-08-23",
+    "2023-08-29",
+    "2023-08-30",
+    "2023-09-01",
+    "2023-09-13",
+    "2023-09-25",
+    "2023-10-19",
+    "2023-10-27",
+    "2023-10-30",
+    "2023-10-31",
+    "2023-11-02",
+    "2023-11-14",
+    "2023-11-24",
+    "2023-11-28",
+    "2023-12-12",
+    "2023-12-14",
+    "2023-12-21",
+    "2024-01-02",
+    "2024-01-18",
+    "2024-01-19",
+    "2024-01-24",
+    "2024-01-25",
+    "2024-01-31",
+    "2024-02-01",
+    "2024-02-09",
+    "2024-03-05",
+    "2024-04-04",
+    "2024-04-05",
+    "2024-04-09",
+    "2024-04-19",
+    "2024-04-23",
+    "2024-04-29",
+    "2024-05-01",
+    "2024-05-02",
+    "2024-05-07",
+    "2024-05-09",
+    "2024-05-20",
+    "2024-05-22",
+    "2024-05-28",
+    "2024-06-03",
+    "2024-06-04",
+    "2024-06-10",
+    "2024-06-12",
+    "2024-06-17",
+    "2024-06-18",
+    "2024-06-20",
+    "2024-06-26",
+    "2024-07-05",
+    "2024-07-10",
+    "2024-07-18",
+    "2024-07-22",
+    "2024-07-26",
+    "2024-08-02",
+    "2024-08-05",
+    "2024-08-13",
+    "2024-08-22",
+    "2024-09-04",
+    "2024-09-06",
+    "2024-09-10",
+    "2024-09-13",
+    "2024-09-23",
+    "2024-09-27",
+    "2024-09-30",
+    "2024-10-07",
+    "2024-10-08",
+    "2024-11-07",
+    "2024-11-14",
+    "2024-11-15",
+    "2024-12-24"
+  ],
+  "schema_version": 1,
+  "selected_symbol_contract": {
+    "decision_boundary": "ten seconds after first condition-valid rebreak, no later than 10:30 ET",
+    "exact_pair_graph_requires_separate_post-scanner_freeze": true,
+    "failed_hold_retention_boundary": "end of first completed touch bar",
+    "full_universe_detail_forbidden": true,
+    "initial_break_search": "causal one-second regular-sale trades from 09:35 ET",
+    "no_signal_retention_boundary": "10:30 ET",
+    "provider_priority": [
+      "local canonical cache",
+      "IBKR",
+      "Massive",
+      "Alpaca"
+    ],
+    "rebreak_search": "causal one-second regular-sale trades after the held retest",
+    "retest_input": "fully completed noninterpolated one-minute bars after the initial-break minute",
+    "scanner_selected_symbols_only": true,
+    "whole_provider_fidelity_per_symbol_session": true
+  },
+  "upstream_contract": {
+    "calendar": {
+      "path": "historical_batches/challenger_orb_retest_v1/session-calendar-2023-01-through-2026-07.json",
+      "sha256": "0ef459092d53f8dcf101e9625d5cde6e5614cfca9e8b872c34dbd1d25f938ebb"
+    },
+    "calendar_source": {
+      "path": "historical_batches/challenger_orb_retest_v1/session-calendar-source.json",
+      "sha256": "b06459587b9ea36a059621f5a46c0b4b4267af2cede7813fe5804df67dce8f98"
+    },
+    "calendar_status": {
+      "path": "historical_batches/challenger_orb_retest_v1/calendar-status.json",
+      "sha256": "524600f562fa58d7fe105a7af1e209603f3c17ddeb42dbd37d4dbd04bd86144c"
+    },
+    "hypothesis": {
+      "path": "learning/hypotheses/experiment-catalyst-orb-retest-v1-b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105.json",
+      "sha256": "75a512dc3ba07cd1e314ab9dc357b9ee9d429dddfd6138b4ae6a85b0d1e27190"
+    },
+    "scanner_manifest": {
+      "path": "historical_batches/challenger_orb_retest_v1/scanner_manifests/dataset-production-scanner-replay-2026-07-21-challenger-orb-retest-v2-77dc80b560b67aaf3ab3991e7a67ffef0cb344ab79ece4e79e868d4b50b96640.json",
+      "sha256": "525a25ce9a6e916cf7e82ef6bbe7572d035600970e63c4169cc8d59eee5852f5"
+    },
+    "scanner_rules": {
+      "path": "historical_batches/scanner_replay/scanner-rules-v2.json",
+      "sha256": "a0232638b56a4ffe10fc3dba44d02aaab0ab5cbed0e18eff0de1abae44fcbc83"
+    },
+    "selection": {
+      "path": "historical_batches/challenger_orb_retest_v1/selection-2026-07-20-100-days.json",
+      "sha256": "7972d512a1e2f254b6bea67d9ac0d4969a2d9e740153719c7c9b0cdcc1948d9d"
+    },
+    "selection_manifest": {
+      "path": "historical_batches/challenger_orb_retest_v1/selection_manifests/dataset-challenger-orb-retest-development-2026-07-20-v1-c1c51924d1bca16797a60e9f92503d36c53700a2e3c102a905900c9ca4ec7dae.json",
+      "sha256": "5c174a656a98dbeba00afb1307d86fb3ec3288380bf220866b23350435ab15ad"
+    },
+    "selection_status": {
+      "path": "historical_batches/challenger_orb_retest_v1/selection-status.json",
+      "sha256": "b2abfc6f9f8775fe40f9769f048f884c5d0d9a58dfed739705cb4a2e013b5d86"
+    },
+    "strategy_source": {
+      "path": "historical_batches/scanner_expansion/production-strategy-source.json",
+      "sha256": "3c07c051bb54612b1e172085a01e330f33a05c65e4a2c8cc274b8006d09c1fc8"
+    }
+  }
+}
