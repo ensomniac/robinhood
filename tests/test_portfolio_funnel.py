@@ -19,7 +19,7 @@ class PortfolioFunnelTests(unittest.TestCase):
         )
         self.assertEqual(dispositions[2]["blockers"], [])
 
-    def test_status_exposes_three_lanes_and_zero_of_three_progress(self):
+    def test_status_exposes_retired_development_and_zero_of_three_progress(self):
         status = funnel.build_funnel_status(maturity.build_report())
         self.assertEqual(status["first_wave"]["retired_count"], 2)
         self.assertEqual(status["first_wave"]["survivor_count"], 1)
@@ -28,13 +28,16 @@ class PortfolioFunnelTests(unittest.TestCase):
             status["lanes"]["stage0_falsification"]["variant_id"],
             "equity-gap-recovery-v1",
         )
-        self.assertEqual(
-            status["lanes"]["representative_development"][
-                "source_stage0_variant_id"
-            ],
-            "equity-gap-continuation-v1",
-        )
+        self.assertIsNone(status["lanes"]["representative_development"])
         self.assertIsNone(status["lanes"]["confirmation_or_shadow"])
+        self.assertEqual(
+            status["validation_candidates"][0]["status"],
+            "RETIRED_DEVELOPMENT",
+        )
+        self.assertEqual(
+            status["validation_candidates"][0]["validation_phase"],
+            "RETIRED_DEVELOPMENT",
+        )
         self.assertTrue(status["notification_due"])
         self.assertEqual(
             status["notification_reasons"],

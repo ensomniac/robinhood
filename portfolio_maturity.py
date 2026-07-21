@@ -347,6 +347,8 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
             "confirmation_untouched",
         ):
             _boolean(record.get(field), field)
+        if "retired_after_development" in record:
+            _boolean(record.get("retired_after_development"), "retired_after_development")
         _integer(
             record.get("confirmation_embargo_trading_days"),
             "confirmation_embargo_trading_days",
@@ -837,6 +839,9 @@ def assess_strategy(
     metrics = _metrics(records, confidence)
     gate = config.raw["pilot_ready"]
     inspection = inspections[0] if inspections else None
+    retired_after_development = bool(
+        inspection and inspection.get("retired_after_development") is True
+    )
     inspection_blockers = _inspection_blockers(inspection, config)
     minimum_confirmation = int(gate["minimum_confirmation_signals"])
     minimum_development = (
@@ -853,6 +858,20 @@ def assess_strategy(
         expectancy_threshold=float(gate["minimum_expectancy_r"]),
         gate=gate,
     )
+    if retired_after_development:
+        if not development_blockers:
+            raise PortfolioMaturityError(
+                "retired_after_development requires a failed development gate"
+            )
+        forbidden = [
+            record
+            for record in records
+            if record.get("sample_phase") in {"confirmation", "shadow", "live"}
+        ]
+        if forbidden:
+            raise PortfolioMaturityError(
+                "retired development strategy cannot contain later-phase evidence"
+            )
     confirmation_blockers = _robustness_blockers(
         "confirmation",
         metrics.confirmation,
@@ -896,7 +915,10 @@ def assess_strategy(
     if metrics.incomplete_capture_records:
         blockers.append("evidence contains incomplete capture records")
     blockers = list(dict.fromkeys(blockers))
-    if inspection_blockers or development_blockers:
+    if retired_after_development:
+        validation_phase = "RETIRED_DEVELOPMENT"
+        current_phase_blockers = development_blockers
+    elif inspection_blockers or development_blockers:
         validation_phase = "DEVELOPMENT"
         current_phase_blockers = [*inspection_blockers, *development_blockers]
     elif confirmation_blockers:
@@ -934,6 +956,7 @@ def assess_strategy(
         "source_stage0_result_sha256": (
             inspection.get("source_stage0_result_sha256") if inspection else None
         ),
+        "retired_after_development": retired_after_development,
         "maturity": "LIVE_VALIDATED" if not live_blockers else ("PILOT_READY" if not blockers else "RESEARCH"),
         "pilot_ready": not blockers,
         "live_started": metrics.live_executions > 0,

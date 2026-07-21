@@ -419,6 +419,11 @@ def build_funnel_status(
                 "mechanism_family": assessment["mechanism_family"],
                 "validation_phase": _candidate_phase(assessment),
                 "maturity": assessment["maturity"],
+                "status": (
+                    "RETIRED_DEVELOPMENT"
+                    if assessment.get("retired_after_development") is True
+                    else "ACTIVE_VALIDATION"
+                ),
                 "blockers": assessment["current_phase_blockers"],
             }
         )
@@ -426,6 +431,7 @@ def build_funnel_status(
         item
         for item in validation_candidates
         if item["validation_phase"] == "DEVELOPMENT"
+        and item.get("status") != "RETIRED_DEVELOPMENT"
     ]
     advanced = [
         item

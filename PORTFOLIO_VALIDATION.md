@@ -252,6 +252,12 @@ This exact production version fails development: 111 closed signals produced
 after removing its five best trades. It loses at both 10 and 20 bps per side.
 The version is retired without parameter repair; its 75-session confirmation
 sample remains untouched and must never be opened for this version.
+The inspected development evidence is now present in `PORTFOLIO_SIGNALS.jsonl`
+as one final inspection, 120 complete session-denominator records, and 111
+closed signal records. `portfolio_maturity.py` reports the exact version as
+`RETIRED_DEVELOPMENT`; `portfolio_funnel.py` excludes it from the active
+development lane and mechanically rejects any later confirmation, shadow, or
+live record for that retired identity.
 
 ## Active discovery funnel
 

@@ -336,6 +336,62 @@ class PortfolioMaturityTests(unittest.TestCase):
         )
         self.assertEqual(assessment["validation_phase"], "DEVELOPMENT")
 
+    def test_inspected_failed_development_is_terminal_and_blocks_later_phases(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = [
+                record
+                for record in self._strategy_records(root, "strategy-one", "momentum")
+                if record.get("sample_phase") not in {"confirmation", "shadow", "live"}
+            ]
+            inspection = next(
+                record for record in records if record["record_type"] == "inspection"
+            )
+            inspection["retired_after_development"] = True
+            for record in records:
+                if record.get("record_type") == "signal":
+                    record["net_r"] = -0.05
+                    record["stress_10bps_r"] = -0.15
+                    record["stress_20bps_r"] = -0.25
+            assessment = maturity.assess_strategy(records, self.config)
+            self.assertTrue(assessment["retired_after_development"])
+            self.assertEqual(assessment["validation_phase"], "RETIRED_DEVELOPMENT")
+            records.append(
+                {
+                    **next(
+                        record
+                        for record in self._strategy_records(
+                            root, "strategy-one", "momentum"
+                        )
+                        if record.get("sample_phase") == "confirmation"
+                    ),
+                    "signal_id": "2025-04-01-strategy-one-forbidden-confirmation",
+                }
+            )
+            with self.assertRaisesRegex(
+                maturity.PortfolioMaturityError,
+                "cannot contain later-phase evidence",
+            ):
+                maturity.assess_strategy(records, self.config)
+
+    def test_passing_development_cannot_be_marked_retired(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = [
+                record
+                for record in self._strategy_records(root, "strategy-one", "momentum")
+                if record.get("sample_phase") not in {"confirmation", "shadow", "live"}
+            ]
+            inspection = next(
+                record for record in records if record["record_type"] == "inspection"
+            )
+            inspection["retired_after_development"] = True
+            with self.assertRaisesRegex(
+                maturity.PortfolioMaturityError,
+                "requires a failed development gate",
+            ):
+                maturity.assess_strategy(records, self.config)
+
     def test_missing_shadows_block_after_both_historical_phases_pass(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
