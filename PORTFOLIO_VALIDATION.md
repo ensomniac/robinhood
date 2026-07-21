@@ -429,6 +429,19 @@ symbols returned usable histories containing 648 normalized earnings rows. Its
 responses; the private payload is hash-bound, zero strategy returns were
 computed, and no broker action occurred.
 
+The first market collection failed closed after two provider calls because the
+provider included its documented request-end boundary at 16:00 ET and the
+regular-session normalizer rejected that extra row. One isolated read-only
+diagnostic call confirmed that exact boundary behavior. No market payload or
+strategy return was retained. Superseding activation
+`strategy_tournament/activations/post-earnings-drift-v1-04dcf6470f6347ede51b6bed481c8ddd389744b7d649be14fbee646d235994ca.json`
+truthfully counts all three discarded market calls and the already retained
+earnings corpus, ignores same-date rows outside the frozen 09:30-15:59 regular
+session, and preserves activation rules hash
+`177a304fe28a4923b373975cb025a7b157fa5b8c476e0bca5a6d35c1b2dc2af9`.
+It requires an independent committed inspection before market collection may
+resume.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:

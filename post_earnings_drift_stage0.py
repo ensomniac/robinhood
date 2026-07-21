@@ -76,6 +76,16 @@ EXPECTED_PAIRS = 102
 EXPECTED_DATES = 52
 DISCARDED_EARNINGS_PROVIDER_REQUESTS = 168
 FAILED_EARNINGS_INGESTION_ATTEMPTS = 2
+EFFECTIVE_EARNINGS_PROVIDER_REQUESTS = 84
+DISCARDED_MARKET_PROVIDER_REQUESTS = 3
+FAILED_MARKET_COLLECTION_ATTEMPTS = 1
+MARKET_DIAGNOSTIC_REQUESTS = 1
+EARNINGS_SOURCE_MANIFEST_SHA256 = (
+    "dbedd0065e72bedbb2bb26f88dd9da5d7c0c42de57bbb8b0fab55dfa2a1697d4"
+)
+EARNINGS_STATUS_SHA256 = (
+    "50f34f7214875983dba988c8c298dab78b68e87db9cea76436cf2273456a825e"
+)
 MAXIMUM_HOLDING_DATES = 5
 ACTIVATION_ROOT = PROJECT_ROOT / "strategy_tournament" / "activations"
 INSPECTION_ROOT = PROJECT_ROOT / "strategy_tournament" / "inspections"
@@ -334,11 +344,17 @@ def build_manifest(store: HistoricalDayStore | None = None) -> dict[str, Any]:
         "collection_transport_incident": {
             "discarded_earnings_provider_requests": DISCARDED_EARNINGS_PROVIDER_REQUESTS,
             "failed_ingestion_attempts": FAILED_EARNINGS_INGESTION_ATTEMPTS,
-            "responses_retained": 0,
-            "market_outcomes_accessed": False,
+            "effective_earnings_provider_requests": EFFECTIVE_EARNINGS_PROVIDER_REQUESTS,
+            "earnings_responses_retained": EFFECTIVE_EARNINGS_PROVIDER_REQUESTS,
+            "discarded_market_provider_requests": DISCARDED_MARKET_PROVIDER_REQUESTS,
+            "failed_market_collection_attempts": FAILED_MARKET_COLLECTION_ATTEMPTS,
+            "market_diagnostic_requests": MARKET_DIAGNOSTIC_REQUESTS,
+            "market_payloads_retained": 0,
+            "market_outcomes_accessed": True,
             "strategy_returns_computed": 0,
             "retry_requires_this_activation_inspection": True,
         },
+        "supersedes_manifest_sha256": EARNINGS_SOURCE_MANIFEST_SHA256,
         "declared_prior_policy_trials": 15,
         "prior_failed_confirmation": {
             "path": PRIOR_RESULT.relative_to(PROJECT_ROOT).as_posix(),
@@ -387,11 +403,16 @@ def build_manifest(store: HistoricalDayStore | None = None) -> dict[str, Any]:
             "earnings_provider": "Robinhood read-only earnings results",
             "logical_earnings_requests": len(symbols),
             "discarded_earnings_provider_requests_before_this_activation": DISCARDED_EARNINGS_PROVIDER_REQUESTS,
+            "effective_earnings_provider_requests_before_this_activation": EFFECTIVE_EARNINGS_PROVIDER_REQUESTS,
+            "earnings_source_manifest_sha256": EARNINGS_SOURCE_MANIFEST_SHA256,
+            "earnings_status_sha256": EARNINGS_STATUS_SHA256,
             "retry_accounting": "all provider calls count, including responses discarded by the failed ingestion transport",
             "market_provider": "Alpaca historical SIP",
             "market_feed": "sip",
             "market_adjustment": "raw with frozen local split handling",
             "intraday_timeframe": "1Min full regular session for every candidate pair",
+            "provider_boundary_policy": "ignore same-date bars outside 09:30 inclusive through 16:00 exclusive before strict regular-session validation",
+            "discarded_market_provider_requests_before_this_activation": DISCARDED_MARKET_PROVIDER_REQUESTS,
             "daily_timeframe": "1Day for every candidate symbol across the complete frozen window",
             "daily_start": min(
                 item["prior_session"] for item in graph["windows"].values()
@@ -468,7 +489,11 @@ def inspect_activation(
         "unique_symbols": len({row["symbol"] for row in graph["pairs"]}),
         "declared_prior_policy_trials": recorded["declared_prior_policy_trials"],
         "provider_requests": 0,
-        "provider_requests_before_this_activation": DISCARDED_EARNINGS_PROVIDER_REQUESTS,
+        "provider_requests_before_this_activation": (
+            DISCARDED_EARNINGS_PROVIDER_REQUESTS
+            + EFFECTIVE_EARNINGS_PROVIDER_REQUESTS
+            + DISCARDED_MARKET_PROVIDER_REQUESTS
+        ),
         "broker_actions": 0,
         "returns_computed": 0,
         "collection_authorized": True,
@@ -727,6 +752,13 @@ def _normalize_minutes(
         try:
             observed = datetime.fromisoformat(str(raw["t"]).replace("Z", "+00:00"))
             observed = observed.astimezone(EASTERN)
+        except (KeyError, TypeError, ValueError) as exc:
+            raise PostEarningsDriftError(f"{symbol} {day}: malformed minute bar") from exc
+        if observed.date().isoformat() != day:
+            raise PostEarningsDriftError(f"{symbol} {day}: invalid minute bar")
+        if not time(9, 30) <= observed.time() < time(16, 0):
+            continue
+        try:
             opened = float(raw["o"])
             high = float(raw["h"])
             low = float(raw["l"])
@@ -737,9 +769,7 @@ def _normalize_minutes(
             raise PostEarningsDriftError(f"{symbol} {day}: malformed minute bar") from exc
         stamp = observed.isoformat()
         if (
-            observed.date().isoformat() != day
-            or not time(9, 30) <= observed.time() < time(16, 0)
-            or stamp in seen
+            stamp in seen
             or min(opened, high, low, close) <= 0
             or low > min(opened, close)
             or high < max(opened, close)
@@ -768,17 +798,24 @@ def _validate_earnings_collection(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     status = _load_json(PUBLIC_EARNINGS_STATUS)
     path = _earnings_path(store)
+    expected_manifest = manifest.get("collection_contract", {}).get(
+        "earnings_source_manifest_sha256", manifest.get("manifest_sha256")
+    )
     if (
         status.get("status_sha256") != common._self_hash(status, "status_sha256")
         or status.get("status") != "READY"
-        or status.get("manifest_sha256") != manifest.get("manifest_sha256")
+        or status.get("manifest_sha256") != expected_manifest
+        or status.get("status_sha256")
+        != manifest.get("collection_contract", {}).get(
+            "earnings_status_sha256", status.get("status_sha256")
+        )
         or status.get("private_payload_sha256") != sha256_file(path)
         or status.get("returns_computed") != 0
         or status.get("broker_actions") != 0
     ):
         raise PostEarningsDriftError("earnings collection is not usable")
     payload = _load_gzip(path)
-    if payload.get("manifest_sha256") != manifest.get("manifest_sha256"):
+    if payload.get("manifest_sha256") != expected_manifest:
         raise PostEarningsDriftError("private earnings payload identity drifted")
     return status, payload
 
@@ -815,7 +852,9 @@ def collect_market(
         )
         daily_by_symbol: dict[str, list[dict[str, Any]]] = {}
         minutes_by_pair: dict[str, list[dict[str, Any]]] = {}
-        provider_requests = 0
+        effective_provider_requests = 0
+        provider_minute_rows = 0
+        ignored_non_regular_session_rows = 0
         with AlpacaBulkBarsClient(config) as client:
             for offset in range(0, len(symbols), config.batch_size):
                 batch = symbols[offset : offset + config.batch_size]
@@ -827,7 +866,7 @@ def collect_market(
                         end_day + timedelta(days=1), time(0), tzinfo=EASTERN
                     ),
                 )
-                provider_requests += pages
+                effective_provider_requests += pages
                 for symbol in batch:
                     daily_by_symbol[symbol] = _normalize_daily(
                         symbol, fetched.get(symbol, [])
@@ -848,11 +887,15 @@ def collect_market(
                         ),
                         end=datetime.combine(session_day, time(16), tzinfo=EASTERN),
                     )
-                    provider_requests += pages
+                    effective_provider_requests += pages
                     for symbol in batch:
-                        minutes_by_pair[f"{day}|{symbol}"] = _normalize_minutes(
-                            symbol, day, fetched.get(symbol, [])
+                        raw_rows = fetched.get(symbol, [])
+                        normalized = _normalize_minutes(symbol, day, raw_rows)
+                        provider_minute_rows += len(raw_rows)
+                        ignored_non_regular_session_rows += len(raw_rows) - len(
+                            normalized
                         )
+                        minutes_by_pair[f"{day}|{symbol}"] = normalized
         payload = {
             "schema_version": SCHEMA_VERSION,
             "dataset_id": DATASET_ID,
@@ -861,7 +904,13 @@ def collect_market(
             "provider": "Alpaca historical SIP",
             "feed": "sip",
             "adjustment": "raw",
-            "provider_requests": provider_requests,
+            "provider_requests": (
+                DISCARDED_MARKET_PROVIDER_REQUESTS + effective_provider_requests
+            ),
+            "effective_provider_requests": effective_provider_requests,
+            "discarded_provider_requests": DISCARDED_MARKET_PROVIDER_REQUESTS,
+            "provider_minute_rows": provider_minute_rows,
+            "ignored_non_regular_session_rows": ignored_non_regular_session_rows,
             "broker_actions": 0,
             "returns_computed": 0,
             "daily_by_symbol": daily_by_symbol,
@@ -884,6 +933,12 @@ def collect_market(
         "pairs_with_minute_rows": sum(bool(rows) for rows in minutes.values()),
         "minute_rows": sum(len(rows) for rows in minutes.values()),
         "provider_requests": int(payload["provider_requests"]),
+        "effective_provider_requests": int(payload["effective_provider_requests"]),
+        "discarded_provider_requests": int(payload["discarded_provider_requests"]),
+        "provider_minute_rows": int(payload["provider_minute_rows"]),
+        "ignored_non_regular_session_rows": int(
+            payload["ignored_non_regular_session_rows"]
+        ),
         "private_payload_sha256": sha256_file(path),
         "broker_actions": 0,
         "returns_computed": 0,

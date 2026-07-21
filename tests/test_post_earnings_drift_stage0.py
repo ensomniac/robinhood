@@ -110,6 +110,19 @@ class PostEarningsDriftStage0Tests(unittest.TestCase):
         self.assertEqual(
             manifest["collection_contract"]["logical_earnings_requests"], 84
         )
+        self.assertEqual(
+            manifest["collection_transport_incident"][
+                "discarded_market_provider_requests"
+            ],
+            3,
+        )
+        self.assertTrue(
+            manifest["collection_transport_incident"]["market_outcomes_accessed"]
+        )
+        self.assertEqual(
+            manifest["activation_rules_hash"],
+            "177a304fe28a4923b373975cb025a7b157fa5b8c476e0bca5a6d35c1b2dc2af9",
+        )
         self.assertFalse(manifest["provider_requests_authorized_before_inspection"])
         self.assertFalse(
             manifest["return_evaluation_authorized_before_input_inspection"]
@@ -166,6 +179,28 @@ class PostEarningsDriftStage0Tests(unittest.TestCase):
         ]
         self.assertTrue(stage0._complete_minute_session(rows, day.isoformat()))
         self.assertFalse(stage0._complete_minute_session(rows[:-1], day.isoformat()))
+
+    def test_normalize_minutes_ignores_provider_end_boundary(self):
+        rows = []
+        day = date.fromisoformat("2025-05-01")
+        for offset in range(391):
+            rows.append(
+                {
+                    "t": (
+                        datetime.combine(day, time(9, 30), tzinfo=EASTERN)
+                        + timedelta(minutes=offset)
+                    ).isoformat(),
+                    "o": 100.0,
+                    "h": 101.0,
+                    "l": 99.0,
+                    "c": 100.5,
+                    "v": 100,
+                    "vw": 100.25,
+                }
+            )
+        normalized = stage0._normalize_minutes("TEST", day.isoformat(), rows)
+        self.assertEqual(len(normalized), 390)
+        self.assertTrue(stage0._complete_minute_session(normalized, day.isoformat()))
 
     def test_stop_first_and_cost_stress_are_conservative(self):
         day = date.fromisoformat("2025-05-01")
