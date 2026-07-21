@@ -284,6 +284,15 @@ still finds zero network access, source classification, selected-symbol detail,
 substitution, return, or outcome. This status and registry transition must be
 committed and pushed before the exact SEC/issuer request graph is frozen.
 
+SEC identity manifest `ddf298d1...227860` now maps all 1,826 frozen pairs to
+the attested point-in-time master, retains eight explicit missing-CIK rows, and
+freezes 529 exact SEC submissions requests. Private identity hash
+`4afd4552...64c2c`, request-graph hash `cf0f1283...7130e`, and daily aggregate
+hash `186a89b5...1be08` bind the graph; the target response namespace contains
+zero artifacts. The manifest is uninspected and registered `COLLECTING`. It
+must be committed and pushed before independent zero-response inspection and
+does not itself authorize an SEC request.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

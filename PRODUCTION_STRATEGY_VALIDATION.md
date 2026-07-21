@@ -350,6 +350,15 @@ It confirms zero target sources, selected-symbol detail, substitution, or
 outcomes. This status must be committed and pushed before the exact SEC/issuer
 request graph is frozen; no provider request or source claim is authorized yet.
 
+The network-free challenger SEC identity graph is now frozen as manifest
+`ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
+missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
+precise acceptance-time rules, forms, pacing, retry, cache provenance, failure
+isolation, capacity, privacy, zero substitution, and the outcome lock. Its
+target response namespace is empty. The `COLLECTING` manifest must be committed
+and pushed before independent inspection and authorizes no provider access by
+itself.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

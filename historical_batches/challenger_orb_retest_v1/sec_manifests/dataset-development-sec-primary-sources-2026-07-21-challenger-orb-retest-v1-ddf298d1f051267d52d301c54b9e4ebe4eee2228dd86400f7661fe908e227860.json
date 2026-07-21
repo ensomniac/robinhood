@@ -1,0 +1,1069 @@
+{
+  "capacity_contract": {
+    "capacity_ready": true,
+    "free_bytes_at_freeze": 423861497856,
+    "historical_deletion_allowed": false,
+    "historical_store_outside_repository": true,
+    "minimum_required_reserve_bytes": 21474836480,
+    "reserve_bytes": 21474836480
+  },
+  "dataset_id": "dataset-development-sec-primary-sources-2026-07-21-challenger-orb-retest-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "CHALLENGER_ORB_RETEST.md",
+      "historical_batches/challenger_orb_retest_v1/catalyst_manifests/dataset-primary-source-semantics-contract-2026-07-21-challenger-orb-retest-v1-60a7d0003e63ffe6ecc18a74bcf562c60419479a53f1b1558402c3f8da299ce9.json",
+      "historical_batches/challenger_orb_retest_v1/selected_pair_manifests/dataset-selected-candidate-contract-2026-07-21-challenger-orb-retest-v1-24ef6d292e27fc13051d85d7e5f134ba576c6ab14174706dd359b17f26965de4.json",
+      "historical_batches/challenger_orb_retest_v1/security-master-source.json",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "identity_contract": {
+    "ambiguous_or_missing_master_match_allowed": false,
+    "cik_missing_pair_count": 8,
+    "cik_present_pair_count": 1818,
+    "daily_identity_aggregates": [
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-01-26",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "1e9d39546c7bdb74c85fc118fbd34d5ec3ff5d6298134722f4dbc7832c06d9c9"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-02-02",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "bb6f1178f08f6a0104c709633aaaa12b14352b2a62c5ed4a0e761f8c8edebf19"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 10,
+        "date": "2023-02-14",
+        "mapped_count": 10,
+        "pair_count": 10,
+        "private_rows_sha256": "591362388bcc020430ec40691f38f392e6e91bb664d4f5d69056b1f7a4911654"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 19,
+        "date": "2023-03-03",
+        "mapped_count": 19,
+        "pair_count": 19,
+        "private_rows_sha256": "09540d3e91ed35cc1a0b6a906b4c660deb94a4df81b21fc8c4cefbf5b0036ca6"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 3,
+        "date": "2023-03-22",
+        "mapped_count": 3,
+        "pair_count": 3,
+        "private_rows_sha256": "1e11899d4cf65aef09a406e18f45cd8bf30b181c1d191962742d5ace66859fe8"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 11,
+        "date": "2023-03-24",
+        "mapped_count": 11,
+        "pair_count": 11,
+        "private_rows_sha256": "760bc5f9c0c350c14126fa901fab80ced1e9bcd2ba87d6aefe49bcab8ec54a3c"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 19,
+        "date": "2023-03-28",
+        "mapped_count": 19,
+        "pair_count": 19,
+        "private_rows_sha256": "341b4a178e4036f74143cea56b454946f8ef25389d93f45e2a2282bbd1be360b"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 19,
+        "date": "2023-03-29",
+        "mapped_count": 19,
+        "pair_count": 19,
+        "private_rows_sha256": "5a0710d133c397fc1c92a2e09037ed191cd81c65803414d4a1c5e573cdc6088a"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-04-03",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "66d2831edb0ddd241c636bbb2f43d8a7970f6b5a9e1517bf166fb655d167ca3a"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-04-11",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "e7897819cecbe66c32d617f4cc51b462be066ef3de7ea4dfd7842fe3b91dcdb5"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-04-17",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "19905edca748ee62a2d3d8adcc17c52b895f49cbae41b2ca78c38c17d5bfbd3b"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-04-18",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "869ac561d7ba5f0c0081ca28f4fc265812e0aa7166e282836dd35858ee4ac403"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-04-24",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "38ced2f28936f485a84fd8a5ad77813458b692390c9ed9c7221074970434654c"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-05-02",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "bc18be17940c0735593906e0c649a806372c07afb626059a92b36bb1a1d73b44"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-05-04",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "ebd7e5c5821b33c9a45df9fc842240bd47b38b9a6cb165c63da2834b34171490"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-05-09",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "6580c085e95823470ad9db4cdef432a98b76817fcac1c43eadaeef94149bfa76"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-05-10",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "e3c5949315cfaf805d582279667cabfefed964027cad33506ad539213d19a7dd"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-05-26",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "039f8b1620685bd2fb5302d5354f3db8df1b38207db217703edaf6772d0db6e1"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-06-01",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "e6d5e392e4ce091d6b013966e0b17db96de8028d8b4d094e8622a8f2598fea2b"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-06-07",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "8b00d029f67ad9873f05d506f0714f41c67c72b51933ef7a8920a9f7cb651810"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-06-14",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "674501d504ba4085353ca2da4a5550251f099397a61c5de6440379c0e829fc58"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-06-15",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "53f34f72bc2025c6883534bc5fd45fa6e9178127ec7e681048d23b6320665aef"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-06-16",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "199ccd80cdc58dcdf733e47c4ecb35b9f8c84b3c1de0f10ff699e17971b3c865"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 9,
+        "date": "2023-06-23",
+        "mapped_count": 9,
+        "pair_count": 9,
+        "private_rows_sha256": "437142eca8052558c21a261f6ad8427198e971275f46550f6f24dbdb6b01b648"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 12,
+        "date": "2023-07-05",
+        "mapped_count": 12,
+        "pair_count": 12,
+        "private_rows_sha256": "290d4fb6b90973bf316c4bb1079bcf5c075de951ac342b177a7314708de6e153"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-07-07",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "e4e94b279d85c99f04d298f5b0ba4feda8760ef717ce2dd2c46f8b70efafc2f5"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-07-12",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "1eaeb7dbe66d2a9487235fa179e5c869f522b3d9f20fdf583a55a4928d235d4c"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-07-19",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "023781201eed5f1554170a535b6f5938f9c6b4e94b1ca06b3be13adabbd3203f"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-08-04",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "3aab83c3b7fd1e37b1a6b60aa6c0e2f45c0d1b720ee0a3a18cc86f53491d5577"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 12,
+        "date": "2023-08-15",
+        "mapped_count": 12,
+        "pair_count": 12,
+        "private_rows_sha256": "09347b8748bc247e6a2aaa7ccee5a59aa5df208743a4f6710903ad7627668f28"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-08-21",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "022e59d8b0afb22b3d65efa46a356297f23bb58f1ae1065f468f7bb554c4ab6d"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-08-23",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "611cd3882924ec687fd96c54125b578738bb9ac9509daa5c2bc565ed99bfc58d"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 11,
+        "date": "2023-08-29",
+        "mapped_count": 11,
+        "pair_count": 11,
+        "private_rows_sha256": "fc65aba5e76389a0c4d00bd42a2a4a19f794a2aa073ec019cf8672dc869df2d2"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-08-30",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "28bdd3adc979a179af7a71755eb1eacf304db319a85d43591590f2dae8e7ffd4"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-09-01",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "292436423b8b3e64af103686d8fd07b0cbaa2ce8c009badb3e70b0416202b1b6"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-09-13",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "eed80921000ed144c99f3306dff988c9202fe9d6f3fbbebfddc336d6ac987321"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 6,
+        "date": "2023-09-25",
+        "mapped_count": 6,
+        "pair_count": 6,
+        "private_rows_sha256": "bbdba0c26c9677bf98e64b4ba2cdc00f8a7abcf20084afa8e9ff4c5f474adf88"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-10-19",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "8bb703a86dbd9db05b09290153ceecd10a27c145073d9083fe91a14d63654591"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-10-27",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "faf2c270a95b1a18de4bdeac767c19d33801820aa504af067b22a5f55ddc9fc4"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-10-30",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "a01784dbccaf0d8bdc86ee5d7c5367f0de5d23a5332c4a3144f7d856ce557ae8"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 16,
+        "date": "2023-10-31",
+        "mapped_count": 16,
+        "pair_count": 16,
+        "private_rows_sha256": "12a6599fac54e037d05ff0a4b2f38af293b84762aaf96c6dee4cd7fba52a5dae"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-11-02",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "eeb5c0d68655f82e76828057d7b648e42294fd6912a5c42eded473a573289c48"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-11-14",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "d22aa795da01641a865d28c2ca1d9594dcef75171c9792bcd24eef4e0c468bfc"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 13,
+        "date": "2023-11-24",
+        "mapped_count": 13,
+        "pair_count": 13,
+        "private_rows_sha256": "7bed4c03913f61996f3094c02a4cac50c3c3dff2e9674b4afd94f28b06e16561"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-11-28",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "139e7446c41342a76089bdd174dd60d11b0680e3a509cee9e03143094be41d10"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-12-12",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "1bf2c6f3c48fd90f937fcf4a8fdaa1cc7c023f92e71438718c16f40dfc7b7ae6"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-12-14",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "4ee9b97863ea8c9452af93c710451508d1c19ae9bd030589bf1c662163ba6927"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2023-12-21",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "077785f7d225c4f990407c8d1004285cb4ef3dd635b9e780b71c446d42a61a69"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 8,
+        "date": "2024-01-02",
+        "mapped_count": 8,
+        "pair_count": 8,
+        "private_rows_sha256": "f22928b84414cddf86a3443118450b292e9d2e46f6dd4a373031a57ff3291a4a"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-01-18",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "2bb1dcafdcbb35c1157a9300daa622f710c03ac95ff6e70d8e2aa3f4d1cc44a1"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-01-19",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "12b13cc4f83ad6cf3656088ef40e1b79325b097829d52741e9e26f16e0cb41be"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-01-24",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "eee6881ec39eb3df6974fa480a8a644ad107dd32bc9e8c7f45c9629cc929db01"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-01-25",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "7317002b86e79ebb576ccbeaf9c6c141628317fdcfad942f74aee5eeb9c66454"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 18,
+        "date": "2024-01-31",
+        "mapped_count": 18,
+        "pair_count": 18,
+        "private_rows_sha256": "18a0e2530a94efe43fb6fe7abeefda3483c706d66d122db30380eed9cb85e89a"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-02-01",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "721bb170cb1afea929669b825cb4cd41b460eaf267f08b4f5e05a6d91eeea660"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-02-09",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "f15a62405a7fbd8a93d6673708b05c5f5e3c0be528c098f2f4a0d93d86a8fb66"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-03-05",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "b6f2b64cbd3bd485a9177a2e0d772c20a3c5c6f1a9584a1920ec2d748a6904ab"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-04-04",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "fedaa3c05874390b94415bfbd85f107f33d3ef85ff84d222275ea6f363563285"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-04-05",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "4dacf58349066a7c079ef09164ffa8585cf2b72a6ae2115d3fd929e891fd6346"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-04-09",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "bc42b0fc49e90cf28b7942e48ac48a34e6ea1efe92a1f56232997e1c4dcd0c22"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-04-19",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "bbff80c72aeb6e26e7fbf161e963f36f62e32b9b040dc3b05c3428901faf55a3"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-04-23",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "7aed7a9fc8a3fc0c00f677bdd3b65bf5939671d4c4ce66d6f68bdda30949e430"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-04-29",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "0f900ca1995a622f3b3c967bad9b7a1fa554de290290422d7bd3eef459d3a3f8"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-05-01",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "299f73591d8fa1605bfc452305cb97082106882f7fed7aeaddd8d8418681af87"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-05-02",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "cef7664547e446bf070e1f08efcb2f39508adc02b0b739ef49e3d3cf031f6790"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-05-07",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "fe244c25e78855b5407327ee3d608f9c7f92aa1d65080aaf5bd5c26c0ef9646d"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-05-09",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "84ac9b07ed0b036a71738522486dc7b8e1feb907251d579682b6fad9f42ee7d4"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-05-20",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "16d54d69bcab6e30b49685e81447013da24140ccb49aa35414b6e75c6771a77c"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-05-22",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "f6e9705cc7021e38740b4d3288233fb0945fb9f515ac603f3d922ec31e6f1e33"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-05-28",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "ca5d1d9edab5eefcd446f260848491fb47f55ee1e3d4a5ddc54b1e73eb54a31d"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-06-03",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "3865ee82fb17f1e3a45cfea7447ab12681eb557c0bee8956c654823eba2f4460"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 16,
+        "date": "2024-06-04",
+        "mapped_count": 16,
+        "pair_count": 16,
+        "private_rows_sha256": "03ad9dba1beb83e6c1024edb9a5d4a7220c2258743e3d7e7bd55e48dc76cb4ea"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-06-10",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "96d2d47e10a6d1d98a1d76edf4c32c03210393541a5d9792ea0ff95b988dee71"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-06-12",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "198874db7125c7fc18746308b7b275930be4a8730e3cabb312446a3d56f09eff"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-06-17",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "18ad2ed29e92a43caad8040e257d52400dd29505a21853ab50125f8c5fad4287"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-06-18",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "957936652ca511f3001510fd34e18acddec964348dd4feb8d31aa979d79ddc16"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-06-20",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "6bce7a2a588cac7f50c8ca2c758d56bd945fb2620b45f1e96dbfff97a550a4b0"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 11,
+        "date": "2024-06-26",
+        "mapped_count": 12,
+        "pair_count": 12,
+        "private_rows_sha256": "4e50cdf574d189441c8c6cbed22bd39d1eefdf70a892fafa222060df72e08d4b"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 16,
+        "date": "2024-07-05",
+        "mapped_count": 16,
+        "pair_count": 16,
+        "private_rows_sha256": "11c0dbfccba8bbfa369ba130500a7239b6a0b340ca6f86c30f5b931641d8db1f"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-07-10",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "7914ffb3b307a1c932c569779ca4546c2101ab0bb94f3b63ef56b26885835659"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 18,
+        "date": "2024-07-18",
+        "mapped_count": 18,
+        "pair_count": 18,
+        "private_rows_sha256": "132cc4e44b9eb9c9b66c527712dbf27c9254283f45594fc1025f1f740f3fcb2b"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-07-22",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "ff8af313486f7a6c7d4445c1371eaf1a2c0a8ad22e7ff288a5f8d80770e05b75"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-07-26",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "43f59378f8941d48a84d8ae274c11bf64c7e3ebaf39403f947e846f78172d006"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-08-02",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "fdd8fc198d519d211394b64e6282a48eae97e0a1ccc3916569425b2cf3b8ca05"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 11,
+        "date": "2024-08-05",
+        "mapped_count": 11,
+        "pair_count": 11,
+        "private_rows_sha256": "73ad06467edfa9665bbaea7616f3c65f936680828315a0e4ef8d1d37d045b7f3"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-08-13",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "130dddfede8892f616501c02351e3346c1760dcc0aba0fa9cea7c0b9ebdbf9d7"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 8,
+        "date": "2024-08-22",
+        "mapped_count": 9,
+        "pair_count": 9,
+        "private_rows_sha256": "2187f3cfa3aa6c493e483acf2e8c1472f921b8c66777ac7d99eac1396728eded"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-09-04",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "53bce75908d9f3d10e1efc88fcf546007897964445678f496df850971c0ef8cb"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-09-06",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "5585e058784ad8ac89470b9868d9326d602b8cdf58f49c634aa19f070875ef14"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 19,
+        "date": "2024-09-10",
+        "mapped_count": 19,
+        "pair_count": 19,
+        "private_rows_sha256": "6562a3195033659fc36f597591cf079b6b95998f270e1687e0aaba7960217961"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2024-09-13",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "e34ebbf07e2a7d501db3c3c20a1f7b1c129b0d533b36054e013fa15aa69c7e0c"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-09-23",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "e8823202c0f3c40f435ca27c0de5cf9829a6c7d48bf020a910d3b08371cc43bf"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 19,
+        "date": "2024-09-27",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "4bde9307b170bafdb0ff7b0394e67a58d619bd6d067c8b58da6a0c9de8c80b8f"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 17,
+        "date": "2024-09-30",
+        "mapped_count": 17,
+        "pair_count": 17,
+        "private_rows_sha256": "affc70f033b1f46f235a5870b364501c476c9284c989fb4705d5509d58d32919"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 18,
+        "date": "2024-10-07",
+        "mapped_count": 19,
+        "pair_count": 19,
+        "private_rows_sha256": "12211f9b146db6377cfc30209e0abc90a9518f34bb1ebe560d7ffec1f0a8f43d"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 16,
+        "date": "2024-10-08",
+        "mapped_count": 16,
+        "pair_count": 16,
+        "private_rows_sha256": "7fc94d0d0eb7ae1460ce085b3be0c292b09a2ae89540be4184950b36fd54baa9"
+      },
+      {
+        "cik_missing_count": 2,
+        "cik_present_count": 18,
+        "date": "2024-11-07",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "9307a54e561df845fc99ef7b2b43f831febdb6eed03bc3c04ab325af6f5142d2"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-11-14",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "ba52d5d018581c22db346c3e5490fd0fef780d0e0b1737080affaa5cc41def6f"
+      },
+      {
+        "cik_missing_count": 0,
+        "cik_present_count": 20,
+        "date": "2024-11-15",
+        "mapped_count": 20,
+        "pair_count": 20,
+        "private_rows_sha256": "275f3dec41b22cf6cd74669ceb20fc7306f38cf29783440ea0a2fe9543b2fb54"
+      },
+      {
+        "cik_missing_count": 1,
+        "cik_present_count": 6,
+        "date": "2024-12-24",
+        "mapped_count": 7,
+        "pair_count": 7,
+        "private_rows_sha256": "cceb1724cb2f494a043efb8ea4b63fb7cd549b3810841508b7848ea543d8c92e"
+      }
+    ],
+    "daily_identity_aggregates_sha256": "186a89b5a8140825f50141b6b554b0433e7903b5bf09fa641f6b16b9f3b1be08",
+    "exact_match_fields": [
+      "instrument_id",
+      "symbol",
+      "primary_exchange",
+      "point_in_time_coverage"
+    ],
+    "listing_scoped_pair_count": 14,
+    "mapped_pair_count": 1826,
+    "missing_cik_rows_retained": true,
+    "private_identity_content_sha256": "4afd4552d1c6d392bf7ed998460f810f27a8a35ae8c2b975a33e0b2398264c2c",
+    "private_identity_path": "LOCAL_HISTORICAL_DATA_ROOT/_derived/development_sec_sources/dataset-development-sec-primary-sources-2026-07-21-challenger-orb-retest-v1/identity-and-query-map.json.gz",
+    "selected_pair_count": 1826,
+    "submission_request_graph_sha256": "cf0f1283f8f1a7d908d13cea4aa81d5ae2b621600585f83302455a9e2127130e",
+    "symbols_ciks_and_requests_public": false,
+    "unique_cik_count": 529
+  },
+  "implementation_contract": {
+    "files": {
+      "catalyst_contract": {
+        "path": "development_catalyst_contract.py",
+        "sha256": "644734ae397cd79d5f4e1fcbc6c1c977445696e66a90b797202a1db8fd637b29"
+      },
+      "historical_discovery": {
+        "path": "historical_discovery.py",
+        "sha256": "7e4e605d17a8b499307a59fa519ac2c647aeef18b11d28754fb5e6c287a464d0"
+      },
+      "learning_data": {
+        "path": "learning_data.py",
+        "sha256": "202bd6698a17b33e8f30c453fcf519cd4199db2cffbc622ffdeece3248d87f6d"
+      },
+      "sec_contract": {
+        "path": "development_sec_sources.py",
+        "sha256": "9f1816df37882982e5ccad5fa9539e8c1fcc0690a7af6b02979722905f9fc939"
+      }
+    },
+    "python": "3.14.2"
+  },
+  "lineage_contract": {
+    "private_selection_content_sha256": "3ed1549325bc10f961ef4f882c4caa4177418a60b224edbe1d7f2ff94ad183c2",
+    "security_master": {
+      "attestation_path": "historical_batches/challenger_orb_retest_v1/security-master-source.json",
+      "attestation_sha256": "c1183f468d6d871ac46dc18c20bebd2b72347111b1c5ac4d3b761056d4577ce6",
+      "canonical_sha256": "b9dac192763decf4d8a5fd7b843f261b65554918ad77a3b6984872a5aa393158",
+      "file_sha256": "a4551d7632bfa4e864e6f31a0960f6ba3b68b3687ebe730cb682ca231a9b49f3",
+      "instrument_count": 6561,
+      "path": "historical_batches/challenger_orb_retest_v1/security-master.jsonl",
+      "record_count": 6797
+    },
+    "selected_pair_manifest": {
+      "manifest_sha256": "24ef6d292e27fc13051d85d7e5f134ba576c6ab14174706dd359b17f26965de4",
+      "path": "historical_batches/challenger_orb_retest_v1/selected_pair_manifests/dataset-selected-candidate-contract-2026-07-21-challenger-orb-retest-v1-24ef6d292e27fc13051d85d7e5f134ba576c6ab14174706dd359b17f26965de4.json",
+      "sha256": "3392a55772f9b6b870d54a88907ce2b4a00f8eb99f1e8857ce7ab7dfd5a0dd40"
+    },
+    "source_semantics_manifest": {
+      "manifest_sha256": "60a7d0003e63ffe6ecc18a74bcf562c60419479a53f1b1558402c3f8da299ce9",
+      "path": "historical_batches/challenger_orb_retest_v1/catalyst_manifests/dataset-primary-source-semantics-contract-2026-07-21-challenger-orb-retest-v1-60a7d0003e63ffe6ecc18a74bcf562c60419479a53f1b1558402c3f8da299ce9.json",
+      "sha256": "c3719eb6f083fab857c0d5a3c8e41de79cb7259b2dd8d1cfc0d36be8d0e872db"
+    },
+    "strategy": {
+      "attestation_path": "historical_batches/scanner_expansion/production-strategy-source.json",
+      "attestation_sha256": "3c07c051bb54612b1e172085a01e330f33a05c65e4a2c8cc274b8006d09c1fc8",
+      "config_path": "strategy_config.toml",
+      "config_sha256": "975e06a981156421a1c6a52cbcbcfeef286016f7c958d40d08b4bdb9ac6ad547",
+      "rules_hash": "00c3aa83754f880ec67d29b7446e43ffccb23c2fb0c939bc4927909f8b4b5867",
+      "strategy_version": "2026-07-15-orb-v3"
+    }
+  },
+  "manifest_sha256": "ddf298d1f051267d52d301c54b9e4ebe4eee2228dd86400f7661fe908e227860",
+  "outcome_lock": {
+    "post_entry_data_access_allowed": false,
+    "selected_symbol_detail_accessed": false,
+    "separate_outcome_contract_required": true,
+    "substitutions_allowed": false,
+    "target_outcomes_observed_or_derived": false,
+    "target_sources_accessed": false
+  },
+  "pre_freeze_target_response_artifact_count": 0,
+  "registered_at": "2026-07-21T16:31:25.524556+00:00",
+  "request_contract": {
+    "cache_policy": {
+      "shared_cache_first": true,
+      "shared_cache_may_predate_this_dataset": true,
+      "shared_cache_namespace": "LOCAL_HISTORICAL_DATA_ROOT/_sources/sec/",
+      "target_response_namespace": "LOCAL_HISTORICAL_DATA_ROOT/_derived/development_sec_sources/dataset-development-sec-primary-sources-2026-07-21-challenger-orb-retest-v1/responses/",
+      "target_specific_provenance_required_for_every_request": true
+    },
+    "failure_policy": {
+      "empty_or_failed_response_is_not_no_filings": true,
+      "missing_cik_remains_terminal_unresolved": true,
+      "one_failed_cik_cannot_abort_unrelated_requests": true,
+      "per_cik_terminal_result_required": true,
+      "substitution_allowed": false
+    },
+    "forms": [
+      "6-K",
+      "6-K/A",
+      "8-K",
+      "8-K/A"
+    ],
+    "global_minimum_spacing_seconds": 0.15,
+    "maximum_attempts": 4,
+    "primary_document_endpoint_template": "https://www.sec.gov/Archives/edgar/data/{cik_unpadded}/{accession_without_dashes}/{primary_document}",
+    "private_request_graph_sha256": "cf0f1283f8f1a7d908d13cea4aa81d5ae2b621600585f83302455a9e2127130e",
+    "provider": "SEC_EDGAR",
+    "provider_operated_endpoints_only": true,
+    "request_count": 529,
+    "retry_backoff_seconds": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "retryable_http_status": "429 or 5xx",
+    "retryable_transport_failures": true,
+    "stage": "SEC_SUBMISSIONS_ONLY",
+    "staging": {
+      "accession_bound_document_manifest_required_before_request": true,
+      "candidate_documents_may_be_derived_but_not_requested": true,
+      "supplemental_request_manifest_required_before_request": true,
+      "supplemental_submission_files_may_be_discovered_but_not_requested": true
+    },
+    "submissions_endpoint_template": "https://data.sec.gov/submissions/CIK{cik_10}.json",
+    "timeout_seconds": 30.0,
+    "user_agent_identifies_application_and_contact": true,
+    "user_agent_public": false,
+    "user_agent_sha256": "87a6c495709e93e1101e1f4dadba98eb371897c9355d2f6a06dae7d809032b4d",
+    "window": {
+      "accepted_timestamp_field": "acceptanceDateTime",
+      "calendar_lookback_days": 4,
+      "cutoff": "TARGET_DATE_09:35_AMERICA_NEW_YORK_INCLUSIVE",
+      "filing_date_alone_is_not_causal_time": true,
+      "precise_acceptance_timestamp_required": true,
+      "start": "TARGET_DATE_MINUS_4_CALENDAR_DAYS_00:00_AMERICA_NEW_YORK"
+    },
+    "workers": 4
+  },
+  "requested_dates": [
+    "2023-01-26",
+    "2023-02-02",
+    "2023-02-14",
+    "2023-03-03",
+    "2023-03-22",
+    "2023-03-24",
+    "2023-03-28",
+    "2023-03-29",
+    "2023-04-03",
+    "2023-04-11",
+    "2023-04-17",
+    "2023-04-18",
+    "2023-04-24",
+    "2023-05-02",
+    "2023-05-04",
+    "2023-05-09",
+    "2023-05-10",
+    "2023-05-26",
+    "2023-06-01",
+    "2023-06-07",
+    "2023-06-14",
+    "2023-06-15",
+    "2023-06-16",
+    "2023-06-23",
+    "2023-07-05",
+    "2023-07-07",
+    "2023-07-12",
+    "2023-07-19",
+    "2023-08-04",
+    "2023-08-15",
+    "2023-08-21",
+    "2023-08-23",
+    "2023-08-29",
+    "2023-08-30",
+    "2023-09-01",
+    "2023-09-13",
+    "2023-09-25",
+    "2023-10-19",
+    "2023-10-27",
+    "2023-10-30",
+    "2023-10-31",
+    "2023-11-02",
+    "2023-11-14",
+    "2023-11-24",
+    "2023-11-28",
+    "2023-12-12",
+    "2023-12-14",
+    "2023-12-21",
+    "2024-01-02",
+    "2024-01-18",
+    "2024-01-19",
+    "2024-01-24",
+    "2024-01-25",
+    "2024-01-31",
+    "2024-02-01",
+    "2024-02-09",
+    "2024-03-05",
+    "2024-04-04",
+    "2024-04-05",
+    "2024-04-09",
+    "2024-04-19",
+    "2024-04-23",
+    "2024-04-29",
+    "2024-05-01",
+    "2024-05-02",
+    "2024-05-07",
+    "2024-05-09",
+    "2024-05-20",
+    "2024-05-22",
+    "2024-05-28",
+    "2024-06-03",
+    "2024-06-04",
+    "2024-06-10",
+    "2024-06-12",
+    "2024-06-17",
+    "2024-06-18",
+    "2024-06-20",
+    "2024-06-26",
+    "2024-07-05",
+    "2024-07-10",
+    "2024-07-18",
+    "2024-07-22",
+    "2024-07-26",
+    "2024-08-02",
+    "2024-08-05",
+    "2024-08-13",
+    "2024-08-22",
+    "2024-09-04",
+    "2024-09-06",
+    "2024-09-10",
+    "2024-09-13",
+    "2024-09-23",
+    "2024-09-27",
+    "2024-09-30",
+    "2024-10-07",
+    "2024-10-08",
+    "2024-11-07",
+    "2024-11-14",
+    "2024-11-15",
+    "2024-12-24"
+  ],
+  "schema_version": 1
+}
