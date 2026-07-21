@@ -330,6 +330,19 @@ per side, and remained positive at 20 bps, but the frozen Stage 0 minimum is 30
 signals. The favorable small sample cannot be tuned, expanded on the evaluated
 corpus, promoted, or entered in the maturity ledger.
 
+The seventh activation is frozen, with returns and provider collection still
+locked, at
+`strategy_tournament/activations/cross-sectional-momentum-v1-a8970ad2bfb0045f54404da985178686ec7cd0068c3a6a23f59165c7e415520a.json`.
+It binds 24 non-overlapping 2025 ranking dates, 118,636 dated common-stock
+membership rows, and 5,457 unique symbols from the two inspected point-in-time
+scanner-replay security masters. The contract fixes a 15:45 completed-bar
+price, prior-20-session return and $20 million average-dollar-volume gate,
+prior-50-session SMA gate, top-decile ranking, three-name maximum, next-session
+open, 1.5-ATR14 stop, fifth-session close, split handling, and 5/10/20
+bps-per-side costs. The exact daily collection spans 2024-12-16 through
+2025-12-22 and cannot begin until an independent committed activation
+inspection authorizes it.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
