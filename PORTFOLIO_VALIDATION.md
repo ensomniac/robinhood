@@ -592,6 +592,14 @@ Successor inspection
 rebuilds that activation, the unchanged private input graph, all 3,120 bars,
 and the prior incident accounting. It made zero provider or broker calls,
 computed zero new returns, and authorizes the privacy-safe materialization.
+The alias-only result
+`research_results/2026-07-21-catalyst-orb-retest-stage0-60d3dd20a62dbff480148ac19aaaa047e036829385dbbe75cba0d044fc558be9.json`
+contains four closed signals from eight verified-positive pairs. It produced
++0.3401R expectancy, 1.6802 profit factor, +1.3604R total, and 1R maximum
+drawdown at 5 bps per side; the 20-bps stress remained positive at +0.0764R.
+Despite those directionally favorable metrics, four signals cannot meet the
+frozen minimum of 30. The result stays outside maturity and awaits independent
+inspection before permanent retirement.
 
 ## Active discovery funnel
 

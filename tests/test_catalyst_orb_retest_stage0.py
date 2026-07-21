@@ -143,6 +143,36 @@ def test_successor_inspection_authorizes_privacy_safe_materialization():
     assert inspection["return_evaluation_authorized"] is True
 
 
+def test_published_result_is_alias_only_and_fails_signal_count():
+    root = Path(__file__).resolve().parents[1]
+    path = (
+        root
+        / "research_results/"
+        "2026-07-21-catalyst-orb-retest-stage0-"
+        "60d3dd20a62dbff480148ac19aaaa047e036829385dbbe75cba0d044fc558be9.json"
+    )
+    result = json.loads(path.read_text(encoding="utf-8"))
+    assert result["result_sha256"] == stage0.common._self_hash(
+        result, "result_sha256"
+    )
+    assert result["denominator"]["closed_signals"] == 4
+    assert result["primary_5bps"]["expectancy_r"] > 0
+    assert result["primary_5bps"]["profit_factor"] >= 1.10
+    assert result["stress"]["20"]["total_r"] > 0
+    assert result["stage0_blockers"] == [
+        "closed signals are below the Stage 0 minimum"
+    ]
+    assert result["stage0_survived"] is False
+    assert all(
+        "date" not in record
+        and "symbol" not in record
+        and "instrument_id" not in record
+        and record["signal_alias"].startswith("legacy-catalyst-signal-")
+        for record in result["records"]
+    )
+    assert result["maturity_effect"] == "NONE"
+
+
 def test_trigger_requires_break_then_retest_then_later_bullish_rebreak():
     candidate = stage0._candidate(
         {"date": "2026-01-14", "symbol": "TEST", "rank": 1, "bars": _bars()}
