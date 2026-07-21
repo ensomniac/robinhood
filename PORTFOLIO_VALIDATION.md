@@ -234,6 +234,13 @@ frozen symbol-sessions returned 1,860,990 raw Alpaca SIP minute bars through 249
 provider requests with zero retries and zero unresolved inputs. The canonical
 data remains outside the repository. Collection computed zero target returns,
 made zero broker actions, and did not access the locked confirmation phase.
+Input inspection
+`strategy_validation/equity_gap_continuation/inspections/equity-gap-continuation-v1-development-inputs-36ef7b4db655573630d0e407e35d3a1e9ed43a44c91da6bf9646a5a991066761.json`
+reconciles all 1,860,990 bars and 4,833 candidates without computing a return.
+It identifies 3,148 exact contiguous 390-minute symbol-sessions; the 1,685
+provider-sparse sessions remain in the complete denominator as frozen
+no-signals. The inspection authorizes the one unchanged development evaluation
+after it is committed and pushed.
 
 ## Active discovery funnel
 

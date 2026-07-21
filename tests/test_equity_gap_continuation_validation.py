@@ -22,6 +22,25 @@ class EquityGapContinuationValidationTests(unittest.TestCase):
         self.assertEqual(status["target_returns_computed"], 0)
         self.assertEqual(status["broker_actions"], 0)
 
+    def test_published_development_input_inspection_reconciles_full_denominator(self):
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "strategy_validation/equity_gap_continuation/inspections"
+            / "equity-gap-continuation-v1-development-inputs-36ef7b4db655573630d0e407e35d3a1e9ed43a44c91da6bf9646a5a991066761.json"
+        )
+        inspection = validation._load_json(path)
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            validation.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["candidate_symbol_sessions"], 4833)
+        self.assertEqual(inspection["minute_bars"], 1860990)
+        self.assertEqual(inspection["exact_390_contiguous_symbol_sessions"], 3148)
+        self.assertEqual(inspection["sparse_symbol_sessions_retained_as_no_signal"], 1685)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["return_evaluation_authorized"])
+
+
     def test_published_freeze_locks_both_samples_before_outcomes(self):
         path = (
             Path(__file__).resolve().parents[1]
