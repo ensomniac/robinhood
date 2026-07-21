@@ -455,6 +455,12 @@ private payload contains 20,328 daily rows and 39,692 regular-session minute
 rows. All 102 returned 16:00 boundary rows were excluded; 55 effective calls
 plus the three discarded incident calls are reported. No return was computed
 and no broker action occurred.
+Input inspection
+`dfbf41c267099c34fc2e97f88c801b9d6f2b4731c9598cba107c7faef5cbf9cf`
+rebuilds all collection bindings and the complete 102-pair denominator without
+provider access or return calculation. Eighty-seven pairs have a complete
+390-bar regular session; 15 remain in the denominator as incomplete and cannot
+signal. The inspection authorizes the single frozen Stage 0 evaluation.
 
 ## Active discovery funnel
 

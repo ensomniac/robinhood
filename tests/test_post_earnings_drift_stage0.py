@@ -133,6 +133,29 @@ class PostEarningsDriftStage0Tests(unittest.TestCase):
         self.assertEqual(status["broker_actions"], 0)
         self.assertEqual(status["status"], "READY")
 
+    def test_published_input_inspection_keeps_complete_denominator(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "post-earnings-drift-v1-input-dfbf41c267099c34fc2e97f88c801b9d6f2b4731c9598cba107c7faef5cbf9cf.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["candidate_pairs"], 102)
+        self.assertEqual(inspection["complete_pairs"], 87)
+        self.assertEqual(
+            inspection["status_counts"],
+            {"complete": 87, "incomplete_minute_session": 15},
+        )
+        self.assertEqual(inspection["provider_requests_during_inspection"], 0)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["return_evaluation_authorized"])
+
     def test_manifest_freezes_complete_source_verified_denominator(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)
