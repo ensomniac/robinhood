@@ -143,6 +143,10 @@ without substitution. All dates were previously referenced by research, so the
 activation is permanently falsification-only. `etf_or_momentum_stage0.py`
 refuses evaluation until a separate input inspection exactly rebuilds this
 manifest, validates every selected bar, and is itself committed and pushed.
+That inspection is now published at
+`strategy_tournament/inspections/etf-or-momentum-v1-input-6736b37133fd8ba9d46c86e76ef3d7e21a2a09541f1ad631d4ec8b94ff78b1c8.json`:
+it reconciles all 127,920 bars, authorizes only the frozen Stage 0 return
+calculation, and computed no return itself.
 
 Resumable nonterminal statuses are `READY`, `WAITING_DATA`, `WAITING_MARKET`,
 `WAITING_PROVIDER`, `WAITING_SUBSCRIPTION`, `WAITING_NEW_SESSIONS`,

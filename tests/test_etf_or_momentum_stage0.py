@@ -75,6 +75,25 @@ class EtfOrbStage0Tests(unittest.TestCase):
             manifest["return_evaluation_authorized_before_inspection"], False
         )
 
+    def test_published_input_inspection_authorizes_only_stage0_evaluation(self):
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "strategy_tournament"
+            / "inspections"
+            / "etf-or-momentum-v1-input-6736b37133fd8ba9d46c86e76ef3d7e21a2a09541f1ad631d4ec8b94ff78b1c8.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertTrue(inspection["valid"])
+        self.assertTrue(inspection["return_evaluation_authorized"])
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertEqual(inspection["provider_requests"], 0)
+        self.assertEqual(inspection["broker_actions"], 0)
+
+
     def test_candidate_uses_only_completed_trigger_then_next_open(self):
         rows = bars(trigger_index=7, entry_open=100.12)
         candidate = stage0._candidate(day="2025-01-02", symbol="SPY", rows=rows)

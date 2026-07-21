@@ -83,6 +83,7 @@ CORE_ARTIFACTS = (
     "research_results/2026-07-21-portfolio-data-inventory.json",
     "strategy_tournament/manifests/portfolio-stage0-slate-1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f.json",
     "strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json",
+    "strategy_tournament/inspections/etf-or-momentum-v1-input-6736b37133fd8ba9d46c86e76ef3d7e21a2a09541f1ad631d4ec8b94ff78b1c8.json",
     "PRODUCTION_STRATEGY_VALIDATION.md",
     "strategy_validation.py",
     "strategy_config.toml",
