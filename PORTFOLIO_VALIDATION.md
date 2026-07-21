@@ -152,6 +152,14 @@ The exact variant is retired: 97 signals lost 34.213R at 5 bps per side, with
 side it lost 60.325R. It cannot be tuned on those dates or relabeled as maturity
 evidence. The tournament advances to the next frozen mechanism.
 
+The second activation is frozen, with returns still locked, at
+`strategy_tournament/activations/etf-vwap-mean-reversion-v1-ecaff3785f2dc9fe3f14332be9e40e056e08aacf55f86487cb2f25df62688a47.json`.
+It reuses the already-accounted 164-date ETF falsification corpus and binds a
+simple five-change RSI washout, later bullish reversal, next-bar entry,
+trigger-low stop, decision-time VWAP target, daily selection, force-flat, and
+5/10/20 bps-per-side costs. It must pass its own committed input inspection
+before the fixed return calculation can run.
+
 Resumable nonterminal statuses are `READY`, `WAITING_DATA`, `WAITING_MARKET`,
 `WAITING_PROVIDER`, `WAITING_SUBSCRIPTION`, `WAITING_NEW_SESSIONS`,
 `WAITING_USER_CONFIRMATION`, and `PAUSED_SAFETY`. The append-only ignored state

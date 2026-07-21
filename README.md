@@ -75,6 +75,10 @@ expectancy was -0.353R, profit factor 0.465, and total return -34.213R at 5 bps
 per side. It cannot contribute development, confirmation, maturity, or live
 evidence and will not be repaired on those dates.
 
+The second frozen trial tests a separately preregistered ETF VWAP-reversion
+mechanism on the same falsification-only denominator. Its return lock remains
+closed until its exact input inspection is committed and pushed.
+
 ### Preserved ORB v3 lane
 
 Strategy version `2026-07-15-orb-v3` remains `UNVALIDATED` and available as one
