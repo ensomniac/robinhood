@@ -362,6 +362,15 @@ zero submissions, primary documents, substitutions, or outcomes. Its READY
 status must be committed and pushed before a separately bound collector may
 access the 529 SEC submissions responses.
 
+The committed collector has now completed all 529 requests with 451 cache
+hits, 78 SEC downloads, zero failures, zero pending, and zero substitutions.
+Independent inspection reparses and rehashes all 88,806,127 source bytes and
+rebuilds 498 candidate filings, 516 pair/filing joins, 453 source-bearing
+pairs, and 715 historical supplemental descriptors. These are discovery
+counts, not verified catalysts. Supplemental files and primary documents stay
+locked behind separate exact manifests, and no causal input or outcome was
+accessed.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

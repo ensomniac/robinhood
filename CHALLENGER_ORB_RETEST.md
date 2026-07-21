@@ -296,6 +296,15 @@ locks. It confirms zero submissions, primary documents, substitutions, or
 outcomes. This status must be committed and pushed before a separate bounded
 collector may request the 529 submissions payloads.
 
+The published collector completed and independently rebuilt all 529 frozen
+submissions requests: 451 shared-cache hits, 78 SEC downloads, zero failures,
+zero pending requests, and zero substitutions. It rehashed 88,806,127 source
+bytes and derives 498 time-window filing candidates, 516 pair/filing joins, 453
+source-bearing pairs, and 715 historical supplemental descriptors. Presence is
+not positive catalyst verification. Supplemental files and all primary
+documents remain inaccessible until their exact graphs are separately frozen,
+inspected, committed, and pushed; outcomes remain locked.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status
