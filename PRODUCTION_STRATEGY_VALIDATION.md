@@ -391,6 +391,14 @@ metadata only. The union with the 498 main-submissions candidates must be
 frozen before any primary document access; semantic and outcome locks remain
 closed.
 
+The combined primary-document graph is now frozen as manifest
+`4eb3f9c4...85e5cc`: 498 main plus 10 supplemental candidates become 508
+exact accession-bound SEC requests with all 526 pair/document joins preserved
+across 457 pairs. Conflicting duplicates fail closed, source identities remain
+private, and the target document namespace is empty. This uninspected
+`COLLECTING` manifest must be committed and pushed before independent
+inspection or document access.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

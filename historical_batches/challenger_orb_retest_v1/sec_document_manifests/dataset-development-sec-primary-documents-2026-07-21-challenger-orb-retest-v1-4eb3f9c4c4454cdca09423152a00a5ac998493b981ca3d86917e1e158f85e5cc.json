@@ -1,0 +1,246 @@
+{
+  "capacity_contract": {
+    "capacity_ready": true,
+    "free_bytes_at_freeze": 423704649728,
+    "historical_deletion_allowed": false,
+    "historical_store_outside_repository": true,
+    "minimum_required_reserve_bytes": 21474836480,
+    "reserve_bytes": 21474836480
+  },
+  "dataset_id": "dataset-development-sec-primary-documents-2026-07-21-challenger-orb-retest-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "CHALLENGER_ORB_RETEST.md",
+      "historical_batches/challenger_orb_retest_v1/sec_manifests/dataset-development-sec-primary-sources-2026-07-21-challenger-orb-retest-v1-ddf298d1f051267d52d301c54b9e4ebe4eee2228dd86400f7661fe908e227860.json",
+      "historical_batches/challenger_orb_retest_v1/sec-submissions-status.json",
+      "research_results/2026-07-21-challenger-sec-submissions-inspection.json",
+      "historical_batches/challenger_orb_retest_v1/sec_supplemental_manifests/dataset-development-sec-supplemental-2026-07-21-challenger-orb-retest-v1-c6d329b31c57b9703568cab874e1c113a7e9b9e973830a558de9479e837f68af.json",
+      "historical_batches/challenger_orb_retest_v1/sec-supplemental-status.json",
+      "research_results/2026-07-21-challenger-sec-supplemental-inspection.json",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "implementation_contract": {
+    "files": {
+      "document_contract": {
+        "path": "development_sec_documents.py",
+        "sha256": "6fde2d9047decdb6234ee7ed1a394382f805aeb97b602efc9219e69b31680494"
+      },
+      "main_submissions_collector": {
+        "path": "development_sec_submissions.py",
+        "sha256": "c4db7ec33e1fbcfc676517c2f61d3aea62484c88ae026501fbc36268050b85e2"
+      },
+      "sec_source_contract": {
+        "path": "development_sec_sources.py",
+        "sha256": "9f1816df37882982e5ccad5fa9539e8c1fcc0690a7af6b02979722905f9fc939"
+      },
+      "supplemental_collector": {
+        "path": "development_sec_supplemental_collection.py",
+        "sha256": "694e23877ef556d92c4d98583ecc8e09aed0655f5ec4f6b38d12103e4132c217"
+      }
+    },
+    "python": "3.14.2"
+  },
+  "lineage_contract": {
+    "main_private_collection_content_sha256": "12541879bc164a1e8ca4ead9015f4f7caccee57aea04829298d9c86d8da9b6a9",
+    "main_submissions_inspection": {
+      "path": "research_results/2026-07-21-challenger-sec-submissions-inspection.json",
+      "sha256": "0045277451568397d2b3bd6178e298e7eec947040816a8c0493711b331b8c20b"
+    },
+    "main_submissions_manifest": {
+      "manifest_sha256": "ddf298d1f051267d52d301c54b9e4ebe4eee2228dd86400f7661fe908e227860",
+      "path": "historical_batches/challenger_orb_retest_v1/sec_manifests/dataset-development-sec-primary-sources-2026-07-21-challenger-orb-retest-v1-ddf298d1f051267d52d301c54b9e4ebe4eee2228dd86400f7661fe908e227860.json",
+      "sha256": "4b57db00c15615928c4db010604718187c052c68dbd971fc1f9bd515c8052142"
+    },
+    "main_submissions_status": {
+      "path": "historical_batches/challenger_orb_retest_v1/sec-submissions-status.json",
+      "sha256": "00fc264852da2b826dc22c332e3a3df3ee4a0f893cc1641386a22ec60e7119d8"
+    },
+    "strategy": {
+      "attestation_path": "historical_batches/scanner_expansion/production-strategy-source.json",
+      "attestation_sha256": "3c07c051bb54612b1e172085a01e330f33a05c65e4a2c8cc274b8006d09c1fc8",
+      "config_path": "strategy_config.toml",
+      "config_sha256": "975e06a981156421a1c6a52cbcbcfeef286016f7c958d40d08b4bdb9ac6ad547",
+      "rules_hash": "00c3aa83754f880ec67d29b7446e43ffccb23c2fb0c939bc4927909f8b4b5867",
+      "strategy_version": "2026-07-15-orb-v3"
+    },
+    "supplemental_inspection": {
+      "path": "research_results/2026-07-21-challenger-sec-supplemental-inspection.json",
+      "sha256": "befe7f322041db1cfcf8c070890c6a513381e0ce7d812b289ce5a7629437e443"
+    },
+    "supplemental_manifest": {
+      "manifest_sha256": "c6d329b31c57b9703568cab874e1c113a7e9b9e973830a558de9479e837f68af",
+      "path": "historical_batches/challenger_orb_retest_v1/sec_supplemental_manifests/dataset-development-sec-supplemental-2026-07-21-challenger-orb-retest-v1-c6d329b31c57b9703568cab874e1c113a7e9b9e973830a558de9479e837f68af.json",
+      "sha256": "ea16a5d1a9d4516968eb2f8c86948e2596289f9861b201b01ad96a2b34f2b35d"
+    },
+    "supplemental_private_collection_content_sha256": "a136ac8385c84a1d45f54d3e04138099461f157a76b7463fff01e7f868681761",
+    "supplemental_status": {
+      "path": "historical_batches/challenger_orb_retest_v1/sec-supplemental-status.json",
+      "sha256": "eaf2d442e59313b45bc4dab99510e0ce150e8756a4c24cbdf284e043e042a9ab"
+    }
+  },
+  "manifest_sha256": "4eb3f9c4c4454cdca09423152a00a5ac998493b981ca3d86917e1e158f85e5cc",
+  "outcome_lock": {
+    "post_entry_data_access_allowed": false,
+    "primary_documents_requested": false,
+    "separate_semantics_review_required": true,
+    "source_semantics_observed_or_derived": false,
+    "substitutions_allowed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "pre_freeze_target_response_artifact_count": 0,
+  "registered_at": "2026-07-21T16:44:54.990365+00:00",
+  "request_contract": {
+    "global_minimum_spacing_seconds": 0.15,
+    "maximum_attempts": 4,
+    "one_failure_cannot_abort_unrelated_requests": true,
+    "per_request_terminal_result_required": true,
+    "private_request_graph_sha256": "230d1f61a94adf6be9139fe642dbd2489459d6b60e90aff5d9d7e92f46660a05",
+    "provider": "SEC_EDGAR",
+    "provider_operated_accession_bound_endpoints_only": true,
+    "raw_source_bytes_retained_outside_git": true,
+    "request_count": 508,
+    "retry_backoff_seconds": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "shared_cache_first": true,
+    "source_semantic_classification_allowed": false,
+    "stage": "SEC_PRIMARY_DOCUMENTS_ONLY",
+    "substitution_allowed": false,
+    "timeout_seconds": 30.0,
+    "user_agent_sha256": "87a6c495709e93e1101e1f4dadba98eb371897c9355d2f6a06dae7d809032b4d",
+    "workers": 4
+  },
+  "requested_dates": [
+    "2023-01-26",
+    "2023-02-02",
+    "2023-02-14",
+    "2023-03-03",
+    "2023-03-22",
+    "2023-03-24",
+    "2023-03-28",
+    "2023-03-29",
+    "2023-04-03",
+    "2023-04-11",
+    "2023-04-17",
+    "2023-04-18",
+    "2023-04-24",
+    "2023-05-02",
+    "2023-05-04",
+    "2023-05-09",
+    "2023-05-10",
+    "2023-05-26",
+    "2023-06-01",
+    "2023-06-07",
+    "2023-06-14",
+    "2023-06-15",
+    "2023-06-16",
+    "2023-06-23",
+    "2023-07-05",
+    "2023-07-07",
+    "2023-07-12",
+    "2023-07-19",
+    "2023-08-04",
+    "2023-08-15",
+    "2023-08-21",
+    "2023-08-23",
+    "2023-08-29",
+    "2023-08-30",
+    "2023-09-01",
+    "2023-09-13",
+    "2023-09-25",
+    "2023-10-19",
+    "2023-10-27",
+    "2023-10-30",
+    "2023-10-31",
+    "2023-11-02",
+    "2023-11-14",
+    "2023-11-24",
+    "2023-11-28",
+    "2023-12-12",
+    "2023-12-14",
+    "2023-12-21",
+    "2024-01-02",
+    "2024-01-18",
+    "2024-01-19",
+    "2024-01-24",
+    "2024-01-25",
+    "2024-01-31",
+    "2024-02-01",
+    "2024-02-09",
+    "2024-03-05",
+    "2024-04-04",
+    "2024-04-05",
+    "2024-04-09",
+    "2024-04-19",
+    "2024-04-23",
+    "2024-04-29",
+    "2024-05-01",
+    "2024-05-02",
+    "2024-05-07",
+    "2024-05-09",
+    "2024-05-20",
+    "2024-05-22",
+    "2024-05-28",
+    "2024-06-03",
+    "2024-06-04",
+    "2024-06-10",
+    "2024-06-12",
+    "2024-06-17",
+    "2024-06-18",
+    "2024-06-20",
+    "2024-06-26",
+    "2024-07-05",
+    "2024-07-10",
+    "2024-07-18",
+    "2024-07-22",
+    "2024-07-26",
+    "2024-08-02",
+    "2024-08-05",
+    "2024-08-13",
+    "2024-08-22",
+    "2024-09-04",
+    "2024-09-06",
+    "2024-09-10",
+    "2024-09-13",
+    "2024-09-23",
+    "2024-09-27",
+    "2024-09-30",
+    "2024-10-07",
+    "2024-10-08",
+    "2024-11-07",
+    "2024-11-14",
+    "2024-11-15",
+    "2024-12-24"
+  ],
+  "schema_version": 1,
+  "selection_contract": {
+    "candidate_document_observations": 508,
+    "conflicting_duplicate_policy": "fail closed",
+    "deduplication_key": "exact SEC accession-bound source URL",
+    "document_request_graph_sha256": "230d1f61a94adf6be9139fe642dbd2489459d6b60e90aff5d9d7e92f46660a05",
+    "duplicate_document_observations": 0,
+    "every_source_pair_join_preserved": true,
+    "main_candidate_documents": 498,
+    "main_pair_document_joins": 516,
+    "pair_document_join_graph_sha256": "07d79ce5f4ddead2305128a158405bb7c1fedc474333939931052abd8a02508b",
+    "pair_document_joins": 526,
+    "private_contract_content_sha256": "477dee6d20c1c18ea6daae2c8bc3e4e4e569f807bd10117fa02d479ea1594e94",
+    "private_contract_path": "LOCAL_HISTORICAL_DATA_ROOT/_derived/development_sec_sources/dataset-development-sec-primary-sources-2026-07-21-challenger-orb-retest-v1/document_contracts/dataset-development-sec-primary-documents-2026-07-21-challenger-orb-retest-v1/primary-document-request-map.json.gz",
+    "source_candidate_graph_sha256": {
+      "MAIN_SUBMISSIONS": "6799c08b4afd9abfa853f0902fbc9d01f8d42e326c0b5bfa02cc5bb9c1d93fc5",
+      "SUPPLEMENTAL_SUBMISSIONS": "e54f6fd71d6c1d37942f4cdf113f75641826f4bdf2c8680922c4d4321cb70c41"
+    },
+    "supplemental_candidate_documents": 10,
+    "supplemental_pair_document_joins": 10,
+    "symbols_ciks_accessions_urls_and_joins_public": false,
+    "unique_document_requests": 508,
+    "unique_pairs_with_document": 457
+  }
+}

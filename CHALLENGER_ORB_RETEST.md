@@ -324,6 +324,14 @@ not source verification. Primary documents, semantic classification,
 selected-symbol causal detail, returns, and outcomes remain locked until the
 combined document graph is separately frozen and published.
 
+Primary-document manifest `4eb3f9c4...85e5cc` now freezes the exact union of
+498 main and 10 supplemental candidates as 508 accession-bound SEC requests,
+preserving all 526 pair/document joins across 457 pairs. Private contract hash
+`477dee6d...594e94`, document graph `230d1f61...660a05`, and join graph
+`07d79ce5...2508b` bind the result; the target document namespace is empty.
+The uninspected `COLLECTING` manifest must be committed and pushed before
+independent inspection and authorizes no document request by itself.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status
