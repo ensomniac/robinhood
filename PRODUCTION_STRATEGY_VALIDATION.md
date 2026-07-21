@@ -267,6 +267,19 @@ covers all 100 dates and 474 sessions without substitution or target-market
 artifacts. The scanner dataset is publicly registered as `COLLECTING`; target
 Alpaca access begins only after this outer slice is committed and pushed.
 
+Scanner acquisition v1 subsequently reached 466/474 independently valid
+sessions with 56,776 provider requests, zero retries, zero invalid sessions,
+and no outcome access. The first reusable-source session failed closed because
+eight attested inherited rows were absent from the immediate source-master
+coverage set and were therefore also classified as provider deltas. The
+duplicate guard prevented a mixed or duplicated file. A v2 pre-outcome recovery
+lineage preserves the v1 artifacts publicly, binds the adapter repair, selects
+only complete hash-attested v1 sessions that exist before freeze, and leaves
+every missing session provider-bound. Dates, strategy rules, providers,
+substitution policy, source semantics, and outcome locks remain unchanged; the
+repair code must be committed and pushed before the v2 inner and outer
+manifests are frozen.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

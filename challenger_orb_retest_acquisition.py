@@ -40,9 +40,9 @@ from learning_data import (
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DATASET_ID = "dataset-challenger-orb-retest-acquisition-2026-07-20-v1"
+DATASET_ID = "dataset-challenger-orb-retest-acquisition-2026-07-21-v2"
 SCANNER_DATASET_ID = (
-    "dataset-production-scanner-replay-2026-07-20-challenger-orb-retest-v1"
+    "dataset-production-scanner-replay-2026-07-21-challenger-orb-retest-v2"
 )
 SELECTION_MANIFEST = (
     PROJECT_ROOT
@@ -95,10 +95,10 @@ SCANNER_CONTRACT_STATUS = (
 )
 REUSE_SCANNER_MANIFEST = (
     PROJECT_ROOT
-    / "historical_batches/development_tranche_v3/scanner_manifests"
+    / "historical_batches/challenger_orb_retest_v1/scanner_manifests"
     / (
-        "dataset-production-scanner-replay-2026-07-20-development-v3-"
-        "1a37bc3d141dff3741bc965303e490eaa59d8f76071b9e5d1bd2b301eb878926.json"
+        "dataset-production-scanner-replay-2026-07-20-challenger-orb-retest-v1-"
+        "8d1f67bbcc9205d4f64549fdf7553b040ad2c6fc634b1928a2cd16d064c30e41.json"
     )
 )
 INSPECTOR = PROJECT_ROOT / "challenger_orb_retest_acquisition_inspection.py"
@@ -381,9 +381,7 @@ def reference_status() -> dict[str, Any]:
 def collect_reference(*, env_path: Path) -> dict[str, Any]:
     _published(Path(__file__))
     selection = _selection()
-    with _exclusive_run_lock(
-        ACQUISITION_LOCK, operation="dated-reference collection"
-    ):
+    with _exclusive_run_lock(ACQUISITION_LOCK, operation="dated-reference collection"):
         result = scanner_replay.collect_reference_snapshots(
             selection["selected_dates"],
             config=scanner_replay.MassiveReferenceConfig.from_env(env_path),
@@ -406,9 +404,7 @@ def build_master() -> dict[str, Any]:
     with _exclusive_run_lock(ACQUISITION_LOCK, operation="security-master build"):
         status = reference_status()
         if status["complete"] is not True:
-            raise ChallengerAcquisitionError(
-                "dated reference collection is incomplete"
-            )
+            raise ChallengerAcquisitionError("dated reference collection is incomplete")
         selection = _selection()
         if SECURITY_MASTER.exists() != SECURITY_SOURCE.exists():
             raise ChallengerAcquisitionError(

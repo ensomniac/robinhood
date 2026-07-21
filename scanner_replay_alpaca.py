@@ -94,10 +94,7 @@ DEFAULT_RUN_ROOT = PROJECT_ROOT / "learning_runs" / "scanner_replay_alpaca"
 DEFAULT_SUMMARY = PROJECT_ROOT / "research_results" / "2026-07-19-scanner-replay.json"
 DEFAULT_SPLITS = PROJECT_ROOT / "learning_runs" / "scanner_replay" / "splits.json.gz"
 DEFAULT_SPLIT_SOURCE = (
-    PROJECT_ROOT
-    / "historical_batches"
-    / "scanner_replay"
-    / "split-actions-source.json"
+    PROJECT_ROOT / "historical_batches" / "scanner_replay" / "split-actions-source.json"
 )
 DEFAULT_STRATEGY_SOURCE = (
     PROJECT_ROOT
@@ -200,6 +197,51 @@ def _validate_index_attestation(
         attestation["reused_source"], Mapping
     ):
         raise ScannerReplayError(f"scanner reuse provenance is malformed for {day}")
+
+
+def _load_attested_reusable_rows(
+    source_path: Path,
+    attestation: Mapping[str, Any],
+    *,
+    day: str,
+    dataset_id: str,
+) -> tuple[list[dict[str, Any]], set[str]]:
+    """Load one immutable reusable index and its actual per-session symbols."""
+
+    _validate_index_attestation(
+        attestation,
+        day=day,
+        dataset_id=dataset_id,
+        source_path=source_path,
+    )
+    rows = _read_csv_rows(source_path)
+    if attestation.get("derived_rows") != len(rows):
+        raise ScannerReplayError("reusable scanner source row count changed")
+    symbols = {str(row.get("ticker") or "").strip().upper() for row in rows}
+    if not symbols or "" in symbols:
+        raise ScannerReplayError("reusable scanner source symbols are invalid")
+    return rows, symbols
+
+
+def _reuse_symbol_partition(
+    target_symbols: Sequence[str],
+    inherited_contract_symbols: set[str],
+    inherited_row_symbols: set[str],
+) -> tuple[list[str], int]:
+    """Partition deltas from both frozen coverage and attested source rows.
+
+    A reusable contract covers symbols that were requested even when the
+    provider returned no row. Chained reusable indexes can also contain
+    attested rows absent from the immediate source security master. Their union
+    is the complete, nonduplicating coverage boundary.
+    """
+
+    target = set(target_symbols)
+    inherited_coverage = set(inherited_contract_symbols).union(inherited_row_symbols)
+    return (
+        sorted(target - inherited_coverage),
+        len(target.union(inherited_coverage)),
+    )
 
 
 @dataclass(frozen=True)
@@ -727,16 +769,12 @@ def collect_day(
         inherited_dataset_id = expected_inherited_dataset_id or str(
             inherited_attestation.get("dataset_id") or ""
         )
-        _validate_index_attestation(
+        inherited_rows, inherited_symbols = _load_attested_reusable_rows(
+            inherited_source,
             inherited_attestation,
             day=day,
             dataset_id=inherited_dataset_id,
-            source_path=inherited_source,
         )
-        inherited_rows = _read_csv_rows(inherited_source)
-        if inherited_attestation.get("derived_rows") != len(inherited_rows):
-            raise ScannerReplayError("reusable scanner source row count changed")
-        inherited_symbols = {str(row.get("ticker") or "") for row in inherited_rows}
         if inherited_symbols.intersection(symbols):
             raise ScannerReplayError("delta collection overlaps inherited symbols")
 
@@ -924,15 +962,16 @@ def freeze_contract(
         or not isinstance(split_provider, Mapping)
         or not isinstance(split_range, Mapping)
         or split_provider.get("provider") != "Massive"
-        or split_provider.get("endpoint")
-        != "https://api.massive.com/stocks/v1/splits"
+        or split_provider.get("endpoint") != "https://api.massive.com/stocks/v1/splits"
         or split_artifact.get("sha256") != split_hash
         or split_artifact.get("events") != _split_event_count(split_path)
         or split_artifact.get("local_ignored_path") != _repo_path(split_path)
         or str(split_range.get("execution_date_gte") or "") > required[0]
         or str(split_range.get("execution_date_lte") or "") < max(requested)
     ):
-        raise ScannerReplayError("split-actions source attestation does not cover contract")
+        raise ScannerReplayError(
+            "split-actions source attestation does not cover contract"
+        )
     strategy_source = _read_object(strategy_source_path)
     strategy_artifact = strategy_source.get("artifact")
     strategy_config_path = PROJECT_ROOT / "strategy_config.toml"
@@ -940,10 +979,8 @@ def freeze_contract(
         strategy_source.get("schema_version") != 1
         or not isinstance(strategy_artifact, Mapping)
         or strategy_artifact.get("path") != "strategy_config.toml"
-        or strategy_artifact.get("file_sha256")
-        != _sha256_file(strategy_config_path)
-        or strategy_artifact.get("strategy_version")
-        != rules.get("strategy_version")
+        or strategy_artifact.get("file_sha256") != _sha256_file(strategy_config_path)
+        or strategy_artifact.get("strategy_version") != rules.get("strategy_version")
     ):
         raise ScannerReplayError("production-strategy source attestation differs")
     records = load_security_master(security_path)
@@ -979,21 +1016,44 @@ def freeze_contract(
             for field in compatible_fields
         ):
             raise ScannerReplayError("reusable scanner source contract is incompatible")
-        reuse_sessions = sorted(
+        candidate_reuse_sessions = sorted(
             set(required).intersection(
                 reuse_manifest["collection_contract"]["required_session_dates"]
             )
         )
-        reusable_source = {
-            "dataset_id": reuse_manifest["dataset_id"],
-            "manifest_path": _repo_path(reuse_manifest_path),
-            "manifest_sha256": reuse_manifest["manifest_sha256"],
-            "session_dates": reuse_sessions,
-            "session_count": len(reuse_sessions),
-            "source_rows_existed_before_freeze": True,
-            "target_outcomes_observed_or_derived": False,
-            "reuse_requires_delta_symbol_collection": True,
-        }
+        reusable_root = index_root.parent / str(reuse_manifest["dataset_id"])
+        reuse_sessions: list[str] = []
+        for day in candidate_reuse_sessions:
+            source_path = reusable_root / "minute_aggs" / day[:4] / f"{day}.csv.gz"
+            sidecar_path = reusable_root / "attestations" / day[:4] / f"{day}.json"
+            if source_path.exists() != sidecar_path.exists():
+                raise ScannerReplayError(
+                    f"reusable scanner source is partial for {day}"
+                )
+            if not source_path.exists():
+                continue
+            _load_attested_reusable_rows(
+                source_path,
+                _read_object(sidecar_path),
+                day=day,
+                dataset_id=str(reuse_manifest["dataset_id"]),
+            )
+            reuse_sessions.append(day)
+        if reuse_sessions:
+            reusable_source = {
+                "dataset_id": reuse_manifest["dataset_id"],
+                "manifest_path": _repo_path(reuse_manifest_path),
+                "manifest_sha256": reuse_manifest["manifest_sha256"],
+                "session_dates": reuse_sessions,
+                "session_count": len(reuse_sessions),
+                "candidate_session_count": len(candidate_reuse_sessions),
+                "session_selection": (
+                    "complete attested source artifacts present before freeze"
+                ),
+                "source_rows_existed_before_freeze": True,
+                "target_outcomes_observed_or_derived": False,
+                "reuse_requires_delta_symbol_collection": True,
+            }
     payload = {
         "schema_version": 1,
         "dataset_id": dataset_id,
@@ -1024,9 +1084,7 @@ def freeze_contract(
                 "split_actions_sha256": split_hash,
                 "split_actions_path": _repo_path(split_path),
                 "split_actions_attestation_path": _repo_path(split_source_path),
-                "split_actions_attestation_sha256": _sha256_file(
-                    split_source_path
-                ),
+                "split_actions_attestation_sha256": _sha256_file(split_source_path),
                 "production_strategy_sha256": _sha256_file(strategy_config_path),
                 "production_strategy_path": "strategy_config.toml",
                 "production_strategy_attestation_path": _repo_path(
@@ -1152,23 +1210,19 @@ def verify_contract_inputs(
             "security-master source attestation no longer matches the contract"
         )
     split_path = PROJECT_ROOT / str(universe["split_actions_path"])
-    split_source_path = PROJECT_ROOT / str(
-        universe["split_actions_attestation_path"]
-    )
-    if (
-        universe["split_actions_sha256"] != _sha256_file(split_path)
-        or universe["split_actions_attestation_sha256"]
-        != _sha256_file(split_source_path)
-    ):
+    split_source_path = PROJECT_ROOT / str(universe["split_actions_attestation_path"])
+    if universe["split_actions_sha256"] != _sha256_file(split_path) or universe[
+        "split_actions_attestation_sha256"
+    ] != _sha256_file(split_source_path):
         raise ScannerReplayError("split actions no longer match the contract")
     strategy_path = PROJECT_ROOT / str(universe["production_strategy_path"])
     strategy_source_path = PROJECT_ROOT / str(
         universe["production_strategy_attestation_path"]
     )
-    if (
-        universe["production_strategy_sha256"] != _sha256_file(strategy_path)
-        or universe["production_strategy_attestation_sha256"]
-        != _sha256_file(strategy_source_path)
+    if universe["production_strategy_sha256"] != _sha256_file(
+        strategy_path
+    ) or universe["production_strategy_attestation_sha256"] != _sha256_file(
+        strategy_source_path
     ):
         raise ScannerReplayError("production strategy no longer matches the contract")
     collection = manifest["collection_contract"]
@@ -1179,8 +1233,7 @@ def verify_contract_inputs(
         if (
             selection_contract.get("file_sha256") != _sha256_file(selection_path)
             or selection_contract.get("seed") != selection["seed"]
-            or list(manifest["requested_dates"])
-            != sorted(selection["selected_dates"])
+            or list(manifest["requested_dates"]) != sorted(selection["selected_dates"])
             or selection_contract.get("substitution_allowed") is not False
         ):
             raise ScannerReplayError("date selection no longer matches the contract")
@@ -1333,6 +1386,7 @@ def collect_contract(
             inherited_source = None
             inherited_attestation = None
             requested_symbols: Sequence[str] = symbols
+            source_symbol_union_total = len(symbols)
             if day in reusable_days:
                 if reusable_root is None:
                     raise ScannerReplayError("reusable scanner root is missing")
@@ -1345,7 +1399,17 @@ def collect_contract(
                         f"frozen reusable scanner session is missing for {day}"
                     )
                 inherited_attestation = _read_object(sidecar)
-                requested_symbols = sorted(set(symbols) - inherited_symbols)
+                _, inherited_row_symbols = _load_attested_reusable_rows(
+                    inherited_source,
+                    inherited_attestation,
+                    day=day,
+                    dataset_id=str(reusable["dataset_id"]),
+                )
+                requested_symbols, source_symbol_union_total = _reuse_symbol_partition(
+                    symbols,
+                    inherited_symbols,
+                    inherited_row_symbols,
+                )
             result = collect_day(
                 day,
                 requested_symbols,
@@ -1363,9 +1427,7 @@ def collect_contract(
                 ),
                 requested_symbol_total=len(symbols),
                 target_symbol_total=len(symbols),
-                source_symbol_union_total=len(
-                    set(symbols).union(inherited_symbols)
-                ),
+                source_symbol_union_total=source_symbol_union_total,
             )
             completed += int(result["disposition"] == "collected")
             print(
@@ -1449,9 +1511,7 @@ def _build_parser() -> argparse.ArgumentParser:
     freeze.add_argument("--security-source", type=Path, default=DEFAULT_SECURITY_SOURCE)
     freeze.add_argument("--splits", type=Path, default=DEFAULT_SPLITS)
     freeze.add_argument("--split-source", type=Path, default=DEFAULT_SPLIT_SOURCE)
-    freeze.add_argument(
-        "--strategy-source", type=Path, default=DEFAULT_STRATEGY_SOURCE
-    )
+    freeze.add_argument("--strategy-source", type=Path, default=DEFAULT_STRATEGY_SOURCE)
     freeze.add_argument("--output-root", type=Path, default=DEFAULT_MANIFEST_ROOT)
     freeze.add_argument("--reuse-manifest", type=Path)
     splits = subparsers.add_parser("collect-splits")

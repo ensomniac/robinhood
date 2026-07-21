@@ -13,6 +13,7 @@ from scanner_replay_alpaca import (
     AlpacaBulkConfig,
     DATASET_ID,
     DEFAULT_RULES,
+    _reuse_symbol_partition,
     collect_day,
     freeze_contract,
     load_contract,
@@ -172,6 +173,16 @@ class FakeBulkClient:
 
 
 class CanonicalScannerCollectionTests(unittest.TestCase):
+    def test_reuse_partition_unions_contract_coverage_and_attested_rows(self):
+        requested, source_union = _reuse_symbol_partition(
+            ["AAA", "BBB", "CCC"],
+            {"AAA"},
+            {"BBB"},
+        )
+
+        self.assertEqual(requested, ["CCC"])
+        self.assertEqual(source_union, 3)
+
     def test_day_collection_is_canonical_exact_and_resumable(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -408,24 +419,40 @@ class AlpacaFreezeTests(unittest.TestCase):
                 "rules_path": DEFAULT_RULES,
                 "security_path": Path("learning/SECURITY_MASTER.jsonl"),
             }
-            source_path, _source = freeze_contract(
+            source_index = root / DATASET_ID
+            source_path, source = freeze_contract(
                 **common,
                 output_root=root / "source-manifests",
-                index_root=root / "source-index",
+                index_root=source_index,
+            )
+            reusable_day = source["collection_contract"]["required_session_dates"][0]
+            collect_day(
+                reusable_day,
+                ["AAA"],
+                client=FakeBulkClient(date.fromisoformat(reusable_day)),
+                store=HistoricalDayStore(root / "history"),
+                index_root=source_index,
+                dataset_id=DATASET_ID,
             )
 
             expanded_path, expanded = freeze_contract(
                 **common,
                 dataset_id="dataset-production-scanner-replay-test-expansion",
                 output_root=root / "expanded-manifests",
-                index_root=root / "expanded-index",
+                index_root=(root / "dataset-production-scanner-replay-test-expansion"),
                 reuse_manifest_path=source_path,
             )
 
             loaded = load_contract(expanded_path)
             reusable = loaded["collection_contract"]["reusable_source"]
             self.assertEqual(reusable["dataset_id"], DATASET_ID)
-            self.assertEqual(reusable["session_count"], 118)
+            self.assertEqual(reusable["session_count"], 1)
+            self.assertEqual(reusable["candidate_session_count"], 118)
+            self.assertEqual(reusable["session_dates"], [reusable_day])
+            self.assertEqual(
+                reusable["session_selection"],
+                "complete attested source artifacts present before freeze",
+            )
             self.assertTrue(reusable["source_rows_existed_before_freeze"])
             self.assertFalse(reusable["target_outcomes_observed_or_derived"])
             self.assertEqual(expanded["manifest_sha256"], loaded["manifest_sha256"])

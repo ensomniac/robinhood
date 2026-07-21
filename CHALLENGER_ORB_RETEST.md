@@ -178,6 +178,25 @@ sessions with zero target-market artifact or substitution. The scanner dataset
 is registered as `COLLECTING`, not `READY`. This outer slice must be committed
 and pushed before `collect-scanner` may contact Alpaca.
 
+The v1 scanner collection later reached 466/474 independently valid sessions
+with 56,776 provider requests, zero retries, zero invalid sessions, and no
+outcome access. It then failed closed on the first of eight reusable-source
+sessions: chained reuse had carried eight attested rows that were absent from
+the immediate reusable security-master union, so the adapter misclassified
+those already-present symbols as provider deltas and its duplicate guard
+correctly stopped the merge. V1 remains immutable failed operational evidence.
+
+The v2 recovery changes only reusable-input accounting and lineage. Delta
+coverage is the union of the source contract's requested universe and the
+actual symbols in each hash-attested reusable file. A new manifest may reuse
+only complete source/sidecar pairs that exist and revalidate before its freeze;
+missing or partial pairs cannot enter that contract. The v2 dataset IDs point
+to the 466 complete v1 sessions, preserve the exact 100 target dates,
+474-session graph, point-in-time master, rules, provider, zero-substitution
+policy, and outcome lock, and leave the remaining eight sessions
+provider-bound. The repair implementation and regression tests must be
+committed and pushed before either new v2 manifest is frozen.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status
