@@ -116,6 +116,7 @@ CORE_ARTIFACTS = (
     "strategy_tournament/activations/post-earnings-drift-v1-04dcf6470f6347ede51b6bed481c8ddd389744b7d649be14fbee646d235994ca.json",
     "strategy_tournament/cross_sectional_momentum/collection-status.json",
     "strategy_tournament/post_earnings_drift/earnings-status.json",
+    "strategy_tournament/post_earnings_drift/market-status.json",
     "strategy_tournament/inspections/equity-gap-continuation-v1-input-fe842aebc174196ceaa34a529d6c3a8eb75ab4df5bc6db110221f7f3dea4c881.json",
     "strategy_tournament/inspections/equity-gap-continuation-v1-result-66ede02688e090973e482ecc9c491349238d14e2af63fd02c336b99a8564c7be.json",
     "strategy_tournament/inspections/equity-gap-recovery-v1-input-6109b4a84007118f27bd6a5e474655b827e8d95515e709f23c5cfb0b95d33b91.json",

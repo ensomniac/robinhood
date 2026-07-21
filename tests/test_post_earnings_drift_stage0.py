@@ -108,6 +108,31 @@ class PostEarningsDriftStage0Tests(unittest.TestCase):
         self.assertEqual(status["broker_actions"], 0)
         self.assertEqual(status["status"], "READY")
 
+    def test_published_market_collection_counts_boundary_and_discarded_calls(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "post_earnings_drift"
+            / "market-status.json"
+        )
+        status = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            status["status_sha256"],
+            stage0.common._self_hash(status, "status_sha256"),
+        )
+        self.assertEqual(status["requested_symbols"], 84)
+        self.assertEqual(status["requested_pairs"], 102)
+        self.assertEqual(status["symbols_with_daily_rows"], 84)
+        self.assertEqual(status["pairs_with_minute_rows"], 102)
+        self.assertEqual(status["effective_provider_requests"], 55)
+        self.assertEqual(status["discarded_provider_requests"], 3)
+        self.assertEqual(status["provider_requests"], 58)
+        self.assertEqual(status["ignored_non_regular_session_rows"], 102)
+        self.assertEqual(status["returns_computed"], 0)
+        self.assertEqual(status["broker_actions"], 0)
+        self.assertEqual(status["status"], "READY")
+
     def test_manifest_freezes_complete_source_verified_denominator(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)

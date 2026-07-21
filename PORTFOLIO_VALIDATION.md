@@ -448,6 +448,14 @@ candidate pairs, and all 255 provider calls made before the activation. It made
 zero additional provider or broker calls, computed zero returns, and authorizes
 the exact market retry.
 
+The retry completed at
+`strategy_tournament/post_earnings_drift/market-status.json`: all 84 symbols
+have daily data and all 102 candidate pairs have minute data. The hash-bound
+private payload contains 20,328 daily rows and 39,692 regular-session minute
+rows. All 102 returned 16:00 boundary rows were excluded; 55 effective calls
+plus the three discarded incident calls are reported. No return was computed
+and no broker action occurred.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
