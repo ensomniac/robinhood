@@ -554,6 +554,21 @@ retirement. `settings.toml` selected `trades` verbosity, so `email_sender.py`
 correctly recorded the non-trade `session_summary` event as skipped rather than
 sending it.
 
+Catalyst ORB-retest activation
+`strategy_tournament/activations/catalyst-orb-retest-v1-c1c7004952ae77ee579b3f33496239783905caccf4aa29637a64528f7805d630.json`
+binds the exact slate rules to the exhausted, independently inspected legacy
+catalyst corpus before any resumed source acquisition. The 1,987-pair legacy
+scanner surface produced exactly eight source-verified positive pairs on eight
+dates; all eight already have complete preserved 390-bar Alpaca SIP sessions.
+Because the maximum possible closed-signal count is eight against the fixed
+minimum of 30, the capacity gate cannot pass. The activation still freezes the
+full break, retest, later bullish rebreak, next-open entry, retest-low stop, 2R
+target, stop-first ambiguity, 15:50 force-flat, and 5/10/20-bps cost contract so
+the one allowed screen can report every disposition. Its source identities and
+market bindings remain in a private content-addressed input graph outside Git.
+The earlier challenger hypothesis is declared as a related but rules-distinct
+trial, and neither its evidence nor this Stage 0 sample may enter maturity.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
