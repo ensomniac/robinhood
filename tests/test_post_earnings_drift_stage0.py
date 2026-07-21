@@ -68,6 +68,28 @@ class PostEarningsDriftStage0Tests(unittest.TestCase):
         self.assertEqual(inspection["returns_computed"], 0)
         self.assertTrue(inspection["collection_authorized"])
 
+    def test_published_earnings_collection_counts_every_provider_call(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "post_earnings_drift"
+            / "earnings-status.json"
+        )
+        status = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            status["status_sha256"],
+            stage0.common._self_hash(status, "status_sha256"),
+        )
+        self.assertEqual(status["requested_symbols"], 84)
+        self.assertEqual(status["effective_provider_requests"], 84)
+        self.assertEqual(status["discarded_ingestion_transport_requests"], 168)
+        self.assertEqual(status["provider_requests"], 252)
+        self.assertEqual(status["earnings_rows"], 648)
+        self.assertEqual(status["returns_computed"], 0)
+        self.assertEqual(status["broker_actions"], 0)
+        self.assertEqual(status["status"], "READY")
+
     def test_manifest_freezes_complete_source_verified_denominator(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)

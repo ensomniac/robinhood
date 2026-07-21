@@ -1,0 +1,21 @@
+{
+  "activation_inspection_sha256": "e728d442e0e32c86ccb4447595f4245a195276fd2b9084c85b2e488fe24b3c0e",
+  "broker_actions": 0,
+  "dataset_id": "dataset-post-earnings-drift-stage0-2026-07-21-v1",
+  "discarded_ingestion_transport_requests": 168,
+  "earnings_rows": 648,
+  "effective_provider_requests": 84,
+  "manifest_sha256": "dbedd0065e72bedbb2bb26f88dd9da5d7c0c42de57bbb8b0fab55dfa2a1697d4",
+  "private_payload_sha256": "35d7099327c4efdcbfeee980e1145c4a090e5a1cfa8293194494599d9e38c8ac",
+  "provider_requests": 252,
+  "provider_status_counts": {
+    "ok": 84
+  },
+  "requested_symbols": 84,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "status": "READY",
+  "status_kind": "stage0-earnings-metadata-collection",
+  "status_sha256": "50f34f7214875983dba988c8c298dab78b68e87db9cea76436cf2273456a825e",
+  "variant_id": "post-earnings-drift-v1"
+}

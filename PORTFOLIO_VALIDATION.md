@@ -422,6 +422,13 @@ rebuilds the corrected stream contract, the 168 prior-call count, and the
 unchanged 102-pair rules with zero additional provider calls or returns. It
 authorizes the next metadata retry through the corrected channel.
 
+The corrected earnings collection is complete at
+`strategy_tournament/post_earnings_drift/earnings-status.json`. All 84 frozen
+symbols returned usable histories containing 648 normalized earnings rows. Its
+252-provider-call total includes all 168 discarded calls plus the 84 retained
+responses; the private payload is hash-bound, zero strategy returns were
+computed, and no broker action occurred.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
