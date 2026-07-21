@@ -872,12 +872,15 @@ def collect_scanner(
             raise ChallengerAcquisitionError(f"acquisition {key} drifted")
     if max_days is not None and max_days < 1:
         raise ChallengerAcquisitionError("--max-days must be positive")
-    return alpaca.collect_contract(
-        alpaca.load_contract(scanner_path),
-        config=alpaca.AlpacaBulkConfig.from_env(env_path),
-        store=store,
-        max_days=max_days,
-    )
+    with _exclusive_run_lock(
+        ACQUISITION_LOCK, operation="full-universe scanner collection"
+    ):
+        return alpaca.collect_contract(
+            alpaca.load_contract(scanner_path),
+            config=alpaca.AlpacaBulkConfig.from_env(env_path),
+            store=store,
+            max_days=max_days,
+        )
 
 
 def status(*, manifest_path: Path, env_path: Path) -> dict[str, Any]:

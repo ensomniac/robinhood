@@ -341,3 +341,60 @@ def test_collect_requires_positive_max_days(monkeypatch):
             env_path=Path(".env"),
             max_days=0,
         )
+
+
+def test_scanner_collection_uses_shared_acquisition_lock(tmp_path, monkeypatch):
+    lock_state = {"held": False, "operation": None}
+    monkeypatch.setattr(acquisition, "_published", lambda _path: {})
+    monkeypatch.setattr(
+        acquisition,
+        "load_frozen_dataset_contract",
+        lambda _path: {
+            "dataset_id": acquisition.DATASET_ID,
+            "upstream_contract": {
+                "scanner_manifest": {"path": "scanner.json", "sha256": "0" * 64}
+            },
+        },
+    )
+    monkeypatch.setattr(acquisition, "_verify_binding", lambda _value: None)
+    monkeypatch.setattr(
+        acquisition.HistoricalStoreConfig,
+        "from_env",
+        lambda _path: type("Config", (), {"root": tmp_path})(),
+    )
+    monkeypatch.setattr(acquisition, "_expected_contract", lambda **_kwargs: {})
+    monkeypatch.setattr(acquisition.alpaca, "load_contract", lambda _path: {})
+    monkeypatch.setattr(
+        acquisition.alpaca.AlpacaBulkConfig,
+        "from_env",
+        lambda _path: object(),
+    )
+
+    @acquisition.contextmanager
+    def fake_lock(path, *, operation):
+        assert path == acquisition.ACQUISITION_LOCK
+        lock_state.update(held=True, operation=operation)
+        try:
+            yield
+        finally:
+            lock_state["held"] = False
+
+    def fake_collect(_manifest, *, config, store, max_days):
+        assert lock_state == {
+            "held": True,
+            "operation": "full-universe scanner collection",
+        }
+        assert config is not None
+        assert store is not None
+        assert max_days == 1
+        return {"valid": True}
+
+    monkeypatch.setattr(acquisition, "_exclusive_run_lock", fake_lock)
+    monkeypatch.setattr(acquisition.alpaca, "collect_contract", fake_collect)
+
+    assert acquisition.collect_scanner(
+        manifest_path=Path("outer.json"),
+        env_path=Path(".env"),
+        max_days=1,
+    ) == {"valid": True}
+    assert lock_state["held"] is False

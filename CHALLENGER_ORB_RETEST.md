@@ -145,7 +145,8 @@ Alpaca.
 The dated reference collector is resumable under the frozen Massive query and
 pacing contract. Use only the challenger controller entrypoint: its
 repository-native single-writer lock serializes dated-reference collection,
-master construction, and split retrieval. The independent reference inspection
+master construction, split retrieval, and full-universe scanner collection.
+The independent reference inspection
 rehashes both the raw gzip containers and their parsed logical rows, rejects
 unexpected or temporary files, and therefore distinguishes harmless gzip
 metadata changes from content drift. After all 100 exact snapshots complete,
