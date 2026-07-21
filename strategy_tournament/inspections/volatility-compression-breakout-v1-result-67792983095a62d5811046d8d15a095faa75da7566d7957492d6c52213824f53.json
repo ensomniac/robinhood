@@ -1,0 +1,16 @@
+{
+  "broker_actions": 0,
+  "closed_signals": 95,
+  "input_inspection_sha256": "600ae694412202299505870eb48a14a9819a00f6c88867c3370a27e89c7d8fce",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "67792983095a62d5811046d8d15a095faa75da7566d7957492d6c52213824f53",
+  "manifest_sha256": "3376ff9d2b6af10247e9eee3704f4e3bf612283a42c37a2c0f1b8f680a76d4c0",
+  "maturity_effect": "NONE",
+  "provider_requests": 0,
+  "result_file_sha256": "4f9b7cb5e07b0778ecb8f20116b45a9bc8f1e2a477ca451ac1cd20287f18c361",
+  "result_sha256": "5959e922a6cdaf117521a2a70877984497077f3c79acd5aedf2ac87eea0bbdfe",
+  "schema_version": 1,
+  "stage0_survived": false,
+  "valid": true,
+  "variant_id": "volatility-compression-breakout-v1"
+}

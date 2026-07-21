@@ -11,24 +11,24 @@ class PortfolioFunnelTests(unittest.TestCase):
         dispositions = funnel.load_stage0_dispositions()
         self.assertEqual(
             [item["variant_id"] for item in dispositions],
-            list(funnel.FIRST_WAVE_ORDER[:4]),
+            list(funnel.FIRST_WAVE_ORDER[:5]),
         )
         self.assertEqual(
             [item["status"] for item in dispositions],
-            ["RETIRED", "RETIRED", "SURVIVED", "RETIRED"],
+            ["RETIRED", "RETIRED", "SURVIVED", "RETIRED", "RETIRED"],
         )
         self.assertEqual(dispositions[2]["blockers"], [])
 
     def test_status_exposes_retired_development_and_zero_of_three_progress(self):
         status = funnel.build_funnel_status(maturity.build_report())
-        self.assertEqual(status["first_wave"]["retired_count"], 3)
+        self.assertEqual(status["first_wave"]["retired_count"], 4)
         self.assertEqual(status["first_wave"]["survivor_count"], 1)
         self.assertEqual(
             status["progress"], {"pilot_ready": 0, "live_started": 0, "target": 3}
         )
         self.assertEqual(
             status["lanes"]["stage0_falsification"]["variant_id"],
-            "volatility-compression-breakout-v1",
+            "short-horizon-oversold-reversal-v1",
         )
         self.assertIsNone(status["lanes"]["representative_development"])
         self.assertIsNone(status["lanes"]["confirmation_or_shadow"])
@@ -47,7 +47,7 @@ class PortfolioFunnelTests(unittest.TestCase):
         status = funnel.build_funnel_status(maturity.build_report())
         self.assertEqual(
             [item["variant_id"] for item in status["first_wave"]["candidate_queue"]],
-            list(funnel.FIRST_WAVE_ORDER[4:]),
+            list(funnel.FIRST_WAVE_ORDER[5:]),
         )
 
     def test_second_wave_is_fixed_and_closed_before_failure_taxonomy(self):
@@ -74,6 +74,11 @@ class PortfolioFunnelTests(unittest.TestCase):
         self.assertIn(
             "primary expectancy is not positive",
             dispositions[3]["blockers"],
+        )
+        self.assertEqual(dispositions[4]["closed_signals"], 95)
+        self.assertIn(
+            "primary drawdown exceeds the Stage 0 maximum",
+            dispositions[4]["blockers"],
         )
 
 

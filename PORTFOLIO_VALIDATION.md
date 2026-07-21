@@ -298,6 +298,15 @@ committed input inspection. Inspection
 reconciles all 95 sessions, 950 symbol-sessions, and 370,500 exact one-minute
 bars with zero return calculations, provider requests, or broker actions.
 
+The inspected volatility-compression result is
+`research_results/2026-07-21-volatility-compression-breakout-stage0-5959e922a6cdaf117521a2a70877984497077f3c79acd5aedf2ac87eea0bbdfe.json`,
+with independent rebuild
+`strategy_tournament/inspections/volatility-compression-breakout-v1-result-67792983095a62d5811046d8d15a095faa75da7566d7957492d6c52213824f53.json`.
+The exact variant is retired: 95 signals lost 19.259R at 5 bps per side,
+with -0.203R expectancy, 0.665 profit factor, and 22.495R drawdown. At
+20 bps per side it lost 30.852R. It cannot be tuned on this corpus or enter
+the maturity ledger; the tournament advances to short-horizon reversal.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:

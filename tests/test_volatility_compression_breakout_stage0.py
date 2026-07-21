@@ -88,6 +88,35 @@ class VolatilityCompressionBreakoutStage0Tests(unittest.TestCase):
         self.assertEqual(inspection["selected_symbol_sessions"], 950)
         self.assertEqual(inspection["selected_bars"], 370500)
 
+    def test_published_result_is_an_inspected_stage0_retirement(self):
+        root = Path(__file__).resolve().parents[1]
+        result = json.loads(
+            (
+                root
+                / "research_results"
+                / "2026-07-21-volatility-compression-breakout-stage0-5959e922a6cdaf117521a2a70877984497077f3c79acd5aedf2ac87eea0bbdfe.json"
+            ).read_text(encoding="utf-8")
+        )
+        inspection = json.loads(
+            (
+                root
+                / "strategy_tournament"
+                / "inspections"
+                / "volatility-compression-breakout-v1-result-67792983095a62d5811046d8d15a095faa75da7566d7957492d6c52213824f53.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            result["result_sha256"],
+            stage0.common._self_hash(result, "result_sha256"),
+        )
+        self.assertFalse(result["stage0_survived"])
+        self.assertEqual(result["maturity_effect"], "NONE")
+        self.assertEqual(result["denominator"]["closed_signals"], 95)
+        self.assertLess(result["primary_5bps"]["expectancy_r"], 0)
+        self.assertLess(result["stress"]["20"]["total_r"], 0)
+        self.assertTrue(inspection["valid"])
+        self.assertFalse(inspection["stage0_survived"])
+
     def test_completed_breakout_uses_prior_twenty_bars_and_next_open(self):
         candidate = stage0._candidate(day="2025-01-02", raw=raw_candidate())
         self.assertEqual(candidate["status"], "executable")
