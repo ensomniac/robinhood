@@ -587,6 +587,11 @@ keeps activation-rules hash
 unchanged and changes only public serialization to sequential signal aliases.
 It explicitly accounts for the prior computation and requires a new independent
 inspection before the privacy-safe result may be materialized.
+Successor inspection
+`039752b9f53336360151dda965bb931e41ab6e1ef1636107ba49faf7e4e1832e`
+rebuilds that activation, the unchanged private input graph, all 3,120 bars,
+and the prior incident accounting. It made zero provider or broker calls,
+computed zero new returns, and authorizes the privacy-safe materialization.
 
 ## Active discovery funnel
 

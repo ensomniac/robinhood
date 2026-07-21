@@ -151,6 +151,7 @@ CORE_ARTIFACTS = (
     "strategy_tournament/inspections/relative-strength-continuation-v1-input-91fa69d7dea4555c579c1d0d71beb8a3a3176d684d2e5d5e0552098792a36f43.json",
     "strategy_tournament/inspections/relative-strength-continuation-v1-result-342e84c3668952a6d1e1dc5ea9b4d391648efebf6030ccb2674a7060077f0d35.json",
     "strategy_tournament/inspections/catalyst-orb-retest-v1-input-126b7dbb0a67202b1f5e6e8f888ff42e5ab7fa087e683ff5549c8fd6da06e6dd.json",
+    "strategy_tournament/inspections/catalyst-orb-retest-v1-input-039752b9f53336360151dda965bb931e41ab6e1ef1636107ba49faf7e4e1832e.json",
     "strategy_tournament/inspections/etf-vwap-mean-reversion-v1-input-deae004f10d53c1753435155385fc0557b6c39249f43896725bf1237dd32eaa0.json",
     "strategy_tournament/inspections/etf-vwap-mean-reversion-v1-result-faef3c6c57e36f8604179e596c959bd3f7c982848552ad224ef371da7c963176.json",
     "strategy_tournament/inspections/etf-or-momentum-v1-input-6736b37133fd8ba9d46c86e76ef3d7e21a2a09541f1ad631d4ec8b94ff78b1c8.json",

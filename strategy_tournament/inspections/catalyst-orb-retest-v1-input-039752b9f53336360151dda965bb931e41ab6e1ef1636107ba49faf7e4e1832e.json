@@ -1,0 +1,20 @@
+{
+  "broker_actions": 0,
+  "claim_scope": "FALSIFICATION_ONLY",
+  "implementation_sha256": "62c3daef97f16e22e1873b9578c73a1447104f299c558b7cfe28880210135c5f",
+  "inspection_kind": "stage0-activation-input-inspection",
+  "inspection_sha256": "039752b9f53336360151dda965bb931e41ab6e1ef1636107ba49faf7e4e1832e",
+  "manifest_file_sha256": "29fb8af9de884d54b8ef8ad45a20d95b7f5a51b876fbe8a205a0813eade95ccb",
+  "manifest_sha256": "1c95b9338d42023682bd84c31b5168097b6c228425663f91f6affac8772aa873",
+  "maximum_closed_signals": 8,
+  "provider_requests": 0,
+  "return_evaluation_authorized": true,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "selected_bars": 3120,
+  "selected_dates": 8,
+  "selected_symbol_sessions": 8,
+  "source_verified_positive_pairs": 8,
+  "valid": true,
+  "variant_id": "catalyst-orb-retest-v1"
+}

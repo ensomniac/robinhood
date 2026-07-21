@@ -124,6 +124,25 @@ def test_successor_activation_preserves_rules_and_accounts_discarded_result():
     assert incident["metrics_changed"] is False
 
 
+def test_successor_inspection_authorizes_privacy_safe_materialization():
+    root = Path(__file__).resolve().parents[1]
+    path = (
+        root
+        / "strategy_tournament/inspections/"
+        "catalyst-orb-retest-v1-input-"
+        "039752b9f53336360151dda965bb931e41ab6e1ef1636107ba49faf7e4e1832e.json"
+    )
+    inspection = json.loads(path.read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["manifest_sha256"] == (
+        "1c95b9338d42023682bd84c31b5168097b6c228425663f91f6affac8772aa873"
+    )
+    assert inspection["returns_computed"] == 0
+    assert inspection["return_evaluation_authorized"] is True
+
+
 def test_trigger_requires_break_then_retest_then_later_bullish_rebreak():
     candidate = stage0._candidate(
         {"date": "2026-01-14", "symbol": "TEST", "rank": 1, "bars": _bars()}
