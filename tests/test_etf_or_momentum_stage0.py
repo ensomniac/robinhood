@@ -93,6 +93,37 @@ class EtfOrbStage0Tests(unittest.TestCase):
         self.assertEqual(inspection["provider_requests"], 0)
         self.assertEqual(inspection["broker_actions"], 0)
 
+    def test_published_result_and_inspection_preserve_failed_disposition(self):
+        root = Path(__file__).resolve().parents[1]
+        result_path = (
+            root
+            / "research_results"
+            / "2026-07-21-etf-or-momentum-stage0-fe9853712ae52f92b4a88403bdb9270f3f3a8add382a393a2b183529d9cc05d2.json"
+        )
+        inspection_path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "etf-or-momentum-v1-result-9db03d7d7e497917e6a4ee663ffee68506bd72a0050a873a903906ff4715fa6b.json"
+        )
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        inspection = json.loads(inspection_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            result["result_sha256"], stage0._self_hash(result, "result_sha256")
+        )
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertFalse(result["stage0_survived"])
+        self.assertEqual(result["maturity_effect"], "NONE")
+        self.assertEqual(result["denominator"]["closed_signals"], 97)
+        self.assertEqual(result["denominator"]["rule_violations"], 0)
+        self.assertLess(result["primary_5bps"]["total_r"], 0)
+        self.assertFalse(inspection["stage0_survived"])
+        self.assertTrue(inspection["valid"])
+
+
 
     def test_candidate_uses_only_completed_trigger_then_next_open(self):
         rows = bars(trigger_index=7, entry_open=100.12)

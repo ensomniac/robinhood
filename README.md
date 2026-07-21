@@ -70,8 +70,10 @@ before any individual Stage 0 activation can access outcomes.
 
 The first frozen activation binds 164 exact SPY/QQQ sessions in
 [`strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json`](strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json).
-It is an outcome-locked, falsification-only input contract; it cannot contribute
-development, confirmation, maturity, or live evidence.
+Its inspected falsification result rejected the exact variant after 97 signals:
+expectancy was -0.353R, profit factor 0.465, and total return -34.213R at 5 bps
+per side. It cannot contribute development, confirmation, maturity, or live
+evidence and will not be repaired on those dates.
 
 ### Preserved ORB v3 lane
 

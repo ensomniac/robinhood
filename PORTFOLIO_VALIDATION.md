@@ -135,18 +135,22 @@ must still publish a separately inspected activation manifest binding exact
 dates, symbols, input hashes, denominators, evaluator implementation, and the
 execution/cost contract before its first Stage 0 outcome is evaluated.
 
-The first activation is frozen, but not yet outcome-authorized, at
+The first activation was frozen at
 `strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json`.
 It binds 164 exact common SPY/QQQ dates (328 symbol sessions and 127,920 expected
 one-minute bars) to one complete IBKR feed and records 81 fidelity exclusions
 without substitution. All dates were previously referenced by research, so the
-activation is permanently falsification-only. `etf_or_momentum_stage0.py`
-refuses evaluation until a separate input inspection exactly rebuilds this
-manifest, validates every selected bar, and is itself committed and pushed.
-That inspection is now published at
+activation is permanently falsification-only. Its input inspection is published at
 `strategy_tournament/inspections/etf-or-momentum-v1-input-6736b37133fd8ba9d46c86e76ef3d7e21a2a09541f1ad631d4ec8b94ff78b1c8.json`:
 it reconciles all 127,920 bars, authorizes only the frozen Stage 0 return
 calculation, and computed no return itself.
+
+The inspected result is
+`research_results/2026-07-21-etf-or-momentum-stage0-fe9853712ae52f92b4a88403bdb9270f3f3a8add382a393a2b183529d9cc05d2.json`.
+The exact variant is retired: 97 signals lost 34.213R at 5 bps per side, with
+-0.353R expectancy, 0.465 profit factor, and 34.213R drawdown; at 20 bps per
+side it lost 60.325R. It cannot be tuned on those dates or relabeled as maturity
+evidence. The tournament advances to the next frozen mechanism.
 
 Resumable nonterminal statuses are `READY`, `WAITING_DATA`, `WAITING_MARKET`,
 `WAITING_PROVIDER`, `WAITING_SUBSCRIPTION`, `WAITING_NEW_SESSIONS`,
