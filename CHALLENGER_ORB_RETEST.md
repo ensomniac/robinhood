@@ -161,6 +161,13 @@ hash `58b9ada2...0c020`. The combined input audit confirms the 20-GiB reserve,
 zero target-market artifacts, no substitution, and no outcome access. These
 public inputs must be committed and pushed before `freeze-scanner`.
 
+Inner scanner manifest `8d1f67bb...c30e41` is now frozen over 474 exact
+target/lookback sessions and a point-in-time union of 6,525 symbols. Its
+zero-state audit reports no ready session, provider request, retry, derived
+row, or canonical merge. Substitution and outcome access remain forbidden.
+This manifest and its public status must be committed and pushed before the
+outer challenger mechanism/source contract is frozen.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

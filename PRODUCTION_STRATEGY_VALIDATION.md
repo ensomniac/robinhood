@@ -253,6 +253,11 @@ keeps outcomes locked, and preserves the storage reserve. The master and input
 attestations remain a pre-scanner evidence slice that must be published before
 the inner scanner request graph is frozen.
 
+The inner Alpaca scanner graph is now frozen as manifest `8d1f67bb...c30e41`:
+474 required sessions, 6,525 point-in-time symbols, and zero provider requests,
+derived rows, or canonical merges. It remains a zero-state contract only and
+must be published before the outer challenger trigger/source-rules freeze.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
