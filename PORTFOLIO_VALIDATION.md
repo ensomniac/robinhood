@@ -119,6 +119,22 @@ confirmation as previously inspected evidence, and routes the two ETF families
 to a newly frozen disjoint development manifest. It authorizes no outcome
 relabeling, provider request, broker action, or validation claim.
 
+The outcome-locked first-wave slate is published at
+`strategy_tournament/manifests/portfolio-stage0-slate-1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f.json`
+and inspected with:
+
+```sh
+python3 portfolio_tournament.py inspect \
+  strategy_tournament/manifests/portfolio-stage0-slate-1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f.json
+```
+
+It freezes one variant in each of the ten authorized mechanism families, counts
+the 15 prior policy trials, and leaves ten first-wave variant slots unused. The
+slate itself authorizes no outcome, provider, or broker access. Each variant
+must still publish a separately inspected activation manifest binding exact
+dates, symbols, input hashes, denominators, evaluator implementation, and the
+execution/cost contract before its first Stage 0 outcome is evaluated.
+
 Resumable nonterminal statuses are `READY`, `WAITING_DATA`, `WAITING_MARKET`,
 `WAITING_PROVIDER`, `WAITING_SUBSCRIPTION`, `WAITING_NEW_SESSIONS`,
 `WAITING_USER_CONFIRMATION`, and `PAUSED_SAFETY`. The append-only ignored state

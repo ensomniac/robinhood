@@ -62,6 +62,12 @@ Rebuild it with `python3 portfolio_data_inventory.py inspect`. It keeps the
 existing 95-date catalyst corpus in its honest falsification-only scope and
 shows where new representative or untouched data is still required.
 
+The first ten mechanism variants are preregistered—without outcome, provider,
+or broker authorization—in
+[`strategy_tournament/manifests/portfolio-stage0-slate-1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f.json`](strategy_tournament/manifests/portfolio-stage0-slate-1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f.json).
+`portfolio_tournament.py` deterministically rebuilds and inspects that lock
+before any individual Stage 0 activation can access outcomes.
+
 ### Preserved ORB v3 lane
 
 Strategy version `2026-07-15-orb-v3` remains `UNVALIDATED` and available as one

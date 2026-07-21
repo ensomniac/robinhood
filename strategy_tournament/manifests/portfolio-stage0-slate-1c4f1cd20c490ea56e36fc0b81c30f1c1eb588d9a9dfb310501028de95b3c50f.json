@@ -1,0 +1,396 @@
+{
+  "activation_contract": {
+    "failed_variant_action": "retain exact failure and do not tune on its evaluation corpus",
+    "required_before_any_variant_outcome_evaluation": [
+      "versioned evaluator implementation hash",
+      "exact ordered dates and symbols",
+      "input artifact hashes and point-in-time claim boundary",
+      "complete denominator and missing-data policy",
+      "frozen execution and cost contract"
+    ]
+  },
+  "broker_actions_authorized": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v1",
+  "data_inventory_sha256": "dd77fb3c226732c652000e6a80a2f4336e876a7d1ba005eb9718e0719e63397b",
+  "implementation_sha256": "a0aac8231a904369021f2b86aaee4596709b26e9b5d830954a8e57b046e9be33",
+  "manifest_sha256": "1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f",
+  "maximum_initial_variants": 20,
+  "outcome_access_authorized": false,
+  "portfolio_config_sha256": "1d38f1329bb1c3bee376c7eed7c22e503ce250532c1d5c0e3b23299ae85284fc",
+  "prior_policy_trials_to_retain": 15,
+  "provider_requests_authorized": false,
+  "schema_version": 1,
+  "slate_kind": "mechanism-preregistration",
+  "stage0_falsification": {
+    "effect": "screening survival only; never PILOT_READY or production evidence",
+    "maximum_drawdown_r": 8,
+    "minimum_closed_signals": 30,
+    "minimum_profit_factor": 1.1,
+    "require_positive_20bps_total_r": true,
+    "require_positive_expectancy": true,
+    "rule_violations": 0
+  },
+  "tournament_wave": 1,
+  "unused_initial_variant_capacity": 10,
+  "variants": [
+    {
+      "asset_scope": "SPY,QQQ",
+      "claim_scope": "FALSIFICATION_ONLY",
+      "data_route": "cached SPY/QQQ screening; new disjoint manifest required for development",
+      "execution": {
+        "entry": "next observed one-minute open plus adverse per-side cost",
+        "force_flat_et": "15:50:00",
+        "maximum_entries_per_strategy_per_day": 1,
+        "primary_cost_bps_per_side": 5,
+        "regular_hours_only": true,
+        "same_interval_ambiguity": "stop_first",
+        "signal_information": "completed one-minute bars only",
+        "stress_cost_bps_per_side": [
+          10,
+          20
+        ]
+      },
+      "exit": {
+        "maximum_stop_fraction": 0.012,
+        "stop": "opening-range low",
+        "target_r": 2
+      },
+      "hypothesis": "liquid index ETFs persist after a directional opening auction",
+      "maximum_holding_trading_days": 1,
+      "mechanism_family": "etf-opening-range-momentum",
+      "rules_hash": "a58d7abf034e5ba89bebafcc481337936c8f6962251ed570f5f9de8e79bcb0aa",
+      "signal": {
+        "maximum_chase_fraction": 0.0015,
+        "opening_candle": "close>open",
+        "opening_range_minutes": 5,
+        "trigger": "first completed close above opening-range high and session VWAP",
+        "window_et": "09:35:00-11:00:00"
+      },
+      "variant_id": "etf-or-momentum-v1",
+      "variant_ordinal": 1,
+      "version": "0.1.0-stage0"
+    },
+    {
+      "asset_scope": "SPY,QQQ",
+      "claim_scope": "FALSIFICATION_ONLY",
+      "data_route": "cached SPY/QQQ screening; new disjoint manifest required for development",
+      "execution": {
+        "entry": "next observed one-minute open plus adverse per-side cost",
+        "force_flat_et": "15:50:00",
+        "maximum_entries_per_strategy_per_day": 1,
+        "primary_cost_bps_per_side": 5,
+        "regular_hours_only": true,
+        "same_interval_ambiguity": "stop_first",
+        "signal_information": "completed one-minute bars only",
+        "stress_cost_bps_per_side": [
+          10,
+          20
+        ]
+      },
+      "exit": {
+        "stop": "signal low minus 5 bps",
+        "target": "session VWAP observed after entry"
+      },
+      "hypothesis": "liquid index ETFs mean-revert after an intraday volatility-normalized washout",
+      "maximum_holding_trading_days": 1,
+      "mechanism_family": "etf-vwap-mean-reversion",
+      "rules_hash": "69f4fc7abb25c7853af76a3b701ef495272eb06cfad7be76432cb71b2de0c9b4",
+      "signal": {
+        "maximum_rsi": 25,
+        "minimum_below_vwap_fraction": 0.0075,
+        "rsi_period_bars": 5,
+        "trigger": "bullish completed close above prior bar high while still below VWAP",
+        "window_et": "10:00:00-14:30:00"
+      },
+      "variant_id": "etf-vwap-mean-reversion-v1",
+      "variant_ordinal": 2,
+      "version": "0.1.0-stage0"
+    },
+    {
+      "asset_scope": "common equities above $5",
+      "claim_scope": "FALSIFICATION_ONLY",
+      "data_route": "legacy catalyst corpus screen only; representative universe required next",
+      "execution": {
+        "entry": "next observed one-minute open plus adverse per-side cost",
+        "force_flat_et": "15:50:00",
+        "maximum_entries_per_strategy_per_day": 1,
+        "primary_cost_bps_per_side": 5,
+        "regular_hours_only": true,
+        "same_interval_ambiguity": "stop_first",
+        "signal_information": "completed one-minute bars only",
+        "stress_cost_bps_per_side": [
+          10,
+          20
+        ]
+      },
+      "exit": {
+        "stop": "first-15-minute low",
+        "target_r": 2
+      },
+      "hypothesis": "moderate liquid gaps continue after a stable first fifteen minutes",
+      "maximum_holding_trading_days": 1,
+      "mechanism_family": "equity-gap-continuation",
+      "rules_hash": "e235d0050b184482834620695e474ae0c9cbdeb9e48cfc5a532c2d2b42952467",
+      "signal": {
+        "gap_fraction": [
+          0.02,
+          0.08
+        ],
+        "minimum_breakout_volume_multiple": 1.5,
+        "opening_range_minutes": 15,
+        "trigger": "completed close above first-15-minute high and VWAP",
+        "window_et": "09:45:00-11:30:00"
+      },
+      "variant_id": "equity-gap-continuation-v1",
+      "variant_ordinal": 3,
+      "version": "0.1.0-stage0"
+    },
+    {
+      "asset_scope": "common equities above $5",
+      "claim_scope": "FALSIFICATION_ONLY",
+      "data_route": "legacy catalyst corpus screen only; representative universe required next",
+      "execution": {
+        "entry": "next observed one-minute open plus adverse per-side cost",
+        "force_flat_et": "15:50:00",
+        "maximum_entries_per_strategy_per_day": 1,
+        "primary_cost_bps_per_side": 5,
+        "regular_hours_only": true,
+        "same_interval_ambiguity": "stop_first",
+        "signal_information": "completed one-minute bars only",
+        "stress_cost_bps_per_side": [
+          10,
+          20
+        ]
+      },
+      "exit": {
+        "stop": "session low",
+        "target": "prior close or 2R, whichever is nearer"
+      },
+      "hypothesis": "liquid gap-down overreactions recover after reclaiming both the open and VWAP",
+      "maximum_holding_trading_days": 1,
+      "mechanism_family": "equity-gap-recovery",
+      "rules_hash": "36bba7f57dd03bf3bf5b9f4821dccd5bdccae950c1444ccd8b0dca08e0940410",
+      "signal": {
+        "gap_fraction": [
+          -0.08,
+          -0.02
+        ],
+        "opening_range_minutes": 15,
+        "trigger": "completed close above session open and VWAP after no new low for 10 minutes",
+        "window_et": "09:45:00-12:00:00"
+      },
+      "variant_id": "equity-gap-recovery-v1",
+      "variant_ordinal": 4,
+      "version": "0.1.0-stage0"
+    },
+    {
+      "asset_scope": "common equities above $5",
+      "claim_scope": "FALSIFICATION_ONLY",
+      "data_route": "blocked until full point-in-time cross-sectional ranking is frozen",
+      "execution": {
+        "entry": "next observed one-minute open plus adverse per-side cost",
+        "force_flat_et": "15:50:00",
+        "maximum_entries_per_strategy_per_day": 1,
+        "primary_cost_bps_per_side": 5,
+        "regular_hours_only": true,
+        "same_interval_ambiguity": "stop_first",
+        "signal_information": "completed one-minute bars only",
+        "stress_cost_bps_per_side": [
+          10,
+          20
+        ]
+      },
+      "exit": {
+        "stop": "last five-bar swing low",
+        "target_r": 2
+      },
+      "hypothesis": "large benchmark-relative leaders continue when breaking intraday highs",
+      "maximum_holding_trading_days": 1,
+      "mechanism_family": "relative-strength-continuation",
+      "rules_hash": "390356c7a4854ae408b1219c4d11aaf4d6815a2c1fd0f971b2999967028861a0",
+      "signal": {
+        "minimum_breakout_volume_multiple": 1.5,
+        "minimum_return_minus_spy_fraction": 0.02,
+        "trigger": "completed close above prior high of day and session VWAP",
+        "window_et": "10:00:00-14:30:00"
+      },
+      "variant_id": "relative-strength-continuation-v1",
+      "variant_ordinal": 5,
+      "version": "0.1.0-stage0"
+    },
+    {
+      "asset_scope": "liquid common equities and ETFs above $5",
+      "claim_scope": "FALSIFICATION_ONLY",
+      "data_route": "legacy catalyst corpus screen only; representative universe required next",
+      "execution": {
+        "entry": "next observed one-minute open plus adverse per-side cost",
+        "force_flat_et": "15:50:00",
+        "maximum_entries_per_strategy_per_day": 1,
+        "primary_cost_bps_per_side": 5,
+        "regular_hours_only": true,
+        "same_interval_ambiguity": "stop_first",
+        "signal_information": "completed one-minute bars only",
+        "stress_cost_bps_per_side": [
+          10,
+          20
+        ]
+      },
+      "exit": {
+        "stop": "compression low",
+        "target_r": 2
+      },
+      "hypothesis": "intraday range compression precedes executable directional expansion",
+      "maximum_holding_trading_days": 1,
+      "mechanism_family": "volatility-compression-breakout",
+      "rules_hash": "d05c583e5812e4c6f8e2c94736b8a48ad1d293187e00147616b487603467d912",
+      "signal": {
+        "compression_bars": 20,
+        "maximum_compression_to_first30_range": 0.6,
+        "minimum_breakout_volume_multiple": 1.5,
+        "trigger": "completed close above compression high and VWAP",
+        "window_et": "10:15:00-14:30:00"
+      },
+      "variant_id": "volatility-compression-breakout-v1",
+      "variant_ordinal": 6,
+      "version": "0.1.0-stage0"
+    },
+    {
+      "asset_scope": "point-in-time US common-equity universe",
+      "claim_scope": "FALSIFICATION_ONLY",
+      "data_route": "blocked until point-in-time membership and split-adjusted five-session timelines are frozen",
+      "execution": {
+        "entry": "next regular-session open plus adverse per-side cost",
+        "primary_cost_bps_per_side": 5,
+        "same_interval_ambiguity": "stop_first",
+        "stress_cost_bps_per_side": [
+          10,
+          20
+        ]
+      },
+      "exit": {
+        "maximum_hold_trading_days": 5,
+        "stop": "1.5 times prior-day ATR14"
+      },
+      "hypothesis": "the strongest liquid monthly leaders persist over the next trading week",
+      "maximum_holding_trading_days": 5,
+      "mechanism_family": "cross-sectional-momentum",
+      "rules_hash": "bf887c26176f47d4e3b4e8f5a3dfe96cfbfa03568632152280eb985a69b882c8",
+      "signal": {
+        "lookback_trading_days": 20,
+        "maximum_names": 3,
+        "ranking_time": "15:45:00 ET",
+        "selection": "top decile total return, price above 50-day simple moving average"
+      },
+      "variant_id": "cross-sectional-momentum-v1",
+      "variant_ordinal": 7,
+      "version": "0.1.0-stage0"
+    },
+    {
+      "asset_scope": "liquid common equities and ETFs above $5",
+      "claim_scope": "FALSIFICATION_ONLY",
+      "data_route": "legacy catalyst corpus screen only; representative universe required next",
+      "execution": {
+        "entry": "next observed one-minute open plus adverse per-side cost",
+        "force_flat_et": "15:50:00",
+        "maximum_entries_per_strategy_per_day": 1,
+        "primary_cost_bps_per_side": 5,
+        "regular_hours_only": true,
+        "same_interval_ambiguity": "stop_first",
+        "signal_information": "completed one-minute bars only",
+        "stress_cost_bps_per_side": [
+          10,
+          20
+        ]
+      },
+      "exit": {
+        "stop": "session low",
+        "target_r": 1.5
+      },
+      "hypothesis": "deep short-horizon selloffs rebound after an executable price reversal",
+      "maximum_holding_trading_days": 1,
+      "mechanism_family": "short-horizon-oversold-reversal",
+      "rules_hash": "d14f77eb59cd4dcdb8c7e3d47ca29bef88f78b2593061c02eed2e4b75c00e180",
+      "signal": {
+        "lookback_bars": 30,
+        "maximum_return_fraction": -0.03,
+        "maximum_rsi_before_trigger": 20,
+        "rsi_period_bars": 5,
+        "trigger": "bullish completed close above prior bar high and session VWAP",
+        "window_et": "10:00:00-14:30:00"
+      },
+      "variant_id": "short-horizon-oversold-reversal-v1",
+      "variant_ordinal": 8,
+      "version": "0.1.0-stage0"
+    },
+    {
+      "asset_scope": "primary-source verified positive earnings common equities above $5",
+      "claim_scope": "FALSIFICATION_ONLY",
+      "data_route": "legacy earnings screen with all 15 prior policy trials counted; new source-verified dates required next",
+      "execution": {
+        "entry": "15:46 one-minute open plus adverse per-side cost",
+        "primary_cost_bps_per_side": 5,
+        "same_interval_ambiguity": "stop_first",
+        "stress_cost_bps_per_side": [
+          10,
+          20
+        ]
+      },
+      "exit": {
+        "maximum_hold_trading_days": 5,
+        "stop": "announcement-session low"
+      },
+      "hypothesis": "material positive earnings surprises drift after the announcement session closes strong",
+      "maximum_holding_trading_days": 5,
+      "mechanism_family": "post-earnings-drift",
+      "rules_hash": "d51adb60fa93e608ac93a7066e3084e4b1cbdc36ec32725c6b69903d9927084f",
+      "signal": {
+        "announcement_session": "close>open and close above session VWAP",
+        "decision_time": "15:45:00 ET",
+        "event": "verified positive primary-source earnings release",
+        "gap_fraction": [
+          0.01,
+          0.08
+        ]
+      },
+      "variant_id": "post-earnings-drift-v1",
+      "variant_ordinal": 9,
+      "version": "0.1.0-stage0"
+    },
+    {
+      "asset_scope": "catalyst-verified common equities above $5",
+      "claim_scope": "FALSIFICATION_ONLY",
+      "data_route": "preserved catalyst lane; legacy screen before any resumed source acquisition",
+      "execution": {
+        "entry": "next observed one-minute open plus adverse per-side cost",
+        "force_flat_et": "15:50:00",
+        "maximum_entries_per_strategy_per_day": 1,
+        "primary_cost_bps_per_side": 5,
+        "regular_hours_only": true,
+        "same_interval_ambiguity": "stop_first",
+        "signal_information": "completed one-minute bars only",
+        "stress_cost_bps_per_side": [
+          10,
+          20
+        ]
+      },
+      "exit": {
+        "stop": "retest low",
+        "target_r": 2
+      },
+      "hypothesis": "a clean post-break retest filters false catalyst opening breakouts",
+      "maximum_holding_trading_days": 1,
+      "mechanism_family": "catalyst-orb-retest",
+      "rules_hash": "1d43ea7d5a43fcad8354d789d77d32267599ba46ffa140bcbbdbd51adc4aed86",
+      "signal": {
+        "first_trigger": "completed close above opening-range high and VWAP",
+        "opening_range_minutes": 5,
+        "retest_tolerance_fraction": 0.002,
+        "trigger": "later completed bullish close back above opening-range high after retest",
+        "window_et": "09:40:00-11:00:00"
+      },
+      "variant_id": "catalyst-orb-retest-v1",
+      "variant_ordinal": 10,
+      "version": "0.1.0-stage0"
+    }
+  ]
+}
