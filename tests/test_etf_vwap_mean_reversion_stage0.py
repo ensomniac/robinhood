@@ -79,6 +79,36 @@ class EtfVwapStage0Tests(unittest.TestCase):
         self.assertTrue(inspection["return_evaluation_authorized"])
         self.assertEqual(inspection["returns_computed"], 0)
 
+    def test_published_result_is_an_inspected_retirement(self):
+        root = Path(__file__).resolve().parents[1]
+        result = json.loads(
+            (
+                root
+                / "research_results"
+                / "2026-07-21-etf-vwap-mean-reversion-stage0-6b3cb4374d858c293176a622e3dc23300d1e09e9a7207a2f487bae700281a5bd.json"
+            ).read_text(encoding="utf-8")
+        )
+        inspection = json.loads(
+            (
+                root
+                / "strategy_tournament"
+                / "inspections"
+                / "etf-vwap-mean-reversion-v1-result-faef3c6c57e36f8604179e596c959bd3f7c982848552ad224ef371da7c963176.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            result["result_sha256"],
+            stage0.common._self_hash(result, "result_sha256"),
+        )
+        self.assertFalse(result["stage0_survived"])
+        self.assertEqual(result["maturity_effect"], "NONE")
+        self.assertEqual(result["denominator"]["closed_signals"], 29)
+        self.assertEqual(result["denominator"]["rule_violations"], 0)
+        self.assertLess(result["primary_5bps"]["total_r"], 0)
+        self.assertTrue(inspection["valid"])
+        self.assertFalse(inspection["stage0_survived"])
+
+
 
     def test_simple_rsi_uses_exactly_five_completed_changes(self):
         rows = bars()

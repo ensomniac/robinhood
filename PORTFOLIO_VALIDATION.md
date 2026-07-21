@@ -162,6 +162,12 @@ before the fixed return calculation can run.
 Input inspection `deae004f10d53c1753435155385fc0557b6c39249f43896725bf1237dd32eaa0`
 now reconciles the full graph with zero returns computed.
 
+The inspected result is
+`research_results/2026-07-21-etf-vwap-mean-reversion-stage0-6b3cb4374d858c293176a622e3dc23300d1e09e9a7207a2f487bae700281a5bd.json`.
+This exact variant is also retired: 29 signals lost 8.388R at 5 bps per side,
+with -0.289R expectancy, 0.601 profit factor, and 13.470R drawdown; at 20 bps
+per side it lost 19.686R. The result cannot be tuned or promoted.
+
 Resumable nonterminal statuses are `READY`, `WAITING_DATA`, `WAITING_MARKET`,
 `WAITING_PROVIDER`, `WAITING_SUBSCRIPTION`, `WAITING_NEW_SESSIONS`,
 `WAITING_USER_CONFIRMATION`, and `PAUSED_SAFETY`. The append-only ignored state

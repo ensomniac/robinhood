@@ -77,7 +77,9 @@ evidence and will not be repaired on those dates.
 
 The second frozen trial tests a separately preregistered ETF VWAP-reversion
 mechanism on the same falsification-only denominator. Its return lock remains
-closed until its exact input inspection is committed and pushed.
+closed until its exact input inspection is committed and pushed. The inspected
+trial then failed with 29 signals, -8.388R total, -0.289R expectancy, and 0.601
+profit factor, so the exact rule is retired without tuning.
 
 ### Preserved ORB v3 lane
 
