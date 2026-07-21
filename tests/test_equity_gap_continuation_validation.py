@@ -49,7 +49,7 @@ class EquityGapContinuationValidationTests(unittest.TestCase):
         path = (
             Path(__file__).resolve().parents[1]
             / "strategy_validation/equity_gap_continuation/inspections"
-            / "equity-gap-continuation-v1-freeze-1b1aba2aa72450943c5b59c8e66c2d7a8d945547ecc11c92dca9abfa9b81f2d8.json"
+            / "equity-gap-continuation-v1-freeze-1aa8fad408438bf19824ae1c01ede6ea35c446238d75113666e337e0fdecec67.json"
         )
         inspection = validation._load_json(path)
         self.assertEqual(
