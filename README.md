@@ -144,6 +144,12 @@ inspection, session, shadow, and live evidence is appended to
 privacy-safe and machine-audited; see [SIGNAL_LEDGER.md](SIGNAL_LEDGER.md) for
 the legacy signal schema and `portfolio_maturity.py` for the portfolio schema.
 
+The first Stage 0 survivor, equity gap continuation `1.0.0`, now has a frozen
+representative 2025 validation contract. It reserves 120 chronological sessions
+for development, five for the embargo, and 75 untouched sessions for
+confirmation. `equity_gap_continuation_validation.py` enforces the outcome
+access order; the freeze itself contributes no maturity evidence.
+
 ## Email Notifications
 
 The project can send operational notifications through the existing server mail

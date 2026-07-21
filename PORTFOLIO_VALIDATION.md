@@ -203,6 +203,21 @@ side, and zero violations. This result has no direct maturity effect and may
 only advance the unchanged rule into a newly frozen representative development
 sample.
 
+The survivor's production version is now frozen, with returns still locked, at
+`strategy_validation/equity_gap_continuation/manifests/equity-gap-continuation-v1-fc4674e3384b107043d80bf97a883ed297db3bc36b6f78f223e5cee297cc3809.json`.
+Strategy `equity-gap-continuation` version `1.0.0` retains the Stage 0 signal,
+fill, stop, target, ambiguity, force-flat, and cost semantics while replacing
+the falsification-only catalyst shortlist with the representative production
+universe: complete point-in-time active US common stocks at 09:35 ET. The
+manifest binds 200 disjoint inspected 2025 sessions chronologically: the first
+120 sessions and 4,833 eligible gap symbol-sessions are development, the next
+five sessions are an excluded embargo, and the final 75 sessions and 3,192
+eligible gap symbol-sessions are untouched confirmation. All identities use
+only information available by 09:35. The private exact graph is hash-bound in
+the canonical store, contains no target returns, permits no substitution or
+parameter change, and forbids confirmation collection until a committed,
+independently inspected development result passes every unchanged gate.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
