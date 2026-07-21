@@ -68,6 +68,24 @@ class PostEarningsDriftStage0Tests(unittest.TestCase):
         self.assertEqual(inspection["returns_computed"], 0)
         self.assertTrue(inspection["collection_authorized"])
 
+    def test_market_boundary_inspection_counts_all_prior_provider_calls(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "post-earnings-drift-v1-activation-0159e738fe1e50c3248ea1496d560b264419f80077fc906b91d4cb6373c5d5f4.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["provider_requests_before_this_activation"], 255)
+        self.assertEqual(inspection["provider_requests"], 0)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["collection_authorized"])
+
     def test_published_earnings_collection_counts_every_provider_call(self):
         root = Path(__file__).resolve().parents[1]
         path = (

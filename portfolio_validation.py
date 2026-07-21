@@ -130,6 +130,7 @@ CORE_ARTIFACTS = (
     "strategy_tournament/inspections/post-earnings-drift-v1-activation-fad0b77a77d8ae2d2d68197e00a1c25dd7bc189969c3b8db05a514784cd573e5.json",
     "strategy_tournament/inspections/post-earnings-drift-v1-activation-1f0bc5f5a0416ffe09d832be2f1dac2f72d03236ab775e85c4152dd13ebae58e.json",
     "strategy_tournament/inspections/post-earnings-drift-v1-activation-e728d442e0e32c86ccb4447595f4245a195276fd2b9084c85b2e488fe24b3c0e.json",
+    "strategy_tournament/inspections/post-earnings-drift-v1-activation-0159e738fe1e50c3248ea1496d560b264419f80077fc906b91d4cb6373c5d5f4.json",
     "strategy_tournament/inspections/etf-vwap-mean-reversion-v1-input-deae004f10d53c1753435155385fc0557b6c39249f43896725bf1237dd32eaa0.json",
     "strategy_tournament/inspections/etf-vwap-mean-reversion-v1-result-faef3c6c57e36f8604179e596c959bd3f7c982848552ad224ef371da7c963176.json",
     "strategy_tournament/inspections/etf-or-momentum-v1-input-6736b37133fd8ba9d46c86e76ef3d7e21a2a09541f1ad631d4ec8b94ff78b1c8.json",

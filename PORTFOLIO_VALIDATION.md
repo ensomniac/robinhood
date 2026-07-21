@@ -441,6 +441,12 @@ session, and preserves activation rules hash
 `177a304fe28a4923b373975cb025a7b157fa5b8c476e0bca5a6d35c1b2dc2af9`.
 It requires an independent committed inspection before market collection may
 resume.
+Inspection
+`0159e738fe1e50c3248ea1496d560b264419f80077fc906b91d4cb6373c5d5f4`
+rebuilds the superseding activation, its unchanged strategy-rules hash, the 102
+candidate pairs, and all 255 provider calls made before the activation. It made
+zero additional provider or broker calls, computed zero returns, and authorizes
+the exact market retry.
 
 ## Active discovery funnel
 
