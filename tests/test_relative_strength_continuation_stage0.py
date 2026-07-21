@@ -158,6 +158,26 @@ class RelativeStrengthContinuationStage0Tests(unittest.TestCase):
         self.assertEqual(status["broker_actions"], 0)
         self.assertEqual(status["status"], "READY")
 
+    def test_input_inspection_authorizes_only_frozen_evaluation(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "relative-strength-continuation-v1-input-91fa69d7dea4555c579c1d0d71beb8a3a3176d684d2e5d5e0552098792a36f43.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["target_dates"], 80)
+        self.assertEqual(inspection["qualifying_leader_symbol_sessions"], 8_729)
+        self.assertEqual(inspection["complete_leader_symbol_sessions"], 3_925)
+        self.assertEqual(inspection["provider_requests_during_inspection"], 0)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["return_evaluation_authorized"])
+
     def test_manifest_freezes_new_full_cross_sectional_dates(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)

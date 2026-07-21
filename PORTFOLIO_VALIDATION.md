@@ -532,6 +532,12 @@ calls, retained 3,303,894 regular-session bars, and excluded 8,637 provider
 boundary rows. Exactly 3,925 leaders have complete 390-bar sessions; incomplete
 leaders remain ineligible. No strategy return was computed and no broker action
 occurred.
+Input inspection
+`91fa69d7dea4555c579c1d0d71beb8a3a3176d684d2e5d5e0552098792a36f43`
+rebuilds the activation, frozen leader ranks, outcome status, and all private
+file hashes. It confirms 3,925 complete leader sessions from 8,729 frozen
+leaders across 80 dates, with zero provider calls, returns, or broker actions
+during inspection. The single Stage 0 evaluation is now authorized.
 
 ## Active discovery funnel
 
