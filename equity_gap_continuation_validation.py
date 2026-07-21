@@ -49,7 +49,7 @@ from scanner_replay_alpaca import (
 PROJECT_ROOT = Path(__file__).resolve().parent
 EASTERN = ZoneInfo("America/New_York")
 SCHEMA_VERSION = 1
-DATASET_ID = "dataset-equity-gap-continuation-validation-2026-07-21-v2"
+DATASET_ID = "dataset-equity-gap-continuation-validation-2026-07-21-v3"
 STRATEGY_ID = "equity-gap-continuation"
 STRATEGY_VERSION = "1.0.0"
 MECHANISM_FAMILY = "equity-gap-continuation"
@@ -534,6 +534,12 @@ def build_freeze(store: HistoricalDayStore | None = None) -> tuple[dict[str, Any
             "confirmation_outcomes_observed_or_derived": False,
         },
         "maturity_effect": "NONE_UNTIL_INSPECTED_RECORDS_ARE_APPENDED",
+        "supersedes_freeze": {
+            "manifest_sha256": "fc4674e3384b107043d80bf97a883ed297db3bc36b6f78f223e5cee297cc3809",
+            "reason": "provider end timestamp was inclusive and returned a 16:00 bar; request boundary corrected to 15:59:59.999999 ET",
+            "selection_rules_outcomes_or_costs_changed": False,
+            "prior_return_results_computed": 0,
+        },
     }
     manifest["manifest_sha256"] = common._self_hash(manifest, "manifest_sha256")
     return manifest, private
@@ -724,7 +730,9 @@ def collect_phase(
             if missing:
                 session_day = date.fromisoformat(day)
                 session_start = datetime.combine(session_day, time(9, 30), tzinfo=EASTERN)
-                session_end = datetime.combine(session_day, time(16, 0), tzinfo=EASTERN)
+                session_end = datetime.combine(
+                    session_day, time(15, 59, 59, 999999), tzinfo=EASTERN
+                )
                 for offset in range(0, len(missing), config.batch_size):
                     batch = missing[offset : offset + config.batch_size]
                     rows_by_symbol, _ = client.fetch(

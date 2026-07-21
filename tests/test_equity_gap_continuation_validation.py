@@ -16,7 +16,7 @@ class EquityGapContinuationValidationTests(unittest.TestCase):
         path = (
             Path(__file__).resolve().parents[1]
             / "strategy_validation/equity_gap_continuation/manifests"
-            / "equity-gap-continuation-v1-fc4674e3384b107043d80bf97a883ed297db3bc36b6f78f223e5cee297cc3809.json"
+            / "equity-gap-continuation-v1-0145f77948ff8d7398c69ec7ae2229b72cfb7a07bab055c3dcfb15762d5cea43.json"
         )
         manifest = validation._load_json(path)
         validation._validate_manifest(manifest)
@@ -36,6 +36,13 @@ class EquityGapContinuationValidationTests(unittest.TestCase):
         )
         self.assertFalse(
             manifest["access_contract"]["confirmation_outcomes_observed_or_derived"]
+        )
+        self.assertEqual(
+            manifest["supersedes_freeze"]["manifest_sha256"],
+            "fc4674e3384b107043d80bf97a883ed297db3bc36b6f78f223e5cee297cc3809",
+        )
+        self.assertEqual(
+            manifest["supersedes_freeze"]["prior_return_results_computed"], 0
         )
 
     def test_published_freeze_inspection_computes_no_returns(self):

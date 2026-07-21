@@ -204,7 +204,7 @@ only advance the unchanged rule into a newly frozen representative development
 sample.
 
 The survivor's production version is now frozen, with returns still locked, at
-`strategy_validation/equity_gap_continuation/manifests/equity-gap-continuation-v1-fc4674e3384b107043d80bf97a883ed297db3bc36b6f78f223e5cee297cc3809.json`.
+`strategy_validation/equity_gap_continuation/manifests/equity-gap-continuation-v1-0145f77948ff8d7398c69ec7ae2229b72cfb7a07bab055c3dcfb15762d5cea43.json`.
 Strategy `equity-gap-continuation` version `1.0.0` retains the Stage 0 signal,
 fill, stop, target, ambiguity, force-flat, and cost semantics while replacing
 the falsification-only catalyst shortlist with the representative production
@@ -220,8 +220,13 @@ independently inspected development result passes every unchanged gate.
 Independent freeze inspection
 `strategy_validation/equity_gap_continuation/inspections/equity-gap-continuation-v1-freeze-1b1aba2aa72450943c5b59c8e66c2d7a8d945547ecc11c92dca9abfa9b81f2d8.json`
 exactly rebuilds the public and private selection graph, confirms zero overlap,
-zero computed returns, zero provider requests, and zero broker actions, and
-authorizes development collection only.
+zero computed returns, zero provider requests, and zero broker actions. The
+inspected predecessor freeze was superseded before evaluation after its first
+collection request revealed that the provider treated the 16:00 endpoint as
+inclusive. No return was computed; the replacement changes only the request
+boundary to 15:59:59.999999 ET and preserves every date, candidate, rule, cost,
+and outcome definition. The replacement requires its own committed inspection
+before development collection resumes.
 
 ## Active discovery funnel
 
