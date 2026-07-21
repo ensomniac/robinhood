@@ -214,6 +214,18 @@ It finds zero v2 target-market artifact and authorizes coarse scanner
 collection only after this outer contract, status, registry event, and durable
 finding are committed and pushed.
 
+That v2 scanner collection and result are now independently `READY`. All 474
+sessions validate: 466 came from the frozen attested v1 reuse set, the remaining
+eight used 969 exact Alpaca SIP requests with zero retries, and no invalid
+session exists. The scanner build evaluates 536,967 point-in-time universe
+rows, retains 4,019 coarse-eligible rows, and selects 1,826 dynamic shortlist
+rows across all 100 dates. The independent inspector rehashes all source
+sessions, recomputes every threshold disposition, rank, shortlist hash, split
+adjustment, and 2,492,864 canonical documents, and reports `valid=true`.
+This is scanner evidence only: selected-symbol causal detail, catalyst sources,
+quotes, breaks, returns, and outcomes still require a separately frozen
+post-scanner contract.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

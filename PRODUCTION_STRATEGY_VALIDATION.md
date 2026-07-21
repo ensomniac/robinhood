@@ -295,6 +295,16 @@ source semantics, shared scanner lock, storage reserve, zero substitutions,
 zero v2 target-market artifacts, and the closed outcome lock. This slice must
 be committed and pushed before coarse scanner collection resumes.
 
+The v2 coarse scanner dataset is now independently `READY`. Collection
+materialized all 474 exact sessions, reused 466 frozen attested sessions, made
+969 Alpaca SIP requests for the remaining eight with zero retries, and retained
+zero invalid session. Independent inspection recomputes 536,967 point-in-time
+universe evaluations, 4,019 coarse-eligible rows, 1,826 dynamic shortlist
+selections across all 100 dates, every rank and shortlist hash, all source
+attestations and split adjustments, and 2,492,864 canonical documents. The
+result remains outcome-blind and authorizes only a separately frozen
+selected-symbol causal-detail and primary-source acquisition boundary.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
