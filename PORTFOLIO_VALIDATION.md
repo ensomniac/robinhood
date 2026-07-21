@@ -259,6 +259,18 @@ closed signal records. `portfolio_maturity.py` reports the exact version as
 development lane and mechanically rejects any later confirmation, shadow, or
 live record for that retired identity.
 
+The fourth activation is frozen, with returns still locked, at
+`strategy_tournament/activations/equity-gap-recovery-v1-550a812bdf0e39f272b9c055c1111bef9cffecf13ad7e69c8f5feb1ecca36bfb.json`.
+It reuses the already inspected legacy denominator without adding or replacing
+dates or symbols: 100 requested dates, 95 available sessions, five permanent
+fidelity exclusions, 950 ordered symbol-sessions, and 950 verified prior
+closes. The contract fixes a 2-8% gap down, a reclaim of both the session open
+and completed-bar VWAP after ten completed minutes without a new low, next-bar
+entry, the decision-time session low as stop, the nearer of prior close or raw
+2R as target, stop-first ambiguity, 15:50 force-flat, one daily selection, and
+5/10/20 bps-per-side costs. It authorizes no return access until its separate
+input inspection is committed and pushed.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
