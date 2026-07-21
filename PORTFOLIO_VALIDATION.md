@@ -159,6 +159,8 @@ simple five-change RSI washout, later bullish reversal, next-bar entry,
 trigger-low stop, decision-time VWAP target, daily selection, force-flat, and
 5/10/20 bps-per-side costs. It must pass its own committed input inspection
 before the fixed return calculation can run.
+Input inspection `deae004f10d53c1753435155385fc0557b6c39249f43896725bf1237dd32eaa0`
+now reconciles the full graph with zero returns computed.
 
 Resumable nonterminal statuses are `READY`, `WAITING_DATA`, `WAITING_MARKET`,
 `WAITING_PROVIDER`, `WAITING_SUBSCRIPTION`, `WAITING_NEW_SESSIONS`,

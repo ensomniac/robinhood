@@ -86,6 +86,7 @@ CORE_ARTIFACTS = (
     "strategy_tournament/manifests/portfolio-stage0-slate-1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f.json",
     "strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json",
     "strategy_tournament/activations/etf-vwap-mean-reversion-v1-ecaff3785f2dc9fe3f14332be9e40e056e08aacf55f86487cb2f25df62688a47.json",
+    "strategy_tournament/inspections/etf-vwap-mean-reversion-v1-input-deae004f10d53c1753435155385fc0557b6c39249f43896725bf1237dd32eaa0.json",
     "strategy_tournament/inspections/etf-or-momentum-v1-input-6736b37133fd8ba9d46c86e76ef3d7e21a2a09541f1ad631d4ec8b94ff78b1c8.json",
     "strategy_tournament/inspections/etf-or-momentum-v1-result-9db03d7d7e497917e6a4ee663ffee68506bd72a0050a873a903906ff4715fa6b.json",
     "PRODUCTION_STRATEGY_VALIDATION.md",

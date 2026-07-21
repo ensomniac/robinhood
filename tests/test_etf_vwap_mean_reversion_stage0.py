@@ -63,6 +63,23 @@ class EtfVwapStage0Tests(unittest.TestCase):
         self.assertFalse(manifest["confirmation_evidence_eligible"])
         self.assertFalse(manifest["return_evaluation_authorized_before_inspection"])
 
+    def test_published_input_inspection_computed_no_returns(self):
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "strategy_tournament"
+            / "inspections"
+            / "etf-vwap-mean-reversion-v1-input-deae004f10d53c1753435155385fc0557b6c39249f43896725bf1237dd32eaa0.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertTrue(inspection["valid"])
+        self.assertTrue(inspection["return_evaluation_authorized"])
+        self.assertEqual(inspection["returns_computed"], 0)
+
+
     def test_simple_rsi_uses_exactly_five_completed_changes(self):
         rows = bars()
         self.assertIsNone(stage0._rsi_five(rows, 4))
