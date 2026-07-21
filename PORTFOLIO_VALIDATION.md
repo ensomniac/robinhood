@@ -402,6 +402,11 @@ activation
 keeps the exact strategy rules and 102-pair denominator unchanged, explicitly
 counts the 84 discarded provider calls, and requires a new committed inspection
 before one fully accounted metadata retry.
+Inspection
+`1f0bc5f5a0416ffe09d832be2f1dac2f72d03236ab775e85c4152dd13ebae58e`
+rebuilds that superseding activation with zero additional provider calls and
+zero returns. It verifies the unchanged 102-pair rule contract, the 84-call
+incident accounting, and authorizes one fully retained metadata retry.
 
 ## Active discovery funnel
 

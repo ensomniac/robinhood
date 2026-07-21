@@ -32,6 +32,24 @@ class PostEarningsDriftStage0Tests(unittest.TestCase):
         self.assertTrue(inspection["collection_authorized"])
         self.assertFalse(inspection["return_evaluation_authorized"])
 
+    def test_superseding_inspection_counts_discarded_provider_calls(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "post-earnings-drift-v1-activation-1f0bc5f5a0416ffe09d832be2f1dac2f72d03236ab775e85c4152dd13ebae58e.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["provider_requests_before_this_activation"], 84)
+        self.assertEqual(inspection["provider_requests"], 0)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["collection_authorized"])
+
     def test_manifest_freezes_complete_source_verified_denominator(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)
