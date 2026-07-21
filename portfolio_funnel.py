@@ -45,6 +45,15 @@ SECOND_WAVE = (
     ("turn-of-month-etf-seasonality-v1", "turn-of-month-etf-seasonality"),
 )
 
+FAILURE_CATEGORY_RULES = (
+    ("insufficient_signal_capacity", "closed signals are below the Stage 0 minimum"),
+    ("nonpositive_expectancy", "primary expectancy is not positive"),
+    ("weak_profit_factor", "primary profit factor is below the Stage 0 minimum"),
+    ("excessive_drawdown", "primary drawdown exceeds the Stage 0 maximum"),
+    ("cost_fragility", "20 bps-per-side total R is not positive"),
+    ("rule_violations", "Stage 0 rule violations are not zero"),
+)
+
 
 class PortfolioFunnelError(RuntimeError):
     """The public discovery funnel is incomplete, inconsistent, or unsafe."""
@@ -365,6 +374,268 @@ def _candidate_phase(assessment: Mapping[str, Any]) -> str:
     return str(assessment.get("validation_phase", "DEVELOPMENT"))
 
 
+def _development_failure(
+    maturity_report: Mapping[str, Any], *, root: Path
+) -> dict[str, Any]:
+    assessments = maturity_report.get("strategies")
+    if not isinstance(assessments, list):
+        raise PortfolioFunnelError("portfolio maturity report lacks strategies")
+    matches = [
+        item
+        for item in assessments
+        if item.get("source_stage0_variant_id") == "equity-gap-continuation-v1"
+    ]
+    if len(matches) != 1 or matches[0].get("retired_after_development") is not True:
+        raise PortfolioFunnelError(
+            "first-wave taxonomy requires the inspected development retirement"
+        )
+    assessment = matches[0]
+    metrics = assessment.get("metrics")
+    development = metrics.get("development") if isinstance(metrics, Mapping) else None
+    if not isinstance(development, Mapping):
+        raise PortfolioFunnelError("development failure metrics are missing")
+    ledger_path = root / "PORTFOLIO_SIGNALS.jsonl"
+    try:
+        records = [
+            json.loads(line)
+            for line in ledger_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+    except (OSError, json.JSONDecodeError) as exc:
+        raise PortfolioFunnelError(f"cannot read {ledger_path}: {exc}") from exc
+    inspections = [
+        item
+        for item in records
+        if item.get("record_type") == "inspection"
+        and item.get("source_stage0_variant_id") == "equity-gap-continuation-v1"
+        and item.get("retired_after_development") is True
+    ]
+    if len(inspections) != 1:
+        raise PortfolioFunnelError(
+            "first-wave taxonomy requires one development inspection ledger record"
+        )
+    evidence = inspections[0].get("evidence_hashes")
+    if not isinstance(evidence, Mapping):
+        raise PortfolioFunnelError("development inspection evidence hashes are missing")
+    result_paths = [
+        path
+        for path in evidence
+        if path.startswith("research_results/") and "-development-" in path
+    ]
+    inspection_paths = [
+        path
+        for path in evidence
+        if "strategy_validation/" in path and "-development-result-" in path
+    ]
+    if len(result_paths) != 1 or len(inspection_paths) != 1:
+        raise PortfolioFunnelError(
+            "development result and result-inspection evidence are ambiguous"
+        )
+    for path in (*result_paths, *inspection_paths):
+        if _file_hash(root / path) != evidence[path]:
+            raise PortfolioFunnelError(f"development evidence hash drifted: {path}")
+    return {
+        "source_stage0_variant_id": "equity-gap-continuation-v1",
+        "strategy_id": str(assessment["strategy_id"]),
+        "strategy_version": str(assessment["strategy_version"]),
+        "status": "RETIRED_DEVELOPMENT",
+        "closed_signals": int(development["signals"]),
+        "expectancy_r": development["expectancy_r"],
+        "profit_factor": development["profit_factor"],
+        "bootstrap_lower_expectancy_r": development[
+            "bootstrap_lower_expectancy_r"
+        ],
+        "maximum_drawdown_r": development["maximum_drawdown_r"],
+        "phase_blockers": list(assessment["current_phase_blockers"]),
+        "development_result_path": result_paths[0],
+        "development_result_file_sha256": str(evidence[result_paths[0]]),
+        "development_result_inspection_path": inspection_paths[0],
+        "development_result_inspection_file_sha256": str(
+            evidence[inspection_paths[0]]
+        ),
+    }
+
+
+def build_failure_taxonomy(
+    maturity_report: Mapping[str, Any], *, root: Path = PROJECT_ROOT
+) -> dict[str, Any]:
+    """Rebuild the immutable first-wave failure taxonomy from inspected evidence."""
+
+    dispositions = load_stage0_dispositions(root)
+    if len(dispositions) != len(FIRST_WAVE_ORDER):
+        raise PortfolioFunnelError("first wave is incomplete")
+    development_failure = _development_failure(maturity_report, root=root)
+    slate_path = _one_path(
+        root,
+        "strategy_tournament/manifests/portfolio-stage0-slate-*.json",
+        "first-wave slate",
+    )
+    slate = _read_json(slate_path)
+    disposition_records: list[dict[str, Any]] = []
+    evidence_hashes = {str(slate_path.relative_to(root)): _file_hash(slate_path)}
+    for disposition in dispositions:
+        inspection = _read_json(root / disposition["result_inspection_path"])
+        result_path = str(disposition["result_path"])
+        inspection_path = str(disposition["result_inspection_path"])
+        evidence_hashes[result_path] = _file_hash(root / result_path)
+        evidence_hashes[inspection_path] = _file_hash(root / inspection_path)
+        disposition_records.append(
+            {
+                "variant_id": disposition["variant_id"],
+                "mechanism_family": disposition["mechanism_family"],
+                "status": disposition["status"],
+                "closed_signals": disposition["closed_signals"],
+                "rules_hash": disposition["rules_hash"],
+                "stage0_result_sha256": disposition["stage0_result_sha256"],
+                "result_inspection_sha256": inspection["inspection_sha256"],
+                "blockers": disposition["blockers"],
+            }
+        )
+    evidence_hashes[development_failure["development_result_path"]] = (
+        development_failure["development_result_file_sha256"]
+    )
+    evidence_hashes[development_failure["development_result_inspection_path"]] = (
+        development_failure["development_result_inspection_file_sha256"]
+    )
+    failure_categories = []
+    for category, blocker in FAILURE_CATEGORY_RULES:
+        variants = [
+            item["variant_id"]
+            for item in dispositions
+            if blocker in item["blockers"]
+        ]
+        if variants:
+            failure_categories.append(
+                {
+                    "category": category,
+                    "gate": blocker,
+                    "variant_count": len(variants),
+                    "variant_ids": variants,
+                }
+            )
+    taxonomy: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_kind": "first-wave-failure-taxonomy",
+        "campaign_id": "multi-strategy-portfolio-validation-v1",
+        "claim_scope": "FIRST_WAVE_FAILURE_CLASSIFICATION_ONLY",
+        "first_wave_slate_manifest_sha256": slate["manifest_sha256"],
+        "first_wave_complete": True,
+        "stage0_disposed_count": len(dispositions),
+        "stage0_retired_count": sum(
+            item["status"] == "RETIRED" for item in dispositions
+        ),
+        "stage0_survivor_count": sum(
+            item["status"] == "SURVIVED" for item in dispositions
+        ),
+        "stage0_dispositions": disposition_records,
+        "stage0_failure_categories": failure_categories,
+        "development_dispositions": [development_failure],
+        "first_wave_active_candidates": 0,
+        "failure_summary": [
+            "Most first-wave exact variants failed edge, drawdown, or 20-bps cost gates.",
+            "Four exact variants were capacity-limited on their frozen screening corpora.",
+            "The sole Stage 0 survivor failed representative development across edge, bootstrap, drawdown, half-sample, best-trade removal, and cost-stress gates.",
+        ],
+        "second_wave_rationale": [
+            "Use highly liquid ETF rotation and trend mechanisms to reduce dependence on sparse single-name catalyst corpora.",
+            "Test overnight, multi-day reversal, structural momentum, and calendar mechanisms that are distinct from the failed intraday breakout and mean-reversion variants.",
+            "Treat every second-wave entry as a new exact frozen variant; no first-wave parameter repair or maturity inheritance is permitted.",
+        ],
+        "second_wave_queue": [
+            {"variant_id": variant_id, "mechanism_family": family}
+            for variant_id, family in SECOND_WAVE
+        ],
+        "second_wave_rules_frozen": False,
+        "second_wave_outcome_access_authorized": False,
+        "maturity_effect": "NONE",
+        "provider_requests": 0,
+        "broker_actions": 0,
+        "evidence_hashes": dict(sorted(evidence_hashes.items())),
+    }
+    taxonomy["taxonomy_sha256"] = _self_hash(taxonomy, "taxonomy_sha256")
+    return taxonomy
+
+
+def build_failure_taxonomy_inspection(
+    taxonomy_path: Path,
+    maturity_report: Mapping[str, Any],
+    *,
+    root: Path = PROJECT_ROOT,
+) -> dict[str, Any]:
+    """Independently rebuild a published taxonomy without outcome computation."""
+
+    taxonomy = _read_json(taxonomy_path)
+    expected = build_failure_taxonomy(maturity_report, root=root)
+    if taxonomy != expected:
+        raise PortfolioFunnelError("first-wave failure taxonomy does not rebuild")
+    inspection: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "inspection_kind": "first-wave-failure-taxonomy-inspection",
+        "taxonomy_sha256": taxonomy["taxonomy_sha256"],
+        "taxonomy_file_sha256": _file_hash(taxonomy_path),
+        "stage0_disposed_count": taxonomy["stage0_disposed_count"],
+        "stage0_retired_count": taxonomy["stage0_retired_count"],
+        "stage0_survivor_count": taxonomy["stage0_survivor_count"],
+        "retired_development_count": len(taxonomy["development_dispositions"]),
+        "evidence_files_verified": len(taxonomy["evidence_hashes"]),
+        "provider_requests": 0,
+        "broker_actions": 0,
+        "returns_computed": 0,
+        "maturity_effect": "NONE",
+        "valid": True,
+    }
+    inspection["inspection_sha256"] = _self_hash(
+        inspection, "inspection_sha256"
+    )
+    return inspection
+
+
+def load_failure_taxonomy_status(
+    maturity_report: Mapping[str, Any], *, root: Path = PROJECT_ROOT
+) -> dict[str, Any]:
+    taxonomy_paths = sorted(
+        (root / "strategy_tournament" / "second_wave").glob(
+            "first-wave-failure-taxonomy-*.json"
+        )
+    )
+    if len(taxonomy_paths) > 1:
+        raise PortfolioFunnelError("multiple first-wave failure taxonomies exist")
+    inspection_paths = sorted(
+        (root / "strategy_tournament" / "second_wave" / "inspections").glob(
+            "first-wave-failure-taxonomy-*.json"
+        )
+    )
+    if len(inspection_paths) > 1:
+        raise PortfolioFunnelError("multiple failure-taxonomy inspections exist")
+    if not taxonomy_paths:
+        if inspection_paths:
+            raise PortfolioFunnelError("failure-taxonomy inspection has no artifact")
+        return {"taxonomy_paths": [], "inspection_paths": [], "inspected": False}
+    taxonomy_path = taxonomy_paths[0]
+    taxonomy = _read_json(taxonomy_path)
+    expected = build_failure_taxonomy(maturity_report, root=root)
+    if taxonomy != expected:
+        raise PortfolioFunnelError("first-wave failure taxonomy does not rebuild")
+    if not inspection_paths:
+        return {
+            "taxonomy_paths": [str(taxonomy_path.relative_to(root))],
+            "inspection_paths": [],
+            "inspected": False,
+        }
+    inspection_path = inspection_paths[0]
+    inspection = _read_json(inspection_path)
+    expected_inspection = build_failure_taxonomy_inspection(
+        taxonomy_path, maturity_report, root=root
+    )
+    if inspection != expected_inspection:
+        raise PortfolioFunnelError("first-wave failure-taxonomy inspection drifted")
+    return {
+        "taxonomy_paths": [str(taxonomy_path.relative_to(root))],
+        "inspection_paths": [str(inspection_path.relative_to(root))],
+        "inspected": True,
+    }
+
+
 def build_funnel_status(
     maturity_report: Mapping[str, Any], *, root: Path = PROJECT_ROOT
 ) -> dict[str, Any]:
@@ -439,15 +710,11 @@ def build_funnel_status(
         if item["validation_phase"] in {"CONFIRMATION", "SHADOW_QUALIFICATION"}
     ]
     first_wave_complete = len(dispositions) == len(FIRST_WAVE_ORDER)
-    failure_taxonomies = sorted(
-        (root / "strategy_tournament" / "second_wave").glob(
-            "first-wave-failure-taxonomy-*.json"
-        )
-    )
+    taxonomy_status = load_failure_taxonomy_status(maturity_report, root=root)
     second_wave_required = first_wave_complete and len(survivors) < int(
         maturity_report.get("target_pilot_ready_strategies", 3)
     )
-    second_wave_open = second_wave_required and len(failure_taxonomies) == 1
+    second_wave_open = second_wave_required and taxonomy_status["inspected"]
     notification_reasons: list[str] = []
     if dispositions and len(dispositions) % 3 == 0:
         notification_reasons.append("three Stage 0 dispositions completed")
@@ -479,7 +746,10 @@ def build_funnel_status(
             "required": second_wave_required,
             "open": second_wave_open,
             "failure_taxonomy_paths": [
-                str(path.relative_to(root)) for path in failure_taxonomies
+                *taxonomy_status["taxonomy_paths"]
+            ],
+            "failure_taxonomy_inspection_paths": [
+                *taxonomy_status["inspection_paths"]
             ],
             "candidate_queue": [
                 {"variant_id": variant_id, "mechanism_family": family}
@@ -518,7 +788,10 @@ def audit_funnel(
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("status", "audit"))
+    parser.add_argument(
+        "command",
+        choices=("status", "audit", "build-failure-taxonomy", "inspect-failure-taxonomy"),
+    )
     return parser
 
 
@@ -528,11 +801,51 @@ def main(argv: Sequence[str] | None = None) -> int:
         from portfolio_maturity import build_report
 
         report = build_report()
-        result = (
-            build_funnel_status(report)
-            if args.command == "status"
-            else audit_funnel(report)
-        )
+        if args.command == "status":
+            result = build_funnel_status(report)
+        elif args.command == "audit":
+            result = audit_funnel(report)
+        elif args.command == "build-failure-taxonomy":
+            taxonomy = build_failure_taxonomy(report)
+            output_path = (
+                PROJECT_ROOT
+                / "strategy_tournament"
+                / "second_wave"
+                / f"first-wave-failure-taxonomy-{taxonomy['taxonomy_sha256']}.json"
+            )
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(
+                json.dumps(taxonomy, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            result = {
+                "taxonomy_sha256": taxonomy["taxonomy_sha256"],
+                "written": str(output_path.relative_to(PROJECT_ROOT)),
+            }
+        else:
+            taxonomy_path = _one_path(
+                PROJECT_ROOT,
+                "strategy_tournament/second_wave/first-wave-failure-taxonomy-*.json",
+                "first-wave failure taxonomy",
+            )
+            inspection = build_failure_taxonomy_inspection(taxonomy_path, report)
+            output_path = (
+                PROJECT_ROOT
+                / "strategy_tournament"
+                / "second_wave"
+                / "inspections"
+                / "first-wave-failure-taxonomy-"
+                f"{inspection['inspection_sha256']}.json"
+            )
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(
+                json.dumps(inspection, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            result = {
+                "inspection_sha256": inspection["inspection_sha256"],
+                "written": str(output_path.relative_to(PROJECT_ROOT)),
+            }
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (OSError, PortfolioFunnelError, ValueError) as exc:

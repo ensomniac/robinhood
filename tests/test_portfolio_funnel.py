@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 import unittest
 
 import portfolio_funnel as funnel
@@ -58,7 +60,7 @@ class PortfolioFunnelTests(unittest.TestCase):
             [],
         )
 
-    def test_second_wave_is_fixed_and_closed_before_failure_taxonomy(self):
+    def test_second_wave_is_fixed_and_closed_before_taxonomy_inspection(self):
         status = funnel.build_funnel_status(maturity.build_report())
         self.assertTrue(status["second_wave"]["required"])
         self.assertFalse(status["second_wave"]["open"])
@@ -70,6 +72,27 @@ class PortfolioFunnelTests(unittest.TestCase):
             ],
             [family for _, family in funnel.SECOND_WAVE],
         )
+
+    def test_first_wave_taxonomy_rebuilds_and_requires_independent_inspection(self):
+        status = funnel.build_funnel_status(maturity.build_report())
+        self.assertEqual(len(status["second_wave"]["failure_taxonomy_paths"]), 1)
+        self.assertEqual(
+            status["second_wave"]["failure_taxonomy_inspection_paths"], []
+        )
+        path = Path(__file__).resolve().parents[1] / status["second_wave"][
+            "failure_taxonomy_paths"
+        ][0]
+        taxonomy = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            taxonomy["taxonomy_sha256"],
+            funnel._self_hash(taxonomy, "taxonomy_sha256"),
+        )
+        self.assertEqual(taxonomy["stage0_disposed_count"], 10)
+        self.assertEqual(taxonomy["stage0_retired_count"], 9)
+        self.assertEqual(taxonomy["stage0_survivor_count"], 1)
+        self.assertEqual(taxonomy["first_wave_active_candidates"], 0)
+        self.assertEqual(len(taxonomy["development_dispositions"]), 1)
+        self.assertEqual(taxonomy["maturity_effect"], "NONE")
 
     def test_stage0_gate_rebuilds_all_published_failures(self):
         dispositions = funnel.load_stage0_dispositions()

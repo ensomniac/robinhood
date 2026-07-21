@@ -1,0 +1,314 @@
+{
+  "artifact_kind": "first-wave-failure-taxonomy",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v1",
+  "claim_scope": "FIRST_WAVE_FAILURE_CLASSIFICATION_ONLY",
+  "development_dispositions": [
+    {
+      "bootstrap_lower_expectancy_r": -0.16840333553276882,
+      "closed_signals": 111,
+      "development_result_file_sha256": "d320954dbc6c17ca8f43c9e9641126f366a78d3cfa1ea19508cc71acfc260833",
+      "development_result_inspection_file_sha256": "433824c9c8aae31acece5aaf3461190eb4f0d75be2569bb89dd3aab02287fcb3",
+      "development_result_inspection_path": "strategy_validation/equity_gap_continuation/inspections/equity-gap-continuation-v1-development-result-bf1050d3d88b2402890befd5c583f2b623b14fa1b33f2edc9f89692e130db8c6.json",
+      "development_result_path": "research_results/2026-07-21-equity-gap-continuation-development-3add7a7bdbd3a47282663a0daa41e17d1b6d3e6e780f08d959cf81ca4f2dba92.json",
+      "expectancy_r": -0.06937772763368799,
+      "maximum_drawdown_r": 15.946106029520008,
+      "phase_blockers": [
+        "development expectancy R is not above required 0.0",
+        "development profit factor is below required 1.3",
+        "development bootstrap lower expectancy R is not above 0",
+        "development maximum drawdown R is missing or above 6.0",
+        "development first chronological half total R is not above 0",
+        "development total R without five best is not above 0",
+        "development 10 bps stress total R is not above 0",
+        "development 10 bps stress profit factor is below required 1.2",
+        "development 10 bps stress drawdown R is missing or above 6.0",
+        "development 20 bps stress total R is not above 0",
+        "development 20 bps stress profit factor is below required 1.2",
+        "development 20 bps stress drawdown R is missing or above 6.0"
+      ],
+      "profit_factor": 0.8065314378307977,
+      "source_stage0_variant_id": "equity-gap-continuation-v1",
+      "status": "RETIRED_DEVELOPMENT",
+      "strategy_id": "equity-gap-continuation",
+      "strategy_version": "1.0.0"
+    }
+  ],
+  "evidence_hashes": {
+    "research_results/2026-07-21-catalyst-orb-retest-stage0-60d3dd20a62dbff480148ac19aaaa047e036829385dbbe75cba0d044fc558be9.json": "467fbfe7c7cb6bcd8a4c5453c3a5f9a7128976e045429feb898f6c6d663de9a1",
+    "research_results/2026-07-21-cross-sectional-momentum-stage0-9a165ae149b2f9220a2d78c2251a34617ad63ed2a468ded8749fb5b0cc0a8869.json": "b7d522fc2cdbb057687dd8430e6527508b6828c3b8267ee08f6b3cbb11c508da",
+    "research_results/2026-07-21-equity-gap-continuation-development-3add7a7bdbd3a47282663a0daa41e17d1b6d3e6e780f08d959cf81ca4f2dba92.json": "d320954dbc6c17ca8f43c9e9641126f366a78d3cfa1ea19508cc71acfc260833",
+    "research_results/2026-07-21-equity-gap-continuation-stage0-1f447fb4e066b041463e62e26d7e752a12e1b90da7c13b6881ea42e10dda9e94.json": "cb3e2bf7977ddeccd65fcac21f98274411b3e9feeaceb3f77802c963310db59e",
+    "research_results/2026-07-21-equity-gap-recovery-stage0-f0bb51acd548819e91292210b5b59029fa7b4307a37770b084707e1530b5c1bc.json": "1eb262948c101e13a61b25e220e04c9f44abbca0f1848dcb8866a162b28d1665",
+    "research_results/2026-07-21-etf-or-momentum-stage0-fe9853712ae52f92b4a88403bdb9270f3f3a8add382a393a2b183529d9cc05d2.json": "e7bca09d61755c6b03caac1a7b260a52a40d0273b1554b97183d0eb8bf696656",
+    "research_results/2026-07-21-etf-vwap-mean-reversion-stage0-6b3cb4374d858c293176a622e3dc23300d1e09e9a7207a2f487bae700281a5bd.json": "1475ce8b046b4a8c2a70ce23516c177cacbe7142d750d0049e8bdcd5322a770d",
+    "research_results/2026-07-21-post-earnings-drift-stage0-08f475e3800530d3044ca09948612f61bb6e3fc9f3da8a84aa8c9d30d6f70357.json": "82acc18fb1788425186bf5195bd4c4f89c0101a02c0b9a16058623772c16697c",
+    "research_results/2026-07-21-relative-strength-continuation-stage0-cfe76e6678078f2a5857c8365322215274134a807851014b6babafc90896e0d8.json": "b82e428e57636b6a979e8e12da50e18f69860140c9b6cd24431898dfcf4104d4",
+    "research_results/2026-07-21-short-horizon-oversold-reversal-stage0-bb2152f3f18aef92bac5c7d5dcffc15bdbe2967525e63fa6678c6c553aeb75c6.json": "3e7815d47ceed50a67f97e95c9617d39923e6c20fc58c23e5b0513106640a94e",
+    "research_results/2026-07-21-volatility-compression-breakout-stage0-5959e922a6cdaf117521a2a70877984497077f3c79acd5aedf2ac87eea0bbdfe.json": "4f9b7cb5e07b0778ecb8f20116b45a9bc8f1e2a477ca451ac1cd20287f18c361",
+    "strategy_tournament/inspections/catalyst-orb-retest-v1-result-caefe1a76c8b17c94bc412dd6cbd24f3f5906d9d4be29cb7e5e3b34596a8e278.json": "2ead7951b732bdb15b6a976bac5a416e685718165216a6fd0a95d4cb11ffbd31",
+    "strategy_tournament/inspections/cross-sectional-momentum-v1-result-fa04429130158e31d221151b1d00d4dd3432ec43a8c88595dd0f8bc4a3c0421b.json": "bdd53ad630c5847314017eb56bb5c3d21dfbc13d9d67548d3fac5cc0c1104f97",
+    "strategy_tournament/inspections/equity-gap-continuation-v1-result-66ede02688e090973e482ecc9c491349238d14e2af63fd02c336b99a8564c7be.json": "9ae255656e6417b9bcf00a764aefe9a1d8ae1a4972fafb9d933cd5cdb9659008",
+    "strategy_tournament/inspections/equity-gap-recovery-v1-result-c2deb307da4528c2f3b6b48d7330c5df8c965a2ca6f04763a5ca2d83fc9a6a12.json": "a7523beea9972a37dc0479fff044477657e9a0662c8129b2bbc5238b5dda7ee8",
+    "strategy_tournament/inspections/etf-or-momentum-v1-result-9db03d7d7e497917e6a4ee663ffee68506bd72a0050a873a903906ff4715fa6b.json": "e4dbbc7cd601c1742f45d7cf70fad7bca448680fc8f83aadb0198aa89321c45f",
+    "strategy_tournament/inspections/etf-vwap-mean-reversion-v1-result-faef3c6c57e36f8604179e596c959bd3f7c982848552ad224ef371da7c963176.json": "f1a54315c38aa8ce29898f080344e52979ba7b3c592c80fa26650117a6cde214",
+    "strategy_tournament/inspections/post-earnings-drift-v1-result-a9efc2d2e2e9454673dd61b03f3037ff429613bde835ee5dd5d920b048d06d7a.json": "b4a305b3f4fb3d161c61052f295d61c04f0733d895913ffc37ebc6991554e724",
+    "strategy_tournament/inspections/relative-strength-continuation-v1-result-342e84c3668952a6d1e1dc5ea9b4d391648efebf6030ccb2674a7060077f0d35.json": "a5f337df9864012a80535dfa7558b89c3db5994065d2c5561ebc2c84f9f311ab",
+    "strategy_tournament/inspections/short-horizon-oversold-reversal-v1-result-be56bcf7bf8fe2fd16e223f510a8236135fbc39f1a27e7531af9a4649a706e25.json": "9f7a9801eadae8dd43dcbf3b6b98b627560dd3696a53ff0fc458d30d2448ed49",
+    "strategy_tournament/inspections/volatility-compression-breakout-v1-result-67792983095a62d5811046d8d15a095faa75da7566d7957492d6c52213824f53.json": "e6af169e7ee162b987a5ab56a6b835f80c81affd337b20abee1327c8a131630f",
+    "strategy_tournament/manifests/portfolio-stage0-slate-1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f.json": "2f8ef27ab706e66f68902b3f04c3d5a593b27cd16542e071a8481c96fb0ceb01",
+    "strategy_validation/equity_gap_continuation/inspections/equity-gap-continuation-v1-development-result-bf1050d3d88b2402890befd5c583f2b623b14fa1b33f2edc9f89692e130db8c6.json": "433824c9c8aae31acece5aaf3461190eb4f0d75be2569bb89dd3aab02287fcb3"
+  },
+  "failure_summary": [
+    "Most first-wave exact variants failed edge, drawdown, or 20-bps cost gates.",
+    "Four exact variants were capacity-limited on their frozen screening corpora.",
+    "The sole Stage 0 survivor failed representative development across edge, bootstrap, drawdown, half-sample, best-trade removal, and cost-stress gates."
+  ],
+  "first_wave_active_candidates": 0,
+  "first_wave_complete": true,
+  "first_wave_slate_manifest_sha256": "1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f",
+  "maturity_effect": "NONE",
+  "provider_requests": 0,
+  "schema_version": 1,
+  "second_wave_outcome_access_authorized": false,
+  "second_wave_queue": [
+    {
+      "mechanism_family": "sector-etf-rotation",
+      "variant_id": "sector-etf-rotation-v1"
+    },
+    {
+      "mechanism_family": "broad-etf-trend-pullback",
+      "variant_id": "broad-etf-trend-pullback-v1"
+    },
+    {
+      "mechanism_family": "close-to-open-etf-momentum",
+      "variant_id": "close-to-open-etf-momentum-v1"
+    },
+    {
+      "mechanism_family": "two-to-three-day-cross-sectional-reversal",
+      "variant_id": "two-to-three-day-cross-sectional-reversal-v1"
+    },
+    {
+      "mechanism_family": "five-day-52-week-high-continuation",
+      "variant_id": "five-day-52-week-high-continuation-v1"
+    },
+    {
+      "mechanism_family": "turn-of-month-etf-seasonality",
+      "variant_id": "turn-of-month-etf-seasonality-v1"
+    }
+  ],
+  "second_wave_rationale": [
+    "Use highly liquid ETF rotation and trend mechanisms to reduce dependence on sparse single-name catalyst corpora.",
+    "Test overnight, multi-day reversal, structural momentum, and calendar mechanisms that are distinct from the failed intraday breakout and mean-reversion variants.",
+    "Treat every second-wave entry as a new exact frozen variant; no first-wave parameter repair or maturity inheritance is permitted."
+  ],
+  "second_wave_rules_frozen": false,
+  "stage0_disposed_count": 10,
+  "stage0_dispositions": [
+    {
+      "blockers": [
+        "primary expectancy is not positive",
+        "primary profit factor is below the Stage 0 minimum",
+        "primary drawdown exceeds the Stage 0 maximum",
+        "20 bps-per-side total R is not positive"
+      ],
+      "closed_signals": 97,
+      "mechanism_family": "etf-opening-range-momentum",
+      "result_inspection_sha256": "9db03d7d7e497917e6a4ee663ffee68506bd72a0050a873a903906ff4715fa6b",
+      "rules_hash": "a58d7abf034e5ba89bebafcc481337936c8f6962251ed570f5f9de8e79bcb0aa",
+      "stage0_result_sha256": "fe9853712ae52f92b4a88403bdb9270f3f3a8add382a393a2b183529d9cc05d2",
+      "status": "RETIRED",
+      "variant_id": "etf-or-momentum-v1"
+    },
+    {
+      "blockers": [
+        "closed signals are below the Stage 0 minimum",
+        "primary expectancy is not positive",
+        "primary profit factor is below the Stage 0 minimum",
+        "primary drawdown exceeds the Stage 0 maximum",
+        "20 bps-per-side total R is not positive"
+      ],
+      "closed_signals": 29,
+      "mechanism_family": "etf-vwap-mean-reversion",
+      "result_inspection_sha256": "faef3c6c57e36f8604179e596c959bd3f7c982848552ad224ef371da7c963176",
+      "rules_hash": "69f4fc7abb25c7853af76a3b701ef495272eb06cfad7be76432cb71b2de0c9b4",
+      "stage0_result_sha256": "6b3cb4374d858c293176a622e3dc23300d1e09e9a7207a2f487bae700281a5bd",
+      "status": "RETIRED",
+      "variant_id": "etf-vwap-mean-reversion-v1"
+    },
+    {
+      "blockers": [],
+      "closed_signals": 37,
+      "mechanism_family": "equity-gap-continuation",
+      "result_inspection_sha256": "66ede02688e090973e482ecc9c491349238d14e2af63fd02c336b99a8564c7be",
+      "rules_hash": "e235d0050b184482834620695e474ae0c9cbdeb9e48cfc5a532c2d2b42952467",
+      "stage0_result_sha256": "1f447fb4e066b041463e62e26d7e752a12e1b90da7c13b6881ea42e10dda9e94",
+      "status": "SURVIVED",
+      "variant_id": "equity-gap-continuation-v1"
+    },
+    {
+      "blockers": [
+        "primary expectancy is not positive",
+        "primary profit factor is below the Stage 0 minimum",
+        "primary drawdown exceeds the Stage 0 maximum",
+        "20 bps-per-side total R is not positive"
+      ],
+      "closed_signals": 65,
+      "mechanism_family": "equity-gap-recovery",
+      "result_inspection_sha256": "c2deb307da4528c2f3b6b48d7330c5df8c965a2ca6f04763a5ca2d83fc9a6a12",
+      "rules_hash": "36bba7f57dd03bf3bf5b9f4821dccd5bdccae950c1444ccd8b0dca08e0940410",
+      "stage0_result_sha256": "f0bb51acd548819e91292210b5b59029fa7b4307a37770b084707e1530b5c1bc",
+      "status": "RETIRED",
+      "variant_id": "equity-gap-recovery-v1"
+    },
+    {
+      "blockers": [
+        "primary expectancy is not positive",
+        "primary profit factor is below the Stage 0 minimum",
+        "primary drawdown exceeds the Stage 0 maximum",
+        "20 bps-per-side total R is not positive"
+      ],
+      "closed_signals": 95,
+      "mechanism_family": "volatility-compression-breakout",
+      "result_inspection_sha256": "67792983095a62d5811046d8d15a095faa75da7566d7957492d6c52213824f53",
+      "rules_hash": "d05c583e5812e4c6f8e2c94736b8a48ad1d293187e00147616b487603467d912",
+      "stage0_result_sha256": "5959e922a6cdaf117521a2a70877984497077f3c79acd5aedf2ac87eea0bbdfe",
+      "status": "RETIRED",
+      "variant_id": "volatility-compression-breakout-v1"
+    },
+    {
+      "blockers": [
+        "closed signals are below the Stage 0 minimum"
+      ],
+      "closed_signals": 10,
+      "mechanism_family": "short-horizon-oversold-reversal",
+      "result_inspection_sha256": "be56bcf7bf8fe2fd16e223f510a8236135fbc39f1a27e7531af9a4649a706e25",
+      "rules_hash": "d14f77eb59cd4dcdb8c7e3d47ca29bef88f78b2593061c02eed2e4b75c00e180",
+      "stage0_result_sha256": "bb2152f3f18aef92bac5c7d5dcffc15bdbe2967525e63fa6678c6c553aeb75c6",
+      "status": "RETIRED",
+      "variant_id": "short-horizon-oversold-reversal-v1"
+    },
+    {
+      "blockers": [
+        "primary drawdown exceeds the Stage 0 maximum"
+      ],
+      "closed_signals": 72,
+      "mechanism_family": "cross-sectional-momentum",
+      "result_inspection_sha256": "fa04429130158e31d221151b1d00d4dd3432ec43a8c88595dd0f8bc4a3c0421b",
+      "rules_hash": "bf887c26176f47d4e3b4e8f5a3dfe96cfbfa03568632152280eb985a69b882c8",
+      "stage0_result_sha256": "9a165ae149b2f9220a2d78c2251a34617ad63ed2a468ded8749fb5b0cc0a8869",
+      "status": "RETIRED",
+      "variant_id": "cross-sectional-momentum-v1"
+    },
+    {
+      "blockers": [
+        "closed signals are below the Stage 0 minimum",
+        "primary expectancy is not positive",
+        "primary profit factor is below the Stage 0 minimum",
+        "20 bps-per-side total R is not positive"
+      ],
+      "closed_signals": 6,
+      "mechanism_family": "post-earnings-drift",
+      "result_inspection_sha256": "a9efc2d2e2e9454673dd61b03f3037ff429613bde835ee5dd5d920b048d06d7a",
+      "rules_hash": "d51adb60fa93e608ac93a7066e3084e4b1cbdc36ec32725c6b69903d9927084f",
+      "stage0_result_sha256": "08f475e3800530d3044ca09948612f61bb6e3fc9f3da8a84aa8c9d30d6f70357",
+      "status": "RETIRED",
+      "variant_id": "post-earnings-drift-v1"
+    },
+    {
+      "blockers": [
+        "primary expectancy is not positive",
+        "primary profit factor is below the Stage 0 minimum",
+        "primary drawdown exceeds the Stage 0 maximum",
+        "20 bps-per-side total R is not positive"
+      ],
+      "closed_signals": 79,
+      "mechanism_family": "relative-strength-continuation",
+      "result_inspection_sha256": "342e84c3668952a6d1e1dc5ea9b4d391648efebf6030ccb2674a7060077f0d35",
+      "rules_hash": "390356c7a4854ae408b1219c4d11aaf4d6815a2c1fd0f971b2999967028861a0",
+      "stage0_result_sha256": "cfe76e6678078f2a5857c8365322215274134a807851014b6babafc90896e0d8",
+      "status": "RETIRED",
+      "variant_id": "relative-strength-continuation-v1"
+    },
+    {
+      "blockers": [
+        "closed signals are below the Stage 0 minimum"
+      ],
+      "closed_signals": 4,
+      "mechanism_family": "catalyst-orb-retest",
+      "result_inspection_sha256": "caefe1a76c8b17c94bc412dd6cbd24f3f5906d9d4be29cb7e5e3b34596a8e278",
+      "rules_hash": "1d43ea7d5a43fcad8354d789d77d32267599ba46ffa140bcbbdbd51adc4aed86",
+      "stage0_result_sha256": "60d3dd20a62dbff480148ac19aaaa047e036829385dbbe75cba0d044fc558be9",
+      "status": "RETIRED",
+      "variant_id": "catalyst-orb-retest-v1"
+    }
+  ],
+  "stage0_failure_categories": [
+    {
+      "category": "insufficient_signal_capacity",
+      "gate": "closed signals are below the Stage 0 minimum",
+      "variant_count": 4,
+      "variant_ids": [
+        "etf-vwap-mean-reversion-v1",
+        "short-horizon-oversold-reversal-v1",
+        "post-earnings-drift-v1",
+        "catalyst-orb-retest-v1"
+      ]
+    },
+    {
+      "category": "nonpositive_expectancy",
+      "gate": "primary expectancy is not positive",
+      "variant_count": 6,
+      "variant_ids": [
+        "etf-or-momentum-v1",
+        "etf-vwap-mean-reversion-v1",
+        "equity-gap-recovery-v1",
+        "volatility-compression-breakout-v1",
+        "post-earnings-drift-v1",
+        "relative-strength-continuation-v1"
+      ]
+    },
+    {
+      "category": "weak_profit_factor",
+      "gate": "primary profit factor is below the Stage 0 minimum",
+      "variant_count": 6,
+      "variant_ids": [
+        "etf-or-momentum-v1",
+        "etf-vwap-mean-reversion-v1",
+        "equity-gap-recovery-v1",
+        "volatility-compression-breakout-v1",
+        "post-earnings-drift-v1",
+        "relative-strength-continuation-v1"
+      ]
+    },
+    {
+      "category": "excessive_drawdown",
+      "gate": "primary drawdown exceeds the Stage 0 maximum",
+      "variant_count": 6,
+      "variant_ids": [
+        "etf-or-momentum-v1",
+        "etf-vwap-mean-reversion-v1",
+        "equity-gap-recovery-v1",
+        "volatility-compression-breakout-v1",
+        "cross-sectional-momentum-v1",
+        "relative-strength-continuation-v1"
+      ]
+    },
+    {
+      "category": "cost_fragility",
+      "gate": "20 bps-per-side total R is not positive",
+      "variant_count": 6,
+      "variant_ids": [
+        "etf-or-momentum-v1",
+        "etf-vwap-mean-reversion-v1",
+        "equity-gap-recovery-v1",
+        "volatility-compression-breakout-v1",
+        "post-earnings-drift-v1",
+        "relative-strength-continuation-v1"
+      ]
+    }
+  ],
+  "stage0_retired_count": 9,
+  "stage0_survivor_count": 1,
+  "taxonomy_sha256": "73d54349f24f52f62125fc9fcc7105ffa9b8a38e0771bf1fb994decadfa90292"
+}

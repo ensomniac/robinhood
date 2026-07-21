@@ -642,7 +642,14 @@ The first wave is complete with ten ordered dispositions: nine exact Stage 0
 variants retired and equity-gap-continuation-v1 survived Stage 0 before failing
 its independently inspected representative-development gates. No candidate is
 active, and no first-wave evidence earned maturity. The required first-wave
-failure taxonomy is therefore the next evidence artifact before the second
+failure taxonomy is frozen as
+`strategy_tournament/second_wave/first-wave-failure-taxonomy-73d54349f24f52f62125fc9fcc7105ffa9b8a38e0771bf1fb994decadfa90292.json`.
+It binds all ten Stage 0 results and inspections plus the 111-signal failed
+development result and inspection. It classifies four capacity failures, six
+nonpositive-expectancy failures, six weak-profit-factor failures, six excessive
+drawdowns, and six 20-bps cost failures; categories overlap by design. The
+taxonomy has no maturity effect and does not authorize second-wave outcome
+access. An independent taxonomy inspection remains mandatory before the second
 wave may open.
 
 Send a concise privacy-safe campaign email after every three Stage 0
