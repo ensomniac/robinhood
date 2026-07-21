@@ -289,9 +289,12 @@ the attested point-in-time master, retains eight explicit missing-CIK rows, and
 freezes 529 exact SEC submissions requests. Private identity hash
 `4afd4552...64c2c`, request-graph hash `cf0f1283...7130e`, and daily aggregate
 hash `186a89b5...1be08` bind the graph; the target response namespace contains
-zero artifacts. The manifest is uninspected and registered `COLLECTING`. It
-must be committed and pushed before independent zero-response inspection and
-does not itself authorize an SEC request.
+zero artifacts. Independent inspection now marks the graph `FROZEN_READY`
+after rebuilding all point-in-time joins, private identity and request rows,
+daily aggregates, lineage, request semantics, capacity, privacy, and outcome
+locks. It confirms zero submissions, primary documents, substitutions, or
+outcomes. This status must be committed and pushed before a separate bounded
+collector may request the 529 submissions payloads.
 
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference

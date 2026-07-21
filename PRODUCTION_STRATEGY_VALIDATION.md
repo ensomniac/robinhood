@@ -355,9 +355,12 @@ The network-free challenger SEC identity graph is now frozen as manifest
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
 precise acceptance-time rules, forms, pacing, retry, cache provenance, failure
 isolation, capacity, privacy, zero substitution, and the outcome lock. Its
-target response namespace is empty. The `COLLECTING` manifest must be committed
-and pushed before independent inspection and authorizes no provider access by
-itself.
+target response namespace is empty. The `COLLECTING` manifest was committed
+and pushed before independent inspection. That inspection now rebuilds the
+complete graph as `FROZEN_READY` with the same 1,826/1,818/8/529 counts and
+zero submissions, primary documents, substitutions, or outcomes. Its READY
+status must be committed and pushed before a separately bound collector may
+access the 529 SEC submissions responses.
 
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
