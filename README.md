@@ -68,6 +68,11 @@ or broker authorization—in
 `portfolio_tournament.py` deterministically rebuilds and inspects that lock
 before any individual Stage 0 activation can access outcomes.
 
+The first frozen activation binds 164 exact SPY/QQQ sessions in
+[`strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json`](strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json).
+It is an outcome-locked, falsification-only input contract; it cannot contribute
+development, confirmation, maturity, or live evidence.
+
 ### Preserved ORB v3 lane
 
 Strategy version `2026-07-15-orb-v3` remains `UNVALIDATED` and available as one
