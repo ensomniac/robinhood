@@ -1,0 +1,16 @@
+{
+  "broker_actions": 0,
+  "closed_signals": 65,
+  "input_inspection_sha256": "6109b4a84007118f27bd6a5e474655b827e8d95515e709f23c5cfb0b95d33b91",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "c2deb307da4528c2f3b6b48d7330c5df8c965a2ca6f04763a5ca2d83fc9a6a12",
+  "manifest_sha256": "550a812bdf0e39f272b9c055c1111bef9cffecf13ad7e69c8f5feb1ecca36bfb",
+  "maturity_effect": "NONE",
+  "provider_requests": 0,
+  "result_file_sha256": "1eb262948c101e13a61b25e220e04c9f44abbca0f1848dcb8866a162b28d1665",
+  "result_sha256": "f0bb51acd548819e91292210b5b59029fa7b4307a37770b084707e1530b5c1bc",
+  "schema_version": 1,
+  "stage0_survived": false,
+  "valid": true,
+  "variant_id": "equity-gap-recovery-v1"
+}

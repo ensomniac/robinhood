@@ -275,6 +275,15 @@ reconciles all 95 sessions, 950 symbol-sessions, 370,500 exact one-minute bars,
 and 950 prior closes with zero return calculations, provider requests, or
 broker actions.
 
+The inspected recovery result is
+`research_results/2026-07-21-equity-gap-recovery-stage0-f0bb51acd548819e91292210b5b59029fa7b4307a37770b084707e1530b5c1bc.json`,
+with independent rebuild
+`strategy_tournament/inspections/equity-gap-recovery-v1-result-c2deb307da4528c2f3b6b48d7330c5df8c965a2ca6f04763a5ca2d83fc9a6a12.json`.
+The exact variant is retired: 65 signals lost 10.967R at 5 bps per side,
+with -0.169R expectancy, 0.609 profit factor, and 14.281R drawdown. At
+20 bps per side it lost 15.529R. It cannot be tuned on this corpus or enter
+the maturity ledger; the tournament advances to volatility compression.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:

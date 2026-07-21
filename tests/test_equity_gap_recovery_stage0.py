@@ -95,6 +95,35 @@ class EquityGapRecoveryStage0Tests(unittest.TestCase):
         self.assertEqual(inspection["selected_symbol_sessions"], 950)
         self.assertEqual(inspection["selected_bars"], 370500)
 
+    def test_published_result_is_an_inspected_stage0_retirement(self):
+        root = Path(__file__).resolve().parents[1]
+        result = json.loads(
+            (
+                root
+                / "research_results"
+                / "2026-07-21-equity-gap-recovery-stage0-f0bb51acd548819e91292210b5b59029fa7b4307a37770b084707e1530b5c1bc.json"
+            ).read_text(encoding="utf-8")
+        )
+        inspection = json.loads(
+            (
+                root
+                / "strategy_tournament"
+                / "inspections"
+                / "equity-gap-recovery-v1-result-c2deb307da4528c2f3b6b48d7330c5df8c965a2ca6f04763a5ca2d83fc9a6a12.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            result["result_sha256"],
+            stage0.common._self_hash(result, "result_sha256"),
+        )
+        self.assertFalse(result["stage0_survived"])
+        self.assertEqual(result["maturity_effect"], "NONE")
+        self.assertEqual(result["denominator"]["closed_signals"], 65)
+        self.assertLess(result["primary_5bps"]["expectancy_r"], 0)
+        self.assertLess(result["stress"]["20"]["total_r"], 0)
+        self.assertTrue(inspection["valid"])
+        self.assertFalse(inspection["stage0_survived"])
+
     def test_gap_boundaries_are_inclusive_and_outside_values_fail(self):
         self.assertTrue(stage0._gap_in_range(-0.08))
         self.assertTrue(stage0._gap_in_range(-0.02))
