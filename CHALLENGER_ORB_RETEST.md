@@ -310,9 +310,11 @@ historical descriptor decisions before access: 20 exact window overlaps and
 695 exclusions. Private contract hash `5723130d...37f5d3`, selected-request
 graph hash `fa5cd04b...2b9d44`, and decision hash `54bdc62c...5bd9c3`
 bind the graph; malformed ranges are included conservatively and the target
-response namespace is empty. The uninspected `COLLECTING` manifest must be
-committed and pushed before independent inspection and authorizes no
-supplemental request by itself.
+response namespace is empty. Independent inspection now marks the graph
+`FROZEN_READY` after rebuilding all 715 decisions, the 20-request graph,
+lineage, implementation, capacity, privacy, zero substitution, and outcome
+locks. This status must be committed and pushed before the bounded collector
+may request the 20 supplemental files.
 
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference

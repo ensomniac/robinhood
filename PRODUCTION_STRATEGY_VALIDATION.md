@@ -376,8 +376,12 @@ The supplemental descriptor reduction is now frozen as manifest
 overlaps and exclude 695 non-overlaps, with malformed ranges included
 conservatively. The graph binds private decisions, exact requests, source
 lineage, implementation, capacity, privacy, zero substitution, and the outcome
-lock with zero supplemental responses. It remains uninspected `COLLECTING` and
-must be committed and pushed before independent inspection or provider access.
+lock with zero supplemental responses. The earlier uninspected `COLLECTING`
+manifest was committed and pushed before inspection. Independent reconstruction
+now marks it `FROZEN_READY` with all 715 decisions, 20 selected requests, 695
+exclusions, source and implementation bindings, capacity, privacy, zero
+substitution, and outcome locks intact. Its READY status must be committed and
+pushed before the bounded supplemental collector may run.
 
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
