@@ -395,9 +395,11 @@ The combined primary-document graph is now frozen as manifest
 `4eb3f9c4...85e5cc`: 498 main plus 10 supplemental candidates become 508
 exact accession-bound SEC requests with all 526 pair/document joins preserved
 across 457 pairs. Conflicting duplicates fail closed, source identities remain
-private, and the target document namespace is empty. This uninspected
-`COLLECTING` manifest must be committed and pushed before independent
-inspection or document access.
+private, and the target document namespace is empty. The earlier `COLLECTING`
+manifest was committed and pushed before inspection. Independent reconstruction
+now marks it `FROZEN_READY` with every request, join, lineage binding, capacity
+gate, privacy lock, and zero-response invariant intact. Its READY status must
+be committed and pushed before the bounded primary-document collector may run.
 
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active

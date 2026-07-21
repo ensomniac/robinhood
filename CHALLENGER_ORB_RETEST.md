@@ -329,8 +329,11 @@ Primary-document manifest `4eb3f9c4...85e5cc` now freezes the exact union of
 preserving all 526 pair/document joins across 457 pairs. Private contract hash
 `477dee6d...594e94`, document graph `230d1f61...660a05`, and join graph
 `07d79ce5...2508b` bind the result; the target document namespace is empty.
-The uninspected `COLLECTING` manifest must be committed and pushed before
-independent inspection and authorizes no document request by itself.
+The earlier `COLLECTING` manifest was committed and pushed before independent
+inspection. A clean-HEAD rebuild now marks the exact graph `FROZEN_READY`,
+reconciling every request, join, lineage binding, capacity gate, privacy lock,
+and zero-response invariant. The READY status must be committed and pushed
+before the manifest-bound collector may request any primary document.
 
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
