@@ -88,6 +88,13 @@ class RelativeStrengthContinuationStage0Tests(unittest.TestCase):
         )
         self.assertFalse(manifest["development_evidence_eligible"])
         self.assertFalse(manifest["confirmation_evidence_eligible"])
+        self.assertEqual(
+            manifest["activation_rules_hash"],
+            "0aa48c15a997b5182cf7223d0c2f6597e2fd9cbc5ce3bf9b2d97753cdf03e6f8",
+        )
+        self.assertEqual(manifest["collection_lineage"]["prefix_provider_requests"], 831)
+        self.assertFalse(manifest["collection_lineage"]["prefix_ranks_computed"])
+        self.assertFalse(manifest["collection_lineage"]["target_outcomes_accessed"])
 
     def test_normalizer_ignores_half_open_end_boundary(self):
         day = "2025-05-01"

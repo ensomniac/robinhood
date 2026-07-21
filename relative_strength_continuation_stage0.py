@@ -61,7 +61,15 @@ INSPECTION_ROOT = PROJECT_ROOT / "strategy_tournament" / "inspections"
 RESULT_ROOT = PROJECT_ROOT / "research_results"
 OUTPUT_ROOT = PROJECT_ROOT / "strategy_tournament" / "relative_strength_continuation"
 PREFIX_STATUS = OUTPUT_ROOT / "prefix-status.json"
+BENCHMARK_STATUS = OUTPUT_ROOT / "benchmark-prior-close-status.json"
 OUTCOME_STATUS = OUTPUT_ROOT / "outcome-status.json"
+PREFIX_SOURCE_MANIFEST_SHA256 = (
+    "a22173e0b7ee21a9a5f37e4b7bc84c8863e9733d6c6d670313662a6e2b0a55cb"
+)
+PREFIX_STATUS_SHA256 = (
+    "54d610efbb744c5054bd41c5bef4ff781424e83941cf4847941e694594457570"
+)
+PREFIX_PROVIDER_REQUESTS = 831
 
 
 class RelativeStrengthError(RuntimeError):
@@ -144,6 +152,10 @@ def _prefix_path(store: HistoricalDayStore, day: str) -> Path:
 
 def _candidate_path(store: HistoricalDayStore) -> Path:
     return _private_root(store) / "frozen-ranked-candidates.json.gz"
+
+
+def _benchmark_path(store: HistoricalDayStore) -> Path:
+    return _private_root(store) / "spy-prior-closes.json.gz"
 
 
 def _outcome_path(store: HistoricalDayStore, day: str) -> Path:
@@ -310,6 +322,16 @@ def build_manifest(store: HistoricalDayStore | None = None) -> dict[str, Any]:
         "broker_actions_authorized": False,
         "provider_requests_authorized_before_inspection": False,
         "target_outcome_requests_authorized_before_input_inspection": False,
+        "supersedes_manifest_sha256": PREFIX_SOURCE_MANIFEST_SHA256,
+        "collection_lineage": {
+            "prefix_source_manifest_sha256": PREFIX_SOURCE_MANIFEST_SHA256,
+            "prefix_status_sha256": PREFIX_STATUS_SHA256,
+            "prefix_provider_requests": PREFIX_PROVIDER_REQUESTS,
+            "prefix_selection_inputs_accessed": True,
+            "prefix_ranks_computed": False,
+            "target_outcomes_accessed": False,
+            "failure": "the bound common-stock daily corpus omitted SPY, so prefix inspection failed before ranking",
+        },
         "related_prior_trial": {
             "variant_id": "cross-sectional-momentum-v1",
             "activation_path": CROSS_ACTIVATION.relative_to(PROJECT_ROOT).as_posix(),
@@ -346,7 +368,13 @@ def build_manifest(store: HistoricalDayStore | None = None) -> dict[str, Any]:
             "status_file_sha256": sha256_file(CROSS_STATUS),
             "status_sha256": daily_status["status_sha256"],
             "private_file_sha256": daily_status["private_daily_file_sha256"],
-            "usage": "prior-session close only",
+            "usage": "common-stock prior-session close only",
+        },
+        "benchmark_prior_close_collection": {
+            "symbol": "SPY",
+            "timeframe": "1Day",
+            "one_exact_prior-session half-open request per target date": True,
+            "target_date_bars_authorized": False,
         },
         "split_sources": [
             {
@@ -437,9 +465,11 @@ def inspect_activation(
             }
         ),
         "provider_requests": 0,
+        "provider_requests_before_this_activation": PREFIX_PROVIDER_REQUESTS,
         "broker_actions": 0,
         "returns_computed": 0,
         "prefix_collection_authorized": True,
+        "benchmark_prior_close_collection_authorized": True,
         "target_outcome_collection_authorized": False,
         "valid": True,
     }
@@ -641,10 +671,17 @@ def _validate_prefix(
 ) -> dict[str, Any]:
     status = _load_json(PREFIX_STATUS)
     graph = _load_gzip(_membership_path(store))
+    expected_manifest = manifest.get("collection_lineage", {}).get(
+        "prefix_source_manifest_sha256", manifest.get("manifest_sha256")
+    )
     if (
         status.get("status_sha256") != common._self_hash(status, "status_sha256")
         or status.get("status") != "READY"
-        or status.get("manifest_sha256") != manifest.get("manifest_sha256")
+        or status.get("manifest_sha256") != expected_manifest
+        or status.get("status_sha256")
+        != manifest.get("collection_lineage", {}).get(
+            "prefix_status_sha256", status.get("status_sha256")
+        )
         or status.get("returns_computed") != 0
         or status.get("broker_actions") != 0
     ):
@@ -655,6 +692,106 @@ def _validate_prefix(
     if status.get("private_date_file_sha256") != expected:
         raise RelativeStrengthError("private prefix payload drifted")
     return status
+
+
+def collect_benchmark(
+    manifest_path: Path,
+    inspection_path: Path,
+    *,
+    env_path: Path,
+    store: HistoricalDayStore | None = None,
+) -> dict[str, Any]:
+    source = store or HistoricalDayStore.from_env(env_path)
+    manifest, inspection = _validate_activation_inspection(
+        manifest_path, inspection_path, source
+    )
+    common._require_published((manifest_path, inspection_path, PREFIX_STATUS))
+    _validate_prefix(manifest, source)
+    graph = _load_gzip(_membership_path(source))
+    path = _benchmark_path(source)
+    if path.exists():
+        payload = _load_gzip(path)
+        if payload.get("manifest_sha256") != manifest["manifest_sha256"]:
+            raise RelativeStrengthError("benchmark prior-close payload drifted")
+    else:
+        config = AlpacaBulkConfig.from_env(env_path)
+        rows_by_target_date: dict[str, dict[str, Any] | None] = {}
+        provider_requests = 0
+        with AlpacaBulkBarsClient(config) as client:
+            for target_day in graph["target_dates"]:
+                prior_day = date.fromisoformat(graph["prior_sessions"][target_day])
+                fetched, pages = client.fetch(
+                    ["SPY"],
+                    timeframe="1Day",
+                    start=datetime.combine(prior_day, time(0), tzinfo=EASTERN),
+                    end=datetime.combine(
+                        prior_day + timedelta(days=1), time(0), tzinfo=EASTERN
+                    ),
+                )
+                provider_requests += pages
+                normalized = cross._normalize_daily_rows("SPY", fetched.get("SPY", []))
+                matches = [
+                    row for row in normalized if row["date"] == prior_day.isoformat()
+                ]
+                if len(matches) > 1:
+                    raise RelativeStrengthError(
+                        f"{target_day}: duplicate SPY prior close"
+                    )
+                rows_by_target_date[target_day] = matches[0] if matches else None
+        payload = {
+            "schema_version": SCHEMA_VERSION,
+            "dataset_id": DATASET_ID,
+            "manifest_sha256": manifest["manifest_sha256"],
+            "activation_inspection_sha256": inspection["inspection_sha256"],
+            "symbol": "SPY",
+            "provider_requests": provider_requests,
+            "rows_by_target_date": rows_by_target_date,
+            "target_date_bars_requested": 0,
+            "broker_actions": 0,
+            "returns_computed": 0,
+        }
+        _write_gzip(path, payload)
+    rows = payload["rows_by_target_date"]
+    status: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "status_kind": "stage0-relative-strength-benchmark-prior-close-collection",
+        "dataset_id": DATASET_ID,
+        "variant_id": VARIANT_ID,
+        "manifest_sha256": manifest["manifest_sha256"],
+        "activation_inspection_sha256": inspection["inspection_sha256"],
+        "requested_prior_sessions": len(graph["target_dates"]),
+        "prior_sessions_with_rows": sum(row is not None for row in rows.values()),
+        "provider_requests": int(payload["provider_requests"]),
+        "target_date_bars_requested": 0,
+        "private_payload_sha256": sha256_file(path),
+        "broker_actions": 0,
+        "returns_computed": 0,
+        "status": "READY",
+    }
+    status["status_sha256"] = common._self_hash(status, "status_sha256")
+    _write_json(BENCHMARK_STATUS, status)
+    return status
+
+
+def _validate_benchmark(
+    manifest: Mapping[str, Any], store: HistoricalDayStore
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    status = _load_json(BENCHMARK_STATUS)
+    path = _benchmark_path(store)
+    if (
+        status.get("status_sha256") != common._self_hash(status, "status_sha256")
+        or status.get("status") != "READY"
+        or status.get("manifest_sha256") != manifest.get("manifest_sha256")
+        or status.get("private_payload_sha256") != sha256_file(path)
+        or status.get("target_date_bars_requested") != 0
+        or status.get("returns_computed") != 0
+        or status.get("broker_actions") != 0
+    ):
+        raise RelativeStrengthError("benchmark prior-close status is unusable")
+    payload = _load_gzip(path)
+    if payload.get("manifest_sha256") != manifest.get("manifest_sha256"):
+        raise RelativeStrengthError("benchmark prior-close identity drifted")
+    return status, payload
 
 
 def _split_days() -> dict[str, set[str]]:
@@ -678,8 +815,16 @@ def inspect_prefix(
         manifest_path, activation_inspection_path, source
     )
     if require_published:
-        common._require_published((manifest_path, activation_inspection_path, PREFIX_STATUS))
+        common._require_published(
+            (
+                manifest_path,
+                activation_inspection_path,
+                PREFIX_STATUS,
+                BENCHMARK_STATUS,
+            )
+        )
     prefix_status = _validate_prefix(manifest, source)
+    benchmark_status, benchmark = _validate_benchmark(manifest, source)
     daily_status, daily_payload = _daily_source(source)
     graph = _load_gzip(_membership_path(source))
     daily = {
@@ -696,7 +841,7 @@ def inspect_prefix(
         rows_by_symbol = payload["rows_by_symbol"]
         prior_day = graph["prior_sessions"][day]
         spy_rows = rows_by_symbol.get("SPY", [])
-        spy_daily = daily.get("SPY", {}).get(prior_day)
+        spy_daily = benchmark["rows_by_target_date"].get(day)
         if not _complete_session(spy_rows, day, 30) or not spy_daily:
             raise RelativeStrengthError(f"{day}: complete SPY prefix is required")
         spy_return = float(spy_rows[-1]["close"]) / float(spy_daily["close"]) - 1
@@ -741,6 +886,7 @@ def inspect_prefix(
         "manifest_sha256": manifest["manifest_sha256"],
         "prefix_status_sha256": prefix_status["status_sha256"],
         "prior_close_status_sha256": daily_status["status_sha256"],
+        "benchmark_status_sha256": benchmark_status["status_sha256"],
         "records_by_date": records_by_date,
         "status_counts": dict(sorted(counts.items())),
         "returns_computed": 0,
@@ -1284,6 +1430,10 @@ def _parser() -> argparse.ArgumentParser:
     prefix.add_argument("manifest", type=Path)
     prefix.add_argument("activation_inspection", type=Path)
     prefix.add_argument("--env-file", type=Path, default=PROJECT_ROOT / ".env")
+    benchmark = commands.add_parser("collect-benchmark")
+    benchmark.add_argument("manifest", type=Path)
+    benchmark.add_argument("activation_inspection", type=Path)
+    benchmark.add_argument("--env-file", type=Path, default=PROJECT_ROOT / ".env")
     inspect_selection = commands.add_parser("inspect-prefix")
     inspect_selection.add_argument("manifest", type=Path)
     inspect_selection.add_argument("activation_inspection", type=Path)
@@ -1327,6 +1477,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.activation_inspection,
                 env_path=args.env_file,
             )
+        elif args.command == "collect-benchmark":
+            value = collect_benchmark(
+                args.manifest,
+                args.activation_inspection,
+                env_path=args.env_file,
+            )
         elif args.command == "inspect-prefix":
             value = inspect_prefix(args.manifest, args.activation_inspection)
         elif args.command == "collect-outcomes":
@@ -1357,7 +1513,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.input_inspection,
                 args.result,
             )
-        if args.command not in {"collect-prefix", "collect-outcomes"} and args.output:
+        if args.command not in {
+            "collect-prefix",
+            "collect-benchmark",
+            "collect-outcomes",
+        } and args.output:
             _publish(value, args.output)
     except Exception as exc:
         print(
