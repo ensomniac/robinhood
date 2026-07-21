@@ -69,6 +69,27 @@ class CrossSectionalMomentumStage0Tests(unittest.TestCase):
         self.assertEqual(status["returns_computed"], 0)
         self.assertEqual(status["broker_actions"], 0)
 
+    def test_published_input_inspection_keeps_complete_denominator(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "cross-sectional-momentum-v1-input-198957534e2d6ec63519d9e6c96b598ff96f8490f2eece45af282ffc5b9358de.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["member_symbol_sessions"], 118636)
+        self.assertEqual(inspection["complete_symbol_sessions"], 77639)
+        self.assertEqual(inspection["missing_daily_window_symbol_sessions"], 3030)
+        self.assertEqual(inspection["missing_ranking_prefix_symbol_sessions"], 37967)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertEqual(inspection["provider_requests_during_inspection"], 0)
+        self.assertTrue(inspection["return_evaluation_authorized"])
+
     def test_target_dates_are_fixed_spaced_and_have_complete_windows(self):
         source_dates, _, _ = stage0.universe_source._source_graph()
         sessions = stage0._calendar()

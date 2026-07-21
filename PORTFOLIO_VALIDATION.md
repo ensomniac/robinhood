@@ -355,6 +355,14 @@ in 131 provider requests. Four symbols returned no rows and remain explicit
 missing inputs. The collection made zero broker actions and computed zero
 strategy returns; the private payload is hash-bound and remains outside Git.
 
+Input inspection
+`198957534e2d6ec63519d9e6c96b598ff96f8490f2eece45af282ffc5b9358de`
+reconciles the complete 118,636-member denominator. It finds 77,639 exact
+daily-window plus 15:45-prefix inputs, 3,030 members missing a required daily
+session, and 37,967 with an incomplete 15-minute ranking prefix. Every miss is
+retained as a no-signal; the inspection makes no provider or broker call,
+computes zero trade returns, and authorizes the one fixed Stage 0 evaluation.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
