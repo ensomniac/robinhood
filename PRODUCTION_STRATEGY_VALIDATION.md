@@ -280,6 +280,13 @@ substitution policy, source semantics, and outcome locks remain unchanged; the
 repair code must be committed and pushed before the v2 inner and outer
 manifests are frozen.
 
+The v2 inner scanner contract is now frozen as manifest
+`77dc80b5...b96640`. Its empty target root, 474-session graph, 6,525-symbol
+target union, exactly 466 pre-freeze attested v1 sessions, eight missing
+provider-bound sessions, zero substitutions, and closed outcome lock rebuild
+from the manifest and external zero-state status. It must be committed and
+pushed before the v2 outer acquisition contract is frozen.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

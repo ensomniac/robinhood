@@ -197,6 +197,14 @@ policy, and outcome lock, and leave the remaining eight sessions
 provider-bound. The repair implementation and regression tests must be
 committed and pushed before either new v2 manifest is frozen.
 
+V2 inner scanner manifest `77dc80b5...b96640` is now `FROZEN_READY` with an
+empty target root. It binds all 474 required sessions and 6,525 target symbols,
+exactly 466 complete v1 source/sidecar pairs that revalidated before freeze,
+and eight provider-bound missing sessions. Its zero-state status contains no
+ready target session, request, retry, derived row, or canonical merge. This
+inner manifest and status must be committed and pushed before the v2 outer
+mechanism/source contract is frozen.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

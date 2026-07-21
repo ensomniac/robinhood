@@ -1,7 +1,7 @@
 {
-  "dataset_id": "dataset-production-scanner-replay-2026-07-20-challenger-orb-retest-v1",
-  "manifest_path": "historical_batches/challenger_orb_retest_v1/scanner_manifests/dataset-production-scanner-replay-2026-07-20-challenger-orb-retest-v1-8d1f67bbcc9205d4f64549fdf7553b040ad2c6fc634b1928a2cd16d064c30e41.json",
-  "manifest_sha256": "8d1f67bbcc9205d4f64549fdf7553b040ad2c6fc634b1928a2cd16d064c30e41",
+  "dataset_id": "dataset-production-scanner-replay-2026-07-21-challenger-orb-retest-v2",
+  "manifest_path": "historical_batches/challenger_orb_retest_v1/scanner_manifests/dataset-production-scanner-replay-2026-07-21-challenger-orb-retest-v2-77dc80b560b67aaf3ab3991e7a67ffef0cb344ab79ece4e79e868d4b50b96640.json",
+  "manifest_sha256": "77dc80b560b67aaf3ab3991e7a67ffef0cb344ab79ece4e79e868d4b50b96640",
   "pre_freeze_target_market_artifacts": 0,
   "required_sessions": 474,
   "schema_version": 1,
