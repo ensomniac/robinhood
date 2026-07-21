@@ -305,6 +305,19 @@ attestations and split adjustments, and 2,492,864 canonical documents. The
 result remains outcome-blind and authorizes only a separately frozen
 selected-symbol causal-detail and primary-source acquisition boundary.
 
+The challenger-specific selected-pair freezer and its independent inspector now
+implement the next privacy and contamination boundary. The freezer binds the
+exact v2 scanner/inspection lineage and one-trial hypothesis, stores all 1,826
+date-security rows outside Git, exposes only counts and hashes, enforces the
+configured reserve and zero downstream artifacts, and keeps outcomes closed.
+The inspector separately reconstructs every row and daily shortlist directly
+from the private scanner detail, verifies all source, implementation,
+publication, mechanism, access, capacity, privacy, and outcome contracts, and
+refuses tampered private state. These implementations must be committed and
+pushed before freezing the exact selected-pair manifest; that inspected
+manifest must itself be committed and pushed before any selected-symbol causal
+or primary-source request graph is frozen or collected.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

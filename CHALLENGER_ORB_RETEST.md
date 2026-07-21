@@ -226,6 +226,32 @@ This is scanner evidence only: selected-symbol causal detail, catalyst sources,
 quotes, breaks, returns, and outcomes still require a separately frozen
 post-scanner contract.
 
+`challenger_orb_retest_selected_pairs.py` now implements the first
+post-scanner boundary. It deterministically extracts all 1,826 exact ordered
+date-security selections into the ignored historical store, publishes only
+counts, daily hashes, upstream hashes, and permitted input classes, and refuses
+any pre-existing downstream causal/source artifact. It also binds the one-trial
+retest mechanism, the v2 inner and outer manifests, the independently inspected
+scanner result, the 20-GiB reserve, zero substitution, and the closed outcome
+lock. `challenger_orb_retest_selected_pairs_inspection.py` independently
+reopens the 100-date private scanner detail and reconstructs every identity,
+rank, field, daily shortlist, and aggregate hash without calling the freezer or
+the shared extraction primitive. The implementation and tests must be committed
+and pushed before the exact contract is frozen.
+
+```sh
+python3 challenger_orb_retest_selected_pairs.py
+python3 challenger_orb_retest_selected_pairs_inspection.py \
+  historical_batches/challenger_orb_retest_v1/selected_pair_manifests/<manifest>.json
+```
+
+The resulting manifest and aggregate-only inspection status must then be
+committed and pushed before a separate exact provider/query graph may authorize
+selected-symbol causal tape, completed retest bars, quote/book snapshots,
+pre-entry structure, or primary-source acquisition. Neither command authorizes
+post-entry rows, returns, outcomes, alpha, a strategy change, maturity, or broker
+activity.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status
