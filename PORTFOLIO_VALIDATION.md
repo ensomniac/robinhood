@@ -386,6 +386,12 @@ market rule fixes a 1%-8% opening gap, a 15:45 decision from completed minute
 bars, close above open and VWAP, 15:46 entry, decision-time session-low stop,
 fifth-date close, and 5/10/20 bps-per-side costs. The activation authorizes no
 provider request until its zero-return inspection is committed and pushed.
+Inspection
+`fad0b77a77d8ae2d2d68197e00a1c25dd7bc189969c3b8db05a514784cd573e5`
+independently rebuilds all 102 pairs, 52 dates, 84 symbols, source bindings,
+prior-trial declarations, implementation, and rules. It computed zero returns,
+made zero provider or broker calls, and authorizes only the exact earnings and
+market input collection.
 
 ## Active discovery funnel
 

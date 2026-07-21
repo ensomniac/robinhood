@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import unittest
 from datetime import date, datetime, time, timedelta
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import post_earnings_drift_stage0 as stage0
@@ -11,6 +13,25 @@ EASTERN = ZoneInfo("America/New_York")
 
 
 class PostEarningsDriftStage0Tests(unittest.TestCase):
+    def test_published_activation_inspection_is_return_blind(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "post-earnings-drift-v1-activation-fad0b77a77d8ae2d2d68197e00a1c25dd7bc189969c3b8db05a514784cd573e5.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["candidate_pairs"], 102)
+        self.assertEqual(inspection["provider_requests"], 0)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["collection_authorized"])
+        self.assertFalse(inspection["return_evaluation_authorized"])
+
     def test_manifest_freezes_complete_source_verified_denominator(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)

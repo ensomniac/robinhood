@@ -1,0 +1,19 @@
+{
+  "broker_actions": 0,
+  "candidate_dates": 52,
+  "candidate_pairs": 102,
+  "collection_authorized": true,
+  "declared_prior_policy_trials": 15,
+  "implementation_sha256": "8a979784bb6f74375a4b890919c66ebe530ea71ea6144069792524292b59594a",
+  "inspection_kind": "stage0-event-activation-inspection",
+  "inspection_sha256": "fad0b77a77d8ae2d2d68197e00a1c25dd7bc189969c3b8db05a514784cd573e5",
+  "manifest_file_sha256": "e48a69b52bed290a8c88ababafa63ce5bd953ea11023e3ba88a0682e48653e94",
+  "manifest_sha256": "d41dd9d9db8531ed90e8cfde0f40382b250ca67177b16f01146e2eab1594f6cf",
+  "provider_requests": 0,
+  "return_evaluation_authorized": false,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "unique_symbols": 84,
+  "valid": true,
+  "variant_id": "post-earnings-drift-v1"
+}
