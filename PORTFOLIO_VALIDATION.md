@@ -341,7 +341,12 @@ prior-50-session SMA gate, top-decile ranking, three-name maximum, next-session
 open, 1.5-ATR14 stop, fifth-session close, split handling, and 5/10/20
 bps-per-side costs. The exact daily collection spans 2024-12-16 through
 2025-12-22 and cannot begin until an independent committed activation
-inspection authorizes it.
+inspection authorizes it. Inspection
+`a0f893cb02e31fb445febfacd4e5535a6e5ec602f18d630c06827efbdc84c31f`
+exactly rebuilds all membership, calendar, split-source, implementation, and
+rule bindings with zero returns, provider requests, or broker actions; its
+minimum observed spacing is seven sessions and it authorizes only the frozen
+daily input collection.
 
 ## Active discovery funnel
 

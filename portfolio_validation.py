@@ -116,6 +116,7 @@ CORE_ARTIFACTS = (
     "strategy_tournament/inspections/volatility-compression-breakout-v1-result-67792983095a62d5811046d8d15a095faa75da7566d7957492d6c52213824f53.json",
     "strategy_tournament/inspections/short-horizon-oversold-reversal-v1-input-0e8796722e06b0643aeb9f6e3001e9e9320730d617619b50884293c006dd46dd.json",
     "strategy_tournament/inspections/short-horizon-oversold-reversal-v1-result-be56bcf7bf8fe2fd16e223f510a8236135fbc39f1a27e7531af9a4649a706e25.json",
+    "strategy_tournament/inspections/cross-sectional-momentum-v1-activation-a0f893cb02e31fb445febfacd4e5535a6e5ec602f18d630c06827efbdc84c31f.json",
     "strategy_tournament/inspections/etf-vwap-mean-reversion-v1-input-deae004f10d53c1753435155385fc0557b6c39249f43896725bf1237dd32eaa0.json",
     "strategy_tournament/inspections/etf-vwap-mean-reversion-v1-result-faef3c6c57e36f8604179e596c959bd3f7c982848552ad224ef371da7c963176.json",
     "strategy_tournament/inspections/etf-or-momentum-v1-input-6736b37133fd8ba9d46c86e76ef3d7e21a2a09541f1ad631d4ec8b94ff78b1c8.json",

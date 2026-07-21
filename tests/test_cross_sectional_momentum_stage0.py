@@ -28,6 +28,26 @@ class CrossSectionalMomentumStage0Tests(unittest.TestCase):
             manifest["return_evaluation_authorized_before_input_inspection"]
         )
 
+    def test_published_activation_inspection_computed_zero_returns(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "cross-sectional-momentum-v1-activation-a0f893cb02e31fb445febfacd4e5535a6e5ec602f18d630c06827efbdc84c31f.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["target_dates"], 24)
+        self.assertEqual(inspection["member_symbol_sessions"], 118636)
+        self.assertEqual(inspection["unique_symbols"], 5457)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["collection_authorized"])
+        self.assertFalse(inspection["return_evaluation_authorized"])
+
     def test_target_dates_are_fixed_spaced_and_have_complete_windows(self):
         source_dates, _, _ = stage0.universe_source._source_graph()
         sessions = stage0._calendar()
