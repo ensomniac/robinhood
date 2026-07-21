@@ -246,6 +246,13 @@ single-writer lock. A separate partial-cache inspector independently rebuilds
 raw and logical snapshot hashes and rejects unexpected or temporary files
 before those identities can become a security master.
 
+That identity stage has completed and independently reconstructs all 100 exact
+snapshots, a 6,797-record point-in-time master covering 6,561 instruments, and
+2,499 split events. The combined audit reports zero target-market artifacts,
+keeps outcomes locked, and preserves the storage reserve. The master and input
+attestations remain a pre-scanner evidence slice that must be published before
+the inner scanner request graph is frozen.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

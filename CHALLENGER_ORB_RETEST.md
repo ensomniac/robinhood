@@ -152,6 +152,15 @@ metadata changes from content drift. After all 100 exact snapshots complete,
 build the challenger security master and split attestation, freeze the inner
 scanner manifest, then freeze and independently inspect the outer contract:
 
+The exact identity stage is now complete. Independent reconstruction reopens
+all 100 dated snapshots with raw set hash `af30f011...377a8e` and logical set
+hash `ee7774f4...2e4ac`, with no temporary or unexpected artifact. The resulting
+point-in-time master contains 6,797 records for 6,561 instruments and has hash
+`b9dac192...93158`. The exact frozen split query contains 2,499 events with
+hash `58b9ada2...0c020`. The combined input audit confirms the 20-GiB reserve,
+zero target-market artifacts, no substitution, and no outcome access. These
+public inputs must be committed and pushed before `freeze-scanner`.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status
