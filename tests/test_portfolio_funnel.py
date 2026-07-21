@@ -60,10 +60,10 @@ class PortfolioFunnelTests(unittest.TestCase):
             [],
         )
 
-    def test_second_wave_is_fixed_and_closed_before_taxonomy_inspection(self):
+    def test_second_wave_is_fixed_and_open_after_taxonomy_inspection(self):
         status = funnel.build_funnel_status(maturity.build_report())
         self.assertTrue(status["second_wave"]["required"])
-        self.assertFalse(status["second_wave"]["open"])
+        self.assertTrue(status["second_wave"]["open"])
         self.assertEqual(len(status["second_wave"]["candidate_queue"]), 6)
         self.assertEqual(
             [
@@ -73,11 +73,11 @@ class PortfolioFunnelTests(unittest.TestCase):
             [family for _, family in funnel.SECOND_WAVE],
         )
 
-    def test_first_wave_taxonomy_rebuilds_and_requires_independent_inspection(self):
+    def test_first_wave_taxonomy_and_independent_inspection_rebuild(self):
         status = funnel.build_funnel_status(maturity.build_report())
         self.assertEqual(len(status["second_wave"]["failure_taxonomy_paths"]), 1)
         self.assertEqual(
-            status["second_wave"]["failure_taxonomy_inspection_paths"], []
+            len(status["second_wave"]["failure_taxonomy_inspection_paths"]), 1
         )
         path = Path(__file__).resolve().parents[1] / status["second_wave"][
             "failure_taxonomy_paths"
@@ -93,6 +93,18 @@ class PortfolioFunnelTests(unittest.TestCase):
         self.assertEqual(taxonomy["first_wave_active_candidates"], 0)
         self.assertEqual(len(taxonomy["development_dispositions"]), 1)
         self.assertEqual(taxonomy["maturity_effect"], "NONE")
+        inspection_path = Path(__file__).resolve().parents[1] / status[
+            "second_wave"
+        ]["failure_taxonomy_inspection_paths"][0]
+        inspection = json.loads(inspection_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            funnel._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["taxonomy_sha256"], taxonomy["taxonomy_sha256"])
+        self.assertEqual(inspection["evidence_files_verified"], 23)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["valid"])
 
     def test_stage0_gate_rebuilds_all_published_failures(self):
         dispositions = funnel.load_stage0_dispositions()

@@ -649,8 +649,12 @@ development result and inspection. It classifies four capacity failures, six
 nonpositive-expectancy failures, six weak-profit-factor failures, six excessive
 drawdowns, and six 20-bps cost failures; categories overlap by design. The
 taxonomy has no maturity effect and does not authorize second-wave outcome
-access. An independent taxonomy inspection remains mandatory before the second
-wave may open.
+access. Independent inspection
+`6f2619090a6312763d16ab9f3e01f63047c59b7fae1907803aea78b0ffa74f58`
+rebuilt the taxonomy and verified all 23 evidence files with zero provider or
+broker calls and zero return computations. The second wave is open; its six
+exact variants still require a frozen and inspected slate before any outcome
+access.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
