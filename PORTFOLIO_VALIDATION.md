@@ -472,6 +472,20 @@ first wave now has eight dispositions, seven Stage 0 retirements, and one Stage
 0 survivor that later failed development. Relative-strength continuation is
 next in the frozen queue.
 
+Relative-strength continuation activation
+`strategy_tournament/activations/relative-strength-continuation-v1-a22173e0b7ee21a9a5f37e4b7bc84c8863e9733d6c6d670313662a6e2b0a55cb.json`
+freezes 80 new 2025 target dates, 395,316 dated common-stock memberships, and
+5,552 unique symbols. Every cross-sectional-momentum Stage 0 date is excluded.
+At 09:59 it ranks the full point-in-time universe by return minus SPY and retains
+every name at least two percentage points stronger and above $5. From 10:00 to
+14:30 it requires a close above prior high-of-day and completed-session VWAP on
+at least 1.5 times the preceding 20-minute mean volume. The first executable
+trigger by time, frozen relative-strength rank, and symbol enters at the next
+minute open, uses the last-five-bar low, a 2R target, stop-first ambiguity, and a
+15:50 force-flat. All fills and exits use 5/10/20 bps per side. Only 09:30-09:59
+selection inputs may be collected after an independent activation inspection;
+post-10:00 outcomes remain locked until the prefix is independently inspected.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
