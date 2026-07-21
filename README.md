@@ -42,9 +42,9 @@ At a high level:
 - Initial pilots risk at most 0.50% of equity in planned loss per position and
   1.25% across open positions, with daily, weekly, drawdown, notional, liquidity,
   protection, and broker limits layered on top.
-- Each version needs at least 50 historical signals including 20 untouched
-  confirmation signals, five clean prospective shadows, positive robust
-  cost-stressed performance, complete trial accounting, and zero violations.
+- Each version needs 30 robust representative development signals, 20
+  separately robust untouched confirmation signals, five clean prospective
+  shadows, complete trial accounting, and zero violations.
 - Three selected mechanisms must also be distinct, have confirmation daily-return
   correlation below 0.70, and cover at least 60% of shared confirmation dates.
 - `PILOT_READY` authorizes a controlled pilot; it is not `LIVE_VALIDATED` and is
@@ -54,7 +54,11 @@ The numeric portfolio rules live in
 [portfolio_config.toml](portfolio_config.toml). `portfolio_maturity.py` audits
 the append-only evidence and computes strategy and portfolio maturity.
 `portfolio_validation.py` maintains resumable ignored state and emits one
-bounded handoff without contacting providers or brokers.
+bounded handoff without contacting providers or brokers. `portfolio_funnel.py`
+rebuilds the ordered Stage 0 dispositions and exposes the falsification,
+development, and confirmation/shadow lanes. `portfolio_guard.py` is the pure
+fail-closed pre-entry gate for an exact `PILOT_READY` version and a fresh
+privacy-safe post-entry risk reconciliation.
 
 The first reproducible inventory is in
 [`research_results/2026-07-21-portfolio-data-inventory.json`](research_results/2026-07-21-portfolio-data-inventory.json).
@@ -75,11 +79,13 @@ expectancy was -0.353R, profit factor 0.465, and total return -34.213R at 5 bps
 per side. It cannot contribute development, confirmation, maturity, or live
 evidence and will not be repaired on those dates.
 
-The second frozen trial tests a separately preregistered ETF VWAP-reversion
-mechanism on the same falsification-only denominator. Its return lock remains
-closed until its exact input inspection is committed and pushed. The inspected
-trial then failed with 29 signals, -8.388R total, -0.289R expectancy, and 0.601
-profit factor, so the exact rule is retired without tuning.
+The second frozen trial tested a separately preregistered ETF VWAP-reversion
+mechanism on the same falsification-only denominator after its exact no-return
+input inspection was committed and pushed. The inspected trial failed with 29
+signals, -8.388R total, -0.289R expectancy, and 0.601 profit factor, so the
+exact rule is retired without tuning. The active queue now begins with equity
+gap continuation; `python3 portfolio_funnel.py status` prints all eight
+remaining first-wave families in their frozen order.
 
 ### Preserved ORB v3 lane
 
@@ -344,8 +350,14 @@ python3 portfolio_validation.py status
 python3 portfolio_validation.py next
 python3 portfolio_validation.py audit
 
+python3 portfolio_funnel.py status
+python3 portfolio_funnel.py audit
+
 python3 portfolio_maturity.py audit
 python3 portfolio_maturity.py report
+
+# Live workflow only, after writing a fresh privacy-safe snapshot:
+python3 portfolio_guard.py /path/to/entry-snapshot.json
 ```
 
 Its hash-chained private state lives under ignored

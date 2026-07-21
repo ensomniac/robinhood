@@ -129,10 +129,19 @@ govern ORB v3 itself.
   `PILOT_READY`, its complete production/evaluator/guard/protection path passes,
   and current broker/tool gates permit it. Do not wait for the other two
   strategies. Never treat `PILOT_READY` as `LIVE_VALIDATED`.
-- Until a portfolio-aware guard is implemented and verified, the existing
-  `session_guard.py` remains fail-closed and limits live operation to the safer
-  state it actually supports. Authorization to hold three positions is not
-  evidence that the implementation can yet do so safely.
+- `portfolio_guard.py` is the fail-closed pre-entry gate for an independently
+  `PILOT_READY` portfolio strategy. It must return `ENTRY_READY` for the exact
+  version and rules hash from a privacy-safe broker/risk snapshot no more than
+  15 seconds old, after reconciling current protection and every post-entry
+  portfolio cap. It never contacts the broker, places an order, or satisfies a
+  broker-required human confirmation. `session_guard.py` remains the separate
+  live authority for legacy ORB v3 and must still be used whenever that lane is
+  active.
+- `portfolio_funnel.py status` is the public discovery-queue authority. Preserve
+  its ordered Stage 0 dispositions, run one cheap falsification lane plus one
+  representative-development lane and one confirmation/shadow lane whenever
+  survivors permit, and never insert a retired or insufficient Stage 0 result
+  into `PORTFOLIO_SIGNALS.jsonl`.
 - A multi-session strategy must freeze gap-risk sizing and have confirmed
   good-til-canceled protection before an overnight hold. Reconcile protection,
   tradability, news, and the account before each open. If protection cannot be
@@ -1150,7 +1159,19 @@ when available, and a link or path to the detailed context file.
 `SIGNALS.jsonl` remains the append-only ORB v3 machine-readable companion.
 `PORTFOLIO_SIGNALS.jsonl` is the append-only portfolio maturity ledger. Each
 must contain the complete records required by its schema, not only selected
-trades, and both must remain free of account and broker identifiers.
+trades, and both must remain free of account and broker identifiers. A portfolio
+strategy's independent inspection must bind one published, independently
+inspected Stage 0 survivor. Development and confirmation are separately scored
+for sample count, expectancy, profit factor, bootstrap lower expectancy,
+drawdown, chronological halves, performance without the five best trades,
+10/20-bps stress, capture, and violations; strong combined history cannot hide
+a weak phase.
+Every portfolio shadow signal must explicitly record complete discovery,
+evaluation, sizing, order construction, protection planning, monitoring, and
+journaling with zero broker actions. Every portfolio live signal must retain an
+`ENTRY_READY` portfolio-guard result, passed broker review, confirmation state,
+confirmed protection, monitoring, and journaling; otherwise it is rejected from
+the ledger rather than counted toward maturity.
 
 Every visible trading decision must also update a detailed context file under
 `trades/active/` or `trades/archived/`. If a decision is session-level rather

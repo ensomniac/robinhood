@@ -168,6 +168,46 @@ This exact variant is also retired: 29 signals lost 8.388R at 5 bps per side,
 with -0.289R expectancy, 0.601 profit factor, and 13.470R drawdown; at 20 bps
 per side it lost 19.686R. The result cannot be tuned or promoted.
 
+## Active discovery funnel
+
+The controller maintains three concurrent lanes whenever survivors exist:
+
+1. one exact variant in cheap Stage 0 falsification;
+2. one Stage 0 survivor acquiring a representative development sample; and
+3. one advanced survivor in untouched confirmation or prospective shadow.
+
+`python3 portfolio_funnel.py status` is the public queue and lane authority.
+It independently rebuilds every published Stage 0 disposition from the frozen
+slate, result, and result inspection. It reports retired and surviving counts,
+each candidate's validation phase and blockers, and `PILOT_READY`/live-start
+progress toward three. `portfolio_validation.py status` embeds the same report.
+
+After the two permanently retired ETF variants, the remaining first wave is
+fixed in this order: equity gap continuation, equity gap recovery,
+volatility-compression breakout, short-horizon oversold reversal,
+cross-sectional momentum, post-earnings drift, relative-strength continuation,
+and catalyst ORB retest. A disposition must be an ordered prefix; a later
+variant cannot skip an unresolved earlier one.
+
+Stage 0 requires at least 30 closed signals, positive expectancy, profit factor
+at least 1.10, drawdown no worse than 8R, positive total R at 20 bps per side,
+and zero violations. A failed or insufficient exact version is retired
+immediately and cannot enter `PORTFOLIO_SIGNALS.jsonl`. A survivor must bind its
+inspected Stage 0 result in its independent maturity inspection before any
+representative development record is accepted.
+
+If the first wave yields fewer than three survivors, a committed and inspected
+failure taxonomy must precede the only permitted second wave. Its six frozen
+families, in order, are sector ETF rotation, broad-ETF trend pullback,
+close-to-open ETF momentum, two-to-three-day cross-sectional reversal,
+five-day 52-week-high continuation, and turn-of-month ETF seasonality.
+
+Send a concise privacy-safe campaign email after every three Stage 0
+dispositions and immediately for a new survivor, `PILOT_READY` award, live
+start, safety pause, or terminal milestone. The funnel exposes whether the
+disposition cadence is due; notification remains secondary to evidence and
+position safety.
+
 Resumable nonterminal statuses are `READY`, `WAITING_DATA`, `WAITING_MARKET`,
 `WAITING_PROVIDER`, `WAITING_SUBSCRIPTION`, `WAITING_NEW_SESSIONS`,
 `WAITING_USER_CONFIRMATION`, and `PAUSED_SAFETY`. The append-only ignored state
@@ -180,14 +220,22 @@ state. `next` emits only one bounded handoff.
 
 A strategy version earns `PILOT_READY` only with all of the following:
 
-- At least 50 eligible closed historical signals, including 20 untouched
-  confirmation signals, plus five complete prospective shadow executions.
-- Positive overall and confirmation expectancy, profit factor at least 1.30, a
-  positive one-sided 90% bootstrap lower bound for mean R, maximum drawdown no
-  worse than 6R, positive chronological halves, and positive total R after
-  removing its five best outcomes.
-- Positive total R, profit factor at least 1.20, and maximum drawdown no worse
-  than 6R under both 10 and 20 bps per-side adverse cost stress.
+- At least 30 representative development signals. Development must have
+  positive expectancy, profit factor at least 1.30, a positive one-sided 90%
+  bootstrap lower expectancy, drawdown no worse than 6R, positive chronological
+  halves, positive total R without the five best trades, and passing 10/20-bps
+  stress.
+- At least 20 chronologically separated untouched confirmation signals, frozen
+  before outcome access after a five-trading-session embargo. Confirmation must
+  independently pass the same robustness, cost, capture, and violation gates
+  without any parameter change.
+- At least 50 eligible closed historical signals across those two samples, plus
+  five complete prospective shadow executions through discovery, evaluation,
+  sizing, order construction, protection, monitoring, and journaling.
+- Positive combined expectancy, profit factor at least 1.30, a positive
+  one-sided 90% bootstrap lower bound for mean R, maximum drawdown no worse than
+  6R, positive chronological halves, positive total R without the five best
+  outcomes, and passing 10/20-bps stress.
 - Complete session/candidate denominators, trial accounting, multiple-testing
   audit, executable fill/protection/exit modeling, and zero evidence, capture,
   or rule violations.
@@ -202,6 +250,15 @@ naturally occurring stop executions for the strategy, entry-slippage p95 at or
 below 15 bps, unprotected-exposure p95 at or below ten seconds, stop slippage
 inside its frozen reserve, and zero rule violations. A stop is never
 manufactured and a marginal setup is never taken to satisfy a count.
+
+Immediately before any controlled pilot entry, `portfolio_guard.py` must return
+`ENTRY_READY` for the exact strategy ID, version, and rules hash using a broker
+snapshot no more than 15 seconds old. The pure guard requires machine-earned
+`PILOT_READY`, reconciled and fully protected existing exposure, a passed order
+review, any broker-required human confirmation, tradability, a ready protective
+order route, live monitoring, and safe post-entry position, entry-count, holding,
+planned-loss, notional, daily, weekly, and drawdown limits. It has no broker
+action surface and cannot satisfy a required human confirmation itself.
 
 ## Outcome, data, and anti-lookahead rules
 

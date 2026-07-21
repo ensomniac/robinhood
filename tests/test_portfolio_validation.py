@@ -88,6 +88,8 @@ class PortfolioValidationTests(unittest.TestCase):
             },
             "portfolio_config": validation.load_portfolio_config().raw,
             "portfolio_ledger_audit": {"valid": True},
+            "funnel_audit": {"valid": True},
+            "funnel": {"valid": True},
             "portfolio_report": {
                 "earned_milestone": validation.TERMINAL_PHASE,
                 "milestone_blockers": [],

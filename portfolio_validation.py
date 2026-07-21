@@ -21,6 +21,7 @@ from typing import Any
 from learning_data import audit_learning_data
 from learning_registry import audit_registries
 from learning_strategy import audit_strategy_evidence
+from portfolio_funnel import audit_funnel, build_funnel_status
 from portfolio_maturity import (
     audit_ledger as audit_portfolio_ledger,
     build_report as build_portfolio_report,
@@ -76,6 +77,8 @@ CORE_ARTIFACTS = (
     "PORTFOLIO_VALIDATION.md",
     "portfolio_config.toml",
     "portfolio_data_inventory.py",
+    "portfolio_funnel.py",
+    "portfolio_guard.py",
     "etf_or_momentum_stage0.py",
     "etf_vwap_mean_reversion_stage0.py",
     "portfolio_maturity.py",
@@ -627,6 +630,7 @@ def _authoritative_snapshot(root: Path) -> dict[str, Any]:
     portfolio_records = read_portfolio_records(root / "PORTFOLIO_SIGNALS.jsonl", root=root)
     portfolio_audit = audit_portfolio_ledger(root / "PORTFOLIO_SIGNALS.jsonl", root=root)
     portfolio_report = build_portfolio_report(portfolio_records, portfolio_config)
+    funnel = build_funnel_status(portfolio_report, root=root)
     registry_root = root / "learning"
     orb_config = load_orb_config(root / "strategy_config.toml")
     orb_ledger = audit_orb_ledger(root / "SIGNALS.jsonl", orb_config)
@@ -640,6 +644,8 @@ def _authoritative_snapshot(root: Path) -> dict[str, Any]:
         "portfolio_config": portfolio_config.raw,
         "portfolio_ledger_audit": portfolio_audit,
         "portfolio_report": portfolio_report,
+        "funnel": funnel,
+        "funnel_audit": audit_funnel(portfolio_report, root=root),
         "registry_audit": audit_registries(registry_root),
         "strategy_audit": audit_strategy_evidence(registry_root),
         "learning_data_audit": audit_learning_data(
@@ -734,6 +740,7 @@ def _finalization_blockers(
         blockers.extend(str(value) for value in report["milestone_blockers"])
     for field in (
         "portfolio_ledger_audit",
+        "funnel_audit",
         "registry_audit",
         "strategy_audit",
         "learning_data_audit",
@@ -777,6 +784,7 @@ def campaign_status(
         "state": _project_state(current),
         "lineage_blockers": _lineage_blockers(current, authoritative["lineage"]),
         "portfolio_report": authoritative["portfolio_report"],
+        "funnel": authoritative["funnel"],
         "store_capacity": authoritative["store_capacity"],
         "safety_snapshot": current.get("safety_snapshot"),
         "finalization_blockers": _finalization_blockers(current, authoritative),
@@ -881,6 +889,7 @@ def audit_campaign(
             key: authoritative[key]
             for key in (
                 "portfolio_ledger_audit",
+                "funnel_audit",
                 "registry_audit",
                 "strategy_audit",
                 "learning_data_audit",

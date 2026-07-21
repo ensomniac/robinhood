@@ -9,6 +9,7 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import portfolio_maturity as maturity
+import portfolio_funnel as funnel
 
 
 RULES_HASH = "a" * 64
@@ -19,11 +20,50 @@ class PortfolioMaturityTests(unittest.TestCase):
         self.config = maturity.load_config()
 
     def _inspection(
-        self, root: Path, strategy_id: str, family: str, *, variant_ordinal: int = 1
+        self,
+        root: Path,
+        strategy_id: str,
+        family: str,
+        *,
+        variant_ordinal: int = 1,
+        stage0_survived: bool = True,
     ):
         evidence = root / f"{strategy_id}.json"
         evidence.write_text('{"inspected":true}\n', encoding="utf-8")
-        digest = hashlib.sha256(evidence.read_bytes()).hexdigest()
+        variant_id = f"{strategy_id}-stage0"
+        result = {
+            "schema_version": 1,
+            "result_kind": "stage0-falsification",
+            "variant_id": variant_id,
+            "mechanism_family": family,
+            "stage0_survived": stage0_survived,
+            "stage0_blockers": [] if stage0_survived else ["failed frozen gate"],
+            "maturity_effect": "NONE",
+            "development_evidence_eligible": False,
+            "confirmation_evidence_eligible": False,
+        }
+        result["result_sha256"] = funnel._self_hash(result, "result_sha256")
+        result_path = root / f"{strategy_id}-stage0-result.json"
+        result_path.write_text(json.dumps(result), encoding="utf-8")
+        result_inspection = {
+            "schema_version": 1,
+            "inspection_kind": "stage0-result-inspection",
+            "variant_id": variant_id,
+            "result_sha256": result["result_sha256"],
+            "result_file_sha256": funnel._file_hash(result_path),
+            "stage0_survived": stage0_survived,
+            "maturity_effect": "NONE",
+            "valid": True,
+        }
+        result_inspection["inspection_sha256"] = funnel._self_hash(
+            result_inspection, "inspection_sha256"
+        )
+        result_inspection_path = root / f"{strategy_id}-stage0-inspection.json"
+        result_inspection_path.write_text(json.dumps(result_inspection), encoding="utf-8")
+        evidence_hashes = {
+            path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in (evidence, result_path, result_inspection_path)
+        }
         return {
             "schema_version": 1,
             "record_type": "inspection",
@@ -42,7 +82,11 @@ class PortfolioMaturityTests(unittest.TestCase):
             "development_universe_representative": True,
             "confirmation_untouched": True,
             "confirmation_embargo_trading_days": 5,
-            "evidence_hashes": {evidence.name: digest},
+            "source_stage0_variant_id": variant_id,
+            "source_stage0_result_sha256": result["result_sha256"],
+            "source_stage0_result_path": result_path.name,
+            "source_stage0_result_inspection_path": result_inspection_path.name,
+            "evidence_hashes": evidence_hashes,
         }
 
     def _strategy_records(
@@ -141,6 +185,14 @@ class PortfolioMaturityTests(unittest.TestCase):
                     "stress_10bps_r": 0.2,
                     "stress_20bps_r": 0.1,
                     "stop_executed": False,
+                    "discovery_complete": True,
+                    "evaluation_complete": True,
+                    "sizing_complete": True,
+                    "order_construction_complete": True,
+                    "protection_plan_complete": True,
+                    "monitoring_complete": True,
+                    "journal_complete": True,
+                    "broker_actions": 0,
                     "session_capture_complete": True,
                     "rule_violations": [],
                 }
@@ -166,6 +218,13 @@ class PortfolioMaturityTests(unittest.TestCase):
                     "stress_10bps_r": 0.1,
                     "stress_20bps_r": 0.05,
                     "stop_executed": False,
+                    "portfolio_guard_status": "ENTRY_READY",
+                    "broker_review_passed": True,
+                    "broker_confirmation_required": False,
+                    "broker_confirmation_satisfied": False,
+                    "protection_confirmed": True,
+                    "monitoring_complete": True,
+                    "journal_complete": True,
                     "entry_slippage_bps": 5.0,
                     "unprotected_seconds": 4.0,
                     "session_capture_complete": True,
@@ -212,6 +271,110 @@ class PortfolioMaturityTests(unittest.TestCase):
             "confirmation expectancy R is not above required 0.0",
             assessment["pilot_ready_blockers"],
         )
+
+    def test_positive_but_fragile_confirmation_blocks_pilot_ready(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            confirmation_index = 0
+            for record in records:
+                if record.get("sample_phase") != "confirmation" or record.get(
+                    "record_type"
+                ) != "signal":
+                    continue
+                value = 1.0 if confirmation_index < 5 else -0.1
+                record["net_r"] = value
+                record["stress_10bps_r"] = value - 0.1
+                record["stress_20bps_r"] = value - 0.2
+                confirmation_index += 1
+            assessment = maturity.assess_strategy(records, self.config)
+        self.assertGreater(assessment["metrics"]["confirmation"]["expectancy_r"], 0)
+        self.assertIn(
+            "confirmation total R without five best is not above 0",
+            assessment["pilot_ready_blockers"],
+        )
+        self.assertEqual(assessment["validation_phase"], "CONFIRMATION")
+
+    def test_strong_confirmation_cannot_hide_weak_development(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            for record in records:
+                if record.get("sample_phase") == "development" and record.get(
+                    "record_type"
+                ) == "signal":
+                    record["net_r"] = -0.05
+                    record["stress_10bps_r"] = -0.15
+                    record["stress_20bps_r"] = -0.25
+            assessment = maturity.assess_strategy(records, self.config)
+        self.assertIn(
+            "development expectancy R is not above required 0.0",
+            assessment["pilot_ready_blockers"],
+        )
+        self.assertEqual(assessment["validation_phase"], "DEVELOPMENT")
+
+    def test_missing_shadows_block_after_both_historical_phases_pass(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = [
+                record
+                for record in self._strategy_records(root, "strategy-one", "momentum")
+                if record.get("sample_phase") != "shadow"
+            ]
+            assessment = maturity.assess_strategy(records, self.config)
+        self.assertIn(
+            "shadow executions 0 is below required 5",
+            assessment["pilot_ready_blockers"],
+        )
+        self.assertEqual(assessment["validation_phase"], "SHADOW_QUALIFICATION")
+
+    def test_incomplete_shadow_path_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            shadow = next(
+                record for record in records if record.get("sample_phase") == "shadow"
+            )
+            shadow["monitoring_complete"] = False
+            with self.assertRaisesRegex(
+                maturity.PortfolioMaturityError,
+                "complete shadow execution requires monitoring_complete=true",
+            ):
+                maturity.validate_record(shadow, root=root)
+
+    def test_live_evidence_without_entry_ready_guard_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(
+                root,
+                "strategy-one",
+                "momentum",
+                live=True,
+            )
+            live = next(
+                record for record in records if record.get("sample_phase") == "live"
+            )
+            live["portfolio_guard_status"] = "PAUSED_SAFETY"
+            with self.assertRaisesRegex(
+                maturity.PortfolioMaturityError,
+                "portfolio_guard_status=ENTRY_READY",
+            ):
+                maturity.validate_record(live, root=root)
+
+    def test_retired_stage0_variant_cannot_enter_maturity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            inspection = self._inspection(
+                root,
+                "strategy-one",
+                "momentum",
+                stage0_survived=False,
+            )
+            with self.assertRaisesRegex(
+                maturity.PortfolioMaturityError,
+                "retired Stage 0 variants cannot enter maturity",
+            ):
+                maturity.validate_record(inspection, root=root)
 
     def test_rule_violation_or_incomplete_capture_blocks_pilot_ready(self):
         with tempfile.TemporaryDirectory() as directory:

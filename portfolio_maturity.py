@@ -20,6 +20,8 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
+from portfolio_funnel import PortfolioFunnelError, validate_stage0_survivor_binding
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "portfolio_config.toml"
@@ -45,8 +47,29 @@ class PortfolioConfig:
 
 
 @dataclass(frozen=True)
+class RobustnessMetrics:
+    signals: int
+    expectancy_r: float | None
+    profit_factor: float | None
+    maximum_drawdown_r: float
+    bootstrap_lower_expectancy_r: float | None
+    first_half_total_r: float | None
+    second_half_total_r: float | None
+    without_five_best_total_r: float | None
+    stress_10_total_r: float | None
+    stress_10_profit_factor: float | None
+    stress_10_drawdown_r: float | None
+    stress_20_total_r: float | None
+    stress_20_profit_factor: float | None
+    stress_20_drawdown_r: float | None
+    rule_violations: int
+    incomplete_capture_records: int
+
+
+@dataclass(frozen=True)
 class StrategyMetrics:
     historical_signals: int
+    development_signals: int
     confirmation_signals: int
     shadow_executions: int
     live_executions: int
@@ -65,6 +88,8 @@ class StrategyMetrics:
     stress_20_total_r: float | None
     stress_20_profit_factor: float | None
     stress_20_drawdown_r: float | None
+    development: RobustnessMetrics
+    confirmation: RobustnessMetrics
     entry_slippage_p95_bps: float | None
     unprotected_p95_seconds: float | None
     stop_slippage_excess_p95_bps: float | None
@@ -348,6 +373,10 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
                 raise PortfolioMaturityError(
                     "wave 2 taxonomy must be included in evidence_hashes"
                 )
+        try:
+            validate_stage0_survivor_binding(record, root=root)
+        except PortfolioFunnelError as exc:
+            raise PortfolioMaturityError(str(exc)) from exc
         return
     record_date = _iso_date(record.get("date"), "date")
     phase = _string(record.get("sample_phase"), "sample_phase")
@@ -376,7 +405,49 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
     for field in ("net_r", "stress_10bps_r", "stress_20bps_r"):
         _finite(record.get(field), field)
     _boolean(record.get("stop_executed"), "stop_executed")
+    if mode == "shadow":
+        for field in (
+            "discovery_complete",
+            "evaluation_complete",
+            "sizing_complete",
+            "order_construction_complete",
+            "protection_plan_complete",
+            "monitoring_complete",
+            "journal_complete",
+        ):
+            if _boolean(record.get(field), field) is not True:
+                raise PortfolioMaturityError(
+                    f"complete shadow execution requires {field}=true"
+                )
+        if _integer(record.get("broker_actions"), "broker_actions") != 0:
+            raise PortfolioMaturityError("shadow execution must have zero broker actions")
     if mode == "live":
+        if _string(record.get("portfolio_guard_status"), "portfolio_guard_status") != "ENTRY_READY":
+            raise PortfolioMaturityError(
+                "live portfolio evidence requires portfolio_guard_status=ENTRY_READY"
+            )
+        for field in (
+            "broker_review_passed",
+            "protection_confirmed",
+            "monitoring_complete",
+            "journal_complete",
+        ):
+            if _boolean(record.get(field), field) is not True:
+                raise PortfolioMaturityError(
+                    f"complete live execution requires {field}=true"
+                )
+        confirmation_required = _boolean(
+            record.get("broker_confirmation_required"),
+            "broker_confirmation_required",
+        )
+        confirmation_satisfied = _boolean(
+            record.get("broker_confirmation_satisfied"),
+            "broker_confirmation_satisfied",
+        )
+        if confirmation_required and not confirmation_satisfied:
+            raise PortfolioMaturityError(
+                "broker-required confirmation was not satisfied"
+            )
         for field in ("entry_slippage_bps", "unprotected_seconds"):
             _finite(record.get(field), field, minimum=0)
         if record.get("stop_executed") is True:
@@ -502,52 +573,26 @@ def _bootstrap_lower(values: Sequence[float], confidence: float) -> float | None
     return _percentile(means, 1 - confidence)
 
 
-def _metrics(records: Sequence[Mapping[str, Any]], confidence: float) -> StrategyMetrics:
-    signals = [record for record in records if record["record_type"] == "signal"]
-    historical = [
+def _robustness_metrics(
+    records: Sequence[Mapping[str, Any]], confidence: float
+) -> RobustnessMetrics:
+    signals = [
         record
-        for record in signals
-        if record["mode"] == "historical" and record["closed"] and record["eligible"]
+        for record in records
+        if record["record_type"] == "signal"
+        and record["mode"] == "historical"
+        and record["closed"]
+        and record["eligible"]
     ]
-    historical.sort(key=lambda item: (str(item["date"]), str(item["signal_id"])))
-    confirmation = [record for record in historical if record["sample_phase"] == "confirmation"]
-    shadow = [
-        record
-        for record in signals
-        if record["mode"] == "shadow" and record["closed"] and record["eligible"]
-    ]
-    live = [
-        record
-        for record in signals
-        if record["mode"] == "live" and record["closed"] and record["eligible"]
-    ]
-    values = [float(record["net_r"]) for record in historical]
-    confirmation_values = [float(record["net_r"]) for record in confirmation]
+    signals.sort(key=lambda item: (str(item["date"]), str(item["signal_id"])))
+    values = [float(record["net_r"]) for record in signals]
     midpoint = len(values) // 2
     without_best = sorted(values, reverse=True)[5:]
-    stress_10 = [float(record["stress_10bps_r"]) for record in historical]
-    stress_20 = [float(record["stress_20bps_r"]) for record in historical]
-    violations = sum(
-        len(record["rule_violations"])
-        for record in records
-        if record["record_type"] != "inspection"
-    )
-    incomplete = sum(record.get("session_capture_complete") is not True for record in records if record["record_type"] != "inspection")
-    entry_slippage = [float(record["entry_slippage_bps"]) for record in live]
-    unprotected = [float(record["unprotected_seconds"]) for record in live]
-    stopped = [record for record in live if record["stop_executed"] is True]
-    stop_excess = [
-        float(record["stop_slippage_bps"]) - float(record["stop_reserve_bps"])
-        for record in stopped
-    ]
-    return StrategyMetrics(
-        historical_signals=len(historical),
-        confirmation_signals=len(confirmation),
-        shadow_executions=len(shadow),
-        live_executions=len(live),
-        natural_stop_executions=len(stopped),
+    stress_10 = [float(record["stress_10bps_r"]) for record in signals]
+    stress_20 = [float(record["stress_20bps_r"]) for record in signals]
+    return RobustnessMetrics(
+        signals=len(signals),
         expectancy_r=statistics.fmean(values) if values else None,
-        confirmation_expectancy_r=statistics.fmean(confirmation_values) if confirmation_values else None,
         profit_factor=_profit_factor(values),
         maximum_drawdown_r=_drawdown(values),
         bootstrap_lower_expectancy_r=_bootstrap_lower(values, confidence),
@@ -560,6 +605,85 @@ def _metrics(records: Sequence[Mapping[str, Any]], confidence: float) -> Strateg
         stress_20_total_r=sum(stress_20) if stress_20 else None,
         stress_20_profit_factor=_profit_factor(stress_20),
         stress_20_drawdown_r=_drawdown(stress_20) if stress_20 else None,
+        rule_violations=sum(
+            len(record["rule_violations"])
+            for record in records
+            if record["record_type"] != "inspection"
+        ),
+        incomplete_capture_records=sum(
+            record.get("session_capture_complete") is not True
+            for record in records
+            if record["record_type"] != "inspection"
+        ),
+    )
+
+
+def _metrics(records: Sequence[Mapping[str, Any]], confidence: float) -> StrategyMetrics:
+    signals = [record for record in records if record["record_type"] == "signal"]
+    historical_records = [
+        record
+        for record in records
+        if record.get("sample_phase") in {"development", "confirmation"}
+    ]
+    development_records = [
+        record for record in records if record.get("sample_phase") == "development"
+    ]
+    confirmation_records = [
+        record for record in records if record.get("sample_phase") == "confirmation"
+    ]
+    historical = _robustness_metrics(historical_records, confidence)
+    development = _robustness_metrics(development_records, confidence)
+    confirmation = _robustness_metrics(confirmation_records, confidence)
+    shadow = [
+        record
+        for record in signals
+        if record["mode"] == "shadow" and record["closed"] and record["eligible"]
+    ]
+    live = [
+        record
+        for record in signals
+        if record["mode"] == "live" and record["closed"] and record["eligible"]
+    ]
+    violations = sum(
+        len(record["rule_violations"])
+        for record in records
+        if record["record_type"] != "inspection"
+    )
+    incomplete = sum(
+        record.get("session_capture_complete") is not True
+        for record in records
+        if record["record_type"] != "inspection"
+    )
+    entry_slippage = [float(record["entry_slippage_bps"]) for record in live]
+    unprotected = [float(record["unprotected_seconds"]) for record in live]
+    stopped = [record for record in live if record["stop_executed"] is True]
+    stop_excess = [
+        float(record["stop_slippage_bps"]) - float(record["stop_reserve_bps"])
+        for record in stopped
+    ]
+    return StrategyMetrics(
+        historical_signals=historical.signals,
+        development_signals=development.signals,
+        confirmation_signals=confirmation.signals,
+        shadow_executions=len(shadow),
+        live_executions=len(live),
+        natural_stop_executions=len(stopped),
+        expectancy_r=historical.expectancy_r,
+        confirmation_expectancy_r=confirmation.expectancy_r,
+        profit_factor=historical.profit_factor,
+        maximum_drawdown_r=historical.maximum_drawdown_r,
+        bootstrap_lower_expectancy_r=historical.bootstrap_lower_expectancy_r,
+        first_half_total_r=historical.first_half_total_r,
+        second_half_total_r=historical.second_half_total_r,
+        without_five_best_total_r=historical.without_five_best_total_r,
+        stress_10_total_r=historical.stress_10_total_r,
+        stress_10_profit_factor=historical.stress_10_profit_factor,
+        stress_10_drawdown_r=historical.stress_10_drawdown_r,
+        stress_20_total_r=historical.stress_20_total_r,
+        stress_20_profit_factor=historical.stress_20_profit_factor,
+        stress_20_drawdown_r=historical.stress_20_drawdown_r,
+        development=development,
+        confirmation=confirmation,
         entry_slippage_p95_bps=_percentile(entry_slippage, 0.95),
         unprotected_p95_seconds=_percentile(unprotected, 0.95),
         stop_slippage_excess_p95_bps=_percentile(stop_excess, 0.95),
@@ -620,6 +744,81 @@ def _maximum_number(blockers: list[str], name: str, value: float | None, maximum
         blockers.append(f"{name} is missing or above {maximum}")
 
 
+def _robustness_blockers(
+    name: str,
+    metrics: RobustnessMetrics,
+    *,
+    minimum_signals: int,
+    expectancy_threshold: float,
+    gate: Mapping[str, Any],
+) -> list[str]:
+    blockers: list[str] = []
+    _at_least(blockers, f"{name} signals", metrics.signals, minimum_signals)
+    _above_number(
+        blockers,
+        f"{name} expectancy R",
+        metrics.expectancy_r,
+        expectancy_threshold,
+    )
+    _minimum_number(
+        blockers,
+        f"{name} profit factor",
+        metrics.profit_factor,
+        float(gate["minimum_profit_factor"]),
+    )
+    _positive(
+        blockers,
+        f"{name} bootstrap lower expectancy R",
+        metrics.bootstrap_lower_expectancy_r,
+    )
+    _maximum_number(
+        blockers,
+        f"{name} maximum drawdown R",
+        metrics.maximum_drawdown_r,
+        float(gate["maximum_drawdown_r"]),
+    )
+    if gate["require_positive_chronological_halves"]:
+        _positive(
+            blockers,
+            f"{name} first chronological half total R",
+            metrics.first_half_total_r,
+        )
+        _positive(
+            blockers,
+            f"{name} second chronological half total R",
+            metrics.second_half_total_r,
+        )
+    if gate["require_positive_without_five_best"]:
+        _positive(
+            blockers,
+            f"{name} total R without five best",
+            metrics.without_five_best_total_r,
+        )
+    for bps in (10, 20):
+        _positive(
+            blockers,
+            f"{name} {bps} bps stress total R",
+            getattr(metrics, f"stress_{bps}_total_r"),
+        )
+        _minimum_number(
+            blockers,
+            f"{name} {bps} bps stress profit factor",
+            getattr(metrics, f"stress_{bps}_profit_factor"),
+            float(gate["minimum_stressed_profit_factor"]),
+        )
+        _maximum_number(
+            blockers,
+            f"{name} {bps} bps stress drawdown R",
+            getattr(metrics, f"stress_{bps}_drawdown_r"),
+            float(gate["maximum_stressed_drawdown_r"]),
+        )
+    if metrics.rule_violations > int(gate["maximum_rule_violations"]):
+        blockers.append(f"{name} rule violations exceed zero")
+    if metrics.incomplete_capture_records:
+        blockers.append(f"{name} evidence contains incomplete capture records")
+    return blockers
+
+
 def assess_strategy(
     records: Sequence[Mapping[str, Any]],
     config: PortfolioConfig,
@@ -636,9 +835,36 @@ def assess_strategy(
     confidence = float(config.raw["pilot_ready"]["minimum_bootstrap_confidence"])
     metrics = _metrics(records, confidence)
     gate = config.raw["pilot_ready"]
-    blockers = _inspection_blockers(inspections[0] if inspections else None, config)
+    inspection = inspections[0] if inspections else None
+    inspection_blockers = _inspection_blockers(inspection, config)
+    minimum_confirmation = int(gate["minimum_confirmation_signals"])
+    minimum_development = (
+        int(gate["minimum_closed_historical_signals"]) - minimum_confirmation
+    )
+    if minimum_development < 1:
+        raise PortfolioMaturityError(
+            "historical signal minimum must exceed confirmation minimum"
+        )
+    development_blockers = _robustness_blockers(
+        "development",
+        metrics.development,
+        minimum_signals=minimum_development,
+        expectancy_threshold=float(gate["minimum_expectancy_r"]),
+        gate=gate,
+    )
+    confirmation_blockers = _robustness_blockers(
+        "confirmation",
+        metrics.confirmation,
+        minimum_signals=minimum_confirmation,
+        expectancy_threshold=float(gate["minimum_confirmation_expectancy_r"]),
+        gate=gate,
+    )
+    blockers = [
+        *inspection_blockers,
+        *development_blockers,
+        *confirmation_blockers,
+    ]
     _at_least(blockers, "historical signals", metrics.historical_signals, int(gate["minimum_closed_historical_signals"]))
-    _at_least(blockers, "confirmation signals", metrics.confirmation_signals, int(gate["minimum_confirmation_signals"]))
     _at_least(blockers, "shadow executions", metrics.shadow_executions, int(gate["minimum_shadow_executions"]))
     _above_number(
         blockers,
@@ -668,6 +894,27 @@ def assess_strategy(
         blockers.append("rule violations exceed zero")
     if metrics.incomplete_capture_records:
         blockers.append("evidence contains incomplete capture records")
+    blockers = list(dict.fromkeys(blockers))
+    if inspection_blockers or development_blockers:
+        validation_phase = "DEVELOPMENT"
+        current_phase_blockers = [*inspection_blockers, *development_blockers]
+    elif confirmation_blockers:
+        validation_phase = "CONFIRMATION"
+        current_phase_blockers = confirmation_blockers
+    elif metrics.shadow_executions < int(gate["minimum_shadow_executions"]):
+        validation_phase = "SHADOW_QUALIFICATION"
+        current_phase_blockers = [
+            item for item in blockers if item.startswith("shadow executions")
+        ]
+    elif blockers:
+        validation_phase = "INDEPENDENT_INSPECTION"
+        current_phase_blockers = blockers
+    elif metrics.live_executions == 0:
+        validation_phase = "LIVE_PILOT_READY"
+        current_phase_blockers = []
+    else:
+        validation_phase = "LIVE_PILOT"
+        current_phase_blockers = []
     live_gate = config.raw["live_validated"]
     live_blockers: list[str] = list(blockers)
     _at_least(live_blockers, "live executions", metrics.live_executions, int(live_gate["minimum_live_executions"]))
@@ -680,10 +927,18 @@ def assess_strategy(
         "strategy_version": version,
         "mechanism_family": family,
         "rules_hash": rules_hash,
+        "source_stage0_variant_id": (
+            inspection.get("source_stage0_variant_id") if inspection else None
+        ),
+        "source_stage0_result_sha256": (
+            inspection.get("source_stage0_result_sha256") if inspection else None
+        ),
         "maturity": "LIVE_VALIDATED" if not live_blockers else ("PILOT_READY" if not blockers else "RESEARCH"),
         "pilot_ready": not blockers,
         "live_started": metrics.live_executions > 0,
         "live_validated": not live_blockers,
+        "validation_phase": validation_phase,
+        "current_phase_blockers": current_phase_blockers,
         "metrics": asdict(metrics),
         "pilot_ready_blockers": blockers,
         "live_validated_blockers": live_blockers,
@@ -835,8 +1090,12 @@ def build_report(
         "schema_version": 1,
         "campaign_id": config.raw["campaign"]["id"],
         "portfolio_config_sha256": config.sha256,
+        "target_pilot_ready_strategies": target,
         "strategies": assessments,
         "pilot_ready_strategy_count": len(ready),
+        "live_started_strategy_count": sum(
+            assessment["live_started"] for assessment in assessments
+        ),
         "selected_strategy_ids": selected_ids,
         "selected_strategies": selected_strategies,
         "selected_pairwise_confirmation_correlations": pairwise,
