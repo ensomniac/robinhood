@@ -11,24 +11,32 @@ class PortfolioFunnelTests(unittest.TestCase):
         dispositions = funnel.load_stage0_dispositions()
         self.assertEqual(
             [item["variant_id"] for item in dispositions],
-            list(funnel.FIRST_WAVE_ORDER[:6]),
+            list(funnel.FIRST_WAVE_ORDER[:7]),
         )
         self.assertEqual(
             [item["status"] for item in dispositions],
-            ["RETIRED", "RETIRED", "SURVIVED", "RETIRED", "RETIRED", "RETIRED"],
+            [
+                "RETIRED",
+                "RETIRED",
+                "SURVIVED",
+                "RETIRED",
+                "RETIRED",
+                "RETIRED",
+                "RETIRED",
+            ],
         )
         self.assertEqual(dispositions[2]["blockers"], [])
 
     def test_status_exposes_retired_development_and_zero_of_three_progress(self):
         status = funnel.build_funnel_status(maturity.build_report())
-        self.assertEqual(status["first_wave"]["retired_count"], 5)
+        self.assertEqual(status["first_wave"]["retired_count"], 6)
         self.assertEqual(status["first_wave"]["survivor_count"], 1)
         self.assertEqual(
             status["progress"], {"pilot_ready": 0, "live_started": 0, "target": 3}
         )
         self.assertEqual(
             status["lanes"]["stage0_falsification"]["variant_id"],
-            "cross-sectional-momentum-v1",
+            "post-earnings-drift-v1",
         )
         self.assertIsNone(status["lanes"]["representative_development"])
         self.assertIsNone(status["lanes"]["confirmation_or_shadow"])
@@ -40,17 +48,14 @@ class PortfolioFunnelTests(unittest.TestCase):
             status["validation_candidates"][0]["validation_phase"],
             "RETIRED_DEVELOPMENT",
         )
-        self.assertTrue(status["notification_due"])
-        self.assertEqual(
-            status["notification_reasons"],
-            ["three Stage 0 dispositions completed"],
-        )
+        self.assertFalse(status["notification_due"])
+        self.assertEqual(status["notification_reasons"], [])
 
     def test_remaining_first_wave_queue_matches_frozen_plan(self):
         status = funnel.build_funnel_status(maturity.build_report())
         self.assertEqual(
             [item["variant_id"] for item in status["first_wave"]["candidate_queue"]],
-            list(funnel.FIRST_WAVE_ORDER[6:]),
+            list(funnel.FIRST_WAVE_ORDER[7:]),
         )
 
     def test_second_wave_is_fixed_and_closed_before_failure_taxonomy(self):
@@ -87,6 +92,11 @@ class PortfolioFunnelTests(unittest.TestCase):
         self.assertEqual(
             dispositions[5]["blockers"],
             ["closed signals are below the Stage 0 minimum"],
+        )
+        self.assertEqual(dispositions[6]["closed_signals"], 72)
+        self.assertEqual(
+            dispositions[6]["blockers"],
+            ["primary drawdown exceeds the Stage 0 maximum"],
         )
 
 

@@ -90,6 +90,40 @@ class CrossSectionalMomentumStage0Tests(unittest.TestCase):
         self.assertEqual(inspection["provider_requests_during_inspection"], 0)
         self.assertTrue(inspection["return_evaluation_authorized"])
 
+    def test_published_result_is_independently_rebuilt_and_retired(self):
+        root = Path(__file__).resolve().parents[1]
+        result_path = (
+            root
+            / "research_results"
+            / "2026-07-21-cross-sectional-momentum-stage0-9a165ae149b2f9220a2d78c2251a34617ad63ed2a468ded8749fb5b0cc0a8869.json"
+        )
+        inspection_path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "cross-sectional-momentum-v1-result-fa04429130158e31d221151b1d00d4dd3432ec43a8c88595dd0f8bc4a3c0421b.json"
+        )
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        inspection = json.loads(inspection_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            result["result_sha256"], stage0.common._self_hash(result, "result_sha256")
+        )
+        self.assertEqual(result["denominator"]["closed_signals"], 72)
+        self.assertGreater(result["primary_5bps"]["expectancy_r"], 0)
+        self.assertGreater(result["stress"]["20"]["total_r"], 0)
+        self.assertGreater(result["primary_5bps"]["maximum_drawdown_r"], 8)
+        self.assertFalse(result["stage0_survived"])
+        self.assertEqual(
+            result["stage0_blockers"],
+            ["primary drawdown exceeds the Stage 0 maximum"],
+        )
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertTrue(inspection["valid"])
+        self.assertFalse(inspection["stage0_survived"])
+
     def test_target_dates_are_fixed_spaced_and_have_complete_windows(self):
         source_dates, _, _ = stage0.universe_source._source_graph()
         sessions = stage0._calendar()

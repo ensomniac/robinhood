@@ -1,0 +1,16 @@
+{
+  "broker_actions": 0,
+  "closed_signals": 72,
+  "input_inspection_sha256": "198957534e2d6ec63519d9e6c96b598ff96f8490f2eece45af282ffc5b9358de",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "fa04429130158e31d221151b1d00d4dd3432ec43a8c88595dd0f8bc4a3c0421b",
+  "manifest_sha256": "a8970ad2bfb0045f54404da985178686ec7cd0068c3a6a23f59165c7e415520a",
+  "maturity_effect": "NONE",
+  "provider_requests": 0,
+  "result_file_sha256": "b7d522fc2cdbb057687dd8430e6527508b6828c3b8267ee08f6b3cbb11c508da",
+  "result_sha256": "9a165ae149b2f9220a2d78c2251a34617ad63ed2a468ded8749fb5b0cc0a8869",
+  "schema_version": 1,
+  "stage0_survived": false,
+  "valid": true,
+  "variant_id": "cross-sectional-momentum-v1"
+}

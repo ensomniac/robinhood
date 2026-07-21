@@ -363,6 +363,17 @@ session, and 37,967 with an incomplete 15-minute ranking prefix. Every miss is
 retained as a no-signal; the inspection makes no provider or broker call,
 computes zero trade returns, and authorizes the one fixed Stage 0 evaluation.
 
+The inspected cross-sectional momentum result is
+`research_results/2026-07-21-cross-sectional-momentum-stage0-9a165ae149b2f9220a2d78c2251a34617ad63ed2a468ded8749fb5b0cc0a8869.json`,
+with independent rebuild
+`strategy_tournament/inspections/cross-sectional-momentum-v1-result-fa04429130158e31d221151b1d00d4dd3432ec43a8c88595dd0f8bc4a3c0421b.json`.
+Its 72 signals produced +6.698R total, +0.093R expectancy, 1.214 profit
+factor, and 13.636R maximum drawdown at 5 bps per side. The exact rule
+remained positive at 20 bps with +5.516R total and 1.175 profit factor, but
+the frozen 8R drawdown maximum is non-negotiable. The exact variant is retired,
+cannot be repaired on this corpus, and contributes no maturity evidence. The
+tournament advances to post-earnings drift.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
