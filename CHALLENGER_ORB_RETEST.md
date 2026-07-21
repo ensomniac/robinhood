@@ -272,6 +272,16 @@ its tests, and durable finding must be committed and pushed before the real
 still authorizes only a separately frozen identity/request graph; it does not
 authorize a provider request by itself.
 
+Source-semantics manifest `60a7d000...299ce9` now freezes the exact 1,826
+pairs across all 100 dates before target source access. It binds daily
+shortlist hash `887d1f12...ab5a5`, private selection hash
+`3ed15493...183c2`, unchanged source-rules hash `99843372...31b4dc`,
+implementation-contract hash `d880bd95...34836`, the 20-GiB reserve, and zero
+target source artifacts. The manifest is registered `COLLECTING` and remains
+uninspected; it must be committed and pushed before the independent zero-state
+inspection. It authorizes no network access, source classification, causal
+detail, return, or outcome.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

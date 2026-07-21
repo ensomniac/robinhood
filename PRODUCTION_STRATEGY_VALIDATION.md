@@ -338,6 +338,15 @@ before freezing the challenger's real source-semantics manifest, which must in
 turn be independently inspected and published before an exact SEC/issuer
 request graph is allowed.
 
+The exact challenger source-semantics contract is now frozen as manifest
+`60a7d000...299ce9` for all 1,826 selected pairs across 100 dates. It binds the
+private selection and daily-shortlist hashes, unchanged source rules, current
+implementation and dependency versions, scanner and identity attestations,
+recovery order, privacy boundary, 20-GiB reserve, zero target artifacts, and
+the separate-outcome lock. It is registered `COLLECTING` and must be committed
+and pushed before independent zero-state inspection; no provider request or
+source claim is authorized yet.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
