@@ -82,6 +82,24 @@ class EquityGapContinuationStage0Tests(unittest.TestCase):
         self.assertFalse(manifest["development_evidence_eligible"])
         self.assertFalse(manifest["confirmation_evidence_eligible"])
 
+    def test_published_input_inspection_computed_zero_returns(self):
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "strategy_tournament"
+            / "inspections"
+            / "equity-gap-continuation-v1-input-fe842aebc174196ceaa34a529d6c3a8eb75ab4df5bc6db110221f7f3dea4c881.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertTrue(inspection["return_evaluation_authorized"])
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertEqual(inspection["selected_dates"], 95)
+        self.assertEqual(inspection["selected_symbol_sessions"], 950)
+        self.assertEqual(inspection["selected_bars"], 370500)
+
     def test_completed_breakout_uses_next_bar_open(self):
         candidate = stage0._candidate(
             day="2025-01-02", raw=raw_candidate(), prior_close=100.0

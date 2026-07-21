@@ -187,6 +187,11 @@ The executable contract fixes the common-stock and price gates, 2-8% gap,
 first-15-minute range, completed-bar VWAP and volume breakout, next-bar entry,
 first-15-minute stop, 2R target, stop-first ambiguity, 15:50 force-flat, one
 daily selection, and 5/10/20 bps-per-side costs.
+Input inspection
+`strategy_tournament/inspections/equity-gap-continuation-v1-input-fe842aebc174196ceaa34a529d6c3a8eb75ab4df5bc6db110221f7f3dea4c881.json`
+independently rebuilt the activation, reconciled 370,500 real one-minute bars
+and every prior close, made zero provider or broker requests, computed zero
+returns, and authorizes only the frozen Stage 0 calculation.
 
 ## Active discovery funnel
 
