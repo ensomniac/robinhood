@@ -58,10 +58,25 @@ def test_cross_sectional_variants_share_exact_frozen_point_in_time_dates():
         assert contract["provider_substitution"] is False
 
 
-def test_slate_inspection_is_absent_before_independent_review():
+def test_published_slate_inspection_authorizes_only_frozen_return_evaluation():
     matches = sorted(
         (ROOT / "strategy_tournament/second_wave/inspections").glob(
             "portfolio-stage0-second-wave-slate-*.json"
         )
     )
-    assert matches == []
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == slate._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["manifest_sha256"] == (
+        "4c513f9de6417a48dccae5bf5ce1e5c59d68a1d2d0b6e65bba41a3f4a5cac822"
+    )
+    assert inspection["variant_count"] == 6
+    assert inspection["outcomes_accessed"] == 0
+    assert inspection["returns_computed"] == 0
+    assert inspection["provider_requests"] == 0
+    assert inspection["broker_actions"] == 0
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["return_evaluation_authorized"] is True
+    assert inspection["valid"] is True

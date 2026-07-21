@@ -791,6 +791,13 @@ def build_funnel_status(
     second_wave_outcome_access_open = (
         second_wave_open and second_wave_slate["inspected"]
     )
+    second_wave_queue = [
+        {"variant_id": variant_id, "mechanism_family": family}
+        for variant_id, family in SECOND_WAVE
+    ]
+    stage0_lane = queue[0] if queue else None
+    if stage0_lane is None and second_wave_outcome_access_open:
+        stage0_lane = second_wave_queue[0]
     notification_reasons: list[str] = []
     if dispositions and len(dispositions) % 3 == 0:
         notification_reasons.append("three Stage 0 dispositions completed")
@@ -834,13 +841,10 @@ def build_funnel_status(
             ],
             "slate_paths": [*second_wave_slate["manifest_paths"]],
             "slate_inspection_paths": [*second_wave_slate["inspection_paths"]],
-            "candidate_queue": [
-                {"variant_id": variant_id, "mechanism_family": family}
-                for variant_id, family in SECOND_WAVE
-            ],
+            "candidate_queue": second_wave_queue,
         },
         "lanes": {
-            "stage0_falsification": queue[0] if queue else None,
+            "stage0_falsification": stage0_lane,
             "representative_development": development[0] if development else None,
             "confirmation_or_shadow": advanced[0] if advanced else None,
         },

@@ -39,7 +39,10 @@ class PortfolioFunnelTests(unittest.TestCase):
         self.assertEqual(
             status["progress"], {"pilot_ready": 0, "live_started": 0, "target": 3}
         )
-        self.assertIsNone(status["lanes"]["stage0_falsification"])
+        self.assertEqual(
+            status["lanes"]["stage0_falsification"]["variant_id"],
+            "sector-etf-rotation-v1",
+        )
         self.assertIsNone(status["lanes"]["representative_development"])
         self.assertIsNone(status["lanes"]["confirmation_or_shadow"])
         self.assertEqual(
@@ -64,9 +67,13 @@ class PortfolioFunnelTests(unittest.TestCase):
         status = funnel.build_funnel_status(maturity.build_report())
         self.assertTrue(status["second_wave"]["required"])
         self.assertTrue(status["second_wave"]["open"])
-        self.assertFalse(status["second_wave"]["outcome_access_open"])
+        self.assertTrue(status["second_wave"]["outcome_access_open"])
         self.assertEqual(len(status["second_wave"]["slate_paths"]), 1)
-        self.assertEqual(status["second_wave"]["slate_inspection_paths"], [])
+        self.assertEqual(len(status["second_wave"]["slate_inspection_paths"]), 1)
+        self.assertEqual(
+            status["lanes"]["stage0_falsification"]["variant_id"],
+            "sector-etf-rotation-v1",
+        )
         self.assertEqual(len(status["second_wave"]["candidate_queue"]), 6)
         self.assertEqual(
             [

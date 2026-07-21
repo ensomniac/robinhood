@@ -663,6 +663,14 @@ parameter repair, maturity inheritance, provider calls, or outcome access
 before independent slate inspection. The funnel exposes the raw slate but
 keeps `outcome_access_open=false` until that inspection is published.
 
+Slate inspection
+`3c12ba6f0ea4a49db5888904015a73d42f54cf1da2a43447ece8b741d1e2c6c0`
+independently rebuilt the six variants and the unchanged point-in-time
+membership binding with zero outcomes, returns, provider requests, or broker
+actions. The funnel now exposes `outcome_access_open=true` and places only
+sector-etf-rotation-v1 in the active Stage 0 lane. Each later family remains
+ordered behind its disposition.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the
