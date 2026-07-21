@@ -176,6 +176,18 @@ This exact variant is also retired: 29 signals lost 8.388R at 5 bps per side,
 with -0.289R expectancy, 0.601 profit factor, and 13.470R drawdown; at 20 bps
 per side it lost 19.686R. The result cannot be tuned or promoted.
 
+The third activation is frozen, with returns still locked, at
+`strategy_tournament/activations/equity-gap-continuation-v1-3bc6f70c2a331e70b00a1dda076b258ce46f1175d062ecee0a641e4c4ab06f3f.json`.
+It binds the exact 100-date legacy catalyst denominator: 95 available bundles,
+five permanent-fidelity exclusions, 950 ordered candidate sessions, and 950
+verified prior-session closes. It adds no dates or symbols and permits no
+substitution, provider request, broker action, development claim, confirmation
+claim, or return calculation before its separate committed input inspection.
+The executable contract fixes the common-stock and price gates, 2-8% gap,
+first-15-minute range, completed-bar VWAP and volume breakout, next-bar entry,
+first-15-minute stop, 2R target, stop-first ambiguity, 15:50 force-flat, one
+daily selection, and 5/10/20 bps-per-side costs.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
