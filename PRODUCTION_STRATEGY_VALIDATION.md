@@ -371,6 +371,14 @@ counts, not verified catalysts. Supplemental files and primary documents stay
 locked behind separate exact manifests, and no causal input or outcome was
 accessed.
 
+The supplemental descriptor reduction is now frozen as manifest
+`c6d329b3...7f68af`: all 715 descriptor decisions retain 20 exact window
+overlaps and exclude 695 non-overlaps, with malformed ranges included
+conservatively. The graph binds private decisions, exact requests, source
+lineage, implementation, capacity, privacy, zero substitution, and the outcome
+lock with zero supplemental responses. It remains uninspected `COLLECTING` and
+must be committed and pushed before independent inspection or provider access.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
