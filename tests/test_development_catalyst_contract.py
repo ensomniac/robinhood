@@ -20,12 +20,13 @@ from learning_data import freeze_dataset_contract
 
 
 class DevelopmentCatalystContractTests(unittest.TestCase):
-    def _fixture(self, root: Path, store_root: Path) -> tuple[Path, Path, Path]:
+    def _fixture(
+        self, root: Path, store_root: Path, *, selected_pair_lock: bool = False
+    ) -> tuple[Path, Path, Path]:
         store = store_root / "history"
         env = root / ".env"
         env.write_text(
-            f"LOCAL_HISTORICAL_DATA_ROOT={store}\n"
-            "LOCAL_HISTORICAL_MIN_FREE_GIB=1\n",
+            f"LOCAL_HISTORICAL_DATA_ROOT={store}\nLOCAL_HISTORICAL_MIN_FREE_GIB=1\n",
             encoding="utf-8",
         )
         source_id = "dataset-selected-candidate-contract-fixture"
@@ -71,6 +72,29 @@ class DevelopmentCatalystContractTests(unittest.TestCase):
                 "rank": 1,
             }
         ]
+        information_lock = (
+            {
+                "outcome_lock": {
+                    "post_entry_data_access_allowed": False,
+                    "return_fields_allowed": False,
+                    "target_outcomes_observed_or_derived": False,
+                    "date_symbol_provider_or_missing_input_substitution_allowed": False,
+                },
+                "permitted_next_inputs": {
+                    "point_in_time_primary_source_evidence": True,
+                    "selected_symbols_only": True,
+                    "post_entry_rows": False,
+                    "returns_or_outcomes": False,
+                },
+            }
+            if selected_pair_lock
+            else {
+                "downstream_contract": {
+                    "source_outcomes_observed_or_derived": False,
+                    "substitutions_allowed": False,
+                }
+            }
+        )
         source_contract = {
             "schema_version": 1,
             "dataset_id": source_id,
@@ -95,10 +119,7 @@ class DevelopmentCatalystContractTests(unittest.TestCase):
                 ],
                 "private_selection_content_sha256": _sha256_json(private),
             },
-            "downstream_contract": {
-                "source_outcomes_observed_or_derived": False,
-                "substitutions_allowed": False,
-            },
+            **information_lock,
         }
         source_path, _manifest = freeze_dataset_contract(
             source_contract, root / "source_manifests"
@@ -106,9 +127,10 @@ class DevelopmentCatalystContractTests(unittest.TestCase):
         return env, source_path, store
 
     def test_rebuild_is_exact_and_public_aggregate_has_no_symbol(self):
-        with tempfile.TemporaryDirectory(
-            dir=PROJECT_ROOT
-        ) as directory, tempfile.TemporaryDirectory() as store_directory:
+        with (
+            tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory,
+            tempfile.TemporaryDirectory() as store_directory,
+        ):
             root = Path(directory)
             _env, source_path, store = self._fixture(root, Path(store_directory))
             source = json.loads(source_path.read_text(encoding="utf-8"))
@@ -116,6 +138,37 @@ class DevelopmentCatalystContractTests(unittest.TestCase):
             self.assertEqual(rebuilt["selected_pair_count"], 1)
             self.assertEqual(rebuilt["requested_date_count"], 1)
             self.assertNotIn("AAA", json.dumps(rebuilt))
+
+    def test_rebuild_accepts_new_selected_pair_outcome_lock(self):
+        with (
+            tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory,
+            tempfile.TemporaryDirectory() as store_directory,
+        ):
+            root = Path(directory)
+            _env, source_path, store = self._fixture(
+                root, Path(store_directory), selected_pair_lock=True
+            )
+            source = json.loads(source_path.read_text(encoding="utf-8"))
+
+            rebuilt = _rebuild_selection(source, store)
+
+            self.assertEqual(rebuilt["selected_pair_count"], 1)
+            self.assertNotIn("AAA", json.dumps(rebuilt))
+
+    def test_rebuild_rejects_weakened_selected_pair_outcome_lock(self):
+        with (
+            tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory,
+            tempfile.TemporaryDirectory() as store_directory,
+        ):
+            root = Path(directory)
+            _env, source_path, store = self._fixture(
+                root, Path(store_directory), selected_pair_lock=True
+            )
+            source = json.loads(source_path.read_text(encoding="utf-8"))
+            source["permitted_next_inputs"]["returns_or_outcomes"] = True
+
+            with self.assertRaises(DevelopmentCatalystContractError):
+                _rebuild_selection(source, store)
 
     def test_rules_keep_primary_semantics_and_outcome_independence(self):
         rules = _source_rules()
@@ -128,9 +181,10 @@ class DevelopmentCatalystContractTests(unittest.TestCase):
         )
 
     def test_freeze_and_inspect_are_idempotent_and_outcome_locked(self):
-        with tempfile.TemporaryDirectory(
-            dir=PROJECT_ROOT
-        ) as directory, tempfile.TemporaryDirectory() as store_directory:
+        with (
+            tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory,
+            tempfile.TemporaryDirectory() as store_directory,
+        ):
             root = Path(directory)
             env, source_path, _store = self._fixture(root, Path(store_directory))
             output = root / "manifests"
@@ -157,9 +211,10 @@ class DevelopmentCatalystContractTests(unittest.TestCase):
             self.assertFalse(status["target_outcomes_observed_or_derived"])
 
     def test_private_selection_drift_fails_closed(self):
-        with tempfile.TemporaryDirectory(
-            dir=PROJECT_ROOT
-        ) as directory, tempfile.TemporaryDirectory() as store_directory:
+        with (
+            tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory,
+            tempfile.TemporaryDirectory() as store_directory,
+        ):
             root = Path(directory)
             _env, source_path, store = self._fixture(root, Path(store_directory))
             source = json.loads(source_path.read_text(encoding="utf-8"))
@@ -178,9 +233,10 @@ class DevelopmentCatalystContractTests(unittest.TestCase):
                 _rebuild_selection(source, store)
 
     def test_custom_dataset_identity_scopes_private_sources_and_inspection(self):
-        with tempfile.TemporaryDirectory(
-            dir=PROJECT_ROOT
-        ) as directory, tempfile.TemporaryDirectory() as store_directory:
+        with (
+            tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory,
+            tempfile.TemporaryDirectory() as store_directory,
+        ):
             root = Path(directory)
             env, source_path, _store = self._fixture(root, Path(store_directory))
             dataset_id = "dataset-primary-source-semantics-contract-fixture-v3"
@@ -212,9 +268,10 @@ class DevelopmentCatalystContractTests(unittest.TestCase):
             self.assertEqual(status["status"], "FROZEN_READY")
 
     def test_custom_dataset_identity_rejects_wrong_namespace(self):
-        with tempfile.TemporaryDirectory(
-            dir=PROJECT_ROOT
-        ) as directory, tempfile.TemporaryDirectory() as store_directory:
+        with (
+            tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory,
+            tempfile.TemporaryDirectory() as store_directory,
+        ):
             root = Path(directory)
             env, source_path, _store = self._fixture(root, Path(store_directory))
             with self.assertRaises(DevelopmentCatalystContractError):
@@ -226,9 +283,10 @@ class DevelopmentCatalystContractTests(unittest.TestCase):
                 )
 
     def test_preexisting_target_source_artifact_blocks_freeze(self):
-        with tempfile.TemporaryDirectory(
-            dir=PROJECT_ROOT
-        ) as directory, tempfile.TemporaryDirectory() as store_directory:
+        with (
+            tempfile.TemporaryDirectory(dir=PROJECT_ROOT) as directory,
+            tempfile.TemporaryDirectory() as store_directory,
+        ):
             root = Path(directory)
             env, source_path, store = self._fixture(root, Path(store_directory))
             artifact = _target_source_root(store, DATASET_ID) / "row.json"

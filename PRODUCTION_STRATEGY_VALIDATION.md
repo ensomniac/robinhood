@@ -328,6 +328,16 @@ committed, and pushed exact request graph for selected-symbol causal inputs and
 primary sources; this selected-pair manifest alone authorizes no provider
 request.
 
+The generic primary-source semantics contract builder now composes both the
+legacy development selection schema and the challenger's modern selected-pair
+outcome lock. The modern path is accepted only when point-in-time primary
+evidence is restricted to selected symbols and substitution, post-entry rows,
+returns, and outcomes are all forbidden; tests also prove that weakening any
+required lock fails closed. This implementation must be committed and pushed
+before freezing the challenger's real source-semantics manifest, which must in
+turn be independently inspected and published before an exact SEC/issuer
+request graph is allowed.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

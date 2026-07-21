@@ -261,6 +261,17 @@ identity, and no outcome access. This manifest, status, registry event, and
 durable finding must be committed and pushed before the exact causal/source
 request graph is frozen.
 
+The existing network-free `development_catalyst_contract.py` source-contract
+builder now accepts this challenger boundary as well as the earlier tranche
+schema. Acceptance requires every modern outcome-lock and permitted-input
+field to remain closed: only point-in-time primary evidence for selected names
+is permitted, while substitution, post-entry rows, returns, and outcomes remain
+forbidden. A weakened field fails closed. This compatibility implementation,
+its tests, and durable finding must be committed and pushed before the real
+1,826-pair source-semantics manifest is frozen. The resulting source manifest
+still authorizes only a separately frozen identity/request graph; it does not
+authorize a provider request by itself.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

@@ -60,7 +60,8 @@ SECURITY_MASTER_SOURCE = (
     / "historical_batches/development_tranche_v2/security-master-source.json"
 )
 STRATEGY_SOURCE = (
-    PROJECT_ROOT / "historical_batches/scanner_expansion/production-strategy-source.json"
+    PROJECT_ROOT
+    / "historical_batches/scanner_expansion/production-strategy-source.json"
 )
 DEFAULT_OUTPUT_ROOT = (
     PROJECT_ROOT / "historical_batches/development_tranche_v2/catalyst_manifests"
@@ -159,13 +160,34 @@ def _rebuild_selection(
         )
     selection = source_manifest.get("selection_contract")
     downstream = source_manifest.get("downstream_contract")
-    if not isinstance(selection, Mapping) or not isinstance(downstream, Mapping):
-        raise DevelopmentCatalystContractError("source selection contract is incomplete")
-    if (
-        downstream.get("source_outcomes_observed_or_derived") is not False
-        or downstream.get("substitutions_allowed") is not False
+    outcome_lock = source_manifest.get("outcome_lock")
+    permitted_inputs = source_manifest.get("permitted_next_inputs")
+    legacy_lock_closed = (
+        isinstance(downstream, Mapping)
+        and downstream.get("source_outcomes_observed_or_derived") is False
+        and downstream.get("substitutions_allowed") is False
+    )
+    selected_pair_lock_closed = (
+        isinstance(outcome_lock, Mapping)
+        and outcome_lock.get("post_entry_data_access_allowed") is False
+        and outcome_lock.get("return_fields_allowed") is False
+        and outcome_lock.get("target_outcomes_observed_or_derived") is False
+        and outcome_lock.get(
+            "date_symbol_provider_or_missing_input_substitution_allowed"
+        )
+        is False
+        and isinstance(permitted_inputs, Mapping)
+        and permitted_inputs.get("point_in_time_primary_source_evidence") is True
+        and permitted_inputs.get("selected_symbols_only") is True
+        and permitted_inputs.get("post_entry_rows") is False
+        and permitted_inputs.get("returns_or_outcomes") is False
+    )
+    if not isinstance(selection, Mapping) or not (
+        legacy_lock_closed or selected_pair_lock_closed
     ):
-        raise DevelopmentCatalystContractError("source selection lock is not closed")
+        raise DevelopmentCatalystContractError(
+            "source selection contract is incomplete"
+        )
     private = _read_gzip_object(_selection_private_path(store_root, source_id))
     expected_private_hash = str(selection.get("private_selection_content_sha256") or "")
     if _sha256_json(private) != expected_private_hash:
@@ -182,7 +204,9 @@ def _rebuild_selection(
         or requested != [str(item.get("date")) for item in daily]
         or len(requested) != len(set(requested))
     ):
-        raise DevelopmentCatalystContractError("selected-pair date surface is malformed")
+        raise DevelopmentCatalystContractError(
+            "selected-pair date surface is malformed"
+        )
 
     by_day: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
     identities: set[tuple[str, str]] = set()
@@ -202,7 +226,9 @@ def _rebuild_selection(
             or not exchange
             or not isinstance(scanner_fields, Mapping)
         ):
-            raise DevelopmentCatalystContractError("selected pair identity is incomplete")
+            raise DevelopmentCatalystContractError(
+                "selected pair identity is incomplete"
+            )
         key = (day, symbol)
         if key in identities:
             raise DevelopmentCatalystContractError("selected pair repeats")
@@ -230,10 +256,9 @@ def _rebuild_selection(
             for row in ordered
         ]
         shortlist_hash = _sha256_json(shortlist)
-        if (
-            len(shortlist) != int(public_day.get("shortlist_count", -1))
-            or shortlist_hash != public_day.get("shortlist_sha256")
-        ):
+        if len(shortlist) != int(
+            public_day.get("shortlist_count", -1)
+        ) or shortlist_hash != public_day.get("shortlist_sha256"):
             raise DevelopmentCatalystContractError(
                 f"selected shortlist differs for {day}"
             )
@@ -257,9 +282,7 @@ def _rebuild_selection(
         "dates_below_20": sum(
             1 for row in rebuilt_daily if row["shortlist_count"] < 20
         ),
-        "minimum_shortlist_count": min(
-            row["shortlist_count"] for row in rebuilt_daily
-        ),
+        "minimum_shortlist_count": min(row["shortlist_count"] for row in rebuilt_daily),
     }
 
 
@@ -293,8 +316,7 @@ def _acquisition_contract(dataset_id: str = DATASET_ID) -> dict[str, Any]:
         "missing_or_failed_sources_remain_terminal_rows": True,
         "paid_archive_policy": "decision memo and WAITING_SUBSCRIPTION; no automatic purchase or fabricated credential",
         "target_source_namespace": (
-            "LOCAL_HISTORICAL_DATA_ROOT/"
-            f"{PRIVATE_NAMESPACE}/{dataset_id}/"
+            f"LOCAL_HISTORICAL_DATA_ROOT/{PRIVATE_NAMESPACE}/{dataset_id}/"
         ),
     }
 
@@ -445,7 +467,9 @@ def freeze_contract(
         return matches[0], existing
     usage = shutil.disk_usage(config.root)
     if usage.free < config.min_free_bytes:
-        raise DevelopmentCatalystContractError("historical-store reserve is unavailable")
+        raise DevelopmentCatalystContractError(
+            "historical-store reserve is unavailable"
+        )
     contract = {
         "schema_version": 1,
         "dataset_id": dataset_id,
