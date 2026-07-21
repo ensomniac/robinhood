@@ -1,0 +1,21 @@
+{
+  "activation_rules_hash": "0aa48c15a997b5182cf7223d0c2f6597e2fd9cbc5ce3bf9b2d97753cdf03e6f8",
+  "benchmark_prior_close_collection_authorized": true,
+  "broker_actions": 0,
+  "implementation_sha256": "c3a8fc973bf0ddb270d92878289dd11755a802b60a98eb2241b0ef2b2a25e793",
+  "inspection_kind": "stage0-intraday-activation-inspection",
+  "inspection_sha256": "7bfe5fddcbaaba26be35eba3cf35dea00d617a6654464998cc499f62f161f992",
+  "manifest_file_sha256": "bf143440a07551a9608986a68231fcf8beecc43b6906d920f99fed522e73126f",
+  "manifest_sha256": "269dcb726208e7f364709a65ed51158c05ccefd02ecc005def0ffb460cc17c8a",
+  "member_symbol_sessions": 395316,
+  "prefix_collection_authorized": true,
+  "provider_requests": 0,
+  "provider_requests_before_this_activation": 831,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "target_dates": 80,
+  "target_outcome_collection_authorized": false,
+  "unique_symbols": 5552,
+  "valid": true,
+  "variant_id": "relative-strength-continuation-v1"
+}

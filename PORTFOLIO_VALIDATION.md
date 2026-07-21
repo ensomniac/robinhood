@@ -507,6 +507,11 @@ preserves rules hash
 `0aa48c15a997b5182cf7223d0c2f6597e2fd9cbc5ce3bf9b2d97753cdf03e6f8`,
 binds the existing prefix, and authorizes only one exact prior-session SPY daily
 bar per target date before a new independent inspection.
+Inspection
+`7bfe5fddcbaaba26be35eba3cf35dea00d617a6654464998cc499f62f161f992`
+rebuilds the successor activation, unchanged rules, full denominator, and 831
+prior prefix calls. It makes zero additional calls or returns, authorizes only
+the 80 exact SPY prior-close requests, and keeps target outcomes locked.
 
 ## Active discovery funnel
 

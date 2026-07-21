@@ -74,6 +74,25 @@ class RelativeStrengthContinuationStage0Tests(unittest.TestCase):
         self.assertEqual(status["broker_actions"], 0)
         self.assertEqual(status["status"], "READY")
 
+    def test_benchmark_retry_inspection_preserves_outcome_lock(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "relative-strength-continuation-v1-activation-7bfe5fddcbaaba26be35eba3cf35dea00d617a6654464998cc499f62f161f992.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["provider_requests_before_this_activation"], 831)
+        self.assertEqual(inspection["provider_requests"], 0)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["benchmark_prior_close_collection_authorized"])
+        self.assertFalse(inspection["target_outcome_collection_authorized"])
+
     def test_manifest_freezes_new_full_cross_sectional_dates(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)
