@@ -56,6 +56,12 @@ the append-only evidence and computes strategy and portfolio maturity.
 `portfolio_validation.py` maintains resumable ignored state and emits one
 bounded handoff without contacting providers or brokers.
 
+The first reproducible inventory is in
+[`research_results/2026-07-21-portfolio-data-inventory.json`](research_results/2026-07-21-portfolio-data-inventory.json).
+Rebuild it with `python3 portfolio_data_inventory.py inspect`. It keeps the
+existing 95-date catalyst corpus in its honest falsification-only scope and
+shows where new representative or untouched data is still required.
+
 ### Preserved ORB v3 lane
 
 Strategy version `2026-07-15-orb-v3` remains `UNVALIDATED` and available as one

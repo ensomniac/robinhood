@@ -111,6 +111,14 @@ The persistent controller uses these phases:
    capacity, and publication gates.
 9. `THREE_PILOT_READY_LIVE_STARTED`: terminal machine-earned milestone.
 
+The initial bounded data inventory is published at
+`research_results/2026-07-21-portfolio-data-inventory.json` and rebuilt with
+`python3 portfolio_data_inventory.py inspect`. It identifies the legacy 95-date
+candidate corpus as falsification-only, preserves the failed reversal
+confirmation as previously inspected evidence, and routes the two ETF families
+to a newly frozen disjoint development manifest. It authorizes no outcome
+relabeling, provider request, broker action, or validation claim.
+
 Resumable nonterminal statuses are `READY`, `WAITING_DATA`, `WAITING_MARKET`,
 `WAITING_PROVIDER`, `WAITING_SUBSCRIPTION`, `WAITING_NEW_SESSIONS`,
 `WAITING_USER_CONFIRMATION`, and `PAUSED_SAFETY`. The append-only ignored state
