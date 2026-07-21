@@ -465,7 +465,12 @@ The resulting six signals produced -0.4465R expectancy, 0.3303 profit factor,
 -2.6788R total, and 2.7053R maximum drawdown at 5 bps per side. At 20 bps per
 side the total is -2.8100R. The result fails signal count, expectancy, profit
 factor, and stress gates and remains outside maturity; permanent retirement is
-pending independent result inspection.
+confirmed by result inspection
+`a9efc2d2e2e9454673dd61b03f3037ff429613bde835ee5dd5d920b048d06d7a`.
+The exact variant is permanently retired with no tuning on this corpus. The
+first wave now has eight dispositions, seven Stage 0 retirements, and one Stage
+0 survivor that later failed development. Relative-strength continuation is
+next in the frozen queue.
 
 ## Active discovery funnel
 

@@ -1,0 +1,16 @@
+{
+  "broker_actions": 0,
+  "closed_signals": 6,
+  "input_inspection_sha256": "dfbf41c267099c34fc2e97f88c801b9d6f2b4731c9598cba107c7faef5cbf9cf",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "a9efc2d2e2e9454673dd61b03f3037ff429613bde835ee5dd5d920b048d06d7a",
+  "manifest_sha256": "04dcf6470f6347ede51b6bed481c8ddd389744b7d649be14fbee646d235994ca",
+  "maturity_effect": "NONE",
+  "provider_requests": 0,
+  "result_file_sha256": "82acc18fb1788425186bf5195bd4c4f89c0101a02c0b9a16058623772c16697c",
+  "result_sha256": "08f475e3800530d3044ca09948612f61bb6e3fc9f3da8a84aa8c9d30d6f70357",
+  "schema_version": 1,
+  "stage0_survived": false,
+  "valid": true,
+  "variant_id": "post-earnings-drift-v1"
+}
