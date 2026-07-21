@@ -217,6 +217,11 @@ only information available by 09:35. The private exact graph is hash-bound in
 the canonical store, contains no target returns, permits no substitution or
 parameter change, and forbids confirmation collection until a committed,
 independently inspected development result passes every unchanged gate.
+Independent freeze inspection
+`strategy_validation/equity_gap_continuation/inspections/equity-gap-continuation-v1-freeze-1b1aba2aa72450943c5b59c8e66c2d7a8d945547ecc11c92dca9abfa9b81f2d8.json`
+exactly rebuilds the public and private selection graph, confirms zero overlap,
+zero computed returns, zero provider requests, and zero broker actions, and
+authorizes development collection only.
 
 ## Active discovery funnel
 

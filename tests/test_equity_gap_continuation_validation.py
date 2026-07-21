@@ -38,6 +38,23 @@ class EquityGapContinuationValidationTests(unittest.TestCase):
             manifest["access_contract"]["confirmation_outcomes_observed_or_derived"]
         )
 
+    def test_published_freeze_inspection_computes_no_returns(self):
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "strategy_validation/equity_gap_continuation/inspections"
+            / "equity-gap-continuation-v1-freeze-1b1aba2aa72450943c5b59c8e66c2d7a8d945547ecc11c92dca9abfa9b81f2d8.json"
+        )
+        inspection = validation._load_json(path)
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            validation.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertTrue(inspection["valid"])
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertEqual(inspection["provider_requests"], 0)
+        self.assertTrue(inspection["development_collection_authorized"])
+        self.assertFalse(inspection["confirmation_collection_authorized"])
+
     def test_preopen_candidate_gate_is_inclusive_and_outcome_blind(self):
         rows = [
             {
