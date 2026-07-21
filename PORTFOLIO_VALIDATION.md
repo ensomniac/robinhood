@@ -541,8 +541,18 @@ during inspection. The single Stage 0 evaluation is now authorized.
 The frozen evaluation selected 79 signals and produced -0.0421R expectancy,
 0.9289 profit factor, -3.3252R total, and 12.6093R maximum drawdown at 5 bps
 per side. At 20 bps per side it produced -14.5359R. Expectancy, profit factor,
-drawdown, and stress all fail. The result remains outside maturity and awaits
-independent inspection before permanent retirement.
+drawdown, and stress all fail. Result inspection
+`342e84c3668952a6d1e1dc5ea9b4d391648efebf6030ccb2674a7060077f0d35`
+independently rebuilds the result with zero provider or broker calls and
+confirms that it has no maturity effect. The exact variant is permanently
+retired with no tuning on this corpus. The first wave now has nine
+dispositions, eight Stage 0 retirements, and one Stage 0 survivor that later
+failed development. Catalyst ORB retest is next and last in the frozen first
+wave.
+The ninth-disposition campaign notification was attempted immediately after
+retirement. `settings.toml` selected `trades` verbosity, so `email_sender.py`
+correctly recorded the non-trade `session_summary` event as skipped rather than
+sending it.
 
 ## Active discovery funnel
 

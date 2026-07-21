@@ -1,0 +1,16 @@
+{
+  "broker_actions": 0,
+  "closed_signals": 79,
+  "input_inspection_sha256": "91fa69d7dea4555c579c1d0d71beb8a3a3176d684d2e5d5e0552098792a36f43",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "342e84c3668952a6d1e1dc5ea9b4d391648efebf6030ccb2674a7060077f0d35",
+  "manifest_sha256": "269dcb726208e7f364709a65ed51158c05ccefd02ecc005def0ffb460cc17c8a",
+  "maturity_effect": "NONE",
+  "provider_requests": 0,
+  "result_file_sha256": "b82e428e57636b6a979e8e12da50e18f69860140c9b6cd24431898dfcf4104d4",
+  "result_sha256": "cfe76e6678078f2a5857c8365322215274134a807851014b6babafc90896e0d8",
+  "schema_version": 1,
+  "stage0_survived": false,
+  "valid": true,
+  "variant_id": "relative-strength-continuation-v1"
+}

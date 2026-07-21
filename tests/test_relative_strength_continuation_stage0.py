@@ -201,6 +201,26 @@ class RelativeStrengthContinuationStage0Tests(unittest.TestCase):
         self.assertFalse(result["development_evidence_eligible"])
         self.assertFalse(result["confirmation_evidence_eligible"])
 
+    def test_published_result_inspection_confirms_permanent_retirement(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "relative-strength-continuation-v1-result-342e84c3668952a6d1e1dc5ea9b4d391648efebf6030ccb2674a7060077f0d35.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["closed_signals"], 79)
+        self.assertFalse(inspection["stage0_survived"])
+        self.assertEqual(inspection["maturity_effect"], "NONE")
+        self.assertEqual(inspection["provider_requests"], 0)
+        self.assertEqual(inspection["broker_actions"], 0)
+        self.assertTrue(inspection["valid"])
+
     def test_manifest_freezes_new_full_cross_sectional_dates(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)
