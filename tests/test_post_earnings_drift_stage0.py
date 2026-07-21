@@ -61,7 +61,11 @@ class PostEarningsDriftStage0Tests(unittest.TestCase):
             manifest["collection_transport_incident"][
                 "discarded_earnings_provider_requests"
             ],
-            84,
+            168,
+        )
+        self.assertEqual(
+            manifest["collection_transport_incident"]["failed_ingestion_attempts"],
+            2,
         )
         self.assertEqual(
             manifest["collection_contract"]["logical_earnings_requests"], 84

@@ -408,6 +408,15 @@ rebuilds that superseding activation with zero additional provider calls and
 zero returns. It verifies the unchanged 102-pair rule contract, the 84-call
 incident accounting, and authorizes one fully retained metadata retry.
 
+That retry also retained zero responses: canonical PTY line buffering rejected
+the long JSON records before the collector received its terminator. No market
+outcome or return was accessed. Second transport activation
+`strategy_tournament/activations/post-earnings-drift-v1-dbedd0065e72bedbb2bb26f88dd9da5d7c0c42de57bbb8b0fab55dfa2a1697d4.json`
+therefore counts 168 discarded calls across two failed ingestion attempts and
+changes only the ingestion channel to raw no-echo streaming with an explicit
+terminator. Strategy rules, dates, candidates, and all outcome gates are still
+identical and locked pending another independent inspection.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:

@@ -74,7 +74,8 @@ STRESS_COST_BPS = (10, 20)
 MINIMUM_FREE_BYTES = 20 * 1024**3
 EXPECTED_PAIRS = 102
 EXPECTED_DATES = 52
-DISCARDED_EARNINGS_PROVIDER_REQUESTS = 84
+DISCARDED_EARNINGS_PROVIDER_REQUESTS = 168
+FAILED_EARNINGS_INGESTION_ATTEMPTS = 2
 MAXIMUM_HOLDING_DATES = 5
 ACTIVATION_ROOT = PROJECT_ROOT / "strategy_tournament" / "activations"
 INSPECTION_ROOT = PROJECT_ROOT / "strategy_tournament" / "inspections"
@@ -332,6 +333,7 @@ def build_manifest(store: HistoricalDayStore | None = None) -> dict[str, Any]:
         "return_evaluation_authorized_before_input_inspection": False,
         "collection_transport_incident": {
             "discarded_earnings_provider_requests": DISCARDED_EARNINGS_PROVIDER_REQUESTS,
+            "failed_ingestion_attempts": FAILED_EARNINGS_INGESTION_ATTEMPTS,
             "responses_retained": 0,
             "market_outcomes_accessed": False,
             "strategy_returns_computed": 0,
@@ -1451,10 +1453,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "earnings-symbols":
             value = earnings_symbols(args.manifest, args.activation_inspection)
         elif args.command == "ingest-earnings":
+            input_lines = []
+            for line in sys.stdin:
+                if line.strip() == "__END__":
+                    break
+                input_lines.append(line)
             value = ingest_earnings(
                 args.manifest,
                 args.activation_inspection,
-                list(sys.stdin),
+                input_lines,
                 discarded_provider_requests=args.discarded_provider_requests,
             )
         elif args.command == "collect-market":
