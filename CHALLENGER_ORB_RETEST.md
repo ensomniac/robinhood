@@ -316,6 +316,14 @@ lineage, implementation, capacity, privacy, zero substitution, and outcome
 locks. This status must be committed and pushed before the bounded collector
 may request the 20 supplemental files.
 
+The published supplemental collector completed and independently rebuilt all
+20 exact requests with 20 downloads, zero failures, zero pending requests, and
+zero substitutions. It rehashed 6,346,357 source bytes and adds 10 time-window
+candidate documents and 10 joins across four pairs. This is discovery metadata,
+not source verification. Primary documents, semantic classification,
+selected-symbol causal detail, returns, and outcomes remain locked until the
+combined document graph is separately frozen and published.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

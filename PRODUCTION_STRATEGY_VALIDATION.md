@@ -383,6 +383,14 @@ exclusions, source and implementation bindings, capacity, privacy, zero
 substitution, and outcome locks intact. Its READY status must be committed and
 pushed before the bounded supplemental collector may run.
 
+That collector now completes and independently rebuilds all 20 requests with
+20 SEC downloads, zero failures, zero pending, and zero substitutions. It
+rehashed 6,346,357 source bytes and contributes 10 additional time-window
+candidate documents and 10 joins across four pairs. These are discovery
+metadata only. The union with the 498 main-submissions candidates must be
+frozen before any primary document access; semantic and outcome locks remain
+closed.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

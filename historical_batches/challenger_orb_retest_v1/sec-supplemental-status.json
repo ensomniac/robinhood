@@ -1,0 +1,30 @@
+{
+  "candidate_document_graph_sha256": "e54f6fd71d6c1d37942f4cdf113f75641826f4bdf2c8680922c4d4321cb70c41",
+  "classification_boundary": "Supplemental submissions metadata can add time-valid filing candidates; documents and semantics remain unobserved.",
+  "collector_commit": "a5951585e1aa6db9f39c382dc8fda311bec0dd2f",
+  "collector_sha256": "694e23877ef556d92c4d98583ecc8e09aed0655f5ec4f6b38d12103e4132c217",
+  "counts": {
+    "cache_hits": 0,
+    "candidate_filings": 10,
+    "downloads": 20,
+    "expected_requests": 20,
+    "failed_requests": 0,
+    "pair_filing_joins": 10,
+    "pairs_with_candidate_filing": 4,
+    "pending_requests": 0,
+    "source_bytes": 6346357,
+    "successful_requests": 20,
+    "terminal_requests": 20
+  },
+  "dataset_id": "dataset-development-sec-supplemental-2026-07-21-challenger-orb-retest-v1",
+  "manifest_sha256": "c6d329b31c57b9703568cab874e1c113a7e9b9e973830a558de9479e837f68af",
+  "primary_documents_requested": false,
+  "private_collection_content_sha256": "a136ac8385c84a1d45f54d3e04138099461f157a76b7463fff01e7f868681761",
+  "schema_version": 1,
+  "status": "SUPPLEMENTAL_COLLECTION_COMPLETE",
+  "substitutions_used": 0,
+  "symbols_ciks_accessions_and_urls_public": false,
+  "target_outcomes_observed_or_derived": false,
+  "unique_candidate_document_count": 10,
+  "verified_positive_catalyst_count": 0
+}
