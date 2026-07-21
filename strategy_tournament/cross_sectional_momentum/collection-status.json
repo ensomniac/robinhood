@@ -1,0 +1,18 @@
+{
+  "activation_inspection_sha256": "a0f893cb02e31fb445febfacd4e5535a6e5ec602f18d630c06827efbdc84c31f",
+  "broker_actions": 0,
+  "daily_rows": 1279526,
+  "dataset_id": "dataset-cross-sectional-momentum-stage0-2026-07-21-v1",
+  "manifest_sha256": "a8970ad2bfb0045f54404da985178686ec7cd0068c3a6a23f59165c7e415520a",
+  "private_daily_file_sha256": "ce532df2278db7e1368f9b88d795e23656806a92149c757d7c338735aa2a156f",
+  "private_payload_present": true,
+  "provider_requests": 131,
+  "requested_symbols": 5457,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "status": "READY",
+  "status_kind": "stage0-multisession-collection",
+  "status_sha256": "486ab930ff93d2bec84a5d0e24bb0c9b3d98f134a30d803a1ddf78626ed672c2",
+  "symbols_with_rows": 5453,
+  "variant_id": "cross-sectional-momentum-v1"
+}

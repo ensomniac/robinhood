@@ -348,6 +348,13 @@ rule bindings with zero returns, provider requests, or broker actions; its
 minimum observed spacing is seven sessions and it authorizes only the frozen
 daily input collection.
 
+The daily collection is complete at
+`strategy_tournament/cross_sectional_momentum/collection-status.json`: 5,457
+frozen symbols produced 1,279,526 raw daily bars across the exact date window
+in 131 provider requests. Four symbols returned no rows and remain explicit
+missing inputs. The collection made zero broker actions and computed zero
+strategy returns; the private payload is hash-bound and remains outside Git.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:

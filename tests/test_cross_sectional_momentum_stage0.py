@@ -48,6 +48,27 @@ class CrossSectionalMomentumStage0Tests(unittest.TestCase):
         self.assertTrue(inspection["collection_authorized"])
         self.assertFalse(inspection["return_evaluation_authorized"])
 
+    def test_published_collection_status_is_complete_and_return_blind(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "cross_sectional_momentum"
+            / "collection-status.json"
+        )
+        status = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            status["status_sha256"],
+            stage0.common._self_hash(status, "status_sha256"),
+        )
+        self.assertEqual(status["status"], "READY")
+        self.assertEqual(status["requested_symbols"], 5457)
+        self.assertEqual(status["symbols_with_rows"], 5453)
+        self.assertEqual(status["daily_rows"], 1279526)
+        self.assertEqual(status["provider_requests"], 131)
+        self.assertEqual(status["returns_computed"], 0)
+        self.assertEqual(status["broker_actions"], 0)
+
     def test_target_dates_are_fixed_spaced_and_have_complete_windows(self):
         source_dates, _, _ = stage0.universe_source._source_graph()
         sessions = stage0._calendar()
