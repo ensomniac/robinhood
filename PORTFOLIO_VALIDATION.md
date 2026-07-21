@@ -193,6 +193,16 @@ independently rebuilt the activation, reconciled 370,500 real one-minute bars
 and every prior close, made zero provider or broker requests, computed zero
 returns, and authorizes only the frozen Stage 0 calculation.
 
+The independently rebuilt result is
+`research_results/2026-07-21-equity-gap-continuation-stage0-1f447fb4e066b041463e62e26d7e752a12e1b90da7c13b6881ea42e10dda9e94.json`,
+with result inspection
+`strategy_tournament/inspections/equity-gap-continuation-v1-result-66ede02688e090973e482ecc9c491349238d14e2af63fd02c336b99a8564c7be.json`.
+The exact variant survives Stage 0 with 37 closed signals, +0.088R expectancy,
+1.417 profit factor, 3.498R maximum drawdown, +0.926R total at 20 bps per
+side, and zero violations. This result has no direct maturity effect and may
+only advance the unchanged rule into a newly frozen representative development
+sample.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:

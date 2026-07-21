@@ -1,0 +1,16 @@
+{
+  "broker_actions": 0,
+  "closed_signals": 37,
+  "input_inspection_sha256": "fe842aebc174196ceaa34a529d6c3a8eb75ab4df5bc6db110221f7f3dea4c881",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "66ede02688e090973e482ecc9c491349238d14e2af63fd02c336b99a8564c7be",
+  "manifest_sha256": "3bc6f70c2a331e70b00a1dda076b258ce46f1175d062ecee0a641e4c4ab06f3f",
+  "maturity_effect": "NONE",
+  "provider_requests": 0,
+  "result_file_sha256": "cb3e2bf7977ddeccd65fcac21f98274411b3e9feeaceb3f77802c963310db59e",
+  "result_sha256": "1f447fb4e066b041463e62e26d7e752a12e1b90da7c13b6881ea42e10dda9e94",
+  "schema_version": 1,
+  "stage0_survived": true,
+  "valid": true,
+  "variant_id": "equity-gap-continuation-v1"
+}

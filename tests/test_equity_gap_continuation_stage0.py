@@ -100,6 +100,35 @@ class EquityGapContinuationStage0Tests(unittest.TestCase):
         self.assertEqual(inspection["selected_symbol_sessions"], 950)
         self.assertEqual(inspection["selected_bars"], 370500)
 
+    def test_published_result_is_an_inspected_stage0_survivor(self):
+        root = Path(__file__).resolve().parents[1]
+        result = json.loads(
+            (
+                root
+                / "research_results"
+                / "2026-07-21-equity-gap-continuation-stage0-1f447fb4e066b041463e62e26d7e752a12e1b90da7c13b6881ea42e10dda9e94.json"
+            ).read_text(encoding="utf-8")
+        )
+        inspection = json.loads(
+            (
+                root
+                / "strategy_tournament"
+                / "inspections"
+                / "equity-gap-continuation-v1-result-66ede02688e090973e482ecc9c491349238d14e2af63fd02c336b99a8564c7be.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            result["result_sha256"],
+            stage0.common._self_hash(result, "result_sha256"),
+        )
+        self.assertTrue(result["stage0_survived"])
+        self.assertEqual(result["stage0_blockers"], [])
+        self.assertEqual(result["maturity_effect"], "NONE")
+        self.assertEqual(result["denominator"]["closed_signals"], 37)
+        self.assertGreater(result["stress"]["20"]["total_r"], 0)
+        self.assertTrue(inspection["valid"])
+        self.assertTrue(inspection["stage0_survived"])
+
     def test_completed_breakout_uses_next_bar_open(self):
         candidate = stage0._candidate(
             day="2025-01-02", raw=raw_candidate(), prior_close=100.0
