@@ -307,6 +307,16 @@ with -0.203R expectancy, 0.665 profit factor, and 22.495R drawdown. At
 20 bps per side it lost 30.852R. It cannot be tuned on this corpus or enter
 the maturity ledger; the tournament advances to short-horizon reversal.
 
+The sixth activation is frozen, with returns still locked, at
+`strategy_tournament/activations/short-horizon-oversold-reversal-v1-b65565475be90a9ad981e4e5dd1c598edbd21d5ee21ba9cad3333ca7da8d9d51.json`.
+It binds the unchanged 100/95/5-date and 950-symbol-session legacy denominator.
+The executable contract fixes a 30-completed-bar pre-trigger return of at most
+-3%, simple RSI(5) no higher than 20 on the final pre-trigger bar, a bullish
+completed close strictly above the prior high and session VWAP, next-bar entry,
+decision-time session-low stop, raw 1.5R target, stop-first ambiguity, 15:50
+force-flat, one daily selection, and 5/10/20 bps-per-side costs. No return
+access is authorized before its separate committed input inspection.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
