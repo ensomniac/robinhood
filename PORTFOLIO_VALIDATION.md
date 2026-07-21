@@ -568,6 +568,12 @@ the one allowed screen can report every disposition. Its source identities and
 market bindings remain in a private content-addressed input graph outside Git.
 The earlier challenger hypothesis is declared as a related but rules-distinct
 trial, and neither its evidence nor this Stage 0 sample may enter maturity.
+Input inspection
+`126b7dbb0a67202b1f5e6e8f888ff42e5ab7fa087e683ff5549c8fd6da06e6dd`
+independently rebuilds the public activation and private input graph, validates
+all 3,120 bars across the eight source-verified pairs, and confirms the
+eight-signal maximum. It made zero provider or broker calls, computed zero
+returns, and authorizes only the single frozen evaluation.
 
 ## Active discovery funnel
 

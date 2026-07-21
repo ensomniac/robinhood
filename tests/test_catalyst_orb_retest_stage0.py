@@ -75,6 +75,26 @@ def test_published_activation_is_content_addressed_and_outcome_locked():
     assert manifest["return_evaluation_authorized_before_inspection"] is False
 
 
+def test_published_input_inspection_authorizes_one_frozen_evaluation():
+    root = Path(__file__).resolve().parents[1]
+    path = (
+        root
+        / "strategy_tournament/inspections/"
+        "catalyst-orb-retest-v1-input-"
+        "126b7dbb0a67202b1f5e6e8f888ff42e5ab7fa087e683ff5549c8fd6da06e6dd.json"
+    )
+    inspection = json.loads(path.read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["source_verified_positive_pairs"] == 8
+    assert inspection["selected_bars"] == 3_120
+    assert inspection["maximum_closed_signals"] == 8
+    assert inspection["provider_requests"] == 0
+    assert inspection["returns_computed"] == 0
+    assert inspection["return_evaluation_authorized"] is True
+
+
 def test_trigger_requires_break_then_retest_then_later_bullish_rebreak():
     candidate = stage0._candidate(
         {"date": "2026-01-14", "symbol": "TEST", "rank": 1, "bars": _bars()}
