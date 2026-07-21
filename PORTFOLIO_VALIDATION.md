@@ -242,6 +242,17 @@ provider-sparse sessions remain in the complete denominator as frozen
 no-signals. The inspection authorizes the one unchanged development evaluation
 after it is committed and pushed.
 
+The inspected representative development result is
+`research_results/2026-07-21-equity-gap-continuation-development-3add7a7bdbd3a47282663a0daa41e17d1b6d3e6e780f08d959cf81ca4f2dba92.json`,
+with independent rebuild
+`strategy_validation/equity_gap_continuation/inspections/equity-gap-continuation-v1-development-result-bf1050d3d88b2402890befd5c583f2b623b14fa1b33f2edc9f89692e130db8c6.json`.
+This exact production version fails development: 111 closed signals produced
+-0.069R expectancy, 0.807 profit factor, a negative 90% bootstrap lower bound,
+15.946R maximum drawdown, a negative first chronological half, and -17.375R
+after removing its five best trades. It loses at both 10 and 20 bps per side.
+The version is retired without parameter repair; its 75-session confirmation
+sample remains untouched and must never be opened for this version.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:

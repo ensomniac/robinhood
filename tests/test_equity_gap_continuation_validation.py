@@ -40,6 +40,30 @@ class EquityGapContinuationValidationTests(unittest.TestCase):
         self.assertEqual(inspection["returns_computed"], 0)
         self.assertTrue(inspection["return_evaluation_authorized"])
 
+    def test_published_development_result_is_an_independently_rebuilt_failure(self):
+        root = Path(__file__).resolve().parents[1]
+        result = validation._load_json(
+            root
+            / "research_results/2026-07-21-equity-gap-continuation-development-3add7a7bdbd3a47282663a0daa41e17d1b6d3e6e780f08d959cf81ca4f2dba92.json"
+        )
+        inspection = validation._load_json(
+            root
+            / "strategy_validation/equity_gap_continuation/inspections/equity-gap-continuation-v1-development-result-bf1050d3d88b2402890befd5c583f2b623b14fa1b33f2edc9f89692e130db8c6.json"
+        )
+        self.assertEqual(
+            result["result_sha256"],
+            validation.common._self_hash(result, "result_sha256"),
+        )
+        self.assertEqual(result["denominator"]["closed_signals"], 111)
+        self.assertFalse(result["development_passed"])
+        self.assertLess(result["robustness"]["expectancy_r"], 0)
+        self.assertLess(result["robustness"]["profit_factor"], 1.0)
+        self.assertGreater(result["robustness"]["maximum_drawdown_r"], 6.0)
+        self.assertTrue(inspection["valid"])
+        self.assertFalse(inspection["phase_passed"])
+        self.assertEqual(inspection["result_sha256"], result["result_sha256"])
+
+
 
     def test_published_freeze_locks_both_samples_before_outcomes(self):
         path = (
