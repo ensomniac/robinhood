@@ -269,7 +269,11 @@ and completed-bar VWAP after ten completed minutes without a new low, next-bar
 entry, the decision-time session low as stop, the nearer of prior close or raw
 2R as target, stop-first ambiguity, 15:50 force-flat, one daily selection, and
 5/10/20 bps-per-side costs. It authorizes no return access until its separate
-input inspection is committed and pushed.
+input inspection is committed and pushed. Inspection
+`6109b4a84007118f27bd6a5e474655b827e8d95515e709f23c5cfb0b95d33b91`
+reconciles all 95 sessions, 950 symbol-sessions, 370,500 exact one-minute bars,
+and 950 prior closes with zero return calculations, provider requests, or
+broker actions.
 
 ## Active discovery funnel
 

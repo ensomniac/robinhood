@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import unittest
+import json
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import equity_gap_recovery_stage0 as stage0
 
@@ -58,6 +60,41 @@ def raw_candidate(*, rows: list[dict] | None = None, common_stock: bool = True):
 
 
 class EquityGapRecoveryStage0Tests(unittest.TestCase):
+    def test_published_activation_is_exact_and_return_locked(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "activations"
+            / "equity-gap-recovery-v1-550a812bdf0e39f272b9c055c1111bef9cffecf13ad7e69c8f5feb1ecca36bfb.json"
+        )
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        stage0._validate_manifest(manifest)
+        self.assertEqual(manifest["denominator"]["requested_dates"], 100)
+        self.assertEqual(manifest["denominator"]["included_dates"], 95)
+        self.assertEqual(manifest["denominator"]["excluded_dates"], 5)
+        self.assertEqual(manifest["denominator"]["included_symbol_sessions"], 950)
+        self.assertFalse(manifest["return_evaluation_authorized_before_inspection"])
+
+    def test_published_input_inspection_computed_zero_returns(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "equity-gap-recovery-v1-input-6109b4a84007118f27bd6a5e474655b827e8d95515e709f23c5cfb0b95d33b91.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertTrue(inspection["return_evaluation_authorized"])
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertEqual(inspection["selected_dates"], 95)
+        self.assertEqual(inspection["selected_symbol_sessions"], 950)
+        self.assertEqual(inspection["selected_bars"], 370500)
+
     def test_gap_boundaries_are_inclusive_and_outside_values_fail(self):
         self.assertTrue(stage0._gap_in_range(-0.08))
         self.assertTrue(stage0._gap_in_range(-0.02))
