@@ -374,6 +374,19 @@ the frozen 8R drawdown maximum is non-negotiable. The exact variant is retired,
 cannot be repaired on this corpus, and contributes no maturity evidence. The
 tournament advances to post-earnings drift.
 
+The eighth activation is frozen, with all new provider and return access still
+locked, at
+`strategy_tournament/activations/post-earnings-drift-v1-d41dd9d9db8531ed90e8cfde0f40382b250ca67177b16f01146e2eab1594f6cf.json`.
+It binds all 102 inspected source-verified positive-primary pairs across 52 new
+2025 dates and 84 symbols, rather than reusing the failed earnings-reversal
+confirmation sample. Fifteen prior policy trials and that failed confirmation
+remain declared. Company-verified Robinhood earnings metadata must match the
+frozen reaction session and show actual EPS strictly above estimated EPS. The
+market rule fixes a 1%-8% opening gap, a 15:45 decision from completed minute
+bars, close above open and VWAP, 15:46 entry, decision-time session-low stop,
+fifth-date close, and 5/10/20 bps-per-side costs. The activation authorizes no
+provider request until its zero-return inspection is committed and pushed.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
