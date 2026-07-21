@@ -178,6 +178,29 @@ class RelativeStrengthContinuationStage0Tests(unittest.TestCase):
         self.assertEqual(inspection["returns_computed"], 0)
         self.assertTrue(inspection["return_evaluation_authorized"])
 
+    def test_published_result_fails_stage0_and_maturity(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "research_results"
+            / "2026-07-21-relative-strength-continuation-stage0-cfe76e6678078f2a5857c8365322215274134a807851014b6babafc90896e0d8.json"
+        )
+        result = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            result["result_sha256"],
+            stage0.common._self_hash(result, "result_sha256"),
+        )
+        self.assertEqual(result["denominator"]["target_dates"], 80)
+        self.assertEqual(result["denominator"]["closed_signals"], 79)
+        self.assertLess(result["primary_5bps"]["expectancy_r"], 0)
+        self.assertLess(result["primary_5bps"]["profit_factor"], 1.10)
+        self.assertGreater(result["primary_5bps"]["maximum_drawdown_r"], 8)
+        self.assertLess(result["stress"]["20"]["total_r"], 0)
+        self.assertFalse(result["stage0_survived"])
+        self.assertEqual(result["maturity_effect"], "NONE")
+        self.assertFalse(result["development_evidence_eligible"])
+        self.assertFalse(result["confirmation_evidence_eligible"])
+
     def test_manifest_freezes_new_full_cross_sectional_dates(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)

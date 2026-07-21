@@ -538,6 +538,11 @@ rebuilds the activation, frozen leader ranks, outcome status, and all private
 file hashes. It confirms 3,925 complete leader sessions from 8,729 frozen
 leaders across 80 dates, with zero provider calls, returns, or broker actions
 during inspection. The single Stage 0 evaluation is now authorized.
+The frozen evaluation selected 79 signals and produced -0.0421R expectancy,
+0.9289 profit factor, -3.3252R total, and 12.6093R maximum drawdown at 5 bps
+per side. At 20 bps per side it produced -14.5359R. Expectancy, profit factor,
+drawdown, and stress all fail. The result remains outside maturity and awaits
+independent inspection before permanent retirement.
 
 ## Active discovery funnel
 
