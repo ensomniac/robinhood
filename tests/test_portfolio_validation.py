@@ -93,6 +93,8 @@ class PortfolioValidationTests(unittest.TestCase):
             "portfolio_report": {
                 "earned_milestone": validation.TERMINAL_PHASE,
                 "milestone_blockers": [],
+                "earned_interim_milestones": [validation.FIRST_PILOT_MILESTONE],
+                "interim_milestone_blockers": [],
             },
             "registry_audit": {"valid": True},
             "strategy_audit": {"valid": True},
@@ -245,6 +247,73 @@ class PortfolioValidationTests(unittest.TestCase):
             result = validation.next_handoff()
         self.assertFalse(result["bounded_handoff"]["perform_by_controller"])
         self.assertEqual(result["bounded_handoff"]["objective"], "falsify-one-preregistered-mechanism-variant")
+
+    def test_interim_goal_requires_ready_strategy_live_evidence(self):
+        current = self._event(safety_snapshot=self._safety())
+        authoritative = self._authoritative(current)
+        authoritative["portfolio_report"]["earned_interim_milestones"] = []
+        authoritative["portfolio_report"]["interim_milestone_blockers"] = [
+            "pilot-ready strategies with a completed live execution 0 is below required 1"
+        ]
+        with (
+            patch.object(validation, "_load_current", return_value=([current], current)),
+            patch.object(validation, "_authoritative_snapshot", return_value=authoritative),
+            patch.object(validation, "_append_event") as append,
+        ):
+            result = validation.audit_campaign(goal=validation.FIRST_PILOT_GOAL)
+        self.assertFalse(result["goal_complete"])
+        self.assertIn("completed live execution", result["finalization_blockers"][0])
+        append.assert_not_called()
+
+    def test_interim_goal_requires_flat_reconciled_snapshot(self):
+        current = self._event(
+            safety_snapshot=self._safety(
+                broker_state="PROTECTED_EXPOSURE_RECONCILED",
+                positions_count=1,
+                protected_positions_count=1,
+                open_orders_count=1,
+            )
+        )
+        authoritative = self._authoritative(current)
+        blockers = validation._interim_goal_blockers(current, authoritative)
+        self.assertIn("broker state is not flat and reconciled", blockers)
+        self.assertIn("broker snapshot retains positions or open orders", blockers)
+
+    def test_interim_goal_records_nonterminal_idempotent_milestone(self):
+        current = self._event(phase="LIVE_PILOT", safety_snapshot=self._safety())
+        authoritative = self._authoritative(current)
+        recorded = self._event(
+            sequence=2,
+            previous_hash=current["event_sha256"],
+            transition_kind="MILESTONE",
+            phase="LIVE_PILOT",
+            milestone=validation.FIRST_PILOT_MILESTONE,
+            safety_snapshot=self._safety(),
+        )
+        with (
+            patch.object(validation, "_load_current", return_value=([current], current)),
+            patch.object(validation, "_authoritative_snapshot", return_value=authoritative),
+            patch.object(validation, "_append_event", return_value=recorded) as append,
+        ):
+            result = validation.audit_campaign(goal=validation.FIRST_PILOT_GOAL)
+        self.assertTrue(result["goal_complete"])
+        self.assertTrue(result["milestone_recorded_now"])
+        self.assertFalse(result["terminal"])
+        append.assert_called_once()
+
+        with (
+            patch.object(
+                validation,
+                "_load_current",
+                return_value=([current, recorded], recorded),
+            ),
+            patch.object(validation, "_authoritative_snapshot", return_value=authoritative),
+            patch.object(validation, "_append_event") as append_again,
+        ):
+            repeated = validation.audit_campaign(goal=validation.FIRST_PILOT_GOAL)
+        self.assertTrue(repeated["goal_complete"])
+        self.assertFalse(repeated["milestone_recorded_now"])
+        append_again.assert_not_called()
 
 
 if __name__ == "__main__":

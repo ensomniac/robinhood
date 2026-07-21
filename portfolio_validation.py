@@ -23,6 +23,7 @@ from learning_registry import audit_registries
 from learning_strategy import audit_strategy_evidence
 from portfolio_funnel import audit_funnel, build_funnel_status
 from portfolio_maturity import (
+    FIRST_PILOT_MILESTONE,
     audit_ledger as audit_portfolio_ledger,
     build_report as build_portfolio_report,
     load_config as load_portfolio_config,
@@ -48,6 +49,9 @@ LEDGER_PATH = PROJECT_ROOT / "PORTFOLIO_SIGNALS.jsonl"
 SCHEMA_VERSION = 1
 CAMPAIGN_ID = "multi-strategy-portfolio-validation-v1"
 TERMINAL_PHASE = "THREE_PILOT_READY_LIVE_STARTED"
+CAMPAIGN_GOAL = "campaign"
+FIRST_PILOT_GOAL = "first-pilot-live-started"
+AUDIT_GOALS = {CAMPAIGN_GOAL, FIRST_PILOT_GOAL}
 SAFETY_SNAPSHOT_MAX_AGE_SECONDS = 15 * 60
 
 PHASES = (
@@ -430,6 +434,13 @@ def _validate_event(
         raise PortfolioValidationError("campaign event hash chain is broken")
     if event.get("event_sha256") != _event_hash(event):
         raise PortfolioValidationError("campaign event content hash is invalid")
+    transition_kind = event.get("transition_kind")
+    milestone = event.get("milestone")
+    if transition_kind == "MILESTONE":
+        if milestone != FIRST_PILOT_MILESTONE:
+            raise PortfolioValidationError("campaign milestone event is invalid")
+    elif milestone is not None:
+        raise PortfolioValidationError("only milestone events may name a milestone")
     phase = event.get("phase")
     if phase not in PHASES:
         raise PortfolioValidationError(f"invalid campaign phase {phase!r}")
@@ -548,6 +559,7 @@ def _append_event(
     transition_kind: str,
     evidence_paths: Sequence[Path] = (),
     safety_snapshot: Mapping[str, Any] | None = None,
+    milestone: str | None = None,
 ) -> dict[str, Any]:
     if phase not in PHASES or status not in STATUSES:
         raise PortfolioValidationError("invalid campaign phase or status")
@@ -573,6 +585,7 @@ def _append_event(
             "sequence": len(events) + 1,
             "recorded_at": datetime.now(UTC).isoformat(),
             "transition_kind": transition_kind,
+            **({"milestone": milestone} if milestone is not None else {}),
             "phase": phase,
             "status": status,
             "active_objective": objective,
@@ -669,6 +682,7 @@ def _safety_snapshot_blockers(
     config: Mapping[str, Any],
     *,
     now: datetime | None = None,
+    require_flat: bool = False,
 ) -> list[str]:
     if snapshot is None:
         return ["fresh privacy-safe broker safety snapshot is missing"]
@@ -685,6 +699,12 @@ def _safety_snapshot_blockers(
         "PROTECTED_EXPOSURE_RECONCILED",
     }:
         blockers.append("broker state is not safely reconciled")
+    if require_flat and value["broker_state"] != "FLAT_RECONCILED":
+        blockers.append("broker state is not flat and reconciled")
+    if require_flat and (
+        value["positions_count"] != 0 or value["open_orders_count"] != 0
+    ):
+        blockers.append("broker snapshot retains positions or open orders")
     if value["account_reconciled"] is not True:
         blockers.append("broker account is not reconciled")
     if value["orders_reconciled"] is not True:
@@ -771,11 +791,68 @@ def _finalization_blockers(
     return list(dict.fromkeys(blockers))
 
 
+def _interim_goal_blockers(
+    current: Mapping[str, Any], snapshot: Mapping[str, Any]
+) -> list[str]:
+    blockers: list[str] = []
+    report = snapshot["portfolio_report"]
+    if FIRST_PILOT_MILESTONE not in report.get("earned_interim_milestones", []):
+        blockers.extend(
+            str(value) for value in report.get("interim_milestone_blockers", [])
+        )
+    for field in (
+        "portfolio_ledger_audit",
+        "funnel_audit",
+        "registry_audit",
+        "strategy_audit",
+        "learning_data_audit",
+        "orb_ledger_audit",
+        "lifecycle_audit",
+        "privacy_audit",
+        "progress_audit",
+    ):
+        if snapshot[field].get("valid") is not True:
+            blockers.append(f"{field} is not valid")
+    if snapshot["store_capacity"].get("capacity_ready") is not True:
+        blockers.append("historical store capacity reserve is not ready")
+    blockers.extend(_lineage_blockers(current, snapshot["lineage"]))
+    blockers.extend(
+        _safety_snapshot_blockers(
+            current.get("safety_snapshot"),
+            snapshot["portfolio_config"],
+            require_flat=True,
+        )
+    )
+    git = snapshot["git"]
+    if git.get("valid") is not True:
+        blockers.append("Git state is unavailable")
+    else:
+        if git.get("clean") is not True:
+            blockers.append("Git worktree is not clean")
+        if git.get("head_equals_upstream") is not True:
+            blockers.append("HEAD does not equal its configured upstream")
+    return list(dict.fromkeys(blockers))
+
+
+def _recorded_interim_milestones(
+    events: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    return list(
+        dict.fromkeys(
+            str(event["milestone"])
+            for event in events
+            if event.get("transition_kind") == "MILESTONE"
+            and event.get("milestone") == FIRST_PILOT_MILESTONE
+        )
+    )
+
+
 def campaign_status(
     *, root: Path = PROJECT_ROOT, run_root: Path = RUN_ROOT
 ) -> dict[str, Any]:
     events, current = _load_current(run_root)
     authoritative = _authoritative_snapshot(root)
+    recorded_interim = _recorded_interim_milestones(events)
     return {
         "schema_version": SCHEMA_VERSION,
         "campaign_id": CAMPAIGN_ID,
@@ -787,6 +864,15 @@ def campaign_status(
         "funnel": authoritative["funnel"],
         "store_capacity": authoritative["store_capacity"],
         "safety_snapshot": current.get("safety_snapshot"),
+        "earned_interim_milestones": recorded_interim,
+        "first_pilot_goal_complete": (
+            FIRST_PILOT_MILESTONE in recorded_interim
+        ),
+        "first_pilot_goal_blockers": (
+            []
+            if FIRST_PILOT_MILESTONE in recorded_interim
+            else _interim_goal_blockers(current, authoritative)
+        ),
         "finalization_blockers": _finalization_blockers(current, authoritative),
     }
 
@@ -855,14 +941,34 @@ def next_handoff(
 
 
 def audit_campaign(
-    *, root: Path = PROJECT_ROOT, run_root: Path = RUN_ROOT
+    *,
+    goal: str = CAMPAIGN_GOAL,
+    root: Path = PROJECT_ROOT,
+    run_root: Path = RUN_ROOT,
 ) -> dict[str, Any]:
+    if goal not in AUDIT_GOALS:
+        raise PortfolioValidationError(f"unsupported audit goal {goal!r}")
     events, current = _load_current(run_root)
     authoritative = _authoritative_snapshot(root)
-    blockers = _finalization_blockers(current, authoritative)
+    recorded_interim = _recorded_interim_milestones(events)
+    interim_already_earned = FIRST_PILOT_MILESTONE in recorded_interim
+    blockers = (
+        _finalization_blockers(current, authoritative)
+        if goal == CAMPAIGN_GOAL
+        else (
+            []
+            if interim_already_earned
+            else _interim_goal_blockers(current, authoritative)
+        )
+    )
     controller_valid = not (current["phase"] == TERMINAL_PHASE and blockers)
     finalized = False
-    if not blockers and current["phase"] != TERMINAL_PHASE:
+    milestone_recorded_now = False
+    if (
+        goal == CAMPAIGN_GOAL
+        and not blockers
+        and current["phase"] != TERMINAL_PHASE
+    ):
         event = _append_event(
             root=root,
             run_root=run_root,
@@ -877,6 +983,26 @@ def audit_campaign(
         current = event
         events.append(event)
         finalized = True
+    elif goal == FIRST_PILOT_GOAL and not blockers and not interim_already_earned:
+        event = _append_event(
+            root=root,
+            run_root=run_root,
+            phase=str(current["phase"]),
+            status="READY",
+            objective="first-pilot-ready-live-started-earned",
+            blocker="",
+            next_action=(
+                "Continue the controlled portfolio campaign toward "
+                "THREE_PILOT_READY_LIVE_STARTED and strategy-specific LIVE_VALIDATED."
+            ),
+            transition_kind="MILESTONE",
+            safety_snapshot=current.get("safety_snapshot"),
+            milestone=FIRST_PILOT_MILESTONE,
+        )
+        current = event
+        events.append(event)
+        recorded_interim.append(FIRST_PILOT_MILESTONE)
+        milestone_recorded_now = True
     return {
         "valid": controller_valid,
         "campaign_id": CAMPAIGN_ID,
@@ -884,6 +1010,14 @@ def audit_campaign(
         "state": _project_state(current),
         "terminal": current["phase"] == TERMINAL_PHASE,
         "finalized_now": finalized,
+        "goal": goal,
+        "goal_complete": (
+            current["phase"] == TERMINAL_PHASE
+            if goal == CAMPAIGN_GOAL
+            else FIRST_PILOT_MILESTONE in recorded_interim
+        ),
+        "earned_interim_milestones": recorded_interim,
+        "milestone_recorded_now": milestone_recorded_now,
         "finalization_blockers": blockers,
         "integrity": {
             key: authoritative[key]
@@ -918,7 +1052,14 @@ def _build_parser() -> argparse.ArgumentParser:
     record.add_argument("--next-action", required=True)
     record.add_argument("--evidence", action="append", type=Path, default=[])
     record.add_argument("--safety-snapshot", type=Path)
-    subparsers.add_parser("audit", help="audit and machine-finalize only if earned")
+    audit = subparsers.add_parser(
+        "audit", help="audit and machine-finalize only if earned"
+    )
+    audit.add_argument(
+        "--goal",
+        choices=sorted(AUDIT_GOALS),
+        default=CAMPAIGN_GOAL,
+    )
     return parser
 
 
@@ -942,7 +1083,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 safety_path=args.safety_snapshot,
             )
         else:
-            result = audit_campaign()
+            result = audit_campaign(goal=args.goal)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result.get("valid", True) else 1
     except Exception as exc:

@@ -27,6 +27,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "portfolio_config.toml"
 DEFAULT_LEDGER_PATH = PROJECT_ROOT / "PORTFOLIO_SIGNALS.jsonl"
 SCHEMA_VERSION = 1
+FIRST_PILOT_MILESTONE = "FIRST_PILOT_READY_LIVE_STARTED"
 STRATEGY_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{2,79}$")
 VERSION_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{1,79}$")
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
@@ -1010,6 +1011,9 @@ def build_report(
         grouped[(str(record["strategy_id"]), str(record["strategy_version"]))].append(record)
     assessments = [assess_strategy(items, config) for _, items in sorted(grouped.items())]
     ready = [assessment for assessment in assessments if assessment["pilot_ready"]]
+    ready_live_started = [
+        assessment for assessment in ready if assessment["live_started"]
+    ]
     target = int(config.raw["campaign"]["target_pilot_ready_strategies"])
     correlation_cap = float(config.raw["portfolio"]["maximum_ready_pairwise_correlation"])
     coverage_floor = float(config.raw["portfolio"]["minimum_combined_confirmation_opportunity_coverage"])
@@ -1086,6 +1090,11 @@ def build_report(
     live_started = [item for item in selected_candidate if item["live_started"]]
     if selected_ids and len(live_started) < target:
         blockers.append(f"selected strategies with a started live pilot {len(live_started)} is below required {target}")
+    interim_blockers: list[str] = []
+    if not ready_live_started:
+        interim_blockers.append(
+            "pilot-ready strategies with a completed live execution 0 is below required 1"
+        )
     return {
         "schema_version": 1,
         "campaign_id": config.raw["campaign"]["id"],
@@ -1096,6 +1105,20 @@ def build_report(
         "live_started_strategy_count": sum(
             assessment["live_started"] for assessment in assessments
         ),
+        "pilot_ready_live_started_strategy_count": len(ready_live_started),
+        "pilot_ready_live_started_strategies": [
+            {
+                "strategy_id": str(assessment["strategy_id"]),
+                "strategy_version": str(assessment["strategy_version"]),
+                "mechanism_family": str(assessment["mechanism_family"]),
+                "rules_hash": str(assessment["rules_hash"]),
+            }
+            for assessment in ready_live_started
+        ],
+        "earned_interim_milestones": (
+            [FIRST_PILOT_MILESTONE] if not interim_blockers else []
+        ),
+        "interim_milestone_blockers": interim_blockers,
         "selected_strategy_ids": selected_ids,
         "selected_strategies": selected_strategies,
         "selected_pairwise_confirmation_correlations": pairwise,

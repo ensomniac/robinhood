@@ -14,6 +14,14 @@ when `python3 portfolio_maturity.py report` machine-earns
 `THREE_PILOT_READY_LIVE_STARTED` and `python3 portfolio_validation.py audit`
 passes every repository, privacy, capacity, Git, and broker-safety integrity gate.
 
+The persistent first-pilot execution goal is earned separately with
+`python3 portfolio_validation.py audit --goal first-pilot-live-started`. It
+records the nonterminal `FIRST_PILOT_READY_LIVE_STARTED` milestone only when one
+exact `PILOT_READY` strategy has a complete closed live execution, the account
+is freshly `FLAT_RECONCILED` with no position or open order, every repository
+and privacy audit passes, and Git is clean and pushed. The audit is idempotent
+and does not alter the three-strategy terminal milestone.
+
 `PILOT_READY` means a frozen strategy has passed historical development,
 untouched confirmation, robustness, cost-stress, evidence, and prospective
 shadow gates. It authorizes a tightly risk-capped live pilot; it is not a claim

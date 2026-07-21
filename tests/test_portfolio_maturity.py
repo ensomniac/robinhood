@@ -243,6 +243,29 @@ class PortfolioMaturityTests(unittest.TestCase):
         report = maturity.build_report([], self.config)
         self.assertEqual(report["earned_milestone"], "RESEARCH")
         self.assertEqual(report["pilot_ready_strategy_count"], 0)
+        self.assertEqual(report["earned_interim_milestones"], [])
+
+    def test_ready_strategy_without_live_execution_does_not_earn_interim_milestone(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            report = maturity.build_report(records, self.config)
+        self.assertEqual(report["pilot_ready_strategy_count"], 1)
+        self.assertEqual(report["earned_interim_milestones"], [])
+
+    def test_ready_strategy_with_closed_live_execution_earns_interim_milestone(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(
+                root, "strategy-one", "momentum", live=True
+            )
+            report = maturity.build_report(records, self.config)
+        self.assertEqual(
+            report["earned_interim_milestones"],
+            [maturity.FIRST_PILOT_MILESTONE],
+        )
+        self.assertEqual(report["pilot_ready_live_started_strategy_count"], 1)
+        self.assertEqual(report["earned_milestone"], "RESEARCH")
 
     def test_strong_strategy_earns_pilot_ready(self):
         with tempfile.TemporaryDirectory() as directory:
