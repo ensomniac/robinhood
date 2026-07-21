@@ -485,6 +485,11 @@ minute open, uses the last-five-bar low, a 2R target, stop-first ambiguity, and 
 15:50 force-flat. All fills and exits use 5/10/20 bps per side. Only 09:30-09:59
 selection inputs may be collected after an independent activation inspection;
 post-10:00 outcomes remain locked until the prefix is independently inspected.
+Activation inspection
+`3d386ed05e5b616f014169f6a6dfb0088ba146c82579140c66b71463a55586d2`
+rebuilds all 80 dates, 395,316 memberships, 5,552 symbols, source hashes,
+implementation, and rules with zero provider calls, returns, or broker actions.
+It authorizes only the frozen 09:30-09:59 prefix collection.
 
 ## Active discovery funnel
 

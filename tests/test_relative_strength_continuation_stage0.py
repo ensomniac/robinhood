@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import unittest
 from datetime import date, datetime, time, timedelta
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import relative_strength_continuation_stage0 as stage0
@@ -30,6 +32,26 @@ def _session(day: str) -> list[dict[str, object]]:
 
 
 class RelativeStrengthContinuationStage0Tests(unittest.TestCase):
+    def test_published_activation_inspection_keeps_target_outcomes_locked(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "relative-strength-continuation-v1-activation-3d386ed05e5b616f014169f6a6dfb0088ba146c82579140c66b71463a55586d2.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["target_dates"], 80)
+        self.assertEqual(inspection["member_symbol_sessions"], 395_316)
+        self.assertEqual(inspection["provider_requests"], 0)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["prefix_collection_authorized"])
+        self.assertFalse(inspection["target_outcome_collection_authorized"])
+
     def test_manifest_freezes_new_full_cross_sectional_dates(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)
