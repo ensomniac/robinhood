@@ -252,6 +252,15 @@ pre-entry structure, or primary-source acquisition. Neither command authorizes
 post-entry rows, returns, outcomes, alpha, a strategy change, maturity, or broker
 activity.
 
+Selected-pair manifest `24ef6d29...965de4` is now independently
+`FROZEN_READY`. The separate reconstruction matches all 1,826 private rows and
+100 daily partitions, private graph hash `3ed15493...183c2`, daily-shortlist set
+hash `887d1f12...ab5a5`, and source-detail hash `5e9dcb08...d21b`. It finds
+zero downstream pre-entry artifacts, zero substitution, no public selected
+identity, and no outcome access. This manifest, status, registry event, and
+durable finding must be committed and pushed before the exact causal/source
+request graph is frozen.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

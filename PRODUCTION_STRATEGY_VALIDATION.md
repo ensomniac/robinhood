@@ -318,6 +318,16 @@ pushed before freezing the exact selected-pair manifest; that inspected
 manifest must itself be committed and pushed before any selected-symbol causal
 or primary-source request graph is frozen or collected.
 
+That selected-pair boundary is now independently `FROZEN_READY` as manifest
+`24ef6d29...965de4`. Independent reconstruction matches all 1,826 rows across
+100 dates, private graph hash `3ed15493...183c2`, daily-shortlist set hash
+`887d1f12...ab5a5`, and source-detail hash `5e9dcb08...d21b`, while finding
+zero downstream artifact, substitution, public selected identity, or outcome
+access. The next stage remains a separately implemented, frozen, inspected,
+committed, and pushed exact request graph for selected-symbol causal inputs and
+primary sources; this selected-pair manifest alone authorizes no provider
+request.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
