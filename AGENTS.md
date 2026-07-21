@@ -1,10 +1,13 @@
 # Robinhood Codex Trading Context
 
-Research refreshed: 2026-07-19
+Research refreshed: 2026-07-21
 
 Strategy version: `2026-07-15-orb-v3`
 
-Strategy maturity: `UNVALIDATED` until the promotion rules below are met.
+ORB v3 maturity: `UNVALIDATED` until its frozen promotion rules are met.
+
+Portfolio campaign: `RESEARCH` until `portfolio_maturity.py report` earns the
+next milestone.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
@@ -88,21 +91,64 @@ may write a cadence-qualified proposal but may not edit or activate live rules.
 `LEARNING_LOOP.md`, but production strategy changes remain proposals subject to
 the normal evidence gates and delegated decision rules below.
 
-Persistent production validation is coordinated by `strategy_validation.py`
-under `PRODUCTION_STRATEGY_VALIDATION.md`. Its ignored hash-chained state may
-resume across bounded workflows, but the controller never contacts providers,
-accesses Robinhood, changes production rules, or performs its own handoff.
-Waiting and safety statuses are nonterminal. Only its final `audit` may append
-campaign phase `VALIDATED`, after recomputing ledger maturity, champion axes,
-integrity, reconciled-flat broker evidence, and clean pushed Git state.
+The current persistent campaign is coordinated by `portfolio_validation.py`
+under `PORTFOLIO_VALIDATION.md`. Its ignored hash-chained state may resume
+across bounded workflows, but the controller never contacts providers, accesses
+Robinhood, changes strategy rules, or performs its own handoff. Waiting and
+safety statuses are nonterminal. Only its final `audit` may append
+`THREE_PILOT_READY_LIVE_STARTED`, after recomputing portfolio maturity,
+diversification, integrity, privacy-safe broker safety evidence, and clean
+pushed Git state.
+
+The prior controller and plan, `strategy_validation.py` and
+`PRODUCTION_STRATEGY_VALIDATION.md`, are `SUPERSEDED_PAUSED` only as the sole
+production route. Preserve their state and all ORB/catalyst evidence. Do not
+call that campaign complete or failed, and do not reinterpret its evidence.
+
+## Multi-Strategy Portfolio Authority
+
+Ryan authorized the multi-strategy campaign on 2026-07-21. This section
+supersedes legacy one-ORB-per-day clauses elsewhere in this file for a strategy
+version that independently earns `PILOT_READY`; legacy clauses continue to
+govern ORB v3 itself.
+
+- The production objective is maximum durable geometric account growth after
+  costs, drawdowns, capital contention, and operational risk—not a daily trade
+  quota or any one setup family.
+- Approved research scope is long common equities and ETFs. The campaign may
+  operate at most three concurrent positions, place at most five new entries per
+  trading day, and hold a position for at most five trading days.
+- `portfolio_config.toml` is the numeric source of truth for portfolio
+  promotion, diversification, pilot risk, loss, drawdown, gross-notional, and
+  scaling limits. Every strategy also requires its own immutable version, rules
+  hash, evaluator, execution contract, and evidence sample.
+- Codex may modify research and risk parameters inside the authorized envelope,
+  but a material strategy-rule change creates a new version. It cannot inherit
+  the changed version's maturity evidence.
+- Begin a controlled live pilot automatically when that exact version earns
+  `PILOT_READY`, its complete production/evaluator/guard/protection path passes,
+  and current broker/tool gates permit it. Do not wait for the other two
+  strategies. Never treat `PILOT_READY` as `LIVE_VALIDATED`.
+- Until a portfolio-aware guard is implemented and verified, the existing
+  `session_guard.py` remains fail-closed and limits live operation to the safer
+  state it actually supports. Authorization to hold three positions is not
+  evidence that the implementation can yet do so safely.
+- A multi-session strategy must freeze gap-risk sizing and have confirmed
+  good-til-canceled protection before an overnight hold. Reconcile protection,
+  tradability, news, and the account before each open. If protection cannot be
+  confirmed, flatten by the current session's safe cutoff.
+- The initial and scaled risk limits, evidence gates, tournament bounds, and
+  anti-cycle rules in `PORTFOLIO_VALIDATION.md` are mandatory. Creativity and
+  risk tolerance do not authorize fabricated evidence, lookahead, confirmation
+  tuning, missing protection, or a hard-cap exception.
 
 ## Authority Boundary
 
-- The user's (Ryan) trading preference is aggressive day trading: seek explosive
-  intraday growth, target a 2% gross gain, exit all trades before the end of the
-  same trading day, target 70-100% of available buying power when risk and
-  executable liquidity support it, and never hold more than one open trade at a
-  time. The allocation target never overrides the loss-risk cap.
+- Ryan's current preference is aggressive but evidence-gated geometric growth
+  through the authorized multi-strategy portfolio. ORB v3 retains its +2%
+  intraday milestone, same-day exit, one-position, one-entry, and frozen sizing
+  contract only when that legacy lane is active. Other strategy versions use
+  their independently frozen contracts and the portfolio envelope above.
 - This file is a standing authorization for Codex to place or cancel real-money
   trades without explicit user approval in the active trading workflow.
 - Once Ryan starts a live trading workflow, do not pause for Ryan's approval
@@ -119,10 +165,10 @@ integrity, reconciled-flat broker evidence, and clean pushed Git state.
   proceed after those checks pass, or which evidence-qualified implementation
   path to take. Decide, document the rationale when material, and act.
 - Ask Ryan only when his own action is irreducibly required by login, MFA, a
-  connector outage, or a broker/tool confirmation contract, or when the action
-  would require new authority outside this file's strategy such as options,
-  short sales, overnight holds, multiple simultaneous trades, or a different
-  risk profile. Complete every safe in-scope prerequisite before asking.
+  connector outage, subscription/purchase, or a broker/tool confirmation
+  contract, or when an action would require authority beyond long equities/ETFs,
+  three positions, five daily entries, five-session holds, or the configured
+  risk envelope. Complete every safe in-scope prerequisite before asking.
 
 ## How The Robinhood MCP Works
 
@@ -146,11 +192,13 @@ important tool families are:
 
 Operational MCP rules:
 
-- `strategy_config.toml` is the numeric rule source of truth. Use
-  `strategy_engine.py` for every candidate calculation and retain its strategy
-  version and rules hash in the session context. Do not substitute hand math for
-  a successful evaluator result. Configuration loading must pass the engine's
-  fail-closed relationship checks. A score of at least 90 does not earn A+
+- `strategy_config.toml` and `strategy_engine.py` remain the numeric and
+  executable sources of truth for ORB v3. `portfolio_config.toml` governs the
+  portfolio envelope, and each new candidate version must name its own frozen
+  evaluator/configuration. Retain the active strategy version and rules hash in
+  session context; never substitute hand math for a successful evaluator result.
+  Configuration loading must pass fail-closed relationship checks. For ORB v3,
+  a score of at least 90 does not earn A+
   unless the measured median spread also satisfies the configured 0.08% A+
   limit; while `UNVALIDATED`, failure of that spread gate blocks the live pilot.
   The planned stop must be strictly below every observed bid. Consecutive-loss
@@ -351,13 +399,15 @@ subject prefix, body line breaks, and structured details rendered as intended.
 
 ## Strategy Objective
 
-Primary objective: compound account equity by taking at most one high-conviction,
-long five-minute Stock-in-Play ORB per day with positive expected value after
-spread, fees, slippage, and failed-signal losses. A +2% move from fill remains the
-primary milestone, but it is neither a daily quota nor an excuse to hold a failed
-trend. No trade is a successful outcome when the edge is absent.
+Primary objective: compound account equity through a diversified set of at
+least three independently evidenced long-equity/ETF mechanisms with maximum
+durable geometric growth after costs and risk. No trade is a successful outcome
+when the edge is absent, and trading every day is an opportunity goal rather
+than permission to force a setup.
 
-Hard constraints:
+Portfolio hard constraints are defined in `portfolio_config.toml` and
+`PORTFOLIO_VALIDATION.md`. The following frozen constraints apply specifically
+to legacy strategy version `2026-07-15-orb-v3`:
 
 - One open trade maximum across all equity positions and open equity orders, and
   at most one filled entry per trading day.
@@ -406,8 +456,10 @@ Hard constraints:
 
 ## Market Discovery Loop
 
-During an active user-invoked trading session, scan continuously until either a
-valid trade setup appears, the user stops the session, or the entry cutoff passes.
+This discovery loop is the frozen ORB v3 path. During an active ORB v3 trading
+session, scan continuously until either a valid trade setup appears, the user
+stops the session, or the entry cutoff passes. A different `PILOT_READY`
+strategy must use its own frozen and tested discovery/evaluator contract.
 
 1. Establish the account and session state.
    - Call `get_accounts`; require a clear account number and `agentic_allowed`
@@ -531,9 +583,9 @@ may be shadow-logged under separate strategy versions, but may not trigger a
 real-money order until separately promoted from at least 50 frozen-rule signals
 with positive out-of-sample expectancy and acceptable execution.
 
-## Order Construction
+## ORB v3 Order Construction
 
-Before any live order:
+Before any live ORB v3 order:
 
 - Verify no existing equity position or unresolved equity order.
 - Verify today's filled-entry limit remains unused and no drawdown, data, tool,
@@ -711,7 +763,8 @@ versioned follow-up rather than silent history changes. Minimum context fields:
 - Catalyst source links
 - Exact opening-relative-volume inputs and ranking scope
 - Opening range OHLCV, ATR, VWAP, and SPY/QQQ context
-- Entry setup family; production trades must use the five-minute Stock-in-Play ORB
+- Entry setup family; production trades must use either frozen ORB v3 or an
+  exact strategy version that `portfolio_maturity.py report` marks `PILOT_READY`
 - Score and disqualifying risks considered
 - Three pre-order spread/depth snapshots and their data ages
 - Entry, milestone, stop, slippage reserve, quantity, allocation, and expected
@@ -1050,9 +1103,12 @@ slice, validate and benchmark it, append a progress lesson, then stop.
 
 Use frozen local bundles before requesting new historical data. A new collection
 is justified only by missing coverage or an independent confirmation need.
-`learning` cannot use broker actions, edit `strategy_config.toml`, activate a
-research strategy, recurse after a failed repair, or broaden external-write
-authority. Generated inventories and plans stay under ignored `learning_runs/`;
+`learning` cannot use broker actions, mutate a frozen strategy version in place,
+activate a version before `PILOT_READY`, recurse after a failed repair, or
+broaden external-write authority. Under the authorized portfolio campaign it
+may create a new version/configuration, update portfolio-level parameters inside
+the authorized envelope, and retire or advance versions through the evidence
+gates. Generated inventories and plans stay under ignored `learning_runs/`;
 durable outcomes belong in source, tests, public docs, and
 `progress/HISTORY.jsonl`.
 
@@ -1091,9 +1147,10 @@ entry should include the ET timestamp, symbol if applicable, decision/action,
 setup family, strategy version, net R or current status, account balance snapshot
 when available, and a link or path to the detailed context file.
 
-`SIGNALS.jsonl` is the append-only machine-readable companion once the first
-record is written. It must contain every evaluated candidate, not only selected
-trades, and it must remain free of account and broker identifiers.
+`SIGNALS.jsonl` remains the append-only ORB v3 machine-readable companion.
+`PORTFOLIO_SIGNALS.jsonl` is the append-only portfolio maturity ledger. Each
+must contain the complete records required by its schema, not only selected
+trades, and both must remain free of account and broker identifiers.
 
 Every visible trading decision must also update a detailed context file under
 `trades/active/` or `trades/archived/`. If a decision is session-level rather
@@ -1124,18 +1181,27 @@ Do not make empty commits.
 
 ## Hard Reject Conditions
 
-Reject a trade immediately if any of these are true:
+The account, encryption, broker, protection, stale-data, liquidity, hard-risk,
+and required-confirmation rejects below apply to every strategy. ORB timing,
+catalyst, score, stop-width, resistance, and same-day-flat rejects apply only to
+ORB v3; every other live candidate must instead pass its own frozen evaluator
+and holding/protection contract plus the portfolio guard.
+
+Reject a trade immediately if any universally applicable condition or any
+active-strategy-specific condition is true:
 
 - No explicit account number.
 - Account is not `agentic_allowed=true` for live order tools.
-- A current position or unresolved order already exists.
-- A filled entry already occurred that trading day.
+- Existing positions, orders, daily entries, gross notional, or aggregate
+  planned open loss leave no capacity under the active portfolio caps. Any
+  unknown or unresolved order is always a reject.
 - A drawdown, stale-data, unknown-order, tool-health, or monitoring circuit
   breaker is active.
 - Identifier encryption configuration or the context audit is unavailable before
   entry.
-- The signal is not the production five-minute Stock-in-Play ORB, or the signal
-  occurs outside 9:35-10:30 ET.
+- For ORB v3, the signal is not the production five-minute Stock-in-Play ORB or
+  occurs outside 9:35-10:30 ET. For another strategy, its exact version is not
+  `PILOT_READY` or the signal falls outside its frozen eligible window.
 - The first-five-minute candle is not bullish, exact opening relative volume is
   below 1.0, or its inputs/ranking scope cannot be recorded.
 - Stop cannot be placed, monitored, or respected.
@@ -1152,7 +1218,9 @@ Reject a trade immediately if any of these are true:
   volume.
 - The move is based only on rumor, social media, or unexplained scanner activity.
 - The entry is outside regular market hours.
-- The trade cannot be exited by 3:50 PM ET.
+- For ORB v3, the trade cannot be exited by 3:50 PM ET. For a multi-session
+  strategy, confirmed GTC protection and its gap-risk reserve cannot remain in
+  force through the authorized hold.
 - Required user confirmation for entry or prompt stop protection is unavailable.
 - Any order review, broker alert, connector error, login/MFA requirement, or
   external blocker that Codex cannot resolve automatically is unresolved.

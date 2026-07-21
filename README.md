@@ -3,10 +3,10 @@
 A public experiment in agentic stock trading.
 
 This repository tracks a real-time experiment where Codex researches, plans,
-executes, monitors, and journals aggressive intraday equity trades through a
-Robinhood agentic trading workflow. The goal is to make the process visible:
-the strategy, decision rules, trade context, and outcomes are all kept in this
-repo so anyone can follow along.
+executes, monitors, and journals aggressive long-equity and ETF strategies
+through a Robinhood agentic trading workflow. The goal is to make the process
+visible: strategy rules, selection failures, trade context, and outcomes are all
+kept in this repo so anyone can follow along.
 
 Codex owns this workflow's in-scope outcomes rather than acting as a passive
 advisor. Its primary objective is rapid compounding growth, pursued through the
@@ -14,53 +14,63 @@ repository's hard risk, evidence, execution, and protection constraints. As a
 normal completion step, validated repository changes are committed and pushed
 without waiting for routine approval.
 
-This is not investment advice, a recommendation to trade, or a claim that the
-strategy will be profitable. Intraday trading is high risk, margin can amplify
+This is not investment advice, a recommendation to trade, or a claim that any
+strategy will be profitable. Active trading is high risk, margin can amplify
 losses, and automated execution can fail in ways that matter financially.
 
 ## What This Is
 
-- A public record of an automated day-trading workflow.
+- A public record of an automated active-trading workflow.
 - A strategy notebook for refining an agentic trading playbook from evidence.
 - A trade journal that records both visible trades and no-trade decisions.
 - A transparency layer around what the agent was allowed to do, what it did,
   and why.
 
-## Current Strategy
+## Current Portfolio Campaign
 
 The active operating contract is defined in [AGENTS.md](AGENTS.md), with the
-evidence, limitations, and worked risk example in
-[STRATEGY_REVIEW.md](STRATEGY_REVIEW.md). The v3 failure analysis and repair map
-is in [STRATEGY_AUDIT_2026-07-15.md](STRATEGY_AUDIT_2026-07-15.md). Strategy version
-`2026-07-15-orb-v3` is currently `UNVALIDATED` because this repository has no
-completed local trade sample.
+multi-strategy objective, evidence gates, risk envelope, and anti-cycle rules in
+[PORTFOLIO_VALIDATION.md](PORTFOLIO_VALIDATION.md). The campaign targets at
+least three independent `PILOT_READY` long-equity/ETF strategy versions and
+starts a controlled live pilot for each as soon as it qualifies.
 
 At a high level:
 
-- Long equities only.
-- One filled trade per day and one open trade maximum.
-- Regular market hours only.
-- Production entries only from 9:35-10:30 AM ET; flat by 3:50 PM ET.
-- One production setup: a long five-minute opening range breakout in a
-  catalyst-backed Stock in Play.
-- Compute opening relative volume from the current 9:30-9:35 bar versus the same
-  interval over the prior 14 sessions.
-- Size from account risk, stop distance, a stop-slippage reserve, buying power,
-  and executable liquidity. Seventy percent is an aggressive allocation target,
-  not a reason to exceed risk or discard a safely sized positive-expectancy setup.
-- Start live pilots at a 0.25% planned-risk cap and a 90-point minimum score;
-  evidence can promote the cap to 0.50% and then 0.65%.
-- Use +2% as a milestone with a structural runner rule, not a daily quota or an
-  unconditional fixed take-profit.
-- Pause or demote the strategy when local expectancy, drawdown, slippage, data,
-  or broker-tool health fails the documented gates.
+- Long common equities and ETFs only.
+- At most three concurrent positions, five new entries per day, and five trading
+  days per hold.
+- Initial pilots risk at most 0.50% of equity in planned loss per position and
+  1.25% across open positions, with daily, weekly, drawdown, notional, liquidity,
+  protection, and broker limits layered on top.
+- Each version needs at least 50 historical signals including 20 untouched
+  confirmation signals, five clean prospective shadows, positive robust
+  cost-stressed performance, complete trial accounting, and zero violations.
+- Three selected mechanisms must also be distinct, have confirmation daily-return
+  correlation below 0.70, and cover at least 60% of shared confirmation dates.
+- `PILOT_READY` authorizes a controlled pilot; it is not `LIVE_VALIDATED` and is
+  not a profitability guarantee.
+
+The numeric portfolio rules live in
+[portfolio_config.toml](portfolio_config.toml). `portfolio_maturity.py` audits
+the append-only evidence and computes strategy and portfolio maturity.
+`portfolio_validation.py` maintains resumable ignored state and emits one
+bounded handoff without contacting providers or brokers.
+
+### Preserved ORB v3 lane
+
+Strategy version `2026-07-15-orb-v3` remains `UNVALIDATED` and available as one
+candidate lane. Its evidence, limitations, and worked risk example are in
+[STRATEGY_REVIEW.md](STRATEGY_REVIEW.md), and its failure analysis is in
+[STRATEGY_AUDIT_2026-07-15.md](STRATEGY_AUDIT_2026-07-15.md). Its frozen
+one-position, one-entry, 9:35-10:30 ET catalyst opening-range-breakout contract
+has not been weakened or reinterpreted.
 
 VWAP pullback and high-of-day continuation setups are research-only until they
 earn separate positive out-of-sample evidence. The cited ORB research studied a
 diversified long-short portfolio; its reported returns are not expected returns
 for this concentrated, long-only implementation.
 
-The numeric rules live in [strategy_config.toml](strategy_config.toml).
+The ORB numeric rules live in [strategy_config.toml](strategy_config.toml).
 `strategy_engine.py` computes every score, hard gate, and sizing result;
 `session_guard.py` enforces the live entry/protection interlock; and
 `strategy_ledger.py` provides append-only signal records, reproducible metrics,
@@ -97,9 +107,11 @@ Detailed per-session and per-trade context lives under:
   archived context contains a readable outcome review and embedded JSON learning
   record.
 
-After the first recorded session, `SIGNALS.jsonl` is the machine-readable
-companion. See [SIGNAL_LEDGER.md](SIGNAL_LEDGER.md) for its privacy-safe schema
-and append/audit/report commands.
+`SIGNALS.jsonl` remains the ORB v3 machine-readable companion. Portfolio
+inspection, session, shadow, and live evidence is appended to
+`PORTFOLIO_SIGNALS.jsonl` once the first inspected record exists. Both are
+privacy-safe and machine-audited; see [SIGNAL_LEDGER.md](SIGNAL_LEDGER.md) for
+the legacy signal schema and `portfolio_maturity.py` for the portfolio schema.
 
 ## Email Notifications
 
@@ -296,23 +308,29 @@ protection failures pause immediately; statistical degradation is reported but
 never changes production rules automatically. `strategy_ledger.py report`
 remains authoritative for production maturity.
 
-The unbudgeted production-validation campaign persists separately from each
-finite learning slice. It coordinates the frozen source, development,
-confirmation, shadow, live-pilot, and promotion gates without contacting a
-provider or broker itself:
+The multi-strategy portfolio campaign persists separately from each finite
+learning slice. It coordinates preserved evidence, data inventory, tournament,
+development, confirmation, shadow, live-pilot, and portfolio-audit gates without
+contacting a provider or broker itself:
 
 ```sh
-python3 strategy_validation.py init
-python3 strategy_validation.py status
-python3 strategy_validation.py next
-python3 strategy_validation.py audit
+python3 portfolio_validation.py init
+python3 portfolio_validation.py status
+python3 portfolio_validation.py next
+python3 portfolio_validation.py audit
+
+python3 portfolio_maturity.py audit
+python3 portfolio_maturity.py report
 ```
 
 Its hash-chained private state lives under ignored
-`learning_runs/production_validation/`. Waiting for market hours, provider
+`learning_runs/portfolio_validation/`. Waiting for data, market hours, provider
 access, required confirmation, subscription, or additional organic sessions is
-nonterminal. Only a clean audit can record `VALIDATED`; see
-[PRODUCTION_STRATEGY_VALIDATION.md](PRODUCTION_STRATEGY_VALIDATION.md).
+nonterminal. Only a clean audit can record
+`THREE_PILOT_READY_LIVE_STARTED`; see
+[PORTFOLIO_VALIDATION.md](PORTFOLIO_VALIDATION.md). The prior single-ORB
+campaign and its ignored state remain preserved as `SUPERSEDED_PAUSED`, not
+declared successful or failed.
 
 Run the finite persistent cadence after the close:
 
