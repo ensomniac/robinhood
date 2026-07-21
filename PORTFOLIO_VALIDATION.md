@@ -320,6 +320,16 @@ access is authorized before its separate committed input inspection. Inspection
 reconciles all 95 sessions, 950 symbol-sessions, and 370,500 exact one-minute
 bars with zero return calculations, provider requests, or broker actions.
 
+The inspected short-horizon reversal result is
+`research_results/2026-07-21-short-horizon-oversold-reversal-stage0-bb2152f3f18aef92bac5c7d5dcffc15bdbe2967525e63fa6678c6c553aeb75c6.json`,
+with independent rebuild
+`strategy_tournament/inspections/short-horizon-oversold-reversal-v1-result-be56bcf7bf8fe2fd16e223f510a8236135fbc39f1a27e7531af9a4649a706e25.json`.
+The exact variant is retired for insufficient capacity: its ten signals earned
+2.442R, +0.244R expectancy, 3.634 profit factor, and 0.749R drawdown at 5 bps
+per side, and remained positive at 20 bps, but the frozen Stage 0 minimum is 30
+signals. The favorable small sample cannot be tuned, expanded on the evaluated
+corpus, promoted, or entered in the maturity ledger.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:

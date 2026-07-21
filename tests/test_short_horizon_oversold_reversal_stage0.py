@@ -90,6 +90,38 @@ class ShortHorizonOversoldReversalStage0Tests(unittest.TestCase):
         self.assertEqual(inspection["selected_symbol_sessions"], 950)
         self.assertEqual(inspection["selected_bars"], 370500)
 
+    def test_published_result_is_retired_only_for_insufficient_signals(self):
+        root = Path(__file__).resolve().parents[1]
+        result = json.loads(
+            (
+                root
+                / "research_results"
+                / "2026-07-21-short-horizon-oversold-reversal-stage0-bb2152f3f18aef92bac5c7d5dcffc15bdbe2967525e63fa6678c6c553aeb75c6.json"
+            ).read_text(encoding="utf-8")
+        )
+        inspection = json.loads(
+            (
+                root
+                / "strategy_tournament"
+                / "inspections"
+                / "short-horizon-oversold-reversal-v1-result-be56bcf7bf8fe2fd16e223f510a8236135fbc39f1a27e7531af9a4649a706e25.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            result["result_sha256"],
+            stage0.common._self_hash(result, "result_sha256"),
+        )
+        self.assertFalse(result["stage0_survived"])
+        self.assertEqual(
+            result["stage0_blockers"],
+            ["closed signals are below the Stage 0 minimum"],
+        )
+        self.assertEqual(result["denominator"]["closed_signals"], 10)
+        self.assertGreater(result["primary_5bps"]["expectancy_r"], 0)
+        self.assertGreater(result["stress"]["20"]["total_r"], 0)
+        self.assertTrue(inspection["valid"])
+        self.assertFalse(inspection["stage0_survived"])
+
     def test_simple_rsi_uses_five_completed_changes(self):
         rows = bars()
         self.assertEqual(stage0._simple_rsi(rows, 29), 0.0)
