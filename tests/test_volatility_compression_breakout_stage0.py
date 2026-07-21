@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import unittest
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import volatility_compression_breakout_stage0 as stage0
 
@@ -51,6 +53,41 @@ def raw_candidate(*, rows: list[dict] | None = None, common_stock: bool = True):
 
 
 class VolatilityCompressionBreakoutStage0Tests(unittest.TestCase):
+    def test_published_activation_is_exact_and_return_locked(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "activations"
+            / "volatility-compression-breakout-v1-3376ff9d2b6af10247e9eee3704f4e3bf612283a42c37a2c0f1b8f680a76d4c0.json"
+        )
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        stage0._validate_manifest(manifest)
+        self.assertEqual(manifest["denominator"]["requested_dates"], 100)
+        self.assertEqual(manifest["denominator"]["included_dates"], 95)
+        self.assertEqual(manifest["denominator"]["excluded_dates"], 5)
+        self.assertEqual(manifest["denominator"]["included_symbol_sessions"], 950)
+        self.assertFalse(manifest["return_evaluation_authorized_before_inspection"])
+
+    def test_published_input_inspection_computed_zero_returns(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "volatility-compression-breakout-v1-input-600ae694412202299505870eb48a14a9819a00f6c88867c3370a27e89c7d8fce.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertTrue(inspection["return_evaluation_authorized"])
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertEqual(inspection["selected_dates"], 95)
+        self.assertEqual(inspection["selected_symbol_sessions"], 950)
+        self.assertEqual(inspection["selected_bars"], 370500)
+
     def test_completed_breakout_uses_prior_twenty_bars_and_next_open(self):
         candidate = stage0._candidate(day="2025-01-02", raw=raw_candidate())
         self.assertEqual(candidate["status"], "executable")

@@ -106,6 +106,7 @@ CORE_ARTIFACTS = (
     "strategy_tournament/inspections/equity-gap-continuation-v1-result-66ede02688e090973e482ecc9c491349238d14e2af63fd02c336b99a8564c7be.json",
     "strategy_tournament/inspections/equity-gap-recovery-v1-input-6109b4a84007118f27bd6a5e474655b827e8d95515e709f23c5cfb0b95d33b91.json",
     "strategy_tournament/inspections/equity-gap-recovery-v1-result-c2deb307da4528c2f3b6b48d7330c5df8c965a2ca6f04763a5ca2d83fc9a6a12.json",
+    "strategy_tournament/inspections/volatility-compression-breakout-v1-input-600ae694412202299505870eb48a14a9819a00f6c88867c3370a27e89c7d8fce.json",
     "strategy_tournament/inspections/etf-vwap-mean-reversion-v1-input-deae004f10d53c1753435155385fc0557b6c39249f43896725bf1237dd32eaa0.json",
     "strategy_tournament/inspections/etf-vwap-mean-reversion-v1-result-faef3c6c57e36f8604179e596c959bd3f7c982848552ad224ef371da7c963176.json",
     "strategy_tournament/inspections/etf-or-momentum-v1-input-6736b37133fd8ba9d46c86e76ef3d7e21a2a09541f1ad631d4ec8b94ff78b1c8.json",

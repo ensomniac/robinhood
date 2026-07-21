@@ -293,7 +293,10 @@ compression ratio, a 1.50 signal-volume multiple, a completed close strictly
 above compression high and VWAP, next-bar entry, compression-low stop, raw 2R
 target, stop-first ambiguity, 15:50 force-flat, one daily selection, and
 5/10/20 bps-per-side costs. No return access is authorized before its separate
-committed input inspection.
+committed input inspection. Inspection
+`600ae694412202299505870eb48a14a9819a00f6c88867c3370a27e89c7d8fce`
+reconciles all 95 sessions, 950 symbol-sessions, and 370,500 exact one-minute
+bars with zero return calculations, provider requests, or broker actions.
 
 ## Active discovery funnel
 
