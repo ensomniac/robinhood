@@ -525,6 +525,13 @@ symbol-sessions across all 80 dates. It records 322,183 incomplete prefixes,
 prior closes, and 26 target-day splits. The inspection made zero provider or
 broker calls, computed zero returns, and now authorizes full-session collection
 only for the frozen leaders.
+The leader outcome collection is complete at
+`strategy_tournament/relative_strength_continuation/outcome-status.json`. It
+requested exactly the 8,729 frozen leader symbol-sessions in 371 provider
+calls, retained 3,303,894 regular-session bars, and excluded 8,637 provider
+boundary rows. Exactly 3,925 leaders have complete 390-bar sessions; incomplete
+leaders remain ineligible. No strategy return was computed and no broker action
+occurred.
 
 ## Active discovery funnel
 
