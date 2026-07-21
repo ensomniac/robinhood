@@ -228,6 +228,13 @@ computed; the replacement changes only the request boundary to
 15:59:59.999999 ET and preserves every date, candidate, rule, cost, and outcome
 definition.
 
+Development collection is `READY` in
+`strategy_validation/equity_gap_continuation/collection-status.json`: all 4,833
+frozen symbol-sessions returned 1,860,990 raw Alpaca SIP minute bars through 249
+provider requests with zero retries and zero unresolved inputs. The canonical
+data remains outside the repository. Collection computed zero target returns,
+made zero broker actions, and did not access the locked confirmation phase.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:

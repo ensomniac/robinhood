@@ -12,6 +12,16 @@ from historical_store import HistoricalDayStore
 
 
 class EquityGapContinuationValidationTests(unittest.TestCase):
+    def test_published_development_collection_is_complete_and_return_free(self):
+        status = validation._load_json(validation.PUBLIC_STATUS)
+        self.assertEqual(status["status"], "READY")
+        self.assertEqual(status["sample_phase"], "development")
+        self.assertEqual(status["candidate_symbol_sessions"], 4833)
+        self.assertEqual(status["provider_symbols_received"], 4833)
+        self.assertEqual(status["unresolved_symbol_sessions"], 0)
+        self.assertEqual(status["target_returns_computed"], 0)
+        self.assertEqual(status["broker_actions"], 0)
+
     def test_published_freeze_locks_both_samples_before_outcomes(self):
         path = (
             Path(__file__).resolve().parents[1]
