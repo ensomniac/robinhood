@@ -284,6 +284,17 @@ with -0.169R expectancy, 0.609 profit factor, and 14.281R drawdown. At
 20 bps per side it lost 15.529R. It cannot be tuned on this corpus or enter
 the maturity ledger; the tournament advances to volatility compression.
 
+The fifth activation is frozen, with returns still locked, at
+`strategy_tournament/activations/volatility-compression-breakout-v1-3376ff9d2b6af10247e9eee3704f4e3bf612283a42c37a2c0f1b8f680a76d4c0.json`.
+It binds the unchanged 100/95/5-date and 950-symbol-session legacy denominator.
+The executable contract fixes the first-30-minute range, the 20 completed bars
+immediately preceding each signal as the compression window, a maximum 0.60
+compression ratio, a 1.50 signal-volume multiple, a completed close strictly
+above compression high and VWAP, next-bar entry, compression-low stop, raw 2R
+target, stop-first ambiguity, 15:50 force-flat, one daily selection, and
+5/10/20 bps-per-side costs. No return access is authorized before its separate
+committed input inspection.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
