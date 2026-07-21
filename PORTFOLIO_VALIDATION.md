@@ -490,6 +490,13 @@ Activation inspection
 rebuilds all 80 dates, 395,316 memberships, 5,552 symbols, source hashes,
 implementation, and rules with zero provider calls, returns, or broker actions.
 It authorizes only the frozen 09:30-09:59 prefix collection.
+The prefix collection is complete at
+`strategy_tournament/relative_strength_continuation/prefix-status.json`. Across
+all 80 dates it made 831 provider calls, retained 6,592,844 bars and 374,731
+symbol-date payloads with at least one row, and ignored 236,485 rows outside the
+half-open selection window. All 395,316 dated memberships remain in the
+denominator. It computed zero returns and made no broker action; post-10:00
+outcomes remain locked pending prefix inspection.
 
 ## Active discovery funnel
 
