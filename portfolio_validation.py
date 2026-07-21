@@ -102,6 +102,7 @@ CORE_ARTIFACTS = (
     "research_results/2026-07-21-volatility-compression-breakout-stage0-5959e922a6cdaf117521a2a70877984497077f3c79acd5aedf2ac87eea0bbdfe.json",
     "research_results/2026-07-21-short-horizon-oversold-reversal-stage0-bb2152f3f18aef92bac5c7d5dcffc15bdbe2967525e63fa6678c6c553aeb75c6.json",
     "research_results/2026-07-21-cross-sectional-momentum-stage0-9a165ae149b2f9220a2d78c2251a34617ad63ed2a468ded8749fb5b0cc0a8869.json",
+    "research_results/2026-07-21-post-earnings-drift-stage0-08f475e3800530d3044ca09948612f61bb6e3fc9f3da8a84aa8c9d30d6f70357.json",
     "strategy_tournament/manifests/portfolio-stage0-slate-1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f.json",
     "strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json",
     "strategy_tournament/activations/etf-vwap-mean-reversion-v1-ecaff3785f2dc9fe3f14332be9e40e056e08aacf55f86487cb2f25df62688a47.json",

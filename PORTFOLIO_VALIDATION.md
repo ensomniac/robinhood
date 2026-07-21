@@ -461,6 +461,11 @@ rebuilds all collection bindings and the complete 102-pair denominator without
 provider access or return calculation. Eighty-seven pairs have a complete
 390-bar regular session; 15 remain in the denominator as incomplete and cannot
 signal. The inspection authorizes the single frozen Stage 0 evaluation.
+The resulting six signals produced -0.4465R expectancy, 0.3303 profit factor,
+-2.6788R total, and 2.7053R maximum drawdown at 5 bps per side. At 20 bps per
+side the total is -2.8100R. The result fails signal count, expectancy, profit
+factor, and stress gates and remains outside maturity; permanent retirement is
+pending independent result inspection.
 
 ## Active discovery funnel
 
