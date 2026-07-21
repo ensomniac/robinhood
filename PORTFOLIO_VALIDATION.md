@@ -416,6 +416,11 @@ therefore counts 168 discarded calls across two failed ingestion attempts and
 changes only the ingestion channel to raw no-echo streaming with an explicit
 terminator. Strategy rules, dates, candidates, and all outcome gates are still
 identical and locked pending another independent inspection.
+Inspection
+`e728d442e0e32c86ccb4447595f4245a195276fd2b9084c85b2e488fe24b3c0e`
+rebuilds the corrected stream contract, the 168 prior-call count, and the
+unchanged 102-pair rules with zero additional provider calls or returns. It
+authorizes the next metadata retry through the corrected channel.
 
 ## Active discovery funnel
 

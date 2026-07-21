@@ -50,6 +50,24 @@ class PostEarningsDriftStage0Tests(unittest.TestCase):
         self.assertEqual(inspection["returns_computed"], 0)
         self.assertTrue(inspection["collection_authorized"])
 
+    def test_corrected_stream_inspection_counts_both_failed_attempts(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "post-earnings-drift-v1-activation-e728d442e0e32c86ccb4447595f4245a195276fd2b9084c85b2e488fe24b3c0e.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertEqual(inspection["provider_requests_before_this_activation"], 168)
+        self.assertEqual(inspection["provider_requests"], 0)
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertTrue(inspection["collection_authorized"])
+
     def test_manifest_freezes_complete_source_verified_denominator(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)
