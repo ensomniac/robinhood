@@ -315,7 +315,10 @@ The executable contract fixes a 30-completed-bar pre-trigger return of at most
 completed close strictly above the prior high and session VWAP, next-bar entry,
 decision-time session-low stop, raw 1.5R target, stop-first ambiguity, 15:50
 force-flat, one daily selection, and 5/10/20 bps-per-side costs. No return
-access is authorized before its separate committed input inspection.
+access is authorized before its separate committed input inspection. Inspection
+`0e8796722e06b0643aeb9f6e3001e9e9320730d617619b50884293c006dd46dd`
+reconciles all 95 sessions, 950 symbol-sessions, and 370,500 exact one-minute
+bars with zero return calculations, provider requests, or broker actions.
 
 ## Active discovery funnel
 

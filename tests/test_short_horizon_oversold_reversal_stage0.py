@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import unittest
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import short_horizon_oversold_reversal_stage0 as stage0
 
@@ -53,6 +55,41 @@ def raw_candidate(*, rows: list[dict] | None = None, common_stock: bool = True):
 
 
 class ShortHorizonOversoldReversalStage0Tests(unittest.TestCase):
+    def test_published_activation_is_exact_and_return_locked(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "activations"
+            / "short-horizon-oversold-reversal-v1-b65565475be90a9ad981e4e5dd1c598edbd21d5ee21ba9cad3333ca7da8d9d51.json"
+        )
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        stage0._validate_manifest(manifest)
+        self.assertEqual(manifest["denominator"]["requested_dates"], 100)
+        self.assertEqual(manifest["denominator"]["included_dates"], 95)
+        self.assertEqual(manifest["denominator"]["excluded_dates"], 5)
+        self.assertEqual(manifest["denominator"]["included_symbol_sessions"], 950)
+        self.assertFalse(manifest["return_evaluation_authorized_before_inspection"])
+
+    def test_published_input_inspection_computed_zero_returns(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "inspections"
+            / "short-horizon-oversold-reversal-v1-input-0e8796722e06b0643aeb9f6e3001e9e9320730d617619b50884293c006dd46dd.json"
+        )
+        inspection = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            inspection["inspection_sha256"],
+            stage0.common._self_hash(inspection, "inspection_sha256"),
+        )
+        self.assertTrue(inspection["return_evaluation_authorized"])
+        self.assertEqual(inspection["returns_computed"], 0)
+        self.assertEqual(inspection["selected_dates"], 95)
+        self.assertEqual(inspection["selected_symbol_sessions"], 950)
+        self.assertEqual(inspection["selected_bars"], 370500)
+
     def test_simple_rsi_uses_five_completed_changes(self):
         rows = bars()
         self.assertEqual(stage0._simple_rsi(rows, 29), 0.0)
