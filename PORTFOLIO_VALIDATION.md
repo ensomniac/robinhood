@@ -393,6 +393,16 @@ prior-trial declarations, implementation, and rules. It computed zero returns,
 made zero provider or broker calls, and authorizes only the exact earnings and
 market input collection.
 
+The first authorized metadata collection made all 84 read-only earnings calls,
+but its non-interactive ingestion pipe closed before retaining any response.
+No market outcome or strategy return was accessed. The original activation and
+inspection remain preserved as the incident lineage. Superseding transport
+activation
+`strategy_tournament/activations/post-earnings-drift-v1-1302ec21b91847106830f51dd8e90ee2309290c93d3032f2696a84a55314d9a5.json`
+keeps the exact strategy rules and 102-pair denominator unchanged, explicitly
+counts the 84 discarded provider calls, and requires a new committed inspection
+before one fully accounted metadata retry.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:

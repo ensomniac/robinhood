@@ -111,6 +111,7 @@ CORE_ARTIFACTS = (
     "strategy_tournament/activations/short-horizon-oversold-reversal-v1-b65565475be90a9ad981e4e5dd1c598edbd21d5ee21ba9cad3333ca7da8d9d51.json",
     "strategy_tournament/activations/cross-sectional-momentum-v1-a8970ad2bfb0045f54404da985178686ec7cd0068c3a6a23f59165c7e415520a.json",
     "strategy_tournament/activations/post-earnings-drift-v1-d41dd9d9db8531ed90e8cfde0f40382b250ca67177b16f01146e2eab1594f6cf.json",
+    "strategy_tournament/activations/post-earnings-drift-v1-1302ec21b91847106830f51dd8e90ee2309290c93d3032f2696a84a55314d9a5.json",
     "strategy_tournament/cross_sectional_momentum/collection-status.json",
     "strategy_tournament/inspections/equity-gap-continuation-v1-input-fe842aebc174196ceaa34a529d6c3a8eb75ab4df5bc6db110221f7f3dea4c881.json",
     "strategy_tournament/inspections/equity-gap-continuation-v1-result-66ede02688e090973e482ecc9c491349238d14e2af63fd02c336b99a8564c7be.json",

@@ -74,6 +74,7 @@ STRESS_COST_BPS = (10, 20)
 MINIMUM_FREE_BYTES = 20 * 1024**3
 EXPECTED_PAIRS = 102
 EXPECTED_DATES = 52
+DISCARDED_EARNINGS_PROVIDER_REQUESTS = 84
 MAXIMUM_HOLDING_DATES = 5
 ACTIVATION_ROOT = PROJECT_ROOT / "strategy_tournament" / "activations"
 INSPECTION_ROOT = PROJECT_ROOT / "strategy_tournament" / "inspections"
@@ -329,6 +330,13 @@ def build_manifest(store: HistoricalDayStore | None = None) -> dict[str, Any]:
         "broker_actions_authorized": False,
         "provider_requests_authorized_before_inspection": False,
         "return_evaluation_authorized_before_input_inspection": False,
+        "collection_transport_incident": {
+            "discarded_earnings_provider_requests": DISCARDED_EARNINGS_PROVIDER_REQUESTS,
+            "responses_retained": 0,
+            "market_outcomes_accessed": False,
+            "strategy_returns_computed": 0,
+            "retry_requires_this_activation_inspection": True,
+        },
         "declared_prior_policy_trials": 15,
         "prior_failed_confirmation": {
             "path": PRIOR_RESULT.relative_to(PROJECT_ROOT).as_posix(),
@@ -375,7 +383,9 @@ def build_manifest(store: HistoricalDayStore | None = None) -> dict[str, Any]:
         },
         "collection_contract": {
             "earnings_provider": "Robinhood read-only earnings results",
-            "earnings_requests": len(symbols),
+            "logical_earnings_requests": len(symbols),
+            "discarded_earnings_provider_requests_before_this_activation": DISCARDED_EARNINGS_PROVIDER_REQUESTS,
+            "retry_accounting": "all provider calls count, including responses discarded by the failed ingestion transport",
             "market_provider": "Alpaca historical SIP",
             "market_feed": "sip",
             "market_adjustment": "raw with frozen local split handling",
@@ -456,6 +466,7 @@ def inspect_activation(
         "unique_symbols": len({row["symbol"] for row in graph["pairs"]}),
         "declared_prior_policy_trials": recorded["declared_prior_policy_trials"],
         "provider_requests": 0,
+        "provider_requests_before_this_activation": DISCARDED_EARNINGS_PROVIDER_REQUESTS,
         "broker_actions": 0,
         "returns_computed": 0,
         "collection_authorized": True,
@@ -584,6 +595,7 @@ def ingest_earnings(
     manifest_path: Path,
     inspection_path: Path,
     lines: Sequence[str],
+    discarded_provider_requests: int = DISCARDED_EARNINGS_PROVIDER_REQUESTS,
     store: HistoricalDayStore | None = None,
 ) -> dict[str, Any]:
     source = store or HistoricalDayStore.from_env()
@@ -592,6 +604,8 @@ def ingest_earnings(
     )
     common._require_published((manifest_path, inspection_path))
     symbols = earnings_symbols(manifest_path, inspection_path, source)
+    if discarded_provider_requests != DISCARDED_EARNINGS_PROVIDER_REQUESTS:
+        raise PostEarningsDriftError("discarded provider-request count drifted")
     by_symbol: dict[str, dict[str, Any]] = {}
     for line in lines:
         if not line.strip() or line.strip() == "__END__":
@@ -617,7 +631,9 @@ def ingest_earnings(
         "manifest_sha256": manifest["manifest_sha256"],
         "activation_inspection_sha256": inspection["inspection_sha256"],
         "provider": "Robinhood read-only earnings results",
-        "provider_requests": len(symbols),
+        "provider_requests": len(symbols) + discarded_provider_requests,
+        "effective_provider_requests": len(symbols),
+        "discarded_ingestion_transport_requests": discarded_provider_requests,
         "broker_actions": 0,
         "returns_computed": 0,
         "results_by_symbol": by_symbol,
@@ -636,7 +652,9 @@ def ingest_earnings(
         "manifest_sha256": manifest["manifest_sha256"],
         "activation_inspection_sha256": inspection["inspection_sha256"],
         "requested_symbols": len(symbols),
-        "provider_requests": len(symbols),
+        "provider_requests": len(symbols) + discarded_provider_requests,
+        "effective_provider_requests": len(symbols),
+        "discarded_ingestion_transport_requests": discarded_provider_requests,
         "provider_status_counts": dict(sorted(counts.items())),
         "earnings_rows": sum(len(row["results"]) for row in by_symbol.values()),
         "private_payload_sha256": sha256_file(path),
@@ -1396,6 +1414,11 @@ def _parser() -> argparse.ArgumentParser:
     ingest = commands.add_parser("ingest-earnings")
     ingest.add_argument("manifest", type=Path)
     ingest.add_argument("activation_inspection", type=Path)
+    ingest.add_argument(
+        "--discarded-provider-requests",
+        type=int,
+        default=DISCARDED_EARNINGS_PROVIDER_REQUESTS,
+    )
     collect = commands.add_parser("collect-market")
     collect.add_argument("manifest", type=Path)
     collect.add_argument("activation_inspection", type=Path)
@@ -1432,6 +1455,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.manifest,
                 args.activation_inspection,
                 list(sys.stdin),
+                discarded_provider_requests=args.discarded_provider_requests,
             )
         elif args.command == "collect-market":
             value = collect_market(

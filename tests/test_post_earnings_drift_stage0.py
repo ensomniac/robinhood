@@ -39,6 +39,15 @@ class PostEarningsDriftStage0Tests(unittest.TestCase):
         self.assertEqual(manifest["denominator"]["candidate_dates"], 52)
         self.assertEqual(manifest["denominator"]["unique_symbols"], 84)
         self.assertEqual(manifest["declared_prior_policy_trials"], 15)
+        self.assertEqual(
+            manifest["collection_transport_incident"][
+                "discarded_earnings_provider_requests"
+            ],
+            84,
+        )
+        self.assertEqual(
+            manifest["collection_contract"]["logical_earnings_requests"], 84
+        )
         self.assertFalse(manifest["provider_requests_authorized_before_inspection"])
         self.assertFalse(
             manifest["return_evaluation_authorized_before_input_inspection"]
