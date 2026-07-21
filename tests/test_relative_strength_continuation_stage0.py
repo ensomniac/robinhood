@@ -93,6 +93,27 @@ class RelativeStrengthContinuationStage0Tests(unittest.TestCase):
         self.assertTrue(inspection["benchmark_prior_close_collection_authorized"])
         self.assertFalse(inspection["target_outcome_collection_authorized"])
 
+    def test_benchmark_collection_excludes_target_date_bars(self):
+        root = Path(__file__).resolve().parents[1]
+        path = (
+            root
+            / "strategy_tournament"
+            / "relative_strength_continuation"
+            / "benchmark-prior-close-status.json"
+        )
+        status = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            status["status_sha256"],
+            stage0.common._self_hash(status, "status_sha256"),
+        )
+        self.assertEqual(status["requested_prior_sessions"], 80)
+        self.assertEqual(status["prior_sessions_with_rows"], 80)
+        self.assertEqual(status["provider_requests"], 80)
+        self.assertEqual(status["target_date_bars_requested"], 0)
+        self.assertEqual(status["returns_computed"], 0)
+        self.assertEqual(status["broker_actions"], 0)
+        self.assertEqual(status["status"], "READY")
+
     def test_manifest_freezes_new_full_cross_sectional_dates(self):
         manifest = stage0.build_manifest()
         stage0._validate_manifest(manifest)

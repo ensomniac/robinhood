@@ -512,6 +512,11 @@ Inspection
 rebuilds the successor activation, unchanged rules, full denominator, and 831
 prior prefix calls. It makes zero additional calls or returns, authorizes only
 the 80 exact SPY prior-close requests, and keeps target outcomes locked.
+The benchmark repair is complete at
+`strategy_tournament/relative_strength_continuation/benchmark-prior-close-status.json`:
+all 80 requested prior sessions returned one SPY daily bar in exactly 80
+provider calls. It requested zero target-date daily bars, computed zero returns,
+and made no broker action.
 
 ## Active discovery funnel
 

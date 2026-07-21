@@ -1,0 +1,17 @@
+{
+  "activation_inspection_sha256": "7bfe5fddcbaaba26be35eba3cf35dea00d617a6654464998cc499f62f161f992",
+  "broker_actions": 0,
+  "dataset_id": "dataset-relative-strength-continuation-stage0-2026-07-21-v1",
+  "manifest_sha256": "269dcb726208e7f364709a65ed51158c05ccefd02ecc005def0ffb460cc17c8a",
+  "prior_sessions_with_rows": 80,
+  "private_payload_sha256": "badb632a756daef7c3e7e7e13cd9e488fdc596352bdbae881e1382c2199837a1",
+  "provider_requests": 80,
+  "requested_prior_sessions": 80,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "status": "READY",
+  "status_kind": "stage0-relative-strength-benchmark-prior-close-collection",
+  "status_sha256": "43b1f8b7fae909e3a6f223108eb0f06f11ffb035936136087d62d2293f017ce6",
+  "target_date_bars_requested": 0,
+  "variant_id": "relative-strength-continuation-v1"
+}
