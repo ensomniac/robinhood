@@ -54,7 +54,7 @@ def test_manifest_binds_exhausted_legacy_capacity_outside_maturity():
     assert manifest["provider_requests_authorized"] is False
 
 
-def test_published_activation_is_content_addressed_and_outcome_locked():
+def test_initial_activation_is_preserved_and_outcome_locked():
     root = Path(__file__).resolve().parents[1]
     path = (
         root
@@ -66,8 +66,8 @@ def test_published_activation_is_content_addressed_and_outcome_locked():
     assert manifest["manifest_sha256"] == stage0.common._self_hash(
         manifest, "manifest_sha256"
     )
-    assert manifest["implementation_sha256"] == stage0.sha256_file(
-        root / "catalyst_orb_retest_stage0.py"
+    assert manifest["implementation_sha256"] == (
+        "de7f6273adca1d5a1fed000bafd40f132c1a7e2bc1983bc24e57d256fccaf3b4"
     )
     assert manifest["denominator"]["maximum_closed_signals"] == 8
     assert "inputs" not in manifest
@@ -93,6 +93,35 @@ def test_published_input_inspection_authorizes_one_frozen_evaluation():
     assert inspection["provider_requests"] == 0
     assert inspection["returns_computed"] == 0
     assert inspection["return_evaluation_authorized"] is True
+
+
+def test_successor_activation_preserves_rules_and_accounts_discarded_result():
+    root = Path(__file__).resolve().parents[1]
+    path = (
+        root
+        / "strategy_tournament/activations/"
+        "catalyst-orb-retest-v1-"
+        "1c95b9338d42023682bd84c31b5168097b6c228425663f91f6affac8772aa873.json"
+    )
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    assert manifest["manifest_sha256"] == stage0.common._self_hash(
+        manifest, "manifest_sha256"
+    )
+    assert manifest["implementation_sha256"] == stage0.sha256_file(
+        root / "catalyst_orb_retest_stage0.py"
+    )
+    assert manifest["activation_rules_hash"] == (
+        "eddc0c77cd45d8aafa619946baee0f79e35d6ef1df166ae9518c79054e12d920"
+    )
+    assert manifest["supersedes_manifest_sha256"] == (
+        "c1c7004952ae77ee579b3f33496239783905caccf4aa29637a64528f7805d630"
+    )
+    incident = manifest["prior_evaluation_incident"]
+    assert incident["return_computations"] == 1
+    assert incident["closed_signals"] == 4
+    assert incident["published"] is False
+    assert incident["strategy_rules_changed"] is False
+    assert incident["metrics_changed"] is False
 
 
 def test_trigger_requires_break_then_retest_then_later_bullish_rebreak():

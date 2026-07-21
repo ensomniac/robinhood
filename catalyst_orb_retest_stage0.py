@@ -35,6 +35,12 @@ SIGNAL_START = time(9, 40)
 SIGNAL_END = time(11, 0)
 RETEST_TOLERANCE = 0.002
 DATASET_ID = "dataset-catalyst-orb-retest-stage0-2026-07-21-v1"
+SUPERSEDED_MANIFEST_SHA256 = (
+    "c1c7004952ae77ee579b3f33496239783905caccf4aa29637a64528f7805d630"
+)
+DISCARDED_PRIVATE_RESULT_SHA256 = (
+    "c3158c4177cb22c56deff85bf852465eaee1a87bf3aab357779e3231d60e1aa1"
+)
 
 SELECTION_MANIFEST = (
     PROJECT_ROOT
@@ -298,6 +304,16 @@ def build_manifest(store: HistoricalDayStore | None = None) -> dict[str, Any]:
         "provider_requests_authorized": False,
         "broker_actions_authorized": False,
         "return_evaluation_authorized_before_inspection": False,
+        "supersedes_manifest_sha256": SUPERSEDED_MANIFEST_SHA256,
+        "prior_evaluation_incident": {
+            "return_computations": 1,
+            "closed_signals": 4,
+            "discarded_result_sha256": DISCARDED_PRIVATE_RESULT_SHA256,
+            "published": False,
+            "reason": "public result serialization included private catalyst source identities",
+            "strategy_rules_changed": False,
+            "metrics_changed": False,
+        },
         "declared_prior_related_trials": 1,
         "prior_related_trial": {
             "path": PRIOR_HYPOTHESIS.relative_to(PROJECT_ROOT).as_posix(),
@@ -656,8 +672,7 @@ def build_result(
         primary = outcomes[str(PRIMARY_COST_BPS)]
         records.append(
             {
-                "date": day,
-                "symbol": selected["symbol"],
+                "signal_alias": f"legacy-catalyst-signal-{len(records) + 1:03d}",
                 "first_trigger_time_et": selected["first_trigger_time_et"],
                 "retest_time_et": selected["retest_time_et"],
                 "trigger_time_et": selected["trigger_time_et"],

@@ -121,6 +121,7 @@ CORE_ARTIFACTS = (
     "strategy_tournament/activations/relative-strength-continuation-v1-a22173e0b7ee21a9a5f37e4b7bc84c8863e9733d6c6d670313662a6e2b0a55cb.json",
     "strategy_tournament/activations/relative-strength-continuation-v1-269dcb726208e7f364709a65ed51158c05ccefd02ecc005def0ffb460cc17c8a.json",
     "strategy_tournament/activations/catalyst-orb-retest-v1-c1c7004952ae77ee579b3f33496239783905caccf4aa29637a64528f7805d630.json",
+    "strategy_tournament/activations/catalyst-orb-retest-v1-1c95b9338d42023682bd84c31b5168097b6c228425663f91f6affac8772aa873.json",
     "strategy_tournament/cross_sectional_momentum/collection-status.json",
     "strategy_tournament/post_earnings_drift/earnings-status.json",
     "strategy_tournament/post_earnings_drift/market-status.json",

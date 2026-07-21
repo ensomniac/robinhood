@@ -575,6 +575,19 @@ all 3,120 bars across the eight source-verified pairs, and confirms the
 eight-signal maximum. It made zero provider or broker calls, computed zero
 returns, and authorizes only the single frozen evaluation.
 
+The first evaluation completed but publication stopped before writing a result:
+the result serializer included private catalyst source identities. Discarded
+result hash
+`c3158c4177cb22c56deff85bf852465eaee1a87bf3aab357779e3231d60e1aa1`
+is retained as an incident, including its four computed returns. Successor
+activation
+`strategy_tournament/activations/catalyst-orb-retest-v1-1c95b9338d42023682bd84c31b5168097b6c228425663f91f6affac8772aa873.json`
+keeps activation-rules hash
+`eddc0c77cd45d8aafa619946baee0f79e35d6ef1df166ae9518c79054e12d920`
+unchanged and changes only public serialization to sequential signal aliases.
+It explicitly accounts for the prior computation and requires a new independent
+inspection before the privacy-safe result may be materialized.
+
 ## Active discovery funnel
 
 The controller maintains three concurrent lanes whenever survivors exist:
