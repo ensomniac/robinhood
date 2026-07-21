@@ -343,9 +343,12 @@ The exact challenger source-semantics contract is now frozen as manifest
 private selection and daily-shortlist hashes, unchanged source rules, current
 implementation and dependency versions, scanner and identity attestations,
 recovery order, privacy boundary, 20-GiB reserve, zero target artifacts, and
-the separate-outcome lock. It is registered `COLLECTING` and must be committed
-and pushed before independent zero-state inspection; no provider request or
-source claim is authorized yet.
+the separate-outcome lock. Independent inspection now marks the contract
+`FROZEN_READY` after rebuilding every private pair and daily hash and matching
+the complete source, implementation, capacity, privacy, and outcome boundary.
+It confirms zero target sources, selected-symbol detail, substitution, or
+outcomes. This status must be committed and pushed before the exact SEC/issuer
+request graph is frozen; no provider request or source claim is authorized yet.
 
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active

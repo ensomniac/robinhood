@@ -277,10 +277,12 @@ pairs across all 100 dates before target source access. It binds daily
 shortlist hash `887d1f12...ab5a5`, private selection hash
 `3ed15493...183c2`, unchanged source-rules hash `99843372...31b4dc`,
 implementation-contract hash `d880bd95...34836`, the 20-GiB reserve, and zero
-target source artifacts. The manifest is registered `COLLECTING` and remains
-uninspected; it must be committed and pushed before the independent zero-state
-inspection. It authorizes no network access, source classification, causal
-detail, return, or outcome.
+target source artifacts. Independent inspection now marks it `FROZEN_READY`
+after rebuilding all 1,826 private rows and 100 daily partitions and matching
+every upstream, rule, implementation, capacity, privacy, and outcome lock. It
+still finds zero network access, source classification, selected-symbol detail,
+substitution, return, or outcome. This status and registry transition must be
+committed and pushed before the exact SEC/issuer request graph is frozen.
 
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
