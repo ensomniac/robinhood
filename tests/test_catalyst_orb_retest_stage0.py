@@ -173,6 +173,29 @@ def test_published_result_is_alias_only_and_fails_signal_count():
     assert result["maturity_effect"] == "NONE"
 
 
+def test_published_result_inspection_permanently_retires_exact_variant():
+    root = Path(__file__).resolve().parents[1]
+    path = (
+        root
+        / "strategy_tournament/inspections/"
+        "catalyst-orb-retest-v1-result-"
+        "caefe1a76c8b17c94bc412dd6cbd24f3f5906d9d4be29cb7e5e3b34596a8e278.json"
+    )
+    inspection = json.loads(path.read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["result_sha256"] == (
+        "60d3dd20a62dbff480148ac19aaaa047e036829385dbbe75cba0d044fc558be9"
+    )
+    assert inspection["closed_signals"] == 4
+    assert inspection["stage0_survived"] is False
+    assert inspection["provider_requests"] == 0
+    assert inspection["broker_actions"] == 0
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["valid"] is True
+
+
 def test_trigger_requires_break_then_retest_then_later_bullish_rebreak():
     candidate = stage0._candidate(
         {"date": "2026-01-14", "symbol": "TEST", "rank": 1, "bars": _bars()}

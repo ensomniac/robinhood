@@ -598,8 +598,11 @@ contains four closed signals from eight verified-positive pairs. It produced
 +0.3401R expectancy, 1.6802 profit factor, +1.3604R total, and 1R maximum
 drawdown at 5 bps per side; the 20-bps stress remained positive at +0.0764R.
 Despite those directionally favorable metrics, four signals cannot meet the
-frozen minimum of 30. The result stays outside maturity and awaits independent
-inspection before permanent retirement.
+frozen minimum of 30. Result inspection
+`caefe1a76c8b17c94bc412dd6cbd24f3f5906d9d4be29cb7e5e3b34596a8e278`
+independently rebuilt all four alias-only outcomes with zero provider or broker
+calls and confirmed no maturity effect. The exact variant is permanently
+retired without tuning on its evaluated corpus.
 
 ## Active discovery funnel
 
@@ -634,6 +637,13 @@ failure taxonomy must precede the only permitted second wave. Its six frozen
 families, in order, are sector ETF rotation, broad-ETF trend pullback,
 close-to-open ETF momentum, two-to-three-day cross-sectional reversal,
 five-day 52-week-high continuation, and turn-of-month ETF seasonality.
+
+The first wave is complete with ten ordered dispositions: nine exact Stage 0
+variants retired and equity-gap-continuation-v1 survived Stage 0 before failing
+its independently inspected representative-development gates. No candidate is
+active, and no first-wave evidence earned maturity. The required first-wave
+failure taxonomy is therefore the next evidence artifact before the second
+wave may open.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
