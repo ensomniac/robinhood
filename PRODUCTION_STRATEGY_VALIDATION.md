@@ -1244,6 +1244,18 @@ selection, alpha, maturity, production, live, or broker claims until an
 independent inspector rebuilds every pair, request, row boundary, quote
 snapshot, history denominator, and trigger decision.
 
+The first independent collection inspection failed closed before publication
+because it compared the trigger source's UTC ISO strings to the collector's
+Eastern ISO strings byte-for-byte. All 60 observed and decision timestamps are
+timezone-aware representations of the exact same instants with zero elapsed
+difference; every non-time trigger field and frozen hash still matches. The
+failed inspector and collection remain unchanged. A separate compatibility
+freezer and independent inspector now bind the only permitted repair: normalize
+those two timestamp fields to UTC and require exact equality, while rerunning
+every other pair, request, quote, history, privacy, and outcome-lock check. The
+repair implementation must be committed and pushed before its own manifest is
+frozen; no provider refetch or outcome access is allowed.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
