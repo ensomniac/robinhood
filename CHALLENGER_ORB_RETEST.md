@@ -131,6 +131,14 @@ distinct daily signals, below the immutable 50-signal development minimum, so
 the exact challenger remains active in `DEVELOPMENT_ACQUISITION` and requires
 another disjoint frozen session tranche before any post-entry data is accessed.
 
+`challenger_orb_retest_tranche2.py` and its independent inspector now implement
+that next selection in a separate namespace without modifying the frozen first
+tranche. The fixed seed is `2026072106`; the selector explicitly includes the
+first challenger selection among its prior artifacts and also rebinds the
+current signal, archive, and inspected-evidence exclusions. Current preflight
+finds 345 eligible dates. The implementations must be committed and pushed
+before the exact 100-date selection may be frozen.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

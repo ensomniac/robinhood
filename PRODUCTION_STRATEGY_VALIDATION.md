@@ -491,6 +491,13 @@ below the frozen 50-signal development requirement. The exact challenger is not
 retired because outcomes remain locked; it continues in
 `DEVELOPMENT_ACQUISITION` with another disjoint preregistered session tranche.
 
+The second challenger tranche selector and independent inspector are now
+implemented in a new namespace. They preserve the exact mechanism, bind seed
+`2026072106`, explicitly include the first challenger selection in the frozen
+prior set, and currently identify 345 eligible dates after all public and
+private exclusions. No selection may be frozen until these implementations are
+committed and pushed.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
