@@ -9,6 +9,13 @@ the next required phase is the preregistered accession-chain source recovery.
 Returns and target-session outcomes remain locked; this result earns no alpha,
 maturity, production, or broker claim.
 
+`challenger_sec_accession_chain_recovery.py` adapts the unchanged, hash-bound
+v3 accession-chain engine to the challenger's exact 372 unresolved pairs, 433
+complete pair/accession joins, and 417 unique accessions. Its separate
+inspector must rebuild a zero-response manifest after freeze. The adapter and
+inspector must be committed and pushed before freezing; the frozen contract
+must then be inspected, committed, and pushed before any accession request.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

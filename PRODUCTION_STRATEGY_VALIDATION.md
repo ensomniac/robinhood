@@ -360,6 +360,16 @@ frozen recovery precedence advances to exact SEC accession-chain recovery.
 No return, target-session outcome, alpha, maturity, production, or broker claim
 is authorized by this source-only result.
 
+The challenger recovery adapter now gives that source-only result an isolated
+dataset namespace while requiring the unchanged v3 accession-chain engine hash
+`e8800c0c...0112ac`. It fixes the recovery surface at 372 pairs, 433 complete
+pair/accession joins, and 417 unique accessions, and records the adapter itself
+as the effective implementation. A separate inspector reuses the proven
+zero-response reconstruction and additionally verifies these challenger
+counts. Both implementations must be committed and pushed before freeze; no
+provider request is permitted until the resulting manifest independently earns
+`FROZEN_READY` and is itself committed and pushed.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
