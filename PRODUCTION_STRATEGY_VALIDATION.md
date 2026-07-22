@@ -666,6 +666,14 @@ pair hash `19a7a69b...e197`, request hash `f114ba25...7671`, and join hash
 zero-response and collection inspectors are included. The implementation must
 be committed and pushed before a recovery manifest may be frozen.
 
+Accession-chain manifest `62acdbbc...cd0fe` now independently earns
+`FROZEN_READY`. It preserves the same 365-pair, 434-join, 425-accession surface,
+all upstream and implementation hashes, the exact EX-99 review rules, the
+20-GiB reserve, aggregate-only privacy, and zero collection or review
+artifacts. Publication authorizes only the 425 exact SEC requests; source
+semantics, returns, outcomes, alpha, maturity, production, and broker claims
+remain blocked.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
