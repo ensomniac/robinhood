@@ -504,6 +504,11 @@ The selected and required identities are privately hash-bound as
 `1be9c996...56fe1e` and `fa7c4664...ee2973`. This uninspected selection must be
 committed and pushed before independent reconstruction or provider access.
 
+Independent reconstruction now marks second-tranche selection
+`cfa2e9fe...0d55a7` `FROZEN_READY`. The exact selection, exclusions, required
+session graph, implementation bindings, private hashes, disjointness, and
+outcome lock all match. Publication is required before dated reference access.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

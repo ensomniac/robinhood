@@ -146,6 +146,11 @@ lookbacks. Selected-date hash `1be9c996...56fe1e` and required-session hash
 must be committed and pushed before independent reconstruction or any dated
 provider access.
 
+Independent reconstruction now marks `cfa2e9fe...0d55a7` `FROZEN_READY`. All
+100 selected dates, 527 exclusions, 530 required sessions, implementation
+bindings, private hashes, and the outcome lock rebuild exactly with zero overlap.
+This inspection must be committed and pushed before dated reference access.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`
