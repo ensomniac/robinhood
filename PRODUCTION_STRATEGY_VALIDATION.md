@@ -836,6 +836,12 @@ hash `91f2d9a8...8817e` bind the graph with no substitution or outcome access.
 The uninspected manifest must be committed and pushed before independent
 reconstruction.
 
+Independent reconstruction now marks the third-tranche selection
+`FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
+selected dates, and all 502 required sessions match, with zero overlap,
+substitution, or outcome access. This inspection must be committed and pushed
+before implementing provider acquisition.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal
