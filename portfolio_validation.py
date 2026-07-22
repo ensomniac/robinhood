@@ -116,6 +116,7 @@ CORE_ARTIFACTS = (
     "strategy_tournament/second_wave/inspections/portfolio-stage0-second-wave-slate-3c12ba6f0ea4a49db5888904015a73d42f54cf1da2a43447ece8b741d1e2c6c0.json",
     "strategy_tournament/second_wave/sector_etf_rotation/collection-status.json",
     "strategy_tournament/second_wave/activations/sector-etf-rotation-v1-5360bfd6c12065169975ec828a813f7e6f5042d87979131542b39659ca5df632.json",
+    "strategy_tournament/second_wave/inspections/sector-etf-rotation-v1-input-ae9133091afe877306589961ee1e6ad2383d698119a244b8e9e875add1805366.json",
     "strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json",
     "strategy_tournament/activations/etf-vwap-mean-reversion-v1-ecaff3785f2dc9fe3f14332be9e40e056e08aacf55f86487cb2f25df62688a47.json",
     "strategy_tournament/activations/equity-gap-continuation-v1-3bc6f70c2a331e70b00a1dda076b258ce46f1175d062ecee0a641e4c4ab06f3f.json",

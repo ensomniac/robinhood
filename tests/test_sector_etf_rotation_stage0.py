@@ -116,10 +116,24 @@ def test_published_activation_binds_complete_whole_provider_input_graph():
     assert activation["maturity_effect"] == "NONE"
 
 
-def test_input_inspection_is_absent_before_independent_review():
+def test_published_input_inspection_authorizes_one_frozen_evaluation():
     matches = sorted(
         (ROOT / "strategy_tournament/second_wave/inspections").glob(
             "sector-etf-rotation-v1-input-*.json"
         )
     )
-    assert matches == []
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["manifest_sha256"] == (
+        "5360bfd6c12065169975ec828a813f7e6f5042d87979131542b39659ca5df632"
+    )
+    assert inspection["input_symbol_dates"] == 12_096
+    assert inspection["evaluation_dates"] == 752
+    assert inspection["provider_requests"] == 0
+    assert inspection["returns_computed"] == 0
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["return_evaluation_authorized"] is True
+    assert inspection["valid"] is True

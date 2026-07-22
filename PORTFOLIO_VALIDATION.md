@@ -698,6 +698,14 @@ question and frozen inventory identity
 `dd77fb3c226732c652000e6a80a2f4336e876a7d1ba005eb9718e0719e63397b`
 while allowing daily collections to coexist.
 
+Input inspection
+`ae9133091afe877306589961ee1e6ad2383d698119a244b8e9e875add1805366`
+independently rebuilt the activation and validated every one of the 12,096
+daily symbol-sessions. It confirmed all 752 evaluation sessions, the immutable
+input graph, and zero maturity effect with no provider calls or return
+calculations. The one frozen sector-rotation evaluation is now authorized only
+after this inspection is committed and pushed.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the
