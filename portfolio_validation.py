@@ -116,6 +116,7 @@ CORE_ARTIFACTS = (
     "research_results/2026-07-21-close-to-open-etf-momentum-stage0-a4c68fb9d99fcb2775caeaf0598fabb2999c9b5f0d6ce6ad275ff21174470ae8.json",
     "strategy_tournament/second_wave/inspections/sector-etf-rotation-v1-result-563155de66061d57761fa18262893d435bb5d6d038bb9760791f92e127d43c20.json",
     "strategy_tournament/second_wave/inspections/broad-etf-trend-pullback-v1-result-384c8372624f14ecc6b92c2a4406830db7061a27474e643f11777800675db8e3.json",
+    "strategy_tournament/second_wave/inspections/close-to-open-etf-momentum-v1-result-60ebceee9881f934ea1921d0d3d445a0910209e3b4653c340b6a9af9b61d9ed3.json",
     "strategy_tournament/manifests/portfolio-stage0-slate-1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f.json",
     "strategy_tournament/second_wave/first-wave-failure-taxonomy-73d54349f24f52f62125fc9fcc7105ffa9b8a38e0771bf1fb994decadfa90292.json",
     "strategy_tournament/second_wave/inspections/first-wave-failure-taxonomy-6f2619090a6312763d16ab9f3e01f63047c59b7fae1907803aea78b0ffa74f58.json",

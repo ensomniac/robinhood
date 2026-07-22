@@ -740,9 +740,10 @@ evaluation after the inspection is committed and pushed.
 The one authorized evaluation produced 191 closed signals across 744 fully
 reconciled decision sessions. At 5 bps per side it returned -0.0185R
 expectancy, 0.8922 profit factor, -3.5280R total, and 7.2890R maximum drawdown.
-At 20 bps per side it lost 32.7094R. The exact variant fails expectancy,
-profit-factor, and cost-stress gates, remains outside maturity, and awaits
-independent result inspection before permanent retirement.
+At 20 bps per side it lost 32.7094R. Independent inspection rebuilt the 744-day
+denominator, all 191 signals, and the three failed gates with zero provider or
+broker calls. The exact variant is permanently retired outside maturity, and
+two-to-three-day cross-sectional reversal is next in the frozen queue.
 
 The one authorized evaluation produced 77 closed signals across 752 fully
 reconciled decision sessions. At 5 bps per side it returned +0.1117R
