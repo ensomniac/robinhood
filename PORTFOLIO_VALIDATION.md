@@ -895,7 +895,12 @@ count, and zero-signal ORB v3 state before presenting three theme-level research
 directions. The proposal grants no authority, freezes no strategy rules or
 sample identities, accesses no provider or outcome, and cannot preregister a
 candidate. Its implementation must be committed and pushed before a content-
-addressed proposal is published. Explicit superseding authorization remains
+addressed proposal is published. Proposal `67f12bf6...c2858e` now independently
+rebuilds that boundary from clean pushed code and six bound evidence files. It
+offers only three theme-level directions: multi-asset ETF time-series momentum,
+Schedule 13D activist continuation, and accelerated-share-repurchase
+continuation. Every theme records its transfer risk and remains
+`THEME_ONLY_NOT_PREREGISTERED`. Explicit superseding authorization remains
 mandatory before any new capacity preflight or hypothesis freeze.
 
 Send a concise privacy-safe campaign email after every three Stage 0

@@ -17,7 +17,9 @@ repair or outcome collection is permitted for that exact version.
 The successor campaign is not authorized. A machine-audited proposal may be
 prepared from exhausted evidence, but it may not freeze a new hypothesis,
 contact a provider, access an outcome, or activate a third wave until Ryan
-explicitly supersedes the one-second-wave campaign limit.
+explicitly supersedes the one-second-wave campaign limit. The current proposal
+is `strategy_tournament/successor_proposal/multi-strategy-portfolio-validation-v2-proposal-67f12bf617cc7f541dd0beba0d574b309effa7adefe5aacb4e4413c3d5c2858e.json`;
+its `REQUIRED_NOT_GRANTED` state is authoritative until superseded.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
