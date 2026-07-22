@@ -698,6 +698,12 @@ question and frozen inventory identity
 `dd77fb3c226732c652000e6a80a2f4336e876a7d1ba005eb9718e0719e63397b`
 while allowing daily collections to coexist.
 
+The later challenger pre-entry acquisition also added bounded one-minute ETF
+windows. The inventory now enforces its original point-in-time boundary of
+2026-07-21 17:48:52 UTC from dataset provenance, so later minute fragments are
+excluded just as later daily data is excluded. The same 245-date question and
+frozen inventory hash continue to rebuild exactly.
+
 Input inspection
 `ae9133091afe877306589961ee1e6ad2383d698119a244b8e9e875add1805366`
 independently rebuilt the activation and validated every one of the 12,096

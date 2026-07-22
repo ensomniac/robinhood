@@ -9,6 +9,7 @@ import statistics
 import sys
 from collections import Counter
 from collections.abc import Mapping, Sequence
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -45,6 +46,7 @@ DEFAULT_INVENTORY_PATH = (
 )
 STORE_SAMPLE_SYMBOLS = ("SPY", "QQQ", "AAPL")
 PAIRED_MINUTE_SAMPLE_SYMBOLS = {"SPY", "QQQ"}
+INVENTORY_OBSERVED_THROUGH = datetime.fromisoformat("2026-07-21T17:48:52+00:00")
 SCHEMA_VERSION = 1
 
 
@@ -94,13 +96,37 @@ def _dataset_descriptor(dataset: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _observed_before_inventory_freeze(dataset: Mapping[str, Any]) -> bool:
+    provenance = dataset.get("provenance")
+    if not isinstance(provenance, Mapping):
+        return False
+    samples = provenance.get("samples")
+    if not isinstance(samples, list):
+        return False
+    for sample in samples:
+        if not isinstance(sample, Mapping):
+            continue
+        captured_at = sample.get("captured_at")
+        if not isinstance(captured_at, str):
+            continue
+        try:
+            observed = datetime.fromisoformat(captured_at.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if observed.tzinfo is not None and observed.astimezone(UTC) <= INVENTORY_OBSERVED_THROUGH:
+            return True
+    return False
+
+
 def _minute_dates(store: HistoricalDayStore, symbol: str) -> list[str]:
     dates = []
     for day in store.dates(symbol):
         document = store.load(symbol, day)
         datasets = document.get("datasets") if isinstance(document, Mapping) else None
         if isinstance(datasets, list) and any(
-            isinstance(item, Mapping) and item.get("timeframe") == "1m"
+            isinstance(item, Mapping)
+            and item.get("timeframe") == "1m"
+            and _observed_before_inventory_freeze(item)
             for item in datasets
         ):
             dates.append(day)
@@ -128,6 +154,7 @@ def _store_sample(store: HistoricalDayStore, symbol: str) -> dict[str, Any]:
                 item
                 for item in document["datasets"]
                 if item.get("timeframe") == "1m"
+                and _observed_before_inventory_freeze(item)
             ]
         document_sha256 = hashlib.sha256(
             _gzip_json_bytes(sampled_document)

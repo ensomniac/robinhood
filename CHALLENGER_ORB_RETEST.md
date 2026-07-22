@@ -72,6 +72,13 @@ capacity, privacy, and outcome locks rebuild, with one frozen selection and
 zero wrapper, collection, or trigger artifacts. This status must be committed
 and pushed before collection.
 
+Collection from pushed commit `67101db` completed all 284 frozen requests with
+zero failures or pending requests and retained 3,195,784 causal rows. Public
+status exposes only aggregate counts and private hashes. The new network-free
+collection inspector must be committed and pushed before it may rehash every
+wrapper and canonical row; trigger derivation remains closed until that
+inspection is published.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

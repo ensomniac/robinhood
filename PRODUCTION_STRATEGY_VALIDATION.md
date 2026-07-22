@@ -434,6 +434,13 @@ implementation hashes, capacity, privacy, and outcome locks. The target state
 contains one frozen selection and zero terminal wrappers, collection index, or
 trigger index. This READY status must be committed and pushed before collection.
 
+Collection from pushed commit `67101db` now has 284 successful terminal
+requests, zero failures or pending requests, and 3,195,784 causal rows. The
+public status contains aggregate counts and private hashes only. A separate
+network-free inspector will rebuild the collection index, rehash every wrapper
+and canonical row, verify the outcome lock and zero-trigger boundary, and must
+itself be committed and pushed before inspection or trigger derivation.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
