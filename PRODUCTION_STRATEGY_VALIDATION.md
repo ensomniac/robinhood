@@ -768,6 +768,13 @@ hash `f5f4801c...3385fe`, pair hash `ba33b6f0...a2ae44`, and request hash
 must be committed and pushed before independent zero-response reconstruction;
 collection and trigger derivation remain blocked.
 
+Independent reconstruction now marks the second-tranche graph
+`FROZEN_READY`: all 113 pairs, 55 dates, 336 requests, source and
+implementation hashes, and outcome locks match. The private target contains
+one frozen selection and zero wrappers, collection indexes, or trigger indexes.
+This READY state must be committed and pushed before the exact bounded
+collection may begin.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal
