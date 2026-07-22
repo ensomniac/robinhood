@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Any
+
+from learning_data import freeze_dataset_contract
 
 
 def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
@@ -57,6 +60,7 @@ def evaluate_development(
             "rolling_folds_positive": not overfit,
             "rules_complete": True,
             "trial_accounting_complete": True,
+            "oof_daily_account_returns": returns,
             "oof_filled_account_returns": returns,
             "oof_net_pnl_dollars": [value * 100_000 for value in returns],
             "risk_fraction": 0.005,
@@ -64,6 +68,7 @@ def evaluate_development(
         rows = [
             {
                 "date": day,
+                "session_outcome": "filled",
                 "primary_account_return_fraction": value + 0.0002,
                 "stress_10bps_account_return_fraction": value + 0.0001,
                 "stress_20bps_account_return_fraction": value,
@@ -86,7 +91,7 @@ def evaluate_development(
                 "trial_accounting": [
                     {
                         "date": day,
-                        "outcome": "filled" if day % 3 else "zero_return_day",
+                        "outcome": "account_return_day",
                     }
                     for day in range(120)
                 ],
@@ -109,6 +114,25 @@ def evaluate_development(
 
 def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
     dates = list(winner["confirmation_dates"])
+    development_manifest = Path(str(winner["development_dataset_manifest"]))
+    confirmation_manifest, _ = freeze_dataset_contract(
+        {
+            "schema_version": 1,
+            "dataset_id": f"dataset-{winner['family_id']}-confirmation",
+            "registered_at": winner["recorded_at"],
+            "requested_dates": dates,
+            "dataset_payload": {
+                "lane": "confirmation",
+                "claim_scope": "EXACT_PREREGISTERED_CONTRACT_ONLY",
+                "evidence_paths": ["tests/synthetic_discovery_plugin.py"],
+                "inspected": True,
+                "preregistration_sha256": winner["rules_hash"],
+                "preregistered_at": winner["recorded_at"],
+                "capture_after_preregistration_attested": True,
+            },
+        },
+        development_manifest.parent / "confirmation",
+    )
 
     def scenario(gain: float, loss: float) -> dict[str, Any]:
         filled = [gain if index % 5 else loss for index in range(len(dates))]
@@ -126,6 +150,7 @@ def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
         "parameter_alternatives": 0,
         "observed_dates": dates,
         "outcome_access_before_winner_freeze": False,
+        "dataset_manifest": str(confirmation_manifest),
         "scenarios": {
             "primary_5bps": primary,
             "stress_10bps": stress_10,
@@ -134,6 +159,7 @@ def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
         "maturity_rows": [
             {
                 "date": day,
+                "session_outcome": "filled",
                 "primary_account_return_fraction": primary[
                     "filled_account_returns"
                 ][index],

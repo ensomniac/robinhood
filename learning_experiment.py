@@ -502,25 +502,45 @@ def validate_complete_evaluation(
         boolean_fields = ["holm_reject_null", "rolling_folds_positive"]
         if frozen["selection_mode"] == "development_search":
             boolean_fields.extend(("rules_complete", "trial_accounting_complete"))
-            returns = metrics.get("oof_filled_account_returns")
-            if not isinstance(returns, list) or not returns:
+            filled_returns = metrics.get("oof_filled_account_returns")
+            daily_returns = metrics.get("oof_daily_account_returns")
+            if not isinstance(filled_returns, list):
                 raise LearningExperimentError(
                     "development-search trial needs oof_filled_account_returns"
                 )
-            for value in returns:
+            if not isinstance(daily_returns, list) or not daily_returns:
+                raise LearningExperimentError(
+                    "development-search trial needs oof_daily_account_returns"
+                )
+            for value in [*filled_returns, *daily_returns]:
                 if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
                     raise LearningExperimentError(
-                        "oof_filled_account_returns must be finite numbers"
+                        "development account returns must be finite numbers"
                     )
             accounting = item.get("trial_accounting")
             if not isinstance(accounting, list) or not accounting:
                 raise LearningExperimentError(
                     "development-search trial needs complete trial_accounting"
                 )
-            if not any(row.get("outcome") == "zero_return_day" for row in accounting if isinstance(row, Mapping)):
+            if len(accounting) != len(daily_returns):
                 raise LearningExperimentError(
-                    "trial accounting must retain explicit zero-return days"
+                    "trial accounting must align with the complete daily account path"
                 )
+            for index, (row, daily_return) in enumerate(
+                zip(accounting, daily_returns, strict=True)
+            ):
+                if not isinstance(row, Mapping):
+                    raise LearningExperimentError(
+                        "trial accounting rows must be objects"
+                    )
+                if daily_return == 0 and row.get("outcome") != "zero_return_day":
+                    raise LearningExperimentError(
+                        f"trial accounting row {index} must retain its zero-return day"
+                    )
+                if daily_return != 0 and row.get("outcome") == "zero_return_day":
+                    raise LearningExperimentError(
+                        f"trial accounting row {index} mislabels a nonzero account day"
+                    )
         for field in boolean_fields:
             if not isinstance(metrics.get(field), bool):
                 raise LearningExperimentError(f"trial metric {field} must be boolean")
@@ -533,69 +553,88 @@ def validate_complete_evaluation(
 def _rebuild_development_statistics(
     trials: Sequence[Mapping[str, Any]],
 ) -> dict[str, dict[str, Any]]:
-    returns_by_id = {
+    daily_returns_by_id = {
+        str(item["trial_id"]): [
+            float(value) for value in item["metrics"]["oof_daily_account_returns"]
+        ]
+        for item in trials
+    }
+    filled_returns_by_id = {
         str(item["trial_id"]): [
             float(value) for value in item["metrics"]["oof_filled_account_returns"]
         ]
         for item in trials
     }
-    lengths = {len(values) for values in returns_by_id.values()}
+    lengths = {len(values) for values in daily_returns_by_id.values()}
     if len(lengths) != 1:
         raise LearningExperimentError(
             "development trials must share the complete OOF calendar"
         )
     sharpes = {
         trial_id: annualized_sharpe(values) or 0.0
-        for trial_id, values in returns_by_id.items()
+        for trial_id, values in daily_returns_by_id.items()
     }
     p_values: dict[str, float] = {}
-    for trial_id, values in returns_by_id.items():
+    for trial_id, values in daily_returns_by_id.items():
         mean = statistics.fmean(values)
         deviation = statistics.stdev(values) if len(values) > 1 else 0.0
         statistic = mean / (deviation / math.sqrt(len(values))) if deviation else 0.0
         p_values[trial_id] = 1 - NormalDist().cdf(statistic)
     holm = holm_family_decisions(p_values, alpha=0.10)
-    pbo = probability_of_backtest_overfitting(returns_by_id)
+    pbo = probability_of_backtest_overfitting(daily_returns_by_id)
     trial_sharpes = list(sharpes.values())
     rebuilt: dict[str, dict[str, Any]] = {}
     for item in trials:
         trial_id = str(item["trial_id"])
-        returns = returns_by_id[trial_id]
+        daily_returns = daily_returns_by_id[trial_id]
+        filled_returns = filled_returns_by_id[trial_id]
         dollars_raw = item["metrics"].get("oof_net_pnl_dollars")
         dollars = (
             [float(value) for value in dollars_raw]
             if isinstance(dollars_raw, list)
-            else [value * 100_000 for value in returns]
+            else [value * 100_000 for value in filled_returns]
         )
-        if len(dollars) != len(returns):
+        if len(dollars) != len(filled_returns):
             raise LearningExperimentError(
-                "oof_net_pnl_dollars must align with account returns"
+                "oof_net_pnl_dollars must align with filled account returns"
             )
-        fold_size = max(1, len(returns) // 5)
+        fold_size = max(1, len(daily_returns) // 5)
         folds = [
-            returns[start : min(len(returns), start + fold_size)]
-            for start in range(0, len(returns), fold_size)
+            daily_returns[start : min(len(daily_returns), start + fold_size)]
+            for start in range(0, len(daily_returns), fold_size)
         ]
-        bootstrap = stationary_bootstrap_summary(
-            returns,
-            confidence=0.90,
-            samples=2_000,
+        bootstrap = (
+            stationary_bootstrap_summary(
+                filled_returns,
+                confidence=0.90,
+                samples=2_000,
+            )
+            if filled_returns
+            else {
+                "confidence": 0.90,
+                "samples": 0,
+                "mean": 0.0,
+                "lower_one_sided": -1.0,
+                "average_block_length": None,
+                "seed": None,
+                "method": "no-filled-trades",
+            }
         )
         risk_fraction = float(item["metrics"].get("risk_fraction", 0.005))
         if risk_fraction <= 0:
             raise LearningExperimentError("risk_fraction must be positive")
         rebuilt[trial_id] = {
             "stress_20bps_total_log_growth": sum(
-                math.log1p(value) for value in returns
+                math.log1p(value) for value in daily_returns
             ),
             "stress_20bps_bootstrap_lower_mean_account_return": bootstrap[
                 "lower_one_sided"
             ],
             "stress_20bps_profit_factor": profit_factor(dollars),
-            "stress_20bps_maximum_drawdown_r": maximum_drawdown_fraction(returns)
+            "stress_20bps_maximum_drawdown_r": maximum_drawdown_fraction(daily_returns)
             / risk_fraction,
             "deflated_sharpe_probability": deflated_sharpe_probability(
-                returns, trial_sharpes
+                daily_returns, trial_sharpes
             )["probability"],
             "pbo_probability": pbo["probability"],
             "holm_reject_null": holm[trial_id]["reject_null"],
@@ -606,7 +645,8 @@ def _rebuild_development_statistics(
             "trial_accounting_complete": item["metrics"][
                 "trial_accounting_complete"
             ],
-            "oof_filled_account_returns": returns,
+            "oof_daily_account_returns": daily_returns,
+            "oof_filled_account_returns": filled_returns,
             "oof_net_pnl_dollars": dollars,
             "risk_fraction": risk_fraction,
             "stationary_bootstrap": bootstrap,

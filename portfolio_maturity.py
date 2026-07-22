@@ -858,7 +858,7 @@ def _account_growth_metrics(
         daily = [float(record[session_field]) for record in sessions]
         filled_returns = [float(record[signal_return_field]) for record in signals]
         dollars = [float(record[signal_dollar_field]) for record in signals]
-        midpoint = len(filled_returns) // 2
+        midpoint = len(daily) // 2
         without_best = sorted(filled_returns, reverse=True)[5:]
         factor = _profit_factor(dollars)
         bootstrap = (
@@ -883,12 +883,12 @@ def _account_growth_metrics(
             ),
             "stationary_bootstrap": bootstrap,
             "first_half_log_growth": (
-                sum(math.log1p(value) for value in filled_returns[:midpoint])
+                sum(math.log1p(value) for value in daily[:midpoint])
                 if midpoint
                 else None
             ),
             "second_half_log_growth": (
-                sum(math.log1p(value) for value in filled_returns[midpoint:])
+                sum(math.log1p(value) for value in daily[midpoint:])
                 if midpoint
                 else None
             ),

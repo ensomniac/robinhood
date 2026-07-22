@@ -76,6 +76,32 @@ path; and its signal records retain net dollars, account-return fraction, `R`,
 cost stress, and stop behavior. Only those emitted records may be appended to
 `PORTFOLIO_SIGNALS.jsonl` after the artifact itself is committed.
 
+Daily sessions and closed trades are deliberately separate. A filled entry day
+marks an opportunity and may carry mark-to-market account return, but it creates
+no maturity signal until the position closes. An exit day may close zero, one,
+or several overlapping positions; each closed signal retains its original entry
+date and exact 5/10/20-bps trade result while the session retains that day's one
+portfolio account return.
+
+`dense_strategy_runtime.py` implements all three predeclared families over one
+already-frozen in-memory dataset. Daily candidates use completed close data and
+enter only at the next session open. Intraday candidates use complete regular-
+session SIP minute bars, exact condition-aware cumulative-VWAP numerator and
+denominator inputs, completed reclaim bars, and the next minute-bar open. Gaps
+through a stop fill at the opening observation, and a bar touching both stop and
+target resolves stop-first. Missing next fills, invalid stops, or incomplete
+holding bars are recorded without substitution. The shared account simulator
+then applies whole-share sizing, overlapping positions, risk, gross-notional,
+cash, and daily-entry contention at 5, 10, and 20 bps.
+
+`dense_strategy_plugin.py` keeps row-level data outside Git under
+`LOCAL_HISTORICAL_DATA_ROOT`. A committed public manifest binds the external
+relative path, compressed-file SHA-256, canonical dataset SHA-256, exact family,
+dates, lane, and formal capacity. Development data must also bind the committed
+search hash. Confirmation data must be captured after and bind the exact winner
+rules hash. Warm trial evaluation loads that frozen dataset once and makes zero
+provider requests.
+
 `portfolio_execution.py` is the broker-inert production adapter. It first
 rebuilds the candidate through the same frozen strategy plugin and rejects any
 implementation-file drift. It then rejects a
@@ -97,3 +123,27 @@ keeps all family-contract, provider, outcome, and broker permissions closed
 until the 2026-W31 reset on 2026-07-27. After that reset it opens only the
 disjoint development/embargo/confirmation evidence-freeze step; provider access
 still requires committed exact family contracts and inspected predecessors.
+
+`outcome_exposure.py` is the append-only global date/instrument contamination
+authority. Its initial hash-bound baseline marks every preserved v1 ledger date
+with wildcard-symbol exposure, so none can silently become v2 confirmation.
+Every inspected development or confirmation result adds its exact frozen scope.
+An absent, mutated, or stale baseline fails the default audit.
+
+At or after the reset, build one zero-outcome inventory containing the exact
+three family IDs, each capacity-manifest path, chronological development dates,
+five embargo sessions, confirmation dates, and matching `development_scope` and
+`confirmation_scope`. Bind the current exposure-index SHA-256 and self-hash the
+inventory as `inventory_sha256`, then run:
+
+```sh
+python3 dense_family_contracts.py path/to/inventory.json --as-of 2026-07-27
+```
+
+The command fails before the reset, below 100 formal observations, on any
+cross-family pair overlap, on any prior confirmation exposure, or if the index
+or inventory drifts. Success writes exactly three immutable family contracts
+and updates the next-batch status while provider, outcome, and broker permissions
+remain false. Each contract then follows the normal `preflight` and
+`freeze-search` transitions before its separately hash-bound development data
+may be collected or evaluated.

@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+import math
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -18,7 +19,9 @@ from learning_experiment import (
     validate_complete_evaluation,
     validate_hypothesis_contract,
     validate_transition,
+    _rebuild_development_statistics,
 )
+from learning_statistics import stationary_bootstrap_summary
 from learning_registry import append_event
 
 
@@ -237,6 +240,42 @@ class HypothesisContractTests(unittest.TestCase):
 
 
 class EvaluationContractTests(unittest.TestCase):
+    def test_development_rebuild_separates_daily_path_from_filled_confidence(self):
+        daily_left = [0.0, 0.002, 0.0, -0.001] * 4
+        filled_left = [0.002, -0.001, 0.002, -0.001]
+        daily_right = [0.0, 0.0015, 0.0, -0.001] * 4
+        filled_right = [0.0015, -0.001, 0.0015, -0.001]
+
+        def trial(trial_id, daily, filled):
+            return {
+                "trial_id": trial_id,
+                "metrics": {
+                    "oof_daily_account_returns": daily,
+                    "oof_filled_account_returns": filled,
+                    "oof_net_pnl_dollars": [value * 100_000 for value in filled],
+                    "risk_fraction": 0.005,
+                    "rules_complete": True,
+                    "trial_accounting_complete": True,
+                },
+            }
+
+        rebuilt = _rebuild_development_statistics(
+            [
+                trial("left", daily_left, filled_left),
+                trial("right", daily_right, filled_right),
+            ]
+        )["left"]
+        expected_bootstrap = stationary_bootstrap_summary(
+            filled_left, confidence=0.90, samples=2_000
+        )
+        self.assertAlmostEqual(
+            rebuilt["stress_20bps_total_log_growth"],
+            sum(math.log1p(value) for value in daily_left),
+        )
+        self.assertEqual(rebuilt["stationary_bootstrap"], expected_bootstrap)
+        self.assertEqual(rebuilt["oof_daily_account_returns"], daily_left)
+        self.assertEqual(rebuilt["oof_filled_account_returns"], filled_left)
+
     def test_rolling_origin_plan_has_expanding_train_and_embargo(self):
         start = date(2026, 1, 1)
         dates = [(start + timedelta(days=index)).isoformat() for index in range(80)]

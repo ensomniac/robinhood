@@ -21,6 +21,7 @@ from typing import Any, Callable
 
 import portfolio_maturity
 import next_week_discovery_batch
+import outcome_exposure
 from learning_experiment import (
     DEVELOPMENT_SEARCH_RULE,
     LearningExperimentError,
@@ -29,6 +30,7 @@ from learning_experiment import (
     validate_hypothesis_contract,
 )
 from learning_statistics import maximum_drawdown_fraction, stationary_bootstrap_summary
+from learning_data import LearningDataError, load_frozen_dataset_contract
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -356,9 +358,41 @@ def evaluate_development(
     contract = search["family_contract"]
     function = _load_plugin(contract, "evaluate_development")
     started = time.monotonic()
-    result = function(contract, list(contract["trial_family"]))
+    plugin_contract = {
+        **contract,
+        "development_search_sha256": search["artifact_sha256"],
+    }
+    result = function(plugin_contract, list(contract["trial_family"]))
     if not isinstance(result, Mapping):
         raise StrategyDiscoveryError("development plugin must return an object")
+    if contract.get("dataset_manifest") and result.get(
+        "dataset_manifest"
+    ) != contract["dataset_manifest"]:
+        raise StrategyDiscoveryError("development dataset manifest was substituted")
+    development_manifest = result.get("dataset_manifest")
+    if not isinstance(development_manifest, str) or not development_manifest:
+        raise StrategyDiscoveryError("development dataset manifest is missing")
+    try:
+        development_dataset = load_frozen_dataset_contract(
+            Path(development_manifest)
+        )
+    except (LearningDataError, OSError) as exc:
+        raise StrategyDiscoveryError(
+            f"development dataset manifest is invalid: {exc}"
+        ) from exc
+    development_payload = development_dataset["dataset_payload"]
+    if not (
+        development_dataset["requested_dates"] == contract["development_dates"]
+        and development_payload.get("lane") == "development"
+        and (
+            contract.get("dataset_manifest")
+            or development_payload.get("development_search_sha256")
+            == search["artifact_sha256"]
+        )
+    ):
+        raise StrategyDiscoveryError(
+            "development dataset is not bound to the frozen search"
+        )
     evaluation = {
         "experiment_id": contract["experiment_id"],
         "dataset_manifest": str(result.get("dataset_manifest")),
@@ -439,11 +473,27 @@ def inspect_development(
         },
         "broker_actions_permitted": False,
     }
-    return _write_artifact(
+    inspection_path, inspection_artifact = _write_artifact(
         payload,
         root / str(contract["family_id"]) / "development-inspection",
         f"{contract['family_id']}-development-inspection",
     )
+    if enforce_commit and contract.get("development_scope") is not None:
+        outcome_exposure.ensure_record(
+            outcome_exposure.build_record(
+                exposure_id=(
+                    f"development-{contract['family_id']}-"
+                    f"{result['artifact_sha256'][:16]}"
+                ),
+                campaign_id=CAMPAIGN_ID,
+                lane="development",
+                recorded_at=contract["created_at"],
+                source_path=_relative(result_path),
+                source_sha256=_file_hash(result_path),
+                scope=contract["development_scope"],
+            )
+        )
+    return inspection_path, inspection_artifact
 
 
 def freeze_winner(
@@ -505,8 +555,11 @@ def freeze_winner(
         "development_dates": contract["development_dates"],
         "embargo_dates": contract["embargo_dates"],
         "confirmation_dates": contract["confirmation_dates"],
+        "development_scope": contract.get("development_scope"),
+        "confirmation_scope": contract.get("confirmation_scope"),
         "plugin": contract["plugin"],
         "implementation_hashes": contract["implementation_hashes"],
+        "development_dataset_manifest": result["evaluation"]["dataset_manifest"],
         "confirmation_parameter_alternatives": 0,
         "confirmation_access_permitted": True,
         "broker_actions_permitted": False,
@@ -529,6 +582,15 @@ def evaluate_confirmation(
     winner = load_artifact(winner_path, expected_kind="frozen-strategy-winner")
     if winner["state"] != "WINNER_FROZEN":
         raise StrategyDiscoveryError("winner is not frozen")
+    confirmation_scope = winner.get("confirmation_scope")
+    if confirmation_scope is not None:
+        try:
+            outcome_exposure.assert_untouched(
+                confirmation_scope,
+                outcome_exposure.read_index(),
+            )
+        except outcome_exposure.OutcomeExposureError as exc:
+            raise StrategyDiscoveryError(str(exc)) from exc
     function = _load_plugin({"plugin": winner["plugin"]}, "evaluate_confirmation")
     started = time.monotonic()
     result = function(winner)
@@ -543,6 +605,34 @@ def evaluate_confirmation(
         raise StrategyDiscoveryError("confirmation dates were substituted or omitted")
     if result.get("outcome_access_before_winner_freeze") is not False:
         raise StrategyDiscoveryError("confirmation outcome-access attestation is missing")
+    confirmation_manifest = result.get("dataset_manifest")
+    if not isinstance(confirmation_manifest, str) or not confirmation_manifest:
+        raise StrategyDiscoveryError("confirmation dataset manifest is missing")
+    confirmation_manifest_path = Path(confirmation_manifest)
+    if enforce_commit:
+        require_committed(confirmation_manifest_path)
+    try:
+        confirmation_dataset = load_frozen_dataset_contract(
+            confirmation_manifest_path
+        )
+    except (LearningDataError, OSError) as exc:
+        raise StrategyDiscoveryError(
+            f"confirmation dataset manifest is invalid: {exc}"
+        ) from exc
+    confirmation_payload = confirmation_dataset["dataset_payload"]
+    if not (
+        confirmation_dataset["requested_dates"] == winner["confirmation_dates"]
+        and confirmation_payload.get("lane") == "confirmation"
+        and confirmation_payload.get("claim_scope")
+        == "EXACT_PREREGISTERED_CONTRACT_ONLY"
+        and confirmation_payload.get("preregistration_sha256")
+        == winner["rules_hash"]
+        and confirmation_payload.get("capture_after_preregistration_attested")
+        is True
+    ):
+        raise StrategyDiscoveryError(
+            "confirmation dataset is not exact, untouched, and winner-bound"
+        )
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact_kind": "confirmation-result",
@@ -593,7 +683,7 @@ def inspect_confirmation_metrics(
         dollars = [float(value) for value in scenario.get("net_pnl_dollars", [])]
         if not daily or len(filled) != len(dollars):
             raise StrategyDiscoveryError(f"{name} confirmation accounting is incomplete")
-        midpoint = len(filled) // 2
+        midpoint = len(daily) // 2
         without_best = sorted(filled, reverse=True)[5:]
         metrics = {
             "signals": len(filled),
@@ -602,12 +692,12 @@ def inspect_confirmation_metrics(
             "profit_factor": _profit_factor(dollars),
             "maximum_drawdown_fraction": maximum_drawdown_fraction(daily),
             "first_half_log_growth": sum(
-                math.log1p(value) for value in filled[:midpoint]
+                math.log1p(value) for value in daily[:midpoint]
             )
             if midpoint
             else None,
             "second_half_log_growth": sum(
-                math.log1p(value) for value in filled[midpoint:]
+                math.log1p(value) for value in daily[midpoint:]
             )
             if midpoint
             else None,
@@ -667,6 +757,18 @@ def _phase_maturity_records(
     records: list[dict[str, Any]] = []
     for row in rows:
         day = str(row["date"])
+        outcome = str(row.get("session_outcome"))
+        if outcome not in {
+            "filled",
+            "no_signal",
+            "rejected",
+            "missed_fill",
+            "capital_blocked",
+            "position_open",
+            "exit",
+            "mixed",
+        }:
+            raise StrategyDiscoveryError(f"{phase} maturity row outcome is invalid")
         common = {
             "schema_version": portfolio_maturity.SCHEMA_VERSION,
             "research_campaign_id": CAMPAIGN_ID,
@@ -688,8 +790,10 @@ def _phase_maturity_records(
                 "session_id": (
                     f"{day}-{winner['strategy_id']}-{phase}-session"
                 ),
-                "eligible_signal": True,
-                "session_outcome": "filled",
+                "eligible_signal": bool(
+                    row.get("eligible_signal", outcome == "filled")
+                ),
+                "session_outcome": outcome,
                 "daily_account_return_fraction": row[
                     "primary_account_return_fraction"
                 ],
@@ -701,35 +805,58 @@ def _phase_maturity_records(
                 ],
             }
         )
-        records.append(
-            {
+        raw_signals = row.get("signals")
+        if raw_signals is None:
+            signals = [row] if outcome == "filled" else []
+        elif isinstance(raw_signals, list):
+            signals = raw_signals
+        else:
+            raise StrategyDiscoveryError(
+                f"{phase} maturity row signals must be an array"
+            )
+        for index, signal in enumerate(signals):
+            if not isinstance(signal, Mapping):
+                raise StrategyDiscoveryError(
+                    f"{phase} maturity row signals must contain objects"
+                )
+            signal_date = str(signal.get("date", day))
+            if signal_date not in expected_dates:
+                raise StrategyDiscoveryError(
+                    f"{phase} closed signal date is outside the frozen dates"
+                )
+            signal_id = signal.get("signal_id")
+            if not isinstance(signal_id, str) or not signal_id:
+                signal_id = (
+                    f"{signal_date}-{winner['strategy_id']}-{phase}-signal-{index}"
+                )
+            records.append({
                 **common,
+                "date": signal_date,
                 "record_type": "signal",
-                "signal_id": f"{day}-{winner['strategy_id']}-{phase}-signal",
+                "signal_id": signal_id,
                 "closed": True,
                 "eligible": True,
-                "net_r": row["net_r"],
-                "stress_10bps_r": row["stress_10bps_r"],
-                "stress_20bps_r": row["stress_20bps_r"],
-                "net_account_return_fraction": row[
+                "net_r": signal["net_r"],
+                "stress_10bps_r": signal["stress_10bps_r"],
+                "stress_20bps_r": signal["stress_20bps_r"],
+                "net_account_return_fraction": signal[
                     "primary_account_return_fraction"
                 ],
-                "stress_10bps_account_return_fraction": row[
+                "stress_10bps_account_return_fraction": signal[
                     "stress_10bps_account_return_fraction"
                 ],
-                "stress_20bps_account_return_fraction": row[
+                "stress_20bps_account_return_fraction": signal[
                     "stress_20bps_account_return_fraction"
                 ],
-                "net_pnl_dollars": row["net_pnl_dollars"],
-                "stress_10bps_net_pnl_dollars": row[
+                "net_pnl_dollars": signal["net_pnl_dollars"],
+                "stress_10bps_net_pnl_dollars": signal[
                     "stress_10bps_net_pnl_dollars"
                 ],
-                "stress_20bps_net_pnl_dollars": row[
+                "stress_20bps_net_pnl_dollars": signal[
                     "stress_20bps_net_pnl_dollars"
                 ],
-                "stop_executed": row["stop_executed"],
-            }
-        )
+                "stop_executed": signal["stop_executed"],
+            })
     return records
 
 
@@ -877,6 +1004,21 @@ def inspect_confirmation(
             confirmation_artifact=artifact,
             confirmation_inspection_path=inspection_path,
             root=root,
+        )
+    if enforce_commit and winner.get("confirmation_scope") is not None:
+        outcome_exposure.ensure_record(
+            outcome_exposure.build_record(
+                exposure_id=(
+                    f"confirmation-{winner['family_id']}-"
+                    f"{artifact['artifact_sha256'][:16]}"
+                ),
+                campaign_id=CAMPAIGN_ID,
+                lane="confirmation",
+                recorded_at=winner["recorded_at"],
+                source_path=_relative(result_path),
+                source_sha256=_file_hash(result_path),
+                scope=winner["confirmation_scope"],
+            )
         )
     return inspection_path, inspection_artifact
 

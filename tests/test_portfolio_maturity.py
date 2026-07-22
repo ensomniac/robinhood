@@ -413,6 +413,33 @@ maximum_second_wave_families = 6
         )
         self.assertFalse(assessment["pilot_ready"])
 
+    def test_account_chronological_halves_use_daily_path_not_trade_subset(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            historical = [
+                record
+                for record in records
+                if record.get("sample_phase") in {"development", "confirmation"}
+            ]
+            metrics = maturity._account_growth_metrics(historical, 0.90)
+        daily = [
+            float(record["daily_account_return_fraction"])
+            for record in sorted(
+                (
+                    record
+                    for record in historical
+                    if record.get("record_type") == "session"
+                ),
+                key=lambda item: (item["date"], item["session_id"]),
+            )
+        ]
+        midpoint = len(daily) // 2
+        self.assertAlmostEqual(
+            metrics["primary_5bps"]["first_half_log_growth"],
+            sum(math.log1p(value) for value in daily[:midpoint]),
+        )
+
     def test_dynamic_power_target_is_frozen_and_authoritative(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

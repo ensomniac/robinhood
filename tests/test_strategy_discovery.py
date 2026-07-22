@@ -368,6 +368,10 @@ def test_confirmation_rejects_date_substitution_rules_drift_and_early_peeking(
                     result["observed_dates"] = result["observed_dates"][1:]
                 elif field == "rules":
                     result["rules_hash"] = "f" * 64
+                elif field == "dataset":
+                    result["dataset_manifest"] = value[
+                        "development_dataset_manifest"
+                    ]
                 else:
                     result["outcome_access_before_winner_freeze"] = True
                 return result
@@ -377,6 +381,7 @@ def test_confirmation_rejects_date_substitution_rules_drift_and_early_peeking(
         for field, message in (
             ("dates", "dates were substituted"),
             ("rules", "rules hash drifted"),
+            ("dataset", "not exact, untouched, and winner-bound"),
             ("peeking", "outcome-access attestation"),
         ):
             monkeypatch.setattr(
@@ -413,6 +418,97 @@ def test_development_rejects_missing_trial_accounting(monkeypatch):
             discovery.evaluate_development(
                 search_path, root=artifact_root, enforce_commit=False
             )
+
+
+def test_development_rejects_dataset_substitution(monkeypatch):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        contract_path = _write_contract(
+            work, family_contract(_dataset(work), family_id="dataset-substitution")
+        )
+        discovery.run_preflight(
+            contract_path, root=artifact_root, enforce_commit=False
+        )
+        search_path, _ = discovery.freeze_search(
+            contract_path, root=artifact_root, enforce_commit=False
+        )
+        substituted = _dataset(work / "substituted")
+        original = synthetic_plugin.evaluate_development
+
+        def replace_manifest(contract, trials):
+            result = original(contract, trials)
+            result["dataset_manifest"] = str(substituted)
+            return result
+
+        monkeypatch.setattr(
+            synthetic_plugin, "evaluate_development", replace_manifest
+        )
+        with pytest.raises(discovery.StrategyDiscoveryError, match="substituted"):
+            discovery.evaluate_development(
+                search_path, root=artifact_root, enforce_commit=False
+            )
+
+
+def test_maturity_rows_count_closed_signals_separately_from_entry_days():
+    dates = ["2025-01-02", "2025-01-03", "2025-01-06"]
+    winner = {
+        "recorded_at": "2026-07-22T19:00:00-04:00",
+        "strategy_id": "strategy-overlap",
+        "strategy_version": "strategy-overlap-v1",
+        "family_id": "overlap-family",
+        "rules_hash": "a" * 64,
+    }
+    rows = [
+        {
+            "date": day,
+            "session_outcome": outcome,
+            "primary_account_return_fraction": daily_return,
+            "stress_10bps_account_return_fraction": daily_return - 0.0001,
+            "stress_20bps_account_return_fraction": daily_return - 0.0002,
+            "signals": signals,
+        }
+        for day, outcome, daily_return, signals in (
+            ("2025-01-02", "filled", -0.0005, []),
+            ("2025-01-03", "position_open", 0.0010, []),
+            (
+                "2025-01-06",
+                "exit",
+                0.0020,
+                [
+                    {
+                        "date": "2025-01-02",
+                        "signal_id": "overlap-signal-1",
+                        "primary_account_return_fraction": 0.0025,
+                        "stress_10bps_account_return_fraction": 0.0023,
+                        "stress_20bps_account_return_fraction": 0.0019,
+                        "net_r": 0.50,
+                        "stress_10bps_r": 0.46,
+                        "stress_20bps_r": 0.38,
+                        "net_pnl_dollars": 250.0,
+                        "stress_10bps_net_pnl_dollars": 230.0,
+                        "stress_20bps_net_pnl_dollars": 190.0,
+                        "stop_executed": False,
+                    }
+                ],
+            ),
+        )
+    ]
+
+    records = discovery._phase_maturity_records(
+        rows,
+        phase="development",
+        expected_dates=dates,
+        winner=winner,
+    )
+
+    sessions = [item for item in records if item["record_type"] == "session"]
+    signals = [item for item in records if item["record_type"] == "signal"]
+    assert len(sessions) == 3
+    assert [item["eligible_signal"] for item in sessions] == [True, False, False]
+    assert len(signals) == 1
+    assert signals[0]["date"] == "2025-01-02"
+    assert signals[0]["net_account_return_fraction"] == pytest.approx(0.0025)
 
 
 def test_declared_family_sizes_are_complete_and_bounded():
