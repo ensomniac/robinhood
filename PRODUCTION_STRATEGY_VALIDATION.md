@@ -865,6 +865,15 @@ Independent combined reconstruction confirms the master, split range, raw and
 canonical hashes, zero target-market artifacts, no substitutions, and no
 outcomes. These point-in-time inputs may be published before scanner freeze.
 
+Inner scanner manifest `34029d3c...60a96` now freezes all 502 exact required
+sessions, the 7,456-symbol point-in-time union, 463 candidate reusable
+sessions, and 39 provider-bound sessions at zero target state. It binds the
+published canonical master and normalization attestation, complete split
+graph, unchanged scanner engine and rules, compatible first-corpus lineage,
+raw Alpaca SIP semantics, zero substitution, and the outcome lock. The
+manifest and zero-state status must be committed and pushed before the outer
+mechanism/source contract is frozen.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
