@@ -1286,6 +1286,23 @@ repository-local sandbox until the v2 result passes. The contract remains
 uninspected and earns no qualification, alpha, maturity, production, or live
 claim.
 
+The bound v2 inspection now marks the 60-pair qualification input collection
+`COLLECTION_INSPECTED`. It rehashed 1,006,966 causal rows across all pair files
+and 480 request groups, rebuilt the frozen trigger decisions, exact stored quote
+snapshots, 252-session history denominators, privacy boundary, and outcome lock,
+and reconciled all 60 timestamp pairs at zero delta. The failed original and v1
+compatibility statuses remain preserved. This milestone authorizes only a
+separately frozen retest-specific entry-qualification evaluator; it has not yet
+counted eligible signals or observed fills, returns, outcomes, alpha, maturity,
+production readiness, or broker facts.
+
+After publication, the full suite correctly exposed that the two compatibility
+snapshot builders are pre-inspection tools and reject the now-promoted source
+status. Their hash-bound implementations remain unchanged. Their tests now
+prove that post-promotion fail-closed behavior and validate the immutable
+manifest plus published inspected result, rather than attempting to reconstruct
+an obsolete uninspected lifecycle phase.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,

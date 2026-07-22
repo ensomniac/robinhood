@@ -19,7 +19,11 @@ def test_collector_local_time_preserves_instant_and_uses_eastern() -> None:
 
 
 def test_quote_call_snapshot_rebuilds_all_stored_snapshots() -> None:
-    value = v2.build_quote_call_snapshot(PROJECT_ROOT / ".env")
+    with pytest.raises(v2.v1.ChallengerQualificationCompatibilityError):
+        v2.build_quote_call_snapshot(PROJECT_ROOT / ".env")
+    matches = sorted(v2.DEFAULT_OUTPUT_ROOT.glob(f"{v2.DATASET_ID}-*.json"))
+    assert len(matches) == 1
+    value = v2.load_manifest(matches[0])["incident_snapshot"]
     assert value["source_pairs"] == 60
     assert value["stored_collector_local_snapshot_rebuilds"] == 60
     assert value["source_utc_representation_snapshot_mismatches"] == 56
@@ -44,7 +48,7 @@ def test_v2_manifest_detects_mutation(tmp_path: Path) -> None:
 
 
 def test_v2_snapshot_does_not_publish_identities() -> None:
-    rendered = json.dumps(v2.build_quote_call_snapshot(PROJECT_ROOT / ".env"))
+    rendered = json.dumps(v2.v1._read_json(v2.DEFAULT_RESULT))
     for forbidden in ('"dates"', '"symbols"', '"instrument_ids"', '"requests"'):
         assert forbidden not in rendered
 

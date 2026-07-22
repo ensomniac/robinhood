@@ -25,14 +25,14 @@ def test_same_instant_requires_aware_exact_equality() -> None:
     )
 
 
-def test_compatibility_snapshot_is_outcome_blind_and_complete() -> None:
-    value = compat.build_compatibility_snapshot(PROJECT_ROOT / ".env")
-    assert value["source_pairs"] == 60
-    assert value["source_distinct_trigger_sessions"] == 52
-    assert value["observed_at_semantic_matches"] == 60
-    assert value["decision_at_semantic_matches"] == 60
-    assert value["observed_at_representation_differences"] == 60
-    assert value["decision_at_representation_differences"] == 60
+def test_compatibility_source_reader_fails_closed_after_inspection() -> None:
+    with pytest.raises(compat.ChallengerQualificationCompatibilityError):
+        compat.build_compatibility_snapshot(PROJECT_ROOT / ".env")
+    value = compat._read_json(compat.SOURCE_STATUS)
+    assert value["status"] == "COLLECTION_INSPECTED"
+    assert value["pairs_terminal"] == 60
+    assert value["distinct_trigger_sessions"] == 52
+    assert value["timezone_representation_pairs_reconciled"] == 60
     assert value["maximum_absolute_timestamp_delta_seconds"] == 0
     assert value["target_outcomes_observed_or_derived"] is False
 
@@ -53,9 +53,7 @@ def test_compatibility_manifest_detects_mutation(tmp_path: Path) -> None:
 
 
 def test_compatibility_snapshot_does_not_publish_identities() -> None:
-    rendered = json.dumps(
-        compat.build_compatibility_snapshot(PROJECT_ROOT / ".env"), sort_keys=True
-    )
+    rendered = json.dumps(compat._read_json(compat.DEFAULT_RESULT), sort_keys=True)
     for forbidden in ('"dates"', '"symbols"', '"instrument_ids"', '"requests"'):
         assert forbidden not in rendered
 
