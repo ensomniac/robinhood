@@ -175,6 +175,12 @@ def build_contract(*, require_published: bool = True) -> dict[str, Any]:
         "unchanged_execution_contract": stage0_contract["execution_contract"],
         "unchanged_exit_contract": stage0_contract["exit_contract"],
         "unchanged_cost_contract": stage0_contract["cost_contract"],
+        "causal_execution_rejection_contract": {
+            "timing": "after the frozen entry open and before any forward high, low, close, stop, or exit is read",
+            "rule": "if entry open minus 1.5 times pre-entry ATR14 is non-positive, preserve the event as a missed unexecutable entry",
+            "parameter_or_event_substitution_permitted": False,
+            "maturity_evidence_eligible": False,
+        },
         "robustness_gate": maturity.load_config(PORTFOLIO_CONFIG).raw["pilot_ready"],
         "access_contract": {
             "development_input_access_after_contract_inspection_permitted": True,
@@ -236,17 +242,28 @@ def inspect_contract(path: Path) -> dict[str, Any]:
 
 
 def _contract_and_inspection() -> tuple[Path, Path, dict[str, Any], dict[str, Any]]:
-    contract_path_value = _one(
-        "strategy_tournament/v2/schedule13d/validation/contracts/"
-        "schedule-13d-activist-continuation-v1-*.json",
-        "validation contract",
-    )
-    inspection_path = _one(
-        "strategy_tournament/v2/schedule13d/validation/inspections/"
-        "schedule-13d-activist-continuation-v1-contract-*.json",
-        "validation contract inspection",
-    )
+    current_implementation = sha256_file(Path(__file__).resolve())
+    contract_matches = [
+        path
+        for path in sorted(CONTRACT_ROOT.glob(f"{VARIANT_ID}-*.json"))
+        if _read_json(path).get("implementation_sha256") == current_implementation
+    ]
+    if len(contract_matches) != 1:
+        raise Schedule13dValidationError(
+            f"expected one current validation contract; found {len(contract_matches)}"
+        )
+    contract_path_value = contract_matches[0]
     contract = _read_json(contract_path_value)
+    inspection_matches = [
+        path
+        for path in sorted(INSPECTION_ROOT.glob(f"{VARIANT_ID}-contract-*.json"))
+        if _read_json(path).get("contract_sha256") == contract["contract_sha256"]
+    ]
+    if len(inspection_matches) != 1:
+        raise Schedule13dValidationError(
+            f"expected one current validation contract inspection; found {len(inspection_matches)}"
+        )
+    inspection_path = inspection_matches[0]
     inspection = _read_json(inspection_path)
     if inspection != inspect_contract(contract_path_value):
         raise Schedule13dValidationError("validation contract inspection differs")
@@ -494,6 +511,22 @@ def build_result(
                 }
             )
             continue
+        raw_entry = float(row["outcome_rows"][0]["o"])
+        planned_stop = raw_entry - stage0.STOP_ATR_MULTIPLE * stage0._atr(
+            row["atr_rows"]
+        )
+        if not (math.isfinite(planned_stop) and 0 < planned_stop < raw_entry):
+            missed.append(
+                {
+                    "event_ordinal": request["event_ordinal"],
+                    "event_accession": request["event_accession"],
+                    "symbol": request["symbol"],
+                    "entry_session": request["entry_session"],
+                    "missing_sessions": [],
+                    "reason": "INVALID_CAUSAL_STOP_AT_ENTRY",
+                }
+            )
+            continue
         outcomes = {
             str(cost): stage0._outcome(row["atr_rows"], row["outcome_rows"], cost)
             for cost in (stage0.PRIMARY_COST_BPS, *stage0.STRESS_COST_BPS)
@@ -628,19 +661,36 @@ def inspect_result(
 
 
 def _activation_file(phase: str) -> Path:
-    return _one(
-        "strategy_tournament/v2/schedule13d/validation/activations/"
-        f"schedule-13d-activist-continuation-v1-{phase}-*.json",
-        f"{phase} activation",
+    _contract_path_value, _inspection_path, contract, _inspection = (
+        _contract_and_inspection()
     )
+    matches = [
+        path
+        for path in sorted(ACTIVATION_ROOT.glob(f"{VARIANT_ID}-{phase}-*.json"))
+        if _read_json(path).get("contract_sha256") == contract["contract_sha256"]
+    ]
+    if len(matches) != 1:
+        raise Schedule13dValidationError(
+            f"expected one current {phase} activation; found {len(matches)}"
+        )
+    return matches[0]
 
 
 def _input_inspection_file(phase: str) -> Path:
-    return _one(
-        "strategy_tournament/v2/schedule13d/validation/inspections/"
-        f"schedule-13d-activist-continuation-v1-{phase}-input-*.json",
-        f"{phase} input inspection",
-    )
+    activation = _read_json(_activation_file(phase))
+    matches = [
+        path
+        for path in sorted(
+            INSPECTION_ROOT.glob(f"{VARIANT_ID}-{phase}-input-*.json")
+        )
+        if _read_json(path).get("activation_sha256")
+        == activation["activation_sha256"]
+    ]
+    if len(matches) != 1:
+        raise Schedule13dValidationError(
+            f"expected one current {phase} input inspection; found {len(matches)}"
+        )
+    return matches[0]
 
 
 def _result_file(phase: str) -> Path:
@@ -683,11 +733,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "market_outcome_access_permitted": False,
             }
         elif args.command == "inspect-contract":
-            source = _one(
-                "strategy_tournament/v2/schedule13d/validation/contracts/"
-                "schedule-13d-activist-continuation-v1-*.json",
-                "validation contract",
-            )
+            current_implementation = sha256_file(Path(__file__).resolve())
+            matches = [
+                path
+                for path in sorted(CONTRACT_ROOT.glob(f"{VARIANT_ID}-*.json"))
+                if _read_json(path).get("implementation_sha256")
+                == current_implementation
+            ]
+            if len(matches) != 1:
+                raise Schedule13dValidationError(
+                    f"expected one current validation contract; found {len(matches)}"
+                )
+            source = matches[0]
             value = inspect_contract(source)
             path = INSPECTION_ROOT / f"{VARIANT_ID}-contract-{value['inspection_sha256']}.json"
             _write_json(value, path)

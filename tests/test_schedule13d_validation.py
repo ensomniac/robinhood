@@ -81,3 +81,15 @@ def test_contract_preserves_stage0_rules_and_locks_confirmation():
     assert contract["rules_hash"] == stage0_contract["rules_hash"]
     assert contract["phase_denominator"] == {"development": 30, "confirmation": 20}
     assert contract["access_contract"]["confirmation_input_access_before_inspected_development_pass_permitted"] is False
+    assert contract["causal_execution_rejection_contract"]["parameter_or_event_substitution_permitted"] is False
+
+
+def test_invalid_causal_stop_is_not_sent_to_outcome_evaluator():
+    atr_rows = [
+        {"date": str(index), "o": 1.0, "h": 3.0, "l": 0.1, "c": 1.0}
+        for index in range(15)
+    ]
+    assert (
+        1.0 - validation.stage0.STOP_ATR_MULTIPLE * validation.stage0._atr(atr_rows)
+        <= 0
+    )
