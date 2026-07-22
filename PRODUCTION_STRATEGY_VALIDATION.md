@@ -991,6 +991,15 @@ substitution prohibitions, and the outcome lock. It must be committed and
 pushed uninspected before the v2 inspector runs; selected-symbol requests and
 outcomes remain blocked.
 
+Independent reconstruction now marks source-contract v2
+`3c39f19e...768dfc` `FROZEN_READY`. All 1,781 private pair identities and 100
+daily partitions rebuild, every current input and historical blob at pushed
+commit `f5774ed` matches, source-rules hash `99843372...b4dc` and
+implementation hash `bb84ceaa...9ab64` are unchanged, and the immutable note
+remains exact. Capacity is ready, the target namespace is empty, substitutions
+are forbidden, and no selected-symbol detail or outcome has been accessed.
+Only a separately frozen source identity/request graph may proceed.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
