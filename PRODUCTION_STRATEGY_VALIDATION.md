@@ -1160,6 +1160,21 @@ canonical rows, implementation hashes, exact-reader compatibility fields, and
 outcome locks match, and the private trigger namespace remains empty. Trigger
 derivation remains blocked until this READY transition is committed and pushed.
 
+The published exact-window runner produced eight third-tranche trigger pairs on
+eight sessions, with seven `NO_INITIAL_BREAK` and eight `RETEST_HOLD_FAILED`
+terminal dispositions across the complete 23-pair denominator. Private trigger
+hash `c03dd9c3...73e3` binds this uninspected causal result. The arithmetic would
+raise cumulative capacity from 44 to 52 distinct trigger sessions only if
+independent reconstruction proves exact parity and corpus disjointness; outcome
+access remains forbidden until that inspection is committed and pushed.
+
+Derivation also revealed that the shared runner temporarily writes the private
+trigger summary through the pre-entry engine's public-status argument. The
+third-tranche publication restores the already inspected, hash-bound collection
+status after capturing the separate trigger status; no private artifact or
+result byte changes. Its lifecycle test now accepts either legitimate private
+trigger-file state while continuing to require exact source reconstruction.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,

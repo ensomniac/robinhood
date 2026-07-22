@@ -1,71 +1,24 @@
 {
   "counts": {
-    "benchmark_bar_requests": 40,
-    "candidate_bar_requests": 23,
-    "candidate_trade_requests": 23,
-    "maximum_daily_signals": 20,
-    "total_requests": 86,
+    "maximum_daily_closed_signals": 8,
+    "minimum_required_development_signals": 50,
+    "trigger_found_dates": 8,
+    "trigger_found_pairs": 8,
     "verified_positive_dates": 20,
     "verified_positive_pairs": 23
   },
   "dataset_id": "dataset-challenger-orb-retest-trigger-review-2026-07-22-tranche3-v2",
-  "implementation_contract": {
-    "inspector": {
-      "path": "challenger_orb_retest_trigger_runner_inspection3.py",
-      "sha256": "b74fcbe647ebb5bd096d38685e3a7b754130ffe8f93b7298ba0ef2c23f084dc2"
-    },
-    "preentry_engine": {
-      "path": "challenger_orb_retest_preentry3.py",
-      "sha256": "5e565958eadd016a4ef889d6e1c8abee2c02161140f43b0d123eb2dbf748ac09"
-    },
-    "preentry_result_inspector": {
-      "path": "challenger_orb_retest_preentry_inspection3.py",
-      "sha256": "b81b636275bf350a41c4ef2f0950fb0f76abf3a961322047ee16aef731dbf5e6"
-    },
-    "reader": {
-      "path": "challenger_orb_retest_preentry_reader.py",
-      "sha256": "2fea82b27b757835c161c6bfbe9f4ec1404c987fd60ebb3ffb69f9780e76ca95"
-    },
-    "runner": {
-      "path": "challenger_orb_retest_trigger_runner3.py",
-      "sha256": "c5fd819532f5a3258371ae80bf4cdd7dc7fccf2de490cc4f2cc4929658e72b5a"
-    },
-    "trigger_engine": {
-      "path": "challenger_orb_retest.py",
-      "sha256": "84290bdc98aca16fd6d3b13d788445aff75af36b77af658fddebed1fe6974682"
-    }
-  },
-  "inspected": true,
+  "inspected": false,
   "manifest_sha256": "d214a021dc3cad6101b6b1ba4dd6028d307e946ee31b9ba50add56d77d064c37",
-  "outcome_lock_verified": true,
   "post_entry_data_accessed": false,
+  "private_trigger_sha256": "c03dd9c32df5758187f856fa3e69bbc40194561cb62568269c0832b5a03e73e3",
   "schema_version": 1,
-  "source_contract": {
-    "canonical_row_set_sha256": "6eee957b9aeabcdee329a5988993cfb67cea56fcf284e78158f8f965c7959b7b",
-    "collection_inspection_sha256": "5e6695fd4ed5239e8cfa4be9fb6bef7f65165d79f395706e1eec543eda4c9a52",
-    "preentry_manifest_file_sha256": "c7cd906d82adf4f7eee9bf5614c7721bfbb707386f9c3eb92418c88bdc012ed5",
-    "preentry_manifest_sha256": "45e9441bbc43f6b79cac90e6a84e375da2b9e56cb1f6d07ae0362f8f64152500",
-    "private_collection_file_sha256": "8fbdf0c35e6210cbd6ea5e8cb9c87f50743c71fa9c89a7e99ee55edb86344d5b",
-    "request_graph_sha256": "a3082eba6d0d24af55e0444d5fe5d4cb4ace83859d933175ecfa836dae06e4be",
-    "wrapper_set_sha256": "1807429fa7750d9de252eee9b8b67b299ef65a3679eb5be6cf2152b9330b1133"
-  },
   "source_preentry_manifest_sha256": "45e9441bbc43f6b79cac90e6a84e375da2b9e56cb1f6d07ae0362f8f64152500",
-  "status": "FROZEN_READY",
+  "status": "TRIGGER_REVIEW_COMPLETE_UNINSPECTED",
   "target_outcomes_observed_or_derived": false,
-  "trigger_artifacts_present": false,
-  "trigger_contract": {
-    "completed_noninterpolated_retest_bars": true,
-    "continuous_cross_version": "continuous-regular-cross-v1",
-    "decision_cutoff_et": "10:30:00",
-    "decision_delay_seconds": 10,
-    "failed_hold_retention_boundary": "end of first completed touch bar",
-    "first_touch_only": true,
-    "hypothesis_sha256": "b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105",
-    "minimum_closed_development_signals": 50,
-    "no_signal_retention_boundary": "10:30:00",
-    "rule_version": "catalyst-orb-retest-v1",
-    "search_start_et": "09:35:00",
-    "sip_condition_rule_version": "alpaca-sip-minute-v1"
-  },
-  "valid": true
+  "terminal_reason_counts": {
+    "NO_INITIAL_BREAK": 7,
+    "RETEST_HOLD_FAILED": 8,
+    "TRIGGER_FOUND": 8
+  }
 }
