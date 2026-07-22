@@ -130,3 +130,32 @@ def test_published_input_inspection_authorizes_one_evaluation():
     assert inspection["return_evaluation_authorized"] is True
     assert inspection["maturity_effect"] == "NONE"
     assert inspection["valid"] is True
+
+
+def test_published_result_fails_four_stage0_gates():
+    matches = sorted(
+        (ROOT / "research_results").glob(
+            "2026-07-21-turn-of-month-etf-seasonality-stage0-*.json"
+        )
+    )
+    assert len(matches) == 1
+    result = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert result["result_sha256"] == stage0.common._self_hash(result, "result_sha256")
+    assert result["denominator"] == {
+        "decision_months": 36,
+        "closed_signals": 36,
+        "no_trade_months": 0,
+        "rule_violations": 0,
+    }
+    assert result["primary_5bps"]["expectancy_r"] < 0
+    assert result["primary_5bps"]["profit_factor"] < 1.10
+    assert result["primary_5bps"]["maximum_drawdown_r"] > 8
+    assert result["stress"]["20"]["total_r"] < 0
+    assert result["stage0_blockers"] == [
+        "primary expectancy is not positive",
+        "primary profit factor is below the Stage 0 minimum",
+        "primary drawdown exceeds the Stage 0 maximum",
+        "20 bps-per-side total R is not positive",
+    ]
+    assert result["stage0_survived"] is False
+    assert result["maturity_effect"] == "NONE"

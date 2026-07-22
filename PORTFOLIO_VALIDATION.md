@@ -855,6 +855,11 @@ Input inspection
 independently rebuilds all 1,008 daily inputs, the 36 monthly event mappings,
 and the private graph identity. It computed no return and now authorizes exactly
 one frozen Stage 0 evaluation after the inspection is committed and pushed.
+The authorized evaluation closed all 36 monthly signals. At 5 bps per side it
+produced -0.1293R expectancy, 0.7272 profit factor, -4.6547R total, and 8.1335R
+maximum drawdown. At 20 bps per side it lost 9.2930R. The exact variant fails
+expectancy, profit factor, drawdown, and cost stress, and remains provisional
+until independent result inspection.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
