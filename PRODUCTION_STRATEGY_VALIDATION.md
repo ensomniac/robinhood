@@ -674,6 +674,15 @@ artifacts. Publication authorizes only the 425 exact SEC requests; source
 semantics, returns, outcomes, alpha, maturity, production, and broker claims
 remain blocked.
 
+The published recovery collector completed all 425 requests with 21 shared
+cache hits, 404 SEC downloads, zero failures, zero pending requests, and zero
+substitutions. Independent transport inspection rebuilt the index, rehashed
+all terminal wrappers and 967,855,132 raw source bytes, and confirmed private
+collection hash `c484921c...a79ac` and wrapper-set hash
+`5b880029...0c7c3`. Zero review artifact exists. Deterministic EX-99 review may
+run only after this collection inspection is committed and pushed; outcomes
+remain locked.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
