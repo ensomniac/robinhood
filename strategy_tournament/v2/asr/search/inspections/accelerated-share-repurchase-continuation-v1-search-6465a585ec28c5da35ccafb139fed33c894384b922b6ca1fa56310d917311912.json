@@ -1,0 +1,22 @@
+{
+  "all_reported_totals_exact": false,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v1",
+  "capacity_classification_complete": false,
+  "collection_sha256": "e743a02c3d7b63bf6db0c73444a0662eebe829585490d90a271bac0e789f6a68",
+  "contract_sha256": "afb19cf7e78db4afb008cbbce5c7ad462911a113efc1c2d36a4dfa80252f6cb7",
+  "inspection_kind": "outcome-blind-asr-efts-denominator-inspection",
+  "inspection_sha256": "6465a585ec28c5da35ccafb139fed33c894384b922b6ca1fa56310d917311912",
+  "market_outcomes_accessed": false,
+  "market_price_values_accessed": 0,
+  "maturity_effect": "NONE",
+  "provider_limitation": "EFTS returned a lower-bound denominator, so the frozen completeness gate forbids pagination, matched-document access, and event classification",
+  "raw_pages_rehashed": true,
+  "reported_totals_rebuilt": true,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "state": "BLOCKED_INEXACT_EFTS_DENOMINATOR",
+  "valid": true,
+  "verified_event_count": null
+}

@@ -24,16 +24,19 @@ Authorization record `6a7e2748...0fd6e` has independently earned
 variant is retired at Stage 0, and its priority-two Schedule 13D activist-
 continuation variant is retired after representative development. Neither may
 be repaired on its evaluation corpus. Priority-three accelerated-share-
-repurchase continuation now has inspected outcome-blind capacity contract
-`afb19cf7...f6cb7`. SEC access is limited to that exact 2010-2025 search and
-accession-document scope; target outcomes and broker actions remain forbidden.
+repurchase continuation froze inspected outcome-blind capacity contract
+`afb19cf7...f6cb7`, but its exact primary EFTS query returned an inexact 10,000+
+denominator. Inspection `6465a585...311912` retired that contract for
+insufficient source completeness before pagination or document access. It may
+not be repaired on the observed provider corpus; target outcomes and broker
+actions remain forbidden.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
 `portfolio_execution.py`. Schema-1 portfolio evidence remains immutable adverse
 history and cannot satisfy v2 maturity. No new family or outcome evidence has
-been admitted by this engineering change; the ASR capacity-only preflight
-remains the next authorized research action.
+been admitted by this engineering change. After the next ISO-week budget reset,
+the three-family batch in `STRATEGY_DISCOVERY_V2.md` is the next research lane.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

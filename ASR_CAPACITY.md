@@ -46,3 +46,17 @@ The public collection and inspection artifacts contain counts, hashes, request
 telemetry, and the terminal source-completeness state. Raw result rows remain in
 the ignored external store. The independently inspected denominator must be
 complete before any filing-semantic classification can begin.
+
+## Inspected disposition
+
+EFTS returned exact totals of 2,657, 204, and 3,508 for three phrases, but the
+primary `"accelerated share repurchase"` phrase returned only a lower bound of
+10,000. Inspection `6465a585...311912` rebuilt that result from all four retained
+pages. The frozen completeness gate therefore stopped before pagination,
+matched-document access, or event classification.
+
+This exact contract is `RETIRED_INSUFFICIENT_SOURCE_COMPLETENESS`, not a
+count-based capacity failure: the verified-event count remains unknown. It is
+removed from the first-pilot fast lane, cannot repair its query or partition on
+the observed provider corpus, and has no maturity effect. A future ASR version
+would require a new pre-outcome authorization and collection contract.
