@@ -632,6 +632,14 @@ artifacts. No document body, semantic classification, causal input,
 substitution, or outcome was accessed; collection requires this boundary to be
 committed and pushed first.
 
+The published primary-document collector then completed all 540 frozen
+requests: 27 shared-cache hits, 513 SEC downloads, zero failures, zero pending
+requests, and zero substitutions. Independent inspection rebuilt every
+terminal wrapper, rehashed 28,374,135 raw source bytes, and confirmed private
+collection hash `5b923be6...f269c`. Raw availability is not semantic evidence;
+ownership, issuer binding, causal timing, direction, materiality, conflicts,
+selected-market inputs, and outcomes remain unclassified and locked.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
