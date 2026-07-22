@@ -614,6 +614,14 @@ Supplemental files, primary documents, semantic classifications, causal
 inputs, substitutions, and outcomes remain locked until this boundary is
 committed and pushed and the bounded collector is run.
 
+The published collector then completed and independently rebuilt all 28 exact
+supplemental requests: 13 shared-cache hits, 15 SEC downloads, zero failures,
+zero pending requests, and zero substitutions. It rehashed 9,231,148 source
+bytes and contributes 27 time-window candidate documents and 27 joins across
+15 pairs. These are discovery metadata only. The union with the 513 main
+submissions candidates must be frozen before any primary-document access;
+semantic and outcome locks remain closed.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
