@@ -943,6 +943,15 @@ zero-artifact v2 preentry namespace, capacity, privacy, zero substitution, and
 the full outcome lock. It is `FROZEN_AWAITING_INSPECTION` and must be committed
 and pushed before the repaired inspector runs.
 
+Independent v2 reconstruction now marks selected-pair manifest
+`f50fe206...f225a` `FROZEN_READY`. It matches all 1,781 ordered private rows,
+all 100 date partitions, private graph hash `9d94c294...2106b`, and daily-
+shortlist set hash `038f35c9...a7a65`. Every current binding and exact Git blob
+at pushed pre-freeze commit `2559801` matches, the v2 downstream namespace is
+still empty, identifiers remain private, substitutions are forbidden, and no
+outcome is permitted. Publication authorizes only an independently frozen
+no-outcome causal/source request graph.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,

@@ -1,12 +1,25 @@
 {
+  "capacity_ready": true,
+  "claim_boundary": "Exact inspected 09:35 scanner selection and permitted pre-entry input classes only. No catalyst, trigger, quote, fill, return, outcome, alpha, maturity, or production-rule claim is established.",
+  "claim_scope": "DEVELOPMENT_ONLY",
+  "daily_shortlist_set_sha256": "038f35c968e2b8b37b5ad154b3ae138d3cc53b226e04c53d48135ae3cd6a7a65",
   "dataset_id": "dataset-selected-candidate-contract-2026-07-22-challenger-orb-retest-tranche3-v2",
-  "inspected": false,
+  "date_symbol_provider_or_missing_input_substitution_allowed": false,
+  "inspected": true,
   "manifest_path": "historical_batches/challenger_orb_retest_v1_tranche3/selected_pair_manifests/dataset-selected-candidate-contract-2026-07-22-challenger-orb-retest-tranche3-v2-f50fe2068ff38e9a130691468eac181e6332351a56b4a78209f0bc708eef225a.json",
   "manifest_sha256": "f50fe2068ff38e9a130691468eac181e6332351a56b4a78209f0bc708eef225a",
+  "next_required_stage": "commit and push this inspected selected-pair boundary, then freeze and inspect the exact no-outcome causal/source request graph before collection",
+  "outcome_contract_permitted": false,
   "pre_freeze_downstream_artifacts": 0,
+  "private_identifiers_public": false,
+  "private_rows_outside_repository": true,
   "requested_dates": 100,
+  "requested_dates_sha256": "8d028c523e592ba4eea03ad02a6e9917d84a45f1a9d3ef36f8176a07b635c2d1",
   "schema_version": 1,
   "selected_pair_count": 1781,
-  "status": "FROZEN_AWAITING_INSPECTION",
-  "target_outcomes_observed_or_derived": false
+  "selected_pair_graph_sha256": "9d94c294054efd500756c2350f1495e8c09501ce338a2302491a8afdc1b2106b",
+  "source_scanner_detail_sha256": "9ed5608a826afd8afbba5c0221fda058735140461d80e88b3985f33724cb77b9",
+  "status": "FROZEN_READY",
+  "target_outcomes_observed_or_derived": false,
+  "valid": true
 }
