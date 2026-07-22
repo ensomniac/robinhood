@@ -1023,6 +1023,17 @@ request. The response namespace remains empty. Only the separately published
 bounded submissions collector may proceed; supplemental files, primary
 documents, semantics, triggers, and outcomes remain locked.
 
+The bounded third-tranche submissions collection is independently inspected.
+All 538 frozen requests are terminal and successful: 513 were exact shared-
+cache hits, 25 were SEC downloads, and none failed or substituted. Rebuilt
+metadata yields 463 unique time-valid candidate filings, 478 pair/filing joins
+across 414 pairs, and 729 historical supplemental descriptors. Private
+collection hash `2ec27da1...27839`, candidate-document graph
+`9a3c9338...7f037`, and supplemental descriptor graph
+`a8b3db39...97fb3` match. Filing presence is not positive-catalyst evidence;
+all supplemental requests and primary documents remain locked behind separate
+published manifests, and no outcome has been accessed.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
