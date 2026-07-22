@@ -1311,12 +1311,14 @@ ATR-or-structure stop with the 0.8% cap, exact SIP VWAP and three-snapshot
 spread gates, complete split-adjusted resistance, and deterministic
 one-per-session ranking. Its public result is aggregate-only and its outcome
 lock remains closed. The frozen contract is uninspected, has zero result
-artifacts, and must be committed and pushed before independent zero-result
-inspection. Only after that inspection may exact qualification and independent
-result reconstruction run. Fewer than 50 inspected eligible sessions retires
-this exact variant without outcome access; at least 50 permits freezing a
-separate post-entry outcome contract, but earns no alpha, maturity, production,
-or live claim by itself.
+artifacts, and its independent zero-result inspection now marks it
+`FROZEN_READY`. That inspection rebuilt the complete source, implementation and
+rules, retest stop, ranking, privacy boundary, and outcome lock. The inspected
+status must be committed and pushed before exact qualification runs. Fewer than
+50 independently reconstructed eligible sessions retires this exact variant
+without outcome access; at least 50 permits freezing a separate post-entry
+outcome contract, but earns no alpha, maturity, production, or live claim by
+itself.
 
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
