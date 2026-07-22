@@ -1320,6 +1320,15 @@ without outcome access; at least 50 permits freezing a separate post-entry
 outcome contract, but earns no alpha, maturity, production, or live claim by
 itself.
 
+The exact qualification has now written an aggregate-only
+`QUALIFICATION_COMPLETE_UNINSPECTED` result. Its preliminary cascade retains two
+one-per-session signals, reports 40 input-unresolved pairs and 18 other gate
+failures, and is far below the frozen 50-signal capacity minimum. These counts
+are not yet evidence and do not retire the variant. The private per-pair result
+and public aggregate must be committed and pushed as-is before the bound
+inspector independently rebuilds all 60 records, terminal precedence, ranking,
+and denominators. The outcome lock remains closed.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
