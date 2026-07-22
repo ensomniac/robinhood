@@ -1034,6 +1034,16 @@ collection hash `2ec27da1...27839`, candidate-document graph
 all supplemental requests and primary documents remain locked behind separate
 published manifests, and no outcome has been accessed.
 
+Supplemental manifest `9f36dd76...0cc55` is independently `FROZEN_READY`.
+The network-free reducer rebuilt all 729 descriptors, selected exactly 27 with
+target-window overlap, excluded 702 outside every frozen pair window, and found
+zero pre-freeze supplemental responses. Private contract hash
+`dc619c38...21b5e`, request graph `18e58911...3fe1b`, and decision graph
+`ab0c1414...983ac` bind every private decision. Publication authorizes only
+those 27 SEC-operated supplemental requests; primary documents, semantic
+classification, triggers, outcomes, alpha, maturity, production, and broker
+actions remain locked.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
