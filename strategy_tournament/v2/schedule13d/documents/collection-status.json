@@ -1,0 +1,54 @@
+{
+  "acceptance_time_classified_count": 0,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "schedule-13d-activist-continuation-v1",
+  "capacity_classification_complete": false,
+  "collection_kind": "outcome-blind-sec-complete-submission-collection",
+  "collection_sha256": "b187ff553bd1cb3b48993a58bf91d1159bc1499d20df07a10870ec8a80198bf0",
+  "collector_sha256": "4452fb51660f8e0e79bd402313c49044f070af0eb718c9397c7d119f92079de9",
+  "contract_sha256": "dbd63296047961fd5d0546627c79c66607ef3498a69fba15f05f974a14527fab",
+  "dataset_id": "dataset-schedule-13d-capacity-2026-07-22-v1",
+  "failure_count": 0,
+  "filing_semantic_classification_permitted": false,
+  "filing_semantic_classified_count": 0,
+  "market_outcomes_accessed": false,
+  "market_price_values_accessed": 0,
+  "maturity_effect": "NONE",
+  "private_collection_file_sha256": "28c0ee7e95fd6e2d9e59f5917db52d91276df464400939d4d4b818615ba950b5",
+  "private_collection_sha256": "997262314f374c425de1c0ec9b4e9868a40710a4e365887d823608984822ae20",
+  "provider_telemetry": {
+    "cache_hits": 0,
+    "download_bytes": 2271691236,
+    "downloads": 6852,
+    "minimum_spacing_seconds": 0.15,
+    "workers": 4
+  },
+  "publication": {
+    "collector": {
+      "commit": "462749761fdd3ee267fc7042c758bee9471fbd62",
+      "path": "schedule13d_document_collection.py",
+      "sha256": "4452fb51660f8e0e79bd402313c49044f070af0eb718c9397c7d119f92079de9"
+    },
+    "request_graph": {
+      "commit": "462749761fdd3ee267fc7042c758bee9471fbd62",
+      "path": "strategy_tournament/v2/schedule13d/documents/manifests/schedule-13d-activist-continuation-v1-00b10117168687abf0878fed6ba55836be10715d139747d99fac7f44cc46e807.json",
+      "sha256": "4135ff1d48984e0f1474fcafd8b0c66683ec544edf6d3c7199722f768a0e8f71"
+    },
+    "request_graph_inspection": {
+      "commit": "462749761fdd3ee267fc7042c758bee9471fbd62",
+      "path": "strategy_tournament/v2/schedule13d/documents/request-status.json",
+      "sha256": "5cae9569859d48cc53b02f3234df491127aef7d42357121dc844aa30e0e53e50"
+    }
+  },
+  "request_count": 6852,
+  "request_graph_inspection_sha256": "51b639007433894ef684dbb0f2578372484fe3d59ae6b65778ab938ff8e94a69",
+  "request_graph_sha256": "00b10117168687abf0878fed6ba55836be10715d139747d99fac7f44cc46e807",
+  "returns_computed": 0,
+  "schema_version": 1,
+  "source_bytes": 2271691236,
+  "success_count": 6852,
+  "terminal_reason_count": 0,
+  "valid": true,
+  "verified_event_count": null
+}
