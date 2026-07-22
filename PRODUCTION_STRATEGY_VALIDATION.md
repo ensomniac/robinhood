@@ -378,6 +378,13 @@ precedence, 20-GiB reserve, privacy, zero substitution, and closed outcomes.
 The target namespace was empty at freeze. This uninspected manifest must be
 committed and pushed before independent zero-response reconstruction.
 
+Independent recovery inspection now marks manifest `562266f3...1b3515`
+`FROZEN_READY`. It reconstructs every one of the 372 pair identities, 433
+joins, and 417 exact requests; verifies the upstream lineage, adapter and rule
+hashes, privacy, capacity, and outcome locks; and confirms zero response,
+collection-index, or reviewed-result artifacts. The READY status must be
+committed and pushed before collection.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

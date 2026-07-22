@@ -1,19 +1,42 @@
 {
+  "claim_boundary": "Frozen SEC accession request and issuer-filed EX-99 review contract only. No accession source, semantic result, target outcome, alpha, maturity, or production-rule claim is established.",
+  "claim_scope": "DEVELOPMENT_ONLY",
   "counts": {
     "candidate_pairs": 372,
     "prior_pair_source_joins": 433,
     "unique_accessions": 417
   },
   "dataset_id": "dataset-development-sec-accession-chain-recovery-2026-07-21-challenger-orb-retest-v1",
+  "free_bytes": 421742071808,
+  "inspected": true,
+  "inspection": {
+    "complete_unresolved_pair_surface_rebuilt": true,
+    "implementation_and_rule_hashes_verified": true,
+    "outcome_lock_verified": true,
+    "privacy_boundary_verified": true,
+    "request_and_join_graphs_rebuilt": true,
+    "upstream_lineage_rebuilt": true,
+    "zero_response_and_review_artifacts_verified": true
+  },
   "join_graph_sha256": "de4371a5916e0b36ba4061a41acc3d9712e6aeb33de088d53212019086b11b26",
   "manifest_sha256": "562266f3942f3f088b8d8e4a0acf2464c5413cdc325704030afa4b1f8f1b3515",
+  "next_required_stage": "commit and push this inspected zero-response contract before running the exact accession collection",
   "outcome_contract_permitted": false,
   "pair_identity_sha256": "985764da3accc188f70b22894f89657a9d3e403a9528b89597379c349dd088c7",
-  "pre_freeze_target_artifact_count": 0,
+  "private_artifact_counts": {
+    "collection_indexes": 0,
+    "frozen_selections": 1,
+    "reviewed_results": 0,
+    "terminal_wrappers": 0
+  },
+  "private_selection_sha256": "f385640cc0fdd20fb3f29f65d5a6fea2c684c3ccf635cd4fb347915a91d36ef4",
+  "production_rule_change_earned": false,
   "request_graph_sha256": "8c7843741e6fce2a9d505be501faeca95f417a8d2ce63a796bb5783b85ca2d4c",
+  "reserve_bytes": 21474836480,
   "schema_version": 1,
   "source_semantics_classified": false,
   "status": "FROZEN_READY",
+  "symbols_ciks_accessions_urls_sources_text_and_rows_public": false,
   "target_outcomes_observed_or_derived": false,
   "valid": true
 }

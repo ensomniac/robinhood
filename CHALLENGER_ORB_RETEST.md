@@ -22,6 +22,12 @@ prior positives, private selection hash `f385640c...d36ef4`, and zero target
 recovery artifacts. It remains uninspected and authorizes no provider access
 until the separate reconstruction is published from a clean pushed commit.
 
+Independent reconstruction now marks that manifest `FROZEN_READY`. It rebuilds
+all pair, request, and join identities, verifies every implementation, source,
+privacy, capacity, and outcome binding, and confirms one frozen selection with
+zero collection or review artifacts. This inspected status must be committed
+and pushed before the exact 417-request collector may run.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`
