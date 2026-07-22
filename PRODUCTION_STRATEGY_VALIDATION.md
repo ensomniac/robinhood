@@ -1235,6 +1235,15 @@ artifacts. This authorizes only the frozen preentry provider collection; fills,
 post-entry prices, returns, outcomes, alpha, maturity, production readiness,
 live authorization, and broker claims remain blocked.
 
+The frozen qualification collector has now checkpointed all 60 pairs with the
+single terminal state `PREENTRY_INPUTS_COLLECTED`. Its uninspected private index
+hash is `be1c680e...1391`; zero one-second searches ran, no provider row extends
+past a frozen final decision, and the post-entry/outcome lock remains false.
+This collection is `COLLECTION_COMPLETE` but cannot support qualification,
+selection, alpha, maturity, production, live, or broker claims until an
+independent inspector rebuilds every pair, request, row boundary, quote
+snapshot, history denominator, and trigger decision.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
