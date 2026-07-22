@@ -335,6 +335,15 @@ reconciling every request, join, lineage binding, capacity gate, privacy lock,
 and zero-response invariant. The READY status must be committed and pushed
 before the manifest-bound collector may request any primary document.
 
+That bounded collection and its independent transport inspection are now
+complete. All 508 frozen accession-bound requests downloaded successfully with
+zero failures, pending requests, cache substitutions, or source substitutions;
+the inspector rehashed all 21,161,872 source bytes and rebuilt private collection
+hash `05a64282...260b3`. Source bodies remain transport evidence only: ownership,
+issuer binding, timing, direction, conflicts, materiality, terminal semantics,
+causal market inputs, and outcomes remain unclassified and locked until a
+separately frozen semantics contract is published and inspected.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

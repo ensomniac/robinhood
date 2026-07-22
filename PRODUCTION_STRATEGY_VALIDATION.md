@@ -401,6 +401,15 @@ now marks it `FROZEN_READY` with every request, join, lineage binding, capacity
 gate, privacy lock, and zero-response invariant intact. Its READY status must
 be committed and pushed before the bounded primary-document collector may run.
 
+The published collector has now completed all 508 requests with 508 downloads,
+zero failures, zero pending requests, and zero substitutions. Independent
+inspection rebuilt every terminal wrapper, rehashed 21,161,872 raw source
+bytes, and confirmed private collection hash
+`05a64282f41af040e7224a4c27a8c325fa87837cb1db9f10d1ed1694239260b3`.
+No source semantic, verified catalyst, causal market input, return, or outcome
+was derived. A separately frozen and inspected semantics contract is required
+before classification.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
