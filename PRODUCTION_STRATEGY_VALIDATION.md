@@ -963,6 +963,15 @@ closed-source freeze/inspection, and historical publication verification. The
 implementation must be committed and pushed before its zero-artifact manifest
 is frozen; selected-symbol source access and outcomes remain forbidden.
 
+Source manifest `2d6803ec...a58da` now freezes the complete outcome-blind
+primary-source boundary for all 1,781 selected pairs. It binds pair-v2 manifest
+`f50fe206...f225a`, daily-shortlist hash `038f35c9...a7a65`, unchanged source-
+rules hash `99843372...b4dc`, implementation hash `7279ff97...2aa3`, scanner,
+identity and strategy sources, pushed commit `a9d860c`, dependencies, private
+namespace, capacity, zero target artifacts, no substitution, and the outcome
+lock. The uninspected manifest must be committed and pushed before independent
+zero-state reconstruction; source requests remain forbidden.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
