@@ -921,6 +921,19 @@ zero-substitution rule, empty downstream namespace, and outcome lock. It is
 separate inspector may reopen the private graph. No causal detail, source,
 trigger, post-entry data, or outcome has been accessed.
 
+The v1 selected-pair inspection then failed closed before accepting any
+evidence because the inherited publication checker required all pre-freeze
+input commits to equal the later manifest-publication HEAD. That condition is
+incompatible with the required implementation-commit, freeze-commit,
+inspection sequence. Manifest `2714c94f...9b159` is preserved as
+`INSPECTION_BLOCKED`. A v2 pair contract keeps the same scanner, selection
+primitive, 1,781-pair denominator, hypothesis, trigger, privacy, and outcome
+rules, but its isolated checker requires each pinned input commit to be a clean
+pushed ancestor of inspection HEAD and verifies the exact historical blob at
+that commit. The v2 implementation must be committed and pushed before a new
+manifest is frozen; no selection repair, causal access, or outcome access is
+permitted.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,

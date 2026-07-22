@@ -1,12 +1,13 @@
 {
   "dataset_id": "dataset-selected-candidate-contract-2026-07-22-challenger-orb-retest-tranche3-v1",
   "inspected": false,
+  "inspection_blocker": "The inherited inspector requires every pre-freeze input publication commit to equal the later manifest publication HEAD; the immutable manifest correctly records pushed implementation commit 028241c while inspection ran from pushed manifest commit 74718b2.",
   "manifest_path": "historical_batches/challenger_orb_retest_v1_tranche3/selected_pair_manifests/dataset-selected-candidate-contract-2026-07-22-challenger-orb-retest-tranche3-v1-2714c94f4a5157898a1723ce9922bd31ebbdac1470a9f07f6b79b26818e9b159.json",
   "manifest_sha256": "2714c94f4a5157898a1723ce9922bd31ebbdac1470a9f07f6b79b26818e9b159",
   "pre_freeze_downstream_artifacts": 0,
   "requested_dates": 100,
   "schema_version": 1,
   "selected_pair_count": 1781,
-  "status": "FROZEN_AWAITING_INSPECTION",
+  "status": "INSPECTION_BLOCKED",
   "target_outcomes_observed_or_derived": false
 }
