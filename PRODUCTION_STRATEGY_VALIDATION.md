@@ -1093,6 +1093,17 @@ Because positive capacity already passes, accession-chain recovery is not the
 preregistered next step; exact pre-entry market-data acquisition may proceed
 after publication. No trigger, post-entry value, return, or outcome is known.
 
+The isolated third-tranche pre-entry adapter is implemented and focused tests
+pass. It hash-pins unchanged base implementation `5543beb0...d5ad`, consumes
+only the repaired pair-v2 private surface and inspected 23-positive semantics
+result, records that source capacity passed without accession recovery, and
+selects 23 pairs across 20 sessions. The planned graph contains exactly 86
+causal requests: 23 candidate bar windows, 23 candidate trade windows, and 40
+SPY/QQQ benchmark windows. Dedicated zero-state, collection, and result
+inspectors remain isolated to tranche3-v2. The implementation must be committed
+and pushed before a manifest is frozen; market access and outcomes remain
+forbidden.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
