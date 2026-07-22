@@ -137,3 +137,28 @@ def test_published_reversal_result_fails_without_outcome_access():
     assert result["market_outcomes_accessed"] is False
     assert result["records"] == []
     assert result["maturity_effect"] == "NONE"
+
+
+def test_published_reversal_result_inspection_rebuilds_retirement():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/inspections").glob(
+            "two-to-three-day-cross-sectional-reversal-v1-result-*.json"
+        )
+    )
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["result_sha256"] == (
+        "3b54a1c87305fe1e808f3852779900728d741d9062a42fe56d8677108bcca057"
+    )
+    assert inspection["closed_signals"] == 0
+    assert inspection["maximum_possible_closed_signals"] == 24
+    assert inspection["minimum_required_closed_signals"] == 30
+    assert inspection["stage0_survived"] is False
+    assert inspection["provider_requests"] == 0
+    assert inspection["returns_computed"] == 0
+    assert inspection["market_outcomes_accessed"] is False
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["valid"] is True

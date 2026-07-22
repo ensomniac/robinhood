@@ -41,7 +41,7 @@ class PortfolioFunnelTests(unittest.TestCase):
         )
         self.assertEqual(
             status["lanes"]["stage0_falsification"]["variant_id"],
-            "two-to-three-day-cross-sectional-reversal-v1",
+            "five-day-52-week-high-continuation-v1",
         )
         self.assertIsNone(status["lanes"]["representative_development"])
         self.assertIsNone(status["lanes"]["confirmation_or_shadow"])
@@ -72,10 +72,10 @@ class PortfolioFunnelTests(unittest.TestCase):
         self.assertEqual(len(status["second_wave"]["slate_inspection_paths"]), 1)
         self.assertEqual(
             status["lanes"]["stage0_falsification"]["variant_id"],
-            "two-to-three-day-cross-sectional-reversal-v1",
+            "five-day-52-week-high-continuation-v1",
         )
-        self.assertEqual(status["second_wave"]["disposed_count"], 3)
-        self.assertEqual(status["second_wave"]["retired_count"], 3)
+        self.assertEqual(status["second_wave"]["disposed_count"], 4)
+        self.assertEqual(status["second_wave"]["retired_count"], 4)
         self.assertEqual(status["second_wave"]["survivor_count"], 0)
         self.assertEqual(
             status["second_wave"]["dispositions"][0]["blockers"],
@@ -97,13 +97,22 @@ class PortfolioFunnelTests(unittest.TestCase):
                 "20 bps-per-side total R is not positive",
             ],
         )
-        self.assertEqual(len(status["second_wave"]["candidate_queue"]), 3)
+        self.assertEqual(
+            status["second_wave"]["dispositions"][3]["blockers"],
+            [
+                "closed signals are below the Stage 0 minimum",
+                "primary expectancy is not positive",
+                "primary profit factor is below the Stage 0 minimum",
+                "20 bps-per-side total R is not positive",
+            ],
+        )
+        self.assertEqual(len(status["second_wave"]["candidate_queue"]), 2)
         self.assertEqual(
             [
                 item["mechanism_family"]
                 for item in status["second_wave"]["candidate_queue"]
             ],
-            [family for _, family in funnel.SECOND_WAVE[3:]],
+            [family for _, family in funnel.SECOND_WAVE[4:]],
         )
 
     def test_first_wave_taxonomy_and_independent_inspection_rebuild(self):
@@ -112,9 +121,10 @@ class PortfolioFunnelTests(unittest.TestCase):
         self.assertEqual(
             len(status["second_wave"]["failure_taxonomy_inspection_paths"]), 1
         )
-        path = Path(__file__).resolve().parents[1] / status["second_wave"][
-            "failure_taxonomy_paths"
-        ][0]
+        path = (
+            Path(__file__).resolve().parents[1]
+            / status["second_wave"]["failure_taxonomy_paths"][0]
+        )
         taxonomy = json.loads(path.read_text(encoding="utf-8"))
         self.assertEqual(
             taxonomy["taxonomy_sha256"],
@@ -126,9 +136,10 @@ class PortfolioFunnelTests(unittest.TestCase):
         self.assertEqual(taxonomy["first_wave_active_candidates"], 0)
         self.assertEqual(len(taxonomy["development_dispositions"]), 1)
         self.assertEqual(taxonomy["maturity_effect"], "NONE")
-        inspection_path = Path(__file__).resolve().parents[1] / status[
-            "second_wave"
-        ]["failure_taxonomy_inspection_paths"][0]
+        inspection_path = (
+            Path(__file__).resolve().parents[1]
+            / status["second_wave"]["failure_taxonomy_inspection_paths"][0]
+        )
         inspection = json.loads(inspection_path.read_text(encoding="utf-8"))
         self.assertEqual(
             inspection["inspection_sha256"],

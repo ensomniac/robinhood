@@ -808,6 +808,11 @@ The authorized result
 records the 24-signal maximum, six-signal shortfall, and the standard Stage 0
 capacity blockers without market outcomes. It remains provisional until an
 independently committed result inspection confirms permanent retirement.
+Result inspection
+`21ad67029e44d87612e862031a8bbace20bdae2d64cade6dc266c3677b0132c7`
+independently rebuilds the activation, capacity inspection, and empty-outcome
+result. The exact reversal variant is permanently retired outside maturity,
+and five-day 52-week-high continuation becomes the next frozen Stage 0 lane.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live

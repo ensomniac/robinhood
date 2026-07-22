@@ -1,0 +1,20 @@
+{
+  "broker_actions": 0,
+  "closed_signals": 0,
+  "input_inspection_sha256": "2af0a5457dcd90a64bda0f3f887d1229605511be0c4aee34da788beeafbd3cff",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "21ad67029e44d87612e862031a8bbace20bdae2d64cade6dc266c3677b0132c7",
+  "manifest_sha256": "0f17a525b514518b764dade4e6f6b6ec62cbf85c766a30d9b3b78ff55169cf54",
+  "market_outcomes_accessed": false,
+  "maturity_effect": "NONE",
+  "maximum_possible_closed_signals": 24,
+  "minimum_required_closed_signals": 30,
+  "provider_requests": 0,
+  "result_file_sha256": "d05448cb24bc4cead516603db825a0ec2c81a5db5d0604f70603ec4e1a5a1bc3",
+  "result_sha256": "3b54a1c87305fe1e808f3852779900728d741d9062a42fe56d8677108bcca057",
+  "returns_computed": 0,
+  "schema_version": 1,
+  "stage0_survived": false,
+  "valid": true,
+  "variant_id": "two-to-three-day-cross-sectional-reversal-v1"
+}
