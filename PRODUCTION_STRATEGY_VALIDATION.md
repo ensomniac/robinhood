@@ -982,6 +982,15 @@ a dedicated immutable `source-contract-boundary-v2.md` and isolated private
 namespace/status. Its implementation and immutable note must be committed and
 pushed before v2 freeze; neither pair selection nor source rules may change.
 
+Source-contract v2 manifest `3c39f19e...768dfc` now freezes that repaired
+zero-artifact boundary for all 1,781 pairs. It binds immutable-note hash
+`a65da186...e6c74`, pair-v2 and scanner-v1, unchanged source-rules hash
+`99843372...b4dc`, implementation hash `bb84ceaa...9ab64`, every source and
+dependency, pushed commit `f5774ed`, isolated private state, capacity,
+substitution prohibitions, and the outcome lock. It must be committed and
+pushed uninspected before the v2 inspector runs; selected-symbol requests and
+outcomes remain blocked.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
