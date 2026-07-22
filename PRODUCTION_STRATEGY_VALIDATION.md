@@ -1191,6 +1191,14 @@ post-entry outcome lock. Focused tests rebuild counts `22 + 22 + 8 = 52`, zero
 pairwise intersections, and no published identities; the implementation must be
 committed and pushed before its hash-addressed manifest is frozen.
 
+Cumulative-capacity manifest `94a6e831...af21a` now freezes the three inspected
+causal sources, their public and private hashes, zero pairwise source-session
+and trigger-session intersections, aggregate trigger counts `22 + 22 + 8`, 52
+distinct one-per-session signals, and the unchanged minimum of 50. Exact
+identities remain private and every outcome field remains locked. This passing
+snapshot is uninspected; it must be committed and pushed before the independent
+capacity inspector may award the outcome-contract milestone.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,

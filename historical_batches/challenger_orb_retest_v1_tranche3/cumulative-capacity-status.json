@@ -1,0 +1,19 @@
+{
+  "counts": {
+    "cumulative_distinct_trigger_sessions": 52,
+    "minimum_required_development_signals": 50,
+    "source_corpora": 3,
+    "source_trigger_sessions": [
+      22,
+      22,
+      8
+    ]
+  },
+  "dataset_id": "dataset-challenger-orb-retest-cumulative-trigger-capacity-2026-07-22-v1",
+  "inspected": false,
+  "manifest_sha256": "94a6e83110427b5c7d7d371e5a36292f7a657b9f80d955b5e30982cccd3af21a",
+  "post_entry_data_accessed": false,
+  "schema_version": 1,
+  "status": "FROZEN_AWAITING_INSPECTION",
+  "target_outcomes_observed_or_derived": false
+}
