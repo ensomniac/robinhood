@@ -461,6 +461,12 @@ runtime substitution is the local reader class; the engine, causal boundary,
 daily cap, and outcome lock are unchanged. The implementation authorizes no
 derivation until a new runner manifest is frozen and independently inspected.
 
+Runner manifest `6dc393ae...ed9cd` now freezes the exact compatibility path,
+six implementation hashes, all inspected collection bindings, 95 pairs across
+47 dates, unchanged causal trigger rules, and the outcome lock. The private
+trigger namespace is empty. This uninspected manifest must be committed and
+pushed before independent zero-state reconstruction.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

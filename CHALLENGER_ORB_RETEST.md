@@ -99,6 +99,12 @@ inspected collection hashes, and the exact-window reader; the only scoped
 runtime substitution is the local reader class. The runner refuses derivation
 until its own zero-trigger contract is frozen, inspected, committed, and pushed.
 
+Runner manifest `6dc393ae...ed9cd` now freezes that exact compatibility path,
+all six implementation hashes, the inspected collection hashes, 95 pairs
+across 47 dates, the unchanged trigger contract, and the closed outcome
+boundary. No trigger artifact exists. The manifest is uninspected and must be
+committed and pushed before zero-state reconstruction.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`
