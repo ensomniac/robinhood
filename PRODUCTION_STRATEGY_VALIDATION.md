@@ -1182,6 +1182,15 @@ is `READY` with eight distinct trigger sessions. It does not independently meet
 50; the next gate is a separate cumulative-capacity inspection across all three
 disjoint corpora, still with no post-entry outcome access.
 
+The cumulative-capacity authority now independently binds all three inspected
+public trigger results to their private trigger-index hashes and recomputes
+one-signal-per-session capacity entirely in memory. It requires pairwise
+disjoint source-session and trigger-session sets, the frozen minimum of 50, no
+source or parameter repair, aggregate-only publication, and the complete
+post-entry outcome lock. Focused tests rebuild counts `22 + 22 + 8 = 52`, zero
+pairwise intersections, and no published identities; the implementation must be
+committed and pushed before its hash-addressed manifest is frozen.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
