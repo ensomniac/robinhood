@@ -89,3 +89,30 @@ def test_published_reversal_activation_binds_the_structural_ceiling():
     assert activation["provider_requests_authorized"] is False
     assert activation["return_evaluation_authorized_before_inspection"] is False
     assert activation["maturity_effect"] == "NONE"
+
+
+def test_published_reversal_capacity_inspection_authorizes_no_returns():
+    activation_path = next(
+        (ROOT / "strategy_tournament/second_wave/activations").glob(
+            "two-to-three-day-cross-sectional-reversal-v1-*.json"
+        )
+    )
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/inspections").glob(
+            "two-to-three-day-cross-sectional-reversal-v1-input-*.json"
+        )
+    )
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection == stage0.inspect_activation(activation_path)
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["maximum_possible_closed_signals"] == 24
+    assert inspection["minimum_required_closed_signals"] == 30
+    assert inspection["closed_signal_shortfall"] == 6
+    assert inspection["capacity_evaluation_authorized"] is True
+    assert inspection["return_evaluation_authorized"] is False
+    assert inspection["provider_requests"] == 0
+    assert inspection["returns_computed"] == 0
+    assert inspection["maturity_effect"] == "NONE"

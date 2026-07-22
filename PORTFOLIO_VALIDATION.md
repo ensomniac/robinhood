@@ -798,6 +798,11 @@ member-date rows, and 5,457 unique symbols. The frozen one-entry-per-date limit
 proves a maximum of 24 closed signals and a six-signal Stage 0 shortfall. No
 market data was requested and no outcome was accessed; the structural result
 remains blocked until its capacity inspection is committed and pushed.
+Capacity inspection
+`2af0a5457dcd90a64bda0f3f887d1229605511be0c4aee34da788beeafbd3cff`
+independently rebuilds that ceiling and the exact membership identity. It
+authorizes only the structural disposition, explicitly leaves return access
+closed, and records zero provider calls, return calculations, or broker actions.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
