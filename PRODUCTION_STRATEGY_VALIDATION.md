@@ -1207,6 +1207,16 @@ minimum of 50. This is the required evidence milestone for
 `FREEZE_OUTCOME_CONTRACT`; it does not reveal an outcome or establish alpha,
 maturity, production readiness, or live authorization.
 
+The retest qualification-collection adapter now binds all 60 frozen trigger
+pairs across 52 sessions to the existing outcome-blind pre-entry collector. It
+starts from each already verified rebreak, then requests only the opening and
+decision prefixes, three causal quote snapshots, completed candidate/SPY/QQQ
+bars, premarket structure, 252 prior sessions, splits, and causal halt records.
+Every request ends at the decision boundary; post-entry prices and outcomes
+remain forbidden. The separate inspector rebuilds every pair and request hash.
+Focused tests and a provider-config preflight pass with zero target artifacts;
+the implementation must be committed and pushed before its manifest is frozen.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
