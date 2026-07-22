@@ -1199,6 +1199,14 @@ identities remain private and every outcome field remains locked. This passing
 snapshot is uninspected; it must be committed and pushed before the independent
 capacity inspector may award the outcome-contract milestone.
 
+Independent capacity inspection now marks manifest `94a6e831...af21a`
+`READY`: all three public results and private trigger indexes rehash, all
+terminal records reload, both source-session and trigger-session sets are
+pairwise disjoint, and one-per-session capacity is 52 against the frozen
+minimum of 50. This is the required evidence milestone for
+`FREEZE_OUTCOME_CONTRACT`; it does not reveal an outcome or establish alpha,
+maturity, production readiness, or live authorization.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
