@@ -1073,6 +1073,16 @@ evidence only; ownership, issuer binding, causal timing, financing conflicts,
 direction, materiality, and terminal source semantics remain unclassified.
 Outcomes and selected-market detail remain inaccessible.
 
+Semantics manifest `26fe3b93...3dc40` is independently `FROZEN_READY` before
+text extraction. It freezes all 1,781 pair identities, 482 documents, 498
+pair/source joins, 431 source-bearing pairs, and 1,350 explicit no-source pairs
+under the unchanged primary-source rules and deterministic classifier. Pair
+hash `bcaee0e0...af65e`, source hash `4747c875...b4755`, join hash
+`437bb561...7f4ba`, no-source hash `9ee0d608...da524`, and private hash
+`4015c0a9...11229` bind the zero-artifact state. Publication permits only
+source-text extraction and deterministic review; outcomes remain forbidden
+regardless of the eventual positive-source count.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
