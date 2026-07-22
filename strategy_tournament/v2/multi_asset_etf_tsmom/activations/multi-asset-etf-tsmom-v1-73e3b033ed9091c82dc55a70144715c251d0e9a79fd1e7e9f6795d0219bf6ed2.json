@@ -1,0 +1,55 @@
+{
+  "access_contract": {
+    "broker_actions_permitted": false,
+    "capacity_evaluation_before_inspection_permitted": false,
+    "entry_fill_access_permitted": false,
+    "exit_or_stop_access_permitted": false,
+    "forward_return_computation_permitted": false,
+    "maturity_effect": "NONE",
+    "stage0_outcome_access_permitted": false
+  },
+  "activation_sha256": "73e3b033ed9091c82dc55a70144715c251d0e9a79fd1e7e9f6795d0219bf6ed2",
+  "artifact_kind": "outcome-blind-capacity-input-activation",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "multi-asset-etf-tsmom-v1",
+  "claim_limit": "This activation freezes only timestamp and close inputs. It contains no signal count or performance outcome.",
+  "contract_inspection_sha256": "e6394042efdb2ed5efb0a76f81283487c70b0066fcdc63ef2f316a2ec0361ff1",
+  "contract_sha256": "a77cc1a26a926b57657c3226f311914c4f0b4b31e94dc8f3c50a0604fa16e063",
+  "denominator": {
+    "eligible_causal_evaluations": 157,
+    "preserve_every_scheduled_week": true,
+    "scheduled_weeks": 157,
+    "signal_count": null
+  },
+  "implementation_sha256": "b09d4d71804ed03d8f9397722fdc7ba05f70ee88dd858d23735be90b3c7aa40e",
+  "inspector_sha256": "fb1922cd309429a2db70a9ad9eb762e20c224492a84ce3bf4c5576b2e684ddf2",
+  "market_outcomes_accessed": false,
+  "mechanism_family": "multi-asset-etf-time-series-momentum",
+  "returns_computed": 0,
+  "schema_version": 1,
+  "source_selection": {
+    "collection_end_exclusive": "2026-01-06",
+    "collection_start": "2021-12-01",
+    "common_sessions": 1027,
+    "dataset_id": "dataset-multi-asset-etf-tsmom-capacity-2026-07-22-v1",
+    "input_sha256": "ad18c0813ba4518ff9c8c30d16c78e876c5b7750b46affd0c0b42b79c13bb00f",
+    "input_symbol_sessions": 7189,
+    "permitted_fields": [
+      "timestamp",
+      "close"
+    ],
+    "private_input_file_sha256": "173cf175d5ba76ddcd188613ca9e8f11f9dc0192c6daec9d8080bc709f928093",
+    "provider_requests": 35,
+    "scheduled_weeks": 157,
+    "symbols": [
+      "SPY",
+      "EFA",
+      "EEM",
+      "IEF",
+      "GLD",
+      "DBC",
+      "UUP"
+    ]
+  },
+  "strategy_version": "2026-07-22-multi-asset-etf-tsmom-v1"
+}
