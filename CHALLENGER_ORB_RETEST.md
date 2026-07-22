@@ -169,6 +169,14 @@ artifact hash `d2b7ea6e...bdbadb`. Combined independent inspection confirms the
 20-GiB reserve, zero target-market artifacts, and no outcome access. These
 public inputs must be committed and pushed before scanner freeze.
 
+The zero-state inner scanner graph was generated with manifest
+`5805ca2d...2da99`: 530 sessions, a 7,522-symbol union, no target-market
+artifact, and no substitution. Immediate status reconstruction then exposed an
+adapter-only locator bug: the inherited default argument still pointed at the
+first corpus's manifest root. No provider request occurred. The locator now
+passes the second-tranche root explicitly and must be committed before outer
+freeze or collection.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

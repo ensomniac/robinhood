@@ -525,6 +525,13 @@ hash `92500496...4ddc2`; 4,933 split events have ignored-artifact hash
 no outcome access, and a valid 20-GiB reserve. Publication is required before
 scanner freeze.
 
+Inner scanner manifest `5805ca2d...2da99` freezes the 530-session,
+7,522-symbol zero-state graph with no target-market artifact or substitution.
+Its first status reconstruction failed closed because the adapter inherited the
+first corpus's default manifest-root argument. The explicit second-tranche root
+repair changes no frozen scanner input and no provider request occurred; it must
+be published before outer freeze.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

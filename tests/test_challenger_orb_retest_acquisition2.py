@@ -59,3 +59,16 @@ def test_expected_contract_binds_wrapper_and_base_controller(monkeypatch):
         "path": str(acquisition.BASE_CONTROLLER),
         "sha256": "bound",
     }
+
+
+def test_scanner_manifest_lookup_passes_second_tranche_root(monkeypatch):
+    observed = []
+    expected = acquisition.DEFAULT_SCANNER_MANIFEST_ROOT / "manifest.json"
+    monkeypatch.setattr(
+        prior,
+        "_scanner_manifest_path",
+        lambda root: observed.append(root) or expected,
+    )
+
+    assert acquisition._scanner_manifest_path() == expected
+    assert observed == [acquisition.DEFAULT_SCANNER_MANIFEST_ROOT]

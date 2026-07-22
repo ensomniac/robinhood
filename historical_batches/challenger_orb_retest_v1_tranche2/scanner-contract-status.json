@@ -1,0 +1,12 @@
+{
+  "dataset_id": "dataset-production-scanner-replay-2026-07-21-challenger-orb-retest-tranche2-v1",
+  "manifest_path": "historical_batches/challenger_orb_retest_v1_tranche2/scanner_manifests/dataset-production-scanner-replay-2026-07-21-challenger-orb-retest-tranche2-v1-5805ca2d6d3e1df680b0793855e3c64867a596b30e920b6f47c372df3c92da99.json",
+  "manifest_sha256": "5805ca2d6d3e1df680b0793855e3c64867a596b30e920b6f47c372df3c92da99",
+  "pre_freeze_target_market_artifacts": 0,
+  "required_sessions": 530,
+  "schema_version": 1,
+  "status": "FROZEN_READY",
+  "substitutions_allowed": false,
+  "target_outcomes_observed_or_derived": false,
+  "target_symbol_union_count": 7522
+}

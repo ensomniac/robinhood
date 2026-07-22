@@ -186,7 +186,7 @@ def collect_splits(*, env_path: Path) -> dict[str, Any]:
 
 def _scanner_manifest_path() -> Path:
     with configured():
-        return base._scanner_manifest_path()
+        return base._scanner_manifest_path(DEFAULT_SCANNER_MANIFEST_ROOT)
 
 
 def _call(name: str, *args: Any, **kwargs: Any):
