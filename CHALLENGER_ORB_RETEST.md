@@ -16,6 +16,12 @@ inspector must rebuild a zero-response manifest after freeze. The adapter and
 inspector must be committed and pushed before freezing; the frozen contract
 must then be inspected, committed, and pushed before any accession request.
 
+The exact recovery manifest is now frozen as `562266f3...1b3515`. It binds all
+372 unresolved pairs, 433 pair/accession joins, 417 accession requests, 10
+prior positives, private selection hash `f385640c...d36ef4`, and zero target
+recovery artifacts. It remains uninspected and authorizes no provider access
+until the separate reconstruction is published from a clean pushed commit.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

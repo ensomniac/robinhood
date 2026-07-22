@@ -1,0 +1,19 @@
+{
+  "counts": {
+    "candidate_pairs": 372,
+    "prior_pair_source_joins": 433,
+    "unique_accessions": 417
+  },
+  "dataset_id": "dataset-development-sec-accession-chain-recovery-2026-07-21-challenger-orb-retest-v1",
+  "join_graph_sha256": "de4371a5916e0b36ba4061a41acc3d9712e6aeb33de088d53212019086b11b26",
+  "manifest_sha256": "562266f3942f3f088b8d8e4a0acf2464c5413cdc325704030afa4b1f8f1b3515",
+  "outcome_contract_permitted": false,
+  "pair_identity_sha256": "985764da3accc188f70b22894f89657a9d3e403a9528b89597379c349dd088c7",
+  "pre_freeze_target_artifact_count": 0,
+  "request_graph_sha256": "8c7843741e6fce2a9d505be501faeca95f417a8d2ce63a796bb5783b85ca2d4c",
+  "schema_version": 1,
+  "source_semantics_classified": false,
+  "status": "FROZEN_READY",
+  "target_outcomes_observed_or_derived": false,
+  "valid": true
+}
