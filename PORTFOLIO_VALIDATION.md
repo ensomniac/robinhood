@@ -730,6 +730,13 @@ binds 1,008 common sessions, 4,032 symbol-sessions, and all 752 evaluation
 sessions. It records zero signal selection or return calculations and forbids
 outcome access until independent input inspection is committed and pushed.
 
+Input inspection
+`83d156b0ea6f6b01bfdf41072fdd4c43c710bb0a734c102ed9cdda22fd83426f`
+independently rebuilt the activation and validated all 4,032 daily
+symbol-sessions plus all 752 evaluation sessions. It made zero provider or
+broker calls, computed zero returns, and authorizes exactly the frozen Stage 0
+evaluation after the inspection is committed and pushed.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the

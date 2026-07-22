@@ -105,10 +105,24 @@ def test_published_activation_binds_complete_whole_provider_input_graph():
     assert activation["maturity_effect"] == "NONE"
 
 
-def test_input_inspection_is_absent_before_independent_review():
+def test_published_input_inspection_authorizes_one_frozen_evaluation():
     matches = sorted(
         (ROOT / "strategy_tournament/second_wave/inspections").glob(
             "broad-etf-trend-pullback-v1-input-*.json"
         )
     )
-    assert matches == []
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["manifest_sha256"] == (
+        "a4f2348809b00bf70994d3c7868a1bce34b8cec578a5270dc32d80afa1f39860"
+    )
+    assert inspection["input_symbol_dates"] == 4032
+    assert inspection["evaluation_dates"] == 752
+    assert inspection["provider_requests"] == 0
+    assert inspection["returns_computed"] == 0
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["return_evaluation_authorized"] is True
+    assert inspection["valid"] is True
