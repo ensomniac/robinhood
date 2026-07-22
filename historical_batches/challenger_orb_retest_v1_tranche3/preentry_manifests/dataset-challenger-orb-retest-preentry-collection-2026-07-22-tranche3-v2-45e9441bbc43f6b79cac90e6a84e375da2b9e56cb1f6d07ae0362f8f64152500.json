@@ -1,0 +1,129 @@
+{
+  "capacity_contract": {
+    "configured_reserve_bytes": 21474836480,
+    "historical_store_outside_repository": true,
+    "minimum_free_bytes": 21474836480
+  },
+  "collection_contract": {
+    "adjustment": "raw",
+    "benchmark_bars": "SPY and QQQ 1Min 09:30-10:30 ET",
+    "candidate_bars": "1Min 09:30-10:30 ET",
+    "candidate_trades": "raw regular-sale SIP trades 09:35-10:30 ET",
+    "checkpoint_unit": "request",
+    "feed": "sip",
+    "local_canonical_cache_first": true,
+    "maximum_attempts": 3,
+    "provider": "Alpaca Market Data API",
+    "provider_switching_allowed": false,
+    "substitutions_allowed": false,
+    "whole_provider_fidelity_per_symbol_session": true
+  },
+  "dataset_id": "dataset-challenger-orb-retest-preentry-collection-2026-07-22-tranche3-v2",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "historical_batches/challenger_orb_retest_v1_tranche3/selected_pair_manifests/dataset-selected-candidate-contract-2026-07-22-challenger-orb-retest-tranche3-v2-f50fe2068ff38e9a130691468eac181e6332351a56b4a78209f0bc708eef225a.json",
+      "research_results/2026-07-22-challenger-orb-retest-sec-source-semantics-tranche3-inspection.json",
+      "research_results/2026-07-22-challenger-orb-retest-sec-source-semantics-tranche3-inspection.json",
+      "learning/hypotheses/experiment-catalyst-orb-retest-v1-b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105.json",
+      "CHALLENGER_ORB_RETEST.md",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "implementation_contract": {
+    "collector": {
+      "path": "challenger_orb_retest_preentry3.py",
+      "sha256": "5e565958eadd016a4ef889d6e1c8abee2c02161140f43b0d123eb2dbf748ac09"
+    },
+    "inspector": {
+      "path": "challenger_orb_retest_preentry_inspection3.py",
+      "sha256": "b81b636275bf350a41c4ef2f0950fb0f76abf3a961322047ee16aef731dbf5e6"
+    },
+    "trigger": {
+      "path": "challenger_orb_retest.py",
+      "sha256": "84290bdc98aca16fd6d3b13d788445aff75af36b77af658fddebed1fe6974682"
+    }
+  },
+  "manifest_sha256": "45e9441bbc43f6b79cac90e6a84e375da2b9e56cb1f6d07ae0362f8f64152500",
+  "outcome_lock": {
+    "outcome_contract_must_be_separately_frozen": true,
+    "post_entry_data_access_allowed": false,
+    "quote_or_fill_access_allowed": false,
+    "return_fields_allowed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "registered_at": "2026-07-22T14:54:15.713590+00:00",
+  "requested_dates": [
+    "2023-02-17",
+    "2023-03-16",
+    "2023-03-30",
+    "2023-05-31",
+    "2023-08-16",
+    "2023-09-29",
+    "2023-10-26",
+    "2023-11-03",
+    "2023-11-06",
+    "2023-11-29",
+    "2023-11-30",
+    "2024-02-08",
+    "2024-03-06",
+    "2024-04-26",
+    "2024-05-29",
+    "2024-08-21",
+    "2024-09-12",
+    "2024-09-26",
+    "2024-10-02",
+    "2024-11-05"
+  ],
+  "schema_version": 1,
+  "selection_contract": {
+    "benchmark_bar_requests": 40,
+    "candidate_bar_requests": 23,
+    "candidate_trade_requests": 23,
+    "daily_entry_cap": 1,
+    "date_symbol_or_missing_input_substitution_allowed": false,
+    "maximum_daily_signals": 20,
+    "pair_identity_sha256": "6dee8e2b5e798f2e3aab59018433452813e245bf916a3b1fadb6c5d926f48123",
+    "private_selection_sha256": "d1f8a97422be3ed7a39fcbdda006694081f2c470135bc75d1d467cc081bea013",
+    "request_graph_sha256": "a3082eba6d0d24af55e0444d5fe5d4cb4ace83859d933175ecfa836dae06e4be",
+    "selection_uses_verified_positive_pairs_only": true,
+    "source_private_artifacts": {
+      "selected_pairs": "0ecec391d080d6d40e41c293b592f3d36a1c32609c1f2a570efa07a27878f40e",
+      "source_review": "d168c2d4c6e74edbb2cc9e29a294186d111386d375a5fc65d10d66f2683fcdb2"
+    },
+    "total_requests": 86,
+    "verified_positive_dates": 20,
+    "verified_positive_pairs": 23
+  },
+  "source_bindings": {
+    "2026-07-22-challenger-orb-retest-sec-source-semantics-tranche3-inspection.json": {
+      "path": "research_results/2026-07-22-challenger-orb-retest-sec-source-semantics-tranche3-inspection.json",
+      "sha256": "452e6036c5a8af2c05f4b5ae7c015dad476d18739c5e8ecfffa0a9deeede608f"
+    },
+    "dataset-selected-candidate-contract-2026-07-22-challenger-orb-retest-tranche3-v2-f50fe2068ff38e9a130691468eac181e6332351a56b4a78209f0bc708eef225a.json": {
+      "path": "historical_batches/challenger_orb_retest_v1_tranche3/selected_pair_manifests/dataset-selected-candidate-contract-2026-07-22-challenger-orb-retest-tranche3-v2-f50fe2068ff38e9a130691468eac181e6332351a56b4a78209f0bc708eef225a.json",
+      "sha256": "0953a3c1c4af341a4bbb547e74b792b4d2a3d252d11d4e84236cf742f0b37d6f"
+    },
+    "experiment-catalyst-orb-retest-v1-b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105.json": {
+      "path": "learning/hypotheses/experiment-catalyst-orb-retest-v1-b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105.json",
+      "sha256": "75a512dc3ba07cd1e314ab9dc357b9ee9d429dddfd6138b4ae6a85b0d1e27190"
+    }
+  },
+  "trigger_contract": {
+    "completed_noninterpolated_retest_bars": true,
+    "continuous_cross_version": "continuous-regular-cross-v1",
+    "decision_cutoff_et": "10:30:00",
+    "decision_delay_seconds": 10,
+    "failed_hold_retention_boundary": "end of first completed touch bar",
+    "first_touch_only": true,
+    "hypothesis_sha256": "b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105",
+    "minimum_closed_development_signals": 50,
+    "no_signal_retention_boundary": "10:30:00",
+    "rule_version": "catalyst-orb-retest-v1",
+    "search_start_et": "09:35:00",
+    "sip_condition_rule_version": "alpaca-sip-minute-v1"
+  }
+}

@@ -1104,6 +1104,16 @@ inspectors remain isolated to tranche3-v2. The implementation must be committed
 and pushed before a manifest is frozen; market access and outcomes remain
 forbidden.
 
+Pre-entry manifest `45e9441b...52500` now freezes all 23 verified-positive
+pairs across 20 third-tranche sessions before selected-market access. The graph
+contains exactly 86 requests: 23 candidate bar windows, 23 candidate trade
+windows, and 40 SPY/QQQ benchmark windows. Private selection hash
+`d1f8a974...a013`, pair hash `6dee8e2b...48123`, and request hash
+`a3082eba...6e4be` bind the omitted denominator. The target contains one
+private frozen selection and no response, collection, trigger, post-entry, or
+outcome artifact. It is uninspected and must be committed and pushed before
+independent zero-state reconstruction; provider access remains forbidden.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
