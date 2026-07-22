@@ -221,3 +221,25 @@ def test_published_high_continuation_result_is_structural_only():
     assert result["market_outcomes_accessed"] is False
     assert result["records"] == []
     assert result["maturity_effect"] == "NONE"
+
+
+def test_published_high_continuation_result_inspection_rebuilds_retirement():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/inspections").glob(
+            "five-day-52-week-high-continuation-v1-result-*.json"
+        )
+    )
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["result_sha256"] == (
+        "2b44cf24c18baba5a388a6dd8bb8ed62f67fcdfe8f012965586429a13ad86fbc"
+    )
+    assert inspection["maximum_possible_closed_signals"] == 24
+    assert inspection["minimum_required_closed_signals"] == 30
+    assert inspection["stage0_survived"] is False
+    assert inspection["market_outcomes_accessed"] is False
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["valid"] is True

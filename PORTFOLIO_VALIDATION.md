@@ -828,6 +828,13 @@ The authorized result
 `2b44cf24c18baba5a388a6dd8bb8ed62f67fcdfe8f012965586429a13ad86fbc`
 records the exact 24-signal ceiling and empty outcome set. It cannot advance and
 remains provisional only until independent result inspection.
+Result inspection
+`7083067c990c221d01d47782882e8eac5a8d652f228e94894d3e5c75cc2967d2`
+independently rebuilds the zero-outcome disposition. The exact high-continuation
+variant is permanently retired outside maturity, and turn-of-month ETF
+seasonality becomes the last second-wave candidate. This was the fifteenth
+Stage 0 disposition; the cadence notification was attempted and skipped by the
+current `trades` email setting.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live

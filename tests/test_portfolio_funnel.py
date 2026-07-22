@@ -41,7 +41,7 @@ class PortfolioFunnelTests(unittest.TestCase):
         )
         self.assertEqual(
             status["lanes"]["stage0_falsification"]["variant_id"],
-            "five-day-52-week-high-continuation-v1",
+            "turn-of-month-etf-seasonality-v1",
         )
         self.assertIsNone(status["lanes"]["representative_development"])
         self.assertIsNone(status["lanes"]["confirmation_or_shadow"])
@@ -53,8 +53,10 @@ class PortfolioFunnelTests(unittest.TestCase):
             status["validation_candidates"][0]["validation_phase"],
             "RETIRED_DEVELOPMENT",
         )
-        self.assertFalse(status["notification_due"])
-        self.assertEqual(status["notification_reasons"], [])
+        self.assertTrue(status["notification_due"])
+        self.assertEqual(
+            status["notification_reasons"], ["three Stage 0 dispositions completed"]
+        )
 
     def test_remaining_first_wave_queue_matches_frozen_plan(self):
         status = funnel.build_funnel_status(maturity.build_report())
@@ -72,10 +74,10 @@ class PortfolioFunnelTests(unittest.TestCase):
         self.assertEqual(len(status["second_wave"]["slate_inspection_paths"]), 1)
         self.assertEqual(
             status["lanes"]["stage0_falsification"]["variant_id"],
-            "five-day-52-week-high-continuation-v1",
+            "turn-of-month-etf-seasonality-v1",
         )
-        self.assertEqual(status["second_wave"]["disposed_count"], 4)
-        self.assertEqual(status["second_wave"]["retired_count"], 4)
+        self.assertEqual(status["second_wave"]["disposed_count"], 5)
+        self.assertEqual(status["second_wave"]["retired_count"], 5)
         self.assertEqual(status["second_wave"]["survivor_count"], 0)
         self.assertEqual(
             status["second_wave"]["dispositions"][0]["blockers"],
@@ -106,13 +108,22 @@ class PortfolioFunnelTests(unittest.TestCase):
                 "20 bps-per-side total R is not positive",
             ],
         )
-        self.assertEqual(len(status["second_wave"]["candidate_queue"]), 2)
+        self.assertEqual(
+            status["second_wave"]["dispositions"][4]["blockers"],
+            [
+                "closed signals are below the Stage 0 minimum",
+                "primary expectancy is not positive",
+                "primary profit factor is below the Stage 0 minimum",
+                "20 bps-per-side total R is not positive",
+            ],
+        )
+        self.assertEqual(len(status["second_wave"]["candidate_queue"]), 1)
         self.assertEqual(
             [
                 item["mechanism_family"]
                 for item in status["second_wave"]["candidate_queue"]
             ],
-            [family for _, family in funnel.SECOND_WAVE[4:]],
+            [family for _, family in funnel.SECOND_WAVE[5:]],
         )
 
     def test_first_wave_taxonomy_and_independent_inspection_rebuild(self):
