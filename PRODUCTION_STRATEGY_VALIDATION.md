@@ -650,6 +650,14 @@ zero-derived-artifact state. Source text, classifications, causal market
 inputs, substitutions, and outcomes remain locked until this manifest is
 committed and pushed.
 
+Independent semantic inspection then rebuilt all 540 documents and 552 joins
+over the full 1,826-pair denominator. Pair dispositions are 18 verified
+positive, 17 conflict, nine negative, 58 non-material, 365 document-semantics
+unresolved, and 1,359 without a selected SEC source. The 18 positives miss the
+frozen minimum of 20, so the only permitted next step is exact accession-chain
+recovery over the 365 unresolved pairs. Private result hash
+`3a69fee7...e63d2` binds the review; outcomes remain unobserved and forbidden.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
