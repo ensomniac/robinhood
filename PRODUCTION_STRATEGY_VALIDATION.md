@@ -604,6 +604,16 @@ descriptors. These are discovery identities, not verified catalyst semantics.
 Supplemental files, primary documents, causal inputs, and outcomes remain
 locked behind later exact contracts.
 
+Second-tranche supplemental manifest `693a1487...7b7e0` now independently
+freezes all 730 descriptor decisions before provider access. Exactly 28
+descriptors overlap a frozen pair window and 702 are excluded as outside those
+windows. Private contract hash `ff66c238...ce90d`, request-graph hash
+`662275e8...1f0be`, and decision hash `25fdc404...27cde` bind the exact graph,
+while the target namespace contains zero supplemental response artifacts.
+Supplemental files, primary documents, semantic classifications, causal
+inputs, substitutions, and outcomes remain locked until this boundary is
+committed and pushed and the bounded collector is run.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
