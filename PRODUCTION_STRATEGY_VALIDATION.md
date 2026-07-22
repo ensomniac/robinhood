@@ -455,6 +455,12 @@ The independent collection inspection now passes all 284 requests and
 trigger artifacts. This inspection must be committed and pushed before causal
 trigger derivation.
 
+A trigger compatibility runner and separate inspector now bind the unchanged
+trigger rules to the exact-window reader and inspected collection. Their sole
+runtime substitution is the local reader class; the engine, causal boundary,
+daily cap, and outcome lock are unchanged. The implementation authorizes no
+derivation until a new runner manifest is frozen and independently inspected.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

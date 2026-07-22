@@ -93,6 +93,12 @@ private collection hash `f3a5708f...d3a`, wrapper-set hash
 the outcome lock and empty trigger namespace. Trigger derivation remains closed
 until this inspection is committed and pushed.
 
+The trigger compatibility runner and its independent inspector are now
+implemented. They bind the original pre-entry manifest and trigger engine, the
+inspected collection hashes, and the exact-window reader; the only scoped
+runtime substitution is the local reader class. The runner refuses derivation
+until its own zero-trigger contract is frozen, inspected, committed, and pushed.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`
