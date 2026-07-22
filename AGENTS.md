@@ -23,10 +23,10 @@ Authorization record `6a7e2748...0fd6e` has independently earned
 `AUTHORIZED_READY`. Its priority-one multi-asset ETF time-series-momentum
 variant is retired at Stage 0, and its priority-two Schedule 13D activist-
 continuation variant is retired after representative development. Neither may
-be repaired on its evaluation corpus. The next bounded action is the outcome-
-blind capacity preflight for priority-three accelerated-share-repurchase
-continuation. Provider access still requires a separately frozen and inspected
-collection contract; target outcomes and broker actions remain forbidden.
+be repaired on its evaluation corpus. Priority-three accelerated-share-
+repurchase continuation now has inspected outcome-blind capacity contract
+`afb19cf7...f6cb7`. SEC access is limited to that exact 2010-2025 search and
+accession-document scope; target outcomes and broker actions remain forbidden.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and

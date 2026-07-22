@@ -1,0 +1,129 @@
+{
+  "access_contract": {
+    "broker_actions_permitted": false,
+    "forward_return_access_permitted": false,
+    "market_price_access_permitted": false,
+    "maturity_effect": "NONE",
+    "sec_access_before_contract_inspection_permitted": false,
+    "sec_search_and_exact_matched_document_access_after_inspection_permitted": true
+  },
+  "artifact_kind": "outcome-blind-asr-capacity-contract",
+  "authority_hashes": {
+    "PORTFOLIO_THESIS_V2.md": "1e8ab966d4ac0aa17e1bf930f9c1f971be0e34070652a76a7ef05eb17c1f7513",
+    "PORTFOLIO_VALIDATION_V2.md": "0c88db58e76bfc7a146ae497b80ece6e6b5f83ef1f44d3792d6b6d6a3ea45e7f",
+    "portfolio_config.toml": "b048636e497b7d89d025cef797845e88c2301a861e9a067a9db5ae6f9722ecac",
+    "strategy_tournament/successor_proposal/authorizations/multi-strategy-portfolio-validation-v2-authorization-6a7e27481ff80cd3e457d972c10347ea831801d6532fdc34b9e9fb0453c0fd6e.json": "6715b4078e30bc88b3f5d3e05bd3c4608736229b2cb6529849d57114399c360a",
+    "strategy_tournament/v2/schedule13d/validation/retirements/schedule-13d-activist-continuation-v1-development-retirement.json": "d0bc1ef32281790d5ae4a2533426efe85d2a44257199de39e55ac9edc0924e2f"
+  },
+  "authorization_sha256": "6a7e27481ff80cd3e457d972c10347ea831801d6532fdc34b9e9fb0453c0fd6e",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v1",
+  "capacity_gate": {
+    "100_plus_disposition": "CAPACITY_READY",
+    "50_through_99_disposition": "PRESERVED_LATER_SINGLE_RULE",
+    "below_50_disposition": "RETIRED_INSUFFICIENT_FORMAL_CAPACITY",
+    "fast_lane_minimum_verified_events": 100,
+    "preserve_later_single_rule_minimum": 50,
+    "retire_below_verified_events": 50
+  },
+  "claim_limit": "This artifact freezes capacity collection only. It contains no filing hit count, event count, price, return, strategy outcome, or maturity evidence.",
+  "contract_sha256": "afb19cf7e78db4afb008cbbce5c7ad462911a113efc1c2d36a4dfa80252f6cb7",
+  "denominator_contract": {
+    "complete_query_and_semantic_attrition_required": true,
+    "no_hit_or_event_substitution": true,
+    "retain_every_matched_document_attempt": true,
+    "retain_every_unique_efts_hit": true,
+    "terminal_reason_required_for_every_hit": true
+  },
+  "distinctness_contract": {
+    "activist_ownership_event": false,
+    "executed_corporate_dealer_agreement": true,
+    "failed_family_rules_reused_or_repaired": false,
+    "ordinary_repurchase_authorization": false,
+    "price_only_signal": false
+  },
+  "event_contract": {
+    "all_required_positive_groups_must_match": true,
+    "board_authorization_only": "ineligible_preserve_denominator",
+    "deduplication_key": "issuer CIK plus normalized agreement date plus committed notional; retain first public SEC acceptance then lexical accession",
+    "generic_only_match": "ineligible_preserve_denominator",
+    "generic_repurchase_intent": "ineligible_preserve_denominator",
+    "long_common_equity_or_etf_only": true,
+    "ordinary_open_market_program": "ineligible_preserve_denominator",
+    "pattern_contract": {
+      "asr_phrase": [
+        "\\baccelerated\\s+(?:share|stock)\\s+repurchase\\b",
+        "\\baccelerated\\s+repurchase\\s+agreement\\b",
+        "\\bASR\\s+agreement\\b"
+      ],
+      "committed_notional": [
+        "\\$\\s?\\d[\\d,.]*(?:\\s?(?:million|billion))?\\b.{0,160}\\b(?:accelerated|ASR|agreement)\\b",
+        "\\b(?:accelerated|ASR|agreement)\\b.{0,160}\\$\\s?\\d[\\d,.]*(?:\\s?(?:million|billion))?\\b"
+      ],
+      "continuing_delivery_or_settlement": [
+        "\\binitial\\s+(?:delivery|deliver)\\b",
+        "\\bfinal\\s+(?:delivery|settlement)\\b",
+        "\\bvaluation\\s+period\\b",
+        "\\bremaining\\s+(?:shares|delivery)\\b",
+        "\\bsettlement\\b.{0,240}\\b(?:shares|cash|delivery|VWAP|average)\\b"
+      ],
+      "executed_agreement": [
+        "\\b(?:entered|entering)\\s+into\\b.{0,400}\\b(?:accelerated|ASR)\\b",
+        "\\b(?:executed|commenced)\\b.{0,400}\\b(?:accelerated|ASR)\\b",
+        "\\b(?:accelerated|ASR)\\b.{0,400}\\b(?:executed|commenced)\\b"
+      ],
+      "generic_only_exclusions": [
+        "\\bboard\\s+(?:has\\s+)?authorized\\b",
+        "\\bmay\\s+repurchase\\b",
+        "\\bopen[- ]market\\s+(?:repurchase|program)\\b",
+        "\\bintends?\\s+to\\s+repurchase\\b"
+      ]
+    },
+    "required_evidence": [
+      "executed accelerated repurchase agreement",
+      "committed dollar notional",
+      "point-in-time SEC acceptance timestamp",
+      "post-disclosure delivery valuation or settlement mechanics"
+    ],
+    "unresolved_agreement_date": "manual-verification-required-not-verified",
+    "unresolved_mechanics": "ineligible_preserve_denominator",
+    "unresolved_notional": "ineligible_preserve_denominator"
+  },
+  "family_two_retirement_inspection_sha256": "e4076fa5ce6da2b7c920727da30ca7ecfb2f32bd61706cabbbd3e59451642f3c",
+  "filing_hit_count": null,
+  "iso_week": "2026-W30",
+  "market_outcomes_accessed": false,
+  "market_price_values_accessed": 0,
+  "maximum_new_mechanism_families_this_iso_week": 3,
+  "mechanism": "executed accelerated-repurchase agreements can create continuing dealer delivery, valuation-period, or settlement flow after disclosure",
+  "new_mechanism_family_slot": 3,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "source_contract": {
+    "acceptance_time_source": "SEC complete-submission ACCEPTANCE-DATETIME",
+    "collection_end_inclusive": "2025-12-31",
+    "collection_start": "2010-01-01",
+    "complete_submission_source": "exact accession .txt submission derived from the same EFTS hit",
+    "date_range_mode": "custom",
+    "forms": "all SEC filing forms",
+    "matched_document_source": "exact SEC Archives document identified by each EFTS hit",
+    "maximum_requests_per_second": 6,
+    "page_size": 100,
+    "pagination": "for each phrase request from=0,100,... until the exact reported total is exhausted; fail if total is inexact or changes on resume",
+    "provider": "SEC_EDGAR_EFTS_AND_ARCHIVES",
+    "provider_substitution_permitted": false,
+    "search_endpoint": "https://efts.sec.gov/LATEST/search-index",
+    "search_phrases": [
+      "\"accelerated share repurchase\"",
+      "\"accelerated stock repurchase\"",
+      "\"accelerated repurchase agreement\"",
+      "\"ASR agreement\""
+    ],
+    "sec_user_agent_required_from_private_configuration": true,
+    "shared_cache_reuse": "exact URL and retained SHA-256 only"
+  },
+  "strategy_version": "2026-07-22-accelerated-share-repurchase-continuation-v1",
+  "theme_id": "accelerated-share-repurchase-continuation",
+  "verified_event_count": null
+}
