@@ -671,6 +671,16 @@ actions. The funnel now exposes `outcome_access_open=true` and places only
 sector-etf-rotation-v1 in the active Stage 0 lane. Each later family remains
 ordered behind its disposition.
 
+`sector_etf_rotation_stage0.py` is the frozen lane implementation. Its
+acquisition path makes no signal selection or return calculation while
+collecting complete IBKR daily bars for SPY and the eleven fixed sector ETFs
+from 2022-01-03 through 2026-01-08. Its later activation will bind the exact
+common calendar and immutable private input graph before inspection. Evaluation
+uses only completed daily bars, ranks 20-session sector return above SPY under
+a 50-session trend filter, enters the selected leader at the next open, applies
+a gap-aware 1.5-ATR stop, exits at the fifth session close, and remains outside
+maturity.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the
