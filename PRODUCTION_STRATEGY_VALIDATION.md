@@ -751,6 +751,16 @@ No source semantic, verified catalyst, causal market input, return, or outcome
 was derived. A separately frozen and inspected semantics contract is required
 before classification.
 
+The disjoint second challenger tranche has now cleared its source-evidence
+capacity gate with 113 independently rebuilt positive pairs across 55 sessions.
+Its causal pre-entry acquisition is implemented as a hash-pinned adapter over
+the unchanged first-corpus engine, with a separate dataset identity, private
+artifact path, public status, and independent contract and transport
+inspectors. Network-free preflight produces exactly 336 requests: 113 candidate
+bar windows, 113 candidate trade windows, and 110 SPY/QQQ benchmark windows.
+The outcome lock remains closed; this implementation alone grants no market
+access, trigger, return, alpha, maturity, production, or broker claim.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal
