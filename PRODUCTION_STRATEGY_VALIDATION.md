@@ -683,6 +683,14 @@ collection hash `c484921c...a79ac` and wrapper-set hash
 run only after this collection inspection is committed and pushed; outcomes
 remain locked.
 
+Independent EX-99 inspection then rebuilt 575 recovered source rows across all
+365 recovery pairs. It classifies 95 pairs verified positive, 106 conflict, 11
+negative, and 153 unresolved. The 95 recovered positives plus 18 prior
+positives produce 113 deduplicated verified-positive pairs, passing the frozen
+minimum of 20 and moving this tranche to `DEVELOPMENT_ACQUISITION`. Private
+result hash `01a88158...479c8` binds the review; returns, target-session
+outcomes, alpha, maturity, production, and broker actions remain forbidden.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
