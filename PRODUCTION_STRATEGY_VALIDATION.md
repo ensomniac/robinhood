@@ -595,6 +595,15 @@ aggregate hash `7af5b4f6...d8f7c` bind the zero-response graph. No submission,
 primary document, source classification, causal input, substitution, or
 outcome was accessed. This boundary must be published before collection.
 
+The published bounded collector then completed and independently rebuilt all
+537 frozen submissions requests: 494 shared-cache hits, 43 SEC downloads,
+zero failures, zero pending requests, and zero substitutions. It rehashed
+91,467,903 source bytes and derived 513 time-window filing candidates, 525
+pair/filing joins across 452 pairs, and 730 historical supplemental
+descriptors. These are discovery identities, not verified catalyst semantics.
+Supplemental files, primary documents, causal inputs, and outcomes remain
+locked behind later exact contracts.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
