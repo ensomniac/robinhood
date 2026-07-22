@@ -855,6 +855,16 @@ changes strategy rules. The independent inspector reconstructs the raw-to-
 canonical transform without calling the production helper. This repair must be
 committed and pushed before canonicalization or master construction.
 
+That published transform now independently rebuilds all 100 raw and canonical
+snapshots. It retains 537,918 of 537,922 raw identity rows, normalizes 53 unique
+when-issued symbols, and excludes all four rows in the two collision groups.
+The point-in-time master contains 7,879 records across 7,428 instruments with
+hash `1c85b7c0...21f89`; the complete 2023-01-10 through 2026-07-13 split graph
+contains 4,883 events with ignored-artifact hash `b03f97d9...47660`.
+Independent combined reconstruction confirms the master, split range, raw and
+canonical hashes, zero target-market artifacts, no substitutions, and no
+outcomes. These point-in-time inputs may be published before scanner freeze.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,

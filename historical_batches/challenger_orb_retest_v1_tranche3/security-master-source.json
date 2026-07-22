@@ -1,0 +1,649 @@
+{
+  "captured_at": "2026-07-22T08:06:50.282837-04:00",
+  "reference_normalization": {
+    "algorithm": "uppercase-unique-exclude-all-collisions-v1",
+    "canonical_logical_snapshot_set_sha256": "e76e47f72de69d0893648d384b0b3e00c8a7d17663569422f491c17ff298c4d7",
+    "canonical_ready": 100,
+    "canonical_rows": 537918,
+    "canonical_snapshot_set_sha256": "9920a9322014dec0b34c6078d7900bcbd702cbd68ff5a3a92e3fcd99914ea809",
+    "case_normalized_rows": 53,
+    "collision_groups_excluded": 2,
+    "collision_rows_excluded": 4,
+    "complete": true,
+    "date_substitution_allowed": false,
+    "raw_logical_snapshot_set_sha256": "057d47b576f0e76e8da525d7a3437cdd3df3e6a5a322088f57fbeb827191ae1b",
+    "raw_ready": 100,
+    "raw_snapshot_set_sha256": "b398ed9356cbcb45634ae85d6644aa8d5e31fb4d8ebd37be80f962129762331b",
+    "requested": 100,
+    "schema_version": 1,
+    "source_rows": 537922,
+    "target_market_data_accessed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "requested_dates": [
+    "2023-02-01",
+    "2023-02-07",
+    "2023-02-09",
+    "2023-02-10",
+    "2023-02-13",
+    "2023-02-17",
+    "2023-02-24",
+    "2023-02-27",
+    "2023-03-02",
+    "2023-03-07",
+    "2023-03-16",
+    "2023-03-23",
+    "2023-03-27",
+    "2023-03-30",
+    "2023-04-05",
+    "2023-04-12",
+    "2023-04-20",
+    "2023-04-28",
+    "2023-05-11",
+    "2023-05-12",
+    "2023-05-23",
+    "2023-05-30",
+    "2023-05-31",
+    "2023-06-12",
+    "2023-06-22",
+    "2023-06-26",
+    "2023-07-06",
+    "2023-07-17",
+    "2023-07-26",
+    "2023-08-07",
+    "2023-08-08",
+    "2023-08-16",
+    "2023-08-24",
+    "2023-08-31",
+    "2023-09-18",
+    "2023-09-21",
+    "2023-09-27",
+    "2023-09-29",
+    "2023-10-03",
+    "2023-10-04",
+    "2023-10-10",
+    "2023-10-13",
+    "2023-10-16",
+    "2023-10-17",
+    "2023-10-25",
+    "2023-10-26",
+    "2023-11-03",
+    "2023-11-06",
+    "2023-11-27",
+    "2023-11-29",
+    "2023-11-30",
+    "2023-12-05",
+    "2023-12-08",
+    "2023-12-18",
+    "2023-12-29",
+    "2024-01-03",
+    "2024-01-08",
+    "2024-01-17",
+    "2024-01-29",
+    "2024-02-08",
+    "2024-03-06",
+    "2024-03-19",
+    "2024-03-27",
+    "2024-04-11",
+    "2024-04-12",
+    "2024-04-16",
+    "2024-04-18",
+    "2024-04-22",
+    "2024-04-26",
+    "2024-05-15",
+    "2024-05-29",
+    "2024-06-27",
+    "2024-07-03",
+    "2024-07-08",
+    "2024-07-15",
+    "2024-07-25",
+    "2024-08-08",
+    "2024-08-21",
+    "2024-08-26",
+    "2024-09-09",
+    "2024-09-11",
+    "2024-09-12",
+    "2024-09-19",
+    "2024-09-24",
+    "2024-09-26",
+    "2024-10-02",
+    "2024-10-09",
+    "2024-10-17",
+    "2024-10-22",
+    "2024-10-23",
+    "2024-11-01",
+    "2024-11-05",
+    "2024-11-12",
+    "2024-11-27",
+    "2024-12-04",
+    "2024-12-10",
+    "2024-12-17",
+    "2024-12-19",
+    "2024-12-23",
+    "2026-07-13"
+  ],
+  "schema_version": 1,
+  "security_master": {
+    "fallback_identity_records": 1813,
+    "instruments": 7428,
+    "listing_scoped_records": 71,
+    "path": "historical_batches/challenger_orb_retest_v1_tranche3/security-master.jsonl",
+    "records": 7879,
+    "sha256": "1c85b7c0a792f5e4d2733b71e7ce659c8bdbb73bf7879fbfae54529f3d021f89",
+    "simultaneous_composite_aliases": 33
+  },
+  "snapshots": [
+    {
+      "date": "2023-02-01",
+      "rows": 5615,
+      "sha256": "5d1eccd3db78421d5a06971856ae60a54331c3bd049c342ebb891fbb318f0aa1"
+    },
+    {
+      "date": "2023-02-07",
+      "rows": 5605,
+      "sha256": "253ed9ca38b26443a32b573ec7caa4b7daf9e86336fa40405767170a4943f21c"
+    },
+    {
+      "date": "2023-02-09",
+      "rows": 5604,
+      "sha256": "19db9571f2369e18f6eadeb3ea01c0c758a2f9bba72f9e95edb06cf2751a2bd0"
+    },
+    {
+      "date": "2023-02-10",
+      "rows": 5606,
+      "sha256": "f5e099a8efbf61e99b92ce828e1a5f0d1f93f0aa3837565926f02ef765f1d73a"
+    },
+    {
+      "date": "2023-02-13",
+      "rows": 5604,
+      "sha256": "160dea5d0f2d1b92b0f68447863fba63a2688e2cd35ab16ec86e92009f7ba422"
+    },
+    {
+      "date": "2023-02-17",
+      "rows": 5597,
+      "sha256": "570f0b17550c916382d94fd4d767bedf39d9e1c374f4f758932043d7abaf3e16"
+    },
+    {
+      "date": "2023-02-24",
+      "rows": 5593,
+      "sha256": "21be312993175b09bf52d6fd768db09019b8270e59969103deefbe43d77ef41f"
+    },
+    {
+      "date": "2023-02-27",
+      "rows": 5591,
+      "sha256": "66132e733da41eac622ececf22909af4fefe07a592ef82acd7a691d928c957ed"
+    },
+    {
+      "date": "2023-03-02",
+      "rows": 5584,
+      "sha256": "901be76f818532c4d2bb9b227db6847e6278f44c64c12ee2a9ae96c0a64df83e"
+    },
+    {
+      "date": "2023-03-07",
+      "rows": 5576,
+      "sha256": "082d3543e97f55cac3535ea695d6a2758508e8c0628c16b83a146e1cb125088b"
+    },
+    {
+      "date": "2023-03-16",
+      "rows": 5553,
+      "sha256": "01016d40995927303d848e05960e3f92eac02f9a212c3b8dac13889f5db9ff3c"
+    },
+    {
+      "date": "2023-03-23",
+      "rows": 5549,
+      "sha256": "5ec5016eda48c8d685a05812ae3a9e2f3f1f97613cbba8bd78fe9db4255a70d6"
+    },
+    {
+      "date": "2023-03-27",
+      "rows": 5541,
+      "sha256": "606599d70599328633ccb4cdc09be7f71cb189dfa7ddc2b51f1818a33edd44ae"
+    },
+    {
+      "date": "2023-03-30",
+      "rows": 5543,
+      "sha256": "29b1c7bc34c62e7e87b7ef7727109a9e2fdb7762031c1afb7ccd8ac234a49e55"
+    },
+    {
+      "date": "2023-04-05",
+      "rows": 5534,
+      "sha256": "77607611da5e22f745362bf35341c622a0148cc550b73cd9015341fbd8a6a1c9"
+    },
+    {
+      "date": "2023-04-12",
+      "rows": 5528,
+      "sha256": "a1709578055240e379f176629eaf147bff5912a65dc789444825aaa72640a3a1"
+    },
+    {
+      "date": "2023-04-20",
+      "rows": 5527,
+      "sha256": "8eece7cf09ad6041547bfb8898c35735e15f09f04d581c2a31324b8086d808ae"
+    },
+    {
+      "date": "2023-04-28",
+      "rows": 5519,
+      "sha256": "e61c1ef015a16a23ce4c73dd4a6c0f4dbdedb9387ed3d5066af627a1d10fac4b"
+    },
+    {
+      "date": "2023-05-11",
+      "rows": 5568,
+      "sha256": "30c93277f4fbd0dece6cf3756ad4921e5488dcd1d79c1b005af4ee6f2f1b7dcb"
+    },
+    {
+      "date": "2023-05-12",
+      "rows": 5568,
+      "sha256": "768c54b9ccbd6792f605788ab7dea234ca1fc22a9075a5232a5b5b0a2a347d67"
+    },
+    {
+      "date": "2023-05-23",
+      "rows": 5564,
+      "sha256": "d590bc183d3e1e581253d740272c50bdc1ba9e548d0489e4a5e08f1ad4d66279"
+    },
+    {
+      "date": "2023-05-30",
+      "rows": 5559,
+      "sha256": "6474c916e2f5e87d6286f6fa58e665ecc411ba0a045fcdf8c0be2e99b07dc6d8"
+    },
+    {
+      "date": "2023-05-31",
+      "rows": 5559,
+      "sha256": "92e11615b7d83e3cf5773328b97b9c430951c5d4063c2a84821ecebc588cfd66"
+    },
+    {
+      "date": "2023-06-12",
+      "rows": 5541,
+      "sha256": "ec84bfd6b7e71e0096bb00c84f208262aaef66660985eb5ba7bc9700610d9074"
+    },
+    {
+      "date": "2023-06-22",
+      "rows": 5533,
+      "sha256": "0dac1567c2ba2a8a0c0325156c6afed3a45ec0231417dcae98689309330f6a23"
+    },
+    {
+      "date": "2023-06-26",
+      "rows": 5527,
+      "sha256": "01c23e04f8452fe0aa29bc73afa8a0209eb24567dab322d17e196ba135414975"
+    },
+    {
+      "date": "2023-07-06",
+      "rows": 5523,
+      "sha256": "1f3002f87ef63b7d171d2cdeb7cefcd68066c155903c9451ad03d626bc7c6410"
+    },
+    {
+      "date": "2023-07-17",
+      "rows": 5509,
+      "sha256": "f7aff36c73400a0f6e7f5699e4159380df8b1dadfa23d14abd11e6c9e3ce99f1"
+    },
+    {
+      "date": "2023-07-26",
+      "rows": 5495,
+      "sha256": "d7a1f4704c3ecd8a688cbb8cd55d54f5a59a639f9b6f17d2a8b3d18662793750"
+    },
+    {
+      "date": "2023-08-07",
+      "rows": 5488,
+      "sha256": "f6995df8ff3433a6b45abdfad3c50afed43325957bf6d0ff939d5e1ecb0a8712"
+    },
+    {
+      "date": "2023-08-08",
+      "rows": 5490,
+      "sha256": "e221b2b71453ab9dd153362873c90c4986c16764195e2f330d60dafbda9dbdc7"
+    },
+    {
+      "date": "2023-08-16",
+      "rows": 5483,
+      "sha256": "5c0f3058d58f131e50b01ab9691da2566bcf6903b8f34f0dc35dacec02a64a0a"
+    },
+    {
+      "date": "2023-08-24",
+      "rows": 5473,
+      "sha256": "6904aee6d3d0c78cb14a493c14cea75df31733a6c968fc3a38a85d36a5327d8e"
+    },
+    {
+      "date": "2023-08-31",
+      "rows": 5466,
+      "sha256": "a07feb24cef35dae33b506a27bde9f1c77e02b43f9f219dbd1045ccf32aa8a62"
+    },
+    {
+      "date": "2023-09-18",
+      "rows": 5454,
+      "sha256": "4840771eb2b84914f3863a16efb8ef621587864ddd94753d92b5d1d1cfdaa8b7"
+    },
+    {
+      "date": "2023-09-21",
+      "rows": 5460,
+      "sha256": "3aab6d234c1851b8ee8555985d107e5fe223ef00bfdd5b8e10770caafffa10df"
+    },
+    {
+      "date": "2023-09-27",
+      "rows": 5455,
+      "sha256": "a37339a920d183268f99bd50aee857f11f1a8566160133e3ad881f7f08a506e3"
+    },
+    {
+      "date": "2023-09-29",
+      "rows": 5453,
+      "sha256": "a2e71f57e4dcc2a5f38a6f10cd64f326c861dd34c67b5faa6b4f251cd2628724"
+    },
+    {
+      "date": "2023-10-03",
+      "rows": 5450,
+      "sha256": "2a8be5e04d46fe1c13e5d0751c9c25b26597457ccee8ee9e2367fa2c0df9e77a"
+    },
+    {
+      "date": "2023-10-04",
+      "rows": 5449,
+      "sha256": "3758c2caca95372527cecad4e3e4b1a51d66246a8a2bfcda0ff1d6c098c4440e"
+    },
+    {
+      "date": "2023-10-10",
+      "rows": 5447,
+      "sha256": "9011e8687ded270385df321f2f331b6dd7489af23f368596016ec42b65eb44a1"
+    },
+    {
+      "date": "2023-10-13",
+      "rows": 5446,
+      "sha256": "d4a18f24bef28fd1ebfc8c639609e3e7c128517589f81968ebb062145ca0ddbf"
+    },
+    {
+      "date": "2023-10-16",
+      "rows": 5443,
+      "sha256": "a1512c2b1f9e2b9665a14095380142d57157a7565a7742eeb19d23b5340f9baf"
+    },
+    {
+      "date": "2023-10-17",
+      "rows": 5439,
+      "sha256": "419b1c576edb49952b5e09bca1515dceb113359e00460308aee0decabbfdf58e"
+    },
+    {
+      "date": "2023-10-25",
+      "rows": 5429,
+      "sha256": "470631fe7d766156a328cc0d0df4d61ec9bf9ad3ce27a24767b81a3e1f54bb72"
+    },
+    {
+      "date": "2023-10-26",
+      "rows": 5427,
+      "sha256": "acf2fa6dfe658fec7b23f1fdb0648febdcd9f0bdea49a7fc1be37efdf3c80027"
+    },
+    {
+      "date": "2023-11-03",
+      "rows": 5422,
+      "sha256": "af5653a372799207f6f6e869520e74248ea8693f2f35b3fcb26120089c0279a9"
+    },
+    {
+      "date": "2023-11-06",
+      "rows": 5421,
+      "sha256": "10864d0c6044a4088e4a7f74074c6bdf5256c467088274913f76639a80b66a98"
+    },
+    {
+      "date": "2023-11-27",
+      "rows": 5392,
+      "sha256": "9830cdf9a1774b48e300a9d97369a35607d93f5ac97b8a34207da16d18819773"
+    },
+    {
+      "date": "2023-11-29",
+      "rows": 5391,
+      "sha256": "ce91cb773e651e6c444e8b46cc00bc69b044105a7e3b2c7f6e115ba8ecf7ad8e"
+    },
+    {
+      "date": "2023-11-30",
+      "rows": 5391,
+      "sha256": "bac5534774ea82111717b263a8e03666f591f97293e66f45ebc0e87693b1d745"
+    },
+    {
+      "date": "2023-12-05",
+      "rows": 5380,
+      "sha256": "a43483d981e5ed0d62aa97d817d65a2af39f3e2cb9e8fd3b9bbe58e0163544a4"
+    },
+    {
+      "date": "2023-12-08",
+      "rows": 5371,
+      "sha256": "7e6440abe03fdc5e41d07ba0736ea6bfc22e7b6c1419eaae8587b359b4441cd2"
+    },
+    {
+      "date": "2023-12-18",
+      "rows": 5355,
+      "sha256": "787d9fa030c564807d7119c7ed251fb331776c7b55a7d24dc4ff591038f586b8"
+    },
+    {
+      "date": "2023-12-29",
+      "rows": 5338,
+      "sha256": "cbd5095679d6e4057aced926858b8e9afafc6801a3ba158eb25a548ecc918924"
+    },
+    {
+      "date": "2024-01-03",
+      "rows": 5336,
+      "sha256": "fe0d3a857ed4861a34fcf2c9c11a7c6da44a80e150f9c149b5ed6190f686e617"
+    },
+    {
+      "date": "2024-01-08",
+      "rows": 5331,
+      "sha256": "67393c62a085316290650a512b128d4a1c7bf1cdf3bb91aa0e365094f31c3e4e"
+    },
+    {
+      "date": "2024-01-17",
+      "rows": 5334,
+      "sha256": "a3274354e593559bf3ebd44da910df8a88c0858f4341840b4091c89b493bfaf9"
+    },
+    {
+      "date": "2024-01-29",
+      "rows": 5339,
+      "sha256": "bc97e5c7bec31feaf06e48e6af6102bb3c37fe9255ed3226b3252a9f318ddccc"
+    },
+    {
+      "date": "2024-02-08",
+      "rows": 5339,
+      "sha256": "64eec4f739be770ffed0a162d8250cb9a043bd108d48f564dc3a98e1d2840411"
+    },
+    {
+      "date": "2024-03-06",
+      "rows": 5312,
+      "sha256": "7446e951c7201ba2e344c83fb367e37e7f20d052edee440c5b7631614698a5be"
+    },
+    {
+      "date": "2024-03-19",
+      "rows": 5293,
+      "sha256": "f56dbeef2d17962af180c729634cfccbd0b67c8ab98307bec24805f83a8e467d"
+    },
+    {
+      "date": "2024-03-27",
+      "rows": 5291,
+      "sha256": "51f504b8de35f699d063bd66597ff8d5c094ebd68b6a69895f579c9ead458dd6"
+    },
+    {
+      "date": "2024-04-11",
+      "rows": 5281,
+      "sha256": "a45256952c945c46062309252383a1d9b613dd67021daa1bbe8a4adea7356c66"
+    },
+    {
+      "date": "2024-04-12",
+      "rows": 5281,
+      "sha256": "fcc61d99b5c62e4a1cb6af9c459a03d66c77b489037d6fdd6576ae9144b70ecf"
+    },
+    {
+      "date": "2024-04-16",
+      "rows": 5279,
+      "sha256": "f712cc043e38e78523424c84d5b3118d29c1a873b0b502220d47c4efeede22b2"
+    },
+    {
+      "date": "2024-04-18",
+      "rows": 5283,
+      "sha256": "90a462972aa302d3e3ecd587d60fe46c080af958391b8df73aedcd40572914a4"
+    },
+    {
+      "date": "2024-04-22",
+      "rows": 5282,
+      "sha256": "beab53ce40631810f5f54a3642fda64da5f336370b9a99d3d57d90b4bde5ed53"
+    },
+    {
+      "date": "2024-04-26",
+      "rows": 5284,
+      "sha256": "df80222ba94102a722cb650246c74f2b00c0b3d79b6d6a0b848950bdd89c506e"
+    },
+    {
+      "date": "2024-05-15",
+      "rows": 5276,
+      "sha256": "8cff9723b4adfa6a3c11bf31b3d1afb811de67d5e6afbb8c9a559ae490262a53"
+    },
+    {
+      "date": "2024-05-29",
+      "rows": 5258,
+      "sha256": "107ff9d4986e8723b6eca0a48604ea74166590b2af11f3f9bd1fcc8464c221f4"
+    },
+    {
+      "date": "2024-06-27",
+      "rows": 5245,
+      "sha256": "108adbcfe9108ed2d501a30baff49bc0866a0acfd4850f862abf8c1f27278c3b"
+    },
+    {
+      "date": "2024-07-03",
+      "rows": 5232,
+      "sha256": "49628cd42bc82b2af7a2482bd4c2bc22733bbae7b703bc6880351e03af836bd3"
+    },
+    {
+      "date": "2024-07-08",
+      "rows": 5232,
+      "sha256": "a621810033097b9fdcee26df300c5c6b697c862e8de76b02c8b81eda34136c1f"
+    },
+    {
+      "date": "2024-07-15",
+      "rows": 5231,
+      "sha256": "f48518e3dfd45ad2c3ea07606ef542bad50862f10618212443b3dac312707bbe"
+    },
+    {
+      "date": "2024-07-25",
+      "rows": 5231,
+      "sha256": "de7917ac6ef97c20233ba45e836d5a1dd5d1215ac13e06b579dc5a587ebf982e"
+    },
+    {
+      "date": "2024-08-08",
+      "rows": 5210,
+      "sha256": "71f8a1c9961f78b7f9ae78133d661f62968d446fe3dc8fbac5d7ddf46c25984b"
+    },
+    {
+      "date": "2024-08-21",
+      "rows": 5203,
+      "sha256": "28f0bec5958e21ca549161d4c80247b8b75679beef4c64b88d9aae9cd6ea256a"
+    },
+    {
+      "date": "2024-08-26",
+      "rows": 5199,
+      "sha256": "3e4c0ac1dfbd9576d8c4614d0fa24e572c2e232d182016221415be5c98ae06b3"
+    },
+    {
+      "date": "2024-09-09",
+      "rows": 5191,
+      "sha256": "371a96a87ab87a84f14bbf0c84414059ab528f3c373d045b8452d555c8be11ba"
+    },
+    {
+      "date": "2024-09-11",
+      "rows": 5184,
+      "sha256": "891109e3d20c927552dd79ed3e983153d107d7bff0fa5f3f16fa1689e4093dcb"
+    },
+    {
+      "date": "2024-09-12",
+      "rows": 5187,
+      "sha256": "2023b3ecb25c5f4cb3abfdf8172f1f77881675952e417a374f5016a0c70f79cd"
+    },
+    {
+      "date": "2024-09-19",
+      "rows": 5181,
+      "sha256": "3986209b69145da355c979fdade7a4aa1491a9382a03b97264399aa92d685811"
+    },
+    {
+      "date": "2024-09-24",
+      "rows": 5183,
+      "sha256": "a50072376f3e0b79fdb33a9223035e16fe14e380f092444cb43be0c3e83ed24e"
+    },
+    {
+      "date": "2024-09-26",
+      "rows": 5190,
+      "sha256": "f18c5156f0df53cf217347a863daecb3bafeca3cfa07494b571c2b00f4f1b70e"
+    },
+    {
+      "date": "2024-10-02",
+      "rows": 5194,
+      "sha256": "b570ec0b69b1d442a18ed3a22e1566e3bde913f5f66af6fd91c538106cb4f165"
+    },
+    {
+      "date": "2024-10-09",
+      "rows": 5188,
+      "sha256": "86f78e1d004758528b12ca83b14fa3fbf66d5b98d6c8802b9e88834ce943f3c6"
+    },
+    {
+      "date": "2024-10-17",
+      "rows": 5188,
+      "sha256": "ae3382a2afc4eaa393bfba39afe9d4a44e8c82b4ad0e16e6e52f9698bb17f7a9"
+    },
+    {
+      "date": "2024-10-22",
+      "rows": 5184,
+      "sha256": "a089ae7430526fb38a29d19c3954f5c7c43e34185943f3302b38effa4a34ce7c"
+    },
+    {
+      "date": "2024-10-23",
+      "rows": 5190,
+      "sha256": "9b9ce45e88b5543552b4968f7f35fb618ed5955efb3055feca9f34572ccb0cdb"
+    },
+    {
+      "date": "2024-11-01",
+      "rows": 5190,
+      "sha256": "09ff68ea837d2af9ebf7c1cac07fa12d369b36890f1c4344af9d225ce4a78255"
+    },
+    {
+      "date": "2024-11-05",
+      "rows": 5181,
+      "sha256": "84af72e42a6965b63bda8cf4fb8055017d5757dc2aa011611a3fb6e297e7bca5"
+    },
+    {
+      "date": "2024-11-12",
+      "rows": 5176,
+      "sha256": "06f89135a81561240728cee85fab4b769efa13852ba88719f116843f2af80345"
+    },
+    {
+      "date": "2024-11-27",
+      "rows": 5170,
+      "sha256": "e00f9fe76080d463194394c1265c80441cd9f54cdfe26bad984b597d4f118cf5"
+    },
+    {
+      "date": "2024-12-04",
+      "rows": 5170,
+      "sha256": "99aa0c959fe9ce6bee3c7662d71e76ca36a46c47585578e10f1d383972e5cf46"
+    },
+    {
+      "date": "2024-12-10",
+      "rows": 5168,
+      "sha256": "1d7a4e1c669bf585ac5353b2d74149be3e4e8d9d2f1e139095f463d82a877e73"
+    },
+    {
+      "date": "2024-12-17",
+      "rows": 5159,
+      "sha256": "56687db32df24c384387ca3eb7a1f77933ec035167e75615be71d24a97f025d3"
+    },
+    {
+      "date": "2024-12-19",
+      "rows": 5163,
+      "sha256": "eff2f6d047e131903d48ea6a87694f94ded6a0f632df1ea461f9e04041b987b8"
+    },
+    {
+      "date": "2024-12-23",
+      "rows": 5161,
+      "sha256": "048da7180bc04dc95e652c7428c372839e3f3393a7d1a73bb646248ac2e00303"
+    },
+    {
+      "date": "2026-07-13",
+      "rows": 5310,
+      "sha256": "f746b5ed1937395838480d19d48c4a8899237af867143612829781b690d3ae9d"
+    }
+  ],
+  "source": {
+    "documentation_url": "https://massive.com/docs/rest/stocks/tickers/all-tickers",
+    "endpoint": "https://api.massive.com/v3/reference/tickers",
+    "provider": "Massive",
+    "query_contract": {
+      "active": true,
+      "locale": "us",
+      "market": "stocks",
+      "point_in_time_parameter": "date",
+      "type": "CS"
+    }
+  }
+}
