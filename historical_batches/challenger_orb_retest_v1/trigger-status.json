@@ -9,12 +9,63 @@
     "verified_positive_pairs": 95
   },
   "dataset_id": "dataset-challenger-orb-retest-trigger-review-2026-07-21-v1",
-  "inspected": false,
+  "implementation_contract": {
+    "inspector": {
+      "path": "challenger_orb_retest_trigger_runner_inspection.py",
+      "sha256": "a53372947ad17fc0c948212b8816e99d63885bb4079d2c2a7ac573c1a408ac56"
+    },
+    "preentry_engine": {
+      "path": "challenger_orb_retest_preentry.py",
+      "sha256": "5543beb0da907fa476c8f3d6b5e11179d2f8334ff02492c64abd43890abdd5ad"
+    },
+    "preentry_result_inspector": {
+      "path": "challenger_orb_retest_preentry_inspection.py",
+      "sha256": "01b663711f2e095d2487a9d19237bb7bacdee182ac0b1a933ad65fc66bba4145"
+    },
+    "reader": {
+      "path": "challenger_orb_retest_preentry_reader.py",
+      "sha256": "2fea82b27b757835c161c6bfbe9f4ec1404c987fd60ebb3ffb69f9780e76ca95"
+    },
+    "runner": {
+      "path": "challenger_orb_retest_trigger_runner.py",
+      "sha256": "99f6739a68b2f01592dd5e87985ad38bdf241c147c7b7f250bf2af3d0970b4f5"
+    },
+    "trigger_engine": {
+      "path": "challenger_orb_retest.py",
+      "sha256": "84290bdc98aca16fd6d3b13d788445aff75af36b77af658fddebed1fe6974682"
+    }
+  },
+  "inspected": true,
   "manifest_sha256": "6dc393ae3129dc283ff889011bd4743c9adefebb291ab52466ba4bbf716ed9cd",
+  "outcome_lock_verified": true,
   "post_entry_data_accessed": false,
   "schema_version": 1,
+  "source_contract": {
+    "canonical_row_set_sha256": "fe752cfa6dd2e2b60a5a647054a2573e441b8619e84ab1c08a2b6fb15290a36a",
+    "collection_inspection_sha256": "2d15734fe3963fd7948a46e1dfcf9198668b75235515d6faa154ba89c766bf3b",
+    "preentry_manifest_file_sha256": "1890125ee7e24d66d3eb97f744076b889107728c3addda7ed1ba16f9fe68f5d1",
+    "preentry_manifest_sha256": "e9bc5a8a57c8695455398b31291e4d4e3267612b04f0fef5742ad0fc57846b77",
+    "private_collection_file_sha256": "f3a5708fe74df32e3214543047b561bb85cace9966afbf452343b3844453fd3a",
+    "request_graph_sha256": "c2af71c01f372fe5417d464cda5cd6a07921880fa21e907b4469db516aa1fc9a",
+    "wrapper_set_sha256": "9747be6a2d2657ec7360f89321a4e8c8d65bb811b25de1befda712e4f7417753"
+  },
   "source_preentry_manifest_sha256": "e9bc5a8a57c8695455398b31291e4d4e3267612b04f0fef5742ad0fc57846b77",
-  "status": "FROZEN_AWAITING_INSPECTION",
+  "status": "FROZEN_READY",
   "target_outcomes_observed_or_derived": false,
-  "trigger_artifacts_present": false
+  "trigger_artifacts_present": false,
+  "trigger_contract": {
+    "completed_noninterpolated_retest_bars": true,
+    "continuous_cross_version": "continuous-regular-cross-v1",
+    "decision_cutoff_et": "10:30:00",
+    "decision_delay_seconds": 10,
+    "failed_hold_retention_boundary": "end of first completed touch bar",
+    "first_touch_only": true,
+    "hypothesis_sha256": "b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105",
+    "minimum_closed_development_signals": 50,
+    "no_signal_retention_boundary": "10:30:00",
+    "rule_version": "catalyst-orb-retest-v1",
+    "search_start_et": "09:35:00",
+    "sip_condition_rule_version": "alpaca-sip-minute-v1"
+  },
+  "valid": true
 }

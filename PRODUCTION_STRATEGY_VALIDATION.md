@@ -467,6 +467,12 @@ six implementation hashes, all inspected collection bindings, 95 pairs across
 trigger namespace is empty. This uninspected manifest must be committed and
 pushed before independent zero-state reconstruction.
 
+Independent reconstruction now marks `6dc393ae...ed9cd` `FROZEN_READY`. Every
+source, collection, implementation, compatibility, causal-rule, and outcome
+binding matches, the full 95-pair/47-date/284-request denominator rebuilds,
+and no trigger artifact exists. This status must be committed and pushed before
+derivation.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

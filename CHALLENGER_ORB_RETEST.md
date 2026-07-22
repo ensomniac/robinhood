@@ -105,6 +105,12 @@ across 47 dates, the unchanged trigger contract, and the closed outcome
 boundary. No trigger artifact exists. The manifest is uninspected and must be
 committed and pushed before zero-state reconstruction.
 
+Independent reconstruction now marks runner manifest `6dc393ae...ed9cd`
+`FROZEN_READY`. All source, collection, implementation, compatibility, trigger,
+and outcome bindings match; the 95-pair/47-date/284-request denominator rebuilds
+and the trigger namespace remains empty. This status must be committed and
+pushed before derivation.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`
