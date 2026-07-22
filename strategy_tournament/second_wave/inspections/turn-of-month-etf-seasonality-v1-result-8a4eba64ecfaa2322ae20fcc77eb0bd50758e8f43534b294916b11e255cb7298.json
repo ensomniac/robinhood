@@ -1,0 +1,16 @@
+{
+  "broker_actions": 0,
+  "closed_signals": 36,
+  "input_inspection_sha256": "4bf5de7bcd727fb99b44c9179ac630cae558e5fc8e5395c49b61093ba19853f9",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "8a4eba64ecfaa2322ae20fcc77eb0bd50758e8f43534b294916b11e255cb7298",
+  "manifest_sha256": "0067fa7170633b070ec32a080c4e0debfde37327021f5f400feb2ee819f42097",
+  "maturity_effect": "NONE",
+  "provider_requests": 0,
+  "result_file_sha256": "fa1fdd84191855c4b05fd0cbe3a82d4ac6de69fabac4d1cd7e30eb80fa024e16",
+  "result_sha256": "392a840bb533fd9ace45075774f6318f04acdd69d1a1b9bfacc41bccb310abf6",
+  "schema_version": 1,
+  "stage0_survived": false,
+  "valid": true,
+  "variant_id": "turn-of-month-etf-seasonality-v1"
+}

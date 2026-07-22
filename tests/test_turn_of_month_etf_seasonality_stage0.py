@@ -159,3 +159,25 @@ def test_published_result_fails_four_stage0_gates():
     ]
     assert result["stage0_survived"] is False
     assert result["maturity_effect"] == "NONE"
+
+
+def test_published_result_inspection_rebuilds_final_retirement():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/inspections").glob(
+            "turn-of-month-etf-seasonality-v1-result-*.json"
+        )
+    )
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["result_sha256"] == (
+        "392a840bb533fd9ace45075774f6318f04acdd69d1a1b9bfacc41bccb310abf6"
+    )
+    assert inspection["closed_signals"] == 36
+    assert inspection["stage0_survived"] is False
+    assert inspection["provider_requests"] == 0
+    assert inspection["broker_actions"] == 0
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["valid"] is True

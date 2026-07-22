@@ -39,10 +39,7 @@ class PortfolioFunnelTests(unittest.TestCase):
         self.assertEqual(
             status["progress"], {"pilot_ready": 0, "live_started": 0, "target": 3}
         )
-        self.assertEqual(
-            status["lanes"]["stage0_falsification"]["variant_id"],
-            "turn-of-month-etf-seasonality-v1",
-        )
+        self.assertIsNone(status["lanes"]["stage0_falsification"])
         self.assertIsNone(status["lanes"]["representative_development"])
         self.assertIsNone(status["lanes"]["confirmation_or_shadow"])
         self.assertEqual(
@@ -53,9 +50,11 @@ class PortfolioFunnelTests(unittest.TestCase):
             status["validation_candidates"][0]["validation_phase"],
             "RETIRED_DEVELOPMENT",
         )
-        self.assertTrue(status["notification_due"])
-        self.assertEqual(
-            status["notification_reasons"], ["three Stage 0 dispositions completed"]
+        self.assertFalse(status["notification_due"])
+        self.assertEqual(status["notification_reasons"], [])
+        self.assertIn(
+            "authorized Stage 0 tournament is exhausted without an active survivor",
+            status["blockers"],
         )
 
     def test_remaining_first_wave_queue_matches_frozen_plan(self):
@@ -72,13 +71,11 @@ class PortfolioFunnelTests(unittest.TestCase):
         self.assertTrue(status["second_wave"]["outcome_access_open"])
         self.assertEqual(len(status["second_wave"]["slate_paths"]), 1)
         self.assertEqual(len(status["second_wave"]["slate_inspection_paths"]), 1)
-        self.assertEqual(
-            status["lanes"]["stage0_falsification"]["variant_id"],
-            "turn-of-month-etf-seasonality-v1",
-        )
-        self.assertEqual(status["second_wave"]["disposed_count"], 5)
-        self.assertEqual(status["second_wave"]["retired_count"], 5)
+        self.assertIsNone(status["lanes"]["stage0_falsification"])
+        self.assertEqual(status["second_wave"]["disposed_count"], 6)
+        self.assertEqual(status["second_wave"]["retired_count"], 6)
         self.assertEqual(status["second_wave"]["survivor_count"], 0)
+        self.assertTrue(status["second_wave"]["complete"])
         self.assertEqual(
             status["second_wave"]["dispositions"][0]["blockers"],
             [
@@ -117,13 +114,22 @@ class PortfolioFunnelTests(unittest.TestCase):
                 "20 bps-per-side total R is not positive",
             ],
         )
-        self.assertEqual(len(status["second_wave"]["candidate_queue"]), 1)
+        self.assertEqual(
+            status["second_wave"]["dispositions"][5]["blockers"],
+            [
+                "primary expectancy is not positive",
+                "primary profit factor is below the Stage 0 minimum",
+                "primary drawdown exceeds the Stage 0 maximum",
+                "20 bps-per-side total R is not positive",
+            ],
+        )
+        self.assertEqual(len(status["second_wave"]["candidate_queue"]), 0)
         self.assertEqual(
             [
                 item["mechanism_family"]
                 for item in status["second_wave"]["candidate_queue"]
             ],
-            [family for _, family in funnel.SECOND_WAVE[5:]],
+            [],
         )
 
     def test_first_wave_taxonomy_and_independent_inspection_rebuild(self):

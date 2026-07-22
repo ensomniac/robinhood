@@ -128,12 +128,14 @@ def _stage0_blockers(result: Mapping[str, Any], gate: Mapping[str, Any]) -> list
     if not isinstance(stress, Mapping) or not isinstance(stress.get("20"), Mapping):
         raise PortfolioFunnelError("Stage 0 20 bps stress metrics are missing")
     blockers: list[str] = []
-    if int(denominator.get("closed_signals", -1)) < int(
-        gate["minimum_closed_signals"]
-    ):
+    if int(denominator.get("closed_signals", -1)) < int(gate["minimum_closed_signals"]):
         blockers.append("closed signals are below the Stage 0 minimum")
     expectancy = primary.get("expectancy_r")
-    if not isinstance(expectancy, (int, float)) or isinstance(expectancy, bool) or expectancy <= 0:
+    if (
+        not isinstance(expectancy, (int, float))
+        or isinstance(expectancy, bool)
+        or expectancy <= 0
+    ):
         blockers.append("primary expectancy is not positive")
     profit_factor = primary.get("profit_factor")
     infinite = primary.get("profit_factor_infinite") is True
@@ -157,9 +159,7 @@ def _stage0_blockers(result: Mapping[str, Any], gate: Mapping[str, Any]) -> list
         or stress_total <= 0
     ):
         blockers.append("20 bps-per-side total R is not positive")
-    if int(denominator.get("rule_violations", -1)) != int(
-        gate["rule_violations"]
-    ):
+    if int(denominator.get("rule_violations", -1)) != int(gate["rule_violations"]):
         blockers.append("Stage 0 rule violations are not zero")
     return blockers
 
@@ -242,9 +242,10 @@ def load_stage0_dispositions(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
             raise PortfolioFunnelError("Stage 0 result claim scope drifted")
         if result.get("maturity_effect") != "NONE":
             raise PortfolioFunnelError("Stage 0 result cannot affect maturity")
-        if result.get("development_evidence_eligible") is not False or result.get(
-            "confirmation_evidence_eligible"
-        ) is not False:
+        if (
+            result.get("development_evidence_eligible") is not False
+            or result.get("confirmation_evidence_eligible") is not False
+        ):
             raise PortfolioFunnelError("Stage 0 result entered maturity evidence")
         blockers = _stage0_blockers(result, gate)
         survived = not blockers
@@ -328,9 +329,10 @@ def validate_stage0_survivor_binding(
         raise PortfolioFunnelError("Stage 0 survivor has disposition blockers")
     if result.get("maturity_effect") != "NONE":
         raise PortfolioFunnelError("Stage 0 result cannot directly affect maturity")
-    if result.get("development_evidence_eligible") is not False or result.get(
-        "confirmation_evidence_eligible"
-    ) is not False:
+    if (
+        result.get("development_evidence_eligible") is not False
+        or result.get("confirmation_evidence_eligible") is not False
+    ):
         raise PortfolioFunnelError("Stage 0 records cannot become maturity samples")
     if result_inspection.get("inspection_sha256") != _self_hash(
         result_inspection, "inspection_sha256"
@@ -464,17 +466,13 @@ def _development_failure(
         "closed_signals": int(development["signals"]),
         "expectancy_r": development["expectancy_r"],
         "profit_factor": development["profit_factor"],
-        "bootstrap_lower_expectancy_r": development[
-            "bootstrap_lower_expectancy_r"
-        ],
+        "bootstrap_lower_expectancy_r": development["bootstrap_lower_expectancy_r"],
         "maximum_drawdown_r": development["maximum_drawdown_r"],
         "phase_blockers": list(assessment["current_phase_blockers"]),
         "development_result_path": result_paths[0],
         "development_result_file_sha256": str(evidence[result_paths[0]]),
         "development_result_inspection_path": inspection_paths[0],
-        "development_result_inspection_file_sha256": str(
-            evidence[inspection_paths[0]]
-        ),
+        "development_result_inspection_file_sha256": str(evidence[inspection_paths[0]]),
     }
 
 
@@ -522,9 +520,7 @@ def build_failure_taxonomy(
     failure_categories = []
     for category, blocker in FAILURE_CATEGORY_RULES:
         variants = [
-            item["variant_id"]
-            for item in dispositions
-            if blocker in item["blockers"]
+            item["variant_id"] for item in dispositions if blocker in item["blockers"]
         ]
         if variants:
             failure_categories.append(
@@ -606,9 +602,7 @@ def build_failure_taxonomy_inspection(
         "maturity_effect": "NONE",
         "valid": True,
     }
-    inspection["inspection_sha256"] = _self_hash(
-        inspection, "inspection_sha256"
-    )
+    inspection["inspection_sha256"] = _self_hash(inspection, "inspection_sha256")
     return inspection
 
 
@@ -812,13 +806,13 @@ def load_second_wave_dispositions(root: Path = PROJECT_ROOT) -> list[dict[str, A
         if result.get("stage0_blockers") != blockers:
             raise PortfolioFunnelError("second-wave Stage 0 blockers do not rebuild")
         if result.get("stage0_survived") is not survived:
-            raise PortfolioFunnelError("second-wave Stage 0 disposition does not rebuild")
+            raise PortfolioFunnelError(
+                "second-wave Stage 0 disposition does not rebuild"
+            )
         dispositions.append(
             {
                 "variant_id": variant_id,
-                "variant_ordinal": [item[0] for item in SECOND_WAVE].index(
-                    variant_id
-                )
+                "variant_ordinal": [item[0] for item in SECOND_WAVE].index(variant_id)
                 + 1,
                 "mechanism_family": str(variant["mechanism_family"]),
                 "rules_hash": str(variant["rules_hash"]),
@@ -930,9 +924,7 @@ def build_funnel_status(
     second_wave_outcome_access_open = (
         second_wave_open and second_wave_slate["inspected"]
     )
-    second_wave_disposed_ids = {
-        item["variant_id"] for item in second_wave_dispositions
-    }
+    second_wave_disposed_ids = {item["variant_id"] for item in second_wave_dispositions}
     second_wave_queue = [
         {
             "queue_position": index + 1,
@@ -944,7 +936,7 @@ def build_funnel_status(
         )
     ]
     stage0_lane = queue[0] if queue else None
-    if stage0_lane is None and second_wave_outcome_access_open:
+    if stage0_lane is None and second_wave_outcome_access_open and second_wave_queue:
         stage0_lane = second_wave_queue[0]
     notification_reasons: list[str] = []
     all_dispositions = [*dispositions, *second_wave_dispositions]
@@ -956,7 +948,9 @@ def build_funnel_status(
     live_started = int(maturity_report.get("live_started_strategy_count", 0))
     blockers: list[str] = []
     if not survivors:
-        blockers.append("no Stage 0 survivor is available for representative development")
+        blockers.append(
+            "no Stage 0 survivor is available for representative development"
+        )
     if not development:
         blockers.append("development lane is vacant")
     if not advanced:
@@ -964,8 +958,11 @@ def build_funnel_status(
     if second_wave_required and not second_wave_open:
         blockers.append("first-wave failure taxonomy is required before wave two")
     if second_wave_open and not second_wave_outcome_access_open:
+        blockers.append("inspected second-wave slate is required before outcome access")
+    second_wave_complete = len(second_wave_dispositions) == len(SECOND_WAVE)
+    if second_wave_complete and not development and not advanced and ready_count == 0:
         blockers.append(
-            "inspected second-wave slate is required before outcome access"
+            "authorized Stage 0 tournament is exhausted without an active survivor"
         )
     return {
         "schema_version": SCHEMA_VERSION,
@@ -982,12 +979,8 @@ def build_funnel_status(
             "required": second_wave_required,
             "open": second_wave_open,
             "outcome_access_open": second_wave_outcome_access_open,
-            "failure_taxonomy_paths": [
-                *taxonomy_status["taxonomy_paths"]
-            ],
-            "failure_taxonomy_inspection_paths": [
-                *taxonomy_status["inspection_paths"]
-            ],
+            "failure_taxonomy_paths": [*taxonomy_status["taxonomy_paths"]],
+            "failure_taxonomy_inspection_paths": [*taxonomy_status["inspection_paths"]],
             "slate_paths": [*second_wave_slate["manifest_paths"]],
             "slate_inspection_paths": [*second_wave_slate["inspection_paths"]],
             "dispositions": second_wave_dispositions,
@@ -997,6 +990,7 @@ def build_funnel_status(
             ),
             "survivor_count": len(second_wave_survivors),
             "candidate_queue": second_wave_queue,
+            "complete": second_wave_complete,
         },
         "lanes": {
             "stage0_falsification": stage0_lane,
@@ -1020,16 +1014,13 @@ def audit_funnel(
 ) -> dict[str, Any]:
     status = build_funnel_status(maturity_report, root=root)
     disposed = (
-        status["first_wave"]["disposed_count"]
-        + status["second_wave"]["disposed_count"]
+        status["first_wave"]["disposed_count"] + status["second_wave"]["disposed_count"]
     )
     retired = (
-        status["first_wave"]["retired_count"]
-        + status["second_wave"]["retired_count"]
+        status["first_wave"]["retired_count"] + status["second_wave"]["retired_count"]
     )
     survivors = (
-        status["first_wave"]["survivor_count"]
-        + status["second_wave"]["survivor_count"]
+        status["first_wave"]["survivor_count"] + status["second_wave"]["survivor_count"]
     )
     return {
         "valid": True,
@@ -1044,7 +1035,12 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "command",
-        choices=("status", "audit", "build-failure-taxonomy", "inspect-failure-taxonomy"),
+        choices=(
+            "status",
+            "audit",
+            "build-failure-taxonomy",
+            "inspect-failure-taxonomy",
+        ),
     )
     return parser
 

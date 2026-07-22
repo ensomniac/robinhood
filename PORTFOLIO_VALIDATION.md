@@ -860,6 +860,16 @@ produced -0.1293R expectancy, 0.7272 profit factor, -4.6547R total, and 8.1335R
 maximum drawdown. At 20 bps per side it lost 9.2930R. The exact variant fails
 expectancy, profit factor, drawdown, and cost stress, and remains provisional
 until independent result inspection.
+Result inspection
+`8a4eba64ecfaa2322ae20fcc77eb0bd50758e8f43534b294916b11e255cb7298`
+independently rebuilds all 36 outcomes and four failed gates. The exact variant
+is permanently retired outside maturity. The authorized one-time second wave
+is now exhausted with zero survivors; no new Stage 0 family or parameter repair
+is authorized by this campaign contract.
+This exhaustion does not relabel or discard the separately preregistered
+catalyst ORB challenger: its preserved outcome-locked evidence lane may
+continue under its own frozen lineage, but it receives no Stage 0 or maturity
+credit unless it independently clears the portfolio evidence gates.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
