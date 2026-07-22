@@ -1053,6 +1053,17 @@ These remain discovery identities only; no document body, source semantics,
 trigger, or outcome has been observed. The exact union document graph must be
 frozen and published before primary-document access.
 
+Primary-document manifest `c8c5e820...7c8af` is independently
+`FROZEN_READY`. It unions the inspected main and supplemental indexes into 482
+unique accession-bound SEC-operated requests, preserves 498 pair/document joins
+across 431 pairs, finds zero conflicting duplicate observations, and confirms
+zero pre-freeze document responses. Private graph hash
+`a43ba6ef...8e7de`, request graph `a68c266a...7c6c3`, and join graph
+`ef6aff71...e1ec1` bind every omitted identity and relationship. Only these
+482 document bodies may now be collected after publication; semantics,
+triggers, outcomes, alpha, maturity, production, and broker actions remain
+locked.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
