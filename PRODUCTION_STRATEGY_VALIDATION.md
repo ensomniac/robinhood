@@ -1000,6 +1000,18 @@ remains exact. Capacity is ready, the target namespace is empty, substitutions
 are forbidden, and no selected-symbol detail or outcome has been accessed.
 Only a separately frozen source identity/request graph may proceed.
 
+SEC identity manifest `85ba7b49...8697e` now freezes the exact third-tranche
+primary-source denominator before provider access. It resolves all 1,781
+selected pairs against the attested point-in-time master, retains 1,778
+CIK-present pairs and three explicit missing-CIK pairs, preserves nine
+listing-scoped joins, and binds 538 unique SEC submissions requests. Private
+identity hash `fe168d1d...1ef8b`, request-graph hash `e5ff36e6...52589`, and
+daily aggregate hash `9c05864d...fbbd` bind the omitted identities and request
+rows. The dataset-specific response namespace contains zero artifacts;
+inspection and a published `FROZEN_READY` status remain mandatory before any
+SEC access, and documents, triggers, outcomes, alpha, maturity, production, and
+broker actions remain blocked.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
