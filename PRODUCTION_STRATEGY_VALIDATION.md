@@ -640,6 +640,16 @@ collection hash `5b923be6...f269c`. Raw availability is not semantic evidence;
 ownership, issuer binding, causal timing, direction, materiality, conflicts,
 selected-market inputs, and outcomes remain unclassified and locked.
 
+Second-tranche semantics manifest `cd0e30db...f784e` now independently
+freezes deterministic review of the complete 1,826-pair denominator: 540
+documents, 552 pair/source joins across 467 source-bearing pairs, and 1,359
+explicit no-source pairs. Pair identity hash `39bb6704...36994`, source hash
+`19bb1dbb...3bdb`, join hash `e6265d42...e79c6`, no-source hash
+`24204926...bb393`, and private selection hash `bf8505c6...3f443` bind the
+zero-derived-artifact state. Source text, classifications, causal market
+inputs, substitutions, and outcomes remain locked until this manifest is
+committed and pushed.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
