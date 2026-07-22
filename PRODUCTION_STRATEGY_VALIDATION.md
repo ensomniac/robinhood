@@ -874,6 +874,14 @@ raw Alpaca SIP semantics, zero substitution, and the outcome lock. The
 manifest and zero-state status must be committed and pushed before the outer
 mechanism/source contract is frozen.
 
+Outer acquisition manifest `898e423c...1c003e` now binds that exact inner
+scanner graph, all upstream selection and calendar artifacts, the unchanged
+one-trial retest trigger, primary-source rules hash `99843372...b4dc`,
+selected-symbol-only detail boundary, provider priority, capacity reserve,
+implementation hashes, privacy boundary, zero substitution, and the complete
+outcome lock. It is uninspected and must be committed and pushed before the
+separate inspector may reconstruct it.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
