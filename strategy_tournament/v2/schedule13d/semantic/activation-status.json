@@ -1,0 +1,16 @@
+{
+  "activation_sha256": "97ebc9075f9336dbc4c5b957be2175092acdc39e720da58d04bd55296d8f0a2c",
+  "broker_actions_permitted": false,
+  "candidate_id": "schedule-13d-activist-continuation-v1",
+  "capacity_passed": null,
+  "classification_permitted": false,
+  "contract_sha256": "dbd63296047961fd5d0546627c79c66607ef3498a69fba15f05f974a14527fab",
+  "dataset_id": "dataset-schedule-13d-capacity-2026-07-22-v1",
+  "issuer_symbol_supplemental_access_permitted": false,
+  "market_price_access_permitted": false,
+  "outcome_access_permitted": false,
+  "schema_version": 1,
+  "status": "SEMANTIC_ACTIVATION_PENDING_INSPECTION",
+  "valid": false,
+  "verified_event_count": null
+}
