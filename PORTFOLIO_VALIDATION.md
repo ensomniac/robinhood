@@ -843,6 +843,13 @@ uses a 1.5-ATR14 protective stop with stop-first and adverse-gap handling, and
 exits at the third XNYS close of the next month. The immutable evaluator applies
 5/10/20-bps per-side costs and requires a clean pushed activation plus an
 independently committed inspection before computing the 36 frozen returns.
+Activation
+`0067fa7170633b070ec32a080c4e0debfde37327021f5f400feb2ee819f42097`
+binds 1,008 whole-provider SPY sessions and all 36 monthly decisions to private
+input hash
+`845cf1b183b46ca93918c36715f3f0b60a0f7990af8ec0fe1fd4e17ce09a1a6b`.
+It reused the existing daily corpus with zero provider calls and computed no
+returns; outcome access remains closed pending inspection.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live

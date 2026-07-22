@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+import json
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import turn_of_month_etf_seasonality_stage0 as stage0
 
 
 EASTERN = ZoneInfo("America/New_York")
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _rows(count: int = 30, *, start: float = 100.0):
@@ -78,3 +81,26 @@ def test_monthly_event_mapping_uses_final_and_third_next_month_sessions():
     assert events[-1]["month"] == "2025-12"
     assert events[-1]["entry_date"] == "2025-12-31"
     assert events[-1]["exit_date"] == "2026-01-05"
+
+
+def test_published_activation_binds_all_frozen_months():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/activations").glob(
+            "turn-of-month-etf-seasonality-v1-*.json"
+        )
+    )
+    assert len(matches) == 1
+    activation = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert activation == stage0.build_activation()
+    assert activation["manifest_sha256"] == stage0.common._self_hash(
+        activation, "manifest_sha256"
+    )
+    assert activation["variant_ordinal"] == 6
+    assert activation["base_rules_hash"] == (
+        "c206cd4f7bd0a6aa094f85a0eafc75f5dffae3df7c9ae74141284178c85212e2"
+    )
+    assert activation["source_selection"]["common_calendar_dates"] == 1008
+    assert activation["source_selection"]["evaluation_months"] == 36
+    assert activation["denominator"]["input_symbol_dates"] == 1008
+    assert activation["return_evaluation_authorized_before_inspection"] is False
+    assert activation["maturity_effect"] == "NONE"

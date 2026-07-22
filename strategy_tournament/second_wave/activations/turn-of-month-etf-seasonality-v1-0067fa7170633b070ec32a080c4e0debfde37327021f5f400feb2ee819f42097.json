@@ -1,0 +1,72 @@
+{
+  "activation_rules_hash": "3cf0d5ffe07ea39d3f8ac139d06a3e332252d786e3f0a3ee6f5006cc800f851c",
+  "base_rules_hash": "c206cd4f7bd0a6aa094f85a0eafc75f5dffae3df7c9ae74141284178c85212e2",
+  "broker_actions_authorized": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v1",
+  "claim_scope": "FALSIFICATION_ONLY",
+  "confirmation_evidence_eligible": false,
+  "contract_kind": "stage0-activation",
+  "denominator": {
+    "decision_months": 36,
+    "input_symbol_dates": 1008,
+    "maximum_strategy_entries_per_day": 1,
+    "preserve_all_months": true
+  },
+  "development_evidence_eligible": false,
+  "implementation_sha256": "19d454302a4f1c7cded98450996bb3caa2b58f4736db6e069a90ddfa4209d2ed",
+  "manifest_sha256": "0067fa7170633b070ec32a080c4e0debfde37327021f5f400feb2ee819f42097",
+  "maturity_effect": "NONE",
+  "mechanism_family": "turn-of-month-etf-seasonality",
+  "outcome_contract": {
+    "entry": "next XNYS session open plus adverse per-side cost",
+    "maximum_concurrent_positions": 1,
+    "maximum_holding_trading_days": 4,
+    "maximum_new_entries_per_day": 1,
+    "planned_risk_r": "cost-adjusted entry minus cost-adjusted planned stop",
+    "primary_cost_bps_per_side": 5,
+    "protective_stop": "good-til-canceled stop modeled from entry; gaps fill at the worse of session open or stop",
+    "same_session_ambiguity": "stop_first",
+    "signal_information": "completed split-consistent regular-session daily bars only",
+    "stop": "1.5 times signal-session ATR14 below entry",
+    "stress_cost_bps_per_side": [
+      10,
+      20
+    ],
+    "time_exit": "third XNYS session close of the next month"
+  },
+  "outcomes_previously_accessed_for_exact_rules": false,
+  "provider_requests_authorized": false,
+  "return_evaluation_authorized_before_inspection": false,
+  "schema_version": 1,
+  "selection_contract": {
+    "decision_time": "after the penultimate XNYS session of each month",
+    "entry_session": "final XNYS session of the month",
+    "selection": "SPY only; one signal per eligible month"
+  },
+  "slate_inspection_sha256": "3c12ba6f0ea4a49db5888904015a73d42f54cf1da2a43447ece8b741d1e2c6c0",
+  "slate_manifest_sha256": "4c513f9de6417a48dccae5bf5ce1e5c59d68a1d2d0b6e65bba41a3f4a5cac822",
+  "source_selection": {
+    "common_calendar_dates": 1008,
+    "evaluation_end": "2025-12-31",
+    "evaluation_months": 36,
+    "evaluation_start": "2023-01-03",
+    "input_sha256": "845cf1b183b46ca93918c36715f3f0b60a0f7990af8ec0fe1fd4e17ce09a1a6b",
+    "private_input_file_sha256": "27a590ecdadda0f2c04f20a791c8de76b547e4fa116c45b4afcf231a9080a54f",
+    "provider_substitution": false,
+    "symbol": "SPY",
+    "whole_provider": "ibkr"
+  },
+  "stage0_gate": {
+    "effect": "screening survival only; never PILOT_READY or maturity evidence",
+    "maximum_drawdown_r": 8,
+    "minimum_closed_signals": 30,
+    "minimum_profit_factor": 1.1,
+    "require_positive_20bps_total_r": true,
+    "require_positive_expectancy": true,
+    "rule_violations": 0
+  },
+  "strategy_version": "0.1.0-stage0",
+  "tournament_wave": 2,
+  "variant_id": "turn-of-month-etf-seasonality-v1",
+  "variant_ordinal": 6
+}
