@@ -1139,6 +1139,14 @@ the result. The trigger namespace remains empty and post-entry data remains
 locked; causal trigger derivation may begin only after this inspection is
 committed and pushed.
 
+The isolated third-tranche trigger adapter now hash-pins the unchanged trigger
+engine and binds only the inspected `tranche3-v2` collection: 23 causal pairs,
+20 sessions, 86 terminal requests, and 739,435 canonical rows. Its independent
+inspector requires the exact-window reader, complete provenance, unchanged
+trigger rules, a zero-trigger namespace at contract inspection, and continued
+post-entry outcome lock. The implementation must be committed and pushed before
+the trigger compatibility manifest is frozen.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
