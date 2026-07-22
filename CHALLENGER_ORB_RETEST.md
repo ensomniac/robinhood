@@ -111,6 +111,13 @@ and outcome bindings match; the 95-pair/47-date/284-request denominator rebuilds
 and the trigger namespace remains empty. This status must be committed and
 pushed before derivation.
 
+The published runner derived an uninspected causal index with 29 trigger pairs
+on 22 distinct dates from the 95-pair denominator. Terminal counts are 23 no
+initial break, two no retest before cutoff, 41 failed first-touch holds, and 29
+triggers. Private trigger hash `f8cf5c89...f7b4` binds the result. No capacity
+decision is valid until this uninspected state is committed and independently
+rebuilt; no post-entry data or outcome was accessed.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`
