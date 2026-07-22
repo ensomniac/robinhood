@@ -1,0 +1,13 @@
+{
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "schedule-13d-activist-continuation-v1",
+  "capacity_classification_permitted": false,
+  "contract_sha256": "dbd63296047961fd5d0546627c79c66607ef3498a69fba15f05f974a14527fab",
+  "market_price_access_permitted": false,
+  "outcome_access_permitted": false,
+  "schema_version": 1,
+  "sec_source_access_permitted": false,
+  "status": "CAPACITY_CONTRACT_PENDING_INSPECTION",
+  "valid": false
+}

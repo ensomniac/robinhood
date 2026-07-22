@@ -1,0 +1,180 @@
+{
+  "access_contract": {
+    "broker_actions_permitted": false,
+    "capacity_classification_after_inspection_permitted": true,
+    "entry_fill_access_permitted": false,
+    "exit_or_stop_access_permitted": false,
+    "forward_return_computation_permitted": false,
+    "market_price_access_permitted": false,
+    "maturity_effect": "NONE",
+    "sec_index_and_document_access_after_inspection_permitted": true,
+    "sec_index_or_document_access_before_inspection_permitted": false,
+    "stage0_outcome_access_permitted": false
+  },
+  "artifact_kind": "outcome-blind-capacity-contract",
+  "authorization_sha256": "6a7e27481ff80cd3e457d972c10347ea831801d6532fdc34b9e9fb0453c0fd6e",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "schedule-13d-activist-continuation-v1",
+  "capacity_gate": {
+    "capacity_pass_rule": "deduplicated events satisfying every source, Item 4, class, symbol, timing, and cooldown rule are at least minimum_verified_events",
+    "minimum_disjoint_maturity_signals": 50,
+    "minimum_stage0_signals": 30,
+    "minimum_verified_events": 80,
+    "negative_disposition": "retire this exact candidate without source, pattern, date, or cooldown repair on the inspected corpus"
+  },
+  "claim_limit": "This artifact freezes only the point-in-time filing-capacity test. It contains no filing count, event count, price, fill, exit, return, profit factor, or maturity evidence.",
+  "contract_sha256": "dbd63296047961fd5d0546627c79c66607ef3498a69fba15f05f974a14527fab",
+  "denominator_contract": {
+    "complete_attrition_counts_required": true,
+    "deduplicate_only_after_source_and_semantic_classification": true,
+    "retain_every_indexed_initial_sc13d": true,
+    "terminal_reason_required_for_every_index_row": true
+  },
+  "distinctness_contract": {
+    "earnings_or_generic_news_event": false,
+    "failed_family_one_rules_reused_or_repaired": false,
+    "opening_range_or_pullback_signal": false,
+    "ownership_control_event": true,
+    "price_only_signal": false
+  },
+  "document_contract": {
+    "boilerplate_only": "ineligible_preserve_denominator",
+    "control_intent_match": "at least one actor-intent pattern and one control-category pattern must match within the same normalized Item 4 paragraph",
+    "item4_end": "next normalized Item 5 heading",
+    "item4_start": "normalized Item 4 heading in the selected SC 13D document",
+    "missing_or_ambiguous_item4": "ineligible_preserve_denominator",
+    "pattern_contract": {
+      "actor_intent_patterns": [
+        "reporting\\s+persons?.{0,240}\\b(?:intend|plan|seek|propose|expect|will|has\\s+nominated|have\\s+nominated)\\b",
+        "\\b(?:intend|plan|seek|propose)\\b.{0,240}\\b(?:issuer|company|board|management|stockholders?)\\b"
+      ],
+      "common_share_class_patterns": [
+        "\\bcommon\\s+(?:stock|shares?)\\b",
+        "\\bordinary\\s+shares?\\b"
+      ],
+      "control_category_patterns": {
+        "board_representation": [
+          "\\bboard\\s+representation\\b",
+          "\\bseat(?:s)?\\s+on\\s+the\\s+board\\b",
+          "\\bnomina(?:te|ted|ting|tion).{0,120}\\bdirectors?\\b"
+        ],
+        "extraordinary_transaction": [
+          "\\bmerger\\b",
+          "\\bbusiness\\s+combination\\b",
+          "\\brecapitalization\\b",
+          "\\brestructuring\\b",
+          "\\bstrategic\\s+alternatives\\b",
+          "\\bsale\\s+of\\s+(?:the\\s+)?(?:issuer|company)\\b"
+        ],
+        "management_or_governance_change": [
+          "\\bchange.{0,80}\\bmanagement\\b",
+          "\\bchange.{0,80}\\bboard\\b",
+          "\\bcorporate\\s+governance\\b",
+          "\\bcapital\\s+allocation\\b"
+        ],
+        "proxy_or_holder_campaign": [
+          "\\bsolicit.{0,80}\\bprox(?:y|ies)\\b",
+          "\\bproxy\\s+solicitation\\b",
+          "\\bcommunicat.{0,120}\\b(?:stockholders?|shareholders?)\\b"
+        ]
+      },
+      "excluded_class_patterns": [
+        "\\bpreferred\\b",
+        "\\bwarrants?\\b",
+        "\\boptions?\\b",
+        "\\bnotes?\\b",
+        "\\bdebentures?\\b",
+        "\\bpartnership\\s+units?\\b"
+      ],
+      "flags": [
+        "IGNORECASE",
+        "DOTALL"
+      ]
+    },
+    "structured_and_html_text_normalization": "decode entities, remove tags, collapse whitespace, preserve headings"
+  },
+  "event_contract": {
+    "acceptance_cutoff": "event accepted within the frozen date window",
+    "amendment_promotion_permitted": false,
+    "cooldown_rule": "after one eligible event, later events for the same issuer inside 63 calendar days are ineligible and retained",
+    "event_identity": "target issuer CIK plus accession number",
+    "initial_schedule_only": true,
+    "issuer_cooldown_calendar_days": 63,
+    "missing_source_substitution_permitted": false,
+    "same_issuer_same_acceptance_date": "retain earliest acceptance timestamp then lexical accession"
+  },
+  "family_one_retirement_inspection_sha256": "3cabba283e1b9a94cae818c3c57d6c216ad42ecd57e289d4468ea220bd2319ee",
+  "filing_count": null,
+  "implementation_and_authority_hashes": {
+    "PORTFOLIO_VALIDATION_V2.md": "0c88db58e76bfc7a146ae497b80ece6e6b5f83ef1f44d3792d6b6d6a3ea45e7f",
+    "portfolio_config.toml": "1d38f1329bb1c3bee376c7eed7c22e503ce250532c1d5c0e3b23299ae85284fc",
+    "portfolio_maturity.py": "e8bbb99d9df8bbfb2e00b5d9f8340aa83a406b0dcbb1abcf9ec9c27271d19016",
+    "schedule13d_capacity.py": "dc77ebb612ac0293a691c39f8a4986214ee9c7c0b0c559da45a8fc9e4a2d8e4e",
+    "schedule13d_capacity_inspection.py": "bb5c4f66ea2ad1e299f95910b3290a7250a90c26da9fb79f9782e511c70a773c",
+    "strategy_tournament/successor_proposal/authorizations/multi-strategy-portfolio-validation-v2-authorization-6a7e27481ff80cd3e457d972c10347ea831801d6532fdc34b9e9fb0453c0fd6e.json": "6715b4078e30bc88b3f5d3e05bd3c4608736229b2cb6529849d57114399c360a",
+    "strategy_tournament/v2/multi_asset_etf_tsmom/stage0/inspections/multi-asset-etf-tsmom-v1-result-3cabba283e1b9a94cae818c3c57d6c216ad42ecd57e289d4468ea220bd2319ee.json": "8fb8092c5158be5486c2988143d20ec9733e614d4e05c915f9165ff917e48053"
+  },
+  "iso_week": "2026-W30",
+  "market_outcomes_accessed": false,
+  "maximum_new_mechanism_families_this_iso_week": 3,
+  "mechanism": "delayed price discovery after the first public initial Schedule 13D with an affirmative control-intent Item 4",
+  "mechanism_family": "schedule-13d-activist-continuation",
+  "new_mechanism_family_slot": 2,
+  "objective": "FIRST_PILOT_READY_LIVE_STARTED",
+  "schema_version": 1,
+  "security_contract": {
+    "current_or_future_symbol_mapping_permitted": false,
+    "eligible_class": "title of class matches a common-share pattern and no excluded-class pattern",
+    "long_common_equity_only": true,
+    "missing_causal_symbol": "ineligible_preserve_denominator",
+    "symbol_normalization": "uppercase SEC-reported symbol; no issuer-name inference",
+    "symbol_source_order": [
+      "issuerTradingSymbol in the event filing",
+      "Trading Symbol in the event filing",
+      "dei:TradingSymbol in the latest issuer 10-K, 10-Q, 8-K, 20-F, or 6-K accepted no later than the event"
+    ]
+  },
+  "source_contract": {
+    "acceptance_time_source": "SEC complete-submission ACCEPTANCE-DATETIME",
+    "collection_end_inclusive": "2025-12-19",
+    "collection_start": "2022-01-03",
+    "filing_source": "https://www.sec.gov/Archives/edgar/data/{cik}/{accession-path}",
+    "forms_excluded": [
+      "SC 13D/A",
+      "SC 13G",
+      "SC 13G/A"
+    ],
+    "forms_included": [
+      "SC 13D"
+    ],
+    "index_source": "https://www.sec.gov/Archives/edgar/full-index/{year}/QTR{quarter}/master.idx",
+    "maximum_requests_per_second": 8,
+    "point_in_time_only": true,
+    "primary_document_selection": "first accession-bound document whose normalized TYPE is SC 13D",
+    "provider": "SEC_EDGAR",
+    "provider_substitution_permitted": false,
+    "sec_user_agent_required_from_private_configuration": true,
+    "shared_cache_reuse": "permitted only for an exact SEC URL with retained content hash"
+  },
+  "stage0_handoff": {
+    "capacity_result_eligible_for_maturity": false,
+    "cost_grid_bps_per_side": [
+      5,
+      10,
+      20
+    ],
+    "full_rules_and_outcome_contract_frozen_after_capacity_pass": true,
+    "independent_zero-result_inspection_required": true,
+    "maximum_holding_sessions": 5
+  },
+  "strategy_version": "2026-07-22-schedule-13d-activist-continuation-v1",
+  "theme_id": "schedule-13d-activist-continuation",
+  "timing_contract": {
+    "candidate_entry_session": "first complete regular trading session strictly after the SEC acceptance date",
+    "decision_time": "public SEC acceptance timestamp",
+    "maximum_holding_sessions": 5,
+    "price_or_return_access_during_capacity_permitted": false,
+    "same_day_entry_permitted": false
+  },
+  "verified_event_count": null
+}
