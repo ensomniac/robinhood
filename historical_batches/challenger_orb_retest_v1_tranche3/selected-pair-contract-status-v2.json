@@ -1,0 +1,12 @@
+{
+  "dataset_id": "dataset-selected-candidate-contract-2026-07-22-challenger-orb-retest-tranche3-v2",
+  "inspected": false,
+  "manifest_path": "historical_batches/challenger_orb_retest_v1_tranche3/selected_pair_manifests/dataset-selected-candidate-contract-2026-07-22-challenger-orb-retest-tranche3-v2-f50fe2068ff38e9a130691468eac181e6332351a56b4a78209f0bc708eef225a.json",
+  "manifest_sha256": "f50fe2068ff38e9a130691468eac181e6332351a56b4a78209f0bc708eef225a",
+  "pre_freeze_downstream_artifacts": 0,
+  "requested_dates": 100,
+  "schema_version": 1,
+  "selected_pair_count": 1781,
+  "status": "FROZEN_AWAITING_INSPECTION",
+  "target_outcomes_observed_or_derived": false
+}

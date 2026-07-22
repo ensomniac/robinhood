@@ -934,6 +934,15 @@ that commit. The v2 implementation must be committed and pushed before a new
 manifest is frozen; no selection repair, causal access, or outcome access is
 permitted.
 
+Repaired selected-pair manifest `f50fe206...f225a` now freezes the same 1,781
+ordered selections under dataset v2, sourced only from the unchanged inspected
+scanner-v1 corpus. Private hash `9d94c294...2106b` reflects the new dataset
+identity while the date-security rows remain unchanged. The contract pins
+pushed repair commit `2559801`, every upstream byte and mechanism binding, a
+zero-artifact v2 preentry namespace, capacity, privacy, zero substitution, and
+the full outcome lock. It is `FROZEN_AWAITING_INSPECTION` and must be committed
+and pushed before the repaired inspector runs.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
