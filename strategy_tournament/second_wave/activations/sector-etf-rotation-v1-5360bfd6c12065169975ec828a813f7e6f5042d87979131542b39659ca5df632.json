@@ -1,0 +1,86 @@
+{
+  "activation_rules_hash": "29483018d8b99b2da3cfed6589ed27923b67ae104b64dc6a19e5fd60e0cfdaa3",
+  "base_rules_hash": "6b5040ccc54ee7b3dfadd81c3e4d32e9f8119990fbc37aa2d4b6abac3b4d8dd1",
+  "broker_actions_authorized": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v1",
+  "claim_scope": "FALSIFICATION_ONLY",
+  "confirmation_evidence_eligible": false,
+  "contract_kind": "stage0-activation",
+  "denominator": {
+    "decision_dates": 752,
+    "input_symbol_dates": 12096,
+    "maximum_strategy_entries_per_day": 1,
+    "preserve_no_trade_dates": true
+  },
+  "development_evidence_eligible": false,
+  "implementation_sha256": "a17b228708d45dc01f86427db01ed8b04f5999a0983e50d15fdd9d5e4f547371",
+  "manifest_sha256": "5360bfd6c12065169975ec828a813f7e6f5042d87979131542b39659ca5df632",
+  "maturity_effect": "NONE",
+  "mechanism_family": "sector-etf-rotation",
+  "outcome_contract": {
+    "entry": "next XNYS session open plus adverse per-side cost",
+    "maximum_concurrent_positions": 1,
+    "maximum_new_entries_per_day": 1,
+    "planned_risk_r": "cost-adjusted entry minus cost-adjusted planned stop",
+    "primary_cost_bps_per_side": 5,
+    "protective_stop": "good-til-canceled stop modeled from entry; gaps fill at the worse of session open or stop",
+    "same_session_ambiguity": "stop_first",
+    "signal_information": "completed split-consistent regular-session daily bars only",
+    "stop": "1.5 times signal-session ATR14 below entry",
+    "stress_cost_bps_per_side": [
+      10,
+      20
+    ],
+    "time_exit": "fifth trading-session close after entry"
+  },
+  "outcomes_previously_accessed_for_exact_rules": false,
+  "provider_requests_authorized": false,
+  "return_evaluation_authorized_before_inspection": false,
+  "schema_version": 1,
+  "selection_contract": {
+    "benchmark_filter": "20-session return strictly above SPY",
+    "decision_time": "after each completed regular session while flat",
+    "lookback_trading_sessions": 20,
+    "selection": "highest 20-session return; symbol ascending tie-break",
+    "trend_filter": "close above simple moving average 50"
+  },
+  "slate_inspection_sha256": "3c12ba6f0ea4a49db5888904015a73d42f54cf1da2a43447ece8b741d1e2c6c0",
+  "slate_manifest_sha256": "4c513f9de6417a48dccae5bf5ce1e5c59d68a1d2d0b6e65bba41a3f4a5cac822",
+  "source_selection": {
+    "common_calendar_dates": 1008,
+    "evaluation_dates": 752,
+    "evaluation_end": "2025-12-31",
+    "evaluation_start": "2023-01-03",
+    "input_sha256": "43a42e2378092d23b7abd5f747a851d9fdfe7efc3696d123a069419948f26d90",
+    "private_input_file_sha256": "00c95c441ef67212b053c5560f0e221406be6599b8911531a68c0ba919f6f80d",
+    "provider_substitution": false,
+    "symbols": [
+      "SPY",
+      "XLB",
+      "XLC",
+      "XLE",
+      "XLF",
+      "XLI",
+      "XLK",
+      "XLP",
+      "XLRE",
+      "XLU",
+      "XLV",
+      "XLY"
+    ],
+    "whole_provider": "ibkr"
+  },
+  "stage0_gate": {
+    "effect": "screening survival only; never PILOT_READY or maturity evidence",
+    "maximum_drawdown_r": 8,
+    "minimum_closed_signals": 30,
+    "minimum_profit_factor": 1.1,
+    "require_positive_20bps_total_r": true,
+    "require_positive_expectancy": true,
+    "rule_violations": 0
+  },
+  "strategy_version": "0.1.0-stage0",
+  "tournament_wave": 2,
+  "variant_id": "sector-etf-rotation-v1",
+  "variant_ordinal": 1
+}

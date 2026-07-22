@@ -681,6 +681,23 @@ a 50-session trend filter, enters the selected leader at the next open, applies
 a gap-aware 1.5-ATR stop, exits at the fifth session close, and remains outside
 maturity.
 
+The read-only acquisition completed 60 IBKR daily-bar requests with zero
+failures and persisted 1,008 exact common sessions for all twelve symbols from
+2022-01-03 through 2026-01-08. It selected no signals and computed no returns.
+Activation
+`5360bfd6c12065169975ec828a813f7e6f5042d87979131542b39659ca5df632`
+binds the resulting private input graph, 12,096 symbol-sessions, and all 752
+evaluation sessions from 2023-01-03 through 2025-12-31. Provider substitution
+and pre-inspection return access remain forbidden.
+
+The acquisition expanded SPY with daily-only documents, so the bounded data
+inventory sampler now defines its ETF slice as the common SPY/QQQ document
+calendar and hashes its declared minute-data projection rather than unrelated
+datasets added later. This preserves the original 245-date paired minute-cache
+question and frozen inventory identity
+`dd77fb3c226732c652000e6a80a2f4336e876a7d1ba005eb9718e0719e63397b`
+while allowing daily collections to coexist.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the

@@ -13,7 +13,12 @@ from pathlib import Path
 from typing import Any
 
 from historical_research import load_dataset
-from historical_store import DEFAULT_ENV_PATH, HistoricalDayStore, sha256_file
+from historical_store import (
+    DEFAULT_ENV_PATH,
+    HistoricalDayStore,
+    _gzip_json_bytes,
+    sha256_file,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -39,6 +44,7 @@ DEFAULT_INVENTORY_PATH = (
     PROJECT_ROOT / "research_results" / "2026-07-21-portfolio-data-inventory.json"
 )
 STORE_SAMPLE_SYMBOLS = ("SPY", "QQQ", "AAPL")
+PAIRED_MINUTE_SAMPLE_SYMBOLS = {"SPY", "QQQ"}
 SCHEMA_VERSION = 1
 
 
@@ -90,6 +96,8 @@ def _dataset_descriptor(dataset: Mapping[str, Any]) -> dict[str, Any]:
 
 def _store_sample(store: HistoricalDayStore, symbol: str) -> dict[str, Any]:
     dates = store.dates(symbol)
+    if symbol in PAIRED_MINUTE_SAMPLE_SYMBOLS:
+        dates = sorted(set(store.dates("SPY")) & set(store.dates("QQQ")))
     if not dates:
         return {"symbol": symbol, "dates": 0, "first": None, "last": None, "samples": []}
     selected = list(dict.fromkeys((dates[0], dates[len(dates) // 2], dates[-1])))
@@ -98,14 +106,23 @@ def _store_sample(store: HistoricalDayStore, symbol: str) -> dict[str, Any]:
         document = store.load(symbol, day)
         if document is None:
             raise PortfolioDataInventoryError(f"sample document disappeared: {symbol} {day}")
-        path = store.path_for(symbol, day)
+        sampled_document = dict(document)
+        if symbol in PAIRED_MINUTE_SAMPLE_SYMBOLS:
+            sampled_document["datasets"] = [
+                item
+                for item in document["datasets"]
+                if item.get("timeframe") == "1m"
+            ]
+        document_sha256 = hashlib.sha256(
+            _gzip_json_bytes(sampled_document)
+        ).hexdigest()
         samples.append(
             {
                 "date": day,
-                "document_sha256": sha256_file(path),
+                "document_sha256": document_sha256,
                 "datasets": [
                     _dataset_descriptor(item)
-                    for item in document["datasets"]
+                    for item in sampled_document["datasets"]
                     if isinstance(item, Mapping)
                 ],
             }
@@ -382,6 +399,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("build", help="rebuild and print the deterministic inventory")
+    subparsers.add_parser("write", help="refresh the published deterministic inventory")
     inspect = subparsers.add_parser("inspect", help="rebuild and inspect a published inventory")
     inspect.add_argument("path", nargs="?", type=Path, default=DEFAULT_INVENTORY_PATH)
     return parser
@@ -390,7 +408,15 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
-        result = build_inventory() if args.command == "build" else inspect_inventory(args.path)
+        if args.command in {"build", "write"}:
+            result = build_inventory()
+            if args.command == "write":
+                DEFAULT_INVENTORY_PATH.write_text(
+                    json.dumps(result, indent=2, sort_keys=True) + "\n",
+                    encoding="utf-8",
+                )
+        else:
+            result = inspect_inventory(args.path)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (PortfolioDataInventoryError, OSError, ValueError) as exc:

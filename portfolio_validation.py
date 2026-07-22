@@ -114,6 +114,8 @@ CORE_ARTIFACTS = (
     "strategy_tournament/second_wave/inspections/first-wave-failure-taxonomy-6f2619090a6312763d16ab9f3e01f63047c59b7fae1907803aea78b0ffa74f58.json",
     "strategy_tournament/second_wave/manifests/portfolio-stage0-second-wave-slate-4c513f9de6417a48dccae5bf5ce1e5c59d68a1d2d0b6e65bba41a3f4a5cac822.json",
     "strategy_tournament/second_wave/inspections/portfolio-stage0-second-wave-slate-3c12ba6f0ea4a49db5888904015a73d42f54cf1da2a43447ece8b741d1e2c6c0.json",
+    "strategy_tournament/second_wave/sector_etf_rotation/collection-status.json",
+    "strategy_tournament/second_wave/activations/sector-etf-rotation-v1-5360bfd6c12065169975ec828a813f7e6f5042d87979131542b39659ca5df632.json",
     "strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json",
     "strategy_tournament/activations/etf-vwap-mean-reversion-v1-ecaff3785f2dc9fe3f14332be9e40e056e08aacf55f86487cb2f25df62688a47.json",
     "strategy_tournament/activations/equity-gap-continuation-v1-3bc6f70c2a331e70b00a1dda076b258ce46f1175d062ecee0a641e4c4ab06f3f.json",

@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+import json
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import sector_etf_rotation_stage0 as stage0
 
 
 EASTERN = ZoneInfo("America/New_York")
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _rows(count: int = 70, *, start: float = 100.0, daily_gain: float = 0.001):
@@ -90,3 +93,33 @@ def test_frozen_variant_is_first_in_inspected_second_wave():
     assert variant["mechanism_family"] == "sector-etf-rotation"
     assert variant["maximum_holding_trading_days"] == 5
     assert variant["maturity_effect"] == "NONE"
+
+
+def test_published_activation_binds_complete_whole_provider_input_graph():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/activations").glob(
+            "sector-etf-rotation-v1-*.json"
+        )
+    )
+    assert len(matches) == 1
+    activation = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert activation == stage0.build_activation()
+    assert activation["manifest_sha256"] == stage0.common._self_hash(
+        activation, "manifest_sha256"
+    )
+    assert activation["source_selection"]["whole_provider"] == "ibkr"
+    assert activation["source_selection"]["provider_substitution"] is False
+    assert activation["source_selection"]["common_calendar_dates"] == 1008
+    assert activation["source_selection"]["evaluation_dates"] == 752
+    assert activation["denominator"]["input_symbol_dates"] == 12_096
+    assert activation["return_evaluation_authorized_before_inspection"] is False
+    assert activation["maturity_effect"] == "NONE"
+
+
+def test_input_inspection_is_absent_before_independent_review():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/inspections").glob(
+            "sector-etf-rotation-v1-input-*.json"
+        )
+    )
+    assert matches == []
