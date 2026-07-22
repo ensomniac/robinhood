@@ -14,6 +14,11 @@ entry qualification retained 2 of 60 pairs across 52 sessions versus the
 frozen 50-signal minimum, with no post-entry outcome access. No parameter
 repair or outcome collection is permitted for that exact version.
 
+The successor campaign is not authorized. A machine-audited proposal may be
+prepared from exhausted evidence, but it may not freeze a new hypothesis,
+contact a provider, access an outcome, or activate a third wave until Ryan
+explicitly supersedes the one-second-wave campaign limit.
+
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
 equity trading research and automated execution on Ryan Martin's behalf.

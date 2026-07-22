@@ -888,6 +888,16 @@ development, confirmation, or shadow lane. A new mechanism family, third wave,
 or repaired version requires a superseding research-campaign authorization;
 none may be inferred from the portfolio objective.
 
+`portfolio_successor_proposal.py` now implements a non-activating, machine-
+audited successor proposal. It rebuilds the complete tournament, failed
+development survivor, preserved-challenger retirement, zero `PILOT_READY`
+count, and zero-signal ORB v3 state before presenting three theme-level research
+directions. The proposal grants no authority, freezes no strategy rules or
+sample identities, accesses no provider or outcome, and cannot preregister a
+candidate. Its implementation must be committed and pushed before a content-
+addressed proposal is published. Explicit superseding authorization remains
+mandatory before any new capacity preflight or hypothesis freeze.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the
