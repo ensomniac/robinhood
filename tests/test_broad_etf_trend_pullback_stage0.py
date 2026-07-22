@@ -126,3 +126,43 @@ def test_published_input_inspection_authorizes_one_frozen_evaluation():
     assert inspection["maturity_effect"] == "NONE"
     assert inspection["return_evaluation_authorized"] is True
     assert inspection["valid"] is True
+
+
+def test_published_result_fails_only_twenty_bps_cost_stress():
+    matches = sorted(
+        (ROOT / "research_results").glob(
+            "2026-07-21-broad-etf-trend-pullback-stage0-*.json"
+        )
+    )
+    assert len(matches) == 1
+    result = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert result["result_sha256"] == stage0.common._self_hash(
+        result, "result_sha256"
+    )
+    denominator = result["denominator"]
+    assert denominator["decision_dates"] == 752
+    assert denominator["closed_signals"] == 77
+    assert (
+        denominator["closed_signals"]
+        + denominator["no_trade_dates"]
+        + denominator["position_occupied_dates"]
+        == denominator["decision_dates"]
+    )
+    assert result["primary_5bps"]["expectancy_r"] > 0
+    assert result["primary_5bps"]["profit_factor"] >= 1.10
+    assert result["primary_5bps"]["maximum_drawdown_r"] <= 8
+    assert result["stress"]["20"]["total_r"] < 0
+    assert result["stage0_blockers"] == [
+        "20 bps-per-side total R is not positive"
+    ]
+    assert result["stage0_survived"] is False
+    assert result["maturity_effect"] == "NONE"
+
+
+def test_result_inspection_is_absent_before_independent_review():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/inspections").glob(
+            "broad-etf-trend-pullback-v1-result-*.json"
+        )
+    )
+    assert matches == []

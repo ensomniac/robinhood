@@ -737,6 +737,13 @@ symbol-sessions plus all 752 evaluation sessions. It made zero provider or
 broker calls, computed zero returns, and authorizes exactly the frozen Stage 0
 evaluation after the inspection is committed and pushed.
 
+The one authorized evaluation produced 77 closed signals across 752 fully
+reconciled decision sessions. At 5 bps per side it returned +0.1117R
+expectancy, 1.4376 profit factor, +8.5995R total, and 4.5892R maximum drawdown.
+At 20 bps per side it lost 2.6012R. The exact variant fails only the mandatory
+cost-stress gate, remains outside maturity, and awaits independent result
+inspection before permanent retirement.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the
