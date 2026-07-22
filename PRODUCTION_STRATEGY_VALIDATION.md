@@ -1256,6 +1256,16 @@ every other pair, request, quote, history, privacy, and outcome-lock check. The
 repair implementation must be committed and pushed before its own manifest is
 frozen; no provider refetch or outcome access is allowed.
 
+Compatibility manifest `0e8c901e...d961` now freezes that isolated repair from
+clean pushed code. It binds the unchanged collection manifest/status/private
+index, the original failed inspector, both compatibility implementations, all
+60 observed-time and decision-time representation differences, all 60 exact
+UTC-instant matches, and a zero-second maximum delta. Only the two named
+timestamp representations may normalize; naive times, any elapsed difference,
+source mutation, provider refetch, identities, post-entry rows, and outcomes
+remain forbidden. The contract is uninspected and authorizes no evidence claim
+until its independent full reconstruction is published from a later commit.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,

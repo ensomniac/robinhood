@@ -1,0 +1,12 @@
+{
+  "dataset_id": "dataset-challenger-orb-retest-qualification-inspection-compatibility-2026-07-22-v1",
+  "inspected": false,
+  "manifest_sha256": "0e8c901eac1f3beb32ba4c248a986baed47aa6ada393920aff4205299fadd961",
+  "maximum_absolute_timestamp_delta_seconds": 0,
+  "post_entry_data_access_allowed": false,
+  "schema_version": 1,
+  "semantically_equal_timestamp_pairs": 60,
+  "source_pairs": 60,
+  "status": "FROZEN_WAITING_INSPECTION",
+  "target_outcomes_observed_or_derived": false
+}

@@ -1,0 +1,68 @@
+{
+  "claim_scope": "DEVELOPMENT_ONLY",
+  "compatibility_contract": {
+    "all_other_original_checks_required": true,
+    "comparison": "ISO_8601_TIMEZONE_AWARE_EXACT_UTC_INSTANT",
+    "maximum_absolute_delta_seconds": 0,
+    "naive_timestamps_allowed": false,
+    "permitted_fields": [
+      "clean_cross.observed_at_et",
+      "final_decision_at_et"
+    ],
+    "provider_refetch_allowed": false,
+    "source_artifact_mutation_allowed": false
+  },
+  "dataset_id": "dataset-challenger-orb-retest-qualification-inspection-compatibility-2026-07-22-v1",
+  "implementation_contract": {
+    "compatibility_freezer": {
+      "path": "challenger_orb_retest_qualification_collection_compatibility.py",
+      "sha256": "c300d8d3c24062621d33ff1b0c62e2204b6a373cca9763065982442968bceb7c"
+    },
+    "compatibility_inspector": {
+      "path": "challenger_orb_retest_qualification_collection_compatibility_inspection.py",
+      "sha256": "942cde6a79cce7c3eb3a49821d60b19cf9b0d117846367c363df1b5412451cc3"
+    },
+    "frozen_collector": {
+      "path": "challenger_orb_retest_qualification_collection.py",
+      "sha256": "5b0007ec21033bb7d0dcec929f525f422f9094f3f4a807aa502de32d212a2744"
+    },
+    "original_inspector": {
+      "path": "challenger_orb_retest_qualification_collection_inspection.py",
+      "sha256": "c34c218e264d8bfc96a3e63aa11f29f3e671f2b61d85bf8fede96dffaa226d26"
+    }
+  },
+  "incident_snapshot": {
+    "decision_at_representation_differences": 60,
+    "decision_at_semantic_matches": 60,
+    "maximum_absolute_timestamp_delta_seconds": 0,
+    "observed_at_representation_differences": 60,
+    "observed_at_semantic_matches": 60,
+    "private_index_sha256": "be1c680ec76be00bbb3896adef51ee4827e5f807ca4bbb58773d1468a9f11391",
+    "source_distinct_trigger_sessions": 52,
+    "source_manifest_file_sha256": "ac93a33e6399cb42bf179aab82e748fb0f1c82a0c862e6251f90fc3c5af0015f",
+    "source_pairs": 60,
+    "source_status_file_sha256": "871051dff44fd648e28a984961583e2c2e3d759c62c8c6ad5213a7c63a8d5e66",
+    "target_outcomes_observed_or_derived": false
+  },
+  "manifest_sha256": "0e8c901eac1f3beb32ba4c248a986baed47aa6ada393920aff4205299fadd961",
+  "outcome_lock": {
+    "post_entry_data_access_allowed": false,
+    "return_fields_allowed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "privacy_contract": {
+    "aggregate_counts_and_hashes_only": true,
+    "symbols_dates_instrument_ids_raw_rows_and_requests_public": false
+  },
+  "registered_at": "2026-07-22T16:02:28.061832+00:00",
+  "schema_version": 1,
+  "source_contract": {
+    "collection_dataset_id": "dataset-challenger-orb-retest-entry-qualification-collection-2026-07-22-v1",
+    "collection_manifest_file_sha256": "ac93a33e6399cb42bf179aab82e748fb0f1c82a0c862e6251f90fc3c5af0015f",
+    "collection_manifest_path": "historical_batches/challenger_orb_retest_v1_tranche3/qualification_collection_manifests/dataset-challenger-orb-retest-entry-qualification-collection-2026-07-22-v1-96a6119ed7b7fa1d1c7b799dea7de044e64a052b34e2fd070ae0532bdd0e8b3c.json",
+    "collection_manifest_sha256": "96a6119ed7b7fa1d1c7b799dea7de044e64a052b34e2fd070ae0532bdd0e8b3c",
+    "collection_status_file_sha256": "871051dff44fd648e28a984961583e2c2e3d759c62c8c6ad5213a7c63a8d5e66",
+    "collection_status_path": "historical_batches/challenger_orb_retest_v1_tranche3/qualification-collection-status.json",
+    "private_index_sha256": "be1c680ec76be00bbb3896adef51ee4827e5f807ca4bbb58773d1468a9f11391"
+  }
+}
