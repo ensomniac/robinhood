@@ -850,6 +850,11 @@ input hash
 `845cf1b183b46ca93918c36715f3f0b60a0f7990af8ec0fe1fd4e17ce09a1a6b`.
 It reused the existing daily corpus with zero provider calls and computed no
 returns; outcome access remains closed pending inspection.
+Input inspection
+`4bf5de7bcd727fb99b44c9179ac630cae558e5fc8e5395c49b61093ba19853f9`
+independently rebuilds all 1,008 daily inputs, the 36 monthly event mappings,
+and the private graph identity. It computed no return and now authorizes exactly
+one frozen Stage 0 evaluation after the inspection is committed and pushed.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live

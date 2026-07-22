@@ -104,3 +104,29 @@ def test_published_activation_binds_all_frozen_months():
     assert activation["denominator"]["input_symbol_dates"] == 1008
     assert activation["return_evaluation_authorized_before_inspection"] is False
     assert activation["maturity_effect"] == "NONE"
+
+
+def test_published_input_inspection_authorizes_one_evaluation():
+    activation_path = next(
+        (ROOT / "strategy_tournament/second_wave/activations").glob(
+            "turn-of-month-etf-seasonality-v1-*.json"
+        )
+    )
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/inspections").glob(
+            "turn-of-month-etf-seasonality-v1-input-*.json"
+        )
+    )
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection == stage0.inspect_activation(activation_path)
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["input_symbol_dates"] == 1008
+    assert inspection["evaluation_months"] == 36
+    assert inspection["provider_requests"] == 0
+    assert inspection["returns_computed"] == 0
+    assert inspection["return_evaluation_authorized"] is True
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["valid"] is True
