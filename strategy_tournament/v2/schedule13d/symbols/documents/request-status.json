@@ -1,0 +1,15 @@
+{
+  "broker_actions_permitted": false,
+  "candidate_id": "schedule-13d-activist-continuation-v1",
+  "capacity_passed": null,
+  "market_price_access_permitted": false,
+  "outcome_access_permitted": false,
+  "provider_access_permitted": false,
+  "request_count": 281,
+  "request_graph_sha256": "276d08a6de977fcda8d181a83715c3eaaa78e05f5bea501e770545f51ca66f7e",
+  "schema_version": 1,
+  "status": "SYMBOL_DOCUMENT_GRAPH_PENDING_INSPECTION",
+  "symbol_resolution_permitted": false,
+  "valid": false,
+  "verified_event_count": 1
+}
