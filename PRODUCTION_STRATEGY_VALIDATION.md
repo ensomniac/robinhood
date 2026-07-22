@@ -1217,6 +1217,15 @@ remain forbidden. The separate inspector rebuilds every pair and request hash.
 Focused tests and a provider-config preflight pass with zero target artifacts;
 the implementation must be committed and pushed before its manifest is frozen.
 
+Qualification-collection manifest `96a6119e...8b3c` now freezes the exact 60-pair,
+52-session causal request graph from clean pushed code. It binds every source
+trigger, the three-snapshot quote contract, completed-bar/history denominators,
+provider settings, zero one-second search windows, aggregate-only publication,
+and a zero-artifact target namespace. The status remains
+`FROZEN_WAITING_INSPECTION`: no provider access, fill, post-entry price, return,
+outcome, alpha, maturity, production-readiness, or broker claim is permitted
+until independent contract inspection is published from a later commit.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,

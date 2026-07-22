@@ -1,0 +1,195 @@
+{
+  "capacity_contract": {
+    "historical_deletion_allowed": false,
+    "minimum_free_bytes": 21474836480,
+    "observed_free_bytes_at_freeze": 415432728576
+  },
+  "collection_contract": {
+    "atomic_pair_checkpoints": true,
+    "calendar_query": {
+      "end": "2026-07-17",
+      "provider": "Alpaca Market Calendar API",
+      "start": "2021-01-01"
+    },
+    "candidate_opening_bars_end_at_09_35": true,
+    "conditional_bars_fully_completed_before_final_decision_minute": true,
+    "decision_trade_prefix_end_exclusive_at_plus_10_seconds": true,
+    "later_search_windows_after_clean_cross_allowed": false,
+    "local_exact_cache_first": true,
+    "maximum_one_second_trade_windows": 0,
+    "one_second_windows_checkpointed": true,
+    "pair_count": 60,
+    "provider_rows_after_final_decision_allowed": false,
+    "provider_switching_allowed": false,
+    "quote_size_shares_effective": "2025-11-03",
+    "quote_size_source_url": "https://docs.alpaca.markets/us/v1.1/changelog?page=3",
+    "quote_window_end_inclusive_at_plus_10_seconds": true,
+    "search_stops_at_first_clean_cross": true,
+    "split_query_count": 1,
+    "symbol_or_date_substitution_allowed": false,
+    "whole_provider_market_fidelity": "ALPACA_RAW_SIP"
+  },
+  "dataset_id": "dataset-challenger-orb-retest-entry-qualification-collection-2026-07-22-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "research_results/2026-07-22-challenger-orb-retest-cumulative-trigger-capacity.json",
+      "historical_batches/challenger_orb_retest_v1_tranche3/cumulative-capacity-status.json",
+      "DEVELOPMENT_NON_RETURN.md",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "implementation_contract": {
+    "collector_must_be_committed_and_pushed_before_provider_access": true,
+    "files": {
+      "challenger_orb_retest_cumulative_capacity.py": {
+        "path": "challenger_orb_retest_cumulative_capacity.py",
+        "sha256": "d3277d307fd9ee40b00f2dffa93754666b7edca3e2eaa17c5f29febf69300c07"
+      },
+      "challenger_orb_retest_qualification_collection.py": {
+        "path": "challenger_orb_retest_qualification_collection.py",
+        "sha256": "5b0007ec21033bb7d0dcec929f525f422f9094f3f4a807aa502de32d212a2744"
+      },
+      "challenger_orb_retest_qualification_collection_inspection.py": {
+        "path": "challenger_orb_retest_qualification_collection_inspection.py",
+        "sha256": "c34c218e264d8bfc96a3e63aa11f29f3e671f2b61d85bf8fede96dffaa226d26"
+      },
+      "development_non_return_collection.py": {
+        "path": "development_non_return_collection.py",
+        "sha256": "168d17dd1a233c6ccf14b775a41cc64e177f0ca16ac600f3849d8111b86aca23"
+      },
+      "historical_providers.py": {
+        "path": "historical_providers.py",
+        "sha256": "2e5ac0266cfe7c295248990340c0e2a02ad54de8b1a2bd0a614a888642fd92ff"
+      },
+      "historical_service.py": {
+        "path": "historical_service.py",
+        "sha256": "49fb07d453302e1b7f566369dfecde828514ba7d937fa63b8c83679d2e221241"
+      },
+      "historical_store.py": {
+        "path": "historical_store.py",
+        "sha256": "6937d707de1b480d65d11638813af21a5d1dd180fb444d30ab7f8623b483c281"
+      },
+      "nasdaq_halts.py": {
+        "path": "nasdaq_halts.py",
+        "sha256": "fa15f59407d600252f658a192985badec173694a1671d112594533921b2327de"
+      },
+      "scanner_replay.py": {
+        "path": "scanner_replay.py",
+        "sha256": "201beec2f0787a6e9be55ac5df2384b95532d767a32619983b7782a9f83b86c4"
+      },
+      "sip_bar_aggregation.py": {
+        "path": "sip_bar_aggregation.py",
+        "sha256": "fb13f18fd9d929f009c5a6cfa66e2f261f3ac7b2a099fdcd89795f9ca416ea49"
+      },
+      "sip_trade_conditions.py": {
+        "path": "sip_trade_conditions.py",
+        "sha256": "cddd60610cd36e144f5a5950f4a14543e1373129c80c0da41ba5fbfd5e8948f1"
+      }
+    },
+    "manifest_must_be_committed_and_pushed_before_provider_access": true
+  },
+  "lineage_contract": {
+    "base_manifest": {
+      "manifest_sha256": "94a6e83110427b5c7d7d371e5a36292f7a657b9f80d955b5e30982cccd3af21a",
+      "path": "research_results/2026-07-22-challenger-orb-retest-cumulative-trigger-capacity.json",
+      "sha256": "af3387e72e8c6ca9d2fa1d56944f855298f72f728292caa8cbc1f0a46eff2527"
+    },
+    "base_public_status": {
+      "path": "historical_batches/challenger_orb_retest_v1_tranche3/cumulative-capacity-status.json",
+      "sha256": "af3387e72e8c6ca9d2fa1d56944f855298f72f728292caa8cbc1f0a46eff2527"
+    },
+    "positive_pair_identity_sha256": "d4796a5529988e1977d6e9303165e88cc2517a5ff1ea09a3f6bc61abc522f6f2",
+    "positive_pairs": 60,
+    "private_base_contract_sha256": "fd3873f806844c1d1a050b4bc718c6d88ad63fd0d8c3d4c7dae8d93095f4f624",
+    "private_request_graph_sha256": "a046a80b301d8df90ffafacaa18e04ef81841045229e05ee933b223239e418b6"
+  },
+  "manifest_sha256": "96a6119ed7b7fa1d1c7b799dea7de044e64a052b34e2fd070ae0532bdd0e8b3c",
+  "outcome_lock": {
+    "outcome_fields_allowed": false,
+    "post_entry_data_access_allowed": false,
+    "separate_inspected_qualification_required": true,
+    "target_outcomes_observed_or_derived": false,
+    "target_returns_prices_after_decision_and_outcomes_allowed": false
+  },
+  "privacy_contract": {
+    "private_root": "LOCAL_HISTORICAL_DATA_ROOT/_derived/challenger_orb_retest_qualification_collection/dataset-challenger-orb-retest-entry-qualification-collection-2026-07-22-v1/",
+    "public_aggregates_and_hashes_only": true,
+    "symbols_dates_instrument_ids_raw_rows_and_requests_public": false
+  },
+  "provider_contract": {
+    "alpaca": {
+      "adjustment": "raw",
+      "base_url": "https://data.alpaca.markets",
+      "credentials_configured": true,
+      "feed": "sip",
+      "minimum_interval_seconds": 0.35,
+      "timeout_seconds": 30.0
+    },
+    "massive": {
+      "api_key_configured": true,
+      "base_url": "https://api.massive.com",
+      "minimum_interval_seconds": 12.5,
+      "timeout_seconds": 30.0
+    }
+  },
+  "registered_at": "2026-07-22T15:42:17.467060+00:00",
+  "requested_dates": [
+    "2023-01-26",
+    "2023-01-30",
+    "2023-02-03",
+    "2023-02-06",
+    "2023-02-08",
+    "2023-02-16",
+    "2023-02-28",
+    "2023-03-13",
+    "2023-03-28",
+    "2023-04-19",
+    "2023-05-05",
+    "2023-05-09",
+    "2023-05-10",
+    "2023-05-26",
+    "2023-06-02",
+    "2023-07-19",
+    "2023-08-04",
+    "2023-08-16",
+    "2023-09-13",
+    "2023-10-20",
+    "2023-10-27",
+    "2023-10-30",
+    "2023-11-02",
+    "2023-11-08",
+    "2023-11-22",
+    "2023-12-01",
+    "2024-01-25",
+    "2024-01-31",
+    "2024-02-02",
+    "2024-02-08",
+    "2024-02-09",
+    "2024-02-14",
+    "2024-02-27",
+    "2024-02-28",
+    "2024-03-06",
+    "2024-05-02",
+    "2024-05-09",
+    "2024-05-20",
+    "2024-05-29",
+    "2024-05-30",
+    "2024-06-03",
+    "2024-07-26",
+    "2024-08-02",
+    "2024-08-09",
+    "2024-08-21",
+    "2024-09-12",
+    "2024-09-27",
+    "2024-10-02",
+    "2024-10-31",
+    "2024-11-05",
+    "2024-12-06",
+    "2024-12-24"
+  ],
+  "schema_version": 1
+}
