@@ -882,6 +882,14 @@ implementation hashes, privacy boundary, zero substitution, and the complete
 outcome lock. It is uninspected and must be committed and pushed before the
 separate inspector may reconstruct it.
 
+Independent outer reconstruction now marks manifest `898e423c...1c003e`
+`FROZEN_READY`. It reopens all 100 raw and canonical identity snapshots, the
+7,879-record master, 4,883 split actions, and all 502 scanner sessions while
+rehashing every upstream, mechanism, source, implementation, capacity,
+privacy, zero-state, and outcome-lock binding. The scanner dataset remains
+uncollected and `COLLECTING`; this inspection must be committed and pushed
+before reusable rows may materialize or Alpaca may be contacted.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,

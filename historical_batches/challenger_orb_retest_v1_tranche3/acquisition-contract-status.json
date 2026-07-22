@@ -1,9 +1,49 @@
 {
   "dataset_id": "dataset-challenger-orb-retest-acquisition-2026-07-22-tranche3-v1",
-  "inspected": false,
+  "input_evidence": {
+    "capacity_ready": true,
+    "logical_snapshot_set_sha256": "e76e47f72de69d0893648d384b0b3e00c8a7d17663569422f491c17ff298c4d7",
+    "pre_freeze_target_market_artifacts": 0,
+    "security_master_records": 7879,
+    "security_master_sha256": "1c85b7c0a792f5e4d2733b71e7ce659c8bdbb73bf7879fbfae54529f3d021f89",
+    "snapshot_count": 100,
+    "snapshot_set_sha256": "9920a9322014dec0b34c6078d7900bcbd702cbd68ff5a3a92e3fcd99914ea809",
+    "split_action_events": 4883,
+    "split_actions_sha256": "b03f97d9af94a0604519b32569de6a0c4df7ba5df2d23266d96e8407f9b47660",
+    "split_query_range": {
+      "execution_date_gte": "2023-01-10",
+      "execution_date_lte": "2026-07-13"
+    }
+  },
+  "inspected": true,
   "manifest_sha256": "898e423cff3f9f49a4ddea0c9a93bcc77c436b57516c873d887c51b2331c003e",
-  "path": "historical_batches/challenger_orb_retest_v1_tranche3/acquisition_manifests/dataset-challenger-orb-retest-acquisition-2026-07-22-tranche3-v1-898e423cff3f9f49a4ddea0c9a93bcc77c436b57516c873d887c51b2331c003e.json",
+  "pre_freeze_target_market_artifacts": 0,
+  "reference_normalization": {
+    "algorithm": "uppercase-unique-exclude-all-collisions-v1",
+    "canonical_logical_snapshot_set_sha256": "e76e47f72de69d0893648d384b0b3e00c8a7d17663569422f491c17ff298c4d7",
+    "canonical_ready": 100,
+    "canonical_rows": 537918,
+    "canonical_snapshot_set_sha256": "9920a9322014dec0b34c6078d7900bcbd702cbd68ff5a3a92e3fcd99914ea809",
+    "case_normalized_rows": 53,
+    "collision_groups_excluded": 2,
+    "collision_rows_excluded": 4,
+    "complete": true,
+    "date_substitution_allowed": false,
+    "raw_logical_snapshot_set_sha256": "057d47b576f0e76e8da525d7a3437cdd3df3e6a5a322088f57fbeb827191ae1b",
+    "raw_ready": 100,
+    "raw_snapshot_set_sha256": "b398ed9356cbcb45634ae85d6644aa8d5e31fb4d8ebd37be80f962129762331b",
+    "requested": 100,
+    "schema_version": 1,
+    "source_rows": 537922,
+    "target_market_data_accessed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "requested_dates": 100,
+  "required_sessions": 502,
   "schema_version": 1,
+  "source_rules_sha256": "998433724e8dfc26be129fb7c105a7f11a949641fbcef9032dd751e3a731b4dc",
   "status": "FROZEN_READY",
-  "target_outcomes_observed_or_derived": false
+  "substitutions_allowed": false,
+  "target_outcomes_observed_or_derived": false,
+  "valid": true
 }
