@@ -901,6 +901,16 @@ result. This scanner evidence authorizes only an exact selected-pair freeze;
 causal details, outcomes, alpha, maturity, production, and broker actions
 remain blocked.
 
+The third-tranche selected-pair boundary is now implemented as an isolated,
+hash-pinned adapter over the unchanged independently tested selection
+primitive. It binds scanner manifest `34029d3c...60a96`, outer manifest
+`898e423c...1c003e`, the inspected 1,781-pair result, the original hypothesis
+and one-trial trigger, its own private namespace, and a separate independent
+inspector. No pair detail or downstream artifact is accessed by this
+implementation slice. The adapter and tests must be committed and pushed
+before the default freezer may materialize or hash the private exact-pair
+contract.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
