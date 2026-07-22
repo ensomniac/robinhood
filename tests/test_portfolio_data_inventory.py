@@ -64,6 +64,23 @@ class PortfolioDataInventoryTests(unittest.TestCase):
             ]
         )
 
+    def test_all_store_samples_remain_at_the_inventory_observation_boundary(self):
+        samples = {
+            item["symbol"]: item
+            for item in self.rebuilt["canonical_store_bounded_sample"]
+        }
+        self.assertEqual(samples["AAPL"]["dates"], 858)
+        self.assertEqual(samples["AAPL"]["first"], "2023-01-04")
+        self.assertEqual(samples["AAPL"]["last"], "2026-07-17")
+        self.assertEqual(
+            [sample["document_sha256"] for sample in samples["AAPL"]["samples"]],
+            [
+                "43c7420099f5665968e0b9ccf8820d172470fa25b557f765427faa914b9f8f5f",
+                "20b109a3f03364184d4b974627947f3701b156fbd5e8292f6bfc990a04b161d9",
+                "7ea711b53208baed77eace6d3330937b4dcd75ca17d741ada01c2fcb9c3bce8f",
+            ],
+        )
+
     def test_retired_confirmation_is_never_relabelled(self):
         prior = self.rebuilt["prior_research"]["retired_confirmation"]
         self.assertEqual(prior["next_stage"], "stop_without_threshold_tuning")

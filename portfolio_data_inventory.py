@@ -118,14 +118,19 @@ def _observed_before_inventory_freeze(dataset: Mapping[str, Any]) -> bool:
     return False
 
 
-def _minute_dates(store: HistoricalDayStore, symbol: str) -> list[str]:
+def _observed_dates(
+    store: HistoricalDayStore,
+    symbol: str,
+    *,
+    timeframe: str | None = None,
+) -> list[str]:
     dates = []
     for day in store.dates(symbol):
         document = store.load(symbol, day)
         datasets = document.get("datasets") if isinstance(document, Mapping) else None
         if isinstance(datasets, list) and any(
             isinstance(item, Mapping)
-            and item.get("timeframe") == "1m"
+            and (timeframe is None or item.get("timeframe") == timeframe)
             and _observed_before_inventory_freeze(item)
             for item in datasets
         ):
@@ -134,11 +139,11 @@ def _minute_dates(store: HistoricalDayStore, symbol: str) -> list[str]:
 
 
 def _store_sample(store: HistoricalDayStore, symbol: str) -> dict[str, Any]:
-    dates = store.dates(symbol)
+    dates = _observed_dates(store, symbol)
     if symbol in PAIRED_MINUTE_SAMPLE_SYMBOLS:
         dates = sorted(
-            set(_minute_dates(store, "SPY"))
-            & set(_minute_dates(store, "QQQ"))
+            set(_observed_dates(store, "SPY", timeframe="1m"))
+            & set(_observed_dates(store, "QQQ", timeframe="1m"))
         )
     if not dates:
         return {"symbol": symbol, "dates": 0, "first": None, "last": None, "samples": []}
@@ -149,13 +154,15 @@ def _store_sample(store: HistoricalDayStore, symbol: str) -> dict[str, Any]:
         if document is None:
             raise PortfolioDataInventoryError(f"sample document disappeared: {symbol} {day}")
         sampled_document = dict(document)
-        if symbol in PAIRED_MINUTE_SAMPLE_SYMBOLS:
-            sampled_document["datasets"] = [
-                item
-                for item in document["datasets"]
-                if item.get("timeframe") == "1m"
-                and _observed_before_inventory_freeze(item)
-            ]
+        sampled_document["datasets"] = [
+            item
+            for item in document["datasets"]
+            if _observed_before_inventory_freeze(item)
+            and (
+                symbol not in PAIRED_MINUTE_SAMPLE_SYMBOLS
+                or item.get("timeframe") == "1m"
+            )
+        ]
         document_sha256 = hashlib.sha256(
             _gzip_json_bytes(sampled_document)
         ).hexdigest()

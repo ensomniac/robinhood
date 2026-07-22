@@ -191,6 +191,16 @@ binding and reopened all 100 dated identity snapshots, 7,995 master records,
 substitution is forbidden, and outcomes remain locked. Scanner collection may
 begin only after this inspection is itself committed and pushed.
 
+The second-tranche scanner is now independently `READY`. All 530 sessions
+validate, including 470 frozen reusable sessions; the exact Alpaca SIP pass
+made 10,588 requests with zero retries. The build evaluated 538,210
+point-in-time universe rows, retained 3,574 coarse-eligible rows, and produced
+1,826 dynamic shortlist rows across all 100 dates. Independent inspection
+recomputed every threshold, rank, split adjustment, source-session hash, and
+2,799,071 canonical documents. This remains scanner evidence only: selected
+identities, catalysts, causal detail, and outcomes require separately frozen
+and published contracts.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

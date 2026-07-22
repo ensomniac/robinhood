@@ -546,6 +546,15 @@ sessions, the 20-GiB reserve, zero target-market artifacts, no substitution,
 and no outcome access. This inspection must be published before the exact
 scanner collection starts.
 
+The complete second-tranche scanner and its independent result are now
+`READY`. The source graph contains all 530 required sessions, 470 from the
+frozen reuse set, 10,588 exact Alpaca requests, zero retries, and no invalid
+session. The independent implementation recomputed 538,210 universe rows,
+3,574 coarse-eligible rows, 1,826 dynamic selections, all source and shortlist
+hashes, and 2,799,071 canonical documents. No selected-symbol detail, catalyst,
+return, outcome, alpha, confirmation, maturity, production, or broker claim is
+earned; the exact selected-pair boundary must be frozen next.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
