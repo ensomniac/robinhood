@@ -824,6 +824,10 @@ Capacity inspection
 `502d588200744deec61112192b7b6893491551088afe3db180c953ba27bec81f`
 independently rebuilds the activation and six-signal shortfall. It authorizes
 only the structural capacity result and explicitly keeps all returns locked.
+The authorized result
+`2b44cf24c18baba5a388a6dd8bb8ed62f67fcdfe8f012965586429a13ad86fbc`
+records the exact 24-signal ceiling and empty outcome set. It cannot advance and
+remains provisional only until independent result inspection.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live

@@ -1,0 +1,79 @@
+{
+  "activation_rules_hash": "5c02d3391d79bd0eb73fd7281dbfbce7a7d23466e451e4578df06b49fde9c1eb",
+  "base_rules_hash": "7d45b5ff602d61bdfbf068cf84ed381a60b5d3c65302c22b8b20a1940a151266",
+  "broker_actions": 0,
+  "claim_scope": "FALSIFICATION_ONLY",
+  "confirmation_evidence_eligible": false,
+  "denominator": {
+    "closed_signal_shortfall": 6,
+    "closed_signals": 0,
+    "decision_dates": 24,
+    "maximum_possible_closed_signals": 24,
+    "minimum_required_closed_signals": 30,
+    "rule_violations": 0,
+    "unevaluated_capacity_blocked_dates": 24
+  },
+  "development_evidence_eligible": false,
+  "implementation_sha256": "44236528cc58da9710339f5750621c21a541dac0e0f2504b16c7a57745592de7",
+  "inspection_sha256": "502d588200744deec61112192b7b6893491551088afe3db180c953ba27bec81f",
+  "manifest_sha256": "63350a9b044c569aff86fa63940b78968298ab9c987c42d42899f7d73915d945",
+  "market_outcomes_accessed": false,
+  "maturity_effect": "NONE",
+  "mechanism_family": "five-day-52-week-high-continuation",
+  "next_action": "retire this exact capacity-infeasible variant and advance to the next frozen mechanism",
+  "primary_5bps": {
+    "expectancy_r": null,
+    "maximum_drawdown_r": 0.0,
+    "profit_factor": null,
+    "profit_factor_infinite": false,
+    "signals": 0,
+    "total_r": 0,
+    "win_rate": null
+  },
+  "provider_requests": 0,
+  "records": [],
+  "result_kind": "stage0-capacity-falsification",
+  "result_sha256": "2b44cf24c18baba5a388a6dd8bb8ed62f67fcdfe8f012965586429a13ad86fbc",
+  "returns_computed": 0,
+  "schema_version": 1,
+  "stage0_blockers": [
+    "closed signals are below the Stage 0 minimum",
+    "primary expectancy is not positive",
+    "primary profit factor is below the Stage 0 minimum",
+    "20 bps-per-side total R is not positive"
+  ],
+  "stage0_survived": false,
+  "strategy_version": "0.1.0-stage0",
+  "stress": {
+    "10": {
+      "expectancy_r": null,
+      "maximum_drawdown_r": 0.0,
+      "profit_factor": null,
+      "profit_factor_infinite": false,
+      "signals": 0,
+      "total_r": 0,
+      "win_rate": null
+    },
+    "20": {
+      "expectancy_r": null,
+      "maximum_drawdown_r": 0.0,
+      "profit_factor": null,
+      "profit_factor_infinite": false,
+      "signals": 0,
+      "total_r": 0,
+      "win_rate": null
+    }
+  },
+  "structural_falsification": {
+    "closed_signal_shortfall": 6,
+    "maximum_new_entries_per_target_date": 1,
+    "maximum_possible_closed_signals": 24,
+    "minimum_required_closed_signals": 30,
+    "outcome_evaluation_skipped": true,
+    "proof": "target_date_count multiplied by maximum_new_entries_per_day; no market outcome can increase this preregistered upper bound",
+    "provider_collection_skipped": true,
+    "stage0_capacity_possible": false,
+    "target_date_count": 24
+  },
+  "variant_id": "five-day-52-week-high-continuation-v1"
+}

@@ -203,3 +203,21 @@ def test_published_high_continuation_inspection_keeps_returns_locked():
     assert inspection["return_evaluation_authorized"] is False
     assert inspection["market_outcomes_accessed"] is False
     assert inspection["valid"] is True
+
+
+def test_published_high_continuation_result_is_structural_only():
+    matches = sorted(
+        (ROOT / "research_results").glob(
+            "2026-07-21-five-day-52-week-high-continuation-stage0-*.json"
+        )
+    )
+    assert len(matches) == 1
+    result = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert result["result_sha256"] == stage0.common._self_hash(result, "result_sha256")
+    assert result["denominator"]["decision_dates"] == 24
+    assert result["denominator"]["maximum_possible_closed_signals"] == 24
+    assert result["denominator"]["closed_signal_shortfall"] == 6
+    assert result["stage0_survived"] is False
+    assert result["market_outcomes_accessed"] is False
+    assert result["records"] == []
+    assert result["maturity_effect"] == "NONE"
