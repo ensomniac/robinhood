@@ -808,6 +808,12 @@ only runtime substitution is the exact-window reader, and the private trigger
 namespace remains empty. This READY state must be committed and pushed before
 causal derivation.
 
+The published runner has produced an uninspected causal denominator: 23
+triggering pairs on 22 distinct dates from all 113 positive pairs, with private
+trigger hash `c6303e81...0cb4c3`. Terminal reasons retain every pair. No
+post-entry data or target outcome was accessed. Independent reconstruction is
+required before this count can contribute to cumulative development capacity.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal

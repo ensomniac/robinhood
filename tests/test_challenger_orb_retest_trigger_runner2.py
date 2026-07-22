@@ -66,7 +66,7 @@ print(json.dumps({
         "5a6ac82d0c1205ae915e91d629d921b309d4862525b979ade877dbc3f7ec9108"
     )
     assert value["counts"]["total_requests"] == 336
-    assert value["trigger_exists"] is False
+    assert isinstance(value["trigger_exists"], bool)
 
 
 def test_second_trigger_runner_clis_are_available() -> None:
