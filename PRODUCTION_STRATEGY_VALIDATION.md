@@ -836,6 +836,13 @@ hash `91f2d9a8...8817e` bind the graph with no substitution or outcome access.
 The uninspected manifest must be committed and pushed before independent
 reconstruction.
 
+The third acquisition boundary is now implemented with isolated reference,
+security-master, split-action, scanner-cache, lock, manifest, and public-status
+paths. It reuses only the previously inspected scanner lineage and hash-pinned
+acquisition engines. Independent preflight must prove 100 expected and zero
+present reference snapshots, zero target-market artifacts, sufficient reserve,
+and zero outcome access before collection.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
