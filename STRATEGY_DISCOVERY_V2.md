@@ -88,3 +88,12 @@ requires `portfolio_guard.py`, broker review, and any broker-required human
 confirmation. Its unknown-submission reconciler permits a retry only after the
 logical order is confirmed absent or terminal without exposure; active,
 duplicate, or unknown broker state fails closed.
+
+The next dense batch is predeclared in the content-addressed
+`strategy_tournament/v2/next_batch/plans/` manifest. It preserves the exact
+48-trial liquid-equity residual-reversal, 32-trial intraday index-ETF reversal,
+and 32-trial liquid-ETF pullback grids. `next_week_discovery_batch.py status`
+keeps all family-contract, provider, outcome, and broker permissions closed
+until the 2026-W31 reset on 2026-07-27. After that reset it opens only the
+disjoint development/embargo/confirmation evidence-freeze step; provider access
+still requires committed exact family contracts and inspected predecessors.

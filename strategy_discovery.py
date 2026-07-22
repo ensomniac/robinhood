@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 import portfolio_maturity
+import next_week_discovery_batch
 from learning_experiment import (
     DEVELOPMENT_SEARCH_RULE,
     LearningExperimentError,
@@ -958,6 +959,7 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
                 }
             )
     maturity = portfolio_maturity.build_report()
+    next_batch = next_week_discovery_batch.activation_status()
     return {
         "schema_version": SCHEMA_VERSION,
         "campaign_id": CAMPAIGN_ID,
@@ -977,6 +979,7 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
             "milestone": maturity["portfolio_milestone"],
             "blockers": maturity["portfolio_milestone_blockers"],
         },
+        "next_family_batch": next_batch,
         "broker_actions_permitted": False,
     }
 

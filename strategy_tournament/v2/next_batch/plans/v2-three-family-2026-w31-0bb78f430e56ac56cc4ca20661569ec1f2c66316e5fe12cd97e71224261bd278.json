@@ -1,0 +1,179 @@
+{
+  "activation_before_reset_permitted": false,
+  "activation_not_before": "2026-07-27",
+  "artifact_kind": "prospective-three-family-discovery-batch-plan",
+  "asr_disposition_sha256": "4395f72eecb5b1d37fa08475e270e7dd59fd4d05fe80339f98b0ec6d6f0b9b01",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "claim_limit": "This artifact predeclares the next batch only. It consumes no family slot and freezes no evidence dates before the ISO-week reset.",
+  "common_contract": {
+    "confirmation_global_outcome_exposure_overlap_permitted": false,
+    "confirmation_parameter_alternatives": 0,
+    "costs_bps_per_side": [
+      5,
+      10,
+      20
+    ],
+    "execution": "next observable bar or open; no same-bar lookahead",
+    "long_only": true,
+    "maximum_holding_trading_days": 5,
+    "maximum_new_entries_per_family_per_day": 1,
+    "maximum_trials_per_family": 64,
+    "minimum_expected_gross_move_to_primary_round_trip_cost": 5.0,
+    "missing_data_or_invalid_structural_stop": "missed_trade_no_substitute",
+    "portfolio_caps_authoritative": true,
+    "same_interval_stop_target_ambiguity": "stop_first",
+    "selection_mode": "development_search"
+  },
+  "evidence_freeze_handoff": {
+    "confirmation_must_be_untouched": true,
+    "development_and_confirmation_dates_frozen": false,
+    "development_may_use_contaminated_training_only_if_labeled": true,
+    "disjoint_symbols_and_dates_required": true,
+    "five_session_embargo_required": true,
+    "global_outcome_exposure_index_checked": false,
+    "outcome_access_permitted": false,
+    "provider_access_permitted": false
+  },
+  "families": [
+    {
+      "family_id": "liquid-equity-market-residual-reversal",
+      "mechanism": "short-horizon idiosyncratic overshoot mean reversion",
+      "parameter_grid": {
+        "hold_sessions": [
+          2,
+          5
+        ],
+        "market_trend_gate": [
+          "SPY>SMA100",
+          "SPY>SMA200"
+        ],
+        "prior_return_sessions": [
+          1,
+          3
+        ],
+        "residual_z_threshold": [
+          -1.5,
+          -2.0,
+          -2.5
+        ],
+        "stop_atr14": [
+          1.0,
+          1.5
+        ]
+      },
+      "priority": 1,
+      "trial_count": 48,
+      "universe": {
+        "historical_identity": "retain delisted and renamed securities",
+        "prior_20_session_median_dollar_volume_minimum": 50000000,
+        "prior_close_minimum": 10.0,
+        "ranking": "top 250 by prior 60-session dollar volume",
+        "security_type": "point-in-time US common stocks"
+      }
+    },
+    {
+      "family_id": "intraday-index-etf-opening-reversal",
+      "mechanism": "opening downside dislocation followed by VWAP reclaim",
+      "parameter_grid": {
+        "downside_z_threshold": [
+          -1.5,
+          -2.0
+        ],
+        "opening_window_minutes": [
+          15,
+          30
+        ],
+        "stop_intraday_atr": [
+          1.0,
+          1.5
+        ],
+        "target_r": [
+          1.0,
+          1.5
+        ],
+        "vwap_reclaim_completed_bars": [
+          1,
+          2
+        ]
+      },
+      "priority": 2,
+      "trial_count": 32,
+      "universe": {
+        "data": "complete SIP regular-session minute bars",
+        "symbols": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA",
+          "XLF",
+          "XLK",
+          "XLE",
+          "XLV"
+        ]
+      }
+    },
+    {
+      "family_id": "liquid-etf-trend-pullback-cost-floor",
+      "mechanism": "short pullback inside a persistent liquid-ETF uptrend",
+      "parameter_grid": {
+        "maximum_hold_sessions": [
+          3,
+          5
+        ],
+        "rsi2_maximum": [
+          5,
+          10
+        ],
+        "stop_atr14": [
+          1.0,
+          1.5
+        ],
+        "three_session_decline_fraction": [
+          0.02,
+          0.03
+        ],
+        "trend_sma": [
+          100,
+          200
+        ]
+      },
+      "priority": 3,
+      "trial_count": 32,
+      "universe": {
+        "history_start": "only after each instrument has complete frozen lookback",
+        "symbols": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA",
+          "EFA",
+          "EEM",
+          "IEF",
+          "TLT",
+          "GLD",
+          "DBC",
+          "XLB",
+          "XLC",
+          "XLE",
+          "XLF",
+          "XLI",
+          "XLK",
+          "XLP",
+          "XLRE",
+          "XLU",
+          "XLV",
+          "XLY"
+        ]
+      }
+    }
+  ],
+  "family_budget": 3,
+  "family_contracts_frozen": 0,
+  "market_outcomes_accessed": false,
+  "plan_sha256": "0bb78f430e56ac56cc4ca20661569ec1f2c66316e5fe12cd97e71224261bd278",
+  "provider_requests": 0,
+  "schema_version": 1,
+  "state": "WAITING_ISO_WEEK_RESET",
+  "target_iso_week": "2026-W31"
+}

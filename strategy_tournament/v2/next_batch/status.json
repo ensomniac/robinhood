@@ -1,0 +1,13 @@
+{
+  "activation_not_before": "2026-07-27",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "family_contracts_frozen": 0,
+  "outcome_access_permitted": false,
+  "plan_sha256": "0bb78f430e56ac56cc4ca20661569ec1f2c66316e5fe12cd97e71224261bd278",
+  "provider_access_permitted": false,
+  "schema_version": 1,
+  "state": "WAITING_ISO_WEEK_RESET",
+  "target_iso_week": "2026-W31",
+  "valid": true
+}
