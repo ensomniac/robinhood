@@ -1,0 +1,30 @@
+{
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_disposition": "CAPACITY_SURVIVOR_STAGE0_FREEZE_REQUIRED",
+  "candidate_id": "schedule-13d-activist-continuation-v1",
+  "capacity_passed": true,
+  "collection_inspection_sha256": "d8951149e846b530c719e7017f48fd76ad9710ea13d77714daf3a935597fb868",
+  "contract_sha256": "dbd63296047961fd5d0546627c79c66607ef3498a69fba15f05f974a14527fab",
+  "denominator": 6852,
+  "inspection_kind": "outcome-blind-schedule13d-capacity-result-inspection",
+  "inspection_sha256": "7459f2d37566019dbaef074ac2468102f8287d9ec1b76e00e272085f5f1c98c6",
+  "market_outcomes_accessed": false,
+  "market_price_values_accessed": 0,
+  "maturity_effect": "NONE",
+  "minimum_required_verified_events": 80,
+  "request_graph_sha256": "276d08a6de977fcda8d181a83715c3eaaa78e05f5bea501e770545f51ca66f7e",
+  "resolution_counts": {
+    "AMBIGUOUS_MULTIPLE_DEI_TRADING_SYMBOLS": 52,
+    "MISSING_DEI_TRADING_SYMBOL": 110,
+    "RECOVERED_CAUSAL_DEI_TRADING_SYMBOL": 119
+  },
+  "resolution_sha256": "9cf7ef75e0f6aa25182981aac44898bdb4147375b9ea038766640f7ef0f333b6",
+  "result_file_sha256": "e18c3ca072fe6bbc8819871ac61042e238d37d3ca7bdf4bfef4041bbc0bdbee5",
+  "result_sha256": "f45b8cc66a6a45d2f559425ba729206492133497182249c26edd30925c05114b",
+  "returns_computed": 0,
+  "schema_version": 1,
+  "stage0_outcome_access_permitted": false,
+  "valid": true,
+  "verified_event_count": 120
+}
