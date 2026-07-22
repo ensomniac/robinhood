@@ -402,11 +402,12 @@ def _development_failure(
     maturity_report: Mapping[str, Any], *, root: Path
 ) -> dict[str, Any]:
     assessments = maturity_report.get("strategies")
-    if not isinstance(assessments, list):
+    preserved = maturity_report.get("preserved_adverse_strategies", [])
+    if not isinstance(assessments, list) or not isinstance(preserved, list):
         raise PortfolioFunnelError("portfolio maturity report lacks strategies")
     matches = [
         item
-        for item in assessments
+        for item in [*assessments, *preserved]
         if item.get("source_stage0_variant_id") == "equity-gap-continuation-v1"
     ]
     if len(matches) != 1 or matches[0].get("retired_after_development") is not True:
@@ -859,10 +860,11 @@ def build_funnel_status(
     ]
     survivors = [*first_wave_survivors, *second_wave_survivors]
     assessments = maturity_report.get("strategies")
-    if not isinstance(assessments, list):
+    preserved = maturity_report.get("preserved_adverse_strategies", [])
+    if not isinstance(assessments, list) or not isinstance(preserved, list):
         raise PortfolioFunnelError("portfolio maturity report lacks strategies")
     by_source: dict[str, list[Mapping[str, Any]]] = {}
-    for assessment in assessments:
+    for assessment in [*assessments, *preserved]:
         source = assessment.get("source_stage0_variant_id")
         if isinstance(source, str):
             by_source.setdefault(source, []).append(assessment)

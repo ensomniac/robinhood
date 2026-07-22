@@ -21,6 +21,7 @@ DEFAULT_ALPHA = 0.10
 DEFAULT_POWER = 0.80
 TRADING_DAYS_PER_YEAR = 252
 OUTCOMES = {"filled", "missed", "rejected", "no_signal"}
+CANDIDATE_OUTCOMES = {"eligible", "missed_fill", "rejected"}
 
 
 class LearningStatisticsError(ValueError):
@@ -131,6 +132,331 @@ def materialize_account_path(
     if not result:
         raise LearningStatisticsError("account path needs at least one requested day")
     return result
+
+
+def simulate_portfolio_account(
+    trading_dates: Sequence[str],
+    candidates: Sequence[Mapping[str, Any]],
+    *,
+    starting_equity: float,
+    risk_fraction: float,
+    maximum_concurrent_positions: int,
+    maximum_new_entries_per_day: int,
+    maximum_aggregate_risk_fraction: float,
+    maximum_gross_notional_fraction: float,
+    cost_bps_per_side: float,
+) -> dict[str, Any]:
+    """Chronologically compound a long-only account under portfolio contention.
+
+    Candidate prices and marks are already-observable plugin outputs. This function
+    performs no signal discovery and never substitutes missing marks or fills.
+    """
+    equity = _finite(starting_equity, "starting_equity")
+    if equity <= 0:
+        raise LearningStatisticsError("starting_equity must be positive")
+    normalized_dates: list[str] = []
+    previous: date | None = None
+    for item in trading_dates:
+        try:
+            parsed = date.fromisoformat(item)
+        except (TypeError, ValueError) as exc:
+            raise LearningStatisticsError("trading_dates must contain ISO dates") from exc
+        if previous is not None and parsed <= previous:
+            raise LearningStatisticsError(
+                "trading_dates must be unique and chronological"
+            )
+        previous = parsed
+        normalized_dates.append(item)
+    if not normalized_dates:
+        raise LearningStatisticsError("trading_dates cannot be empty")
+    date_set = set(normalized_dates)
+    for name, raw in (
+        ("risk_fraction", risk_fraction),
+        ("maximum_aggregate_risk_fraction", maximum_aggregate_risk_fraction),
+        ("maximum_gross_notional_fraction", maximum_gross_notional_fraction),
+    ):
+        value = _finite(raw, name)
+        if value <= 0:
+            raise LearningStatisticsError(f"{name} must be positive")
+    for name, raw in (
+        ("maximum_concurrent_positions", maximum_concurrent_positions),
+        ("maximum_new_entries_per_day", maximum_new_entries_per_day),
+    ):
+        if isinstance(raw, bool) or not isinstance(raw, int) or raw < 1:
+            raise LearningStatisticsError(f"{name} must be a positive integer")
+    cost_bps = _finite(cost_bps_per_side, "cost_bps_per_side")
+    if cost_bps < 0:
+        raise LearningStatisticsError("cost_bps_per_side cannot be negative")
+    cost_rate = cost_bps / 10_000
+
+    normalized_candidates: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for index, raw in enumerate(candidates):
+        if not isinstance(raw, Mapping):
+            raise LearningStatisticsError(f"candidates[{index}] must be an object")
+        item = dict(raw)
+        signal_id = item.get("signal_id")
+        if not isinstance(signal_id, str) or not signal_id or signal_id in seen_ids:
+            raise LearningStatisticsError("candidate signal_id must be unique text")
+        seen_ids.add(signal_id)
+        signal_date = item.get("signal_date")
+        if signal_date not in date_set:
+            raise LearningStatisticsError(
+                f"{signal_id}: signal_date is outside the frozen calendar"
+            )
+        outcome = item.get("outcome")
+        if outcome not in CANDIDATE_OUTCOMES:
+            raise LearningStatisticsError(f"{signal_id}: outcome is invalid")
+        if outcome == "eligible":
+            entry = _finite(item.get("entry_price"), f"{signal_id}.entry_price")
+            stop = _finite(item.get("stop_price"), f"{signal_id}.stop_price")
+            exit_price = _finite(
+                item.get("exit_price"), f"{signal_id}.exit_price"
+            )
+            exit_date = item.get("exit_date")
+            if entry <= 0 or stop <= 0 or exit_price <= 0 or stop >= entry:
+                raise LearningStatisticsError(
+                    f"{signal_id}: long entry, stop, and exit prices are invalid"
+                )
+            if exit_date not in date_set or normalized_dates.index(exit_date) < normalized_dates.index(signal_date):
+                raise LearningStatisticsError(
+                    f"{signal_id}: exit_date is outside or before the entry"
+                )
+            marks = item.get("marks")
+            if not isinstance(marks, Mapping):
+                raise LearningStatisticsError(f"{signal_id}: marks must be an object")
+            entry_index = normalized_dates.index(signal_date)
+            exit_index = normalized_dates.index(exit_date)
+            needed = normalized_dates[entry_index : exit_index + 1]
+            for day_text in needed:
+                mark = _finite(marks.get(day_text), f"{signal_id}.marks.{day_text}")
+                if mark <= 0:
+                    raise LearningStatisticsError(
+                        f"{signal_id}: marks must be positive"
+                    )
+        normalized_candidates.append(item)
+
+    by_date: dict[str, list[dict[str, Any]]] = {day_text: [] for day_text in normalized_dates}
+    for item in normalized_candidates:
+        by_date[str(item["signal_date"])].append(item)
+    for items in by_date.values():
+        items.sort(key=lambda item: (int(item.get("rank", 0)), str(item["signal_id"])))
+
+    cash = equity
+    positions: dict[str, dict[str, Any]] = {}
+    account_path: list[dict[str, Any]] = []
+    trial_accounting: list[dict[str, Any]] = []
+    closed_trades: list[dict[str, Any]] = []
+    previous_equity = equity
+    for day_text in normalized_dates:
+        exits: list[str] = []
+        for signal_id, position in sorted(positions.items()):
+            if position["exit_date"] != day_text:
+                continue
+            exit_price = float(position["exit_price"])
+            exit_value = position["quantity"] * exit_price
+            exit_cost = exit_value * cost_rate
+            cash += exit_value - exit_cost
+            net_pnl = (
+                exit_value
+                - exit_cost
+                - position["entry_notional"]
+                - position["entry_cost"]
+            )
+            closed_trades.append(
+                {
+                    "signal_id": signal_id,
+                    "entry_date": position["entry_date"],
+                    "exit_date": day_text,
+                    "quantity": position["quantity"],
+                    "net_pnl_dollars": net_pnl,
+                    "net_account_return_fraction": net_pnl
+                    / position["equity_before_entry"],
+                    "log_growth": math.log1p(
+                        net_pnl / position["equity_before_entry"]
+                    ),
+                }
+            )
+            exits.append(signal_id)
+        for signal_id in exits:
+            del positions[signal_id]
+
+        new_entries = 0
+        capital_blocked = 0
+        missed = 0
+        rejected = 0
+        for candidate in by_date[day_text]:
+            signal_id = str(candidate["signal_id"])
+            if candidate["outcome"] == "missed_fill":
+                missed += 1
+                trial_accounting.append(
+                    {"date": day_text, "signal_id": signal_id, "outcome": "missed_fill"}
+                )
+                continue
+            if candidate["outcome"] == "rejected":
+                rejected += 1
+                trial_accounting.append(
+                    {"date": day_text, "signal_id": signal_id, "outcome": "rejected"}
+                )
+                continue
+            marked_notional = sum(
+                position["quantity"] * float(position["marks"][day_text])
+                for position in positions.values()
+            )
+            current_equity = cash + marked_notional
+            open_risk = sum(position["planned_loss_dollars"] for position in positions.values())
+            entry_price = float(candidate["entry_price"])
+            stop_distance = entry_price - float(candidate["stop_price"])
+            capacity_reasons: list[str] = []
+            if len(positions) >= maximum_concurrent_positions:
+                capacity_reasons.append("maximum_concurrent_positions")
+            if new_entries >= maximum_new_entries_per_day:
+                capacity_reasons.append("maximum_new_entries_per_day")
+            risk_budget = min(
+                current_equity * risk_fraction,
+                max(
+                    0.0,
+                    current_equity * maximum_aggregate_risk_fraction - open_risk,
+                ),
+            )
+            gross_capacity = max(
+                0.0,
+                current_equity * maximum_gross_notional_fraction - marked_notional,
+            )
+            quantity = math.floor(
+                min(
+                    risk_budget / stop_distance,
+                    gross_capacity / entry_price,
+                    cash / (entry_price * (1 + cost_rate)),
+                )
+            )
+            if quantity < 1:
+                capacity_reasons.append("risk_notional_or_cash_capacity")
+            if capacity_reasons:
+                capital_blocked += 1
+                trial_accounting.append(
+                    {
+                        "date": day_text,
+                        "signal_id": signal_id,
+                        "outcome": "capital_blocked",
+                        "reasons": capacity_reasons,
+                    }
+                )
+                continue
+            entry_notional = quantity * entry_price
+            entry_cost = entry_notional * cost_rate
+            cash -= entry_notional + entry_cost
+            positions[signal_id] = {
+                "entry_date": day_text,
+                "exit_date": str(candidate["exit_date"]),
+                "entry_notional": entry_notional,
+                "entry_cost": entry_cost,
+                "entry_price": entry_price,
+                "exit_price": float(candidate["exit_price"]),
+                "quantity": quantity,
+                "marks": dict(candidate["marks"]),
+                "planned_loss_dollars": quantity * stop_distance,
+                "equity_before_entry": current_equity,
+            }
+            new_entries += 1
+            trial_accounting.append(
+                {
+                    "date": day_text,
+                    "signal_id": signal_id,
+                    "outcome": "filled",
+                    "quantity": quantity,
+                }
+            )
+
+        same_day_exits = [
+            signal_id
+            for signal_id, position in positions.items()
+            if position["entry_date"] == day_text and position["exit_date"] == day_text
+        ]
+        for signal_id in sorted(same_day_exits):
+            position = positions[signal_id]
+            exit_price = float(position["exit_price"])
+            exit_value = position["quantity"] * exit_price
+            exit_cost = exit_value * cost_rate
+            cash += exit_value - exit_cost
+            net_pnl = (
+                exit_value
+                - exit_cost
+                - position["entry_notional"]
+                - position["entry_cost"]
+            )
+            closed_trades.append(
+                {
+                    "signal_id": signal_id,
+                    "entry_date": day_text,
+                    "exit_date": day_text,
+                    "quantity": position["quantity"],
+                    "net_pnl_dollars": net_pnl,
+                    "net_account_return_fraction": net_pnl
+                    / position["equity_before_entry"],
+                    "log_growth": math.log1p(
+                        net_pnl / position["equity_before_entry"]
+                    ),
+                }
+            )
+            del positions[signal_id]
+            exits.append(signal_id)
+
+        marked_notional = sum(
+            position["quantity"] * float(position["marks"][day_text])
+            for position in positions.values()
+        )
+        ending_equity = cash + marked_notional
+        daily_return = ending_equity / previous_equity - 1
+        if daily_return <= -1:
+            raise LearningStatisticsError("simulated account lost 100 percent or more")
+        if new_entries:
+            session_outcome = "filled"
+        elif capital_blocked:
+            session_outcome = "capital_blocked"
+        elif missed:
+            session_outcome = "missed_fill"
+        elif rejected:
+            session_outcome = "rejected"
+        elif exits:
+            session_outcome = "exit"
+        elif positions:
+            session_outcome = "position_open"
+        else:
+            session_outcome = "no_signal"
+        account_path.append(
+            {
+                "date": day_text,
+                "session_outcome": session_outcome,
+                "starting_equity": previous_equity,
+                "ending_equity": ending_equity,
+                "daily_account_return_fraction": daily_return,
+                "log_growth": math.log1p(daily_return),
+                "new_entries": new_entries,
+                "open_positions": len(positions),
+                "capital_blocked_signals": capital_blocked,
+                "missed_fills": missed,
+                "rejected_signals": rejected,
+            }
+        )
+        previous_equity = ending_equity
+
+    if positions:
+        raise LearningStatisticsError(
+            "frozen calendar ended with open positions; extend it without substitution"
+        )
+    returns = [float(item["daily_account_return_fraction"]) for item in account_path]
+    return {
+        "cost_bps_per_side": cost_bps,
+        "starting_equity": equity,
+        "ending_equity": previous_equity,
+        "compounded_return_fraction": previous_equity / equity - 1,
+        "total_log_growth": sum(math.log1p(value) for value in returns),
+        "maximum_drawdown_fraction": maximum_drawdown_fraction(returns),
+        "account_path": account_path,
+        "trial_accounting": trial_accounting,
+        "closed_trades": closed_trades,
+    }
 
 
 def maximum_drawdown_fraction(returns: Sequence[float]) -> float:

@@ -1,12 +1,6 @@
 [campaign]
-schema_version = 2
-active_research_campaign_id = "multi-strategy-portfolio-validation-v2"
-preserved_adverse_campaign_ids = ["multi-strategy-portfolio-validation-v1"]
-first_pilot_ready_target = 1
-portfolio_target = 3
-maximum_new_mechanism_families_per_iso_week = 3
-# Immutable schema-1 audit bindings retained for the preserved v1 artifacts.
 id = "multi-strategy-portfolio-validation-v1"
+schema_version = 1
 target_pilot_ready_strategies = 3
 initial_mechanism_families = 10
 maximum_initial_variants = 20

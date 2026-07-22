@@ -13,6 +13,7 @@ import portfolio_funnel as funnel
 
 
 RULES_HASH = "a" * 64
+CAMPAIGN_ID = maturity.V2_CAMPAIGN_ID
 
 
 class PortfolioMaturityTests(unittest.TestCase):
@@ -65,7 +66,8 @@ class PortfolioMaturityTests(unittest.TestCase):
             for path in (evidence, result_path, result_inspection_path)
         }
         return {
-            "schema_version": 1,
+            "schema_version": 2,
+            "research_campaign_id": CAMPAIGN_ID,
             "record_type": "inspection",
             "inspection_id": f"{strategy_id}-final-inspection",
             "recorded_at": "2026-07-21T12:00:00+00:00",
@@ -74,6 +76,11 @@ class PortfolioMaturityTests(unittest.TestCase):
             "mechanism_family": family,
             "rules_hash": RULES_HASH,
             "trial_count": 10,
+            "selection_mode": "development_search",
+            "power_target": 50,
+            "required_total_signals": 50,
+            "required_confirmation_signals": 20,
+            "evidence_counts_frozen_before_confirmation": True,
             "tournament_wave": 1,
             "variant_ordinal": variant_ordinal,
             "trial_accounting_complete": True,
@@ -124,7 +131,8 @@ class PortfolioMaturityTests(unittest.TestCase):
             phase = "confirmation" if confirmation else "development"
             records.append(
                 {
-                    "schema_version": 1,
+                    "schema_version": 2,
+                    "research_campaign_id": CAMPAIGN_ID,
                     "record_type": "signal",
                     "recorded_at": datetime.now(UTC).isoformat(),
                     "strategy_id": strategy_id,
@@ -140,35 +148,48 @@ class PortfolioMaturityTests(unittest.TestCase):
                     "net_r": value,
                     "stress_10bps_r": value - 0.10,
                     "stress_20bps_r": value - 0.20,
+                    "net_account_return_fraction": value * 0.005,
+                    "stress_10bps_account_return_fraction": (value - 0.10) * 0.005,
+                    "stress_20bps_account_return_fraction": (value - 0.20) * 0.005,
+                    "net_pnl_dollars": value * 500.0,
+                    "stress_10bps_net_pnl_dollars": (value - 0.10) * 500.0,
+                    "stress_20bps_net_pnl_dollars": (value - 0.20) * 500.0,
                     "stop_executed": value < 0,
                     "session_capture_complete": True,
                     "rule_violations": [],
                 }
             )
-            if confirmation:
-                records.append(
-                    {
-                        "schema_version": 1,
-                        "record_type": "session",
-                        "recorded_at": datetime.now(UTC).isoformat(),
-                        "strategy_id": strategy_id,
-                        "strategy_version": "v1",
-                        "mechanism_family": family,
-                        "rules_hash": RULES_HASH,
-                        "date": day.isoformat(),
-                        "sample_phase": "confirmation",
-                        "mode": "historical",
-                        "session_id": f"{day.isoformat()}-{strategy_id}-session",
-                        "eligible_signal": True,
-                        "session_capture_complete": True,
-                        "rule_violations": [],
-                    }
-                )
+            records.append(
+                {
+                    "schema_version": 2,
+                    "research_campaign_id": CAMPAIGN_ID,
+                    "record_type": "session",
+                    "recorded_at": datetime.now(UTC).isoformat(),
+                    "strategy_id": strategy_id,
+                    "strategy_version": "v1",
+                    "mechanism_family": family,
+                    "rules_hash": RULES_HASH,
+                    "date": day.isoformat(),
+                    "sample_phase": phase,
+                    "mode": "historical",
+                    "session_id": f"{day.isoformat()}-{strategy_id}-session",
+                    "eligible_signal": True,
+                    "session_outcome": "filled",
+                    "daily_account_return_fraction": value * 0.005,
+                    "stress_10bps_daily_account_return_fraction": (value - 0.10)
+                    * 0.005,
+                    "stress_20bps_daily_account_return_fraction": (value - 0.20)
+                    * 0.005,
+                    "session_capture_complete": True,
+                    "rule_violations": [],
+                }
+            )
         for index in range(5):
             day = date(2025, 6, 2) + timedelta(days=index)
             records.append(
                 {
-                    "schema_version": 1,
+                    "schema_version": 2,
+                    "research_campaign_id": CAMPAIGN_ID,
                     "record_type": "signal",
                     "recorded_at": datetime.now(UTC).isoformat(),
                     "strategy_id": strategy_id,
@@ -201,7 +222,8 @@ class PortfolioMaturityTests(unittest.TestCase):
             day = date(2025, 6, 16)
             records.append(
                 {
-                    "schema_version": 1,
+                    "schema_version": 2,
+                    "research_campaign_id": CAMPAIGN_ID,
                     "record_type": "signal",
                     "recorded_at": datetime.now(UTC).isoformat(),
                     "strategy_id": strategy_id,
@@ -235,9 +257,45 @@ class PortfolioMaturityTests(unittest.TestCase):
 
     def test_config_matches_authorized_portfolio_limits(self):
         portfolio = self.config.raw["portfolio"]
+        campaign = self.config.raw["campaign"]
+        self.assertEqual(campaign["schema_version"], 2)
+        self.assertEqual(
+            campaign["active_research_campaign_id"], maturity.V2_CAMPAIGN_ID
+        )
+        self.assertEqual(campaign["first_pilot_ready_target"], 1)
+        self.assertEqual(campaign["portfolio_target"], 3)
         self.assertEqual(portfolio["maximum_concurrent_positions"], 3)
         self.assertEqual(portfolio["maximum_new_entries_per_day"], 5)
         self.assertEqual(portfolio["maximum_holding_trading_days"], 5)
+
+    def test_schema_one_config_remains_loadable_and_v1_evidence_is_adverse_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "portfolio-v1.toml"
+            current = maturity.DEFAULT_CONFIG_PATH.read_text(encoding="utf-8")
+            campaign_end = current.index("\n[portfolio]")
+            legacy_campaign = """[campaign]
+id = "multi-strategy-portfolio-validation-v1"
+schema_version = 1
+target_pilot_ready_strategies = 3
+initial_mechanism_families = 10
+maximum_initial_variants = 20
+maximum_second_wave_families = 6
+"""
+            path.write_text(
+                legacy_campaign + current[campaign_end + 1 :], encoding="utf-8"
+            )
+            legacy = maturity.load_config(path)
+            self.assertEqual(legacy.schema_version, 1)
+            self.assertEqual(legacy.portfolio_target, 3)
+
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            for record in records:
+                record["schema_version"] = 1
+                record.pop("research_campaign_id", None)
+            report = maturity.build_report(records, self.config)
+            self.assertEqual(report["pilot_ready_strategy_count"], 0)
+            self.assertEqual(report["preserved_adverse_record_count"], len(records))
 
     def test_empty_report_refuses_milestone(self):
         report = maturity.build_report([], self.config)
@@ -276,6 +334,47 @@ class PortfolioMaturityTests(unittest.TestCase):
             assessment = maturity.assess_strategy(records, self.config)
         self.assertEqual(assessment["maturity"], "PILOT_READY")
         self.assertEqual(assessment["pilot_ready_blockers"], [])
+
+    def test_positive_r_cannot_hide_negative_account_growth(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            for record in records:
+                if record.get("record_type") == "session":
+                    record["daily_account_return_fraction"] = -0.001
+                    record["stress_10bps_daily_account_return_fraction"] = -0.002
+                    record["stress_20bps_daily_account_return_fraction"] = -0.003
+                elif record.get("record_type") == "signal" and record.get(
+                    "mode"
+                ) == "historical":
+                    record["net_account_return_fraction"] = -0.001
+                    record["stress_10bps_account_return_fraction"] = -0.002
+                    record["stress_20bps_account_return_fraction"] = -0.003
+                    record["net_pnl_dollars"] = -100.0
+                    record["stress_10bps_net_pnl_dollars"] = -200.0
+                    record["stress_20bps_net_pnl_dollars"] = -300.0
+            assessment = maturity.assess_strategy(records, self.config)
+        self.assertIn(
+            "combined historical total log growth is not above 0",
+            assessment["pilot_ready_blockers"],
+        )
+        self.assertFalse(assessment["pilot_ready"])
+
+    def test_dynamic_power_target_is_frozen_and_authoritative(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            inspection = next(
+                record for record in records if record["record_type"] == "inspection"
+            )
+            inspection["power_target"] = 70
+            inspection["required_total_signals"] = 70
+            inspection["required_confirmation_signals"] = 21
+            assessment = maturity.assess_strategy(records, self.config)
+        self.assertIn(
+            "historical signals 50 is below required 70",
+            assessment["pilot_ready_blockers"],
+        )
 
     def test_weak_confirmation_blocks_pilot_ready(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -20,13 +20,18 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
+from learning_statistics import stationary_bootstrap_summary
+
 from portfolio_funnel import PortfolioFunnelError, validate_stage0_survivor_binding
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "portfolio_config.toml"
 DEFAULT_LEDGER_PATH = PROJECT_ROOT / "PORTFOLIO_SIGNALS.jsonl"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+LEGACY_SCHEMA_VERSION = 1
+V1_CAMPAIGN_ID = "multi-strategy-portfolio-validation-v1"
+V2_CAMPAIGN_ID = "multi-strategy-portfolio-validation-v2"
 FIRST_PILOT_MILESTONE = "FIRST_PILOT_READY_LIVE_STARTED"
 STRATEGY_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{2,79}$")
 VERSION_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{1,79}$")
@@ -45,6 +50,31 @@ class PortfolioConfig:
     path: Path
     raw: Mapping[str, Any]
     sha256: str
+
+    @property
+    def schema_version(self) -> int:
+        return int(self.raw["campaign"]["schema_version"])
+
+    @property
+    def active_research_campaign_id(self) -> str:
+        campaign = self.raw["campaign"]
+        if self.schema_version == LEGACY_SCHEMA_VERSION:
+            return str(campaign["id"])
+        return str(campaign["active_research_campaign_id"])
+
+    @property
+    def first_pilot_ready_target(self) -> int:
+        campaign = self.raw["campaign"]
+        if self.schema_version == LEGACY_SCHEMA_VERSION:
+            return 1
+        return int(campaign["first_pilot_ready_target"])
+
+    @property
+    def portfolio_target(self) -> int:
+        campaign = self.raw["campaign"]
+        if self.schema_version == LEGACY_SCHEMA_VERSION:
+            return int(campaign["target_pilot_ready_strategies"])
+        return int(campaign["portfolio_target"])
 
 
 @dataclass(frozen=True)
@@ -96,6 +126,9 @@ class StrategyMetrics:
     stop_slippage_excess_p95_bps: float | None
     rule_violations: int
     incomplete_capture_records: int
+    account_growth: Mapping[str, Any]
+    development_account_growth: Mapping[str, Any]
+    confirmation_account_growth: Mapping[str, Any]
 
 
 def _canonical_bytes(value: Any) -> bytes:
@@ -215,17 +248,39 @@ def load_config(path: Path = DEFAULT_CONFIG_PATH) -> PortfolioConfig:
     portfolio = raw["portfolio"]
     pilot_risk = raw["pilot_risk"]
     scaled = raw["scaled_risk"]
-    if campaign.get("id") != "multi-strategy-portfolio-validation-v1":
-        raise PortfolioMaturityError("unexpected portfolio campaign ID")
-    if campaign.get("schema_version") != 1:
-        raise PortfolioMaturityError("portfolio schema_version must be 1")
-    for field in (
-        "target_pilot_ready_strategies",
-        "initial_mechanism_families",
-        "maximum_initial_variants",
-        "maximum_second_wave_families",
-    ):
-        _integer(campaign.get(field), f"campaign.{field}", minimum=1)
+    schema_version = campaign.get("schema_version")
+    if schema_version == LEGACY_SCHEMA_VERSION:
+        if campaign.get("id") != V1_CAMPAIGN_ID:
+            raise PortfolioMaturityError("unexpected legacy portfolio campaign ID")
+        for field in (
+            "target_pilot_ready_strategies",
+            "initial_mechanism_families",
+            "maximum_initial_variants",
+            "maximum_second_wave_families",
+        ):
+            _integer(campaign.get(field), f"campaign.{field}", minimum=1)
+    elif schema_version == SCHEMA_VERSION:
+        if campaign.get("active_research_campaign_id") != V2_CAMPAIGN_ID:
+            raise PortfolioMaturityError("unexpected active portfolio campaign ID")
+        preserved = campaign.get("preserved_adverse_campaign_ids")
+        if preserved != [V1_CAMPAIGN_ID]:
+            raise PortfolioMaturityError(
+                "schema 2 must preserve v1 as immutable adverse history"
+            )
+        for field in (
+            "first_pilot_ready_target",
+            "portfolio_target",
+            "maximum_new_mechanism_families_per_iso_week",
+        ):
+            _integer(campaign.get(field), f"campaign.{field}", minimum=1)
+        if campaign["first_pilot_ready_target"] != 1:
+            raise PortfolioMaturityError("first pilot-ready target must remain one")
+        if campaign["portfolio_target"] != 3:
+            raise PortfolioMaturityError("portfolio target must remain three")
+        if campaign["maximum_new_mechanism_families_per_iso_week"] != 3:
+            raise PortfolioMaturityError("weekly mechanism-family limit must remain three")
+    else:
+        raise PortfolioMaturityError("portfolio schema_version must be 1 or 2")
     for field in (
         "maximum_concurrent_positions",
         "maximum_new_entries_per_day",
@@ -316,8 +371,17 @@ def load_config(path: Path = DEFAULT_CONFIG_PATH) -> PortfolioConfig:
 
 
 def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> None:
-    if record.get("schema_version") != SCHEMA_VERSION:
-        raise PortfolioMaturityError("record schema_version must be 1")
+    record_schema = record.get("schema_version")
+    if record_schema not in {LEGACY_SCHEMA_VERSION, SCHEMA_VERSION}:
+        raise PortfolioMaturityError("record schema_version must be 1 or 2")
+    if record_schema == SCHEMA_VERSION:
+        campaign_id = _string(
+            record.get("research_campaign_id"), "research_campaign_id"
+        )
+        if campaign_id != V2_CAMPAIGN_ID:
+            raise PortfolioMaturityError(
+                "schema 2 record must belong to the active v2 research campaign"
+            )
     record_type = _string(record.get("record_type"), "record_type")
     if record_type not in RECORD_TYPES:
         raise PortfolioMaturityError(f"unsupported record_type {record_type!r}")
@@ -328,8 +392,11 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
         if not inspection_id.startswith(_string(record.get("strategy_id"), "strategy_id")):
             raise PortfolioMaturityError("inspection_id must begin with strategy_id")
         trial_count = _integer(record.get("trial_count"), "trial_count", minimum=1)
-        if trial_count > 26:
-            raise PortfolioMaturityError("trial_count exceeds both authorized waves")
+        maximum_trials = 64 if record_schema == SCHEMA_VERSION else 26
+        if trial_count > maximum_trials:
+            raise PortfolioMaturityError(
+                f"trial_count exceeds the authorized maximum of {maximum_trials}"
+            )
         wave = _integer(record.get("tournament_wave"), "tournament_wave", minimum=1)
         if wave not in {1, 2}:
             raise PortfolioMaturityError("tournament_wave must be 1 or 2")
@@ -347,6 +414,39 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
             "confirmation_untouched",
         ):
             _boolean(record.get(field), field)
+        if record_schema == SCHEMA_VERSION:
+            if record.get("selection_mode") != "development_search":
+                raise PortfolioMaturityError(
+                    "schema 2 inspection requires selection_mode=development_search"
+                )
+            power_target = _integer(
+                record.get("power_target"), "power_target", minimum=1
+            )
+            required_total = _integer(
+                record.get("required_total_signals"),
+                "required_total_signals",
+                minimum=50,
+            )
+            required_confirmation = _integer(
+                record.get("required_confirmation_signals"),
+                "required_confirmation_signals",
+                minimum=20,
+            )
+            if required_total != max(50, power_target):
+                raise PortfolioMaturityError(
+                    "required_total_signals does not match the frozen power target"
+                )
+            if required_confirmation != max(20, math.ceil(required_total * 0.30)):
+                raise PortfolioMaturityError(
+                    "required_confirmation_signals does not match the 30% rule"
+                )
+            if _boolean(
+                record.get("evidence_counts_frozen_before_confirmation"),
+                "evidence_counts_frozen_before_confirmation",
+            ) is not True:
+                raise PortfolioMaturityError(
+                    "evidence counts must freeze before confirmation outcomes"
+                )
         if "retired_after_development" in record:
             _boolean(record.get("retired_after_development"), "retired_after_development")
         _integer(
@@ -399,6 +499,30 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
         if not session_id.startswith(record_date):
             raise PortfolioMaturityError("session_id must begin with its date")
         _boolean(record.get("eligible_signal"), "eligible_signal")
+        if record_schema == SCHEMA_VERSION and mode == "historical":
+            if record.get("session_outcome") not in {
+                "filled",
+                "no_signal",
+                "rejected",
+                "missed_fill",
+                "capital_blocked",
+                "position_open",
+                "exit",
+                "mixed",
+            }:
+                raise PortfolioMaturityError(
+                    "schema 2 historical session needs an explicit session_outcome"
+                )
+            for field in (
+                "daily_account_return_fraction",
+                "stress_10bps_daily_account_return_fraction",
+                "stress_20bps_daily_account_return_fraction",
+            ):
+                value = _finite(record.get(field), field)
+                if value <= -1:
+                    raise PortfolioMaturityError(
+                        f"{field} cannot lose 100 percent or more"
+                    )
         return
     signal_id = _string(record.get("signal_id"), "signal_id")
     if not signal_id.startswith(record_date):
@@ -407,6 +531,23 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
     _boolean(record.get("eligible"), "eligible")
     for field in ("net_r", "stress_10bps_r", "stress_20bps_r"):
         _finite(record.get(field), field)
+    if record_schema == SCHEMA_VERSION and mode == "historical":
+        for field in (
+            "net_account_return_fraction",
+            "stress_10bps_account_return_fraction",
+            "stress_20bps_account_return_fraction",
+        ):
+            value = _finite(record.get(field), field)
+            if value <= -1:
+                raise PortfolioMaturityError(
+                    f"{field} cannot lose 100 percent or more"
+                )
+        for field in (
+            "net_pnl_dollars",
+            "stress_10bps_net_pnl_dollars",
+            "stress_20bps_net_pnl_dollars",
+        ):
+            _finite(record.get(field), field)
     _boolean(record.get("stop_executed"), "stop_executed")
     if mode == "shadow":
         for field in (
@@ -621,6 +762,116 @@ def _robustness_metrics(
     )
 
 
+def _account_growth_metrics(
+    records: Sequence[Mapping[str, Any]], confidence: float
+) -> dict[str, Any]:
+    sessions = sorted(
+        (
+            record
+            for record in records
+            if record["record_type"] == "session"
+            and record.get("mode") == "historical"
+        ),
+        key=lambda item: (str(item["date"]), str(item["session_id"])),
+    )
+    signals = sorted(
+        (
+            record
+            for record in records
+            if record["record_type"] == "signal"
+            and record.get("mode") == "historical"
+            and record.get("closed") is True
+            and record.get("eligible") is True
+        ),
+        key=lambda item: (str(item["date"]), str(item["signal_id"])),
+    )
+    if not sessions or any(record.get("schema_version") != SCHEMA_VERSION for record in records):
+        return {
+            "available": False,
+            "sessions": len(sessions),
+            "filled_trades": len(signals),
+        }
+
+    def scenario(
+        session_field: str, signal_return_field: str, signal_dollar_field: str
+    ) -> dict[str, Any]:
+        daily = [float(record[session_field]) for record in sessions]
+        filled_returns = [float(record[signal_return_field]) for record in signals]
+        dollars = [float(record[signal_dollar_field]) for record in signals]
+        midpoint = len(filled_returns) // 2
+        without_best = sorted(filled_returns, reverse=True)[5:]
+        factor = _profit_factor(dollars)
+        bootstrap = (
+            stationary_bootstrap_summary(
+                filled_returns,
+                confidence=confidence,
+                samples=5_000,
+            )
+            if filled_returns
+            else None
+        )
+        return {
+            "total_log_growth": sum(math.log1p(value) for value in daily),
+            "compounded_return_fraction": math.prod(1 + value for value in daily) - 1,
+            "mean_filled_account_return_fraction": (
+                statistics.fmean(filled_returns) if filled_returns else None
+            ),
+            "net_dollar_profit_factor": factor,
+            "maximum_drawdown_fraction": _account_drawdown(daily),
+            "stationary_bootstrap_lower_mean_filled_return": (
+                bootstrap["lower_one_sided"] if bootstrap else None
+            ),
+            "stationary_bootstrap": bootstrap,
+            "first_half_log_growth": (
+                sum(math.log1p(value) for value in filled_returns[:midpoint])
+                if midpoint
+                else None
+            ),
+            "second_half_log_growth": (
+                sum(math.log1p(value) for value in filled_returns[midpoint:])
+                if midpoint
+                else None
+            ),
+            "without_five_best_log_growth": (
+                sum(math.log1p(value) for value in without_best)
+                if without_best
+                else None
+            ),
+        }
+
+    return {
+        "available": True,
+        "sessions": len(sessions),
+        "filled_trades": len(signals),
+        "primary_5bps": scenario(
+            "daily_account_return_fraction",
+            "net_account_return_fraction",
+            "net_pnl_dollars",
+        ),
+        "stress_10bps": scenario(
+            "stress_10bps_daily_account_return_fraction",
+            "stress_10bps_account_return_fraction",
+            "stress_10bps_net_pnl_dollars",
+        ),
+        "stress_20bps": scenario(
+            "stress_20bps_daily_account_return_fraction",
+            "stress_20bps_account_return_fraction",
+            "stress_20bps_net_pnl_dollars",
+        ),
+    }
+
+
+def _account_drawdown(values: Sequence[float]) -> float:
+    equity = 1.0
+    peak = 1.0
+    maximum = 0.0
+    for value in values:
+        equity *= 1 + value
+        peak = max(peak, equity)
+        maximum = max(maximum, 1 - equity / peak)
+    return maximum
+
+
 def _metrics(records: Sequence[Mapping[str, Any]], confidence: float) -> StrategyMetrics:
     signals = [record for record in records if record["record_type"] == "signal"]
     historical_records = [
@@ -637,6 +888,13 @@ def _metrics(records: Sequence[Mapping[str, Any]], confidence: float) -> Strateg
     historical = _robustness_metrics(historical_records, confidence)
     development = _robustness_metrics(development_records, confidence)
     confirmation = _robustness_metrics(confirmation_records, confidence)
+    account_growth = _account_growth_metrics(historical_records, confidence)
+    development_account_growth = _account_growth_metrics(
+        development_records, confidence
+    )
+    confirmation_account_growth = _account_growth_metrics(
+        confirmation_records, confidence
+    )
     shadow = [
         record
         for record in signals
@@ -692,6 +950,9 @@ def _metrics(records: Sequence[Mapping[str, Any]], confidence: float) -> Strateg
         stop_slippage_excess_p95_bps=_percentile(stop_excess, 0.95),
         rule_violations=violations,
         incomplete_capture_records=incomplete,
+        account_growth=account_growth,
+        development_account_growth=development_account_growth,
+        confirmation_account_growth=confirmation_account_growth,
     )
 
 
@@ -822,6 +1083,77 @@ def _robustness_blockers(
     return blockers
 
 
+def _account_growth_blockers(
+    name: str,
+    metrics: Mapping[str, Any],
+    *,
+    gate: Mapping[str, Any],
+    maximum_drawdown_fraction: float,
+) -> list[str]:
+    if metrics.get("available") is not True:
+        return [f"{name} chronological account-growth evidence is missing"]
+    blockers: list[str] = []
+    primary = metrics["primary_5bps"]
+    for field, label in (
+        ("total_log_growth", "total log growth"),
+        ("compounded_return_fraction", "compounded account return"),
+        (
+            "stationary_bootstrap_lower_mean_filled_return",
+            "stationary-bootstrap lower mean filled account return",
+        ),
+    ):
+        _positive(blockers, f"{name} {label}", primary.get(field))
+    _minimum_number(
+        blockers,
+        f"{name} net dollar profit factor",
+        primary.get("net_dollar_profit_factor"),
+        float(gate["minimum_profit_factor"]),
+    )
+    _maximum_number(
+        blockers,
+        f"{name} account drawdown fraction",
+        primary.get("maximum_drawdown_fraction"),
+        maximum_drawdown_fraction,
+    )
+    if gate["require_positive_chronological_halves"]:
+        _positive(
+            blockers,
+            f"{name} first chronological half log growth",
+            primary.get("first_half_log_growth"),
+        )
+        _positive(
+            blockers,
+            f"{name} second chronological half log growth",
+            primary.get("second_half_log_growth"),
+        )
+    if gate["require_positive_without_five_best"]:
+        _positive(
+            blockers,
+            f"{name} log growth without five best trades",
+            primary.get("without_five_best_log_growth"),
+        )
+    for bps in (10, 20):
+        stress = metrics[f"stress_{bps}bps"]
+        _positive(
+            blockers,
+            f"{name} {bps} bps total log growth",
+            stress.get("total_log_growth"),
+        )
+        _minimum_number(
+            blockers,
+            f"{name} {bps} bps net dollar profit factor",
+            stress.get("net_dollar_profit_factor"),
+            float(gate["minimum_stressed_profit_factor"]),
+        )
+        _maximum_number(
+            blockers,
+            f"{name} {bps} bps account drawdown fraction",
+            stress.get("maximum_drawdown_fraction"),
+            maximum_drawdown_fraction,
+        )
+    return blockers
+
+
 def assess_strategy(
     records: Sequence[Mapping[str, Any]],
     config: PortfolioConfig,
@@ -843,10 +1175,13 @@ def assess_strategy(
         inspection and inspection.get("retired_after_development") is True
     )
     inspection_blockers = _inspection_blockers(inspection, config)
-    minimum_confirmation = int(gate["minimum_confirmation_signals"])
-    minimum_development = (
-        int(gate["minimum_closed_historical_signals"]) - minimum_confirmation
-    )
+    if inspection and inspection.get("schema_version") == SCHEMA_VERSION:
+        minimum_total = int(inspection["required_total_signals"])
+        minimum_confirmation = int(inspection["required_confirmation_signals"])
+    else:
+        minimum_total = int(gate["minimum_closed_historical_signals"])
+        minimum_confirmation = int(gate["minimum_confirmation_signals"])
+    minimum_development = minimum_total - minimum_confirmation
     if minimum_development < 1:
         raise PortfolioMaturityError(
             "historical signal minimum must exceed confirmation minimum"
@@ -879,12 +1214,43 @@ def assess_strategy(
         expectancy_threshold=float(gate["minimum_confirmation_expectancy_r"]),
         gate=gate,
     )
+    account_drawdown_limit = float(gate["maximum_drawdown_r"]) * float(
+        config.raw["pilot_risk"]["maximum_planned_loss_fraction_per_position"]
+    )
+    development_account_blockers: list[str] = []
+    confirmation_account_blockers: list[str] = []
+    combined_account_blockers: list[str] = []
+    if inspection and inspection.get("schema_version") == SCHEMA_VERSION:
+        development_account_blockers = _account_growth_blockers(
+            "development",
+            metrics.development_account_growth,
+            gate=gate,
+            maximum_drawdown_fraction=account_drawdown_limit,
+        )
+        confirmation_account_blockers = _account_growth_blockers(
+            "confirmation",
+            metrics.confirmation_account_growth,
+            gate=gate,
+            maximum_drawdown_fraction=account_drawdown_limit,
+        )
+        combined_account_blockers = _account_growth_blockers(
+            "combined historical",
+            metrics.account_growth,
+            gate=gate,
+            maximum_drawdown_fraction=account_drawdown_limit,
+        )
+    account_blockers = [
+        *development_account_blockers,
+        *confirmation_account_blockers,
+        *combined_account_blockers,
+    ]
     blockers = [
         *inspection_blockers,
         *development_blockers,
         *confirmation_blockers,
+        *account_blockers,
     ]
-    _at_least(blockers, "historical signals", metrics.historical_signals, int(gate["minimum_closed_historical_signals"]))
+    _at_least(blockers, "historical signals", metrics.historical_signals, minimum_total)
     _at_least(blockers, "shadow executions", metrics.shadow_executions, int(gate["minimum_shadow_executions"]))
     _above_number(
         blockers,
@@ -918,12 +1284,19 @@ def assess_strategy(
     if retired_after_development:
         validation_phase = "RETIRED_DEVELOPMENT"
         current_phase_blockers = development_blockers
-    elif inspection_blockers or development_blockers:
+    elif inspection_blockers or development_blockers or development_account_blockers:
         validation_phase = "DEVELOPMENT"
-        current_phase_blockers = [*inspection_blockers, *development_blockers]
-    elif confirmation_blockers:
+        current_phase_blockers = [
+            *inspection_blockers,
+            *development_blockers,
+            *development_account_blockers,
+        ]
+    elif confirmation_blockers or confirmation_account_blockers:
         validation_phase = "CONFIRMATION"
-        current_phase_blockers = confirmation_blockers
+        current_phase_blockers = [
+            *confirmation_blockers,
+            *confirmation_account_blockers,
+        ]
     elif metrics.shadow_executions < int(gate["minimum_shadow_executions"]):
         validation_phase = "SHADOW_QUALIFICATION"
         current_phase_blockers = [
@@ -1028,7 +1401,30 @@ def build_report(
     config: PortfolioConfig | None = None,
 ) -> dict[str, Any]:
     config = config or load_config()
-    records = list(records if records is not None else read_records())
+    all_records = list(records if records is not None else read_records())
+    if config.schema_version == SCHEMA_VERSION:
+        records = [
+            record
+            for record in all_records
+            if record.get("schema_version") == SCHEMA_VERSION
+            and record.get("research_campaign_id")
+            == config.active_research_campaign_id
+        ]
+    else:
+        records = [
+            record
+            for record in all_records
+            if record.get("schema_version") == LEGACY_SCHEMA_VERSION
+        ]
+    preserved_records = [record for record in all_records if record not in records]
+    preserved_grouped: dict[tuple[str, str], list[Mapping[str, Any]]] = defaultdict(list)
+    for record in preserved_records:
+        preserved_grouped[
+            (str(record["strategy_id"]), str(record["strategy_version"]))
+        ].append(record)
+    preserved_assessments = [
+        assess_strategy(items, config) for _, items in sorted(preserved_grouped.items())
+    ]
     grouped: dict[tuple[str, str], list[Mapping[str, Any]]] = defaultdict(list)
     for record in records:
         grouped[(str(record["strategy_id"]), str(record["strategy_version"]))].append(record)
@@ -1037,7 +1433,7 @@ def build_report(
     ready_live_started = [
         assessment for assessment in ready if assessment["live_started"]
     ]
-    target = int(config.raw["campaign"]["target_pilot_ready_strategies"])
+    target = config.portfolio_target
     correlation_cap = float(config.raw["portfolio"]["maximum_ready_pairwise_correlation"])
     coverage_floor = float(config.raw["portfolio"]["minimum_combined_confirmation_opportunity_coverage"])
     selected_ids: list[str] = []
@@ -1085,27 +1481,30 @@ def build_report(
             selected_coverage = candidate_coverage
             break
     blockers: list[str] = []
-    inspections = [
-        record for record in records if record["record_type"] == "inspection"
-    ]
-    wave_one_families = {
-        str(record["mechanism_family"])
-        for record in inspections
-        if record.get("tournament_wave") == 1
-    }
-    wave_two_families = {
-        str(record["mechanism_family"])
-        for record in inspections
-        if record.get("tournament_wave") == 2
-    }
-    if len(wave_one_families) > int(config.raw["campaign"]["initial_mechanism_families"]):
-        blockers.append("initial mechanism-family count exceeds campaign ceiling")
-    if sum(record.get("tournament_wave") == 1 for record in inspections) > int(
-        config.raw["campaign"]["maximum_initial_variants"]
-    ):
-        blockers.append("initial variant count exceeds campaign ceiling")
-    if len(wave_two_families) > int(config.raw["campaign"]["maximum_second_wave_families"]):
-        blockers.append("second-wave mechanism-family count exceeds campaign ceiling")
+    inspections = [record for record in records if record["record_type"] == "inspection"]
+    if config.schema_version == LEGACY_SCHEMA_VERSION:
+        wave_one_families = {
+            str(record["mechanism_family"])
+            for record in inspections
+            if record.get("tournament_wave") == 1
+        }
+        wave_two_families = {
+            str(record["mechanism_family"])
+            for record in inspections
+            if record.get("tournament_wave") == 2
+        }
+        if len(wave_one_families) > int(
+            config.raw["campaign"]["initial_mechanism_families"]
+        ):
+            blockers.append("initial mechanism-family count exceeds campaign ceiling")
+        if sum(record.get("tournament_wave") == 1 for record in inspections) > int(
+            config.raw["campaign"]["maximum_initial_variants"]
+        ):
+            blockers.append("initial variant count exceeds campaign ceiling")
+        if len(wave_two_families) > int(
+            config.raw["campaign"]["maximum_second_wave_families"]
+        ):
+            blockers.append("second-wave mechanism-family count exceeds campaign ceiling")
     if len(ready) < target:
         blockers.append(f"pilot-ready strategies {len(ready)} is below required {target}")
     if not selected_ids:
@@ -1114,16 +1513,29 @@ def build_report(
     if selected_ids and len(live_started) < target:
         blockers.append(f"selected strategies with a started live pilot {len(live_started)} is below required {target}")
     interim_blockers: list[str] = []
-    if not ready_live_started:
+    if len(ready_live_started) < config.first_pilot_ready_target:
         interim_blockers.append(
-            "pilot-ready strategies with a completed live execution 0 is below required 1"
+            "pilot-ready strategies with a completed live execution "
+            f"{len(ready_live_started)} is below required "
+            f"{config.first_pilot_ready_target}"
         )
+    first_pilot_milestone = (
+        FIRST_PILOT_MILESTONE if not interim_blockers else "RESEARCH"
+    )
+    portfolio_milestone = (
+        "THREE_PILOT_READY_LIVE_STARTED" if not blockers else "RESEARCH"
+    )
     return {
-        "schema_version": 1,
-        "campaign_id": config.raw["campaign"]["id"],
+        "schema_version": config.schema_version,
+        "campaign_id": config.active_research_campaign_id,
+        "active_research_campaign_id": config.active_research_campaign_id,
+        "preserved_adverse_record_count": len(all_records) - len(records),
         "portfolio_config_sha256": config.sha256,
+        "first_pilot_ready_target": config.first_pilot_ready_target,
+        "portfolio_target": target,
         "target_pilot_ready_strategies": target,
         "strategies": assessments,
+        "preserved_adverse_strategies": preserved_assessments,
         "pilot_ready_strategy_count": len(ready),
         "live_started_strategy_count": sum(
             assessment["live_started"] for assessment in assessments
@@ -1142,12 +1554,16 @@ def build_report(
             [FIRST_PILOT_MILESTONE] if not interim_blockers else []
         ),
         "interim_milestone_blockers": interim_blockers,
+        "first_pilot_milestone": first_pilot_milestone,
+        "first_pilot_milestone_blockers": interim_blockers,
         "selected_strategy_ids": selected_ids,
         "selected_strategies": selected_strategies,
         "selected_pairwise_confirmation_correlations": pairwise,
         "selected_confirmation_opportunity_coverage": selected_coverage,
         "live_started_selected_strategy_count": len(live_started),
-        "earned_milestone": "THREE_PILOT_READY_LIVE_STARTED" if not blockers else "RESEARCH",
+        "portfolio_milestone": portfolio_milestone,
+        "portfolio_milestone_blockers": blockers,
+        "earned_milestone": portfolio_milestone,
         "milestone_blockers": blockers,
     }
 

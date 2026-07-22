@@ -89,6 +89,15 @@ EXCLUDED_CLASS_PATTERNS = (
     r"\bdebentures?\b",
     r"\bpartnership\s+units?\b",
 )
+FROZEN_IMPLEMENTATION_AND_AUTHORITY_HASHES = {
+    "PORTFOLIO_VALIDATION_V2.md": "0c88db58e76bfc7a146ae497b80ece6e6b5f83ef1f44d3792d6b6d6a3ea45e7f",
+    "portfolio_config.toml": "1d38f1329bb1c3bee376c7eed7c22e503ce250532c1d5c0e3b23299ae85284fc",
+    "portfolio_maturity.py": "e8bbb99d9df8bbfb2e00b5d9f8340aa83a406b0dcbb1abcf9ec9c27271d19016",
+    "schedule13d_capacity.py": "dc77ebb612ac0293a691c39f8a4986214ee9c7c0b0c559da45a8fc9e4a2d8e4e",
+    "schedule13d_capacity_inspection.py": "bb5c4f66ea2ad1e299f95910b3290a7250a90c26da9fb79f9782e511c70a773c",
+    "strategy_tournament/successor_proposal/authorizations/multi-strategy-portfolio-validation-v2-authorization-6a7e27481ff80cd3e457d972c10347ea831801d6532fdc34b9e9fb0453c0fd6e.json": "6715b4078e30bc88b3f5d3e05bd3c4608736229b2cb6529849d57114399c360a",
+    "strategy_tournament/v2/multi_asset_etf_tsmom/stage0/inspections/multi-asset-etf-tsmom-v1-result-3cabba283e1b9a94cae818c3c57d6c216ad42ecd57e289d4468ea220bd2319ee.json": "8fb8092c5158be5486c2988143d20ec9733e614d4e05c915f9165ff917e48053",
+}
 
 
 class Schedule13dCapacityError(RuntimeError):
@@ -161,15 +170,6 @@ def build_contract() -> dict[str, Any]:
     """Build the exact filing-capacity contract without reading filing counts."""
 
     authorization, family_one = _assert_campaign_and_family_one()
-    bound_files = (
-        Path(__file__).resolve(),
-        INSPECTOR_PATH,
-        AUTHORIZATION_PATH,
-        FAMILY_ONE_INSPECTION_PATH,
-        PROJECT_ROOT / "PORTFOLIO_VALIDATION_V2.md",
-        PROJECT_ROOT / "portfolio_config.toml",
-        PROJECT_ROOT / "portfolio_maturity.py",
-    )
     contract: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "artifact_kind": "outcome-blind-capacity-contract",
@@ -311,10 +311,12 @@ def build_contract() -> dict[str, Any]:
             "cost_grid_bps_per_side": [5, 10, 20],
             "capacity_result_eligible_for_maturity": False,
         },
-        "implementation_and_authority_hashes": {
-            str(path.relative_to(PROJECT_ROOT)): successor._hash_file(path)
-            for path in bound_files
-        },
+        # This retired candidate remains immutable adverse evidence. Rebuild its
+        # original contract identity rather than rebinding it to schema-2 core
+        # files that were upgraded after the retirement.
+        "implementation_and_authority_hashes": dict(
+            FROZEN_IMPLEMENTATION_AND_AUTHORITY_HASHES
+        ),
         "filing_count": None,
         "verified_event_count": None,
         "market_outcomes_accessed": False,

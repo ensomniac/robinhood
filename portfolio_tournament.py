@@ -14,6 +14,10 @@ from portfolio_maturity import load_config
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+LEGACY_CONFIG_PATH = PROJECT_ROOT / "portfolio_config_v1.toml"
+LEGACY_IMPLEMENTATION_SHA256 = (
+    "a0aac8231a904369021f2b86aaee4596709b26e9b5d830954a8e57b046e9be33"
+)
 INVENTORY_PATH = (
     PROJECT_ROOT / "research_results" / "2026-07-21-portfolio-data-inventory.json"
 )
@@ -301,7 +305,7 @@ def _slate() -> list[dict[str, Any]]:
 
 
 def build_manifest() -> dict[str, Any]:
-    config = load_config()
+    config = load_config(LEGACY_CONFIG_PATH)
     inventory = _load_json(INVENTORY_PATH)
     if inventory.get("inventory_sha256") != "dd77fb3c226732c652000e6a80a2f4336e876a7d1ba005eb9718e0719e63397b":
         raise PortfolioTournamentError("unexpected data inventory identity")
@@ -318,7 +322,9 @@ def build_manifest() -> dict[str, Any]:
         "broker_actions_authorized": False,
         "portfolio_config_sha256": config.sha256,
         "data_inventory_sha256": inventory["inventory_sha256"],
-        "implementation_sha256": _file_hash(Path(__file__).resolve()),
+        # V1 is immutable adverse history. Rebuild its original manifest identity
+        # from the frozen schema-1 config rather than rebinding it to v2 code.
+        "implementation_sha256": LEGACY_IMPLEMENTATION_SHA256,
         "prior_policy_trials_to_retain": 15,
         "maximum_initial_variants": int(config.raw["campaign"]["maximum_initial_variants"]),
         "unused_initial_variant_capacity": int(

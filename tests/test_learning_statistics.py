@@ -10,6 +10,7 @@ from learning_statistics import (
     maximum_drawdown_fraction,
     power_sample_target,
     probability_of_backtest_overfitting,
+    simulate_portfolio_account,
     stationary_bootstrap_summary,
 )
 
@@ -73,6 +74,107 @@ class AccountPathTests(unittest.TestCase):
 
     def test_compounded_drawdown_uses_account_equity(self):
         self.assertAlmostEqual(maximum_drawdown_fraction([0.10, -0.10]), 0.10)
+
+    def test_portfolio_simulator_compounds_overlap_and_records_contention(self):
+        dates = [
+            "2026-07-13",
+            "2026-07-14",
+            "2026-07-15",
+            "2026-07-16",
+            "2026-07-17",
+        ]
+        candidates = [
+            {
+                "signal_id": "first",
+                "signal_date": dates[0],
+                "outcome": "eligible",
+                "entry_price": 100.0,
+                "stop_price": 99.0,
+                "exit_date": dates[2],
+                "exit_price": 104.0,
+                "marks": {dates[0]: 100.0, dates[1]: 101.0, dates[2]: 104.0},
+                "rank": 1,
+            },
+            {
+                "signal_id": "second",
+                "signal_date": dates[1],
+                "outcome": "eligible",
+                "entry_price": 50.0,
+                "stop_price": 49.5,
+                "exit_date": dates[3],
+                "exit_price": 51.0,
+                "marks": {dates[1]: 50.0, dates[2]: 50.5, dates[3]: 51.0},
+                "rank": 1,
+            },
+            {
+                "signal_id": "third",
+                "signal_date": dates[1],
+                "outcome": "eligible",
+                "entry_price": 25.0,
+                "stop_price": 24.5,
+                "exit_date": dates[2],
+                "exit_price": 26.0,
+                "marks": {dates[1]: 25.0, dates[2]: 26.0},
+                "rank": 2,
+            },
+        ]
+        result = simulate_portfolio_account(
+            dates,
+            candidates,
+            starting_equity=100_000,
+            risk_fraction=0.005,
+            maximum_concurrent_positions=2,
+            maximum_new_entries_per_day=5,
+            maximum_aggregate_risk_fraction=0.0125,
+            maximum_gross_notional_fraction=1.0,
+            cost_bps_per_side=5,
+        )
+
+        self.assertGreater(result["ending_equity"], result["starting_equity"])
+        self.assertEqual(len(result["closed_trades"]), 2)
+        blocked = [
+            item
+            for item in result["trial_accounting"]
+            if item["outcome"] == "capital_blocked"
+        ]
+        self.assertEqual([item["signal_id"] for item in blocked], ["third"])
+        self.assertEqual(result["account_path"][-1]["session_outcome"], "no_signal")
+        self.assertEqual(len(result["account_path"]), len(dates))
+
+    def test_portfolio_simulator_primary_and_stress_costs_are_monotone(self):
+        dates = ["2026-07-13", "2026-07-14"]
+        candidate = {
+            "signal_id": "one",
+            "signal_date": dates[0],
+            "outcome": "eligible",
+            "entry_price": 100.0,
+            "stop_price": 99.0,
+            "exit_date": dates[1],
+            "exit_price": 101.0,
+            "marks": {dates[0]: 100.0, dates[1]: 101.0},
+        }
+        results = [
+            simulate_portfolio_account(
+                dates,
+                [candidate],
+                starting_equity=100_000,
+                risk_fraction=0.005,
+                maximum_concurrent_positions=3,
+                maximum_new_entries_per_day=5,
+                maximum_aggregate_risk_fraction=0.0125,
+                maximum_gross_notional_fraction=1.0,
+                cost_bps_per_side=bps,
+            )
+            for bps in (5, 10, 20)
+        ]
+        self.assertGreater(
+            results[0]["compounded_return_fraction"],
+            results[1]["compounded_return_fraction"],
+        )
+        self.assertGreater(
+            results[1]["compounded_return_fraction"],
+            results[2]["compounded_return_fraction"],
+        )
 
 
 class StatisticalControlTests(unittest.TestCase):

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import subprocess
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -12,8 +14,33 @@ from typing import Any
 import schedule13d_capacity as capacity
 
 
+PRE_SCHEMA2_COMMIT = "5a828c97cf28a4864b1eef89188d7167f8ce240d"
+HISTORICAL_CORE_BINDINGS = {
+    "PORTFOLIO_VALIDATION_V2.md",
+    "portfolio_config.toml",
+    "portfolio_maturity.py",
+    "schedule13d_capacity.py",
+    "schedule13d_capacity_inspection.py",
+}
+
+
 class Schedule13dCapacityInspectionError(RuntimeError):
     """The Schedule 13D capacity contract does not independently rebuild."""
+
+
+def _historical_hash(relative: str) -> str:
+    try:
+        content = subprocess.run(
+            ["git", "show", f"{PRE_SCHEMA2_COMMIT}:{relative}"],
+            cwd=capacity.PROJECT_ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise Schedule13dCapacityInspectionError(
+            f"cannot read historical bound artifact: {relative}"
+        ) from exc
+    return hashlib.sha256(content).hexdigest()
 
 
 def inspect_contract(
@@ -25,7 +52,12 @@ def inspect_contract(
     if recorded != expected:
         raise Schedule13dCapacityInspectionError("capacity contract does not rebuild")
     for relative, digest in recorded["implementation_and_authority_hashes"].items():
-        if capacity.successor._hash_file(capacity.PROJECT_ROOT / relative) != digest:
+        actual = (
+            _historical_hash(relative)
+            if relative in HISTORICAL_CORE_BINDINGS
+            else capacity.successor._hash_file(capacity.PROJECT_ROOT / relative)
+        )
+        if actual != digest:
             raise Schedule13dCapacityInspectionError(
                 f"bound Schedule 13D artifact drifted: {relative}"
             )
