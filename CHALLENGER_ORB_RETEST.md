@@ -118,6 +118,12 @@ triggers. Private trigger hash `f8cf5c89...f7b4` binds the result. No capacity
 decision is valid until this uninspected state is committed and independently
 rebuilt; no post-entry data or outcome was accessed.
 
+The first result-inspection attempt exposed a public status ownership collision:
+the frozen base derivation writes its trigger summary to the collection status
+path. The collection status has been restored to its already-inspected content;
+the complete uninspected trigger state remains separately bound in
+`trigger-status.json`. No private artifact or evidence value changed.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

@@ -479,6 +479,11 @@ terminations across the complete 95-pair denominator. Private hash
 `f8cf5c89...f7b4` binds the index. These counts support no capacity conclusion
 until committed and independently rebuilt, and no post-entry outcome was read.
 
+The first result inspection failed closed because the frozen base derivation
+also writes to the collection status path. That file is restored to its
+published `COLLECTION_INSPECTED` content while the full uninspected trigger state
+remains in `trigger-status.json`; private data and evidence hashes are unchanged.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
