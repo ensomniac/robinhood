@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "development-retirement",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "schedule-13d-activist-continuation-v1",
+  "strategy_id": "schedule-13d-activist-continuation",
+  "strategy_version": "2026-07-22-schedule-13d-activist-continuation-v1",
+  "mechanism_family": "schedule-13d-activist-continuation",
+  "rules_hash": "a3ebd0c4025889a0f2ec5d2e56d694bdf3f537838db9ef872dfb21e25dec46e7",
+  "development_result_sha256": "019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc",
+  "development_result_file_sha256": "ab93e6d235d0bb1cb797807e48bef78ceac48e0bf81e9817808f9f6596f12e93",
+  "development_inspection_sha256": "e4076fa5ce6da2b7c920727da30ca7ecfb2f32bd61706cabbbd3e59451642f3c",
+  "development_inspection_file_sha256": "3ac0aaf2c8b3773f9a7e5117cbfa03b9d3cc491c2d28f0ce009c95b211eed4e2",
+  "denominator": {
+    "frozen_signals": 54,
+    "closed_signals": 49,
+    "missed_entries": 5,
+    "rule_violations": 0
+  },
+  "blockers": [
+    "development profit factor is below required 1.3",
+    "development bootstrap lower expectancy R is not above 0",
+    "development total R without five best is not above 0",
+    "development 20 bps stress profit factor is below required 1.2"
+  ],
+  "confirmation_outcomes_accessed": false,
+  "confirmation_records_created": 0,
+  "parameter_repair_on_evaluation_corpus_permitted": false,
+  "disposition": "RETIRED_DEVELOPMENT",
+  "broker_actions": 0,
+  "maturity_effect": "RETIRED_NOT_PILOT_READY"
+}

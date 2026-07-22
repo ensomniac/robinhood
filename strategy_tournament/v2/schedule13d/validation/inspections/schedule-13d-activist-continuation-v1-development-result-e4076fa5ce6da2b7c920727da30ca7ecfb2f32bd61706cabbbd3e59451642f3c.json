@@ -1,0 +1,51 @@
+{
+  "activation_sha256": "eccbf81ca3c6e20f970158d60dfdee1188f38d7cb76b1f11b440ca70e7a67aef",
+  "broker_actions": 0,
+  "contract_sha256": "214bf5d1e93d0a9f0eaa6df5c93d8bc29ca047667fdd18820c03a98bd8ba7684",
+  "denominator": {
+    "closed_signals": 49,
+    "frozen_signals": 54,
+    "missed_entries": 5,
+    "rule_violations": 0
+  },
+  "input_inspection_sha256": "13df2aecae8ad9619262d98ab75ee388379b7b1bd818ac31e556d613ceb45ebd",
+  "inspection_kind": "representative-validation-result-inspection",
+  "inspection_sha256": "e4076fa5ce6da2b7c920727da30ca7ecfb2f32bd61706cabbbd3e59451642f3c",
+  "ledger_records_rebuilt": 49,
+  "phase_blockers": [
+    "development profit factor is below required 1.3",
+    "development bootstrap lower expectancy R is not above 0",
+    "development total R without five best is not above 0",
+    "development 20 bps stress profit factor is below required 1.2"
+  ],
+  "phase_passed": false,
+  "result_file_sha256": "ab93e6d235d0bb1cb797807e48bef78ceac48e0bf81e9817808f9f6596f12e93",
+  "result_sha256": "019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc",
+  "robustness": {
+    "bootstrap_lower_expectancy_r": -0.06724127236957596,
+    "expectancy_r": 0.07992740050208043,
+    "first_half_total_r": 2.5191392587925283,
+    "incomplete_capture_records": 0,
+    "maximum_drawdown_r": 4.005454534015401,
+    "profit_factor": 1.2970692885375166,
+    "profit_factor_infinite": false,
+    "rule_violations": 0,
+    "second_half_total_r": 1.3973033658094132,
+    "signals": 49,
+    "stress_10_drawdown_r": 4.127873596506735,
+    "stress_10_profit_factor": 1.2365491486043219,
+    "stress_10_profit_factor_infinite": false,
+    "stress_10_total_r": 3.187668056249305,
+    "stress_20_drawdown_r": 4.3449955037459835,
+    "stress_20_profit_factor": 1.1297723591843423,
+    "stress_20_profit_factor_infinite": false,
+    "stress_20_total_r": 1.819750731723017,
+    "without_five_best_total_r": -5.1801177345754095
+  },
+  "rules_hash": "a3ebd0c4025889a0f2ec5d2e56d694bdf3f537838db9ef872dfb21e25dec46e7",
+  "sample_phase": "development",
+  "schema_version": 1,
+  "strategy_id": "schedule-13d-activist-continuation",
+  "strategy_version": "2026-07-22-schedule-13d-activist-continuation-v1",
+  "valid": true
+}
