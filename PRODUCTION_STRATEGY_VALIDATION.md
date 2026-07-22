@@ -1147,6 +1147,13 @@ trigger rules, a zero-trigger namespace at contract inspection, and continued
 post-entry outcome lock. The implementation must be committed and pushed before
 the trigger compatibility manifest is frozen.
 
+Trigger manifest `d214a021...64c37` now freezes the exact third-tranche
+compatibility boundary over the inspected 86-request causal graph. It binds the
+unchanged trigger rule, exact-window reader, implementation files, request and
+row hashes, no-substitution provider contract, and complete outcome lock while
+the private trigger namespace is empty. This manifest is uninspected and must
+be committed and pushed before independent reconstruction.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
