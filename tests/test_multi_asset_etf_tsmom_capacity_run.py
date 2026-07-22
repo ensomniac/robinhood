@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
+from pathlib import Path
 
 import multi_asset_etf_tsmom_capacity as contract
 import multi_asset_etf_tsmom_capacity_run as capacity_run
@@ -84,3 +85,48 @@ def test_capacity_state_never_publishes_prices_or_performance_metrics():
     assert "profit_factor" not in state
     assert "expectancy" not in state
     assert state["broker_actions"] == 0
+
+
+def test_completed_collection_preserves_actual_provider_request_count(
+    monkeypatch, tmp_path: Path
+):
+    inventory = {
+        "schema_version": 1,
+        "inventory_kind": "outcome-blind-daily-input-inventory",
+        "candidate_id": contract.CANDIDATE_ID,
+        "contract_sha256": "contract",
+        "symbols": [item[0] for item in contract.UNIVERSE],
+        "symbol_complete_session_counts": {
+            item[0]: 1027 for item in contract.UNIVERSE
+        },
+        "qualified_common_sessions": 1027,
+        "first_common_session": "2021-12-01",
+        "last_common_session": "2026-01-05",
+        "minimum_common_sessions": 1000,
+        "price_values_read": 0,
+        "signal_count": None,
+        "returns_computed": 0,
+        "market_outcomes_accessed": False,
+        "provider_requests": 0,
+        "broker_actions": 0,
+        "valid": True,
+    }
+    status_path = tmp_path / "collection.json"
+    status_path.write_text(
+        capacity_run.json.dumps(
+            {
+                **inventory,
+                "local_inventory_valid_before_collection": False,
+                "completed": [{"symbol": "SPY", "rows": 1027}],
+                "failures": [],
+                "provider_telemetry": {"submitted": 35, "completed": 35},
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(capacity_run, "COLLECTION_STATUS_PATH", status_path)
+    monkeypatch.setattr(capacity_run, "_load_contract_and_inspection", lambda: ({}, {}))
+    monkeypatch.setattr(capacity_run, "local_inventory", lambda _store: dict(inventory))
+    result = capacity_run.collect_inputs(store=object())
+    assert result["provider_requests"] == 35
+    assert result["local_inventory_valid_before_collection"] is False

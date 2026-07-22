@@ -1,0 +1,102 @@
+{
+  "broker_actions": 0,
+  "candidate_id": "multi-asset-etf-tsmom-v1",
+  "completed": [
+    {
+      "rows": 1027,
+      "symbol": "SPY"
+    },
+    {
+      "rows": 1027,
+      "symbol": "EFA"
+    },
+    {
+      "rows": 1027,
+      "symbol": "EEM"
+    },
+    {
+      "rows": 1027,
+      "symbol": "IEF"
+    },
+    {
+      "rows": 1027,
+      "symbol": "GLD"
+    },
+    {
+      "rows": 1027,
+      "symbol": "DBC"
+    },
+    {
+      "rows": 1027,
+      "symbol": "UUP"
+    }
+  ],
+  "contract_sha256": "a77cc1a26a926b57657c3226f311914c4f0b4b31e94dc8f3c50a0604fa16e063",
+  "failures": [],
+  "first_common_session": "2021-12-01",
+  "inventory_kind": "outcome-blind-daily-input-collection",
+  "last_common_session": "2026-01-05",
+  "local_inventory_valid_before_collection": false,
+  "market_outcomes_accessed": false,
+  "minimum_common_sessions": 1000,
+  "price_values_read": 0,
+  "provider_requests": 35,
+  "provider_telemetry": {
+    "completed": 35,
+    "completed_by_kind": {
+      "historical-bars": 35
+    },
+    "configured_max_in_flight": 4,
+    "contract_cache": {
+      "expired": 0,
+      "hits": 0,
+      "invalid": 0,
+      "misses": 0,
+      "namespace": "9fb701338054",
+      "resolved_ttl_seconds": 2592000.0,
+      "unresolvable_ttl_seconds": 86400.0,
+      "writes": 0
+    },
+    "elapsed_seconds": 57.92950404097792,
+    "failed": 0,
+    "failed_by_kind": {},
+    "in_flight": 0,
+    "max_request_seconds_by_kind": {
+      "historical-bars": 2.688285249983892
+    },
+    "minimum_request_spacing_seconds": 0.4,
+    "pacing_wait_seconds": 37.412727547693066,
+    "peak_in_flight": 4,
+    "request_seconds_by_kind": {
+      "historical-bars": 10.77138245786773
+    },
+    "slot_wait_seconds": 5.379004869610071e-05,
+    "submitted": 35,
+    "submitted_by_kind": {
+      "historical-bars": 35
+    }
+  },
+  "qualified_common_sessions": 1027,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "signal_count": null,
+  "symbol_complete_session_counts": {
+    "DBC": 1027,
+    "EEM": 1027,
+    "EFA": 1027,
+    "GLD": 1027,
+    "IEF": 1027,
+    "SPY": 1027,
+    "UUP": 1027
+  },
+  "symbols": [
+    "SPY",
+    "EFA",
+    "EEM",
+    "IEF",
+    "GLD",
+    "DBC",
+    "UUP"
+  ],
+  "valid": true
+}

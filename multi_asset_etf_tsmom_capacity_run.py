@@ -200,7 +200,21 @@ def collect_inputs(store: HistoricalDayStore | None = None) -> dict[str, Any]:
     completed: list[dict[str, Any]] = []
     failures: list[dict[str, str]] = []
     telemetry: dict[str, Any] = {"requests": 0, "skipped_existing_complete": True}
-    if not before["valid"]:
+    local_inventory_valid_before_collection = before["valid"]
+    if before["valid"] and COLLECTION_STATUS_PATH.is_file():
+        previous = _read_json(COLLECTION_STATUS_PATH)
+        if (
+            previous.get("contract_sha256") == before["contract_sha256"]
+            and previous.get("valid") is True
+            and isinstance(previous.get("provider_telemetry"), Mapping)
+        ):
+            completed = list(previous.get("completed", []))
+            failures = list(previous.get("failures", []))
+            telemetry = dict(previous["provider_telemetry"])
+            local_inventory_valid_before_collection = bool(
+                previous.get("local_inventory_valid_before_collection")
+            )
+    elif not before["valid"]:
         config = IBKRConfig.from_env()
         with IBKRHistoricalClient(config) as raw_client:
             recorder = RecordingHistoricalClient(raw_client, target)
@@ -234,11 +248,15 @@ def collect_inputs(store: HistoricalDayStore | None = None) -> dict[str, Any]:
     status = {
         **after,
         "inventory_kind": "outcome-blind-daily-input-collection",
-        "local_inventory_valid_before_collection": before["valid"],
+        "local_inventory_valid_before_collection": (
+            local_inventory_valid_before_collection
+        ),
         "completed": completed,
         "failures": failures,
         "provider_telemetry": telemetry,
-        "provider_requests": int(telemetry.get("requests", len(completed))),
+        "provider_requests": int(
+            telemetry.get("submitted", telemetry.get("requests", len(completed)))
+        ),
         "valid": after["valid"] and not failures,
     }
     _write_json(status, COLLECTION_STATUS_PATH)
