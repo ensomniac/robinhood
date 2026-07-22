@@ -211,6 +211,15 @@ capacity, privacy, zero-substitution, and closed-outcome rules. These
 implementations and tests must be committed and pushed before the private
 graph or public manifest is frozen.
 
+Selected-pair manifest `9cdb9fd0...5a511` is now independently
+`FROZEN_READY`. The separate reconstruction matches all 1,826 private rows,
+100 daily partitions, private graph hash `173991d5...5b0137`, daily-shortlist
+set hash `d22db8ad...8fbf4`, and scanner-detail hash
+`380567f1...5fd57`. It finds zero downstream pre-entry artifact, zero
+substitution, no public selected identity, and no outcome access. This boundary
+must be committed and pushed before a separately frozen primary-source and
+causal-input graph may access any selected-symbol detail.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

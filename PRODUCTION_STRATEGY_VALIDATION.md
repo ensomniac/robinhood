@@ -563,6 +563,14 @@ unchanged base implementations; it keeps exact identities outside Git and
 allows no downstream causal artifact or outcome. The implementation must be
 published before the graph is frozen and inspected.
 
+That graph now independently earns `FROZEN_READY` as manifest
+`9cdb9fd0...5a511`. The inspector rebuilds all 1,826 private rows across 100
+dates, graph hash `173991d5...5b0137`, daily-shortlist set hash
+`d22db8ad...8fbf4`, and source-detail hash `380567f1...5fd57`; exact selected
+identities remain outside Git. Zero downstream artifact, substitution, causal
+input, or outcome exists. A separate source/causal contract must be frozen and
+published next.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
