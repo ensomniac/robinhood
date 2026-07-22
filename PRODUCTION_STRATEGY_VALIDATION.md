@@ -1114,6 +1114,15 @@ private frozen selection and no response, collection, trigger, post-entry, or
 outcome artifact. It is uninspected and must be committed and pushed before
 independent zero-state reconstruction; provider access remains forbidden.
 
+Independent reconstruction now marks pre-entry manifest
+`45e9441b...52500` `FROZEN_READY`. All 23 verified-positive pairs, 20 sessions,
+86 requests, private selection, source and implementation hashes, capacity,
+privacy, and outcome locks match. The target still contains exactly one frozen
+selection and zero terminal wrappers, collection indexes, or trigger indexes.
+Publication authorizes only the frozen causal collection; fills, post-entry
+rows, returns, outcomes, alpha, maturity, production, and broker actions remain
+blocked.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
