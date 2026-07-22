@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import cross_sectional_capacity_stage0 as stage0
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_both_frozen_cross_sectional_variants_are_capacity_infeasible():
@@ -60,3 +66,26 @@ def test_capacity_inspection_never_authorizes_return_access(tmp_path):
     assert inspection["returns_computed"] == 0
     assert inspection["market_outcomes_accessed"] is False
     assert inspection["valid"] is True
+
+
+def test_published_reversal_activation_binds_the_structural_ceiling():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/activations").glob(
+            "two-to-three-day-cross-sectional-reversal-v1-*.json"
+        )
+    )
+    assert len(matches) == 1
+    activation = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert activation == stage0.build_activation(activation["variant_id"])
+    assert activation["manifest_sha256"] == stage0.common._self_hash(
+        activation, "manifest_sha256"
+    )
+    assert activation["variant_ordinal"] == 4
+    assert activation["base_rules_hash"] == (
+        "4795592f6053c73bfced4521b94dfd3a6f4e0c6ea5064b76dde48afb6c63e0d6"
+    )
+    assert activation["capacity_contract"]["maximum_possible_closed_signals"] == 24
+    assert activation["capacity_contract"]["minimum_required_closed_signals"] == 30
+    assert activation["provider_requests_authorized"] is False
+    assert activation["return_evaluation_authorized_before_inspection"] is False
+    assert activation["maturity_effect"] == "NONE"

@@ -791,6 +791,14 @@ After an independently committed capacity inspection, it can retire only the
 exact capacity-infeasible version; it cannot repair the date set, count extra
 shortlisted names as executions, or contribute maturity evidence.
 
+Reversal activation
+`0f17a525b514518b764dade4e6f6b6ec62cbf85c766a30d9b3b78ff55169cf54`
+binds the fourth variant's exact rules hash, all 24 membership dates, 118,636
+member-date rows, and 5,457 unique symbols. The frozen one-entry-per-date limit
+proves a maximum of 24 closed signals and a six-signal Stage 0 shortfall. No
+market data was requested and no outcome was accessed; the structural result
+remains blocked until its capacity inspection is committed and pushed.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the

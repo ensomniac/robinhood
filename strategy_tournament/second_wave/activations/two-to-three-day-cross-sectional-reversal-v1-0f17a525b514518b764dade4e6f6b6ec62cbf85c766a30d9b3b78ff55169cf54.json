@@ -1,0 +1,81 @@
+{
+  "activation_rules_hash": "11ed794d0297e7a465b5129aad0e48efd44c0c424de0644a3aafdca060260253",
+  "base_rules_hash": "4795592f6053c73bfced4521b94dfd3a6f4e0c6ea5064b76dde48afb6c63e0d6",
+  "broker_actions_authorized": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v1",
+  "capacity_contract": {
+    "closed_signal_shortfall": 6,
+    "maximum_new_entries_per_target_date": 1,
+    "maximum_possible_closed_signals": 24,
+    "minimum_required_closed_signals": 30,
+    "proof": "target_date_count multiplied by maximum_new_entries_per_day; no market outcome can increase this preregistered upper bound",
+    "stage0_capacity_possible": false,
+    "target_date_count": 24
+  },
+  "claim_scope": "FALSIFICATION_ONLY",
+  "confirmation_evidence_eligible": false,
+  "contract_kind": "stage0-capacity-activation",
+  "denominator": {
+    "decision_dates": 24,
+    "maximum_strategy_entries_per_day": 1,
+    "preserve_unevaluated_dates": true
+  },
+  "development_evidence_eligible": false,
+  "implementation_sha256": "44236528cc58da9710339f5750621c21a541dac0e0f2504b16c7a57745592de7",
+  "manifest_sha256": "0f17a525b514518b764dade4e6f6b6ec62cbf85c766a30d9b3b78ff55169cf54",
+  "maturity_effect": "NONE",
+  "mechanism_family": "two-to-three-day-cross-sectional-reversal",
+  "outcome_contract": {
+    "entry": "next XNYS session open plus adverse per-side cost",
+    "maximum_concurrent_positions": 1,
+    "maximum_holding_trading_days": 3,
+    "maximum_new_entries_per_day": 1,
+    "primary_cost_bps_per_side": 5,
+    "protective_stop": "good-til-canceled stop modeled from entry; gaps fill at the worse of session open or stop",
+    "same_session_ambiguity": "stop_first",
+    "signal_information": "completed split-consistent regular-session daily bars only",
+    "stop": "1.5 times signal-session ATR14 below entry",
+    "stress_cost_bps_per_side": [
+      10,
+      20
+    ],
+    "time_exit": "third trading-session close after entry"
+  },
+  "outcomes_previously_accessed_for_exact_rules": false,
+  "provider_requests_authorized": false,
+  "return_evaluation_authorized_before_inspection": false,
+  "schema_version": 1,
+  "selection_contract": {
+    "decision_time": "after the completed session preceding each target date",
+    "maximum_three_session_return_fraction": -0.08,
+    "minimum_price": 5,
+    "minimum_prior_20_session_average_dollar_volume": 20000000,
+    "selection": "lowest three-session return; symbol ascending tie-break"
+  },
+  "slate_inspection_sha256": "3c12ba6f0ea4a49db5888904015a73d42f54cf1da2a43447ece8b741d1e2c6c0",
+  "slate_manifest_sha256": "4c513f9de6417a48dccae5bf5ce1e5c59d68a1d2d0b6e65bba41a3f4a5cac822",
+  "source_selection": {
+    "market_data_requested": false,
+    "market_outcomes_accessed": false,
+    "membership_dates": 24,
+    "membership_file_sha256": "30968a8c11a44407091218285366b086c275f6f2f6dde678a5c71357c7b48c53",
+    "membership_path": "_derived/cross_sectional_momentum_stage0/dataset-cross-sectional-momentum-stage0-2026-07-21-v1/frozen-membership.json.gz",
+    "membership_rows": 118636,
+    "provider": "Massive",
+    "provider_substitution": false,
+    "unique_symbols": 5457
+  },
+  "stage0_gate": {
+    "effect": "screening survival only; never PILOT_READY or maturity evidence",
+    "maximum_drawdown_r": 8,
+    "minimum_closed_signals": 30,
+    "minimum_profit_factor": 1.1,
+    "require_positive_20bps_total_r": true,
+    "require_positive_expectancy": true,
+    "rule_violations": 0
+  },
+  "strategy_version": "0.1.0-stage0",
+  "tournament_wave": 2,
+  "variant_id": "two-to-three-day-cross-sectional-reversal-v1",
+  "variant_ordinal": 4
+}
