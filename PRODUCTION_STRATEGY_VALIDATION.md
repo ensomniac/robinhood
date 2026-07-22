@@ -952,6 +952,17 @@ still empty, identifiers remain private, substitutions are forbidden, and no
 outcome is permitted. Publication authorizes only an independently frozen
 no-outcome causal/source request graph.
 
+The isolated third-tranche catalyst/source contract is now implemented for
+the `FROZEN_READY` pair-v2 input and unchanged scanner-v1 corpus. It preserves
+the generic primary-source rules and parser while binding its own private
+source namespace, adapter, independent inspector, point-in-time master source,
+strategy attestation, and public documentation surface. Its publication proof
+uses the repaired pushed-ancestor and exact-historical-blob semantics from the
+outset. Four focused tests cover identity routing, scoped base configuration,
+closed-source freeze/inspection, and historical publication verification. The
+implementation must be committed and pushed before its zero-artifact manifest
+is frozen; selected-symbol source access and outcomes remain forbidden.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
