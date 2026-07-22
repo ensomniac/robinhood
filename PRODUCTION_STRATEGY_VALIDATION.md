@@ -1226,6 +1226,15 @@ and a zero-artifact target namespace. The status remains
 outcome, alpha, maturity, production-readiness, or broker claim is permitted
 until independent contract inspection is published from a later commit.
 
+Independent qualification-contract reconstruction now marks manifest
+`96a6119e...8b3c` `FROZEN_READY`. It rebuilds the source lineage, every committed
+implementation hash, all 60 frozen trigger decisions, all 52 session
+denominators, the exact request boundaries and provider configuration, the
+privacy boundary, and the complete outcome lock while rechecking zero target
+artifacts. This authorizes only the frozen preentry provider collection; fills,
+post-entry prices, returns, outcomes, alpha, maturity, production readiness,
+live authorization, and broker claims remain blocked.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
