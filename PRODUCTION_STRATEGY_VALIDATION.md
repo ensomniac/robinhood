@@ -890,6 +890,17 @@ privacy, zero-state, and outcome-lock binding. The scanner dataset remains
 uncollected and `COLLECTING`; this inspection must be committed and pushed
 before reusable rows may materialize or Alpaca may be contacted.
 
+The exact third-tranche scanner corpus is now independently `READY`.
+Reconstruction verifies all 502 frozen source sessions, 2,648,865 canonical
+documents, 537,918 point-in-time universe evaluations, 3,062 coarse-eligible
+rows, and 1,781 dynamic selections across the unchanged 100 dates. The run
+made 6,803 Alpaca SIP requests with zero retries and reused 463 compatible
+sessions. Summary hash `6068140c...ba28`, private-detail hash
+`9ed5608a...7b9`, and inspection hash `946018b7...8b95` bind the complete
+result. This scanner evidence authorizes only an exact selected-pair freeze;
+causal details, outcomes, alpha, maturity, production, and broker actions
+remain blocked.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
