@@ -972,6 +972,16 @@ namespace, capacity, zero target artifacts, no substitution, and the outcome
 lock. The uninspected manifest must be committed and pushed before independent
 zero-state reconstruction; source requests remain forbidden.
 
+Source-contract v1 inspection then failed closed on its mutable documentation
+binding: this campaign document necessarily changed when manifest
+`2d6803ec...a58da` was published, so current bytes no longer matched the
+pre-freeze `selection_doc` hash. No source or outcome was accessed, and v1 is
+preserved as `INSPECTION_BLOCKED`. Source-contract v2 keeps the exact pair-v2
+denominator, scanner-v1 source, rules, parser, and outcome locks, while binding
+a dedicated immutable `source-contract-boundary-v2.md` and isolated private
+namespace/status. Its implementation and immutable note must be committed and
+pushed before v2 freeze; neither pair selection nor source rules may change.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
