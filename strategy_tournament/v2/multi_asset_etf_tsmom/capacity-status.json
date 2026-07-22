@@ -1,0 +1,12 @@
+{
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "multi-asset-etf-tsmom-v1",
+  "capacity_signal_count_permitted": false,
+  "contract_sha256": "a77cc1a26a926b57657c3226f311914c4f0b4b31e94dc8f3c50a0604fa16e063",
+  "outcome_access_permitted": false,
+  "provider_access_permitted": false,
+  "schema_version": 1,
+  "status": "CAPACITY_CONTRACT_PENDING_INSPECTION",
+  "valid": false
+}

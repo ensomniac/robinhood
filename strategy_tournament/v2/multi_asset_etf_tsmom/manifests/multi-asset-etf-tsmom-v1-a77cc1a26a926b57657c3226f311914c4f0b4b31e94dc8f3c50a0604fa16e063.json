@@ -1,0 +1,147 @@
+{
+  "access_contract": {
+    "broker_actions_permitted": false,
+    "capacity_signal_count_after_inspection_permitted": true,
+    "entry_fill_access_permitted": false,
+    "exit_or_stop_access_permitted": false,
+    "forward_return_computation_permitted": false,
+    "maturity_effect": "NONE",
+    "provider_collection_after_inspection_permitted": true,
+    "provider_collection_before_inspection_permitted": false,
+    "stage0_outcome_access_permitted": false
+  },
+  "artifact_kind": "outcome-blind-capacity-contract",
+  "authorization_sha256": "6a7e27481ff80cd3e457d972c10347ea831801d6532fdc34b9e9fb0453c0fd6e",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "multi-asset-etf-tsmom-v1",
+  "capacity_gate": {
+    "capacity_pass_rule": "causal_long_signals_at_least minimum_total_historical_signals",
+    "minimum_stage0_signals": 30,
+    "minimum_total_historical_signals": 50,
+    "negative_disposition": "retire this exact candidate without parameter repair on this corpus"
+  },
+  "claim_limit": "This artifact freezes only a causal capacity test. It contains no signal count, fill, exit, return, profit factor, or maturity evidence.",
+  "contract_sha256": "a77cc1a26a926b57657c3226f311914c4f0b4b31e94dc8f3c50a0604fa16e063",
+  "distinctness_contract": {
+    "cross_sectional_ranking_used": false,
+    "failed_v1_parameters_reused_or_repaired": false,
+    "opening_range_or_intraday_pullback_used": false,
+    "sector_rotation_used": false,
+    "uses_own_price_history_only": true
+  },
+  "implementation_and_authority_hashes": {
+    "PORTFOLIO_VALIDATION_V2.md": "0c88db58e76bfc7a146ae497b80ece6e6b5f83ef1f44d3792d6b6d6a3ea45e7f",
+    "multi_asset_etf_tsmom_capacity.py": "91152ff5f37a69aa940dcb19dec0fd92a65ac8a95456d629dfd80e9b45c0bd0c",
+    "multi_asset_etf_tsmom_capacity_inspection.py": "056345120ee2e59336417c88bdf696d2b3c6bf48c22998048ef6cbc4457c66be",
+    "portfolio_config.toml": "1d38f1329bb1c3bee376c7eed7c22e503ce250532c1d5c0e3b23299ae85284fc",
+    "portfolio_maturity.py": "e8bbb99d9df8bbfb2e00b5d9f8340aa83a406b0dcbb1abcf9ec9c27271d19016",
+    "strategy_tournament/successor_proposal/authorizations/multi-strategy-portfolio-validation-v2-authorization-6a7e27481ff80cd3e457d972c10347ea831801d6532fdc34b9e9fb0453c0fd6e.json": "6715b4078e30bc88b3f5d3e05bd3c4608736229b2cb6529849d57114399c360a"
+  },
+  "iso_week": "2026-W30",
+  "maximum_new_mechanism_families_this_iso_week": 3,
+  "mechanism": "long-only persistence in each scheduled ETF's own 252-session price history",
+  "mechanism_family": "multi-asset-etf-time-series-momentum",
+  "missing_data_contract": {
+    "alternate_symbol_or_date_substitution_permitted": false,
+    "incomplete_common_session": "exclude_from_common_session_calendar",
+    "minimum_lookback_must_be_exact": true,
+    "missing_scheduled_decision_or_lookback": "ineligible_preserve_denominator"
+  },
+  "new_mechanism_family_slot": 1,
+  "objective": "FIRST_PILOT_READY_LIVE_STARTED",
+  "schedule_contract": {
+    "anchor_iso_week_monday": "2023-01-02",
+    "date_or_symbol_substitution_permitted": false,
+    "decision_session_rule": "last complete common regular session before the opportunity session",
+    "last_iso_week_monday": "2025-12-29",
+    "maximum_candidate_opportunities_per_week": 1,
+    "one_candidate_opportunity_per_iso_week": true,
+    "opportunity_session_rule": "first complete common regular session in the scheduled ISO week",
+    "scheduled_symbol_rule": "whole ISO weeks since anchor modulo the frozen universe order"
+  },
+  "schema_version": 1,
+  "signal_contract": {
+    "cross_asset_values_used": false,
+    "decision_close_available_before_candidate_entry": true,
+    "formula": "decision_close / close_252_complete_common_sessions_ago - 1",
+    "future_bar_access_permitted": false,
+    "long_signal_rule": "strictly_greater_than_zero",
+    "lookback_sessions": 252,
+    "signal_threshold_tuning_permitted": false
+  },
+  "source_contract": {
+    "adjustment": "provider_adjusted_unknown_basis",
+    "channel": "trades",
+    "collection_end_exclusive": "2026-01-06",
+    "collection_start": "2021-12-01",
+    "feed": "smart",
+    "historical_store_outside_repository": true,
+    "permitted_capacity_fields": [
+      "timestamp",
+      "close"
+    ],
+    "provider": "IBKR",
+    "provider_substitution_permitted": false,
+    "regular_trading_hours_only": true,
+    "symbols": [
+      "SPY",
+      "EFA",
+      "EEM",
+      "IEF",
+      "GLD",
+      "DBC",
+      "UUP"
+    ],
+    "timeframe": "1d"
+  },
+  "stage0_handoff": {
+    "capacity_result_eligible_for_maturity": false,
+    "cost_grid_bps_per_side": [
+      5,
+      10,
+      20
+    ],
+    "full_rules_and_outcome_contract_frozen_after_capacity_pass": true,
+    "independent_zero-result_inspection_required": true,
+    "maximum_holding_sessions": 5
+  },
+  "strategy_version": "2026-07-22-multi-asset-etf-tsmom-v1",
+  "theme_id": "multi-asset-etf-time-series-momentum",
+  "universe": [
+    {
+      "asset_class": "us-large-cap-equity",
+      "symbol": "SPY",
+      "weighting": "not-applicable"
+    },
+    {
+      "asset_class": "developed-ex-us-equity",
+      "symbol": "EFA",
+      "weighting": "not-applicable"
+    },
+    {
+      "asset_class": "emerging-markets-equity",
+      "symbol": "EEM",
+      "weighting": "not-applicable"
+    },
+    {
+      "asset_class": "intermediate-us-treasury",
+      "symbol": "IEF",
+      "weighting": "not-applicable"
+    },
+    {
+      "asset_class": "gold",
+      "symbol": "GLD",
+      "weighting": "not-applicable"
+    },
+    {
+      "asset_class": "broad-commodities",
+      "symbol": "DBC",
+      "weighting": "not-applicable"
+    },
+    {
+      "asset_class": "us-dollar",
+      "symbol": "UUP",
+      "weighting": "not-applicable"
+    }
+  ]
+}
