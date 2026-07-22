@@ -1012,6 +1012,17 @@ inspection and a published `FROZEN_READY` status remain mandatory before any
 SEC access, and documents, triggers, outcomes, alpha, maturity, production, and
 broker actions remain blocked.
 
+Independent zero-state reconstruction now marks SEC manifest
+`85ba7b49...8697e` `FROZEN_READY`. It reproduces all 1,781 pair/master joins,
+1,778 CIK-present rows, three retained missing-CIK rows, nine listing-scoped
+joins, the 538-request private graph, daily aggregates, lineage, capacity, and
+every request and outcome lock. The SEC graph covers 99 dates with at least one
+selected pair inside the frozen 100-date corpus; this corrects the initial
+registry event's `requested_dates` aggregate without changing any identity or
+request. The response namespace remains empty. Only the separately published
+bounded submissions collector may proceed; supplemental files, primary
+documents, semantics, triggers, and outcomes remain locked.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
