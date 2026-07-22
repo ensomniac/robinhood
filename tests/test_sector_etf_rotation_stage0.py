@@ -165,10 +165,23 @@ def test_published_result_fails_profit_factor_drawdown_and_cost_stress():
     assert result["maturity_effect"] == "NONE"
 
 
-def test_result_inspection_is_absent_before_independent_review():
+def test_published_result_inspection_rebuilds_failed_disposition():
     matches = sorted(
         (ROOT / "strategy_tournament/second_wave/inspections").glob(
             "sector-etf-rotation-v1-result-*.json"
         )
     )
-    assert matches == []
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["result_sha256"] == (
+        "29ea58ac2b950c25ee7f0d17246567daf3eac84a11cddcd9f0f873da08d1a646"
+    )
+    assert inspection["closed_signals"] == 149
+    assert inspection["stage0_survived"] is False
+    assert inspection["provider_requests"] == 0
+    assert inspection["broker_actions"] == 0
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["valid"] is True

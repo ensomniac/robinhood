@@ -1,0 +1,16 @@
+{
+  "broker_actions": 0,
+  "closed_signals": 149,
+  "input_inspection_sha256": "ae9133091afe877306589961ee1e6ad2383d698119a244b8e9e875add1805366",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "563155de66061d57761fa18262893d435bb5d6d038bb9760791f92e127d43c20",
+  "manifest_sha256": "5360bfd6c12065169975ec828a813f7e6f5042d87979131542b39659ca5df632",
+  "maturity_effect": "NONE",
+  "provider_requests": 0,
+  "result_file_sha256": "41146bffec45eafd39195dd185ef86a77c21b2a1b9e4b04a6459b6c5382c856b",
+  "result_sha256": "29ea58ac2b950c25ee7f0d17246567daf3eac84a11cddcd9f0f873da08d1a646",
+  "schema_version": 1,
+  "stage0_survived": false,
+  "valid": true,
+  "variant_id": "sector-etf-rotation-v1"
+}

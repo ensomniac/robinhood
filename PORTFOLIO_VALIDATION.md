@@ -710,8 +710,10 @@ The one authorized evaluation produced 149 closed signals across 752 decision
 sessions. At 5 bps per side it returned +0.0062R expectancy, 1.0164 profit
 factor, +0.9300R total, and 8.6322R maximum drawdown. At 20 bps per side it
 lost 16.5468R. The exact variant fails profit factor, drawdown, and cost-stress
-gates and remains outside maturity. Its raw result awaits independent rebuild
-before permanent retirement.
+gates and remains outside maturity. Independent inspection rebuilt all 149
+signals and the failed disposition with zero provider or broker calls. The exact
+variant is permanently retired; broad ETF trend pullback is next in the frozen
+queue.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live

@@ -350,10 +350,11 @@ def validate_stage0_survivor_binding(
             raise PortfolioFunnelError(
                 f"source Stage 0 result inspection {field} drifted"
             )
+    wave = inspection.get("tournament_wave")
     published_slates = sorted(
         root.glob("strategy_tournament/manifests/portfolio-stage0-slate-*.json")
     )
-    if variant_id in FIRST_WAVE_ORDER and published_slates:
+    if wave == 1 and variant_id in FIRST_WAVE_ORDER and published_slates:
         matches = [
             item
             for item in load_stage0_dispositions(root)
@@ -364,10 +365,31 @@ def validate_stage0_survivor_binding(
             raise PortfolioFunnelError(
                 "maturity inspection does not bind one published Stage 0 survivor"
             )
-    elif inspection.get("tournament_wave") == 1 and published_slates:
+    elif wave == 1 and published_slates:
         raise PortfolioFunnelError(
             "wave-one maturity inspection names a variant outside the frozen slate"
         )
+    elif wave == 2:
+        published_second_wave_slates = sorted(
+            root.glob(
+                "strategy_tournament/second_wave/manifests/"
+                "portfolio-stage0-second-wave-slate-*.json"
+            )
+        )
+        if not published_second_wave_slates:
+            raise PortfolioFunnelError(
+                "wave-two maturity inspection has no frozen second-wave slate"
+            )
+        matches = [
+            item
+            for item in load_second_wave_dispositions(root)
+            if item["variant_id"] == variant_id
+            and item["stage0_result_sha256"] == result_sha256
+        ]
+        if len(matches) != 1 or matches[0]["status"] != "SURVIVED":
+            raise PortfolioFunnelError(
+                "maturity inspection does not bind one published wave-two survivor"
+            )
 
 
 def _candidate_phase(assessment: Mapping[str, Any]) -> str:
@@ -708,6 +730,116 @@ def load_second_wave_slate_status(*, root: Path = PROJECT_ROOT) -> dict[str, Any
     }
 
 
+def load_second_wave_dispositions(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
+    """Return independently checked, ordered second-wave Stage 0 dispositions."""
+
+    slate_status = load_second_wave_slate_status(root=root)
+    if not slate_status["inspected"]:
+        return []
+    manifest_path = root / slate_status["manifest_paths"][0]
+    manifest = _read_json(manifest_path)
+    gate = manifest.get("stage0_falsification")
+    variants_value = manifest.get("variants")
+    if not isinstance(gate, Mapping) or not isinstance(variants_value, list):
+        raise PortfolioFunnelError("second-wave Stage 0 contract is incomplete")
+    variants = {str(item.get("variant_id")): dict(item) for item in variants_value}
+    dispositions: list[dict[str, Any]] = []
+    inspection_dir = root / "strategy_tournament" / "second_wave" / "inspections"
+    for inspection_path in sorted(inspection_dir.glob("*-result-*.json")):
+        inspection = _read_json(inspection_path)
+        if inspection.get("inspection_kind") != "stage0-result-inspection":
+            continue
+        if inspection.get("inspection_sha256") != _self_hash(
+            inspection, "inspection_sha256"
+        ):
+            raise PortfolioFunnelError(
+                f"second-wave result inspection hash is invalid: {inspection_path.name}"
+            )
+        if inspection.get("valid") is not True:
+            raise PortfolioFunnelError(
+                f"second-wave result inspection is not valid: {inspection_path.name}"
+            )
+        variant_id = str(inspection.get("variant_id"))
+        if variant_id not in variants:
+            raise PortfolioFunnelError(
+                f"second-wave result names an unknown variant: {variant_id}"
+            )
+        result_sha256 = str(inspection.get("result_sha256"))
+        result_path = _one_path(
+            root,
+            f"research_results/*-stage0-{result_sha256}.json",
+            f"second-wave Stage 0 result {result_sha256}",
+        )
+        result = _read_json(result_path)
+        if result.get("result_sha256") != _self_hash(result, "result_sha256"):
+            raise PortfolioFunnelError(
+                f"second-wave result content hash is invalid: {result_path.name}"
+            )
+        if _file_hash(result_path) != inspection.get("result_file_sha256"):
+            raise PortfolioFunnelError(
+                f"second-wave result file hash drifted: {result_path.name}"
+            )
+        variant = variants[variant_id]
+        required_result = {
+            "variant_id": variant_id,
+            "strategy_version": variant.get("version"),
+            "mechanism_family": variant.get("mechanism_family"),
+            "base_rules_hash": variant.get("rules_hash"),
+            "claim_scope": "FALSIFICATION_ONLY",
+            "maturity_effect": "NONE",
+            "development_evidence_eligible": False,
+            "confirmation_evidence_eligible": False,
+        }
+        for field, expected in required_result.items():
+            if result.get(field) != expected:
+                raise PortfolioFunnelError(
+                    f"second-wave Stage 0 result {field} drifted for {variant_id}"
+                )
+        blockers = _stage0_blockers(result, gate)
+        survived = not blockers
+        required_inspection = {
+            "variant_id": variant_id,
+            "result_sha256": result_sha256,
+            "stage0_survived": survived,
+            "maturity_effect": "NONE",
+            "valid": True,
+        }
+        for field, expected in required_inspection.items():
+            if inspection.get(field) != expected:
+                raise PortfolioFunnelError(
+                    f"second-wave Stage 0 inspection {field} drifted"
+                )
+        if result.get("stage0_blockers") != blockers:
+            raise PortfolioFunnelError("second-wave Stage 0 blockers do not rebuild")
+        if result.get("stage0_survived") is not survived:
+            raise PortfolioFunnelError("second-wave Stage 0 disposition does not rebuild")
+        dispositions.append(
+            {
+                "variant_id": variant_id,
+                "variant_ordinal": [item[0] for item in SECOND_WAVE].index(
+                    variant_id
+                )
+                + 1,
+                "mechanism_family": str(variant["mechanism_family"]),
+                "rules_hash": str(variant["rules_hash"]),
+                "stage0_result_sha256": result_sha256,
+                "result_path": str(result_path.relative_to(root)),
+                "result_inspection_path": str(inspection_path.relative_to(root)),
+                "closed_signals": int(result["denominator"]["closed_signals"]),
+                "status": "SURVIVED" if survived else "RETIRED",
+                "blockers": blockers,
+            }
+        )
+    by_disposition = {item["variant_id"]: item for item in dispositions}
+    if len(by_disposition) != len(dispositions):
+        raise PortfolioFunnelError("a second-wave variant has multiple dispositions")
+    frozen_order = [item[0] for item in SECOND_WAVE]
+    ordered_ids = [item for item in frozen_order if item in by_disposition]
+    if ordered_ids != frozen_order[: len(ordered_ids)]:
+        raise PortfolioFunnelError("second-wave dispositions skipped the frozen queue")
+    return [by_disposition[item] for item in ordered_ids]
+
+
 def build_funnel_status(
     maturity_report: Mapping[str, Any], *, root: Path = PROJECT_ROOT
 ) -> dict[str, Any]:
@@ -724,7 +856,14 @@ def build_funnel_status(
             item for item in FIRST_WAVE_ORDER if item not in disposed_ids
         )
     ]
-    survivors = [item for item in dispositions if item["status"] == "SURVIVED"]
+    first_wave_survivors = [
+        item for item in dispositions if item["status"] == "SURVIVED"
+    ]
+    second_wave_dispositions = load_second_wave_dispositions(root)
+    second_wave_survivors = [
+        item for item in second_wave_dispositions if item["status"] == "SURVIVED"
+    ]
+    survivors = [*first_wave_survivors, *second_wave_survivors]
     assessments = maturity_report.get("strategies")
     if not isinstance(assessments, list):
         raise PortfolioFunnelError("portfolio maturity report lacks strategies")
@@ -784,24 +923,34 @@ def build_funnel_status(
     first_wave_complete = len(dispositions) == len(FIRST_WAVE_ORDER)
     taxonomy_status = load_failure_taxonomy_status(maturity_report, root=root)
     second_wave_slate = load_second_wave_slate_status(root=root)
-    second_wave_required = first_wave_complete and len(survivors) < int(
+    second_wave_required = first_wave_complete and len(first_wave_survivors) < int(
         maturity_report.get("target_pilot_ready_strategies", 3)
     )
     second_wave_open = second_wave_required and taxonomy_status["inspected"]
     second_wave_outcome_access_open = (
         second_wave_open and second_wave_slate["inspected"]
     )
+    second_wave_disposed_ids = {
+        item["variant_id"] for item in second_wave_dispositions
+    }
     second_wave_queue = [
-        {"variant_id": variant_id, "mechanism_family": family}
-        for variant_id, family in SECOND_WAVE
+        {
+            "queue_position": index + 1,
+            "variant_id": variant_id,
+            "mechanism_family": family,
+        }
+        for index, (variant_id, family) in enumerate(
+            item for item in SECOND_WAVE if item[0] not in second_wave_disposed_ids
+        )
     ]
     stage0_lane = queue[0] if queue else None
     if stage0_lane is None and second_wave_outcome_access_open:
         stage0_lane = second_wave_queue[0]
     notification_reasons: list[str] = []
-    if dispositions and len(dispositions) % 3 == 0:
+    all_dispositions = [*dispositions, *second_wave_dispositions]
+    if all_dispositions and len(all_dispositions) % 3 == 0:
         notification_reasons.append("three Stage 0 dispositions completed")
-    if dispositions and dispositions[-1]["status"] == "SURVIVED":
+    if all_dispositions and all_dispositions[-1]["status"] == "SURVIVED":
         notification_reasons.append("new Stage 0 survivor")
     ready_count = int(maturity_report.get("pilot_ready_strategy_count", 0))
     live_started = int(maturity_report.get("live_started_strategy_count", 0))
@@ -841,6 +990,12 @@ def build_funnel_status(
             ],
             "slate_paths": [*second_wave_slate["manifest_paths"]],
             "slate_inspection_paths": [*second_wave_slate["inspection_paths"]],
+            "dispositions": second_wave_dispositions,
+            "disposed_count": len(second_wave_dispositions),
+            "retired_count": sum(
+                item["status"] == "RETIRED" for item in second_wave_dispositions
+            ),
+            "survivor_count": len(second_wave_survivors),
             "candidate_queue": second_wave_queue,
         },
         "lanes": {
@@ -864,11 +1019,23 @@ def audit_funnel(
     maturity_report: Mapping[str, Any], *, root: Path = PROJECT_ROOT
 ) -> dict[str, Any]:
     status = build_funnel_status(maturity_report, root=root)
+    disposed = (
+        status["first_wave"]["disposed_count"]
+        + status["second_wave"]["disposed_count"]
+    )
+    retired = (
+        status["first_wave"]["retired_count"]
+        + status["second_wave"]["retired_count"]
+    )
+    survivors = (
+        status["first_wave"]["survivor_count"]
+        + status["second_wave"]["survivor_count"]
+    )
     return {
         "valid": True,
-        "disposed_stage0_variants": status["first_wave"]["disposed_count"],
-        "retired_stage0_variants": status["first_wave"]["retired_count"],
-        "stage0_survivors": status["first_wave"]["survivor_count"],
+        "disposed_stage0_variants": disposed,
+        "retired_stage0_variants": retired,
+        "stage0_survivors": survivors,
         "pilot_ready_progress": status["progress"],
     }
 
