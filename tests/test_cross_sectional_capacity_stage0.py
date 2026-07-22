@@ -1,0 +1,62 @@
+from __future__ import annotations
+
+import cross_sectional_capacity_stage0 as stage0
+
+
+def test_both_frozen_cross_sectional_variants_are_capacity_infeasible():
+    for variant_id, ordinal in stage0.VARIANT_ORDINALS.items():
+        activation = stage0.build_activation(variant_id)
+        assert activation["variant_ordinal"] == ordinal
+        assert activation["implementation_sha256"] == stage0.sha256_file(
+            stage0.Path(stage0.__file__).resolve()
+        )
+        capacity = activation["capacity_contract"]
+        assert capacity["target_date_count"] == 24
+        assert capacity["maximum_new_entries_per_target_date"] == 1
+        assert capacity["maximum_possible_closed_signals"] == 24
+        assert capacity["minimum_required_closed_signals"] == 30
+        assert capacity["closed_signal_shortfall"] == 6
+        assert capacity["stage0_capacity_possible"] is False
+        assert activation["source_selection"]["membership_dates"] == 24
+        assert activation["source_selection"]["market_outcomes_accessed"] is False
+        assert activation["provider_requests_authorized"] is False
+        assert activation["maturity_effect"] == "NONE"
+
+
+def test_capacity_result_is_a_standard_failed_stage0_disposition(tmp_path):
+    variant_id = "two-to-three-day-cross-sectional-reversal-v1"
+    activation = stage0.build_activation(variant_id)
+    activation_path = tmp_path / "activation.json"
+    stage0.daily._write_json(activation, activation_path)
+    inspection = stage0.inspect_activation(activation_path)
+    inspection_path = tmp_path / "inspection.json"
+    stage0.daily._write_json(inspection, inspection_path)
+    result = stage0.build_result(
+        activation_path, inspection_path, require_published=False
+    )
+    assert result["denominator"]["closed_signals"] == 0
+    assert result["denominator"]["maximum_possible_closed_signals"] == 24
+    assert result["primary_5bps"]["expectancy_r"] is None
+    assert result["stress"]["20"]["total_r"] == 0
+    assert result["stage0_blockers"] == [
+        "closed signals are below the Stage 0 minimum",
+        "primary expectancy is not positive",
+        "primary profit factor is below the Stage 0 minimum",
+        "20 bps-per-side total R is not positive",
+    ]
+    assert result["stage0_survived"] is False
+    assert result["market_outcomes_accessed"] is False
+    assert result["maturity_effect"] == "NONE"
+
+
+def test_capacity_inspection_never_authorizes_return_access(tmp_path):
+    activation = stage0.build_activation("five-day-52-week-high-continuation-v1")
+    path = tmp_path / "activation.json"
+    stage0.daily._write_json(activation, path)
+    inspection = stage0.inspect_activation(path)
+    assert inspection["capacity_evaluation_authorized"] is True
+    assert inspection["return_evaluation_authorized"] is False
+    assert inspection["provider_requests"] == 0
+    assert inspection["returns_computed"] == 0
+    assert inspection["market_outcomes_accessed"] is False
+    assert inspection["valid"] is True

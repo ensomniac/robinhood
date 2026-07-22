@@ -781,6 +781,16 @@ input, including all 744 eligible evaluation dates. It made zero provider or
 broker calls, computed zero returns, and authorizes exactly the frozen Stage 0
 evaluation after the inspection is committed and pushed.
 
+`cross_sectional_capacity_stage0.py` implements a zero-outcome capacity screen
+for the fourth and fifth frozen second-wave variants. Each exact contract has
+24 target dates and permits at most one new entry per target date, so its hard
+upper bound is 24 closed signals against the preregistered Stage 0 minimum of
+30. The evaluator binds the point-in-time membership file and complete frozen
+entry/exit rules, but it never authorizes provider collection or return access.
+After an independently committed capacity inspection, it can retire only the
+exact capacity-infeasible version; it cannot repair the date set, count extra
+shortlisted names as executions, or contribute maturity evidence.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the
