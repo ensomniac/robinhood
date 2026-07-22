@@ -1,0 +1,22 @@
+{
+  "activation_sha256": "e5fa9877e1dce92036ee014540d4195b7f284b6c794b0161415027bb99cba4be",
+  "artifact_kind": "stage0-input-activation",
+  "broker_actions_permitted": false,
+  "confirmation_outcome_access_permitted": false,
+  "contract_inspection_sha256": "9b594288267fb62e082ac34db1f1fe41f580965e16bb2c2e9a6c58516c1c46a5",
+  "contract_sha256": "e3434736806323f06d7151a2bcaa8db214088c6e8a06b7457b25cc0482c51a63",
+  "daily_rows_frozen": 800,
+  "development_outcome_access_permitted": false,
+  "input_sha256": "3bedeb0a1f043996b27e5ea406f3fc0908794cc7b2d8623d3fed89f3c1b93f20",
+  "maturity_effect": "NONE",
+  "mechanism_family": "multi-asset-etf-time-series-momentum",
+  "partition_sha256": "001e5dd38ede6d8a9e39406cd73981fcbd54ec62b9a7dcf193e15077c92c3617",
+  "private_input_file_sha256": "af0a0aea1828ca36a7a98ff342f890dfbda582dca8c7b4f50c5ebfc9d254d04e",
+  "return_evaluation_before_input_inspection_permitted": false,
+  "returns_computed": 0,
+  "rules_hash": "712c09a464849ed7ddb26aae5692464b33140fc06f0ab2797eb1221be3cc1d91",
+  "schema_version": 1,
+  "stage0_signals": 40,
+  "strategy_version": "2026-07-22-multi-asset-etf-tsmom-v1",
+  "variant_id": "multi-asset-etf-tsmom-v1"
+}
