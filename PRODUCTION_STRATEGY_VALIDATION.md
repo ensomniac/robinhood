@@ -1044,6 +1044,15 @@ those 27 SEC-operated supplemental requests; primary documents, semantic
 classification, triggers, outcomes, alpha, maturity, production, and broker
 actions remain locked.
 
+All 27 frozen supplemental requests are now independently inspected: 16 exact
+cache hits, 11 SEC downloads, zero failures, zero pending requests, and zero
+substitutions. Precise acceptance-time filtering adds 19 unique candidate
+documents and 20 pair/document joins across 18 pairs. Private collection hash
+`d7ceabd9...63e5e` and candidate graph `cf162bc0...6b959` reproduce exactly.
+These remain discovery identities only; no document body, source semantics,
+trigger, or outcome has been observed. The exact union document graph must be
+frozen and published before primary-document access.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
