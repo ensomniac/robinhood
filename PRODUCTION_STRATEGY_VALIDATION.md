@@ -829,6 +829,13 @@ to the complete repository exclusion snapshot, then deterministically samples
 private exclusion namespace, public artifacts, and independent inspector. Its
 network-free preflight must pass before any manifest is frozen.
 
+Third-tranche selection manifest `90dde41a...152bfa` now freezes 100 dates
+from a 245-date eligible pool after 627 exclusions, plus the exact 502-session
+prior-data graph. Selected-date hash `abb3bd4a...40314` and required-session
+hash `91f2d9a8...8817e` bind the graph with no substitution or outcome access.
+The uninspected manifest must be committed and pushed before independent
+reconstruction.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal

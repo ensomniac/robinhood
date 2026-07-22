@@ -1,0 +1,14 @@
+{
+  "dataset_id": "dataset-challenger-orb-retest-development-2026-07-22-v3",
+  "date_substitution_allowed": false,
+  "eligible_dates": 245,
+  "excluded_dates": 627,
+  "inspected": false,
+  "manifest_sha256": "90dde41a23e82c07f7fa28f4b45ab60944cd7a4745a0614b60eea7ecab152bfa",
+  "path": "historical_batches/challenger_orb_retest_v1_tranche3/selection_manifests/dataset-challenger-orb-retest-development-2026-07-22-v3-90dde41a23e82c07f7fa28f4b45ab60944cd7a4745a0614b60eea7ecab152bfa.json",
+  "required_sessions": 502,
+  "schema_version": 1,
+  "selected_dates": 100,
+  "status": "FROZEN_READY",
+  "target_outcomes_observed_or_derived": false
+}
