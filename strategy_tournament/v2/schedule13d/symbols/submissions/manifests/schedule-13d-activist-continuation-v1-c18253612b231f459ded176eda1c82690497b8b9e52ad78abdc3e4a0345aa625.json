@@ -1,0 +1,3193 @@
+{
+  "access_contract": {
+    "broker_actions_permitted": false,
+    "forward_return_computation_permitted": false,
+    "issuer_primary_document_access_permitted": false,
+    "market_price_access_permitted": false,
+    "maturity_effect": "NONE",
+    "provider_access_after_graph_inspection_permitted": true,
+    "provider_access_before_graph_inspection_permitted": false,
+    "stage0_outcome_access_permitted": false,
+    "supplemental_submission_file_access_permitted": false
+  },
+  "artifact_kind": "outcome-blind-sec-issuer-submissions-request-graph",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "schedule-13d-activist-continuation-v1",
+  "capacity_passed": null,
+  "claim_limit": "This graph freezes only subject-CIK submissions metadata requests. It contains no issuer filing selection, recovered symbol, price, return, or maturity evidence.",
+  "classification_sha256": "8a45a15600eadc16547496b5c54495bdfd156f0676f81583843851aa0fd2ba68",
+  "contract_sha256": "dbd63296047961fd5d0546627c79c66607ef3498a69fba15f05f974a14527fab",
+  "dataset_id": "dataset-schedule-13d-capacity-2026-07-22-v1",
+  "implementation_hashes": {
+    "schedule13d_symbol_submissions.py": "7857127fd9f0cbd2095338f1bb47358eebf8efc22b03fd60d0fccd1fc7fd08f7",
+    "schedule13d_symbol_submissions_inspection.py": "a163eefd59650d08645200a28aa5e0b150ddcc68425c31e6d6a47a3c503fa34e"
+  },
+  "market_outcomes_accessed": false,
+  "pending_event_count": 317,
+  "request_contract": {
+    "endpoint_kind": "issuer submissions metadata",
+    "global_minimum_spacing_seconds": 0.15,
+    "maximum_attempts": 4,
+    "maximum_requests_per_second": 6.666666666666667,
+    "pending_event_count": 317,
+    "provider": "SEC_EDGAR",
+    "provider_substitution_permitted": false,
+    "request_count": 312,
+    "requests": [
+      {
+        "earliest_event_accepted_at": "2023-09-01T08:23:55",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-01T08:23:55",
+        "ordinal": 0,
+        "request_sha256": "a04ae096e0788780c345c792bcbd953275e38d79e9a6f6e5a1d4f321f8638355",
+        "shared_cache_relative_path": "submissions/CIK0000002230.json",
+        "subject_cik": "2230",
+        "url": "https://data.sec.gov/submissions/CIK0000002230.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-05-06T20:13:54",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-05-06T20:13:54",
+        "ordinal": 1,
+        "request_sha256": "c25847aeed3447456ced7699378549e6a769512579773bacc49bc249019a0a37",
+        "shared_cache_relative_path": "submissions/CIK0000010329.json",
+        "subject_cik": "10329",
+        "url": "https://data.sec.gov/submissions/CIK0000010329.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-10-28T15:27:29",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-10-28T15:27:29",
+        "ordinal": 2,
+        "request_sha256": "be7e77671e9d95f47c35ee410a3011829ad9aecebb69037e84ed9b71421631d5",
+        "shared_cache_relative_path": "submissions/CIK0000040417.json",
+        "subject_cik": "40417",
+        "url": "https://data.sec.gov/submissions/CIK0000040417.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-30T20:12:47",
+        "event_count": 2,
+        "latest_event_accepted_at": "2023-08-15T15:38:43",
+        "ordinal": 3,
+        "request_sha256": "d219779acba8a53b72664dc2ed8e6861b8c9850ccf72cfd54e27f8450f07c728",
+        "shared_cache_relative_path": "submissions/CIK0000040570.json",
+        "subject_cik": "40570",
+        "url": "https://data.sec.gov/submissions/CIK0000040570.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-11-06T16:00:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-11-06T16:00:25",
+        "ordinal": 4,
+        "request_sha256": "ad180581e34bb59e5476a905c3e46b5b7272067a7a38c44b1def07a87b5be208",
+        "shared_cache_relative_path": "submissions/CIK0000046129.json",
+        "subject_cik": "46129",
+        "url": "https://data.sec.gov/submissions/CIK0000046129.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-08-08T16:15:34",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-08-08T16:15:34",
+        "ordinal": 5,
+        "request_sha256": "4714355f78fc1cd546795a3b00866990e162805b4b3b0fc4d8278000118eefbc",
+        "shared_cache_relative_path": "submissions/CIK0000067716.json",
+        "subject_cik": "67716",
+        "url": "https://data.sec.gov/submissions/CIK0000067716.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-11-14T16:41:35",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-11-14T16:41:35",
+        "ordinal": 6,
+        "request_sha256": "10637be1509ead312ce2991af16fdbc0b6da7caa797dece419d4b1be4d9b6aea",
+        "shared_cache_relative_path": "submissions/CIK0000089140.json",
+        "subject_cik": "89140",
+        "url": "https://data.sec.gov/submissions/CIK0000089140.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-06-17T17:08:46",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-06-17T17:08:46",
+        "ordinal": 7,
+        "request_sha256": "39f384a4401378ee1c2315afb34b05bedd7006411c9f7b0da7b36f18bab9c3c3",
+        "shared_cache_relative_path": "submissions/CIK0000104169.json",
+        "subject_cik": "104169",
+        "url": "https://data.sec.gov/submissions/CIK0000104169.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-11T11:23:07",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-11T11:23:07",
+        "ordinal": 8,
+        "request_sha256": "0ecf38db42590179648471570fd8be8b2fe116da6932baacfc75332b6d68c2e8",
+        "shared_cache_relative_path": "submissions/CIK0000216851.json",
+        "subject_cik": "216851",
+        "url": "https://data.sec.gov/submissions/CIK0000216851.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-23T12:44:28",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-23T12:44:28",
+        "ordinal": 9,
+        "request_sha256": "2776ca65aaeff03d7a9c2f6bcc074d3e695083d547c7ab4246fe833c67a9178a",
+        "shared_cache_relative_path": "submissions/CIK0000313216.json",
+        "subject_cik": "313216",
+        "url": "https://data.sec.gov/submissions/CIK0000313216.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-11-14T16:26:30",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-11-14T16:26:30",
+        "ordinal": 10,
+        "request_sha256": "29a0be18fc12f62be7367e236c0153df3a3877e744473017f67279c035e62d3f",
+        "shared_cache_relative_path": "submissions/CIK0000315131.json",
+        "subject_cik": "315131",
+        "url": "https://data.sec.gov/submissions/CIK0000315131.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-08-16T16:08:20",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-08-16T16:08:20",
+        "ordinal": 11,
+        "request_sha256": "a4e81955b5430591301ba51a45098efb169c4c2c734beb1c99e28876dc3ca7c4",
+        "shared_cache_relative_path": "submissions/CIK0000319458.json",
+        "subject_cik": "319458",
+        "url": "https://data.sec.gov/submissions/CIK0000319458.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-12-08T16:06:42",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-12-08T16:06:42",
+        "ordinal": 12,
+        "request_sha256": "65488585bc910de2907d4467041b349e70c0afc56ac3e510a807c6f6efb4de40",
+        "shared_cache_relative_path": "submissions/CIK0000701985.json",
+        "subject_cik": "701985",
+        "url": "https://data.sec.gov/submissions/CIK0000701985.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-11-28T15:31:55",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-11-28T15:31:55",
+        "ordinal": 13,
+        "request_sha256": "3d1a40f6b9a62263ab03ce2fccc9c53f63c9c2e09892ba3f9b273bb989e8b748",
+        "shared_cache_relative_path": "submissions/CIK0000709005.json",
+        "subject_cik": "709005",
+        "url": "https://data.sec.gov/submissions/CIK0000709005.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-11-10T17:21:58",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-11-10T17:21:58",
+        "ordinal": 14,
+        "request_sha256": "29dfec22acf890a5771296365a61c378b2d81f22a133292cfda643a5c3927dc7",
+        "shared_cache_relative_path": "submissions/CIK0000729580.json",
+        "subject_cik": "729580",
+        "url": "https://data.sec.gov/submissions/CIK0000729580.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-05-13T08:27:05",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-05-13T08:27:05",
+        "ordinal": 15,
+        "request_sha256": "ca1eea96b2e1ebc2cdcb3a53b621d9306df7fb01ea88b4299a943e6112f318ec",
+        "shared_cache_relative_path": "submissions/CIK0000793040.json",
+        "subject_cik": "793040",
+        "url": "https://data.sec.gov/submissions/CIK0000793040.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-01-13T15:07:06",
+        "event_count": 2,
+        "latest_event_accepted_at": "2024-08-19T16:38:10",
+        "ordinal": 16,
+        "request_sha256": "82a386f905956f5dafebfa77d404143a626d0832319c5217597244759303cf7b",
+        "shared_cache_relative_path": "submissions/CIK0000803578.json",
+        "subject_cik": "803578",
+        "url": "https://data.sec.gov/submissions/CIK0000803578.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-03-15T10:47:24",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-03-15T10:47:24",
+        "ordinal": 17,
+        "request_sha256": "f8e118c84ecddbb770147d952d15a2737da5a7c04660cd02d02b339b53a09b86",
+        "shared_cache_relative_path": "submissions/CIK0000805267.json",
+        "subject_cik": "805267",
+        "url": "https://data.sec.gov/submissions/CIK0000805267.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-04-10T10:15:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-04-10T10:15:25",
+        "ordinal": 18,
+        "request_sha256": "21a99acda1d36646b94bc61258df23ee8d505d76203cb28bc2aa84ab86427244",
+        "shared_cache_relative_path": "submissions/CIK0000809844.json",
+        "subject_cik": "809844",
+        "url": "https://data.sec.gov/submissions/CIK0000809844.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-04-12T11:45:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-04-12T11:45:56",
+        "ordinal": 19,
+        "request_sha256": "8638b83a4b024812e7a05151dc757f562734b28c6afbbb9ca63c4dd89ea5a825",
+        "shared_cache_relative_path": "submissions/CIK0000814052.json",
+        "subject_cik": "814052",
+        "url": "https://data.sec.gov/submissions/CIK0000814052.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-06-12T08:07:17",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-06-12T08:07:17",
+        "ordinal": 20,
+        "request_sha256": "234a4b4a858f7c055a63fa6a9496584cf97598abc1a1647a3ba1f0671d740681",
+        "shared_cache_relative_path": "submissions/CIK0000818972.json",
+        "subject_cik": "818972",
+        "url": "https://data.sec.gov/submissions/CIK0000818972.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-14T17:14:44",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-14T17:14:44",
+        "ordinal": 21,
+        "request_sha256": "cf50aabbcfe0c08cdc9c69fbe7044736545bbddefa638a4388b47db7c2346fc1",
+        "shared_cache_relative_path": "submissions/CIK0000825345.json",
+        "subject_cik": "825345",
+        "url": "https://data.sec.gov/submissions/CIK0000825345.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-01T17:21:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-01T17:21:56",
+        "ordinal": 22,
+        "request_sha256": "970175a2f44b21997edaba0c5451a9f182ec98fe920db02f6058209b03362ed9",
+        "shared_cache_relative_path": "submissions/CIK0000835324.json",
+        "subject_cik": "835324",
+        "url": "https://data.sec.gov/submissions/CIK0000835324.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-31T18:14:16",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-31T18:14:16",
+        "ordinal": 23,
+        "request_sha256": "c67355c1939da53693768ffbda15d2b33614e679d0928763cb171ff0ad40eae5",
+        "shared_cache_relative_path": "submissions/CIK0000839122.json",
+        "subject_cik": "839122",
+        "url": "https://data.sec.gov/submissions/CIK0000839122.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-13T11:50:17",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-13T11:50:17",
+        "ordinal": 24,
+        "request_sha256": "376dd272f6a16efc9f7a83cb0cd66e0fc0c1a7ef877aab687c40a4bee4135ffb",
+        "shared_cache_relative_path": "submissions/CIK0000839533.json",
+        "subject_cik": "839533",
+        "url": "https://data.sec.gov/submissions/CIK0000839533.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-11-14T12:22:44",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-11-14T12:22:44",
+        "ordinal": 25,
+        "request_sha256": "4eeed0e019bd7127c6ce01b13be7e45e2b49cbd752cd96fcd273f432816ca6f7",
+        "shared_cache_relative_path": "submissions/CIK0000842518.json",
+        "subject_cik": "842518",
+        "url": "https://data.sec.gov/submissions/CIK0000842518.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-07-19T12:46:40",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-07-19T12:46:40",
+        "ordinal": 26,
+        "request_sha256": "49f2e69dc148647409ac6f9e87d55b7d71a5f5351f5e47f4c13397d0db39e819",
+        "shared_cache_relative_path": "submissions/CIK0000845606.json",
+        "subject_cik": "845606",
+        "url": "https://data.sec.gov/submissions/CIK0000845606.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-17T09:07:40",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-17T09:07:40",
+        "ordinal": 27,
+        "request_sha256": "3990f4cda9023528cb0ab4485393d259286d629c2f25741904e671adade48f6b",
+        "shared_cache_relative_path": "submissions/CIK0000846596.json",
+        "subject_cik": "846596",
+        "url": "https://data.sec.gov/submissions/CIK0000846596.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-07-24T13:01:27",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-07-24T13:01:27",
+        "ordinal": 28,
+        "request_sha256": "2e91c959e21579fd1f4ad06a85824b7709d9426c06bf09a91485b1f418caa74d",
+        "shared_cache_relative_path": "submissions/CIK0000847411.json",
+        "subject_cik": "847411",
+        "url": "https://data.sec.gov/submissions/CIK0000847411.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-15T14:01:44",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-15T14:01:44",
+        "ordinal": 29,
+        "request_sha256": "5ce205c8adb16061e7d29964aad2b43d69215d50487c147cf6eb53894ee584d2",
+        "shared_cache_relative_path": "submissions/CIK0000849146.json",
+        "subject_cik": "849146",
+        "url": "https://data.sec.gov/submissions/CIK0000849146.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-29T07:52:04",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-29T07:52:04",
+        "ordinal": 30,
+        "request_sha256": "8e35f89e39195d1cf1569f95514a86f65ef9e1f89b480515f7781f4d06b39cd7",
+        "shared_cache_relative_path": "submissions/CIK0000855887.json",
+        "subject_cik": "855887",
+        "url": "https://data.sec.gov/submissions/CIK0000855887.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-09-09T17:29:46",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-09-09T17:29:46",
+        "ordinal": 31,
+        "request_sha256": "59c0c5ab5c48750b30313af4f9df7dad845fc537f417ec830e8ddd7c17c28d3e",
+        "shared_cache_relative_path": "submissions/CIK0000858706.json",
+        "subject_cik": "858706",
+        "url": "https://data.sec.gov/submissions/CIK0000858706.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-22T08:44:22",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-22T08:44:22",
+        "ordinal": 32,
+        "request_sha256": "0da1919e7385d39117fcbec8bc0da71ac1d9101587ea2bd1aa185eec61bed8f5",
+        "shared_cache_relative_path": "submissions/CIK0000870780.json",
+        "subject_cik": "870780",
+        "url": "https://data.sec.gov/submissions/CIK0000870780.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-04-26T08:20:09",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-04-26T08:20:09",
+        "ordinal": 33,
+        "request_sha256": "184e39d230fad19a2fbf6bec15dd6141e18935173f43c5f5a64e72900a385a0a",
+        "shared_cache_relative_path": "submissions/CIK0000877463.json",
+        "subject_cik": "877463",
+        "url": "https://data.sec.gov/submissions/CIK0000877463.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-05-07T16:03:10",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-05-07T16:03:10",
+        "ordinal": 34,
+        "request_sha256": "92f2b15ff95b8be7a65da666ca8e303a4ce0fc10d97d35af9901f50468344c8c",
+        "shared_cache_relative_path": "submissions/CIK0000879585.json",
+        "subject_cik": "879585",
+        "url": "https://data.sec.gov/submissions/CIK0000879585.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-04-26T08:20:09",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-04-26T08:20:09",
+        "ordinal": 35,
+        "request_sha256": "7161679e939cc7a0519fa832d9a577ef0d6b675957428667e81fbd4d91bc318e",
+        "shared_cache_relative_path": "submissions/CIK0000880892.json",
+        "subject_cik": "880892",
+        "url": "https://data.sec.gov/submissions/CIK0000880892.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-20T14:12:22",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-20T14:12:22",
+        "ordinal": 36,
+        "request_sha256": "0c77c441556e3a51030f7c5d739c6cc66c766a104fede3a73f25dff63e7f0ce7",
+        "shared_cache_relative_path": "submissions/CIK0000882150.json",
+        "subject_cik": "882150",
+        "url": "https://data.sec.gov/submissions/CIK0000882150.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-01-30T09:59:26",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-01-30T09:59:26",
+        "ordinal": 37,
+        "request_sha256": "94b34453374ab7216f61cd4cd1909544bd79fe554851d5cf00e8377d78da2bd6",
+        "shared_cache_relative_path": "submissions/CIK0000882300.json",
+        "subject_cik": "882300",
+        "url": "https://data.sec.gov/submissions/CIK0000882300.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-18T08:31:23",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-18T08:31:23",
+        "ordinal": 38,
+        "request_sha256": "2a8e9bed00acc8ed961f7ad67db52842b7f7f24c39dc084cf943057346f6b129",
+        "shared_cache_relative_path": "submissions/CIK0000883265.json",
+        "subject_cik": "883265",
+        "url": "https://data.sec.gov/submissions/CIK0000883265.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-29T07:54:11",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-29T07:54:11",
+        "ordinal": 39,
+        "request_sha256": "b8bb66d91d1d24875519512392414ed0519adf97cfd910f27918c6bcf529b959",
+        "shared_cache_relative_path": "submissions/CIK0000884121.json",
+        "subject_cik": "884121",
+        "url": "https://data.sec.gov/submissions/CIK0000884121.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-24T07:25:07",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-24T07:25:07",
+        "ordinal": 40,
+        "request_sha256": "c4f614da993e1da764f6828e1ea3fa18192cd7e2413d91210246a87df626dc39",
+        "shared_cache_relative_path": "submissions/CIK0000884152.json",
+        "subject_cik": "884152",
+        "url": "https://data.sec.gov/submissions/CIK0000884152.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-10-01T17:28:19",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-10-01T17:28:19",
+        "ordinal": 41,
+        "request_sha256": "8c914d201648754a18c74525bdd88f448da634d58317f30f0c6080967fcb7763",
+        "shared_cache_relative_path": "submissions/CIK0000890447.json",
+        "subject_cik": "890447",
+        "url": "https://data.sec.gov/submissions/CIK0000890447.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-01-30T10:00:49",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-01-30T10:00:49",
+        "ordinal": 42,
+        "request_sha256": "ebc494ee1deb14fc5338ccf6c8bf5138e3322168649a6892521a7746f97cc162",
+        "shared_cache_relative_path": "submissions/CIK0000891038.json",
+        "subject_cik": "891038",
+        "url": "https://data.sec.gov/submissions/CIK0000891038.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-05-17T08:32:53",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-05-17T08:32:53",
+        "ordinal": 43,
+        "request_sha256": "18a522e7e4d55535a0aa06b63fe4d8b5ae0b4c057605bcd032ddbb74706c25d3",
+        "shared_cache_relative_path": "submissions/CIK0000892992.json",
+        "subject_cik": "892992",
+        "url": "https://data.sec.gov/submissions/CIK0000892992.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-02-17T17:06:07",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-02-17T17:06:07",
+        "ordinal": 44,
+        "request_sha256": "b0e396d1c49cc0a5143fb5003691a7dfec4b2d88231e0a05707b99a28a229703",
+        "shared_cache_relative_path": "submissions/CIK0000893847.json",
+        "subject_cik": "893847",
+        "url": "https://data.sec.gov/submissions/CIK0000893847.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-15T10:57:57",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-15T10:57:57",
+        "ordinal": 45,
+        "request_sha256": "94a179617e30834e96bd86d4ca8b9833015e39c724a76d1715a9debd83c4524b",
+        "shared_cache_relative_path": "submissions/CIK0000895528.json",
+        "subject_cik": "895528",
+        "url": "https://data.sec.gov/submissions/CIK0000895528.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-02-15T15:46:08",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-02-15T15:46:08",
+        "ordinal": 46,
+        "request_sha256": "e7da93c95e7047f7c1e80a6cd77fab973a5678a08ae09fd4f315a3120abf7863",
+        "shared_cache_relative_path": "submissions/CIK0000895574.json",
+        "subject_cik": "895574",
+        "url": "https://data.sec.gov/submissions/CIK0000895574.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-04T09:20:51",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-04T09:20:51",
+        "ordinal": 47,
+        "request_sha256": "c63f761466cea836525da69af2ea1deb7818fb4525c5a2b248c255006d6fa940",
+        "shared_cache_relative_path": "submissions/CIK0000897419.json",
+        "subject_cik": "897419",
+        "url": "https://data.sec.gov/submissions/CIK0000897419.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-04-04T08:32:57",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-04-04T08:32:57",
+        "ordinal": 48,
+        "request_sha256": "bba04b06be1f76c61f0eda4ce8f146e9ebee9b3ac4c26cbc1e5bafd6bbc68a0e",
+        "shared_cache_relative_path": "submissions/CIK0000899782.json",
+        "subject_cik": "899782",
+        "url": "https://data.sec.gov/submissions/CIK0000899782.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-08-14T17:53:05",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-08-14T17:53:05",
+        "ordinal": 49,
+        "request_sha256": "8b9588337e2478065b6b39008d31132f14939e4b7ea84f99da752bed927480ee",
+        "shared_cache_relative_path": "submissions/CIK0000916618.json",
+        "subject_cik": "916618",
+        "url": "https://data.sec.gov/submissions/CIK0000916618.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-03-21T17:15:37",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-03-21T17:15:37",
+        "ordinal": 50,
+        "request_sha256": "c98bf44c984bf4c0357d8d0477f69ebfda3736c561cf6e010d2d279f6ca933af",
+        "shared_cache_relative_path": "submissions/CIK0000919864.json",
+        "subject_cik": "919864",
+        "url": "https://data.sec.gov/submissions/CIK0000919864.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-03-08T17:22:00",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-03-08T17:22:00",
+        "ordinal": 51,
+        "request_sha256": "70d3e1e90192237a50e527f4ab8c07caea871fa6088db194ad4fd085800f5e94",
+        "shared_cache_relative_path": "submissions/CIK0000920112.json",
+        "subject_cik": "920112",
+        "url": "https://data.sec.gov/submissions/CIK0000920112.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-08-09T18:28:34",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-08-09T18:28:34",
+        "ordinal": 52,
+        "request_sha256": "44127aee823d9e38f79eebf3a97939e1613b431449131acf4b79f0cebe633fbd",
+        "shared_cache_relative_path": "submissions/CIK0000922864.json",
+        "subject_cik": "922864",
+        "url": "https://data.sec.gov/submissions/CIK0000922864.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-08-16T06:37:02",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-08-16T06:37:02",
+        "ordinal": 53,
+        "request_sha256": "34d3cfc9d45c211808ff9cd6c7e9f3c2fa742f1f6e63428588e280ffdc55d9e5",
+        "shared_cache_relative_path": "submissions/CIK0000937556.json",
+        "subject_cik": "937556",
+        "url": "https://data.sec.gov/submissions/CIK0000937556.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-18T17:18:19",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-18T17:18:19",
+        "ordinal": 54,
+        "request_sha256": "d99f8bd7e9e550b627558338651424ed46cf2cf978c3775c504a48a994aa3498",
+        "shared_cache_relative_path": "submissions/CIK0001013488.json",
+        "subject_cik": "1013488",
+        "url": "https://data.sec.gov/submissions/CIK0001013488.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-04-10T21:24:12",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-04-10T21:24:12",
+        "ordinal": 55,
+        "request_sha256": "638fc57b615beff644f9aa5d7747056dc5f21e852fb3b95ea94b46747249cfe1",
+        "shared_cache_relative_path": "submissions/CIK0001015155.json",
+        "subject_cik": "1015155",
+        "url": "https://data.sec.gov/submissions/CIK0001015155.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-09T16:48:34",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-09T16:48:34",
+        "ordinal": 56,
+        "request_sha256": "122fc080053f739829c5199f9790014780ccfe9bb75fe8ce18df14b8169a0dcf",
+        "shared_cache_relative_path": "submissions/CIK0001017303.json",
+        "subject_cik": "1017303",
+        "url": "https://data.sec.gov/submissions/CIK0001017303.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-06-13T08:31:45",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-06-13T08:31:45",
+        "ordinal": 57,
+        "request_sha256": "4312094ea31d6f30b716b5a779bab08a4166d645da19e32cfef48bd9e0f1af5a",
+        "shared_cache_relative_path": "submissions/CIK0001017480.json",
+        "subject_cik": "1017480",
+        "url": "https://data.sec.gov/submissions/CIK0001017480.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-26T11:13:03",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-26T11:13:03",
+        "ordinal": 58,
+        "request_sha256": "ab2178f8c3e79a0aaf2a2d291279beeadce0841b8a08ebfc05825ae288ecedd9",
+        "shared_cache_relative_path": "submissions/CIK0001023731.json",
+        "subject_cik": "1023731",
+        "url": "https://data.sec.gov/submissions/CIK0001023731.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-08T17:04:30",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-08T17:04:30",
+        "ordinal": 59,
+        "request_sha256": "30d59b05f5db08d3f3fbd06b67c3e0b4dbb8f2e96aec11aa56fa26477621aecf",
+        "shared_cache_relative_path": "submissions/CIK0001036044.json",
+        "subject_cik": "1036044",
+        "url": "https://data.sec.gov/submissions/CIK0001036044.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-24T18:40:21",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-24T18:40:21",
+        "ordinal": 60,
+        "request_sha256": "c89ba4163e95f6a23ed1065813ed865f73f914a211af3cee8207463d9ed19618",
+        "shared_cache_relative_path": "submissions/CIK0001037643.json",
+        "subject_cik": "1037643",
+        "url": "https://data.sec.gov/submissions/CIK0001037643.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-25T08:10:20",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-25T08:10:20",
+        "ordinal": 61,
+        "request_sha256": "a26a2304a27f946fb190b0d043c8cc51108659cd967a86e2d625b98181e5bccd",
+        "shared_cache_relative_path": "submissions/CIK0001038186.json",
+        "subject_cik": "1038186",
+        "url": "https://data.sec.gov/submissions/CIK0001038186.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-02-16T17:09:17",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-02-16T17:09:17",
+        "ordinal": 62,
+        "request_sha256": "10a43986c40aa9e70a3e7e166405d18f39ee26c18c813e02096ba15baaedcc7c",
+        "shared_cache_relative_path": "submissions/CIK0001041859.json",
+        "subject_cik": "1041859",
+        "url": "https://data.sec.gov/submissions/CIK0001041859.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-07-29T06:00:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-07-29T06:00:56",
+        "ordinal": 63,
+        "request_sha256": "82c43b18c1fb2367f1aba1a00df4b692f180232716ee5e62fbd9177e9ef51c04",
+        "shared_cache_relative_path": "submissions/CIK0001054721.json",
+        "subject_cik": "1054721",
+        "url": "https://data.sec.gov/submissions/CIK0001054721.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-08T08:04:40",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-08T08:04:40",
+        "ordinal": 64,
+        "request_sha256": "caafff93408b97f9ce624735c9ea05447af203856315dec4651beef41c5a9b4c",
+        "shared_cache_relative_path": "submissions/CIK0001057861.json",
+        "subject_cik": "1057861",
+        "url": "https://data.sec.gov/submissions/CIK0001057861.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-06T15:02:02",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-06T15:02:02",
+        "ordinal": 65,
+        "request_sha256": "f49fee61c1c611dfb6e5ccf2321625fa0d056bcdd51cb2c4ff9596cc9408bab6",
+        "shared_cache_relative_path": "submissions/CIK0001074692.json",
+        "subject_cik": "1074692",
+        "url": "https://data.sec.gov/submissions/CIK0001074692.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-12T08:57:36",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-12T08:57:36",
+        "ordinal": 66,
+        "request_sha256": "6a6bee9bae8557b54df299b8d2342f0d636f972612e8998b5b3bd84b661b29aa",
+        "shared_cache_relative_path": "submissions/CIK0001074952.json",
+        "subject_cik": "1074952",
+        "url": "https://data.sec.gov/submissions/CIK0001074952.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-04-10T10:19:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-04-10T10:19:56",
+        "ordinal": 67,
+        "request_sha256": "2aa5f43c876a9e99b83e8c7be6837bf1d3f87a55a4cb4c071962718b7f0e3fec",
+        "shared_cache_relative_path": "submissions/CIK0001087786.json",
+        "subject_cik": "1087786",
+        "url": "https://data.sec.gov/submissions/CIK0001087786.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-01T09:21:54",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-01T09:21:54",
+        "ordinal": 68,
+        "request_sha256": "d5bb2ce2201416418bacbd27ecf395c2ef9bf4d48416d4ff0d819541c0bbb953",
+        "shared_cache_relative_path": "submissions/CIK0001092662.json",
+        "subject_cik": "1092662",
+        "url": "https://data.sec.gov/submissions/CIK0001092662.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-04-10T16:15:17",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-04-10T16:15:17",
+        "ordinal": 69,
+        "request_sha256": "4e368fc2bdf3255fb07e24f7d071a450911e4428afcfcb6231a489bd1a72e5ec",
+        "shared_cache_relative_path": "submissions/CIK0001095651.json",
+        "subject_cik": "1095651",
+        "url": "https://data.sec.gov/submissions/CIK0001095651.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-11T12:38:47",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-11T12:38:47",
+        "ordinal": 70,
+        "request_sha256": "baeb154168688ab31553a0fe40e9f3cead5bfae445e0fa181004bb56911cd0c7",
+        "shared_cache_relative_path": "submissions/CIK0001100397.json",
+        "subject_cik": "1100397",
+        "url": "https://data.sec.gov/submissions/CIK0001100397.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-10T16:05:15",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-10T16:05:15",
+        "ordinal": 71,
+        "request_sha256": "4591e1938436d1f19ba7c0096faa635bebeef4472aabbbba60d1ed5e1a3fff19",
+        "shared_cache_relative_path": "submissions/CIK0001101396.json",
+        "subject_cik": "1101396",
+        "url": "https://data.sec.gov/submissions/CIK0001101396.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-06-27T17:02:16",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-06-27T17:02:16",
+        "ordinal": 72,
+        "request_sha256": "3465eb2bfc15a68ce558956623f5d4179276a7225359d92d30cc8b33a8e01e72",
+        "shared_cache_relative_path": "submissions/CIK0001119769.json",
+        "subject_cik": "1119769",
+        "url": "https://data.sec.gov/submissions/CIK0001119769.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-21T16:05:28",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-21T16:05:28",
+        "ordinal": 73,
+        "request_sha256": "76734fb1267b45b5a482e8ac9d46ea0c91fc48b8752941df60280de90b397134",
+        "shared_cache_relative_path": "submissions/CIK0001122491.json",
+        "subject_cik": "1122491",
+        "url": "https://data.sec.gov/submissions/CIK0001122491.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-14T18:25:59",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-14T18:25:59",
+        "ordinal": 74,
+        "request_sha256": "4bbff92087c0b04bd23108ebd7721059e3e0530a29cf4188f598f60fc72e8b92",
+        "shared_cache_relative_path": "submissions/CIK0001126234.json",
+        "subject_cik": "1126234",
+        "url": "https://data.sec.gov/submissions/CIK0001126234.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-16T10:00:10",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-16T10:00:10",
+        "ordinal": 75,
+        "request_sha256": "5152a1122d0498e34b0039fcaf9c82ff73b17c2bb6aad462f69a775a65596573",
+        "shared_cache_relative_path": "submissions/CIK0001130713.json",
+        "subject_cik": "1130713",
+        "url": "https://data.sec.gov/submissions/CIK0001130713.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-07-24T13:15:22",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-07-24T13:15:22",
+        "ordinal": 76,
+        "request_sha256": "b15ba8ff8106f32ee086c1589087cbe10b8ac8cf4d3195ecc6eff2a36234587e",
+        "shared_cache_relative_path": "submissions/CIK0001131903.json",
+        "subject_cik": "1131903",
+        "url": "https://data.sec.gov/submissions/CIK0001131903.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-29T10:18:35",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-29T10:18:35",
+        "ordinal": 77,
+        "request_sha256": "953503b8450d5148cd8dbc0ac7d33a01cc31103cb6b656ca9ae4607da678ef20",
+        "shared_cache_relative_path": "submissions/CIK0001137390.json",
+        "subject_cik": "1137390",
+        "url": "https://data.sec.gov/submissions/CIK0001137390.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-06T08:55:02",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-06T08:55:02",
+        "ordinal": 78,
+        "request_sha256": "49ff9291722f43aa956a8e191941ac3b82cfd01bd17a77b382fc46292c8ce9de",
+        "shared_cache_relative_path": "submissions/CIK0001137391.json",
+        "subject_cik": "1137391",
+        "url": "https://data.sec.gov/submissions/CIK0001137391.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-06T09:01:08",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-06T09:01:08",
+        "ordinal": 79,
+        "request_sha256": "0d5afed7c34a3751dc7e2f76b376c136f23516e40051acd5c1d94d42db5534b8",
+        "shared_cache_relative_path": "submissions/CIK0001158172.json",
+        "subject_cik": "1158172",
+        "url": "https://data.sec.gov/submissions/CIK0001158172.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-09-05T17:12:16",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-09-05T17:12:16",
+        "ordinal": 80,
+        "request_sha256": "89be6b7e1f53a502f6cf9de72594aad82af424da9032dc428c2cc30673a9a0d9",
+        "shared_cache_relative_path": "submissions/CIK0001158463.json",
+        "subject_cik": "1158463",
+        "url": "https://data.sec.gov/submissions/CIK0001158463.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-21T08:38:23",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-21T08:38:23",
+        "ordinal": 81,
+        "request_sha256": "de8c2b03a198aeceda24f55b1592355a5356d178c62e654709be251ebfb50c0e",
+        "shared_cache_relative_path": "submissions/CIK0001162027.json",
+        "subject_cik": "1162027",
+        "url": "https://data.sec.gov/submissions/CIK0001162027.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-11-04T12:28:18",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-11-04T12:28:18",
+        "ordinal": 82,
+        "request_sha256": "1a081523b818d52bc5eec8a7fbe4f7db09838f6513505a7d70c0af0fdd20580c",
+        "shared_cache_relative_path": "submissions/CIK0001164771.json",
+        "subject_cik": "1164771",
+        "url": "https://data.sec.gov/submissions/CIK0001164771.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-20T14:00:44",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-20T14:00:44",
+        "ordinal": 83,
+        "request_sha256": "e3c70eeb0c055fe84cc6bbe77d1fc1816216aa48d6182757e7a4114bb9cc107b",
+        "shared_cache_relative_path": "submissions/CIK0001169034.json",
+        "subject_cik": "1169034",
+        "url": "https://data.sec.gov/submissions/CIK0001169034.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-31T11:50:42",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-31T11:50:42",
+        "ordinal": 84,
+        "request_sha256": "e160c3f35557b7c9f85a1e8f812f7421f1ed44f81e5ca592fd527ccdc936bc8c",
+        "shared_cache_relative_path": "submissions/CIK0001173281.json",
+        "subject_cik": "1173281",
+        "url": "https://data.sec.gov/submissions/CIK0001173281.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-02T13:01:59",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-02T13:01:59",
+        "ordinal": 85,
+        "request_sha256": "cda5fa365411035c4e67fa332bfeaa6633871cbba26de80167ad9e0299782cd5",
+        "shared_cache_relative_path": "submissions/CIK0001177161.json",
+        "subject_cik": "1177161",
+        "url": "https://data.sec.gov/submissions/CIK0001177161.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-12-12T13:09:58",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-12-12T13:09:58",
+        "ordinal": 86,
+        "request_sha256": "d8c99358b7c98af015b00a87a5907f321c1260a764b83ccf34ff06e2941d573e",
+        "shared_cache_relative_path": "submissions/CIK0001177162.json",
+        "subject_cik": "1177162",
+        "url": "https://data.sec.gov/submissions/CIK0001177162.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-30T16:30:07",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-30T16:30:07",
+        "ordinal": 87,
+        "request_sha256": "326cbd715c51a538ad3f4e24e231fa24d140074e28a0629490c4e5a731a0e7ac",
+        "shared_cache_relative_path": "submissions/CIK0001178711.json",
+        "subject_cik": "1178711",
+        "url": "https://data.sec.gov/submissions/CIK0001178711.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-20T14:08:27",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-20T14:08:27",
+        "ordinal": 88,
+        "request_sha256": "20bf27d50048aa8f1ae3d1948c4c2a49498a08c8d08054e6a431e0324efd0412",
+        "shared_cache_relative_path": "submissions/CIK0001178839.json",
+        "subject_cik": "1178839",
+        "url": "https://data.sec.gov/submissions/CIK0001178839.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-13T09:24:46",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-13T09:24:46",
+        "ordinal": 89,
+        "request_sha256": "74259253a9247de3e7198287995de1f2f2f28e05516350caf07dcd59caffc4a1",
+        "shared_cache_relative_path": "submissions/CIK0001178840.json",
+        "subject_cik": "1178840",
+        "url": "https://data.sec.gov/submissions/CIK0001178840.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-16T07:53:23",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-16T07:53:23",
+        "ordinal": 90,
+        "request_sha256": "f23cb3a57fb8f6c7621725f0b72b6e71c88c54c7c19816d609650e20eca598f1",
+        "shared_cache_relative_path": "submissions/CIK0001178841.json",
+        "subject_cik": "1178841",
+        "url": "https://data.sec.gov/submissions/CIK0001178841.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-04-18T11:30:34",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-04-18T11:30:34",
+        "ordinal": 91,
+        "request_sha256": "51223248f54793c699213063f0b24ef63325980950fd7e4f7e20e0afdd1f8a7a",
+        "shared_cache_relative_path": "submissions/CIK0001199004.json",
+        "subject_cik": "1199004",
+        "url": "https://data.sec.gov/submissions/CIK0001199004.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-05T07:48:51",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-05T07:48:51",
+        "ordinal": 92,
+        "request_sha256": "de1457a8c498e1011678880bd23f134f0b23ce551cf342059d4c6f4ed4145e4d",
+        "shared_cache_relative_path": "submissions/CIK0001223026.json",
+        "subject_cik": "1223026",
+        "url": "https://data.sec.gov/submissions/CIK0001223026.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-10-21T16:05:53",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-10-21T16:05:53",
+        "ordinal": 93,
+        "request_sha256": "c33d0f56f85951a6564352dce8dd6b9a8ca09099ff416d146ee20eeb4ace075a",
+        "shared_cache_relative_path": "submissions/CIK0001227654.json",
+        "subject_cik": "1227654",
+        "url": "https://data.sec.gov/submissions/CIK0001227654.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-13T09:22:40",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-13T09:22:40",
+        "ordinal": 94,
+        "request_sha256": "d062200ca1a124c03453fe60f8679cf41fc109d0650cd95d15e7d4b68212cde3",
+        "shared_cache_relative_path": "submissions/CIK0001230869.json",
+        "subject_cik": "1230869",
+        "url": "https://data.sec.gov/submissions/CIK0001230869.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-07T16:13:03",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-07T16:13:03",
+        "ordinal": 95,
+        "request_sha256": "047b0f0e8a5b7e2f914d58ff402b8b870b4d46ad9445e7e0e8ab9798cd298513",
+        "shared_cache_relative_path": "submissions/CIK0001258943.json",
+        "subject_cik": "1258943",
+        "url": "https://data.sec.gov/submissions/CIK0001258943.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-06-14T09:39:02",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-06-14T09:39:02",
+        "ordinal": 96,
+        "request_sha256": "f035c915bcc0105c3b2250a062921f3ca52b629b83e2fe1e4c79b2832ceeebad",
+        "shared_cache_relative_path": "submissions/CIK0001260563.json",
+        "subject_cik": "1260563",
+        "url": "https://data.sec.gov/submissions/CIK0001260563.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-08-01T14:35:58",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-08-01T14:35:58",
+        "ordinal": 97,
+        "request_sha256": "7443f219a547309620667f2ad9d1979e441ce35ae88d2308ae554513a9bc29e5",
+        "shared_cache_relative_path": "submissions/CIK0001260729.json",
+        "subject_cik": "1260729",
+        "url": "https://data.sec.gov/submissions/CIK0001260729.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-02-28T07:51:38",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-02-28T07:51:38",
+        "ordinal": 98,
+        "request_sha256": "664673393cc4d978185c4f5565c9cac9cf7d85f66184a68660842189829a2830",
+        "shared_cache_relative_path": "submissions/CIK0001276469.json",
+        "subject_cik": "1276469",
+        "url": "https://data.sec.gov/submissions/CIK0001276469.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-03-18T12:25:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-03-18T12:25:25",
+        "ordinal": 99,
+        "request_sha256": "a80116f3e80be2b8e5e9bcabbf270dff6cde848e122149b5a51bf125479c8d21",
+        "shared_cache_relative_path": "submissions/CIK0001278211.json",
+        "subject_cik": "1278211",
+        "url": "https://data.sec.gov/submissions/CIK0001278211.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-09-03T14:04:58",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-09-03T14:04:58",
+        "ordinal": 100,
+        "request_sha256": "0bcee774e71d54b49c47491f3810eeae66a79ef8b3a027b45aa9e81e9c966cc1",
+        "shared_cache_relative_path": "submissions/CIK0001288795.json",
+        "subject_cik": "1288795",
+        "url": "https://data.sec.gov/submissions/CIK0001288795.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-01T07:17:03",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-01T07:17:03",
+        "ordinal": 101,
+        "request_sha256": "c3b557a828b160c9f2b50031197a560e2d3b0ae4f602c610f56f579cbbc108e0",
+        "shared_cache_relative_path": "submissions/CIK0001332943.json",
+        "subject_cik": "1332943",
+        "url": "https://data.sec.gov/submissions/CIK0001332943.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-16T16:31:07",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-16T16:31:07",
+        "ordinal": 102,
+        "request_sha256": "6f8cbbe082733771e500f21d318a091fd17fd68c31653cd2f22595ee3eb3ae53",
+        "shared_cache_relative_path": "submissions/CIK0001334978.json",
+        "subject_cik": "1334978",
+        "url": "https://data.sec.gov/submissions/CIK0001334978.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-05T19:51:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-05T19:51:25",
+        "ordinal": 103,
+        "request_sha256": "69750c67232d2a66ee70ac2ed63ceeb7123c9707c8a8de2cf3dd4c8eca4aa948",
+        "shared_cache_relative_path": "submissions/CIK0001342423.json",
+        "subject_cik": "1342423",
+        "url": "https://data.sec.gov/submissions/CIK0001342423.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-08-08T17:32:05",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-08-08T17:32:05",
+        "ordinal": 104,
+        "request_sha256": "254eda89960291916b935a70126493917d9b05aa262c4c8301ad59d27bb9491c",
+        "shared_cache_relative_path": "submissions/CIK0001350869.json",
+        "subject_cik": "1350869",
+        "url": "https://data.sec.gov/submissions/CIK0001350869.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-07-25T16:15:40",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-07-25T16:15:40",
+        "ordinal": 105,
+        "request_sha256": "a8746bf5a5910755d3e86f215014b3cbaf812eb20ad4d88fbcbb4f2bfc3e9891",
+        "shared_cache_relative_path": "submissions/CIK0001362481.json",
+        "subject_cik": "1362481",
+        "url": "https://data.sec.gov/submissions/CIK0001362481.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-08-11T15:35:12",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-08-11T15:35:12",
+        "ordinal": 106,
+        "request_sha256": "0b3e441d120b26d2ebde67b1d0df4dd0a9ee543a514bbd7a506ab7b5ca2b040d",
+        "shared_cache_relative_path": "submissions/CIK0001363438.json",
+        "subject_cik": "1363438",
+        "url": "https://data.sec.gov/submissions/CIK0001363438.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-07-30T17:37:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-07-30T17:37:56",
+        "ordinal": 107,
+        "request_sha256": "5ed9048e4a843647add007c8f7ef5152432297090c5f45fed56f1782a9729fd3",
+        "shared_cache_relative_path": "submissions/CIK0001363829.json",
+        "subject_cik": "1363829",
+        "url": "https://data.sec.gov/submissions/CIK0001363829.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-06-06T06:17:41",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-06-06T06:17:41",
+        "ordinal": 108,
+        "request_sha256": "f5b21438402aba8cbb23956bdfa06bf287cc7b7ad2b43a5426f6368743d693f9",
+        "shared_cache_relative_path": "submissions/CIK0001370450.json",
+        "subject_cik": "1370450",
+        "url": "https://data.sec.gov/submissions/CIK0001370450.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-01T16:30:30",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-01T16:30:30",
+        "ordinal": 109,
+        "request_sha256": "3002eb657788f3c10e5a05263b33c922bd9e2025f249d5a57884fa0fab193364",
+        "shared_cache_relative_path": "submissions/CIK0001372183.json",
+        "subject_cik": "1372183",
+        "url": "https://data.sec.gov/submissions/CIK0001372183.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-08-02T12:10:51",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-08-02T12:10:51",
+        "ordinal": 110,
+        "request_sha256": "26192564bf68b7646c0b652b6451936554784c76b1699ebef85fd1dbfdaa10c2",
+        "shared_cache_relative_path": "submissions/CIK0001379400.json",
+        "subject_cik": "1379400",
+        "url": "https://data.sec.gov/submissions/CIK0001379400.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-26T11:18:36",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-26T11:18:36",
+        "ordinal": 111,
+        "request_sha256": "18b5cd0300b557d02e8ec75fc6f59070dd655b08c1fefcf9635fd40d435e0da7",
+        "shared_cache_relative_path": "submissions/CIK0001384905.json",
+        "subject_cik": "1384905",
+        "url": "https://data.sec.gov/submissions/CIK0001384905.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-07-10T18:27:24",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-07-10T18:27:24",
+        "ordinal": 112,
+        "request_sha256": "703f72775ea8d393a621e2fbeacb472452625f0da5d518d84478eb5099f25950",
+        "shared_cache_relative_path": "submissions/CIK0001391437.json",
+        "subject_cik": "1391437",
+        "url": "https://data.sec.gov/submissions/CIK0001391437.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-04-29T10:57:29",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-04-29T10:57:29",
+        "ordinal": 113,
+        "request_sha256": "644f4606cd7169ed29fef2ccb94673b593d6b43352e01681a21936e044712144",
+        "shared_cache_relative_path": "submissions/CIK0001392994.json",
+        "subject_cik": "1392994",
+        "url": "https://data.sec.gov/submissions/CIK0001392994.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-13T17:16:48",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-13T17:16:48",
+        "ordinal": 114,
+        "request_sha256": "44f97a3294a9532dd10685afd473fc6689b571dfec7cb9a270e309034fec37af",
+        "shared_cache_relative_path": "submissions/CIK0001403256.json",
+        "subject_cik": "1403256",
+        "url": "https://data.sec.gov/submissions/CIK0001403256.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-11-14T19:58:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-11-14T19:58:56",
+        "ordinal": 115,
+        "request_sha256": "593382371ca5e53581f533778fb07acb06ab9da6e8b67c63bbcfdbcdd0714464",
+        "shared_cache_relative_path": "submissions/CIK0001413898.json",
+        "subject_cik": "1413898",
+        "url": "https://data.sec.gov/submissions/CIK0001413898.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-08T15:39:29",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-08T15:39:29",
+        "ordinal": 116,
+        "request_sha256": "46cfde47574ff4a555131e16a619f7a3188daa36febf8eea1bc7d562095c3346",
+        "shared_cache_relative_path": "submissions/CIK0001417802.json",
+        "subject_cik": "1417802",
+        "url": "https://data.sec.gov/submissions/CIK0001417802.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-04-11T17:29:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-04-11T17:29:56",
+        "ordinal": 117,
+        "request_sha256": "3c2a33f3adb78eb293cae33a10a0e0cfd3b60b879381ab299369d04ee06db276",
+        "shared_cache_relative_path": "submissions/CIK0001418076.json",
+        "subject_cik": "1418076",
+        "url": "https://data.sec.gov/submissions/CIK0001418076.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-05-16T17:24:19",
+        "event_count": 2,
+        "latest_event_accepted_at": "2022-10-31T17:02:59",
+        "ordinal": 118,
+        "request_sha256": "80afa0978cf9eda8bcc64995605902fbee453e9cac7fa0e54315f4b38c6f1325",
+        "shared_cache_relative_path": "submissions/CIK0001418091.json",
+        "subject_cik": "1418091",
+        "url": "https://data.sec.gov/submissions/CIK0001418091.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-10-23T20:17:13",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-10-23T20:17:13",
+        "ordinal": 119,
+        "request_sha256": "92ffb9c54a4fc5d7d74b6a8a73505db06c6aa7c0db8bd24a95cf7f922e0b9f6a",
+        "shared_cache_relative_path": "submissions/CIK0001423774.json",
+        "subject_cik": "1423774",
+        "url": "https://data.sec.gov/submissions/CIK0001423774.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-16T08:18:02",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-16T08:18:02",
+        "ordinal": 120,
+        "request_sha256": "78b3dfbd936ba0cee9fc22c08ba7983b0947657be063326311ebfa5666fb7a65",
+        "shared_cache_relative_path": "submissions/CIK0001438893.json",
+        "subject_cik": "1438893",
+        "url": "https://data.sec.gov/submissions/CIK0001438893.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-03T16:43:23",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-03T16:43:23",
+        "ordinal": 121,
+        "request_sha256": "ff1aeed2c4de89f161e0b00fa5f393c544bb32f277080ea9e37f8970e2b8cdef",
+        "shared_cache_relative_path": "submissions/CIK0001447380.json",
+        "subject_cik": "1447380",
+        "url": "https://data.sec.gov/submissions/CIK0001447380.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-09T16:35:12",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-09T16:35:12",
+        "ordinal": 122,
+        "request_sha256": "0144f37d245d0cfb1b9e1303ba9b7df191ec15afff3652b14c7261eb20888a71",
+        "shared_cache_relative_path": "submissions/CIK0001452965.json",
+        "subject_cik": "1452965",
+        "url": "https://data.sec.gov/submissions/CIK0001452965.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-17T16:15:23",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-17T16:15:23",
+        "ordinal": 123,
+        "request_sha256": "174d4078de0d4f1705768ab0e2cd3421b2a2e306a781dadfcb24ae448f156089",
+        "shared_cache_relative_path": "submissions/CIK0001468327.json",
+        "subject_cik": "1468327",
+        "url": "https://data.sec.gov/submissions/CIK0001468327.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-06-14T17:04:28",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-06-14T17:04:28",
+        "ordinal": 124,
+        "request_sha256": "48b2da39a6870d7860ca3d6c0d424d08c08b1f0ff95c8a6ebf7855cef458a777",
+        "shared_cache_relative_path": "submissions/CIK0001468492.json",
+        "subject_cik": "1468492",
+        "url": "https://data.sec.gov/submissions/CIK0001468492.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-12T16:02:09",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-12T16:02:09",
+        "ordinal": 125,
+        "request_sha256": "a26c029acdc71d22a94a4e8ddd37eec22becfa2d8c208143e209c14d75f976f4",
+        "shared_cache_relative_path": "submissions/CIK0001472012.json",
+        "subject_cik": "1472012",
+        "url": "https://data.sec.gov/submissions/CIK0001472012.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-11-18T13:31:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-11-18T13:31:25",
+        "ordinal": 126,
+        "request_sha256": "496851f10b302415511dd3ca3dad7d8c96ffeeee48f0a1c9a98ad3ce28817ebb",
+        "shared_cache_relative_path": "submissions/CIK0001485003.json",
+        "subject_cik": "1485003",
+        "url": "https://data.sec.gov/submissions/CIK0001485003.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-10-07T12:48:31",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-10-07T12:48:31",
+        "ordinal": 127,
+        "request_sha256": "02bcb990c5d6926ae6e99cf62aedef5ec55d280851ec67b3cc11e9f31484a5f9",
+        "shared_cache_relative_path": "submissions/CIK0001488775.json",
+        "subject_cik": "1488775",
+        "url": "https://data.sec.gov/submissions/CIK0001488775.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-07-11T17:19:27",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-07-11T17:19:27",
+        "ordinal": 128,
+        "request_sha256": "e3bad11bf0b7cddfc4f1a050dd156abbb7662e7de299dd74f152f2a2bb762a8f",
+        "shared_cache_relative_path": "submissions/CIK0001488917.json",
+        "subject_cik": "1488917",
+        "url": "https://data.sec.gov/submissions/CIK0001488917.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-20T21:20:36",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-20T21:20:36",
+        "ordinal": 129,
+        "request_sha256": "b4198f86bf60686593d4579a3292ddcf66109594b1c46d6b172315b83b0b38cb",
+        "shared_cache_relative_path": "submissions/CIK0001490286.json",
+        "subject_cik": "1490286",
+        "url": "https://data.sec.gov/submissions/CIK0001490286.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-11-25T13:47:19",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-11-25T13:47:19",
+        "ordinal": 130,
+        "request_sha256": "f8ed391fd9fb5d43c5ab031dab5e68ba5c8bbdfa920aae3d23b8844d5633169c",
+        "shared_cache_relative_path": "submissions/CIK0001495584.json",
+        "subject_cik": "1495584",
+        "url": "https://data.sec.gov/submissions/CIK0001495584.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-04-21T06:06:36",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-04-21T06:06:36",
+        "ordinal": 131,
+        "request_sha256": "82fbad12c8208bb8a26af32a791be352b7ad77d12c53d9cda2de047d7dda68e2",
+        "shared_cache_relative_path": "submissions/CIK0001496671.json",
+        "subject_cik": "1496671",
+        "url": "https://data.sec.gov/submissions/CIK0001496671.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-10-20T15:09:24",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-10-20T15:09:24",
+        "ordinal": 132,
+        "request_sha256": "a0c932e837936c847614c40abc35623fdecccd6103e498e60685d7ced13213e7",
+        "shared_cache_relative_path": "submissions/CIK0001500096.json",
+        "subject_cik": "1500096",
+        "url": "https://data.sec.gov/submissions/CIK0001500096.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-23T16:31:37",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-23T16:31:37",
+        "ordinal": 133,
+        "request_sha256": "a619471678b4ab79001c0eca2fa08d0d172be553755217ca2a2970ea74b1468c",
+        "shared_cache_relative_path": "submissions/CIK0001513789.json",
+        "subject_cik": "1513789",
+        "url": "https://data.sec.gov/submissions/CIK0001513789.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-18T06:02:49",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-18T06:02:49",
+        "ordinal": 134,
+        "request_sha256": "31ce87678f9ef671aa6f658003f632683876da6ffb7d0f960d10b87ac186ff5d",
+        "shared_cache_relative_path": "submissions/CIK0001514743.json",
+        "subject_cik": "1514743",
+        "url": "https://data.sec.gov/submissions/CIK0001514743.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-09-26T14:05:33",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-09-26T14:05:33",
+        "ordinal": 135,
+        "request_sha256": "d894f4e43d802fedd228fa981da9e0caeeffa9da4b475d98b1bcd6d3f26fdb50",
+        "shared_cache_relative_path": "submissions/CIK0001517518.json",
+        "subject_cik": "1517518",
+        "url": "https://data.sec.gov/submissions/CIK0001517518.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-01-05T10:19:53",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-01-05T10:19:53",
+        "ordinal": 136,
+        "request_sha256": "83521e2c34f4349da1b82357853ae500c1763155455923203e0a912ba1695404",
+        "shared_cache_relative_path": "submissions/CIK0001519505.json",
+        "subject_cik": "1519505",
+        "url": "https://data.sec.gov/submissions/CIK0001519505.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-22T16:00:20",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-22T16:00:20",
+        "ordinal": 137,
+        "request_sha256": "4cd436ae3d6f5c8ef48d8e5db9de49a334c042f541b28ef8706e4ba51ca38d15",
+        "shared_cache_relative_path": "submissions/CIK0001523289.json",
+        "subject_cik": "1523289",
+        "url": "https://data.sec.gov/submissions/CIK0001523289.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-20T21:30:45",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-20T21:30:45",
+        "ordinal": 138,
+        "request_sha256": "2d6ee9b0f9fa5605a6c38b4a26f8fb6f443f8adc50b9778f5a5a50a677f3bb38",
+        "shared_cache_relative_path": "submissions/CIK0001526329.json",
+        "subject_cik": "1526329",
+        "url": "https://data.sec.gov/submissions/CIK0001526329.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-08T09:08:57",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-08T09:08:57",
+        "ordinal": 139,
+        "request_sha256": "576186cd908893fd9812b17bafdbbb904b6d3e50b1e36824898423dc1494afa9",
+        "shared_cache_relative_path": "submissions/CIK0001528930.json",
+        "subject_cik": "1528930",
+        "url": "https://data.sec.gov/submissions/CIK0001528930.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-14T11:19:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-14T11:19:56",
+        "ordinal": 140,
+        "request_sha256": "08976ae7401fec55b7c59f2f856254360b3c79de27ab9dc9fcf90f7e5de4ccb9",
+        "shared_cache_relative_path": "submissions/CIK0001539337.json",
+        "subject_cik": "1539337",
+        "url": "https://data.sec.gov/submissions/CIK0001539337.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-12-11T16:07:36",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-12-11T16:07:36",
+        "ordinal": 141,
+        "request_sha256": "0274479a0fb385265b80f224613a9c1ab23112952bf90e7da393f4cb3342b144",
+        "shared_cache_relative_path": "submissions/CIK0001540013.json",
+        "subject_cik": "1540013",
+        "url": "https://data.sec.gov/submissions/CIK0001540013.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-03-17T17:00:38",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-03-17T17:00:38",
+        "ordinal": 142,
+        "request_sha256": "358ad03c5e2da368f677cd19e55140d3a2589fdbd080ea93dc68f22c37135228",
+        "shared_cache_relative_path": "submissions/CIK0001540755.json",
+        "subject_cik": "1540755",
+        "url": "https://data.sec.gov/submissions/CIK0001540755.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-01-10T17:22:45",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-01-10T17:22:45",
+        "ordinal": 143,
+        "request_sha256": "1a756c5a199a606b1f41cbf0ff0135eaf756fead48e6ecc1ef09920aaac73c92",
+        "shared_cache_relative_path": "submissions/CIK0001547158.json",
+        "subject_cik": "1547158",
+        "url": "https://data.sec.gov/submissions/CIK0001547158.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-09-26T16:54:35",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-09-26T16:54:35",
+        "ordinal": 144,
+        "request_sha256": "daf6aceb442f38c387217b93d8aa261f29af5a486ad280af388a5ff9ae90cd71",
+        "shared_cache_relative_path": "submissions/CIK0001547341.json",
+        "subject_cik": "1547341",
+        "url": "https://data.sec.gov/submissions/CIK0001547341.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-02-25T06:09:15",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-02-25T06:09:15",
+        "ordinal": 145,
+        "request_sha256": "8dada294681a97876f9d3f901f8c7f13ea3a901f006fc01587dc27b4bbb984bb",
+        "shared_cache_relative_path": "submissions/CIK0001547546.json",
+        "subject_cik": "1547546",
+        "url": "https://data.sec.gov/submissions/CIK0001547546.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-06-09T16:30:28",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-06-09T16:30:28",
+        "ordinal": 146,
+        "request_sha256": "90a9288d47031bfdc118997711aab526095712681383ddf1aa9517a8799ad285",
+        "shared_cache_relative_path": "submissions/CIK0001556336.json",
+        "subject_cik": "1556336",
+        "url": "https://data.sec.gov/submissions/CIK0001556336.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-03T16:00:24",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-03T16:00:24",
+        "ordinal": 147,
+        "request_sha256": "e1b0fd0d5a7fca2e12ff8ef9ac216fa8278a346ecaab7f2a2ee4677d7d4b056c",
+        "shared_cache_relative_path": "submissions/CIK0001557523.json",
+        "subject_cik": "1557523",
+        "url": "https://data.sec.gov/submissions/CIK0001557523.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-09T16:49:01",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-09T16:49:01",
+        "ordinal": 148,
+        "request_sha256": "2f226f8542ca24f0f12d6f046648c9ebb0b188099c51e1efef976dd218aa03e1",
+        "shared_cache_relative_path": "submissions/CIK0001563577.json",
+        "subject_cik": "1563577",
+        "url": "https://data.sec.gov/submissions/CIK0001563577.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-06-12T08:03:52",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-06-12T08:03:52",
+        "ordinal": 149,
+        "request_sha256": "93997291b8640d0e68603a0ec7efabbfd730cbc2a5976f4b00e357548a352030",
+        "shared_cache_relative_path": "submissions/CIK0001565381.json",
+        "subject_cik": "1565381",
+        "url": "https://data.sec.gov/submissions/CIK0001565381.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-13T08:24:27",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-13T08:24:27",
+        "ordinal": 150,
+        "request_sha256": "0397494f511382140657e6e550668814d24a078710c78b6c089a3afd8df02cd7",
+        "shared_cache_relative_path": "submissions/CIK0001566044.json",
+        "subject_cik": "1566044",
+        "url": "https://data.sec.gov/submissions/CIK0001566044.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-07-07T16:57:01",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-07-07T16:57:01",
+        "ordinal": 151,
+        "request_sha256": "ba319b31a346148a8f2a22190d3370c9a2494a8337577f5d5fce905d5c96e7f3",
+        "shared_cache_relative_path": "submissions/CIK0001571498.json",
+        "subject_cik": "1571498",
+        "url": "https://data.sec.gov/submissions/CIK0001571498.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-22T16:10:16",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-22T16:10:16",
+        "ordinal": 152,
+        "request_sha256": "3da116e7d91c1cb38b6c62763aa06a12eee624ed0b81c72de105e957b79a08db",
+        "shared_cache_relative_path": "submissions/CIK0001582581.json",
+        "subject_cik": "1582581",
+        "url": "https://data.sec.gov/submissions/CIK0001582581.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-08-01T17:22:00",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-08-01T17:22:00",
+        "ordinal": 153,
+        "request_sha256": "b71e1bee9f4f0b89c32f138a65f722c36747712511cf228baa2b99b041965ccb",
+        "shared_cache_relative_path": "submissions/CIK0001589061.json",
+        "subject_cik": "1589061",
+        "url": "https://data.sec.gov/submissions/CIK0001589061.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-07-24T08:47:50",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-07-24T08:47:50",
+        "ordinal": 154,
+        "request_sha256": "cdee8a2e6eb47603c71baedb4b9f47c9bb847fbb291fe48aa6539185cfd3c4d0",
+        "shared_cache_relative_path": "submissions/CIK0001589420.json",
+        "subject_cik": "1589420",
+        "url": "https://data.sec.gov/submissions/CIK0001589420.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-22T09:00:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-22T09:00:25",
+        "ordinal": 155,
+        "request_sha256": "7e3e172bc3e5467a32268e6fc635206cc6e46d902d1f93499ede934949c2e80c",
+        "shared_cache_relative_path": "submissions/CIK0001593899.json",
+        "subject_cik": "1593899",
+        "url": "https://data.sec.gov/submissions/CIK0001593899.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-11-10T16:26:45",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-11-10T16:26:45",
+        "ordinal": 156,
+        "request_sha256": "83921134e2868bd97ba8aeec18611d9f0ffea1341d62f5a28914a93e3a1a6095",
+        "shared_cache_relative_path": "submissions/CIK0001595974.json",
+        "subject_cik": "1595974",
+        "url": "https://data.sec.gov/submissions/CIK0001595974.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-07-07T16:18:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-07-07T16:18:56",
+        "ordinal": 157,
+        "request_sha256": "f9b4d9eb8a1370bfe25d45d80c6a8a3c294ad9cfbbf02ff836faade572886fe2",
+        "shared_cache_relative_path": "submissions/CIK0001598646.json",
+        "subject_cik": "1598646",
+        "url": "https://data.sec.gov/submissions/CIK0001598646.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-02-14T07:11:00",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-02-14T07:11:00",
+        "ordinal": 158,
+        "request_sha256": "2f3e11dd34a1e7ab96e1873d5f8b0b172abf55ac619e6f40b4a85d552b91bb23",
+        "shared_cache_relative_path": "submissions/CIK0001604481.json",
+        "subject_cik": "1604481",
+        "url": "https://data.sec.gov/submissions/CIK0001604481.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-06-28T17:19:35",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-06-28T17:19:35",
+        "ordinal": 159,
+        "request_sha256": "0e92e1201a09f67b20d2eccf374da0154d372c9ebf86a75afd09abfb9305edc9",
+        "shared_cache_relative_path": "submissions/CIK0001605888.json",
+        "subject_cik": "1605888",
+        "url": "https://data.sec.gov/submissions/CIK0001605888.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-03-23T13:30:11",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-03-23T13:30:11",
+        "ordinal": 160,
+        "request_sha256": "85dd0eb47c9fe03c8d76212fbb75b5012afd2caba506848270955d6078c47a2e",
+        "shared_cache_relative_path": "submissions/CIK0001606457.json",
+        "subject_cik": "1606457",
+        "url": "https://data.sec.gov/submissions/CIK0001606457.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-07-09T16:34:52",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-07-09T16:34:52",
+        "ordinal": 161,
+        "request_sha256": "a766af63bf2bc4cbe43f274623165804c2f6efaa1b656f316d40774174d2ed4a",
+        "shared_cache_relative_path": "submissions/CIK0001609253.json",
+        "subject_cik": "1609253",
+        "url": "https://data.sec.gov/submissions/CIK0001609253.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-16T17:12:02",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-16T17:12:02",
+        "ordinal": 162,
+        "request_sha256": "4f93e86caafcfa0943977d0172546b42c4ebe6f4efd4750144a7d9997665bdbb",
+        "shared_cache_relative_path": "submissions/CIK0001612720.json",
+        "subject_cik": "1612720",
+        "url": "https://data.sec.gov/submissions/CIK0001612720.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-06-18T17:44:00",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-06-18T17:44:00",
+        "ordinal": 163,
+        "request_sha256": "c2111ae4a43d778debbf3969eea7a6b8758a597f1b3a1663dee34b8fc26988a4",
+        "shared_cache_relative_path": "submissions/CIK0001614806.json",
+        "subject_cik": "1614806",
+        "url": "https://data.sec.gov/submissions/CIK0001614806.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-24T17:23:46",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-24T17:23:46",
+        "ordinal": 164,
+        "request_sha256": "bb0a7c6cdefbbf8735609bf1a8c2ee050344e20b8170dc89001af43fd4e07f13",
+        "shared_cache_relative_path": "submissions/CIK0001621443.json",
+        "subject_cik": "1621443",
+        "url": "https://data.sec.gov/submissions/CIK0001621443.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-06-30T17:24:26",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-06-30T17:24:26",
+        "ordinal": 165,
+        "request_sha256": "5603d74d782e098614ccdf751edd6b86d1a1f7002b596ab6d3017a800cd8ed3e",
+        "shared_cache_relative_path": "submissions/CIK0001636282.json",
+        "subject_cik": "1636282",
+        "url": "https://data.sec.gov/submissions/CIK0001636282.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-26T17:00:09",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-26T17:00:09",
+        "ordinal": 166,
+        "request_sha256": "26015bb6727353608723caed7500250111e8c9da0541fa8b45aaed78a6c7603a",
+        "shared_cache_relative_path": "submissions/CIK0001637715.json",
+        "subject_cik": "1637715",
+        "url": "https://data.sec.gov/submissions/CIK0001637715.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-07-01T14:23:37",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-07-01T14:23:37",
+        "ordinal": 167,
+        "request_sha256": "382ced3ed2a9313f3355d39503434ef6fe2d2d7d21e3fca3cff7f824941bad85",
+        "shared_cache_relative_path": "submissions/CIK0001643154.json",
+        "subject_cik": "1643154",
+        "url": "https://data.sec.gov/submissions/CIK0001643154.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-10-08T16:20:17",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-10-08T16:20:17",
+        "ordinal": 168,
+        "request_sha256": "9ccea50e8ebdbd01d76a201cd15151f49c8933c7d0926e783ff06c21926b640b",
+        "shared_cache_relative_path": "submissions/CIK0001645666.json",
+        "subject_cik": "1645666",
+        "url": "https://data.sec.gov/submissions/CIK0001645666.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-12-19T16:18:14",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-12-19T16:18:14",
+        "ordinal": 169,
+        "request_sha256": "4ab67b125e57a85e242aed5c97886d023963889bc1455f6a11af22496a1c7c8f",
+        "shared_cache_relative_path": "submissions/CIK0001648365.json",
+        "subject_cik": "1648365",
+        "url": "https://data.sec.gov/submissions/CIK0001648365.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-09-12T16:31:03",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-09-12T16:31:03",
+        "ordinal": 170,
+        "request_sha256": "e4e36cead5f727d6eed37fb742751364914827caa254d6228d659de2a398a128",
+        "shared_cache_relative_path": "submissions/CIK0001658566.json",
+        "subject_cik": "1658566",
+        "url": "https://data.sec.gov/submissions/CIK0001658566.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-03-04T17:17:13",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-03-04T17:17:13",
+        "ordinal": 171,
+        "request_sha256": "97fb616e61b1f700a23d440046159312c06b302f0b4837ddb9e354718ccec519",
+        "shared_cache_relative_path": "submissions/CIK0001662991.json",
+        "subject_cik": "1662991",
+        "url": "https://data.sec.gov/submissions/CIK0001662991.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-10-14T07:00:52",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-10-14T07:00:52",
+        "ordinal": 172,
+        "request_sha256": "3ea15ac4df62f70d8b0f3cdebdf53bd86deaa96c6258e1b3f83a9211757cb830",
+        "shared_cache_relative_path": "submissions/CIK0001664998.json",
+        "subject_cik": "1664998",
+        "url": "https://data.sec.gov/submissions/CIK0001664998.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-21T16:32:27",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-21T16:32:27",
+        "ordinal": 173,
+        "request_sha256": "2350a189e2b0cad2f2d7f9d1a89e7edcfd377e8a3c3e5be451289d53a6b7e69d",
+        "shared_cache_relative_path": "submissions/CIK0001690585.json",
+        "subject_cik": "1690585",
+        "url": "https://data.sec.gov/submissions/CIK0001690585.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-03-04T16:21:52",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-03-04T16:21:52",
+        "ordinal": 174,
+        "request_sha256": "3ecbe462401a829ddb0f47467283efbf0816f7c3b66108258043d2fd86cb973c",
+        "shared_cache_relative_path": "submissions/CIK0001692787.json",
+        "subject_cik": "1692787",
+        "url": "https://data.sec.gov/submissions/CIK0001692787.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-04T16:54:57",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-04T16:54:57",
+        "ordinal": 175,
+        "request_sha256": "7d6ab77cd9b76ae0d95ea61da9935eafc82dd8f65f750f355e6a28e0f1cd449a",
+        "shared_cache_relative_path": "submissions/CIK0001697818.json",
+        "subject_cik": "1697818",
+        "url": "https://data.sec.gov/submissions/CIK0001697818.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-11-29T17:51:28",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-11-29T17:51:28",
+        "ordinal": 176,
+        "request_sha256": "fa6a2c21dd9f0e2d6393ae0c65058ea0dadc548d31779efa6b1edce99828b87d",
+        "shared_cache_relative_path": "submissions/CIK0001698530.json",
+        "subject_cik": "1698530",
+        "url": "https://data.sec.gov/submissions/CIK0001698530.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-20T21:25:07",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-20T21:25:07",
+        "ordinal": 177,
+        "request_sha256": "1831891eb5aa4bc29d3cceffee31351f62e592b1b8111608921beff6ecfd0c23",
+        "shared_cache_relative_path": "submissions/CIK0001704299.json",
+        "subject_cik": "1704299",
+        "url": "https://data.sec.gov/submissions/CIK0001704299.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-17T17:48:59",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-17T17:48:59",
+        "ordinal": 178,
+        "request_sha256": "8a7e35f72a03fe91b7193d69b247aa0bd449b42bc2c398f695e1510e2c9fe0b8",
+        "shared_cache_relative_path": "submissions/CIK0001708493.json",
+        "subject_cik": "1708493",
+        "url": "https://data.sec.gov/submissions/CIK0001708493.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-04-20T17:26:59",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-04-20T17:26:59",
+        "ordinal": 179,
+        "request_sha256": "86719e818df4ad5fb1b0a3d22ef29eab7b48d595da996957c2000ab25bba6f23",
+        "shared_cache_relative_path": "submissions/CIK0001714562.json",
+        "subject_cik": "1714562",
+        "url": "https://data.sec.gov/submissions/CIK0001714562.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-03-18T12:39:43",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-03-18T12:39:43",
+        "ordinal": 180,
+        "request_sha256": "18ee5644d7146933287b182bf9bcea85545009abaf2d08478520158254ba2aa6",
+        "shared_cache_relative_path": "submissions/CIK0001717457.json",
+        "subject_cik": "1717457",
+        "url": "https://data.sec.gov/submissions/CIK0001717457.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-06-03T15:59:15",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-06-03T15:59:15",
+        "ordinal": 181,
+        "request_sha256": "bb8fe2dde45fab7e235b41eca8060786872cf3e5cc6d70c5046da76e6cc99880",
+        "shared_cache_relative_path": "submissions/CIK0001719406.json",
+        "subject_cik": "1719406",
+        "url": "https://data.sec.gov/submissions/CIK0001719406.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-10-27T16:31:30",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-10-27T16:31:30",
+        "ordinal": 182,
+        "request_sha256": "201fa52b90a1f83ccf7e8697b5bebe35658a35e6d3dd507b0c4ed7a3ade85567",
+        "shared_cache_relative_path": "submissions/CIK0001722271.json",
+        "subject_cik": "1722271",
+        "url": "https://data.sec.gov/submissions/CIK0001722271.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-06-01T16:50:45",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-06-01T16:50:45",
+        "ordinal": 183,
+        "request_sha256": "1922759372fa8faaa064b7e4b730b52dfdd5ffe92a7d8efddb8dcb816f59ccf0",
+        "shared_cache_relative_path": "submissions/CIK0001724979.json",
+        "subject_cik": "1724979",
+        "url": "https://data.sec.gov/submissions/CIK0001724979.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-13T16:48:02",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-13T16:48:02",
+        "ordinal": 184,
+        "request_sha256": "be8d9c8dc586b73de18e105c50de2b7de48dd02aa15fa6dfd3a3aa4a7b0083f4",
+        "shared_cache_relative_path": "submissions/CIK0001731289.json",
+        "subject_cik": "1731289",
+        "url": "https://data.sec.gov/submissions/CIK0001731289.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-06T16:31:31",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-06T16:31:31",
+        "ordinal": 185,
+        "request_sha256": "6ef7a56306989bec7a36ea133c783c919ed665e0c6356c1b7d7fd5082a0a9786",
+        "shared_cache_relative_path": "submissions/CIK0001734713.json",
+        "subject_cik": "1734713",
+        "url": "https://data.sec.gov/submissions/CIK0001734713.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-11-23T16:07:00",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-11-23T16:07:00",
+        "ordinal": 186,
+        "request_sha256": "e0ccfd22735242af015134e81183886fdab624cd8a3932793514280c3c1d463b",
+        "shared_cache_relative_path": "submissions/CIK0001743759.json",
+        "subject_cik": "1743759",
+        "url": "https://data.sec.gov/submissions/CIK0001743759.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-24T13:49:14",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-24T13:49:14",
+        "ordinal": 187,
+        "request_sha256": "54351c036135c8749d59c646a06ae61ac117c966b84b64853f85936eb3ba22dc",
+        "shared_cache_relative_path": "submissions/CIK0001745020.json",
+        "subject_cik": "1745020",
+        "url": "https://data.sec.gov/submissions/CIK0001745020.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-04-09T15:04:48",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-04-09T15:04:48",
+        "ordinal": 188,
+        "request_sha256": "d0d732c7dbd1872cc8af85d28e714d17df3a108faaabe93cf9f21d1a6afd3473",
+        "shared_cache_relative_path": "submissions/CIK0001766363.json",
+        "subject_cik": "1766363",
+        "url": "https://data.sec.gov/submissions/CIK0001766363.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-04-08T17:12:49",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-04-08T17:12:49",
+        "ordinal": 189,
+        "request_sha256": "ccbd61985ba79f47072690fc2a5bd30afdbda2b6cd769d2fb07a42d5864c5093",
+        "shared_cache_relative_path": "submissions/CIK0001767042.json",
+        "subject_cik": "1767042",
+        "url": "https://data.sec.gov/submissions/CIK0001767042.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-02-05T08:35:23",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-02-05T08:35:23",
+        "ordinal": 190,
+        "request_sha256": "43d49cdf210a1b341858ff11d2d9c2ff3f32874a2e91147eaee43fcedd895cc2",
+        "shared_cache_relative_path": "submissions/CIK0001768666.json",
+        "subject_cik": "1768666",
+        "url": "https://data.sec.gov/submissions/CIK0001768666.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-07-20T17:11:24",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-07-20T17:11:24",
+        "ordinal": 191,
+        "request_sha256": "d3790ebfc2a7d7d87ff240bdce5f904ec5221f0541fb8e4b6aff56397b12de3b",
+        "shared_cache_relative_path": "submissions/CIK0001769697.json",
+        "subject_cik": "1769697",
+        "url": "https://data.sec.gov/submissions/CIK0001769697.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-27T17:29:47",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-27T17:29:47",
+        "ordinal": 192,
+        "request_sha256": "bd58ed087d60004ee2d854f6513e27c9744b8b307c6125fcbdbe168079c1e479",
+        "shared_cache_relative_path": "submissions/CIK0001770141.json",
+        "subject_cik": "1770141",
+        "url": "https://data.sec.gov/submissions/CIK0001770141.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-06-14T16:01:51",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-06-14T16:01:51",
+        "ordinal": 193,
+        "request_sha256": "29192f2712591fd96e771e519edaed6ed490eb5f444aac2cae4754cbe6d5e7af",
+        "shared_cache_relative_path": "submissions/CIK0001775734.json",
+        "subject_cik": "1775734",
+        "url": "https://data.sec.gov/submissions/CIK0001775734.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-05T17:23:18",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-05T17:23:18",
+        "ordinal": 194,
+        "request_sha256": "c94bd72009fbfb7dca765dbc2c3e383414708b2dd28ac40394c9cacbe717c0b4",
+        "shared_cache_relative_path": "submissions/CIK0001776197.json",
+        "subject_cik": "1776197",
+        "url": "https://data.sec.gov/submissions/CIK0001776197.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-15T17:28:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-15T17:28:25",
+        "ordinal": 195,
+        "request_sha256": "3226d488c84f9517ab765f3ef0f7bfaf98666d651a3930c3b71277912d34dcaa",
+        "shared_cache_relative_path": "submissions/CIK0001778784.json",
+        "subject_cik": "1778784",
+        "url": "https://data.sec.gov/submissions/CIK0001778784.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-26T09:20:05",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-26T09:20:05",
+        "ordinal": 196,
+        "request_sha256": "0aee1ccbe4c24d6c623d3f224aeac5884e7d0e7f93ac82455db9c2154dbc0d3f",
+        "shared_cache_relative_path": "submissions/CIK0001785971.json",
+        "subject_cik": "1785971",
+        "url": "https://data.sec.gov/submissions/CIK0001785971.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-16T08:20:30",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-16T08:20:30",
+        "ordinal": 197,
+        "request_sha256": "e7dd4adb426de6fa08b32602c8f2c68415f6d3a12f7eb4efa39a767631f396fe",
+        "shared_cache_relative_path": "submissions/CIK0001793855.json",
+        "subject_cik": "1793855",
+        "url": "https://data.sec.gov/submissions/CIK0001793855.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-02-18T17:03:59",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-02-18T17:03:59",
+        "ordinal": 198,
+        "request_sha256": "49fc245ea014e05f3ccf728faf924834ec1e9ef8ac1779eb88011e72904012de",
+        "shared_cache_relative_path": "submissions/CIK0001794621.json",
+        "subject_cik": "1794621",
+        "url": "https://data.sec.gov/submissions/CIK0001794621.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-01-13T16:04:32",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-01-13T16:04:32",
+        "ordinal": 199,
+        "request_sha256": "9944641e61c8e4511afc34e4888f8516faa2c21ec1f89420f82e939c6da95ee2",
+        "shared_cache_relative_path": "submissions/CIK0001796209.json",
+        "subject_cik": "1796209",
+        "url": "https://data.sec.gov/submissions/CIK0001796209.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-06-21T06:00:27",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-06-21T06:00:27",
+        "ordinal": 200,
+        "request_sha256": "e92d886e4f4b3850561d1f0d82700fe05b19b6f78d477fa78edef87ac2bfa278",
+        "shared_cache_relative_path": "submissions/CIK0001799983.json",
+        "subject_cik": "1799983",
+        "url": "https://data.sec.gov/submissions/CIK0001799983.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-06-07T13:48:59",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-06-07T13:48:59",
+        "ordinal": 201,
+        "request_sha256": "5f08fdb6df630e664dfea7e5a906b5afa864c49367357b6e795739bda9c751c4",
+        "shared_cache_relative_path": "submissions/CIK0001802450.json",
+        "subject_cik": "1802450",
+        "url": "https://data.sec.gov/submissions/CIK0001802450.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-05T16:05:49",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-05T16:05:49",
+        "ordinal": 202,
+        "request_sha256": "82055783087eeda6876ae7a8cc79bb1a943f00130a13c0d8afb94ba0250952b4",
+        "shared_cache_relative_path": "submissions/CIK0001803599.json",
+        "subject_cik": "1803599",
+        "url": "https://data.sec.gov/submissions/CIK0001803599.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-01-21T16:30:54",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-01-21T16:30:54",
+        "ordinal": 203,
+        "request_sha256": "3926346f32cfcea18bbab8b85ac688e5e7680b70192dce75fc043aad925a3f4e",
+        "shared_cache_relative_path": "submissions/CIK0001805087.json",
+        "subject_cik": "1805087",
+        "url": "https://data.sec.gov/submissions/CIK0001805087.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-01-30T17:29:52",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-01-30T17:29:52",
+        "ordinal": 204,
+        "request_sha256": "c02e3d912dd4885d29a24e8ab9d463f865d72cbb1b882b937b4be997fc54539a",
+        "shared_cache_relative_path": "submissions/CIK0001805385.json",
+        "subject_cik": "1805385",
+        "url": "https://data.sec.gov/submissions/CIK0001805385.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-14T16:11:08",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-14T16:11:08",
+        "ordinal": 205,
+        "request_sha256": "346a8814dcb772975d6ff22aa7f8d2973c2e74cc4f4ae0b9d357ecbfee9f2480",
+        "shared_cache_relative_path": "submissions/CIK0001805651.json",
+        "subject_cik": "1805651",
+        "url": "https://data.sec.gov/submissions/CIK0001805651.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-21T17:07:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-21T17:07:25",
+        "ordinal": 206,
+        "request_sha256": "0e961cdfaec56f009a5245860e4b8c87893316877a5ddcb62f9605f055a024e8",
+        "shared_cache_relative_path": "submissions/CIK0001807192.json",
+        "subject_cik": "1807192",
+        "url": "https://data.sec.gov/submissions/CIK0001807192.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-30T18:57:47",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-30T18:57:47",
+        "ordinal": 207,
+        "request_sha256": "3c272a0442969609f3031f3102ef60c2bf2915a8a7444742cd6e11072016f36d",
+        "shared_cache_relative_path": "submissions/CIK0001809519.json",
+        "subject_cik": "1809519",
+        "url": "https://data.sec.gov/submissions/CIK0001809519.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-28T16:15:28",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-28T16:15:28",
+        "ordinal": 208,
+        "request_sha256": "9d332b0730d807bc8093076e96c3b168808a35b534f95ef9d11e7fed63275f0f",
+        "shared_cache_relative_path": "submissions/CIK0001809541.json",
+        "subject_cik": "1809541",
+        "url": "https://data.sec.gov/submissions/CIK0001809541.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-07-10T06:06:57",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-07-10T06:06:57",
+        "ordinal": 209,
+        "request_sha256": "44f1a7491cc638c90f3b099dcfc2c53fd315491c17e1033253b76427ac575681",
+        "shared_cache_relative_path": "submissions/CIK0001814287.json",
+        "subject_cik": "1814287",
+        "url": "https://data.sec.gov/submissions/CIK0001814287.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-16T16:30:39",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-16T16:30:39",
+        "ordinal": 210,
+        "request_sha256": "c41ac29fdb7a27fadd681e176146b5150d6aca34546aa52b16846f5c15a3c347",
+        "shared_cache_relative_path": "submissions/CIK0001814329.json",
+        "subject_cik": "1814329",
+        "url": "https://data.sec.gov/submissions/CIK0001814329.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-27T16:19:52",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-27T16:19:52",
+        "ordinal": 211,
+        "request_sha256": "d11b59208374bee6f73f35e1103937a79bd7598ed1d7dad22383629c5ac695f8",
+        "shared_cache_relative_path": "submissions/CIK0001816708.json",
+        "subject_cik": "1816708",
+        "url": "https://data.sec.gov/submissions/CIK0001816708.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-01-09T16:02:29",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-01-09T16:02:29",
+        "ordinal": 212,
+        "request_sha256": "c4b0b85713dbe41fb861df1837ff4cb879bd6df8952a6a48f4c15f5abde48c62",
+        "shared_cache_relative_path": "submissions/CIK0001816736.json",
+        "subject_cik": "1816736",
+        "url": "https://data.sec.gov/submissions/CIK0001816736.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-05-09T16:39:51",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-05-09T16:39:51",
+        "ordinal": 213,
+        "request_sha256": "3c548640d7cab8894c8f961a8407b70ea198090bde4ec783d6220ac74a05a3ba",
+        "shared_cache_relative_path": "submissions/CIK0001818331.json",
+        "subject_cik": "1818331",
+        "url": "https://data.sec.gov/submissions/CIK0001818331.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-27T16:15:55",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-27T16:15:55",
+        "ordinal": 214,
+        "request_sha256": "c319da15bb5f20a82fcaf6a969ce78420cf5b6c0ffbaee4e93f79d2123b00dcf",
+        "shared_cache_relative_path": "submissions/CIK0001818605.json",
+        "subject_cik": "1818605",
+        "url": "https://data.sec.gov/submissions/CIK0001818605.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-02-23T16:05:41",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-02-23T16:05:41",
+        "ordinal": 215,
+        "request_sha256": "ec7684e8427b76b98000dddda2eaa38fb37a14906b1cdf0c86fc177f7027029c",
+        "shared_cache_relative_path": "submissions/CIK0001818644.json",
+        "subject_cik": "1818644",
+        "url": "https://data.sec.gov/submissions/CIK0001818644.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-07-13T16:51:17",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-07-13T16:51:17",
+        "ordinal": 216,
+        "request_sha256": "d2f62b0618c0c379c8009f1ef361c0106c540a4216ec6b5d107eb3d79fdc9855",
+        "shared_cache_relative_path": "submissions/CIK0001819438.json",
+        "subject_cik": "1819438",
+        "url": "https://data.sec.gov/submissions/CIK0001819438.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-05-15T21:11:49",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-05-15T21:11:49",
+        "ordinal": 217,
+        "request_sha256": "b5b1857d017652fe55bc1fb246d95164115259770c3d24d37013d26223447696",
+        "shared_cache_relative_path": "submissions/CIK0001819615.json",
+        "subject_cik": "1819615",
+        "url": "https://data.sec.gov/submissions/CIK0001819615.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-06-06T16:03:22",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-06-06T16:03:22",
+        "ordinal": 218,
+        "request_sha256": "283adfc60a390d45c2ccbfc1516283c588ed49ce0cc6a83968f4f6977bfd65d9",
+        "shared_cache_relative_path": "submissions/CIK0001822691.json",
+        "subject_cik": "1822691",
+        "url": "https://data.sec.gov/submissions/CIK0001822691.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-02-07T16:01:58",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-02-07T16:01:58",
+        "ordinal": 219,
+        "request_sha256": "ff339fd7d82d4743b01d376a897c7b168b64f809d4288354d040b65f0572f478",
+        "shared_cache_relative_path": "submissions/CIK0001822711.json",
+        "subject_cik": "1822711",
+        "url": "https://data.sec.gov/submissions/CIK0001822711.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-05-12T10:09:53",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-05-12T10:09:53",
+        "ordinal": 220,
+        "request_sha256": "84de9083976260c1fe4b63bf96ad820e43c216073f25a799c59f31ef475f17d6",
+        "shared_cache_relative_path": "submissions/CIK0001822966.json",
+        "subject_cik": "1822966",
+        "url": "https://data.sec.gov/submissions/CIK0001822966.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-02-04T16:50:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-02-04T16:50:25",
+        "ordinal": 221,
+        "request_sha256": "92e5342ebbca260689ac2b57e4ee07b73e4104540d83a7f05a476de5fee6fde4",
+        "shared_cache_relative_path": "submissions/CIK0001823587.json",
+        "subject_cik": "1823587",
+        "url": "https://data.sec.gov/submissions/CIK0001823587.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-12-16T14:21:35",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-12-16T14:21:35",
+        "ordinal": 222,
+        "request_sha256": "999e9b77c57a93c2126d20935c5082758c4e6cb6f3a89b0023609fc894485d55",
+        "shared_cache_relative_path": "submissions/CIK0001823593.json",
+        "subject_cik": "1823593",
+        "url": "https://data.sec.gov/submissions/CIK0001823593.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-20T17:07:15",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-20T17:07:15",
+        "ordinal": 223,
+        "request_sha256": "7baf56fc68354f67a8b8995ccb61a7647a239d3795febb62306e9500fe65f994",
+        "shared_cache_relative_path": "submissions/CIK0001824403.json",
+        "subject_cik": "1824403",
+        "url": "https://data.sec.gov/submissions/CIK0001824403.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-05-09T16:37:28",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-05-09T16:37:28",
+        "ordinal": 224,
+        "request_sha256": "02b30ac8a82f45e22af32f7b87dceccb2a0a15d63e7651d37a9aec8a3c598c78",
+        "shared_cache_relative_path": "submissions/CIK0001824502.json",
+        "subject_cik": "1824502",
+        "url": "https://data.sec.gov/submissions/CIK0001824502.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-05-16T07:36:54",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-05-16T07:36:54",
+        "ordinal": 225,
+        "request_sha256": "1c799744b3e13e48029ccbaf42b725a74c6f5eaf64145e0a69049d17b1db0ed6",
+        "shared_cache_relative_path": "submissions/CIK0001824814.json",
+        "subject_cik": "1824814",
+        "url": "https://data.sec.gov/submissions/CIK0001824814.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-07-13T16:27:31",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-07-13T16:27:31",
+        "ordinal": 226,
+        "request_sha256": "f5d930657a036f38b5181c808a17511f98a0c20a6691d749df7402afed41f9d8",
+        "shared_cache_relative_path": "submissions/CIK0001826000.json",
+        "subject_cik": "1826000",
+        "url": "https://data.sec.gov/submissions/CIK0001826000.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-12-22T17:30:32",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-12-22T17:30:32",
+        "ordinal": 227,
+        "request_sha256": "87035b0633c50191ba6546f549d16178732be542e625d593293b4ed2e3aec740",
+        "shared_cache_relative_path": "submissions/CIK0001826667.json",
+        "subject_cik": "1826667",
+        "url": "https://data.sec.gov/submissions/CIK0001826667.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-04-03T16:06:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-04-03T16:06:25",
+        "ordinal": 228,
+        "request_sha256": "602eaa049a6ee354c699e673c3848caee27021f2b0fad3395e6494c43107c179",
+        "shared_cache_relative_path": "submissions/CIK0001826671.json",
+        "subject_cik": "1826671",
+        "url": "https://data.sec.gov/submissions/CIK0001826671.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-16T16:31:00",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-16T16:31:00",
+        "ordinal": 229,
+        "request_sha256": "38c31c15e4e624a317a25372985ce0d02ee4711955a492c6e4dbc2a682989c07",
+        "shared_cache_relative_path": "submissions/CIK0001827075.json",
+        "subject_cik": "1827075",
+        "url": "https://data.sec.gov/submissions/CIK0001827075.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-06-12T21:15:15",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-06-12T21:15:15",
+        "ordinal": 230,
+        "request_sha256": "fe429bc1f21843340ef93ff96aace26fd9188c96a86e136f690b472d9a610255",
+        "shared_cache_relative_path": "submissions/CIK0001828791.json",
+        "subject_cik": "1828791",
+        "url": "https://data.sec.gov/submissions/CIK0001828791.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-09-23T17:00:20",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-09-23T17:00:20",
+        "ordinal": 231,
+        "request_sha256": "202b2b6917eeb2d0db7756c377d1e3da642c817be2f7f50b87d33235631fb6b9",
+        "shared_cache_relative_path": "submissions/CIK0001828811.json",
+        "subject_cik": "1828811",
+        "url": "https://data.sec.gov/submissions/CIK0001828811.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-04-10T16:07:51",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-04-10T16:07:51",
+        "ordinal": 232,
+        "request_sha256": "90e725c58bb7f118b6a36b7a352807f4a2bb3b12d492c23cac25c1409103fa16",
+        "shared_cache_relative_path": "submissions/CIK0001828937.json",
+        "subject_cik": "1828937",
+        "url": "https://data.sec.gov/submissions/CIK0001828937.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-12-19T17:36:41",
+        "event_count": 2,
+        "latest_event_accepted_at": "2024-06-21T16:02:06",
+        "ordinal": 233,
+        "request_sha256": "e35963cb808f5c4852300295042237c4703963bb9d47fb46219d41bbe4a3e1cb",
+        "shared_cache_relative_path": "submissions/CIK0001829635.json",
+        "subject_cik": "1829635",
+        "url": "https://data.sec.gov/submissions/CIK0001829635.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-03-24T09:52:50",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-03-24T09:52:50",
+        "ordinal": 234,
+        "request_sha256": "457ab39b9879e0862f8d135cdf6f7dd4a6c4bbb1eb075873bf3525b04fecaf5b",
+        "shared_cache_relative_path": "submissions/CIK0001830033.json",
+        "subject_cik": "1830033",
+        "url": "https://data.sec.gov/submissions/CIK0001830033.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-03-30T16:21:33",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-03-30T16:21:33",
+        "ordinal": 235,
+        "request_sha256": "7c47bb47577093760844e36edd4221babd350779d2a507f89b22acc282907c1e",
+        "shared_cache_relative_path": "submissions/CIK0001832038.json",
+        "subject_cik": "1832038",
+        "url": "https://data.sec.gov/submissions/CIK0001832038.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-08-12T17:08:30",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-08-12T17:08:30",
+        "ordinal": 236,
+        "request_sha256": "a4b5a01510319cf88008c3d10c0290d16e7fc7e9530dcf3e868a6c97d39d13b3",
+        "shared_cache_relative_path": "submissions/CIK0001832487.json",
+        "subject_cik": "1832487",
+        "url": "https://data.sec.gov/submissions/CIK0001832487.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-01-03T16:17:04",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-01-03T16:17:04",
+        "ordinal": 237,
+        "request_sha256": "74b3514523da875b8bb510eef614d18b05a233b55dcc8c31830411cf0902ee9b",
+        "shared_cache_relative_path": "submissions/CIK0001833835.json",
+        "subject_cik": "1833835",
+        "url": "https://data.sec.gov/submissions/CIK0001833835.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-27T16:02:16",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-27T16:02:16",
+        "ordinal": 238,
+        "request_sha256": "1c207452074ccc447d94b2d26dc1081c3b2f8dd74ddc1eb9be1c8f513c3e32bc",
+        "shared_cache_relative_path": "submissions/CIK0001835068.json",
+        "subject_cik": "1835068",
+        "url": "https://data.sec.gov/submissions/CIK0001835068.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-05-01T18:46:45",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-05-01T18:46:45",
+        "ordinal": 239,
+        "request_sha256": "5e21fe7ee70e0f332e7e3038e31bd4ee5c9b25bb81c5bd4ad7858156f35030b3",
+        "shared_cache_relative_path": "submissions/CIK0001835256.json",
+        "subject_cik": "1835256",
+        "url": "https://data.sec.gov/submissions/CIK0001835256.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-11-09T14:52:13",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-11-09T14:52:13",
+        "ordinal": 240,
+        "request_sha256": "2969dbe13f4a88c3cbe2cc084bef1d908111c643c781d984c05414c495a18580",
+        "shared_cache_relative_path": "submissions/CIK0001835512.json",
+        "subject_cik": "1835512",
+        "url": "https://data.sec.gov/submissions/CIK0001835512.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-01T17:01:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-01T17:01:56",
+        "ordinal": 241,
+        "request_sha256": "eaf2ffec9349e0bd102ab3d00faf7368a62106a550bcf92d4e54b7e140d6d603",
+        "shared_cache_relative_path": "submissions/CIK0001835856.json",
+        "subject_cik": "1835856",
+        "url": "https://data.sec.gov/submissions/CIK0001835856.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-16T14:34:44",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-16T14:34:44",
+        "ordinal": 242,
+        "request_sha256": "9ecef4aa310cd7b690fa7f0a896df36d02fd4ae0e59a6d03bbcd89e244f299b8",
+        "shared_cache_relative_path": "submissions/CIK0001836057.json",
+        "subject_cik": "1836057",
+        "url": "https://data.sec.gov/submissions/CIK0001836057.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-07-07T16:21:49",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-07-07T16:21:49",
+        "ordinal": 243,
+        "request_sha256": "0c24bc31e58b6cf13d48f4a434fd46765e85cbab1b39046409d4176a32cca7a1",
+        "shared_cache_relative_path": "submissions/CIK0001836379.json",
+        "subject_cik": "1836379",
+        "url": "https://data.sec.gov/submissions/CIK0001836379.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-06-17T20:20:46",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-06-17T20:20:46",
+        "ordinal": 244,
+        "request_sha256": "f9664c86b6ee8d87a66358ee24f005c7a8d718191eb27b6828fd956973282db2",
+        "shared_cache_relative_path": "submissions/CIK0001837240.json",
+        "subject_cik": "1837240",
+        "url": "https://data.sec.gov/submissions/CIK0001837240.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-01-13T17:28:01",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-01-13T17:28:01",
+        "ordinal": 245,
+        "request_sha256": "c188cb95f187828113b7f3c3064638299dbaa895375793d971914d9803394324",
+        "shared_cache_relative_path": "submissions/CIK0001838615.json",
+        "subject_cik": "1838615",
+        "url": "https://data.sec.gov/submissions/CIK0001838615.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-07-29T13:00:33",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-07-29T13:00:33",
+        "ordinal": 246,
+        "request_sha256": "ffbdc25727bcb0a8ee0f34df520cbca6fe0d8993f584dbc34f30d464079da770",
+        "shared_cache_relative_path": "submissions/CIK0001839360.json",
+        "subject_cik": "1839360",
+        "url": "https://data.sec.gov/submissions/CIK0001839360.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-23T16:03:53",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-23T16:03:53",
+        "ordinal": 247,
+        "request_sha256": "055025106782184ba61fc0270a7602b5ec3e2a772fe91bb3e1f812f5e8fca3ae",
+        "shared_cache_relative_path": "submissions/CIK0001840199.json",
+        "subject_cik": "1840199",
+        "url": "https://data.sec.gov/submissions/CIK0001840199.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-06-27T16:30:57",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-06-27T16:30:57",
+        "ordinal": 248,
+        "request_sha256": "607183b06b8d28467d7734b670431da24778c4369a4e31e3bd8e6ac3cc7ba4fa",
+        "shared_cache_relative_path": "submissions/CIK0001841761.json",
+        "subject_cik": "1841761",
+        "url": "https://data.sec.gov/submissions/CIK0001841761.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-08-01T17:24:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-08-01T17:24:56",
+        "ordinal": 249,
+        "request_sha256": "33b9e5fc2116ab301e13ad93dd1790cac52c6c9b1d3ff22d39e671daba2e9dbe",
+        "shared_cache_relative_path": "submissions/CIK0001842279.json",
+        "subject_cik": "1842279",
+        "url": "https://data.sec.gov/submissions/CIK0001842279.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-02T16:15:09",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-02T16:15:09",
+        "ordinal": 250,
+        "request_sha256": "abac264f299df59f0367fdfc592b3ab797d81bdc947723bbb16ba501b9fdb48c",
+        "shared_cache_relative_path": "submissions/CIK0001842566.json",
+        "subject_cik": "1842566",
+        "url": "https://data.sec.gov/submissions/CIK0001842566.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-05T07:49:34",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-05T07:49:34",
+        "ordinal": 251,
+        "request_sha256": "4bf5cf82ba134f7c6151efbc202cacb352aa0dbb78656e2c98448373d2b80687",
+        "shared_cache_relative_path": "submissions/CIK0001843181.json",
+        "subject_cik": "1843181",
+        "url": "https://data.sec.gov/submissions/CIK0001843181.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-09-26T15:56:30",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-09-26T15:56:30",
+        "ordinal": 252,
+        "request_sha256": "35f7d77d1173800ca5079e8f1cd2b038a79b9f524ab87abad3ba534ff7ae5ee6",
+        "shared_cache_relative_path": "submissions/CIK0001843588.json",
+        "subject_cik": "1843588",
+        "url": "https://data.sec.gov/submissions/CIK0001843588.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-08T17:22:26",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-08T17:22:26",
+        "ordinal": 253,
+        "request_sha256": "92d6542fb4827b3b4194b1cfd4498d69340aecad5707f45503631026401c4223",
+        "shared_cache_relative_path": "submissions/CIK0001843973.json",
+        "subject_cik": "1843973",
+        "url": "https://data.sec.gov/submissions/CIK0001843973.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-03-18T08:30:25",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-03-18T08:30:25",
+        "ordinal": 254,
+        "request_sha256": "4f983bbbb1f119a63c76f26ae126eee425fbb19f6c1323f58227cbe2e9650139",
+        "shared_cache_relative_path": "submissions/CIK0001844505.json",
+        "subject_cik": "1844505",
+        "url": "https://data.sec.gov/submissions/CIK0001844505.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-30T17:06:49",
+        "event_count": 2,
+        "latest_event_accepted_at": "2024-10-21T20:31:52",
+        "ordinal": 255,
+        "request_sha256": "1cd67e0d9ed5d9f93ba6ca6898d47f1118b1ff9a55b35f93d2aa902f8c7804ab",
+        "shared_cache_relative_path": "submissions/CIK0001846084.json",
+        "subject_cik": "1846084",
+        "url": "https://data.sec.gov/submissions/CIK0001846084.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-05-27T16:29:55",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-05-27T16:29:55",
+        "ordinal": 256,
+        "request_sha256": "4b94d3cfdeac31a21e34f58bb325d09c77f185de6dfbacd0de62ee370d76d7a3",
+        "shared_cache_relative_path": "submissions/CIK0001846576.json",
+        "subject_cik": "1846576",
+        "url": "https://data.sec.gov/submissions/CIK0001846576.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-06-07T20:20:34",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-06-07T20:20:34",
+        "ordinal": 257,
+        "request_sha256": "e9760b9c25f680eac55a7f4a74ebd7b0112c7b300f01ea92498696002047aea5",
+        "shared_cache_relative_path": "submissions/CIK0001847355.json",
+        "subject_cik": "1847355",
+        "url": "https://data.sec.gov/submissions/CIK0001847355.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-28T17:00:06",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-28T17:00:06",
+        "ordinal": 258,
+        "request_sha256": "2ff5d6e743e868699d003021fdcdb6e17eed66832758aeff09c89f32c0d6571c",
+        "shared_cache_relative_path": "submissions/CIK0001848861.json",
+        "subject_cik": "1848861",
+        "url": "https://data.sec.gov/submissions/CIK0001848861.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-03-15T21:17:23",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-03-15T21:17:23",
+        "ordinal": 259,
+        "request_sha256": "091409c9922899d458b834d89c3a6ad5f1c21923010a9cfe2d4fe1d05c6b0465",
+        "shared_cache_relative_path": "submissions/CIK0001848898.json",
+        "subject_cik": "1848898",
+        "url": "https://data.sec.gov/submissions/CIK0001848898.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-02-14T19:12:10",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-02-14T19:12:10",
+        "ordinal": 260,
+        "request_sha256": "2a5b8919d8dea3d739100db1e1acc71ee2a27155ab62096a7a4c9a9e2af3e138",
+        "shared_cache_relative_path": "submissions/CIK0001848948.json",
+        "subject_cik": "1848948",
+        "url": "https://data.sec.gov/submissions/CIK0001848948.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-02T17:16:55",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-02T17:16:55",
+        "ordinal": 261,
+        "request_sha256": "d508dc38140fd08fb51c4aab8ed248ba2516273ed300f921d112ea8cdd5dccd9",
+        "shared_cache_relative_path": "submissions/CIK0001849820.json",
+        "subject_cik": "1849820",
+        "url": "https://data.sec.gov/submissions/CIK0001849820.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-06-21T16:23:29",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-06-21T16:23:29",
+        "ordinal": 262,
+        "request_sha256": "92668d4762f18eaefda3be9abfd796935e911ba9289ddafe2a477e0cda2855fe",
+        "shared_cache_relative_path": "submissions/CIK0001850059.json",
+        "subject_cik": "1850059",
+        "url": "https://data.sec.gov/submissions/CIK0001850059.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-08-30T16:48:09",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-08-30T16:48:09",
+        "ordinal": 263,
+        "request_sha256": "80b639e307495b8d324efc03efcd0e5e9f319fd8d38b6405710d740634b019fd",
+        "shared_cache_relative_path": "submissions/CIK0001850266.json",
+        "subject_cik": "1850266",
+        "url": "https://data.sec.gov/submissions/CIK0001850266.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-09-18T16:26:27",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-09-18T16:26:27",
+        "ordinal": 264,
+        "request_sha256": "f9e12d84fca1ed18dd8229969a06af18ac35d68d4798785d572fca43301e4570",
+        "shared_cache_relative_path": "submissions/CIK0001850906.json",
+        "subject_cik": "1850906",
+        "url": "https://data.sec.gov/submissions/CIK0001850906.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-09-07T21:47:10",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-09-07T21:47:10",
+        "ordinal": 265,
+        "request_sha256": "84a0aa69dcdfea358dec8d876b05e58ffc3d1046349b2218ed720bbe936fd446",
+        "shared_cache_relative_path": "submissions/CIK0001852736.json",
+        "subject_cik": "1852736",
+        "url": "https://data.sec.gov/submissions/CIK0001852736.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-07-20T16:20:14",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-07-20T16:20:14",
+        "ordinal": 266,
+        "request_sha256": "2989a9a4e9c0761ce65cf2c3e027c3cdc4a8fbd93682c78abd623d21b247103c",
+        "shared_cache_relative_path": "submissions/CIK0001852767.json",
+        "subject_cik": "1852767",
+        "url": "https://data.sec.gov/submissions/CIK0001852767.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-11T20:52:50",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-11T20:52:50",
+        "ordinal": 267,
+        "request_sha256": "bdfa343687ebd863575d455cfb515b3071298f0a3cec534b63d2d05f5b682e8a",
+        "shared_cache_relative_path": "submissions/CIK0001853070.json",
+        "subject_cik": "1853070",
+        "url": "https://data.sec.gov/submissions/CIK0001853070.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-01T08:02:12",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-01T08:02:12",
+        "ordinal": 268,
+        "request_sha256": "0c6f2ad48d0c3e78878045f871169227e57446f9165ec38fe1f72300ce2e845b",
+        "shared_cache_relative_path": "submissions/CIK0001855066.json",
+        "subject_cik": "1855066",
+        "url": "https://data.sec.gov/submissions/CIK0001855066.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-09-21T17:01:24",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-09-21T17:01:24",
+        "ordinal": 269,
+        "request_sha256": "801febf0b936fbd919e834b77d38f8da74cade6479ebe2b4e2d13dec98bbfd82",
+        "shared_cache_relative_path": "submissions/CIK0001855485.json",
+        "subject_cik": "1855485",
+        "url": "https://data.sec.gov/submissions/CIK0001855485.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-05-06T20:26:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-05-06T20:26:56",
+        "ordinal": 270,
+        "request_sha256": "1d62c0ef846ef3ce0f991e06738c28fc5c0316304287e32601d0ef9674ed18b5",
+        "shared_cache_relative_path": "submissions/CIK0001855747.json",
+        "subject_cik": "1855747",
+        "url": "https://data.sec.gov/submissions/CIK0001855747.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-11-04T19:51:40",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-11-04T19:51:40",
+        "ordinal": 271,
+        "request_sha256": "acb571d589a4a5b06a63883bb551145865c81bfb23d2afff223455ff0e8ef85d",
+        "shared_cache_relative_path": "submissions/CIK0001857853.json",
+        "subject_cik": "1857853",
+        "url": "https://data.sec.gov/submissions/CIK0001857853.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-10-03T13:50:55",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-10-03T13:50:55",
+        "ordinal": 272,
+        "request_sha256": "fd641daf8a54c8911c7f0cd882c6eba514b363914c3be1e01d1ed94e21e192ba",
+        "shared_cache_relative_path": "submissions/CIK0001861115.json",
+        "subject_cik": "1861115",
+        "url": "https://data.sec.gov/submissions/CIK0001861115.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-05T07:52:53",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-05T07:52:53",
+        "ordinal": 273,
+        "request_sha256": "1718e579f451164ff42facd7655e01e7bc7865ec02e056271e1225d14f7b4db4",
+        "shared_cache_relative_path": "submissions/CIK0001864290.json",
+        "subject_cik": "1864290",
+        "url": "https://data.sec.gov/submissions/CIK0001864290.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-11-01T12:26:04",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-11-01T12:26:04",
+        "ordinal": 274,
+        "request_sha256": "4b95e3b26783c40b0e12c79897f01c053b73c3afee0c625073e2065233377335",
+        "shared_cache_relative_path": "submissions/CIK0001864843.json",
+        "subject_cik": "1864843",
+        "url": "https://data.sec.gov/submissions/CIK0001864843.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-18T12:26:52",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-18T12:26:52",
+        "ordinal": 275,
+        "request_sha256": "41fb63996775e4c619da6b2946d30c95459fed8fb2ed5e7c344c9e918d4fe28c",
+        "shared_cache_relative_path": "submissions/CIK0001865389.json",
+        "subject_cik": "1865389",
+        "url": "https://data.sec.gov/submissions/CIK0001865389.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-08-07T18:25:02",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-08-07T18:25:02",
+        "ordinal": 276,
+        "request_sha256": "583800931b6e6f628774d9ccfa199a4fc2ef17846812ef734e6a4c6680fd69ce",
+        "shared_cache_relative_path": "submissions/CIK0001866501.json",
+        "subject_cik": "1866501",
+        "url": "https://data.sec.gov/submissions/CIK0001866501.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-01-21T16:13:38",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-01-21T16:13:38",
+        "ordinal": 277,
+        "request_sha256": "ed457b9de45356dede25539a00becde23ad9b9f0e7772238870f07f8ebdb44f3",
+        "shared_cache_relative_path": "submissions/CIK0001868419.json",
+        "subject_cik": "1868419",
+        "url": "https://data.sec.gov/submissions/CIK0001868419.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-05T17:47:38",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-05T17:47:38",
+        "ordinal": 278,
+        "request_sha256": "3d53a1dbf777e218359de6122ad894eed0ac9d6a14c18cb9d5e2863adefe8bf3",
+        "shared_cache_relative_path": "submissions/CIK0001868640.json",
+        "subject_cik": "1868640",
+        "url": "https://data.sec.gov/submissions/CIK0001868640.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-13T13:33:26",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-13T13:33:26",
+        "ordinal": 279,
+        "request_sha256": "00f7e595ac452bb4694ea7c91a6e692f0ba825fd92dc78c3e5ec5729b05bf7d7",
+        "shared_cache_relative_path": "submissions/CIK0001868734.json",
+        "subject_cik": "1868734",
+        "url": "https://data.sec.gov/submissions/CIK0001868734.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-03-15T17:21:59",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-03-15T17:21:59",
+        "ordinal": 280,
+        "request_sha256": "dc19e1dd6b5794e65da01b741d5874addd47af53ea466786ac1e9208f3a4555a",
+        "shared_cache_relative_path": "submissions/CIK0001872371.json",
+        "subject_cik": "1872371",
+        "url": "https://data.sec.gov/submissions/CIK0001872371.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-02-04T16:59:20",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-02-04T16:59:20",
+        "ordinal": 281,
+        "request_sha256": "9d3dc3f03a212e58abcf186b72357cbee94ad8351b13ec8d4158098361881c58",
+        "shared_cache_relative_path": "submissions/CIK0001874315.json",
+        "subject_cik": "1874315",
+        "url": "https://data.sec.gov/submissions/CIK0001874315.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-27T10:59:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-27T10:59:56",
+        "ordinal": 282,
+        "request_sha256": "2d6c9c93dc2fddfcb6f480077c28e81f0b14ff2c8027d23bb69146666e4a1a96",
+        "shared_cache_relative_path": "submissions/CIK0001876431.json",
+        "subject_cik": "1876431",
+        "url": "https://data.sec.gov/submissions/CIK0001876431.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-12-13T11:51:26",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-12-13T11:51:26",
+        "ordinal": 283,
+        "request_sha256": "3a72e4482a09f17f8e07701d5ec699b75a69a1f04fc3dce1f3084f009ed57415",
+        "shared_cache_relative_path": "submissions/CIK0001878848.json",
+        "subject_cik": "1878848",
+        "url": "https://data.sec.gov/submissions/CIK0001878848.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-04-05T13:08:00",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-04-05T13:08:00",
+        "ordinal": 284,
+        "request_sha256": "806079588c83dc049f538e40d7774054ca803a84ca78e3e4187a4820cea154f6",
+        "shared_cache_relative_path": "submissions/CIK0001881462.json",
+        "subject_cik": "1881462",
+        "url": "https://data.sec.gov/submissions/CIK0001881462.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-31T16:30:54",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-31T16:30:54",
+        "ordinal": 285,
+        "request_sha256": "ca1ef444b55bb1f8d0422ef2c2c284e7d3a62261547154a25345f05d541161e4",
+        "shared_cache_relative_path": "submissions/CIK0001883085.json",
+        "subject_cik": "1883085",
+        "url": "https://data.sec.gov/submissions/CIK0001883085.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-06-30T14:42:49",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-06-30T14:42:49",
+        "ordinal": 286,
+        "request_sha256": "82effcbfed94066efa9255e068c6d201d32dd29d4723231433ce8ea34d7b810b",
+        "shared_cache_relative_path": "submissions/CIK0001884516.json",
+        "subject_cik": "1884516",
+        "url": "https://data.sec.gov/submissions/CIK0001884516.json"
+      },
+      {
+        "earliest_event_accepted_at": "2022-04-08T16:47:59",
+        "event_count": 1,
+        "latest_event_accepted_at": "2022-04-08T16:47:59",
+        "ordinal": 287,
+        "request_sha256": "5b584fa701b3849464150c90c0ca56ee08c0837750053223f8a8db38910f56b2",
+        "shared_cache_relative_path": "submissions/CIK0001884697.json",
+        "subject_cik": "1884697",
+        "url": "https://data.sec.gov/submissions/CIK0001884697.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-03T16:49:46",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-03T16:49:46",
+        "ordinal": 288,
+        "request_sha256": "c6edd36ad802ebff0463d2274d763e97acd988f23f20fc58052e30cc9e8918a1",
+        "shared_cache_relative_path": "submissions/CIK0001894210.json",
+        "subject_cik": "1894210",
+        "url": "https://data.sec.gov/submissions/CIK0001894210.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-09-09T16:11:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-09-09T16:11:56",
+        "ordinal": 289,
+        "request_sha256": "0a17b9b6d5a7d9beca001602ec5858026b3f90a2cb7a9afd7d8204808e7dcba9",
+        "shared_cache_relative_path": "submissions/CIK0001913577.json",
+        "subject_cik": "1913577",
+        "url": "https://data.sec.gov/submissions/CIK0001913577.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-01-09T17:13:05",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-01-09T17:13:05",
+        "ordinal": 290,
+        "request_sha256": "3a0a3291a4cace065cffaa63429bca7b53c5334868ce29627b3fd0cd7551b9d9",
+        "shared_cache_relative_path": "submissions/CIK0001913721.json",
+        "subject_cik": "1913721",
+        "url": "https://data.sec.gov/submissions/CIK0001913721.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-05-07T16:00:24",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-05-07T16:00:24",
+        "ordinal": 291,
+        "request_sha256": "dadf21cd0967f7642dbc34f7e6e1582994b0ce8fb171bf18c2054d2e36512123",
+        "shared_cache_relative_path": "submissions/CIK0001916331.json",
+        "subject_cik": "1916331",
+        "url": "https://data.sec.gov/submissions/CIK0001916331.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-08-26T16:31:26",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-08-26T16:31:26",
+        "ordinal": 292,
+        "request_sha256": "d5cfafcc19579f3226b9b0c876d25bc6fe58291933494154d7227e18c97a1ffe",
+        "shared_cache_relative_path": "submissions/CIK0001920294.json",
+        "subject_cik": "1920294",
+        "url": "https://data.sec.gov/submissions/CIK0001920294.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-01-05T16:05:44",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-01-05T16:05:44",
+        "ordinal": 293,
+        "request_sha256": "58489dcb27d3607955953e2d3cf19e76b254e884061c45b6239eccb8a791b326",
+        "shared_cache_relative_path": "submissions/CIK0001921800.json",
+        "subject_cik": "1921800",
+        "url": "https://data.sec.gov/submissions/CIK0001921800.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-01T16:36:30",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-01T16:36:30",
+        "ordinal": 294,
+        "request_sha256": "c25eb106c23213103d0d939c59cdefd44659b4bbed5e33bd458063b1fe81d2aa",
+        "shared_cache_relative_path": "submissions/CIK0001925309.json",
+        "subject_cik": "1925309",
+        "url": "https://data.sec.gov/submissions/CIK0001925309.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-12T16:39:19",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-12T16:39:19",
+        "ordinal": 295,
+        "request_sha256": "25bf45ab8a1002e522d7a0174d3da3885cca5836e8df40940dfef98344237915",
+        "shared_cache_relative_path": "submissions/CIK0001929589.json",
+        "subject_cik": "1929589",
+        "url": "https://data.sec.gov/submissions/CIK0001929589.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-24T16:00:47",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-24T16:00:47",
+        "ordinal": 296,
+        "request_sha256": "d1c46acdcb3fc45068ea671fc753d161e97f2dcc2238c65978d5797dcfddef90",
+        "shared_cache_relative_path": "submissions/CIK0001933414.json",
+        "subject_cik": "1933414",
+        "url": "https://data.sec.gov/submissions/CIK0001933414.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-02-13T16:24:56",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-02-13T16:24:56",
+        "ordinal": 297,
+        "request_sha256": "c3713f9a1e952747729dde8ba7bb20341c0f0c98adaa37bf0e027384bcef3b89",
+        "shared_cache_relative_path": "submissions/CIK0001937987.json",
+        "subject_cik": "1937987",
+        "url": "https://data.sec.gov/submissions/CIK0001937987.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-03-20T17:11:58",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-03-20T17:11:58",
+        "ordinal": 298,
+        "request_sha256": "bc6cbfd89f6fd375ed2a038d3aafabe42943bb78ca31db94a0184b72e188a53b",
+        "shared_cache_relative_path": "submissions/CIK0001940674.json",
+        "subject_cik": "1940674",
+        "url": "https://data.sec.gov/submissions/CIK0001940674.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-02-23T16:46:24",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-02-23T16:46:24",
+        "ordinal": 299,
+        "request_sha256": "5640f53c8b992d43b5bd563a264a388b3afff45c70a720df37d5a6f342346cb4",
+        "shared_cache_relative_path": "submissions/CIK0001941536.json",
+        "subject_cik": "1941536",
+        "url": "https://data.sec.gov/submissions/CIK0001941536.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-10-30T13:42:49",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-10-30T13:42:49",
+        "ordinal": 300,
+        "request_sha256": "a73b3754ff21cd0d276f5eb8389944615604a083c142f22a3b045f65cf6d7bd0",
+        "shared_cache_relative_path": "submissions/CIK0001956827.json",
+        "subject_cik": "1956827",
+        "url": "https://data.sec.gov/submissions/CIK0001956827.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-08-11T16:15:16",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-08-11T16:15:16",
+        "ordinal": 301,
+        "request_sha256": "37930c63241ee445a7f64bc7860e7157633c667730d46174458a41ac462be0d6",
+        "shared_cache_relative_path": "submissions/CIK0001964979.json",
+        "subject_cik": "1964979",
+        "url": "https://data.sec.gov/submissions/CIK0001964979.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-12-01T16:48:55",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-12-01T16:48:55",
+        "ordinal": 302,
+        "request_sha256": "534889e5f208d3f862ed23fdc70cf645601ba27757f78fad8996c205bd9049d5",
+        "shared_cache_relative_path": "submissions/CIK0001965143.json",
+        "subject_cik": "1965143",
+        "url": "https://data.sec.gov/submissions/CIK0001965143.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-11-24T16:54:29",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-11-24T16:54:29",
+        "ordinal": 303,
+        "request_sha256": "7328d94e4f597dbe8a4754b759eca11a0faeb1add854b88b8999f2220e99666b",
+        "shared_cache_relative_path": "submissions/CIK0001973266.json",
+        "subject_cik": "1973266",
+        "url": "https://data.sec.gov/submissions/CIK0001973266.json"
+      },
+      {
+        "earliest_event_accepted_at": "2023-07-21T16:31:10",
+        "event_count": 1,
+        "latest_event_accepted_at": "2023-07-21T16:31:10",
+        "ordinal": 304,
+        "request_sha256": "16d771c4f2d523beb5c656add2e43b2419d1f1003ddf885748232a2b6667e598",
+        "shared_cache_relative_path": "submissions/CIK0001974640.json",
+        "subject_cik": "1974640",
+        "url": "https://data.sec.gov/submissions/CIK0001974640.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-11-05T19:41:42",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-11-05T19:41:42",
+        "ordinal": 305,
+        "request_sha256": "715407c1ead4a4a35888b34e282f42301188a3c165a357145417a0eb5eb09bd3",
+        "shared_cache_relative_path": "submissions/CIK0001979332.json",
+        "subject_cik": "1979332",
+        "url": "https://data.sec.gov/submissions/CIK0001979332.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-03-28T06:01:46",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-03-28T06:01:46",
+        "ordinal": 306,
+        "request_sha256": "faf7dd0131aa5eef9a7e7453576884a9814370a131d50c6bc69d4b01519ada55",
+        "shared_cache_relative_path": "submissions/CIK0001988776.json",
+        "subject_cik": "1988776",
+        "url": "https://data.sec.gov/submissions/CIK0001988776.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-02-09T11:29:57",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-02-09T11:29:57",
+        "ordinal": 307,
+        "request_sha256": "beccff2ffece3286ddc50c75884bf1d45028cdacf65cfd4e5d9aaef5c48c3e3b",
+        "shared_cache_relative_path": "submissions/CIK0001988894.json",
+        "subject_cik": "1988894",
+        "url": "https://data.sec.gov/submissions/CIK0001988894.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-07-26T21:00:48",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-07-26T21:00:48",
+        "ordinal": 308,
+        "request_sha256": "c23e81636434538e0f19f0cc13a2931638b51c9839daefe07e39d0c09d8608e9",
+        "shared_cache_relative_path": "submissions/CIK0001998043.json",
+        "subject_cik": "1998043",
+        "url": "https://data.sec.gov/submissions/CIK0001998043.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-05-20T17:02:57",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-05-20T17:02:57",
+        "ordinal": 309,
+        "request_sha256": "75b976619ae719af2e876d5c4e487d24fad128c96016487a2b3b9ea26b9e4013",
+        "shared_cache_relative_path": "submissions/CIK0002006191.json",
+        "subject_cik": "2006191",
+        "url": "https://data.sec.gov/submissions/CIK0002006191.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-06-21T20:50:50",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-06-21T20:50:50",
+        "ordinal": 310,
+        "request_sha256": "83d136d317ccb3287508e80e842929b48c6d16e0445f29d8a6c05951f261cdb9",
+        "shared_cache_relative_path": "submissions/CIK0002012590.json",
+        "subject_cik": "2012590",
+        "url": "https://data.sec.gov/submissions/CIK0002012590.json"
+      },
+      {
+        "earliest_event_accepted_at": "2024-11-18T09:21:26",
+        "event_count": 1,
+        "latest_event_accepted_at": "2024-11-18T09:21:26",
+        "ordinal": 311,
+        "request_sha256": "ccbac026f9f27f36ab82d18d040f0f8034df7c4698435d79d2cabd367762c3bb",
+        "shared_cache_relative_path": "submissions/CIK0002042694.json",
+        "subject_cik": "2042694",
+        "url": "https://data.sec.gov/submissions/CIK0002042694.json"
+      }
+    ],
+    "timeout_seconds": 30.0,
+    "unique_subject_cik_count": 312,
+    "user_agent_sha256": "87a6c495709e93e1101e1f4dadba98eb371897c9355d2f6a06dae7d809032b4d",
+    "workers": 4
+  },
+  "request_graph_sha256": "c18253612b231f459ded176eda1c82690497b8b9e52ad78abdc3e4a0345aa625",
+  "returns_computed": 0,
+  "schema_version": 1,
+  "semantic_inspection_sha256": "9973ee5a49484f2ec041e439c8310f622f8eedb7be431bfff35039e7be1f7522",
+  "semantic_result_sha256": "3bf6253e91ecc3cf8b15788ff047cf1d66868bfb2ec204fd72cc54081b055f13",
+  "source_selection_contract": {
+    "accepted_no_later_than_event_required": true,
+    "allowed_forms": [
+      "10-K",
+      "10-Q",
+      "8-K",
+      "20-F",
+      "6-K"
+    ],
+    "current_or_future_symbol_mapping_permitted": false,
+    "dei_trading_symbol_only": true,
+    "latest_eligible_prior_filing_required": true,
+    "primary_documents_must_be_frozen_before_access": true,
+    "supplemental_submission_files_must_be_frozen_before_access": true
+  },
+  "storage_contract": {
+    "historical_deletion_permitted": false,
+    "minimum_free_bytes_after_reserve": 21474836480,
+    "private_derived_namespace": "_derived/schedule13d_capacity/dataset-schedule-13d-capacity-2026-07-22-v1/symbols/submissions",
+    "raw_source_retention_required": true,
+    "repository_storage_permitted": false,
+    "shared_cache_namespace": "_sources/sec/schedule13d-issuer-submissions-v1"
+  },
+  "strategy_version": "2026-07-22-schedule-13d-activist-continuation-v1",
+  "verified_event_count": 1
+}
