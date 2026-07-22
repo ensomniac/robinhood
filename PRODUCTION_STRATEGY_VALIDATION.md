@@ -512,10 +512,18 @@ outcome lock all match. Publication is required before dated reference access.
 The second-tranche acquisition adapter and independent inspector now isolate
 all provider, master, split, scanner, status, and lock paths without modifying
 the frozen first corpus. The exact split window covers the complete required
-session graph from `2023-01-04` through `2026-07-17`; the prior complete v2
+session graph from `2023-01-03` through `2026-07-17`; the prior complete v2
 scanner manifest is the sole reusable lineage. Independent zero-state reference
 inspection reports 0/100 ready with no unexpected artifact. Provider access is
 blocked until these implementations are committed and pushed.
+
+The exact split boundary is `2023-01-03` through `2026-07-17`. All 100 reference snapshots
+now independently rebuild with raw/logical hashes `bb6e5053...f31a52` and
+`03c2ffc6...c5533`. Their 7,995-record, 7,521-instrument point-in-time master has
+hash `92500496...4ddc2`; 4,933 split events have ignored-artifact hash
+`d2b7ea6e...bdbadb`. The combined inspection finds zero target-market artifact,
+no outcome access, and a valid 20-GiB reserve. Publication is required before
+scanner freeze.
 
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight

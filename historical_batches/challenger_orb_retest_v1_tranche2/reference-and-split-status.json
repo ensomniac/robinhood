@@ -1,0 +1,39 @@
+{
+  "capacity_ready": true,
+  "dataset_id": "dataset-challenger-orb-retest-development-2026-07-21-v2",
+  "date_symbol_or_provider_substitution_allowed": false,
+  "pre_freeze_target_market_artifacts": 0,
+  "reference": {
+    "complete": true,
+    "dataset_id": "dataset-challenger-orb-retest-development-2026-07-21-v2",
+    "date_substitution_allowed": false,
+    "logical_snapshot_set_sha256": "03c2ffc68cbbbc7ce48ebc363ec26eb0b0c71ec073da119a42d57044dabc5533",
+    "missing": 0,
+    "provider": "Massive dated ticker reference",
+    "ready": 100,
+    "requested": 100,
+    "schema_version": 1,
+    "snapshot_set_sha256": "bb6e5053cd84250b911a8da22de849b8e0a28ea38b0396b24e089b81daf31a52",
+    "target_market_data_accessed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "reserve_bytes": 21474836480,
+  "schema_version": 1,
+  "security_master": {
+    "fallback_identity_records": 1896,
+    "instruments": 7521,
+    "listing_scoped_records": 52,
+    "path": "historical_batches/challenger_orb_retest_v1_tranche2/security-master.jsonl",
+    "records": 7995,
+    "sha256": "92500496e15dac466ac46fc431dddce141f67e4dfc4178d3fdb5c048e4e4ddc2",
+    "simultaneous_composite_aliases": 24
+  },
+  "split_actions": {
+    "events": 4933,
+    "local_ignored_path": "learning_runs/challenger_orb_retest_v1_tranche2/scanner_replay/splits.json.gz",
+    "sha256": "d2b7ea6ef586800d909092ee22b2518c160d05d6441e87a854e620b0e6bdbadb"
+  },
+  "status": "INPUTS_READY",
+  "target_market_data_accessed": false,
+  "target_outcomes_observed_or_derived": false
+}

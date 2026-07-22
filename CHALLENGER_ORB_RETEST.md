@@ -155,10 +155,19 @@ This inspection must be committed and pushed before dated reference access.
 the second selection to separate reference, security-master, split, scanner,
 status, and lock namespaces while reusing the frozen acquisition engine. The
 adapter also expands the split query to the complete 530-session boundary
-(`2023-01-04` through `2026-07-17`) and binds the completed v2 scanner corpus as
+(`2023-01-03` through `2026-07-17`) and binds the completed v2 scanner corpus as
 the only eligible reusable lineage. Zero-state inspection finds all 100 dated
 reference snapshots missing and no unexpected artifact. These implementations
 must be committed and pushed before any provider call.
+
+All 100 exact dated-reference snapshots now independently rebuild with raw set
+hash `bb6e5053...f31a52` and logical set hash `03c2ffc6...c5533`, with zero
+missing, unexpected, or temporary files. The public point-in-time master has
+7,995 records across 7,521 instruments and hash `92500496...4ddc2`. The exact
+`2023-01-03` through `2026-07-17` split query contains 4,933 events with ignored
+artifact hash `d2b7ea6e...bdbadb`. Combined independent inspection confirms the
+20-GiB reserve, zero target-market artifacts, and no outcome access. These
+public inputs must be committed and pushed before scanner freeze.
 
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
