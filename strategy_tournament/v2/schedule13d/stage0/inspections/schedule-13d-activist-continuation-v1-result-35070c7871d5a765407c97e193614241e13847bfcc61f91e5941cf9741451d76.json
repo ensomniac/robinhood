@@ -1,0 +1,54 @@
+{
+  "activation_sha256": "cf220a5fb71ad6e9c4b5827fe85a984a12970b9497ada37117583210aba4ce58",
+  "broker_actions": 0,
+  "confirmation_evidence_eligible": false,
+  "contract_sha256": "a43b9f9039ca6c260be4174855cdf65491983c635e3c3a74e062baa74c9d7526",
+  "denominator": {
+    "closed_signals": 34,
+    "frozen_stage0_signals": 40,
+    "missed_entries": 6,
+    "rule_violations": 0
+  },
+  "development_evidence_eligible": false,
+  "input_inspection_sha256": "dc3f0236ed9fbb650775deeee8728e0bd4c450f1bc18267e67b63e3bdabdc650",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "35070c7871d5a765407c97e193614241e13847bfcc61f91e5941cf9741451d76",
+  "maturity_effect": "NONE",
+  "primary_5bps": {
+    "expectancy_r": 0.10893631619232771,
+    "maximum_drawdown_r": 5.38763990284165,
+    "profit_factor": 1.2766284210482866,
+    "profit_factor_infinite": false,
+    "signals": 34,
+    "total_r": 3.7038347505391425,
+    "win_rate": 0.4411764705882353
+  },
+  "result_file_sha256": "7f22438786f68957191063eae8431aa2b03c590e1128b7e4ae5caf8c16e05a70",
+  "result_sha256": "fafd9ab4b61395efb256c449f316580b1e2ee622df3f601562e9d426f460bd6a",
+  "rules_hash": "a3ebd0c4025889a0f2ec5d2e56d694bdf3f537838db9ef872dfb21e25dec46e7",
+  "schema_version": 1,
+  "stage0_blockers": [],
+  "stage0_survived": true,
+  "stress": {
+    "10": {
+      "expectancy_r": 0.07136208174954234,
+      "maximum_drawdown_r": 5.421884347947105,
+      "profit_factor": 1.1807138294557027,
+      "profit_factor_infinite": false,
+      "signals": 34,
+      "total_r": 2.4263107794844396,
+      "win_rate": 0.4411764705882353
+    },
+    "20": {
+      "expectancy_r": 0.020765388915124392,
+      "maximum_drawdown_r": 5.488407987010591,
+      "profit_factor": 1.052298586183767,
+      "profit_factor_infinite": false,
+      "signals": 34,
+      "total_r": 0.7060232231142294,
+      "win_rate": 0.4411764705882353
+    }
+  },
+  "valid": true,
+  "variant_id": "schedule-13d-activist-continuation-v1"
+}
