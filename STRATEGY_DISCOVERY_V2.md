@@ -37,3 +37,33 @@ required confirmation signals are
 `max(20, ceil(required_total_signals * 0.30))`. A five-session embargo remains
 mandatory. Insufficient untouched inventory is terminal
 `INSUFFICIENT_POWER_CAPACITY`, not permission to extend or substitute dates.
+
+## Manifest-driven controller
+
+`strategy_discovery.py` is the active controller. Its stable commands are:
+
+- `status`
+- `preflight <family-contract>`
+- `freeze-search <family-contract>`
+- `evaluate-development <contract>`
+- `inspect-development <result>`
+- `freeze-winner <inspected-result>`
+- `evaluate-confirmation <winner>`
+- `inspect-confirmation <result>`
+- `queue-shadow <winner>`
+
+Every transition verifies a content hash and, except for the initial read-only
+status, requires its predecessor artifact to be committed and unchanged. The
+controller is broker-inert. Preflight rejects outcome-like fields, development
+requires every declared trial and explicit zero-return accounting, confirmation
+accepts no parameter alternatives or date substitutions, and shadow queueing
+requires a committed passing confirmation inspection.
+
+For `selection_mode = "development_search"`, a family may contain at most 64
+trials. A trial must first retain positive 20-bps log growth, stressed profit
+factor of at least 1.20, drawdown no greater than 6R, positive rolling-fold
+stability, complete rules, and complete accounting. It must then satisfy DSR at
+0.90, Holm rejection at alpha 0.10, PBO no greater than 0.50, and positive
+20-bps growth in at least half of its one-step parameter neighbors. Survivors
+rank by 20-bps bootstrap lower mean account return, total log growth, drawdown,
+then canonical trial ID. Confirmation never participates in selection.

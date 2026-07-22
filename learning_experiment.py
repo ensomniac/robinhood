@@ -7,13 +7,25 @@ import hashlib
 import itertools
 import json
 import math
+import statistics
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
 from pathlib import Path
+from statistics import NormalDist
 from typing import Any
 
 from learning_data import DATASET_LANES, load_frozen_dataset_contract
 from learning_registry import REGISTRY_ROOT, current_entities
+from learning_statistics import (
+    annualized_sharpe,
+    deflated_sharpe_probability,
+    holm_family_decisions,
+    maximum_drawdown_fraction,
+    power_sample_target,
+    probability_of_backtest_overfitting,
+    profit_factor,
+    stationary_bootstrap_summary,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -21,7 +33,20 @@ DEFAULT_HYPOTHESIS_ROOT = REGISTRY_ROOT / "hypotheses"
 DEFAULT_RESEARCH_LOCK = REGISTRY_ROOT / "RESEARCH_LOCK.json"
 SCHEMA_VERSION = 1
 MAX_NEW_HYPOTHESES_PER_ISO_WEEK = 3
-MAX_TRIALS_PER_FAMILY = 256
+MAX_TRIALS_PER_FAMILY = 64
+SELECTION_MODES = {"preselected_primary", "development_search"}
+DEVELOPMENT_SEARCH_RULE = {
+    "minimum_deflated_sharpe_probability": 0.90,
+    "holm_alpha": 0.10,
+    "maximum_pbo_probability": 0.50,
+    "minimum_neighbor_positive_fraction": 0.50,
+    "ranking": [
+        "highest_20bps_bootstrap_lower_mean_account_return",
+        "highest_20bps_total_log_growth",
+        "lowest_20bps_maximum_drawdown",
+        "canonical_trial_id",
+    ],
+}
 EXPERIMENT_TRANSITIONS = {
     "INVENTED": {"PREREGISTERED", "REJECTED"},
     "PREREGISTERED": {"DATA_READY", "REJECTED"},
@@ -121,6 +146,36 @@ def enumerate_trials(parameter_grid: Mapping[str, Any]) -> list[dict[str, Any]]:
     return trials
 
 
+def parameter_neighbors(
+    trial: Mapping[str, Any],
+    parameter_grid: Mapping[str, Any],
+    trials: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    parameters = trial.get("parameters")
+    if not isinstance(parameters, Mapping):
+        raise LearningExperimentError("trial parameters are missing")
+    by_parameters = {
+        json.dumps(item["parameters"], sort_keys=True, separators=(",", ":")): str(
+            item["trial_id"]
+        )
+        for item in trials
+    }
+    neighbors: list[str] = []
+    for name in sorted(parameter_grid):
+        options = parameter_grid[name]
+        canonical = [json.dumps(item, sort_keys=True) for item in options]
+        current = json.dumps(parameters[name], sort_keys=True)
+        index = canonical.index(current)
+        for neighbor_index in (index - 1, index + 1):
+            if not 0 <= neighbor_index < len(options):
+                continue
+            candidate = dict(parameters)
+            candidate[name] = options[neighbor_index]
+            key = json.dumps(candidate, sort_keys=True, separators=(",", ":"))
+            neighbors.append(by_parameters[key])
+    return sorted(neighbors)
+
+
 def build_rolling_origin_plan(
     requested_dates: Sequence[str],
     *,
@@ -202,21 +257,38 @@ def validate_hypothesis_contract(value: Any) -> dict[str, Any]:
             "material_difference_rationale must explain the distinct mechanism"
         )
     trials = enumerate_trials(contract.get("parameter_grid", {}))
-    primary = contract.get("primary_parameters")
-    if not isinstance(primary, Mapping):
-        raise LearningExperimentError("primary_parameters must be an object")
-    matching = [trial for trial in trials if trial["parameters"] == dict(primary)]
-    if len(matching) != 1:
-        raise LearningExperimentError(
-            "primary_parameters must select exactly one registered grid trial"
-        )
+    selection_mode = contract.get("selection_mode", "preselected_primary")
+    if selection_mode not in SELECTION_MODES:
+        raise LearningExperimentError("selection_mode is unsupported")
+    contract["selection_mode"] = selection_mode
+    matching: list[dict[str, Any]] = []
+    if selection_mode == "preselected_primary":
+        primary = contract.get("primary_parameters")
+        if not isinstance(primary, Mapping):
+            raise LearningExperimentError("primary_parameters must be an object")
+        matching = [trial for trial in trials if trial["parameters"] == dict(primary)]
+        if len(matching) != 1:
+            raise LearningExperimentError(
+                "primary_parameters must select exactly one registered grid trial"
+            )
+    else:
+        if "primary_parameters" in contract:
+            raise LearningExperimentError(
+                "development_search cannot preselect primary_parameters"
+            )
+        if contract.get("winner_selection") != DEVELOPMENT_SEARCH_RULE:
+            raise LearningExperimentError(
+                "development_search winner_selection must match the frozen rule"
+            )
     parent = contract.get("parent_experiment_id")
     if parent is not None and (
         not isinstance(parent, str) or parent == contract["experiment_id"]
     ):
         raise LearningExperimentError("parent_experiment_id is invalid")
     contract["trial_family"] = trials
-    contract["primary_trial_id"] = matching[0]["trial_id"]
+    contract["primary_trial_id"] = (
+        matching[0]["trial_id"] if matching else None
+    )
     return contract
 
 
@@ -400,14 +472,26 @@ def validate_complete_evaluation(
         metrics = item.get("metrics")
         if not isinstance(metrics, Mapping):
             raise LearningExperimentError("every trial needs metrics")
-        for field in (
-            "total_log_growth",
-            "bootstrap_lower_mean",
-            "profit_factor",
-            "maximum_drawdown",
-            "deflated_sharpe_probability",
-            "pbo_probability",
-        ):
+        numeric_fields = (
+            (
+                "total_log_growth",
+                "bootstrap_lower_mean",
+                "profit_factor",
+                "maximum_drawdown",
+                "deflated_sharpe_probability",
+                "pbo_probability",
+            )
+            if frozen["selection_mode"] == "preselected_primary"
+            else (
+                "stress_20bps_total_log_growth",
+                "stress_20bps_bootstrap_lower_mean_account_return",
+                "stress_20bps_profit_factor",
+                "stress_20bps_maximum_drawdown_r",
+                "deflated_sharpe_probability",
+                "pbo_probability",
+            )
+        )
+        for field in numeric_fields:
             value = metrics.get(field)
             if (
                 isinstance(value, bool)
@@ -415,13 +499,247 @@ def validate_complete_evaluation(
                 or not math.isfinite(value)
             ):
                 raise LearningExperimentError(f"trial metric {field} must be finite")
-        for field in ("holm_reject_null", "rolling_folds_positive"):
+        boolean_fields = ["holm_reject_null", "rolling_folds_positive"]
+        if frozen["selection_mode"] == "development_search":
+            boolean_fields.extend(("rules_complete", "trial_accounting_complete"))
+            returns = metrics.get("oof_filled_account_returns")
+            if not isinstance(returns, list) or not returns:
+                raise LearningExperimentError(
+                    "development-search trial needs oof_filled_account_returns"
+                )
+            for value in returns:
+                if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+                    raise LearningExperimentError(
+                        "oof_filled_account_returns must be finite numbers"
+                    )
+            accounting = item.get("trial_accounting")
+            if not isinstance(accounting, list) or not accounting:
+                raise LearningExperimentError(
+                    "development-search trial needs complete trial_accounting"
+                )
+            if not any(row.get("outcome") == "zero_return_day" for row in accounting if isinstance(row, Mapping)):
+                raise LearningExperimentError(
+                    "trial accounting must retain explicit zero-return days"
+                )
+        for field in boolean_fields:
             if not isinstance(metrics.get(field), bool):
                 raise LearningExperimentError(f"trial metric {field} must be boolean")
     implementation = result.get("implementation_sha256")
     if not isinstance(implementation, str) or len(implementation) != 64:
         raise LearningExperimentError("evaluation needs implementation_sha256")
     return dict(result)
+
+
+def _rebuild_development_statistics(
+    trials: Sequence[Mapping[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    returns_by_id = {
+        str(item["trial_id"]): [
+            float(value) for value in item["metrics"]["oof_filled_account_returns"]
+        ]
+        for item in trials
+    }
+    lengths = {len(values) for values in returns_by_id.values()}
+    if len(lengths) != 1:
+        raise LearningExperimentError(
+            "development trials must share the complete OOF calendar"
+        )
+    sharpes = {
+        trial_id: annualized_sharpe(values) or 0.0
+        for trial_id, values in returns_by_id.items()
+    }
+    p_values: dict[str, float] = {}
+    for trial_id, values in returns_by_id.items():
+        mean = statistics.fmean(values)
+        deviation = statistics.stdev(values) if len(values) > 1 else 0.0
+        statistic = mean / (deviation / math.sqrt(len(values))) if deviation else 0.0
+        p_values[trial_id] = 1 - NormalDist().cdf(statistic)
+    holm = holm_family_decisions(p_values, alpha=0.10)
+    pbo = probability_of_backtest_overfitting(returns_by_id)
+    trial_sharpes = list(sharpes.values())
+    rebuilt: dict[str, dict[str, Any]] = {}
+    for item in trials:
+        trial_id = str(item["trial_id"])
+        returns = returns_by_id[trial_id]
+        dollars_raw = item["metrics"].get("oof_net_pnl_dollars")
+        dollars = (
+            [float(value) for value in dollars_raw]
+            if isinstance(dollars_raw, list)
+            else [value * 100_000 for value in returns]
+        )
+        if len(dollars) != len(returns):
+            raise LearningExperimentError(
+                "oof_net_pnl_dollars must align with account returns"
+            )
+        fold_size = max(1, len(returns) // 5)
+        folds = [
+            returns[start : min(len(returns), start + fold_size)]
+            for start in range(0, len(returns), fold_size)
+        ]
+        bootstrap = stationary_bootstrap_summary(
+            returns,
+            confidence=0.90,
+            samples=2_000,
+        )
+        risk_fraction = float(item["metrics"].get("risk_fraction", 0.005))
+        if risk_fraction <= 0:
+            raise LearningExperimentError("risk_fraction must be positive")
+        rebuilt[trial_id] = {
+            "stress_20bps_total_log_growth": sum(
+                math.log1p(value) for value in returns
+            ),
+            "stress_20bps_bootstrap_lower_mean_account_return": bootstrap[
+                "lower_one_sided"
+            ],
+            "stress_20bps_profit_factor": profit_factor(dollars),
+            "stress_20bps_maximum_drawdown_r": maximum_drawdown_fraction(returns)
+            / risk_fraction,
+            "deflated_sharpe_probability": deflated_sharpe_probability(
+                returns, trial_sharpes
+            )["probability"],
+            "pbo_probability": pbo["probability"],
+            "holm_reject_null": holm[trial_id]["reject_null"],
+            "rolling_folds_positive": all(
+                sum(math.log1p(value) for value in fold) > 0 for fold in folds
+            ),
+            "rules_complete": item["metrics"]["rules_complete"],
+            "trial_accounting_complete": item["metrics"][
+                "trial_accounting_complete"
+            ],
+            "oof_filled_account_returns": returns,
+            "oof_net_pnl_dollars": dollars,
+            "risk_fraction": risk_fraction,
+            "stationary_bootstrap": bootstrap,
+        }
+    return rebuilt
+
+
+def select_development_winner(
+    contract: Mapping[str, Any], result: Mapping[str, Any]
+) -> dict[str, Any]:
+    normalized = validate_complete_evaluation(contract, result)
+    frozen = validate_hypothesis_contract(
+        {
+            key: value
+            for key, value in contract.items()
+            if key not in {"contract_sha256", "trial_family", "primary_trial_id"}
+        }
+    )
+    if frozen["selection_mode"] != "development_search":
+        raise LearningExperimentError(
+            "winner selection requires selection_mode=development_search"
+        )
+    trials_by_id = {str(item["trial_id"]): item for item in normalized["trials"]}
+    rebuilt_by_id = _rebuild_development_statistics(normalized["trials"])
+    trial_contracts = {
+        str(item["trial_id"]): item for item in frozen["trial_family"]
+    }
+    classifications: list[dict[str, Any]] = []
+    survivors: list[dict[str, Any]] = []
+    for trial_id in sorted(trials_by_id):
+        item = trials_by_id[trial_id]
+        metrics = rebuilt_by_id[trial_id]
+        neighbors = parameter_neighbors(
+            trial_contracts[trial_id],
+            frozen["parameter_grid"],
+            frozen["trial_family"],
+        )
+        positive_neighbors = sum(
+            rebuilt_by_id[neighbor]["stress_20bps_total_log_growth"] > 0
+            for neighbor in neighbors
+        )
+        neighbor_fraction = positive_neighbors / len(neighbors) if neighbors else 1.0
+        gates = {
+            "positive_20bps_total_growth": metrics[
+                "stress_20bps_total_log_growth"
+            ]
+            > 0,
+            "stressed_profit_factor": metrics["stress_20bps_profit_factor"]
+            is not None
+            and metrics["stress_20bps_profit_factor"] >= 1.20,
+            "stressed_drawdown": metrics["stress_20bps_maximum_drawdown_r"] <= 6.0,
+            "rolling_fold_stability": metrics["rolling_folds_positive"] is True,
+            "rule_completeness": metrics["rules_complete"] is True,
+            "trial_accounting": metrics["trial_accounting_complete"] is True,
+            "deflated_sharpe": metrics["deflated_sharpe_probability"] is not None
+            and metrics["deflated_sharpe_probability"] >= 0.90,
+            "holm_family": metrics["holm_reject_null"] is True,
+            "backtest_overfitting": metrics["pbo_probability"] is not None
+            and metrics["pbo_probability"] <= 0.50,
+            "neighbor_stability": neighbor_fraction >= 0.50,
+        }
+        classification = {
+            "trial_id": trial_id,
+            "neighbors": neighbors,
+            "positive_20bps_neighbors": positive_neighbors,
+            "neighbor_positive_fraction": neighbor_fraction,
+            "gates": gates,
+            "rebuilt_metrics": metrics,
+            "status": "SURVIVOR" if all(gates.values()) else "REJECTED",
+        }
+        classifications.append(classification)
+        if classification["status"] == "SURVIVOR":
+            survivors.append(item)
+    survivors.sort(
+        key=lambda item: (
+            -float(
+                rebuilt_by_id[str(item["trial_id"])][
+                    "stress_20bps_bootstrap_lower_mean_account_return"
+                ]
+            ),
+            -float(
+                rebuilt_by_id[str(item["trial_id"])][
+                    "stress_20bps_total_log_growth"
+                ]
+            ),
+            float(
+                rebuilt_by_id[str(item["trial_id"])][
+                    "stress_20bps_maximum_drawdown_r"
+                ]
+            ),
+            str(item["trial_id"]),
+        )
+    )
+    if not survivors:
+        return {
+            "status": "REJECTED",
+            "reason": "no trial survived the frozen selection-aware gates",
+            "selected_trial_id": None,
+            "trial_classifications": classifications,
+        }
+    selected = survivors[0]
+    returns = rebuilt_by_id[str(selected["trial_id"])][
+        "oof_filled_account_returns"
+    ]
+    mean = sum(returns) / len(returns)
+    deviation = math.sqrt(
+        sum((value - mean) ** 2 for value in returns) / (len(returns) - 1)
+    ) if len(returns) > 1 else 0.0
+    try:
+        power_target = power_sample_target(
+            mean,
+            deviation,
+            alpha=0.10,
+            power=0.80,
+            configured_floor=50,
+        )
+    except ValueError:
+        power_target = 50
+    required_total = max(50, power_target)
+    return {
+        "status": "WINNER_SELECTED",
+        "reason": "frozen deterministic ranking selected one surviving trial",
+        "selected_trial_id": selected["trial_id"],
+        "selected_parameters": trial_contracts[str(selected["trial_id"])][
+            "parameters"
+        ],
+        "power_target": power_target,
+        "required_total_signals": required_total,
+        "required_confirmation_signals": max(
+            20, math.ceil(required_total * 0.30)
+        ),
+        "trial_classifications": classifications,
+    }
 
 
 def disposition_from_result(
@@ -435,6 +753,12 @@ def disposition_from_result(
             if key not in {"contract_sha256", "trial_family", "primary_trial_id"}
         }
     )
+    if frozen["selection_mode"] == "development_search":
+        selection = select_development_winner(contract, normalized)
+        return {
+            **selection,
+            "automatic_strategy_application": False,
+        }
     primary = next(
         item
         for item in normalized["trials"]
