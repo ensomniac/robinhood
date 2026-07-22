@@ -32,3 +32,17 @@ python3 asr_capacity.py status
 
 The status must be `CAPACITY_CONTRACT_INSPECTED`, with SEC access true and all
 market, outcome, and broker permissions false, before collection begins.
+
+The committed collector reads each exact search phrase into the external
+content-addressed historical store, reuses retained pages on resume, and stops
+before matched-document access if EFTS does not provide an exact total:
+
+```sh
+python3 asr_capacity_collection.py collect
+python3 asr_capacity_collection_inspection.py inspect
+```
+
+The public collection and inspection artifacts contain counts, hashes, request
+telemetry, and the terminal source-completeness state. Raw result rows remain in
+the ignored external store. The independently inspected denominator must be
+complete before any filing-semantic classification can begin.
