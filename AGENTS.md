@@ -17,9 +17,11 @@ repair or outcome collection is permitted for that exact version.
 Ryan explicitly authorized the successor campaign on 2026-07-22. The exact
 scope is defined in `PORTFOLIO_VALIDATION_V2.md` and recorded from proposal
 `strategy_tournament/successor_proposal/multi-strategy-portfolio-validation-v2-proposal-67f12bf617cc7f541dd0beba0d574b309effa7adefe5aacb4e4413c3d5c2858e.json`.
-The authorization does not activate research until its content-addressed record
-earns `AUTHORIZED_READY`; before that inspection, do not freeze a candidate,
-contact a provider, access an outcome, or perform a broker action.
+Authorization record `6a7e2748...0fd6e` has independently earned
+`AUTHORIZED_READY`. Campaign v2 may now run only its first bounded action: the
+priority-one outcome-blind capacity preflight. Provider access still requires a
+separately frozen and inspected collection contract; target outcomes and broker
+actions remain forbidden.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
