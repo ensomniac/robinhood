@@ -1,0 +1,28 @@
+{
+  "activation_sha256": "73e3b033ed9091c82dc55a70144715c251d0e9a79fd1e7e9f6795d0219bf6ed2",
+  "broker_actions": 0,
+  "candidate_disposition": "CAPACITY_SURVIVOR_STAGE0_FREEZE_REQUIRED",
+  "candidate_id": "multi-asset-etf-tsmom-v1",
+  "capacity_passed": true,
+  "contract_sha256": "a77cc1a26a926b57657c3226f311914c4f0b4b31e94dc8f3c50a0604fa16e063",
+  "denominator": {
+    "causal_long_signals": 102,
+    "causal_non_signals": 55,
+    "eligible_causal_evaluations": 157,
+    "ineligible_causal_evaluations": 0,
+    "minimum_required_signals": 50,
+    "scheduled_weeks": 157,
+    "signal_shortfall": 0
+  },
+  "forward_returns_computed": 0,
+  "input_inspection_sha256": "ae521afe9488dce27e9ca8dcdc4c1c82b887ce3b03d03a061e01a5a0008ddcfc",
+  "inspection_kind": "outcome-blind-capacity-result-inspection",
+  "inspection_sha256": "38cbd1d878256990fb260471ef3d833d41a840302ddd787ba0545a315f9185c0",
+  "market_outcomes_accessed": false,
+  "maturity_effect": "NONE",
+  "result_file_sha256": "f88a5e378342683187efaecd8062249076b89cfd25d268b11bd41227460416d6",
+  "result_sha256": "653e7eaa8fabcd18c6e196b399ac458f2db488df068de31c06e28455443d81b6",
+  "schema_version": 1,
+  "stage0_outcome_access_permitted": false,
+  "valid": true
+}
