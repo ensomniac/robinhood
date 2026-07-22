@@ -509,6 +509,14 @@ Independent reconstruction now marks second-tranche selection
 session graph, implementation bindings, private hashes, disjointness, and
 outcome lock all match. Publication is required before dated reference access.
 
+The second-tranche acquisition adapter and independent inspector now isolate
+all provider, master, split, scanner, status, and lock paths without modifying
+the frozen first corpus. The exact split window covers the complete required
+session graph from `2023-01-04` through `2026-07-17`; the prior complete v2
+scanner manifest is the sole reusable lineage. Independent zero-state reference
+inspection reports 0/100 ready with no unexpected artifact. Provider access is
+blocked until these implementations are committed and pushed.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

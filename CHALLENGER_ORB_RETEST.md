@@ -151,6 +151,15 @@ Independent reconstruction now marks `cfa2e9fe...0d55a7` `FROZEN_READY`. All
 bindings, private hashes, and the outcome lock rebuild exactly with zero overlap.
 This inspection must be committed and pushed before dated reference access.
 
+`challenger_orb_retest_acquisition2.py` and its independent inspector now bind
+the second selection to separate reference, security-master, split, scanner,
+status, and lock namespaces while reusing the frozen acquisition engine. The
+adapter also expands the split query to the complete 530-session boundary
+(`2023-01-04` through `2026-07-17`) and binds the completed v2 scanner corpus as
+the only eligible reusable lineage. Zero-state inspection finds all 100 dated
+reference snapshots missing and no unexpected artifact. These implementations
+must be committed and pushed before any provider call.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`
