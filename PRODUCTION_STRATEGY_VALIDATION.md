@@ -586,6 +586,15 @@ target source artifacts. It authorizes only a separately frozen and published
 SEC/issuer identity/request graph; source bodies, semantic classifications,
 causal inputs, and outcomes remain locked.
 
+SEC identity manifest `83e21d3e...e1f638` now independently earns
+`FROZEN_READY`. It exactly maps all 1,826 private pairs to the attested
+point-in-time master, retains two missing-CIK rows and four listing-scoped
+joins, and freezes 537 SEC-operated submissions requests. Private identity
+hash `041d8a4d...ba7f5`, request-graph hash `6ad3c618...40991`, and daily
+aggregate hash `7af5b4f6...d8f7c` bind the zero-response graph. No submission,
+primary document, source classification, causal input, substitution, or
+outcome was accessed. This boundary must be published before collection.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
