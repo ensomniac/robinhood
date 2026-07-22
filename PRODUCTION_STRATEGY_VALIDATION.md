@@ -428,6 +428,12 @@ retention boundaries, one daily entry, the 20-GiB reserve, zero substitution,
 and closed quote, fill, post-entry, return, and outcome access. The manifest is
 uninspected and must be committed and pushed before zero-state reconstruction.
 
+The pre-entry inspector now marks `e9bc5a8a...846b77` `FROZEN_READY` after
+rebuilding all 95 pair identities, 47 dates, 284 requests, source and
+implementation hashes, capacity, privacy, and outcome locks. The target state
+contains one frozen selection and zero terminal wrappers, collection index, or
+trigger index. This READY status must be committed and pushed before collection.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
