@@ -107,7 +107,7 @@ def _patches(value: dict):
         patch.object(preentry, "_build_index", return_value=value["index"]),
         patch.object(preentry, "_load_rows", return_value=value["rows"]),
         patch.object(inspection, "HistoricalDayStore"),
-        patch.object(inspection, "LocalHistoricalClient"),
+        patch.object(inspection.causal_reader, "FrozenCausalWindowClient"),
     )
 
 

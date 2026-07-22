@@ -441,6 +441,13 @@ network-free inspector will rebuild the collection index, rehash every wrapper
 and canonical row, verify the outcome lock and zero-trigger boundary, and must
 itself be committed and pushed before inspection or trigger derivation.
 
+The initial inspection failed closed on the generic cache reader's complete-RTH
+requirement. The collected bars are deliberately bounded regular-session
+windows, so a separate local reader now admits only exact provenance-bound
+09:30/09:35-10:30 Alpaca SIP windows. This is a transport adapter only; the
+frozen collector and trigger rules remain unchanged, and the adapter must be
+committed and pushed before inspection retries.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

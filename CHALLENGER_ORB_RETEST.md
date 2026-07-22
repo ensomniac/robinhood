@@ -79,6 +79,13 @@ collection inspector must be committed and pushed before it may rehash every
 wrapper and canonical row; trigger derivation remains closed until that
 inspection is published.
 
+The first inspection attempt failed closed because the general local client
+only serves complete regular sessions for `use_rth=true`; the frozen requests
+are intentionally bounded 09:30/09:35-10:30 regular-session windows. A separate
+network-free reader now requires exact provider, feed, adjustment, request-time,
+and provenance matches for those stored windows. It changes neither the frozen
+collector nor trigger rules and must be committed before inspection retries.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

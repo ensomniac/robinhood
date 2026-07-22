@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any
 
 import challenger_orb_retest_preentry as preentry
+import challenger_orb_retest_preentry_reader as causal_reader
 from historical_providers import HistoricalProviderError
-from historical_service import LocalHistoricalClient
 from historical_store import HistoricalDayStore, HistoricalStoreError
 from learning_data import LearningDataError
 
@@ -70,7 +70,7 @@ def inspect_collection(
             "terminal request denominator differs"
         )
 
-    local = LocalHistoricalClient(
+    local = causal_reader.FrozenCausalWindowClient(
         HistoricalDayStore(config.root), "alpaca", feed="sip", adjustment="raw"
     )
     row_count = 0
@@ -159,6 +159,10 @@ def inspect_collection(
         "private_collection_content_sha256": preentry._sha256_json(index),
         "wrapper_set_sha256": preentry._sha256_json(wrapper_hashes),
         "canonical_row_set_sha256": preentry._sha256_json(canonical_row_hashes),
+        "inspection_implementation": {
+            "inspector_sha256": preentry._sha256_file(Path(__file__)),
+            "reader_sha256": preentry._sha256_file(Path(causal_reader.__file__)),
+        },
         "inspection": {
             "selection_rebuilt": True,
             "collection_index_rebuilt": True,
