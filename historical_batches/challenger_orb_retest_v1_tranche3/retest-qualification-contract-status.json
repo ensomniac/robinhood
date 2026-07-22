@@ -1,0 +1,14 @@
+{
+  "dataset_id": "dataset-challenger-orb-retest-entry-qualification-2026-07-22-v1",
+  "distinct_trigger_sessions": 52,
+  "inspected": false,
+  "manifest_sha256": "c6576b32b91c8ffe03e08c668f47ab04748c447c317a4f1e80091a45f5248e50",
+  "minimum_eligible_signals": 50,
+  "outcome_contract_permitted": false,
+  "pairs_expected": 60,
+  "post_entry_data_access_allowed": false,
+  "private_artifacts": 0,
+  "schema_version": 1,
+  "status": "FROZEN_WAITING_INSPECTION",
+  "target_outcomes_observed_or_derived": false
+}

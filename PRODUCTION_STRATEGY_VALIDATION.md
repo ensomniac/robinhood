@@ -1303,19 +1303,20 @@ prove that post-promotion fail-closed behavior and validate the immutable
 manifest plus published inspected result, rather than attempting to reconstruct
 an obsolete uninspected lifecycle phase.
 
-The retest-specific entry-qualification evaluator is now implemented but not
-yet frozen. It binds the inspected 60-pair, 52-session causal collection, the
-exact catalyst-ORB-retest hypothesis, executable evaluator/config hashes, a
+Qualification manifest `c6576b32...48e50` now freezes the retest-specific
+entry evaluator against the inspected 60-pair, 52-session causal collection,
+the exact catalyst-ORB-retest hypothesis, executable evaluator/config hashes, a
 retest-low structural invalidation outside measured noise, the uncompressed
 ATR-or-structure stop with the 0.8% cap, exact SIP VWAP and three-snapshot
 spread gates, complete split-adjusted resistance, and deterministic
 one-per-session ranking. Its public result is aggregate-only and its outcome
-lock remains closed. After the implementation is committed and pushed, the
-ordered handoff is manifest freeze, independent zero-result inspection, exact
-qualification, and independent result reconstruction. Fewer than 50 inspected
-eligible sessions retires this exact variant without outcome access; at least
-50 permits freezing a separate post-entry outcome contract, but earns no alpha,
-maturity, production, or live claim by itself.
+lock remains closed. The frozen contract is uninspected, has zero result
+artifacts, and must be committed and pushed before independent zero-result
+inspection. Only after that inspection may exact qualification and independent
+result reconstruction run. Fewer than 50 inspected eligible sessions retires
+this exact variant without outcome access; at least 50 permits freezing a
+separate post-entry outcome contract, but earns no alpha, maturity, production,
+or live claim by itself.
 
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
