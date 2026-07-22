@@ -836,6 +836,14 @@ seasonality becomes the last second-wave candidate. This was the fifteenth
 Stage 0 disposition; the cadence notification was attempted and skipped by the
 current `trades` email setting.
 
+`turn_of_month_etf_seasonality_stage0.py` implements the sixth and final
+second-wave variant without accessing its outcomes. It derives each monthly
+decision after the penultimate SPY session, enters the final session's open,
+uses a 1.5-ATR14 protective stop with stop-first and adverse-gap handling, and
+exits at the third XNYS close of the next month. The immutable evaluator applies
+5/10/20-bps per-side costs and requires a clean pushed activation plus an
+independently committed inspection before computing the 36 frozen returns.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the
