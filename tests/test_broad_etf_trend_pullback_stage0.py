@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+import json
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -82,10 +83,32 @@ def test_frozen_variant_is_second_in_inspected_second_wave():
     assert variant["maturity_effect"] == "NONE"
 
 
-def test_no_activation_exists_before_inputs_are_acquired_and_frozen():
+def test_published_activation_binds_complete_whole_provider_input_graph():
     matches = sorted(
         (ROOT / "strategy_tournament/second_wave/activations").glob(
             "broad-etf-trend-pullback-v1-*.json"
+        )
+    )
+    assert len(matches) == 1
+    activation = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert activation == stage0.build_activation()
+    assert activation["manifest_sha256"] == stage0.common._self_hash(
+        activation, "manifest_sha256"
+    )
+    assert activation["variant_ordinal"] == 2
+    assert activation["source_selection"]["whole_provider"] == "ibkr"
+    assert activation["source_selection"]["provider_substitution"] is False
+    assert activation["source_selection"]["common_calendar_dates"] == 1008
+    assert activation["source_selection"]["evaluation_dates"] == 752
+    assert activation["denominator"]["input_symbol_dates"] == 4032
+    assert activation["return_evaluation_authorized_before_inspection"] is False
+    assert activation["maturity_effect"] == "NONE"
+
+
+def test_input_inspection_is_absent_before_independent_review():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/inspections").glob(
+            "broad-etf-trend-pullback-v1-input-*.json"
         )
     )
     assert matches == []

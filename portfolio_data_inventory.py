@@ -94,10 +94,26 @@ def _dataset_descriptor(dataset: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _minute_dates(store: HistoricalDayStore, symbol: str) -> list[str]:
+    dates = []
+    for day in store.dates(symbol):
+        document = store.load(symbol, day)
+        datasets = document.get("datasets") if isinstance(document, Mapping) else None
+        if isinstance(datasets, list) and any(
+            isinstance(item, Mapping) and item.get("timeframe") == "1m"
+            for item in datasets
+        ):
+            dates.append(day)
+    return dates
+
+
 def _store_sample(store: HistoricalDayStore, symbol: str) -> dict[str, Any]:
     dates = store.dates(symbol)
     if symbol in PAIRED_MINUTE_SAMPLE_SYMBOLS:
-        dates = sorted(set(store.dates("SPY")) & set(store.dates("QQQ")))
+        dates = sorted(
+            set(_minute_dates(store, "SPY"))
+            & set(_minute_dates(store, "QQQ"))
+        )
     if not dates:
         return {"symbol": symbol, "dates": 0, "first": None, "last": None, "samples": []}
     selected = list(dict.fromkeys((dates[0], dates[len(dates) // 2], dates[-1])))

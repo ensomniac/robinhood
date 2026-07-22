@@ -691,7 +691,7 @@ evaluation sessions from 2023-01-03 through 2025-12-31. Provider substitution
 and pre-inspection return access remain forbidden.
 
 The acquisition expanded SPY with daily-only documents, so the bounded data
-inventory sampler now defines its ETF slice as the common SPY/QQQ document
+inventory sampler now defines its ETF slice as the common SPY/QQQ minute-data
 calendar and hashes its declared minute-data projection rather than unrelated
 datasets added later. This preserves the original 245-date paired minute-cache
 question and frozen inventory identity
@@ -721,6 +721,14 @@ three-session return at or below -1%, and Wilder RSI(2) at or below 15; then
 selects the lowest RSI, enters at the next open, and exits on a gap-aware
 1.5-ATR stop, the first close back above SMA5, or the fifth-session close. Its
 acquisition stage selects no signals and computes no returns.
+
+The read-only acquisition completed 15 IBKR historical-bar requests with zero
+failures, adding QQQ, IWM, and DIA to the existing compatible SPY daily series.
+Activation
+`a4f2348809b00bf70994d3c7868a1bce34b8cec578a5270dc32d80afa1f39860`
+binds 1,008 common sessions, 4,032 symbol-sessions, and all 752 evaluation
+sessions. It records zero signal selection or return calculations and forbids
+outcome access until independent input inspection is committed and pushed.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live

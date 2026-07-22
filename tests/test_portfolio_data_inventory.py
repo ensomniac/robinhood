@@ -46,7 +46,7 @@ class PortfolioDataInventoryTests(unittest.TestCase):
             for item in self.rebuilt["canonical_store_bounded_sample"]
         }
         for symbol in ("SPY", "QQQ"):
-            self.assertGreaterEqual(samples[symbol]["dates"], 245)
+            self.assertEqual(samples[symbol]["dates"], 245)
             self.assertTrue(
                 all(
                     any(
