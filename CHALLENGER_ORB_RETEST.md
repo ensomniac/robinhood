@@ -35,6 +35,12 @@ independently rehash every wrapper and raw response before any EX-99 semantic
 review; its implementation and this uninspected collection status must be
 committed and pushed before that inspection runs.
 
+Collection inspection now independently rebuilds all 417 terminal wrappers,
+rehashes all 949,569,801 raw source bytes, matches collection hash
+`6d89d180...ae393` and wrapper-set hash `d36c664c...875f`, and confirms zero
+semantic-review artifacts. The result must be committed and pushed before the
+unchanged issuer-filed EX-99 review is allowed to run.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

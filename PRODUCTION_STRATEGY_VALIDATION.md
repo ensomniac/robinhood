@@ -393,6 +393,13 @@ denominator, and requires zero semantic-review artifacts. Its implementation
 and the uninspected completion status must be committed and pushed before this
 inspection; semantic review remains closed until the inspection is published.
 
+Independent collection inspection now rebuilds all 417 terminal wrappers and
+the complete private index, rehashes and transport-validates all 949,569,801
+source bytes, matches collection hash `6d89d180...ae393` and wrapper-set hash
+`d36c664c...875f`, and confirms zero semantic-review artifacts. Only after this
+result is committed and pushed may deterministic issuer-filed EX-99 review run;
+returns and outcomes remain forbidden.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
