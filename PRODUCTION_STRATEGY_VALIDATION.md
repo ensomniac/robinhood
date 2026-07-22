@@ -1276,6 +1276,16 @@ entire v1 inspection in a temporary nonpublic sandbox while normalizing only
 that quote-rebuild argument after exact-instant equality. It must be committed,
 pushed, frozen, and independently executed before collection evidence advances.
 
+V2 compatibility manifest `a26f2641...50bb` now freezes the successor boundary
+from clean pushed code. It binds the failed v1 manifest/status, unchanged source
+collection and private index, both generations of compatibility code, 60 exact
+stored-snapshot rebuilds, 56 UTC-representation-only snapshot differences, four
+unaffected empty sets, and zero timestamp delta. The v1 public failure state
+cannot be mutated, and every full inspection write must remain in the temporary
+repository-local sandbox until the v2 result passes. The contract remains
+uninspected and earns no qualification, alpha, maturity, production, or live
+claim.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
