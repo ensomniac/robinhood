@@ -715,6 +715,13 @@ signals and the failed disposition with zero provider or broker calls. The exact
 variant is permanently retired; broad ETF trend pullback is next in the frozen
 queue.
 
+`broad_etf_trend_pullback_stage0.py` implements that next exact variant. It
+uses SPY, QQQ, IWM, and DIA daily bars; requires price above SMA200, a
+three-session return at or below -1%, and Wilder RSI(2) at or below 15; then
+selects the lowest RSI, enters at the next open, and exits on a gap-aware
+1.5-ATR stop, the first close back above SMA5, or the fifth-session close. Its
+acquisition stage selects no signals and computes no returns.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the

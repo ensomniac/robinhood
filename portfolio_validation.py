@@ -84,6 +84,7 @@ CORE_ARTIFACTS = (
     "portfolio_funnel.py",
     "second_wave_slate.py",
     "sector_etf_rotation_stage0.py",
+    "broad_etf_trend_pullback_stage0.py",
     "portfolio_guard.py",
     "etf_or_momentum_stage0.py",
     "etf_vwap_mean_reversion_stage0.py",
