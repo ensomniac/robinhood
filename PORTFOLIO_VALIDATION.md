@@ -755,6 +755,17 @@ that bar, models an adverse overnight gap, and otherwise exits at the next
 09:30 bar open. The acquisition path selects no signals and computes no
 returns.
 
+The read-only intraday acquisition completed 196 IBKR requests with zero
+failures and persisted 104,400 bars across the four ETFs. The corpus contains
+1,008 common sessions, of which 999 have the full 26 regular-session bars.
+Activation
+`1e7934f023b26213e085277cb18bb343ddc6f4655aa9cdc8a9bc0096cc95a9c6`
+binds 4,032 daily plus 4,032 intraday symbol-sessions and 744 eligible
+evaluation dates to private input hash
+`fe0f39a6411d51790d5b7ba699527c5bb144c1f0d305c2340d7171619447be99`.
+It forbids outcome access until independent input inspection is committed and
+pushed.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the

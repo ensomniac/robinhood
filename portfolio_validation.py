@@ -126,6 +126,8 @@ CORE_ARTIFACTS = (
     "strategy_tournament/second_wave/broad_etf_trend_pullback/collection-status.json",
     "strategy_tournament/second_wave/activations/broad-etf-trend-pullback-v1-a4f2348809b00bf70994d3c7868a1bce34b8cec578a5270dc32d80afa1f39860.json",
     "strategy_tournament/second_wave/inspections/broad-etf-trend-pullback-v1-input-83d156b0ea6f6b01bfdf41072fdd4c43c710bb0a734c102ed9cdda22fd83426f.json",
+    "strategy_tournament/second_wave/close_to_open_etf_momentum/collection-status.json",
+    "strategy_tournament/second_wave/activations/close-to-open-etf-momentum-v1-1e7934f023b26213e085277cb18bb343ddc6f4655aa9cdc8a9bc0096cc95a9c6.json",
     "strategy_tournament/activations/etf-or-momentum-v1-fbea206058e0530a38f89b4b19ccdb71949329960fc6ebbef63ae56966961b03.json",
     "strategy_tournament/activations/etf-vwap-mean-reversion-v1-ecaff3785f2dc9fe3f14332be9e40e056e08aacf55f86487cb2f25df62688a47.json",
     "strategy_tournament/activations/equity-gap-continuation-v1-3bc6f70c2a331e70b00a1dda076b258ce46f1175d062ecee0a641e4c4ab06f3f.json",

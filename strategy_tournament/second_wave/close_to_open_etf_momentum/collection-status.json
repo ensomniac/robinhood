@@ -1,0 +1,77 @@
+{
+  "broker_actions": 0,
+  "collection_end_exclusive": "2026-01-09",
+  "collection_kind": "close-to-open-etf-momentum-stage0-15m-inputs",
+  "collection_start": "2022-01-03",
+  "complete_twenty_six_bar_dates": 999,
+  "completed": [
+    {
+      "rows": 26100,
+      "symbol": "SPY"
+    },
+    {
+      "rows": 26100,
+      "symbol": "QQQ"
+    },
+    {
+      "rows": 26100,
+      "symbol": "IWM"
+    },
+    {
+      "rows": 26100,
+      "symbol": "DIA"
+    }
+  ],
+  "failures": [],
+  "first_common_date": "2022-01-03",
+  "last_common_date": "2026-01-08",
+  "provider": "IBKR",
+  "provider_telemetry": {
+    "completed": 196,
+    "completed_by_kind": {
+      "historical-bars": 196
+    },
+    "configured_max_in_flight": 4,
+    "contract_cache": {
+      "expired": 0,
+      "hits": 0,
+      "invalid": 0,
+      "misses": 0,
+      "namespace": "9fb701338054",
+      "resolved_ttl_seconds": 2592000.0,
+      "unresolvable_ttl_seconds": 86400.0,
+      "writes": 0
+    },
+    "elapsed_seconds": 919.256409582973,
+    "failed": 0,
+    "failed_by_kind": {},
+    "in_flight": 0,
+    "max_request_seconds_by_kind": {
+      "historical-bars": 48.00226275000023
+    },
+    "minimum_request_spacing_seconds": 0.4,
+    "pacing_wait_seconds": 86.85682116803946,
+    "peak_in_flight": 4,
+    "request_seconds_by_kind": {
+      "historical-bars": 3549.2101382076507
+    },
+    "slot_wait_seconds": 0.0001845741062425077,
+    "submitted": 196,
+    "submitted_by_kind": {
+      "historical-bars": 196
+    }
+  },
+  "qualified_common_dates": 1008,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "signal_selections": 0,
+  "symbols": [
+    "SPY",
+    "QQQ",
+    "IWM",
+    "DIA"
+  ],
+  "timeframe": "15m",
+  "valid": true,
+  "variant_id": "close-to-open-etf-momentum-v1"
+}
