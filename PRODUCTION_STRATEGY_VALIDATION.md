@@ -1175,6 +1175,13 @@ status after capturing the separate trigger status; no private artifact or
 result byte changes. Its lifecycle test now accepts either legitimate private
 trigger-file state while continuing to require exact source reconstruction.
 
+Independent trigger inspection reloaded and rehashed the complete collection,
+rebuilt every causal boundary, and exactly reproduced all 23 terminal
+dispositions and private trigger hash `c03dd9c3...73e3`. The tranche-local result
+is `READY` with eight distinct trigger sessions. It does not independently meet
+50; the next gate is a separate cumulative-capacity inspection across all three
+disjoint corpora, still with no post-entry outcome access.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,

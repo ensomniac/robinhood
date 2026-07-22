@@ -1,0 +1,47 @@
+{
+  "claim_scope": "DEVELOPMENT_ONLY",
+  "compatibility_contract": {
+    "adjustment": "raw",
+    "exact_request_provenance_required": true,
+    "feed": "sip",
+    "only_runtime_substitution": "preentry.LocalHistoricalClient",
+    "provider": "alpaca",
+    "replacement": "FrozenCausalWindowClient",
+    "trigger_rule_change_allowed": false
+  },
+  "counts": {
+    "maximum_daily_closed_signals": 8,
+    "minimum_required_development_signals": 50,
+    "trigger_found_dates": 8,
+    "trigger_found_pairs": 8,
+    "verified_positive_dates": 20,
+    "verified_positive_pairs": 23
+  },
+  "dataset_id": "dataset-challenger-orb-retest-preentry-collection-2026-07-22-tranche3-v2",
+  "inspected": true,
+  "inspection": {
+    "canonical_rows_rehashed": true,
+    "causal_boundaries_rebuilt": true,
+    "collection_index_rebuilt": true,
+    "complete_pair_denominator_reconciled": true,
+    "selection_rebuilt": true,
+    "trigger_results_rebuilt": true
+  },
+  "manifest_sha256": "45e9441bbc43f6b79cac90e6a84e375da2b9e56cb1f6d07ae0362f8f64152500",
+  "minimum_development_signal_capacity_passed": false,
+  "next_phase": "DEVELOPMENT_ACQUISITION",
+  "post_entry_data_accessed": false,
+  "private_result_sha256": "c03dd9c32df5758187f856fa3e69bbc40194561cb62568269c0832b5a03e73e3",
+  "production_rule_change_earned": false,
+  "schema_version": 1,
+  "status": "READY",
+  "target_outcomes_observed_or_derived": false,
+  "terminal_reason_counts": {
+    "NO_INITIAL_BREAK": 7,
+    "RETEST_HOLD_FAILED": 8,
+    "TRIGGER_FOUND": 8
+  },
+  "trigger_runner_dataset_id": "dataset-challenger-orb-retest-trigger-review-2026-07-22-tranche3-v2",
+  "trigger_runner_manifest_sha256": "d214a021dc3cad6101b6b1ba4dd6028d307e946ee31b9ba50add56d77d064c37",
+  "valid": true
+}

@@ -8,17 +8,21 @@
     "verified_positive_pairs": 23
   },
   "dataset_id": "dataset-challenger-orb-retest-trigger-review-2026-07-22-tranche3-v2",
-  "inspected": false,
+  "inspected": true,
+  "inspection_result": "research_results/2026-07-22-challenger-orb-retest-preentry-tranche3.json",
   "manifest_sha256": "d214a021dc3cad6101b6b1ba4dd6028d307e946ee31b9ba50add56d77d064c37",
+  "minimum_development_signal_capacity_passed": false,
+  "next_phase": "CUMULATIVE_CAPACITY_INSPECTION",
   "post_entry_data_accessed": false,
   "private_trigger_sha256": "c03dd9c32df5758187f856fa3e69bbc40194561cb62568269c0832b5a03e73e3",
   "schema_version": 1,
   "source_preentry_manifest_sha256": "45e9441bbc43f6b79cac90e6a84e375da2b9e56cb1f6d07ae0362f8f64152500",
-  "status": "TRIGGER_REVIEW_COMPLETE_UNINSPECTED",
+  "status": "READY",
   "target_outcomes_observed_or_derived": false,
   "terminal_reason_counts": {
     "NO_INITIAL_BREAK": 7,
     "RETEST_HOLD_FAILED": 8,
     "TRIGGER_FOUND": 8
-  }
+  },
+  "valid": true
 }
