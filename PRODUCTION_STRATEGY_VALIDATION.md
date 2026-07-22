@@ -1131,6 +1131,14 @@ transport result. This collection remains uninspected; no trigger, fill,
 return, outcome, alpha, maturity, production, or broker claim is permitted
 until every wrapper and canonical row independently rebuilds.
 
+Independent transport inspection rebuilt the complete 86-request denominator,
+rehashed every terminal wrapper, and reloaded all 739,435 canonical causal
+rows. Wrapper-set hash `1807429f...1133`, canonical-row-set hash
+`6eee957b...b7b`, and private collection-content hash `9570ee27...2c1e` bind
+the result. The trigger namespace remains empty and post-entry data remains
+locked; causal trigger derivation may begin only after this inspection is
+committed and pushed.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
