@@ -82,7 +82,7 @@ def _client(tmp_path: Path) -> tuple[FrozenCausalWindowClient, datetime, datetim
                 adjustment="raw",
                 session="regular",
                 scope="observed_window",
-                quality={"complete": True, "requested_window_complete": True},
+                quality={"complete": True},
                 provenance=provenance(False),
             ),
         ],

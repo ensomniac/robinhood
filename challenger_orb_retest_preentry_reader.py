@@ -98,8 +98,19 @@ class FrozenCausalWindowClient:
                     and provider_id(str(dataset.get("provider", ""))) == self.provider
                     and dataset.get("feed") == self.feed
                     and dataset.get("adjustment") == self.adjustment
-                    and dataset.get("quality", {}).get("requested_window_complete")
-                    is True
+                    and (
+                        (
+                            kind == "bars"
+                            and dataset.get("quality", {}).get(
+                                "requested_window_complete"
+                            )
+                            is True
+                        )
+                        or (
+                            kind == "trades"
+                            and dataset.get("quality", {}).get("complete") is True
+                        )
+                    )
                     and _provenance_covers(
                         dataset, start=start_utc, end=end_utc, bar_size=bar_size
                     )
