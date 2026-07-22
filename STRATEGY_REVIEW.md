@@ -1,6 +1,6 @@
 # 2026 Agentic Intraday Strategy Review
 
-Reviewed: 2026-07-19 (ET)
+Reviewed: 2026-07-22 (ET)
 
 Active strategy: `2026-07-15-orb-v3`
 
@@ -38,6 +38,49 @@ Change these parts:
    and an evidence-based strategy maturity state.
 6. Obey the current MCP tool contract. Repository authorization cannot replace
    an explicit confirmation that a broker tool or platform requires.
+
+### 2026-07-22 portfolio thesis checkpoint
+
+The superseding v2 campaign has now disposed its first two exact mechanism
+variants without weakening a gate. Multi-asset ETF time-series momentum v1 was
+retired at Stage 0. Schedule 13D activist continuation v1 passed cheap Stage 0
+falsification, then failed representative development under its unchanged rules.
+Its final denominator was 54 frozen events, 49 closed signals, five missed
+entries, and zero rule violations. Mean expectancy was +0.079927R and both
+chronological halves were positive, but profit factor was 1.297069 versus the
+1.30 minimum, the 90% bootstrap lower expectancy was -0.067241R, total return
+without the five best trades was -5.180118R, and 20-bps stressed profit factor
+was 1.129772 versus the 1.20 minimum. Confirmation outcomes were never opened.
+
+This does not prove that every activist strategy is ineffective. It rejects the
+narrower claim that a public control-intent filing, by itself and under this
+exact five-session implementation, supplied a sufficiently broad and robust
+residual edge. The positive mean was concentrated in a few outcomes and was not
+stable under uncertainty and execution-cost tests. The development gates
+therefore did exactly what they were designed to do; none should be relaxed or
+reweighted.
+
+The forward research thesis is now distribution-first and mechanism-specific.
+A one-shot favorable disclosure is presumed to be rapidly priced unless a
+candidate can state and reconstruct a continuing post-announcement demand or
+price-discovery channel. For accelerated-share-repurchase continuation, the
+candidate class must be based on an executed accelerated agreement with
+committed notional and observable delivery or settlement mechanics, not an
+ordinary board authorization or generic buyback announcement. Capacity for that
+stricter class must be proven before rules or outcome dates are frozen.
+
+The same review also established an execution principle: one development event
+could not form a positive stop from information available at entry. It was
+preserved as a missed, unexecutable entry before any forward exit value was
+read. Future event strategies must treat a causal, protectable stop as part of
+the mechanism contract, not as a post-outcome sizing adjustment.
+
+The machine evidence is the frozen development result in
+`research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`
+and its independent retirement in
+`strategy_tournament/v2/schedule13d/validation/retirements/schedule-13d-activist-continuation-v1-development-retirement.json`.
+No ORB production rule, portfolio promotion threshold, or risk limit changes at
+this checkpoint.
 
 ### 2026-07-16 frozen-rule checkpoint
 

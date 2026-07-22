@@ -17,11 +17,16 @@ repair or outcome collection is permitted for that exact version.
 Ryan explicitly authorized the successor campaign on 2026-07-22. The exact
 scope is defined in `PORTFOLIO_VALIDATION_V2.md` and recorded from proposal
 `strategy_tournament/successor_proposal/multi-strategy-portfolio-validation-v2-proposal-67f12bf617cc7f541dd0beba0d574b309effa7adefe5aacb4e4413c3d5c2858e.json`.
+The prospective, evidence-derived mechanism thesis is maintained separately in
+`PORTFOLIO_THESIS_V2.md` so the hash-bound authorization plan remains immutable.
 Authorization record `6a7e2748...0fd6e` has independently earned
-`AUTHORIZED_READY`. Campaign v2 may now run only its first bounded action: the
-priority-one outcome-blind capacity preflight. Provider access still requires a
-separately frozen and inspected collection contract; target outcomes and broker
-actions remain forbidden.
+`AUTHORIZED_READY`. Its priority-one multi-asset ETF time-series-momentum
+variant is retired at Stage 0, and its priority-two Schedule 13D activist-
+continuation variant is retired after representative development. Neither may
+be repaired on its evaluation corpus. The next bounded action is the outcome-
+blind capacity preflight for priority-three accelerated-share-repurchase
+continuation. Provider access still requires a separately frozen and inspected
+collection contract; target outcomes and broker actions remain forbidden.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
@@ -105,14 +110,13 @@ may write a cadence-qualified proposal but may not edit or activate live rules.
 `LEARNING_LOOP.md`, but production strategy changes remain proposals subject to
 the normal evidence gates and delegated decision rules below.
 
-The current persistent campaign is coordinated by `portfolio_validation.py`
-under `PORTFOLIO_VALIDATION.md`. Its ignored hash-chained state may resume
-across bounded workflows, but the controller never contacts providers, accesses
-Robinhood, changes strategy rules, or performs its own handoff. Waiting and
-safety statuses are nonterminal. Only its final `audit` may append
-`THREE_PILOT_READY_LIVE_STARTED`, after recomputing portfolio maturity,
-diversification, integrity, privacy-safe broker safety evidence, and clean
-pushed Git state.
+The preserved v1 campaign is coordinated by `portfolio_validation.py` under
+`PORTFOLIO_VALIDATION.md`; its status is not the disposition authority for v2.
+The active successor research contract is `PORTFOLIO_VALIDATION_V2.md`, with
+content-addressed evidence under `strategy_tournament/v2/`. Neither workflow
+contacts providers or Robinhood without a separately frozen authorization, and
+neither may award readiness. `portfolio_maturity.py` remains the sole
+`PILOT_READY` authority. Waiting and safety statuses are nonterminal.
 
 The prior controller and plan, `strategy_validation.py` and
 `PRODUCTION_STRATEGY_VALIDATION.md`, are `SUPERSEDED_PAUSED` only as the sole
@@ -427,6 +431,25 @@ least three independently evidenced long-equity/ETF mechanisms with maximum
 durable geometric growth after costs and risk. No trade is a successful outcome
 when the edge is absent, and trading every day is an opportunity goal rather
 than permission to force a setup.
+
+The current portfolio research thesis is distribution-first. A favorable,
+one-time public disclosure is presumed to be rapidly priced unless the exact
+candidate identifies a causal source of demand or price discovery that persists
+after the public timestamp. Positive average return is not enough when the
+bootstrap lower expectancy is non-positive, performance turns negative without
+the five best trades, or stressed profit factor fails. Those are mechanism
+tests, not optional diagnostics. `PORTFOLIO_THESIS_V2.md` is the current
+prospective thesis and handoff surface.
+
+For accelerated-share-repurchase research, an ordinary repurchase authorization
+or generic capital-allocation announcement is outside the thesis. Capacity must
+first establish point-in-time evidence of an executed accelerated repurchase
+agreement with committed notional and post-announcement delivery or settlement
+mechanics capable of creating continuing flow. The exact candidate must still
+freeze its own inclusion semantics, timestamps, entry, stop, exit, costs, and
+falsifiers before any outcome access. A non-positive or otherwise unprotectable
+causal stop is a missed entry, never permission to repair the rule after seeing
+the event.
 
 Portfolio hard constraints are defined in `portfolio_config.toml` and
 `PORTFOLIO_VALIDATION.md`. The following frozen constraints apply specifically

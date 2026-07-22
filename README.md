@@ -30,9 +30,24 @@ losses, and automated execution can fail in ways that matter financially.
 
 The active operating contract is defined in [AGENTS.md](AGENTS.md), with the
 multi-strategy objective, evidence gates, risk envelope, and anti-cycle rules in
-[PORTFOLIO_VALIDATION.md](PORTFOLIO_VALIDATION.md). The campaign targets at
-least three independent `PILOT_READY` long-equity/ETF strategy versions and
-starts a controlled live pilot for each as soon as it qualifies.
+[PORTFOLIO_VALIDATION.md](PORTFOLIO_VALIDATION.md). The active superseding
+research scope and first-pilot milestone are defined in
+[PORTFOLIO_VALIDATION_V2.md](PORTFOLIO_VALIDATION_V2.md); the evidence-derived
+forward mechanism thesis is kept separately in
+[PORTFOLIO_THESIS_V2.md](PORTFOLIO_THESIS_V2.md) so the content-addressed
+authorization plan remains immutable. The campaign targets at least three
+independent `PILOT_READY` long-equity/ETF strategy versions and starts a
+controlled live pilot for each as soon as it qualifies.
+
+Campaign v2 currently has zero `PILOT_READY` strategies. Its first exact variant
+was retired at Stage 0, and Schedule 13D activist continuation v1 was retired in
+representative development after its positive mean failed bootstrap,
+outlier-dependence, and stressed-profit-factor gates. The research thesis now
+requires event-driven candidates to identify a continuing post-announcement
+demand mechanism; positive disclosure alone is insufficient. The next bounded
+family is accelerated-share-repurchase continuation, restricted first to an
+outcome-blind capacity test of executed, committed ASR agreements rather than
+ordinary repurchase authorizations.
 
 At a high level:
 
