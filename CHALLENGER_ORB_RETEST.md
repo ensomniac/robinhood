@@ -220,6 +220,16 @@ substitution, no public selected identity, and no outcome access. This boundary
 must be committed and pushed before a separately frozen primary-source and
 causal-input graph may access any selected-symbol detail.
 
+`challenger_orb_retest_catalyst_contract2.py` and its inspector adapter now
+compose the published pair boundary with the unchanged source-semantics engine
+inside an isolated second-tranche namespace. A read-only rebuild matches all
+1,826 pairs and 100 daily partitions, source-rules hash
+`99843372...b4dc`, and zero target source artifacts. The new implementation
+contract binds both adapters, the immutable base builder, parser, and exact
+published inputs. These implementations must be committed and pushed before
+the source-semantics manifest is frozen; no selected-symbol source or outcome
+access is yet authorized.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

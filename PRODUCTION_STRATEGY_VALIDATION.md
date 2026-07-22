@@ -571,6 +571,14 @@ identities remain outside Git. Zero downstream artifact, substitution, causal
 input, or outcome exists. A separate source/causal contract must be frozen and
 published next.
 
+The second-tranche source-contract adapter and inspector now bind the complete
+1,826-pair private denominator, 100 daily partitions, unchanged primary-source
+rules hash `99843372...b4dc`, and an isolated zero-artifact namespace. The
+implementation contract includes both adapters, the immutable generic builder,
+and the source-semantics parser. The implementation must be committed and
+pushed before manifest freeze; source bodies, classifications, causal inputs,
+and outcomes remain inaccessible.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
