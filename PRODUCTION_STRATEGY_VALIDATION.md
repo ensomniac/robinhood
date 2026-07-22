@@ -579,6 +579,13 @@ and the source-semantics parser. The implementation must be committed and
 pushed before manifest freeze; source bodies, classifications, causal inputs,
 and outcomes remain inaccessible.
 
+Source-semantics manifest `e8463fc8...79f9f` now independently earns
+`FROZEN_READY` with all 1,826 selected pairs, 100 daily partitions, unchanged
+rules hash `99843372...b4dc`, implementation hash `4b0a203d...2ed4`, and zero
+target source artifacts. It authorizes only a separately frozen and published
+SEC/issuer identity/request graph; source bodies, semantic classifications,
+causal inputs, and outcomes remain locked.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

@@ -1,0 +1,21 @@
+{
+  "capacity_ready": true,
+  "daily_shortlists_sha256": "d22db8ada3ac6ad8dd88ab0c799fc373451244778bbc92c469c5fb256fc8fbf4",
+  "dataset_id": "dataset-primary-source-semantics-contract-2026-07-22-challenger-orb-retest-tranche2-v1",
+  "implementation_contract_sha256": "4b0a203daead9c104ba8ec369288322b364ff8cc11483c57bd233258d5942ed4",
+  "manifest_path": "historical_batches/challenger_orb_retest_v1_tranche2/catalyst_manifests/dataset-primary-source-semantics-contract-2026-07-22-challenger-orb-retest-tranche2-v1-e8463fc8452c280b28169906e5802d2d69ef293326349629f4cd3eccd2279f9f.json",
+  "manifest_sha256": "e8463fc8452c280b28169906e5802d2d69ef293326349629f4cd3eccd2279f9f",
+  "pre_freeze_target_artifact_count": 0,
+  "primary_evidence_only": true,
+  "private_selection_content_sha256": "173991d52e4807207b0fa9e97d42f27d0ebb335ea6a5581acbef4381ab5b0137",
+  "requested_dates": 100,
+  "schema_version": 1,
+  "selected_pair_count": 1826,
+  "selected_symbol_detail_accessed": false,
+  "source_rules_sha256": "998433724e8dfc26be129fb7c105a7f11a949641fbcef9032dd751e3a731b4dc",
+  "status": "FROZEN_READY",
+  "substitutions_allowed": false,
+  "target_outcomes_observed_or_derived": false,
+  "target_sources_accessed": false,
+  "valid": true
+}
