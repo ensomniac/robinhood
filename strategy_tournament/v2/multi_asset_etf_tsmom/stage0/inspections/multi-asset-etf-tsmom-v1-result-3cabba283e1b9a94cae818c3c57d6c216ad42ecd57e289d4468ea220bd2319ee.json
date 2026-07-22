@@ -1,0 +1,56 @@
+{
+  "activation_sha256": "e5fa9877e1dce92036ee014540d4195b7f284b6c794b0161415027bb99cba4be",
+  "broker_actions": 0,
+  "confirmation_evidence_eligible": false,
+  "contract_sha256": "e3434736806323f06d7151a2bcaa8db214088c6e8a06b7457b25cc0482c51a63",
+  "denominator": {
+    "closed_signals": 40,
+    "frozen_stage0_signals": 40,
+    "missed_entries": 0,
+    "rule_violations": 0
+  },
+  "development_evidence_eligible": false,
+  "input_inspection_sha256": "f9d837ec5b01e66822c8d0ef4cf0ed73e38332330701e7ac90b4a670fe71f896",
+  "inspection_kind": "stage0-result-inspection",
+  "inspection_sha256": "3cabba283e1b9a94cae818c3c57d6c216ad42ecd57e289d4468ea220bd2319ee",
+  "maturity_effect": "NONE",
+  "primary_5bps": {
+    "expectancy_r": 0.10169783069357337,
+    "maximum_drawdown_r": 6.768430833814997,
+    "profit_factor": 1.2769648591440554,
+    "profit_factor_infinite": false,
+    "signals": 40,
+    "total_r": 4.067913227742935,
+    "win_rate": 0.6
+  },
+  "result_file_sha256": "0e71eb4f1e0c1b1dffeb90d878b14d892bc9f473bbd4d8215769e28e74f7def8",
+  "result_sha256": "62e701b08258a2101cb51f50aa70e5ad2e05a8b4dc14ecc9941b7fc3d251dd90",
+  "rules_hash": "712c09a464849ed7ddb26aae5692464b33140fc06f0ab2797eb1221be3cc1d91",
+  "schema_version": 1,
+  "stage0_blockers": [
+    "20 bps-per-side total R is not positive"
+  ],
+  "stage0_survived": false,
+  "stress": {
+    "10": {
+      "expectancy_r": 0.027541566362108666,
+      "maximum_drawdown_r": 7.049283405342278,
+      "profit_factor": 1.0740666672394317,
+      "profit_factor_infinite": false,
+      "signals": 40,
+      "total_r": 1.1016626544843466,
+      "win_rate": 0.55
+    },
+    "20": {
+      "expectancy_r": -0.0932032335197891,
+      "maximum_drawdown_r": 8.39020529626184,
+      "profit_factor": 0.7592809102675655,
+      "profit_factor_infinite": false,
+      "signals": 40,
+      "total_r": -3.728129340791564,
+      "win_rate": 0.45
+    }
+  },
+  "valid": true,
+  "variant_id": "multi-asset-etf-tsmom-v1"
+}
