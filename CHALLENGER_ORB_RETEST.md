@@ -60,6 +60,12 @@ fills, post-entry rows, returns, or outcomes. Its separate inspector rebuilds
 the zero state and later the full trigger result. The implementations must be
 committed and pushed before freeze.
 
+Pre-entry manifest `e9bc5a8a...846b77` now freezes the 95 source-positive
+pairs across 47 dates and all 284 exact causal requests. Private selection hash
+`358fcb85...9da5d`, pair hash `44a203a6...f4061`, and request hash
+`c2af71c0...1fc9a` bind the graph. The target namespace contains only the
+frozen selection; this uninspected contract authorizes no provider request.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

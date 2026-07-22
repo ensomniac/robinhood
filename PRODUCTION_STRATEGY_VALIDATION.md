@@ -420,6 +420,14 @@ rows, returns, and outcomes remain forbidden. A separate inspector rebuilds
 the zero state and trigger results. Both implementations must be committed and
 pushed before the graph is frozen.
 
+Pre-entry manifest `e9bc5a8a...846b77` now binds exactly 95 verified-positive
+pairs across 47 dates and 284 requests, with private selection hash
+`358fcb85...9da5d`, pair hash `44a203a6...f4061`, and request graph
+`c2af71c0...1fc9a`. It freezes source and implementation hashes, causal
+retention boundaries, one daily entry, the 20-GiB reserve, zero substitution,
+and closed quote, fill, post-entry, return, and outcome access. The manifest is
+uninspected and must be committed and pushed before zero-state reconstruction.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
