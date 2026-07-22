@@ -1,0 +1,141 @@
+{
+  "compatibility_contract": {
+    "adjustment": "raw",
+    "exact_request_provenance_required": true,
+    "feed": "sip",
+    "only_runtime_substitution": "preentry.LocalHistoricalClient",
+    "provider": "alpaca",
+    "replacement": "FrozenCausalWindowClient",
+    "trigger_rule_change_allowed": false
+  },
+  "dataset_id": "dataset-challenger-orb-retest-trigger-review-2026-07-22-tranche2-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "historical_batches/challenger_orb_retest_v1_tranche2/preentry_manifests/dataset-challenger-orb-retest-preentry-collection-2026-07-22-tranche2-v1-5a6ac82d0c1205ae915e91d629d921b309d4862525b979ade877dbc3f7ec9108.json",
+      "research_results/2026-07-22-challenger-orb-retest-preentry-tranche2-collection-inspection.json",
+      "historical_batches/challenger_orb_retest_v1_tranche2/preentry-status.json",
+      "CHALLENGER_ORB_RETEST.md",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "implementation_contract": {
+    "inspector": {
+      "path": "challenger_orb_retest_trigger_runner_inspection2.py",
+      "sha256": "ba6af2e9800e7c2dd4c932a72da6621bce5bbfce9615832cb9933f2bb1580dd0"
+    },
+    "preentry_engine": {
+      "path": "challenger_orb_retest_preentry2.py",
+      "sha256": "c0d41c226dadf45c479435baf844b60ba6bcc2d03d27faaf29e76980d86dfbd2"
+    },
+    "preentry_result_inspector": {
+      "path": "challenger_orb_retest_preentry_inspection2.py",
+      "sha256": "5e28cabaa40e688dedb8c886b713db2d4b865449568abe7ae8b4988022a77aa2"
+    },
+    "reader": {
+      "path": "challenger_orb_retest_preentry_reader.py",
+      "sha256": "2fea82b27b757835c161c6bfbe9f4ec1404c987fd60ebb3ffb69f9780e76ca95"
+    },
+    "runner": {
+      "path": "challenger_orb_retest_trigger_runner2.py",
+      "sha256": "8a2c099acfdb1842b33e2bd029342eafd1dc72867b002c621f382c8bdc626352"
+    },
+    "trigger_engine": {
+      "path": "challenger_orb_retest.py",
+      "sha256": "84290bdc98aca16fd6d3b13d788445aff75af36b77af658fddebed1fe6974682"
+    }
+  },
+  "manifest_sha256": "99ab24f746f9f7e73853b41d03d5e6188c3aa706047262d0981c7ec2045760fe",
+  "outcome_lock": {
+    "outcome_contract_must_be_separately_frozen": true,
+    "post_entry_data_access_allowed": false,
+    "quote_or_fill_access_allowed": false,
+    "return_fields_allowed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "registered_at": "2026-07-22T09:26:02.394108+00:00",
+  "requested_dates": [
+    "2023-01-25",
+    "2023-01-27",
+    "2023-01-30",
+    "2023-01-31",
+    "2023-02-03",
+    "2023-02-06",
+    "2023-02-08",
+    "2023-02-16",
+    "2023-02-28",
+    "2023-03-06",
+    "2023-03-13",
+    "2023-04-19",
+    "2023-04-21",
+    "2023-04-26",
+    "2023-04-27",
+    "2023-05-03",
+    "2023-05-05",
+    "2023-05-25",
+    "2023-06-02",
+    "2023-08-02",
+    "2023-08-03",
+    "2023-08-09",
+    "2023-09-08",
+    "2023-10-20",
+    "2023-11-08",
+    "2023-11-22",
+    "2023-12-01",
+    "2023-12-11",
+    "2023-12-15",
+    "2023-12-20",
+    "2023-12-22",
+    "2024-01-30",
+    "2024-02-02",
+    "2024-02-14",
+    "2024-02-21",
+    "2024-02-23",
+    "2024-02-27",
+    "2024-02-28",
+    "2024-03-14",
+    "2024-03-26",
+    "2024-04-15",
+    "2024-05-21",
+    "2024-05-30",
+    "2024-08-01",
+    "2024-08-06",
+    "2024-08-09",
+    "2024-08-29",
+    "2024-10-31",
+    "2024-11-04",
+    "2024-11-19",
+    "2024-12-06",
+    "2024-12-09",
+    "2024-12-12",
+    "2025-12-01",
+    "2026-07-17"
+  ],
+  "schema_version": 1,
+  "source_contract": {
+    "canonical_row_set_sha256": "f84d8f9823a05364d324bb702725e32047aec36145e0e71d5607fb4ac4f23d39",
+    "collection_inspection_sha256": "b8de9c2d93d32352585943ffc37df563aa1f05a68edcfab6342c09dec94721b9",
+    "preentry_manifest_file_sha256": "b5e4d437fdd523a3c715c1e289ac3be4b411e9729ac421f5d38b3001f8fbafbc",
+    "preentry_manifest_sha256": "5a6ac82d0c1205ae915e91d629d921b309d4862525b979ade877dbc3f7ec9108",
+    "private_collection_file_sha256": "c8471a111f6190e5744d2bd939a5ddd3a3c728696f18a024529d3e06663d65e6",
+    "request_graph_sha256": "3342764e59ca8d63e9eb12815920a4972025134e3c0430b8346d76e978f4e66e",
+    "wrapper_set_sha256": "19f744a19fde1d633226b88a81a67bcb26635b1293c4fcfdf58da24e0b364c67"
+  },
+  "trigger_contract": {
+    "completed_noninterpolated_retest_bars": true,
+    "continuous_cross_version": "continuous-regular-cross-v1",
+    "decision_cutoff_et": "10:30:00",
+    "decision_delay_seconds": 10,
+    "failed_hold_retention_boundary": "end of first completed touch bar",
+    "first_touch_only": true,
+    "hypothesis_sha256": "b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105",
+    "minimum_closed_development_signals": 50,
+    "no_signal_retention_boundary": "10:30:00",
+    "rule_version": "catalyst-orb-retest-v1",
+    "search_start_et": "09:35:00",
+    "sip_condition_rule_version": "alpaca-sip-minute-v1"
+  }
+}

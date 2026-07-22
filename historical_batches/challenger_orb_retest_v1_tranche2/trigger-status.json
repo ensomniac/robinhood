@@ -1,0 +1,20 @@
+{
+  "counts": {
+    "benchmark_bar_requests": 110,
+    "candidate_bar_requests": 113,
+    "candidate_trade_requests": 113,
+    "maximum_daily_signals": 55,
+    "total_requests": 336,
+    "verified_positive_dates": 55,
+    "verified_positive_pairs": 113
+  },
+  "dataset_id": "dataset-challenger-orb-retest-trigger-review-2026-07-22-tranche2-v1",
+  "inspected": false,
+  "manifest_sha256": "99ab24f746f9f7e73853b41d03d5e6188c3aa706047262d0981c7ec2045760fe",
+  "post_entry_data_accessed": false,
+  "schema_version": 1,
+  "source_preentry_manifest_sha256": "5a6ac82d0c1205ae915e91d629d921b309d4862525b979ade877dbc3f7ec9108",
+  "status": "FROZEN_AWAITING_INSPECTION",
+  "target_outcomes_observed_or_derived": false,
+  "trigger_artifacts_present": false
+}

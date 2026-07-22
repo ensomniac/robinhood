@@ -796,6 +796,12 @@ second-tranche result inspector. Network-free preflight confirms 113 pairs, 55
 dates, 4,325,297 causal rows, and zero trigger artifact. This implementation
 must be committed and pushed before its compatibility manifest is frozen.
 
+Trigger manifest `99ab24f7...5760fe` now freezes that exact compatibility
+boundary, including the inspected collection digests and all runner, reader,
+pre-entry, trigger, and result-inspector hashes. It permits no trigger-rule
+change and retains the complete outcome lock. The manifest is uninspected and
+must be committed and pushed before zero-artifact reconstruction.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal
