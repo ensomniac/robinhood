@@ -14,12 +14,12 @@ entry qualification retained 2 of 60 pairs across 52 sessions versus the
 frozen 50-signal minimum, with no post-entry outcome access. No parameter
 repair or outcome collection is permitted for that exact version.
 
-The successor campaign is not authorized. A machine-audited proposal may be
-prepared from exhausted evidence, but it may not freeze a new hypothesis,
-contact a provider, access an outcome, or activate a third wave until Ryan
-explicitly supersedes the one-second-wave campaign limit. The current proposal
-is `strategy_tournament/successor_proposal/multi-strategy-portfolio-validation-v2-proposal-67f12bf617cc7f541dd0beba0d574b309effa7adefe5aacb4e4413c3d5c2858e.json`;
-its `REQUIRED_NOT_GRANTED` state is authoritative until superseded.
+Ryan explicitly authorized the successor campaign on 2026-07-22. The exact
+scope is defined in `PORTFOLIO_VALIDATION_V2.md` and recorded from proposal
+`strategy_tournament/successor_proposal/multi-strategy-portfolio-validation-v2-proposal-67f12bf617cc7f541dd0beba0d574b309effa7adefe5aacb4e4413c3d5c2858e.json`.
+The authorization does not activate research until its content-addressed record
+earns `AUTHORIZED_READY`; before that inspection, do not freeze a candidate,
+contact a provider, access an outcome, or perform a broker action.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
