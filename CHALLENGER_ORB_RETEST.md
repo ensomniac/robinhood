@@ -201,6 +201,16 @@ recomputed every threshold, rank, split adjustment, source-session hash, and
 identities, catalysts, causal detail, and outcomes require separately frozen
 and published contracts.
 
+`challenger_orb_retest_selected_pairs2.py` and its separate inspector now
+implement that next boundary without changing the hash-bound first-corpus
+modules. A read-only reconstruction finds exactly 1,826 unique date-security
+pairs across all 100 dates and private content hash `173991d5...5b0137`.
+The new freezer binds both adapters, both immutable base implementations, the
+selection primitive, trigger, scanner evidence, manifests, hypothesis,
+capacity, privacy, zero-substitution, and closed-outcome rules. These
+implementations and tests must be committed and pushed before the private
+graph or public manifest is frozen.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

@@ -555,6 +555,14 @@ hashes, and 2,799,071 canonical documents. No selected-symbol detail, catalyst,
 return, outcome, alpha, confirmation, maturity, production, or broker claim is
 earned; the exact selected-pair boundary must be frozen next.
 
+The isolated second-tranche selected-pair freezer and independent-inspector
+adapter are now implemented. Their read-only pre-freeze reconstruction matches
+all 1,826 unique rows and 100 dates with private selection hash
+`173991d5...5b0137`. The new contract explicitly binds both adapters and both
+unchanged base implementations; it keeps exact identities outside Git and
+allows no downstream causal artifact or outcome. The implementation must be
+published before the graph is frozen and inspected.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
