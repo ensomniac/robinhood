@@ -400,6 +400,16 @@ source bytes, matches collection hash `6d89d180...ae393` and wrapper-set hash
 result is committed and pushed may deterministic issuer-filed EX-99 review run;
 returns and outcomes remain forbidden.
 
+Independent EX-99 review now reconstructs 554 recovered source rows over the
+complete 372-pair recovery denominator. It finds 85 recovered verified-positive
+pairs, 91 conflicts, 19 verified negatives, and 177 still unresolved pairs;
+together with the 10 prior positives, the deduplicated source capacity is 95.
+That passes the frozen minimum of 20 and advances to
+`DEVELOPMENT_ACQUISITION`. Private result hash `fa9e196a...e524f` binds the
+review. This source result must be committed and pushed before any selected
+causal detail or outcome access; it is not alpha or maturity evidence by
+itself.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

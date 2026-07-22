@@ -41,6 +41,15 @@ rehashes all 949,569,801 raw source bytes, matches collection hash
 semantic-review artifacts. The result must be committed and pushed before the
 unchanged issuer-filed EX-99 review is allowed to run.
 
+The independently rebuilt EX-99 review recovers 85 additional verified
+positive pairs, for 95 combined with the 10 prior positives. This passes the
+frozen minimum source capacity of 20 and advances to
+`DEVELOPMENT_ACQUISITION`. The reviewed 372-pair denominator also contains 91
+conflicts, 19 negative catalysts, and 177 still unresolved pairs; none are
+silently discarded or reclassified. Private result hash
+`fa9e196a...e524f` binds the review. Returns remain unobserved and locked until
+this source-only result is committed and pushed.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

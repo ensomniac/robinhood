@@ -1,4 +1,6 @@
 {
+  "claim_boundary": "Issuer-filed EX-99 exhibits attached to exact causal SEC accessions, reviewed under the unchanged v3 direction and conflict rules. Returns and target-session outcomes remain inaccessible.",
+  "claim_scope": "DEVELOPMENT_ONLY",
   "collection_counts": {
     "cache_hits": 0,
     "downloads": 417,
@@ -11,10 +13,25 @@
   },
   "combined_verified_positive_pairs": 95,
   "dataset_id": "dataset-development-sec-accession-chain-recovery-2026-07-21-challenger-orb-retest-v1",
+  "inspected": true,
+  "inspection": {
+    "collection_index_rebuilt": true,
+    "complete_pair_denominator_reconciled": true,
+    "ex99_document_graph_rebuilt": true,
+    "one_terminal_reason_per_source": true,
+    "prior_and_recovered_positive_counts_deduplicated": true,
+    "raw_source_bytes_rehashed": true,
+    "selection_rebuilt": true,
+    "terminal_counts_rebuilt": true
+  },
   "manifest_sha256": "562266f3942f3f088b8d8e4a0acf2464c5413cdc325704030afa4b1f8f1b3515",
+  "minimum_positive_capacity": 20,
   "next_phase": "DEVELOPMENT_ACQUISITION",
   "outcome_contract_permitted": false,
-  "private_reviewed_result_sha256": "fa9e196aa967c16d656654b31020673bcbde25ea58b44548f1ea395bd5de524f",
+  "positive_capacity_gate_passed": true,
+  "prior_verified_positive_pairs": 10,
+  "private_result_sha256": "fa9e196aa967c16d656654b31020673bcbde25ea58b44548f1ea395bd5de524f",
+  "production_rule_change_earned": false,
   "recovered_source_rows": 554,
   "recovered_verified_positive_pairs": 85,
   "schema_version": 1,
@@ -24,7 +41,7 @@
     "unique_accessions": 417
   },
   "source_text_urls_symbols_dates_reviews_and_rows_public": false,
-  "status": "REVIEW_COMPLETE",
+  "status": "READY",
   "target_outcomes_observed_or_derived": false,
   "terminal_pair_counts": {
     "CAPTURE_FORBIDDEN": 0,
@@ -61,5 +78,6 @@
     "VERIFIED_CONFLICT": 102,
     "VERIFIED_NEGATIVE_PRIMARY": 24,
     "VERIFIED_POSITIVE_PRIMARY": 100
-  }
+  },
+  "valid": true
 }
