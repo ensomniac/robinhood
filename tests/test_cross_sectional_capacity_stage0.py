@@ -162,3 +162,22 @@ def test_published_reversal_result_inspection_rebuilds_retirement():
     assert inspection["market_outcomes_accessed"] is False
     assert inspection["maturity_effect"] == "NONE"
     assert inspection["valid"] is True
+
+
+def test_published_high_continuation_activation_binds_the_structural_ceiling():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/activations").glob(
+            "five-day-52-week-high-continuation-v1-*.json"
+        )
+    )
+    assert len(matches) == 1
+    activation = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert activation == stage0.build_activation(activation["variant_id"])
+    assert activation["variant_ordinal"] == 5
+    assert activation["base_rules_hash"] == (
+        "7d45b5ff602d61bdfbf068cf84ed381a60b5d3c65302c22b8b20a1940a151266"
+    )
+    assert activation["capacity_contract"]["maximum_possible_closed_signals"] == 24
+    assert activation["capacity_contract"]["closed_signal_shortfall"] == 6
+    assert activation["source_selection"]["market_data_requested"] is False
+    assert activation["maturity_effect"] == "NONE"

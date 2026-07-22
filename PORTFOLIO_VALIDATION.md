@@ -814,6 +814,13 @@ independently rebuilds the activation, capacity inspection, and empty-outcome
 result. The exact reversal variant is permanently retired outside maturity,
 and five-day 52-week-high continuation becomes the next frozen Stage 0 lane.
 
+High-continuation activation
+`63350a9b044c569aff86fa63940b78968298ab9c987c42d42899f7d73915d945`
+binds the fifth variant's distinct rules hash to the same 24 dated membership
+sets and one-entry-per-date execution ceiling. Its maximum is likewise 24
+closed signals, six below the Stage 0 minimum. No provider request, return
+calculation, market-outcome access, broker action, or maturity effect occurred.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the
