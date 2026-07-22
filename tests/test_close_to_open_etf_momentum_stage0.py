@@ -118,3 +118,43 @@ def test_published_input_inspection_authorizes_one_frozen_evaluation():
     assert inspection["maturity_effect"] == "NONE"
     assert inspection["return_evaluation_authorized"] is True
     assert inspection["valid"] is True
+
+
+def test_published_result_fails_edge_profit_factor_and_cost_stress():
+    matches = sorted(
+        (ROOT / "research_results").glob(
+            "2026-07-21-close-to-open-etf-momentum-stage0-*.json"
+        )
+    )
+    assert len(matches) == 1
+    result = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert result["result_sha256"] == stage0.common._self_hash(
+        result, "result_sha256"
+    )
+    denominator = result["denominator"]
+    assert denominator == {
+        "decision_dates": 744,
+        "closed_signals": 191,
+        "no_trade_dates": 553,
+        "rule_violations": 0,
+    }
+    assert result["primary_5bps"]["expectancy_r"] < 0
+    assert result["primary_5bps"]["profit_factor"] < 1.10
+    assert result["primary_5bps"]["maximum_drawdown_r"] <= 8
+    assert result["stress"]["20"]["total_r"] < 0
+    assert result["stage0_blockers"] == [
+        "primary expectancy is not positive",
+        "primary profit factor is below the Stage 0 minimum",
+        "20 bps-per-side total R is not positive",
+    ]
+    assert result["stage0_survived"] is False
+    assert result["maturity_effect"] == "NONE"
+
+
+def test_result_inspection_is_absent_before_independent_review():
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/inspections").glob(
+            "close-to-open-etf-momentum-v1-result-*.json"
+        )
+    )
+    assert matches == []

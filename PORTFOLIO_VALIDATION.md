@@ -737,6 +737,13 @@ symbol-sessions plus all 752 evaluation sessions. It made zero provider or
 broker calls, computed zero returns, and authorizes exactly the frozen Stage 0
 evaluation after the inspection is committed and pushed.
 
+The one authorized evaluation produced 191 closed signals across 744 fully
+reconciled decision sessions. At 5 bps per side it returned -0.0185R
+expectancy, 0.8922 profit factor, -3.5280R total, and 7.2890R maximum drawdown.
+At 20 bps per side it lost 32.7094R. The exact variant fails expectancy,
+profit-factor, and cost-stress gates, remains outside maturity, and awaits
+independent result inspection before permanent retirement.
+
 The one authorized evaluation produced 77 closed signals across 752 fully
 reconciled decision sessions. At 5 bps per side it returned +0.1117R
 expectancy, 1.4376 profit factor, +8.5995R total, and 4.5892R maximum drawdown.
