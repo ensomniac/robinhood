@@ -802,6 +802,12 @@ pre-entry, trigger, and result-inspector hashes. It permits no trigger-rule
 change and retains the complete outcome lock. The manifest is uninspected and
 must be committed and pushed before zero-artifact reconstruction.
 
+Independent reconstruction now marks trigger manifest `99ab24f7...5760fe`
+`FROZEN_READY`. The complete source and implementation bindings match, the
+only runtime substitution is the exact-window reader, and the private trigger
+namespace remains empty. This READY state must be committed and pushed before
+causal derivation.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal
