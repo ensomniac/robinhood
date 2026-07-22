@@ -44,10 +44,15 @@ def _client(tmp_path: Path) -> tuple[FrozenCausalWindowClient, datetime, datetim
     }
     trade = {
         "time_et": (start.replace(minute=35)).isoformat(),
-        "source_timestamp": (start.replace(minute=35)).isoformat(),
+        "source_timestamp": "2026-01-02T14:35:00.000000900Z",
         "price": 10.01,
         "size": 25,
-        "trade_id": "trade-a",
+        "trade_id": "1",
+    }
+    earlier_source_trade = {
+        **trade,
+        "source_timestamp": "2026-01-02T14:35:00.000000100Z",
+        "trade_id": "2",
     }
     def provenance(bars: bool) -> dict:
         return {
@@ -76,7 +81,7 @@ def _client(tmp_path: Path) -> tuple[FrozenCausalWindowClient, datetime, datetim
             build_dataset(
                 kind="trades",
                 provider="alpaca",
-                rows=[compact_trade(trade)],
+                rows=[compact_trade(trade), compact_trade(earlier_source_trade)],
                 channel="sale",
                 feed="sip",
                 adjustment="raw",
@@ -104,8 +109,8 @@ def test_reads_exact_bounded_regular_session_bar_and_trade_windows(
 
     assert len(bars) == 1
     assert bars[0]["close"] == 10.05
-    assert len(trades) == 1
-    assert trades[0]["trade_id"] == "trade-a"
+    assert len(trades) == 2
+    assert [row["trade_id"] for row in trades] == ["2", "1"]
 
 
 def test_rejects_a_window_not_bound_by_exact_request_provenance(tmp_path: Path) -> None:

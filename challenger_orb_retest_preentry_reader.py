@@ -183,13 +183,19 @@ class FrozenCausalWindowClient:
                 "frozen causal reader received an unsupported trade request",
                 category="local_configuration",
             )
-        return self._rows(
-            symbol,
-            start,
-            end,
-            kind="trades",
-            channel="sale",
-            timeframe=None,
-            bar_size=None,
-            expand=expand_trade,
+        return sorted(
+            self._rows(
+                symbol,
+                start,
+                end,
+                kind="trades",
+                channel="sale",
+                timeframe=None,
+                bar_size=None,
+                expand=expand_trade,
+            ),
+            key=lambda row: (
+                str(row.get("source_timestamp", "")),
+                str(row.get("trade_id", "")),
+            ),
         )
