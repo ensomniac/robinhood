@@ -28,6 +28,13 @@ blind capacity preflight for priority-three accelerated-share-repurchase
 continuation. Provider access still requires a separately frozen and inspected
 collection contract; target outcomes and broker actions remain forbidden.
 
+The active v2 implementation uses `portfolio_config.toml` schema 2,
+`strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
+`portfolio_execution.py`. Schema-1 portfolio evidence remains immutable adverse
+history and cannot satisfy v2 maturity. No new family or outcome evidence has
+been admitted by this engineering change; the ASR capacity-only preflight
+remains the next authorized research action.
+
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
 equity trading research and automated execution on Ryan Martin's behalf.

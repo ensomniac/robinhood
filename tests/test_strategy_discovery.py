@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 import tempfile
 import time
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
+import portfolio_guard
+import portfolio_maturity
 import strategy_discovery as discovery
 import tests.synthetic_discovery_plugin as synthetic_plugin
 from learning_data import freeze_dataset_contract
@@ -66,9 +68,9 @@ def family_contract(
         "material_difference_rationale": (
             "This synthetic fixture exercises a distinct causal flow mechanism."
         ),
-        "development_dates": _dates(date(2025, 1, 2), 60),
-        "embargo_dates": _dates(date(2025, 4, 1), 5),
-        "confirmation_dates": _dates(date(2025, 4, 6), confirmation_count),
+        "development_dates": _dates(date(2025, 1, 2), 120),
+        "embargo_dates": _dates(date(2025, 6, 1), 5),
+        "confirmation_dates": _dates(date(2025, 6, 6), confirmation_count),
         "universe": {"symbols": ["SYNTH"], "point_in_time": True},
         "costs_bps_per_side": [5, 10, 20],
         "partitions": {"rolling_origin": True, "confirmation_untouched": True},
@@ -79,6 +81,7 @@ def family_contract(
             "preflight": "preflight",
             "evaluate_development": "evaluate_development",
             "evaluate_confirmation": "evaluate_confirmation",
+            "evaluate_production": "evaluate_production",
         },
         "capacity_policy": {"retire_below": 50, "fast_lane_at": 100},
         "synthetic_capacity": capacity,
@@ -93,7 +96,7 @@ def _dataset(root: Path) -> Path:
             "schema_version": 1,
             "dataset_id": "dataset-synthetic-discovery",
             "registered_at": "2026-07-22T19:00:00-04:00",
-            "requested_dates": _dates(date(2025, 1, 2), 60),
+            "requested_dates": _dates(date(2025, 1, 2), 120),
             "dataset_payload": {
                 "lane": "development",
                 "claim_scope": "DEVELOPMENT_ONLY",
@@ -189,6 +192,88 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
         assert queue["broker_actions_permitted"] is False
         assert confirmation_inspection_path.is_file()
         assert preflight_path.is_file()
+        historical = discovery.load_artifact(
+            discovery.PROJECT_ROOT / queue["historical_maturity_ledger_path"],
+            expected_kind="historical-maturity-ledger",
+        )
+        records = list(historical["records"])
+        for index in range(5):
+            day = date(2025, 8, 1) + timedelta(days=index)
+            records.append(
+                {
+                    "schema_version": 2,
+                    "research_campaign_id": discovery.CAMPAIGN_ID,
+                    "record_type": "signal",
+                    "recorded_at": "2026-07-22T23:00:00+00:00",
+                    "strategy_id": winner["strategy_id"],
+                    "strategy_version": winner["strategy_version"],
+                    "mechanism_family": winner["family_id"],
+                    "rules_hash": winner["rules_hash"],
+                    "date": day.isoformat(),
+                    "sample_phase": "shadow",
+                    "mode": "shadow",
+                    "signal_id": f"{day.isoformat()}-{winner['strategy_id']}-shadow",
+                    "closed": True,
+                    "eligible": True,
+                    "net_r": 0.25,
+                    "stress_10bps_r": 0.20,
+                    "stress_20bps_r": 0.15,
+                    "stop_executed": False,
+                    "discovery_complete": True,
+                    "evaluation_complete": True,
+                    "sizing_complete": True,
+                    "order_construction_complete": True,
+                    "protection_plan_complete": True,
+                    "monitoring_complete": True,
+                    "journal_complete": True,
+                    "broker_actions": 0,
+                    "session_capture_complete": True,
+                    "rule_violations": [],
+                }
+            )
+        report = portfolio_maturity.build_report(
+            records, portfolio_maturity.load_config()
+        )
+        assert report["pilot_ready_strategy_count"] == 1
+        exact = report["strategies"][0]
+        assert exact["maturity"] == "PILOT_READY"
+        now = datetime.now(UTC)
+        guard = portfolio_guard.evaluate_entry(
+            {
+                "schema_version": 1,
+                "observed_at": now.isoformat(),
+                "strategy_id": winner["strategy_id"],
+                "strategy_version": winner["strategy_version"],
+                "rules_hash": winner["rules_hash"],
+                "broker_state": "FLAT_RECONCILED",
+                "account_reconciled": True,
+                "orders_reconciled": True,
+                "positions_count": 0,
+                "protected_positions_count": 0,
+                "unknown_orders_count": 0,
+                "unprotected_positions_count": 0,
+                "new_entries_today": 0,
+                "gross_notional_fraction": 0.0,
+                "aggregate_planned_open_loss_fraction": 0.0,
+                "daily_loss_fraction": 0.0,
+                "weekly_loss_fraction": 0.0,
+                "peak_to_trough_drawdown_fraction": 0.0,
+                "proposed_position_loss_fraction": 0.005,
+                "proposed_gross_notional_fraction": 0.25,
+                "proposed_holding_trading_days": 2,
+                "tradable": True,
+                "broker_review_passed": True,
+                "broker_confirmation_required": False,
+                "broker_confirmation_satisfied": False,
+                "protective_order_route_ready": True,
+                "monitoring_ready": True,
+                "source": "synthetic privacy-safe reconciliation",
+            },
+            report,
+            portfolio_maturity.load_config(),
+            now=now,
+        )
+        assert guard["status"] == "ENTRY_READY"
 
 
 def test_overfit_family_is_rejected_before_winner_or_confirmation():

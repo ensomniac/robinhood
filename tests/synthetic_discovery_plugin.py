@@ -61,6 +61,24 @@ def evaluate_development(
             "oof_net_pnl_dollars": [value * 100_000 for value in returns],
             "risk_fraction": 0.005,
         }
+        rows = [
+            {
+                "date": day,
+                "primary_account_return_fraction": value + 0.0002,
+                "stress_10bps_account_return_fraction": value + 0.0001,
+                "stress_20bps_account_return_fraction": value,
+                "net_r": (value + 0.0002) / 0.005,
+                "stress_10bps_r": (value + 0.0001) / 0.005,
+                "stress_20bps_r": value / 0.005,
+                "net_pnl_dollars": (value + 0.0002) * 100_000,
+                "stress_10bps_net_pnl_dollars": (value + 0.0001) * 100_000,
+                "stress_20bps_net_pnl_dollars": value * 100_000,
+                "stop_executed": value < 0,
+            }
+            for day, value in zip(
+                contract["development_dates"], returns, strict=True
+            )
+        ]
         evaluated.append(
             {
                 "trial_id": trial["trial_id"],
@@ -72,6 +90,7 @@ def evaluate_development(
                     }
                     for day in range(120)
                 ],
+                "maturity_rows": rows,
             }
         )
     return {
@@ -99,16 +118,47 @@ def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
             "net_pnl_dollars": [value * 100_000 for value in filled],
         }
 
+    primary = scenario(0.0020, -0.0002)
+    stress_10 = scenario(0.0018, -0.0003)
+    stress_20 = scenario(0.0015, -0.0004)
     return {
         "rules_hash": winner["rules_hash"],
         "parameter_alternatives": 0,
         "observed_dates": dates,
         "outcome_access_before_winner_freeze": False,
         "scenarios": {
-            "primary_5bps": scenario(0.0020, -0.0002),
-            "stress_10bps": scenario(0.0018, -0.0003),
-            "stress_20bps": scenario(0.0015, -0.0004),
+            "primary_5bps": primary,
+            "stress_10bps": stress_10,
+            "stress_20bps": stress_20,
         },
+        "maturity_rows": [
+            {
+                "date": day,
+                "primary_account_return_fraction": primary[
+                    "filled_account_returns"
+                ][index],
+                "stress_10bps_account_return_fraction": stress_10[
+                    "filled_account_returns"
+                ][index],
+                "stress_20bps_account_return_fraction": stress_20[
+                    "filled_account_returns"
+                ][index],
+                "net_r": primary["filled_account_returns"][index] / 0.005,
+                "stress_10bps_r": stress_10["filled_account_returns"][index]
+                / 0.005,
+                "stress_20bps_r": stress_20["filled_account_returns"][index]
+                / 0.005,
+                "net_pnl_dollars": primary["net_pnl_dollars"][index],
+                "stress_10bps_net_pnl_dollars": stress_10[
+                    "net_pnl_dollars"
+                ][index],
+                "stress_20bps_net_pnl_dollars": stress_20[
+                    "net_pnl_dollars"
+                ][index],
+                "stop_executed": primary["filled_account_returns"][index] < 0,
+            }
+            for index, day in enumerate(dates)
+        ],
         "rule_violations": [],
         "capture_complete": True,
         "provider_telemetry": {
@@ -119,4 +169,17 @@ def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
             "failures": 0,
             "dataset_loads": 1,
         },
+    }
+
+
+def evaluate_production(
+    winner: Mapping[str, Any], market_facts: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Synthetic exact-rule live adapter used only by integration tests."""
+    return {
+        **dict(market_facts),
+        "strategy_id": winner["strategy_id"],
+        "strategy_version": winner["strategy_version"],
+        "rules_hash": winner["rules_hash"],
+        "historical_semantics_sha256": winner["rules_hash"],
     }

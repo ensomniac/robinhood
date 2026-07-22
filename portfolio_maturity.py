@@ -228,6 +228,50 @@ def _required_string_list(value: Any, field: str) -> list[str]:
     return [str(item) for item in value]
 
 
+def _validate_discovery_inspection_binding(
+    record: Mapping[str, Any], evidence: Mapping[str, Any], *, root: Path
+) -> None:
+    relative_text = _string(
+        record.get("discovery_confirmation_inspection_path"),
+        "discovery_confirmation_inspection_path",
+    )
+    if relative_text not in evidence:
+        raise PortfolioMaturityError(
+            "discovery confirmation inspection must be evidence-bound"
+        )
+    path = root / relative_text
+    try:
+        artifact = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise PortfolioMaturityError(
+            "cannot read discovery confirmation inspection"
+        ) from exc
+    if not isinstance(artifact, dict):
+        raise PortfolioMaturityError("discovery inspection must contain an object")
+    supplied = artifact.get("artifact_sha256")
+    content = {
+        key: value for key, value in artifact.items() if key != "artifact_sha256"
+    }
+    expected = hashlib.sha256(_canonical_bytes(content)).hexdigest()
+    if supplied != expected or not path.name.endswith(f"-{expected}.json"):
+        raise PortfolioMaturityError("discovery confirmation inspection hash is invalid")
+    if record.get("discovery_confirmation_inspection_sha256") != supplied:
+        raise PortfolioMaturityError("discovery inspection identity drifted")
+    if not (
+        artifact.get("artifact_kind") == "confirmation-inspection"
+        and artifact.get("campaign_id") == V2_CAMPAIGN_ID
+        and artifact.get("state") == "CONFIRMATION_PASSED"
+        and artifact.get("strategy_id") == record.get("strategy_id")
+        and artifact.get("strategy_version") == record.get("strategy_version")
+        and artifact.get("rules_hash") == record.get("rules_hash")
+        and artifact.get("inspection", {}).get("passed") is True
+        and artifact.get("broker_actions_permitted") is False
+    ):
+        raise PortfolioMaturityError(
+            "discovery confirmation inspection is not a passing exact-version binding"
+        )
+
+
 def load_config(path: Path = DEFAULT_CONFIG_PATH) -> PortfolioConfig:
     try:
         raw = tomllib.loads(path.read_text(encoding="utf-8"))
@@ -397,15 +441,21 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
             raise PortfolioMaturityError(
                 f"trial_count exceeds the authorized maximum of {maximum_trials}"
             )
-        wave = _integer(record.get("tournament_wave"), "tournament_wave", minimum=1)
-        if wave not in {1, 2}:
-            raise PortfolioMaturityError("tournament_wave must be 1 or 2")
-        ordinal = _integer(record.get("variant_ordinal"), "variant_ordinal", minimum=1)
-        maximum_ordinal = 20 if wave == 1 else 6
-        if ordinal > maximum_ordinal:
-            raise PortfolioMaturityError(
-                f"wave {wave} variant_ordinal exceeds {maximum_ordinal}"
+        wave: int | None = None
+        if record_schema == LEGACY_SCHEMA_VERSION:
+            wave = _integer(
+                record.get("tournament_wave"), "tournament_wave", minimum=1
             )
+            if wave not in {1, 2}:
+                raise PortfolioMaturityError("tournament_wave must be 1 or 2")
+            ordinal = _integer(
+                record.get("variant_ordinal"), "variant_ordinal", minimum=1
+            )
+            maximum_ordinal = 20 if wave == 1 else 6
+            if ordinal > maximum_ordinal:
+                raise PortfolioMaturityError(
+                    f"wave {wave} variant_ordinal exceeds {maximum_ordinal}"
+                )
         for field in (
             "trial_accounting_complete",
             "multiple_testing_clear",
@@ -465,21 +515,26 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
                 expected, f"evidence_hashes.{supplied}"
             ):
                 raise PortfolioMaturityError(f"inspection evidence drifted: {relative}")
-        taxonomy_path = record.get("second_wave_failure_taxonomy_path")
-        if wave == 1 and taxonomy_path is not None:
-            raise PortfolioMaturityError("wave 1 cannot name a second-wave taxonomy")
-        if wave == 2:
-            taxonomy = _string(
-                taxonomy_path, "second_wave_failure_taxonomy_path"
-            )
-            if taxonomy not in evidence:
+        if record_schema == SCHEMA_VERSION:
+            _validate_discovery_inspection_binding(record, evidence, root=root)
+        else:
+            taxonomy_path = record.get("second_wave_failure_taxonomy_path")
+            if wave == 1 and taxonomy_path is not None:
                 raise PortfolioMaturityError(
-                    "wave 2 taxonomy must be included in evidence_hashes"
+                    "wave 1 cannot name a second-wave taxonomy"
                 )
-        try:
-            validate_stage0_survivor_binding(record, root=root)
-        except PortfolioFunnelError as exc:
-            raise PortfolioMaturityError(str(exc)) from exc
+            if wave == 2:
+                taxonomy = _string(
+                    taxonomy_path, "second_wave_failure_taxonomy_path"
+                )
+                if taxonomy not in evidence:
+                    raise PortfolioMaturityError(
+                        "wave 2 taxonomy must be included in evidence_hashes"
+                    )
+            try:
+                validate_stage0_survivor_binding(record, root=root)
+            except PortfolioFunnelError as exc:
+                raise PortfolioMaturityError(str(exc)) from exc
         return
     record_date = _iso_date(record.get("date"), "date")
     phase = _string(record.get("sample_phase"), "sample_phase")
@@ -625,7 +680,10 @@ def read_records(path: Path = DEFAULT_LEDGER_PATH, *, root: Path = PROJECT_ROOT)
         key = (str(value["record_type"]), str(record_id))
         if key in seen:
             raise PortfolioMaturityError(f"duplicate ledger record identity {key}")
-        if value["record_type"] == "inspection":
+        if (
+            value["record_type"] == "inspection"
+            and value.get("schema_version") == LEGACY_SCHEMA_VERSION
+        ):
             variant_key = (int(value["tournament_wave"]), int(value["variant_ordinal"]))
             if variant_key in seen_variants:
                 raise PortfolioMaturityError(
@@ -666,6 +724,8 @@ def append_record(
             if (
                 item["record_type"] == "inspection"
                 and candidate["record_type"] == "inspection"
+                and item.get("schema_version") == LEGACY_SCHEMA_VERSION
+                and candidate.get("schema_version") == LEGACY_SCHEMA_VERSION
                 and item["tournament_wave"] == candidate["tournament_wave"]
                 and item["variant_ordinal"] == candidate["variant_ordinal"]
             ):

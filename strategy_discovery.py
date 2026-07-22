@@ -184,7 +184,12 @@ def _validate_family_contract(value: Mapping[str, Any]) -> dict[str, Any]:
         str(plugin.get("module", ""))
     ):
         raise StrategyDiscoveryError("plugin module is unsafe")
-    for field in ("preflight", "evaluate_development", "evaluate_confirmation"):
+    for field in (
+        "preflight",
+        "evaluate_development",
+        "evaluate_confirmation",
+        "evaluate_production",
+    ):
         if not isinstance(plugin.get(field), str) or not plugin[field].isidentifier():
             raise StrategyDiscoveryError(f"plugin.{field} is invalid")
     implementation_hashes: dict[str, str] = {}
@@ -486,6 +491,8 @@ def freeze_winner(
         "strategy_version": version,
         "rules_hash": rules_hash,
         "state": "WINNER_FROZEN",
+        "recorded_at": contract["created_at"],
+        "trial_count": len(contract["trial_family"]),
         "development_inspection_path": _relative(inspection_path),
         "development_inspection_sha256": inspection["artifact_sha256"],
         "exact_rules": exact_rules,
@@ -643,6 +650,184 @@ def inspect_confirmation_metrics(
     return {"metrics": rebuilt, "gates": gates, "passed": all(gates.values())}
 
 
+def _phase_maturity_records(
+    rows: Any,
+    *,
+    phase: str,
+    expected_dates: Sequence[str],
+    winner: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    if not isinstance(rows, list) or [item.get("date") for item in rows] != list(
+        expected_dates
+    ):
+        raise StrategyDiscoveryError(
+            f"{phase} maturity rows must match the frozen dates exactly"
+        )
+    records: list[dict[str, Any]] = []
+    for row in rows:
+        day = str(row["date"])
+        common = {
+            "schema_version": portfolio_maturity.SCHEMA_VERSION,
+            "research_campaign_id": CAMPAIGN_ID,
+            "recorded_at": winner["recorded_at"],
+            "strategy_id": winner["strategy_id"],
+            "strategy_version": winner["strategy_version"],
+            "mechanism_family": winner["family_id"],
+            "rules_hash": winner["rules_hash"],
+            "date": day,
+            "sample_phase": phase,
+            "mode": "historical",
+            "session_capture_complete": True,
+            "rule_violations": [],
+        }
+        records.append(
+            {
+                **common,
+                "record_type": "session",
+                "session_id": (
+                    f"{day}-{winner['strategy_id']}-{phase}-session"
+                ),
+                "eligible_signal": True,
+                "session_outcome": "filled",
+                "daily_account_return_fraction": row[
+                    "primary_account_return_fraction"
+                ],
+                "stress_10bps_daily_account_return_fraction": row[
+                    "stress_10bps_account_return_fraction"
+                ],
+                "stress_20bps_daily_account_return_fraction": row[
+                    "stress_20bps_account_return_fraction"
+                ],
+            }
+        )
+        records.append(
+            {
+                **common,
+                "record_type": "signal",
+                "signal_id": f"{day}-{winner['strategy_id']}-{phase}-signal",
+                "closed": True,
+                "eligible": True,
+                "net_r": row["net_r"],
+                "stress_10bps_r": row["stress_10bps_r"],
+                "stress_20bps_r": row["stress_20bps_r"],
+                "net_account_return_fraction": row[
+                    "primary_account_return_fraction"
+                ],
+                "stress_10bps_account_return_fraction": row[
+                    "stress_10bps_account_return_fraction"
+                ],
+                "stress_20bps_account_return_fraction": row[
+                    "stress_20bps_account_return_fraction"
+                ],
+                "net_pnl_dollars": row["net_pnl_dollars"],
+                "stress_10bps_net_pnl_dollars": row[
+                    "stress_10bps_net_pnl_dollars"
+                ],
+                "stress_20bps_net_pnl_dollars": row[
+                    "stress_20bps_net_pnl_dollars"
+                ],
+                "stop_executed": row["stop_executed"],
+            }
+        )
+    return records
+
+
+def _write_historical_maturity_ledger(
+    *,
+    winner: Mapping[str, Any],
+    confirmation_artifact: Mapping[str, Any],
+    confirmation_inspection_path: Path,
+    root: Path,
+) -> tuple[Path, dict[str, Any]]:
+    development_inspection = load_artifact(
+        PROJECT_ROOT / str(winner["development_inspection_path"]),
+        expected_kind="development-search-inspection",
+    )
+    development_result = load_artifact(
+        PROJECT_ROOT / str(development_inspection["result_path"]),
+        expected_kind="development-search-result",
+    )
+    selected_trial_id = development_inspection["selection"]["selected_trial_id"]
+    matches = [
+        item
+        for item in development_result["evaluation"]["trials"]
+        if item["trial_id"] == selected_trial_id
+    ]
+    if len(matches) != 1:
+        raise StrategyDiscoveryError("selected development trial is absent or ambiguous")
+    development_records = _phase_maturity_records(
+        matches[0].get("maturity_rows"),
+        phase="development",
+        expected_dates=winner["development_dates"],
+        winner=winner,
+    )
+    confirmation_records = _phase_maturity_records(
+        confirmation_artifact["result"].get("maturity_rows"),
+        phase="confirmation",
+        expected_dates=winner["confirmation_dates"],
+        winner=winner,
+    )
+    confirmation_relative = _relative(confirmation_inspection_path)
+    evidence_hashes = {
+        confirmation_relative: _file_hash(confirmation_inspection_path),
+        str(winner["development_inspection_path"]): _file_hash(
+            PROJECT_ROOT / str(winner["development_inspection_path"])
+        ),
+    }
+    inspection_record = {
+        "schema_version": portfolio_maturity.SCHEMA_VERSION,
+        "research_campaign_id": CAMPAIGN_ID,
+        "record_type": "inspection",
+        "inspection_id": f"{winner['strategy_id']}-discovery-final-inspection",
+        "recorded_at": winner["recorded_at"],
+        "strategy_id": winner["strategy_id"],
+        "strategy_version": winner["strategy_version"],
+        "mechanism_family": winner["family_id"],
+        "rules_hash": winner["rules_hash"],
+        "trial_count": winner["trial_count"],
+        "selection_mode": "development_search",
+        "power_target": winner["power_target"],
+        "required_total_signals": winner["required_total_signals"],
+        "required_confirmation_signals": winner[
+            "required_confirmation_signals"
+        ],
+        "evidence_counts_frozen_before_confirmation": True,
+        "trial_accounting_complete": True,
+        "multiple_testing_clear": True,
+        "execution_model_complete": True,
+        "development_universe_representative": True,
+        "confirmation_untouched": True,
+        "confirmation_embargo_trading_days": len(winner["embargo_dates"]),
+        "discovery_confirmation_inspection_path": confirmation_relative,
+        "discovery_confirmation_inspection_sha256": load_artifact(
+            confirmation_inspection_path, expected_kind="confirmation-inspection"
+        )["artifact_sha256"],
+        "evidence_hashes": evidence_hashes,
+    }
+    records = [inspection_record, *development_records, *confirmation_records]
+    for record in records:
+        portfolio_maturity.validate_record(record, root=PROJECT_ROOT)
+    payload = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_kind": "historical-maturity-ledger",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": winner["family_id"],
+        "strategy_id": winner["strategy_id"],
+        "strategy_version": winner["strategy_version"],
+        "rules_hash": winner["rules_hash"],
+        "state": "HISTORICAL_EVIDENCE_INSPECTED",
+        "confirmation_inspection_path": confirmation_relative,
+        "records": records,
+        "append_permitted": True,
+        "broker_actions_permitted": False,
+    }
+    return _write_artifact(
+        payload,
+        root / str(winner["family_id"]) / "maturity-ledger",
+        f"{winner['family_id']}-historical-maturity-ledger",
+    )
+
+
 def inspect_confirmation(
     result_path: Path,
     *,
@@ -680,11 +865,19 @@ def inspect_confirmation(
         "shadow_queue_permitted": state == "CONFIRMATION_PASSED",
         "broker_actions_permitted": False,
     }
-    return _write_artifact(
+    inspection_path, inspection_artifact = _write_artifact(
         payload,
         root / str(winner["family_id"]) / "confirmation-inspection",
         f"{winner['family_id']}-confirmation-inspection",
     )
+    if state == "CONFIRMATION_PASSED":
+        _write_historical_maturity_ledger(
+            winner=winner,
+            confirmation_artifact=artifact,
+            confirmation_inspection_path=inspection_path,
+            root=root,
+        )
+    return inspection_path, inspection_artifact
 
 
 def queue_shadow(
@@ -707,6 +900,15 @@ def queue_shadow(
         raise StrategyDiscoveryError("confirmation has not passed unchanged")
     if inspection["winner_sha256"] != winner["artifact_sha256"]:
         raise StrategyDiscoveryError("shadow queue winner binding drifted")
+    ledger_path, ledger = _find_single(
+        root / str(winner["family_id"]) / "maturity-ledger",
+        "*.json",
+        kind="historical-maturity-ledger",
+    )
+    if enforce_commit:
+        require_committed(ledger_path)
+    if ledger["rules_hash"] != winner["rules_hash"]:
+        raise StrategyDiscoveryError("historical maturity ledger binding drifted")
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact_kind": "prospective-shadow-queue",
@@ -720,6 +922,8 @@ def queue_shadow(
         "completed_clean_closed_shadows": 0,
         "confirmation_inspection_path": _relative(inspection_path),
         "confirmation_inspection_sha256": inspection["artifact_sha256"],
+        "historical_maturity_ledger_path": _relative(ledger_path),
+        "historical_maturity_ledger_sha256": ledger["artifact_sha256"],
         "broker_actions_permitted": False,
     }
     return _write_artifact(

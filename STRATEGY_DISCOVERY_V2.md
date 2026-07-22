@@ -67,3 +67,24 @@ stability, complete rules, and complete accounting. It must then satisfy DSR at
 20-bps growth in at least half of its one-step parameter neighbors. Survivors
 rank by 20-bps bootstrap lower mean account return, total log growth, drawdown,
 then canonical trial ID. Confirmation never participates in selection.
+
+A passing confirmation inspection emits a content-addressed
+`historical-maturity-ledger` artifact. Its schema-2 inspection record binds the
+exact strategy version and rules hash back to the committed discovery and
+confirmation inspection; its session records preserve the chronological account
+path; and its signal records retain net dollars, account-return fraction, `R`,
+cost stress, and stop behavior. Only those emitted records may be appended to
+`PORTFOLIO_SIGNALS.jsonl` after the artifact itself is committed.
+
+`portfolio_execution.py` is the broker-inert production adapter. It first
+rebuilds the candidate through the same frozen strategy plugin and rejects any
+implementation-file drift. It then rejects a
+rules-hash or live-semantics mismatch, market data older than five seconds,
+crossed or excessive spreads, stops at or above the observed bid, gross movement
+below five times primary round-trip cost, incomplete before-open reconciliation,
+missing GTC overnight protection, and any whole-share size outside risk,
+notional, buying-power, depth, or recent-volume capacity. A passing result still
+requires `portfolio_guard.py`, broker review, and any broker-required human
+confirmation. Its unknown-submission reconciler permits a retry only after the
+logical order is confirmed absent or terminal without exposure; active,
+duplicate, or unknown broker state fails closed.

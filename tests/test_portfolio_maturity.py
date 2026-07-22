@@ -31,6 +31,65 @@ class PortfolioMaturityTests(unittest.TestCase):
     ):
         evidence = root / f"{strategy_id}.json"
         evidence.write_text('{"inspected":true}\n', encoding="utf-8")
+        if stage0_survived:
+            confirmation = {
+                "schema_version": 1,
+                "artifact_kind": "confirmation-inspection",
+                "campaign_id": CAMPAIGN_ID,
+                "family_id": family,
+                "strategy_id": strategy_id,
+                "strategy_version": "v1",
+                "rules_hash": RULES_HASH,
+                "state": "CONFIRMATION_PASSED",
+                "inspection": {"passed": True},
+                "broker_actions_permitted": False,
+            }
+            confirmation["artifact_sha256"] = hashlib.sha256(
+                json.dumps(
+                    confirmation,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode()
+            ).hexdigest()
+            confirmation_path = root / (
+                f"{strategy_id}-confirmation-{confirmation['artifact_sha256']}.json"
+            )
+            confirmation_path.write_text(
+                json.dumps(confirmation, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            evidence_hashes = {
+                path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in (evidence, confirmation_path)
+            }
+            return {
+                "schema_version": 2,
+                "research_campaign_id": CAMPAIGN_ID,
+                "record_type": "inspection",
+                "inspection_id": f"{strategy_id}-final-inspection",
+                "recorded_at": "2026-07-21T12:00:00+00:00",
+                "strategy_id": strategy_id,
+                "strategy_version": "v1",
+                "mechanism_family": family,
+                "rules_hash": RULES_HASH,
+                "trial_count": 10,
+                "selection_mode": "development_search",
+                "power_target": 50,
+                "required_total_signals": 50,
+                "required_confirmation_signals": 20,
+                "evidence_counts_frozen_before_confirmation": True,
+                "trial_accounting_complete": True,
+                "multiple_testing_clear": True,
+                "execution_model_complete": True,
+                "development_universe_representative": True,
+                "confirmation_untouched": True,
+                "confirmation_embargo_trading_days": 5,
+                "discovery_confirmation_inspection_path": confirmation_path.name,
+                "discovery_confirmation_inspection_sha256": confirmation[
+                    "artifact_sha256"
+                ],
+                "evidence_hashes": evidence_hashes,
+            }
         variant_id = f"{strategy_id}-stage0"
         result = {
             "schema_version": 1,
@@ -66,8 +125,7 @@ class PortfolioMaturityTests(unittest.TestCase):
             for path in (evidence, result_path, result_inspection_path)
         }
         return {
-            "schema_version": 2,
-            "research_campaign_id": CAMPAIGN_ID,
+            "schema_version": 1,
             "record_type": "inspection",
             "inspection_id": f"{strategy_id}-final-inspection",
             "recorded_at": "2026-07-21T12:00:00+00:00",
@@ -76,11 +134,6 @@ class PortfolioMaturityTests(unittest.TestCase):
             "mechanism_family": family,
             "rules_hash": RULES_HASH,
             "trial_count": 10,
-            "selection_mode": "development_search",
-            "power_target": 50,
-            "required_total_signals": 50,
-            "required_confirmation_signals": 20,
-            "evidence_counts_frozen_before_confirmation": True,
             "tournament_wave": 1,
             "variant_ordinal": variant_ordinal,
             "trial_accounting_complete": True,
@@ -575,7 +628,7 @@ maximum_second_wave_families = 6
             with self.assertRaisesRegex(maturity.PortfolioMaturityError, "drifted"):
                 maturity.validate_record(inspection, root=root)
 
-    def test_duplicate_tournament_variant_identity_is_rejected(self):
+    def test_schema_two_discovery_inspections_do_not_consume_legacy_ordinals(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             left = self._inspection(root, "strategy-one", "momentum")
@@ -585,11 +638,9 @@ maximum_second_wave_families = 6
                 json.dumps(left) + "\n" + json.dumps(right) + "\n",
                 encoding="utf-8",
             )
-            with self.assertRaisesRegex(
-                maturity.PortfolioMaturityError,
-                "duplicate tournament variant identity",
-            ):
-                maturity.read_records(ledger, root=root)
+            records = maturity.read_records(ledger, root=root)
+        self.assertEqual(len(records), 2)
+        self.assertTrue(all("tournament_wave" not in item for item in records))
 
     def test_same_family_cannot_form_portfolio(self):
         with tempfile.TemporaryDirectory() as directory:
