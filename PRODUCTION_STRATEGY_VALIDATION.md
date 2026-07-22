@@ -843,6 +843,18 @@ acquisition engines. Independent preflight must prove 100 expected and zero
 present reference snapshots, zero target-market artifacts, sufficient reserve,
 and zero outcome access before collection.
 
+The complete third-tranche raw reference download then exposed a fail-closed
+provider-identity defect before master construction: Massive's documented
+case-sensitive symbols can include a lowercase when-issued suffix, and two
+snapshot dates each contain two distinct issuers whose symbols collapse to the
+same uppercase execution symbol. The isolated third-tranche adapter now
+preserves every raw response, derives a separately hashed canonical cache, and
+excludes every member of any normalization-collision group under one generic
+outcome-blind rule. It never selects a preferred issuer, substitutes a date, or
+changes strategy rules. The independent inspector reconstructs the raw-to-
+canonical transform without calling the production helper. This repair must be
+committed and pushed before canonicalization or master construction.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
