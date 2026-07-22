@@ -385,6 +385,14 @@ hashes, privacy, capacity, and outcome locks; and confirms zero response,
 collection-index, or reviewed-result artifacts. The READY status must be
 committed and pushed before collection.
 
+The exact collector completed 417/417 accession requests with zero failures or
+pending work and retained 949,569,801 source bytes privately. A dedicated
+collection-only inspector now rebuilds the index, rehashes every terminal
+wrapper and raw accession, revalidates transport integrity and the full request
+denominator, and requires zero semantic-review artifacts. Its implementation
+and the uninspected completion status must be committed and pushed before this
+inspection; semantic review remains closed until the inspection is published.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

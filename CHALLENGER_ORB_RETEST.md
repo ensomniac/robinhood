@@ -28,6 +28,13 @@ privacy, capacity, and outcome binding, and confirms one frozen selection with
 zero collection or review artifacts. This inspected status must be committed
 and pushed before the exact 417-request collector may run.
 
+The published collector has now completed all 417 frozen accession requests
+with 417 downloads, zero failures, zero pending requests, zero substitutions,
+and 949,569,801 private source bytes. The new collection-only inspector will
+independently rehash every wrapper and raw response before any EX-99 semantic
+review; its implementation and this uninspected collection status must be
+committed and pushed before that inspection runs.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

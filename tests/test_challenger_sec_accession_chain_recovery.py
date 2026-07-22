@@ -49,3 +49,19 @@ def test_challenger_recovery_help_is_available() -> None:
     )
     assert completed.returncode == 0
     assert "freeze" in completed.stdout
+
+
+def test_challenger_collection_inspection_help_is_available() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "challenger_sec_accession_chain_collection_inspection.py",
+            "--help",
+        ],
+        cwd=PROJECT_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0
+    assert "manifest" in completed.stdout
