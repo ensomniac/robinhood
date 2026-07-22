@@ -1,0 +1,11 @@
+{
+  "authorization_sha256": "6a7e27481ff80cd3e457d972c10347ea831801d6532fdc34b9e9fb0453c0fd6e",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_preregistration_permitted": false,
+  "inspected": false,
+  "outcome_access_permitted": false,
+  "provider_access_permitted": false,
+  "schema_version": 1,
+  "status": "AUTHORIZED_PENDING_INSPECTION"
+}
