@@ -1083,6 +1083,16 @@ hash `bcaee0e0...af65e`, source hash `4747c875...b4755`, join hash
 source-text extraction and deterministic review; outcomes remain forbidden
 regardless of the eventual positive-source count.
 
+Independent semantics reconstruction verifies 23 positive primary-source pairs,
+so the frozen 20-pair capacity gate passes and the next phase is
+`DEVELOPMENT_ACQUISITION`. The complete 1,781-pair disposition also retains 16
+verified conflicts, seven verified negatives, 47 non-material/context-only
+pairs, 338 document-semantics unresolved pairs, and 1,350 pairs without a
+selected SEC source. Private result hash `d168c2d4...fcdb2` binds the review.
+Because positive capacity already passes, accession-chain recovery is not the
+preregistered next step; exact pre-entry market-data acquisition may proceed
+after publication. No trigger, post-entry value, return, or outcome is known.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
