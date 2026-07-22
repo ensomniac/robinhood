@@ -124,6 +124,13 @@ path. The collection status has been restored to its already-inspected content;
 the complete uninspected trigger state remains separately bound in
 `trigger-status.json`. No private artifact or evidence value changed.
 
+Independent result reconstruction now marks the trigger review `READY`. All 95
+causal decisions, 284 source requests, terminal denominators, and private hash
+rebuild exactly; the outcome lock remains closed. The corpus supports only 22
+distinct daily signals, below the immutable 50-signal development minimum, so
+the exact challenger remains active in `DEVELOPMENT_ACQUISITION` and requires
+another disjoint frozen session tranche before any post-entry data is accessed.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

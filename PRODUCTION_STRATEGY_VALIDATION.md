@@ -484,6 +484,13 @@ also writes to the collection status path. That file is restored to its
 published `COLLECTION_INSPECTED` content while the full uninspected trigger state
 remains in `trigger-status.json`; private data and evidence hashes are unchanged.
 
+Independent reconstruction now marks the causal trigger result `READY`: all 95
+decisions, 284 source requests, terminal counts, and private trigger hash match,
+and no post-entry target was read. Its maximum daily capacity is 22 signals,
+below the frozen 50-signal development requirement. The exact challenger is not
+retired because outcomes remain locked; it continues in
+`DEVELOPMENT_ACQUISITION` with another disjoint preregistered session tranche.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
