@@ -782,6 +782,13 @@ retaining 4,325,297 causal rows through 10:30 ET. Private collection hash
 network-free reconstruction of every wrapper and canonical row is required
 before trigger derivation; outcomes remain locked.
 
+Independent transport inspection has now rebuilt the complete index, all 336
+wrappers, and all 4,325,297 canonical rows. Wrapper-set hash
+`19f744a1...64c67` and canonical-row-set hash `f84d8f98...23d39` bind the
+result, while the trigger namespace remains empty. Publication of this
+inspection permits only a separately frozen compatibility-bound trigger run;
+fill and outcome access remain forbidden.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal

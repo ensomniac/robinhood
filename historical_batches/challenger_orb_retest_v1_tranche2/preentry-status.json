@@ -11,12 +11,19 @@
     "successful_requests": 336,
     "terminal_requests": 336
   },
-  "dataset_id": "dataset-challenger-orb-retest-preentry-collection-2026-07-22-tranche2-v1",
-  "manifest_sha256": "5a6ac82d0c1205ae915e91d629d921b309d4862525b979ade877dbc3f7ec9108",
-  "post_entry_data_accessed": false,
-  "private_collection_sha256": "c8471a111f6190e5744d2bd939a5ddd3a3c728696f18a024529d3e06663d65e6",
-  "schema_version": 1,
-  "source_rows_and_identities_public": false,
-  "status": "COLLECTION_COMPLETE",
-  "target_outcomes_observed_or_derived": false
+    "dataset_id": "dataset-challenger-orb-retest-preentry-collection-2026-07-22-tranche2-v1",
+    "inspected": true,
+    "inspection_result": "research_results/2026-07-22-challenger-orb-retest-preentry-tranche2-collection-inspection.json",
+    "manifest_sha256": "5a6ac82d0c1205ae915e91d629d921b309d4862525b979ade877dbc3f7ec9108",
+    "outcome_lock_verified": true,
+    "post_entry_data_accessed": false,
+    "private_canonical_row_set_sha256": "f84d8f9823a05364d324bb702725e32047aec36145e0e71d5607fb4ac4f23d39",
+    "private_collection_sha256": "c8471a111f6190e5744d2bd939a5ddd3a3c728696f18a024529d3e06663d65e6",
+    "private_wrapper_set_sha256": "19f744a19fde1d633226b88a81a67bcb26635b1293c4fcfdf58da24e0b364c67",
+    "schema_version": 1,
+    "source_rows_and_identities_public": false,
+    "status": "COLLECTION_INSPECTED",
+    "target_outcomes_observed_or_derived": false,
+    "trigger_artifacts_present": false,
+    "valid": true
 }
