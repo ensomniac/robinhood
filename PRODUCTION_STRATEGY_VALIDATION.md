@@ -1064,6 +1064,15 @@ zero pre-freeze document responses. Private graph hash
 triggers, outcomes, alpha, maturity, production, and broker actions remain
 locked.
 
+The complete third-tranche primary-document corpus is independently inspected.
+All 482 frozen requests succeeded: 56 exact cache hits, 426 SEC downloads,
+zero failures, zero pending requests, and zero substitutions. Inspection
+rehashed all 19,689,633 retained bytes and rebuilt private collection hash
+`78e95eab...01f26` plus every terminal wrapper. Raw availability is transport
+evidence only; ownership, issuer binding, causal timing, financing conflicts,
+direction, materiality, and terminal source semantics remain unclassified.
+Outcomes and selected-market detail remain inaccessible.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
