@@ -1266,6 +1266,16 @@ source mutation, provider refetch, identities, post-entry rows, and outcomes
 remain forbidden. The contract is uninspected and authorizes no evidence claim
 until its independent full reconstruction is published from a later commit.
 
+The first compatibility inspection also failed closed before publication. It
+passed the UTC source representation into the quote-snapshot rebuilder, so 56
+nonempty snapshot sets differed only in their generated `target_at_et` strings;
+four empty sets were unaffected. Rebuilding from each already reconciled stored
+collector-Eastern timestamp reproduces all 60 stored snapshot sets exactly. A
+v2 compatibility boundary preserves the failed v1 status and will rerun the
+entire v1 inspection in a temporary nonpublic sandbox while normalizing only
+that quote-rebuild argument after exact-instant equality. It must be committed,
+pushed, frozen, and independently executed before collection evidence advances.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
