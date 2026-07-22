@@ -622,6 +622,16 @@ bytes and contributes 27 time-window candidate documents and 27 joins across
 submissions candidates must be frozen before any primary-document access;
 semantic and outcome locks remain closed.
 
+Second-tranche primary-document manifest `6698ac65...b24190` now
+independently freezes the complete union: 513 main plus 27 supplemental
+observations become 540 exact accession-bound SEC requests, with all 552
+source-specific pair/document joins preserved across 467 pairs. There are zero
+duplicate observations, private contract hash `c93f2b16...14017`, request hash
+`d7258c06...a8891`, join hash `aefe937f...d240c`, and zero target document
+artifacts. No document body, semantic classification, causal input,
+substitution, or outcome was accessed; collection requires this boundary to be
+committed and pushed first.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

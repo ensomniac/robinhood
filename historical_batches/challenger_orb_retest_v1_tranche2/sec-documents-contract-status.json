@@ -1,0 +1,28 @@
+{
+  "counts": {
+    "candidate_document_observations": 540,
+    "duplicate_document_observations": 0,
+    "main_candidate_documents": 513,
+    "main_pair_document_joins": 525,
+    "pair_document_joins": 552,
+    "supplemental_candidate_documents": 27,
+    "supplemental_pair_document_joins": 27,
+    "unique_document_requests": 540,
+    "unique_pairs_with_document": 467
+  },
+  "dataset_id": "dataset-development-sec-primary-documents-2026-07-22-challenger-orb-retest-tranche2-v1",
+  "document_request_graph_sha256": "d7258c06638e5daa7bf2119c74c9429d295c7bd9565fbc4a5fb1b554128a8891",
+  "manifest_sha256": "6698ac653f313c06050f730b0b2248a7087083b2c7b88b9978bdbce781b24190",
+  "pair_document_join_graph_sha256": "aefe937ffaf836d5cca39ef89e355fb46c0cae9aa5a0ee6e5138b34cc32d240c",
+  "pre_freeze_target_response_artifact_count": 0,
+  "primary_documents_requested": false,
+  "private_contract_content_sha256": "c93f2b16a51bc2f204d39c84faf4978ba4bbb39d197d9f5c2c81290a9e014017",
+  "schema_version": 1,
+  "source_semantics_observed_or_derived": false,
+  "status": "FROZEN_READY",
+  "substitutions_allowed": false,
+  "symbols_ciks_accessions_urls_and_joins_public": false,
+  "target_outcomes_observed_or_derived": false,
+  "valid": true,
+  "verified_positive_catalyst_count": 0
+}
