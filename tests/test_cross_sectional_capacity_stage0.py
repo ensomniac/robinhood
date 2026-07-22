@@ -181,3 +181,25 @@ def test_published_high_continuation_activation_binds_the_structural_ceiling():
     assert activation["capacity_contract"]["closed_signal_shortfall"] == 6
     assert activation["source_selection"]["market_data_requested"] is False
     assert activation["maturity_effect"] == "NONE"
+
+
+def test_published_high_continuation_inspection_keeps_returns_locked():
+    activation_path = next(
+        (ROOT / "strategy_tournament/second_wave/activations").glob(
+            "five-day-52-week-high-continuation-v1-*.json"
+        )
+    )
+    matches = sorted(
+        (ROOT / "strategy_tournament/second_wave/inspections").glob(
+            "five-day-52-week-high-continuation-v1-input-*.json"
+        )
+    )
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection == stage0.inspect_activation(activation_path)
+    assert inspection["maximum_possible_closed_signals"] == 24
+    assert inspection["minimum_required_closed_signals"] == 30
+    assert inspection["capacity_evaluation_authorized"] is True
+    assert inspection["return_evaluation_authorized"] is False
+    assert inspection["market_outcomes_accessed"] is False
+    assert inspection["valid"] is True

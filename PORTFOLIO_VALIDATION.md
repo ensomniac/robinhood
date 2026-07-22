@@ -820,6 +820,10 @@ binds the fifth variant's distinct rules hash to the same 24 dated membership
 sets and one-entry-per-date execution ceiling. Its maximum is likewise 24
 closed signals, six below the Stage 0 minimum. No provider request, return
 calculation, market-outcome access, broker action, or maturity effect occurred.
+Capacity inspection
+`502d588200744deec61112192b7b6893491551088afe3db180c953ba27bec81f`
+independently rebuilds the activation and six-signal shortfall. It authorizes
+only the structural capacity result and explicitly keeps all returns locked.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
