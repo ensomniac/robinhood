@@ -1,28 +1,22 @@
 {
   "counts": {
-    "benchmark_bar_requests": 40,
-    "candidate_bar_requests": 23,
-    "candidate_trade_requests": 23,
-    "maximum_daily_signals": 20,
-    "total_requests": 86,
-    "verified_positive_dates": 20,
-    "verified_positive_pairs": 23
+    "ALPACA_DOWNLOAD_requests": 86,
+    "benchmark_bars_requests": 40,
+    "candidate_bars_requests": 23,
+    "candidate_trades_requests": 23,
+    "expected_requests": 86,
+    "failed_requests": 0,
+    "pending_requests": 0,
+    "rows": 739435,
+    "successful_requests": 86,
+    "terminal_requests": 86
   },
   "dataset_id": "dataset-challenger-orb-retest-preentry-collection-2026-07-22-tranche3-v2",
-  "inspected": true,
   "manifest_sha256": "45e9441bbc43f6b79cac90e6a84e375da2b9e56cb1f6d07ae0362f8f64152500",
-  "outcome_lock_verified": true,
-  "pair_identity_sha256": "6dee8e2b5e798f2e3aab59018433452813e245bf916a3b1fadb6c5d926f48123",
   "post_entry_data_accessed": false,
-  "private_artifact_counts": {
-    "collection_indexes": 0,
-    "frozen_selections": 1,
-    "terminal_wrappers": 0,
-    "trigger_indexes": 0
-  },
-  "request_graph_sha256": "a3082eba6d0d24af55e0444d5fe5d4cb4ace83859d933175ecfa836dae06e4be",
+  "private_collection_sha256": "8fbdf0c35e6210cbd6ea5e8cb9c87f50743c71fa9c89a7e99ee55edb86344d5b",
   "schema_version": 1,
-  "status": "FROZEN_READY",
-  "target_outcomes_observed_or_derived": false,
-  "valid": true
+  "source_rows_and_identities_public": false,
+  "status": "COLLECTION_COMPLETE",
+  "target_outcomes_observed_or_derived": false
 }

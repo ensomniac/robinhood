@@ -1123,6 +1123,14 @@ Publication authorizes only the frozen causal collection; fills, post-entry
 rows, returns, outcomes, alpha, maturity, production, and broker actions remain
 blocked.
 
+The published collector completed all 86 exact frozen causal requests with 86
+Alpaca SIP downloads, zero failures, zero pending requests, and zero
+substitutions. The bounded 09:30-10:30 ET graph retains 739,435 causal rows and
+no post-entry data. Private collection hash `8fbdf0c3...44d5b` binds the
+transport result. This collection remains uninspected; no trigger, fill,
+return, outcome, alpha, maturity, production, or broker claim is permitted
+until every wrapper and canonical row independently rebuilds.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
