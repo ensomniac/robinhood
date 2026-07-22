@@ -109,6 +109,7 @@ CORE_ARTIFACTS = (
     "research_results/2026-07-21-post-earnings-drift-stage0-08f475e3800530d3044ca09948612f61bb6e3fc9f3da8a84aa8c9d30d6f70357.json",
     "research_results/2026-07-21-relative-strength-continuation-stage0-cfe76e6678078f2a5857c8365322215274134a807851014b6babafc90896e0d8.json",
     "research_results/2026-07-21-catalyst-orb-retest-stage0-60d3dd20a62dbff480148ac19aaaa047e036829385dbbe75cba0d044fc558be9.json",
+    "research_results/2026-07-21-sector-etf-rotation-stage0-29ea58ac2b950c25ee7f0d17246567daf3eac84a11cddcd9f0f873da08d1a646.json",
     "strategy_tournament/manifests/portfolio-stage0-slate-1c4f1cd20c490ea56e36fc0b81c30f1c1eb588d9a9dfb310501028de95b3c50f.json",
     "strategy_tournament/second_wave/first-wave-failure-taxonomy-73d54349f24f52f62125fc9fcc7105ffa9b8a38e0771bf1fb994decadfa90292.json",
     "strategy_tournament/second_wave/inspections/first-wave-failure-taxonomy-6f2619090a6312763d16ab9f3e01f63047c59b7fae1907803aea78b0ffa74f58.json",
