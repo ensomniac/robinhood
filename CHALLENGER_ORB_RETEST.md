@@ -139,6 +139,13 @@ current signal, archive, and inspected-evidence exclusions. Current preflight
 finds 345 eligible dates. The implementations must be committed and pushed
 before the exact 100-date selection may be frozen.
 
+Second-tranche manifest `cfa2e9fe...0d55a7` now freezes exactly 100 dates from
+that 345-date pool, with 527 excluded dates and 530 required sessions including
+lookbacks. Selected-date hash `1be9c996...56fe1e` and required-session hash
+`fa7c4664...ee2973` bind the hidden identities. The manifest is uninspected and
+must be committed and pushed before independent reconstruction or any dated
+provider access.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`
