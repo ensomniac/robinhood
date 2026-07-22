@@ -410,6 +410,16 @@ review. This source result must be committed and pushed before any selected
 causal detail or outcome access; it is not alpha or maturity evidence by
 itself.
 
+The challenger pre-entry implementation now joins only the 95 independently
+verified-positive pairs to the frozen scanner identities. Those pairs span 47
+dates and imply an exact 284-request causal graph: 95 candidate minute-bar
+windows, 95 raw SIP-trade windows, and SPY/QQQ minute bars on all 47 dates,
+ending at 10:30 ET. The bound retest engine truncates each retained record at
+its first failed touch, final decision, or cutoff. Quotes, fills, post-entry
+rows, returns, and outcomes remain forbidden. A separate inspector rebuilds
+the zero state and trigger results. Both implementations must be committed and
+pushed before the graph is frozen.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

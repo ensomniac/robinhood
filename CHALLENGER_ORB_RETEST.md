@@ -50,6 +50,16 @@ silently discarded or reclassified. Private result hash
 `fa9e196a...e524f` binds the review. Returns remain unobserved and locked until
 this source-only result is committed and pushed.
 
+`challenger_orb_retest_preentry.py` now implements the next outcome-blind
+boundary. It deterministically joins the 95 verified positives back to the
+frozen scanner selection, revealing 47 distinct candidate sessions, and will
+freeze exactly 284 Alpaca SIP requests: candidate minute bars and raw trades
+through 10:30 plus SPY/QQQ minute bars on those dates. It derives each causal
+terminal boundary with the hash-bound retest engine and never requests quotes,
+fills, post-entry rows, returns, or outcomes. Its separate inspector rebuilds
+the zero state and later the full trigger result. The implementations must be
+committed and pushed before freeze.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`
