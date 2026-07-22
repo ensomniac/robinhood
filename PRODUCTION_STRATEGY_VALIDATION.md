@@ -350,6 +350,16 @@ It confirms zero target sources, selected-symbol detail, substitution, or
 outcomes. This status must be committed and pushed before the exact SEC/issuer
 request graph is frozen; no provider request or source claim is authorized yet.
 
+Deterministic extraction and independent review of the later 508-document
+contract now classify the complete 1,826-pair denominator. Ten pairs are
+verified positive, 10 are verified conflicts, five are verified negative, 60
+are non-material, 1,369 have no selected SEC source, and 372 remain
+`DOCUMENT_SEMANTICS_UNRESOLVED` across 424 pair/document joins. Because the
+positive-capacity minimum is 20, the outcome contract remains closed and the
+frozen recovery precedence advances to exact SEC accession-chain recovery.
+No return, target-session outcome, alpha, maturity, production, or broker claim
+is authorized by this source-only result.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,

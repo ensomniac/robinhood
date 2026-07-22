@@ -2,6 +2,13 @@
 
 Status: `PREREGISTERED` research-only active challenger
 
+The independently inspected SEC source-semantics review now verifies 10
+positive catalyst pairs, below the frozen minimum capacity of 20. It leaves
+372 pairs and 424 pair/document joins as `DOCUMENT_SEMANTICS_UNRESOLVED`, so
+the next required phase is the preregistered accession-chain source recovery.
+Returns and target-session outcomes remain locked; this result earns no alpha,
+maturity, production, or broker claim.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`
