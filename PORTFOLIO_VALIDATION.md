@@ -747,6 +747,14 @@ close-to-open ETF momentum is next in the frozen queue. This was the twelfth
 Stage 0 disposition; the cadence email was attempted and correctly skipped by
 the current `trades` notification setting.
 
+`close_to_open_etf_momentum_stage0.py` implements the third frozen second-wave
+variant. It combines prior-session daily SMA20 and ATR14 with complete IBKR
+15-minute bars for SPY, QQQ, IWM, and DIA. The signal uses only the completed
+15:30-15:45 bar, enters at the 15:45 bar open, applies stop-first handling to
+that bar, models an adverse overnight gap, and otherwise exits at the next
+09:30 bar open. The acquisition path selects no signals and computes no
+returns.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the
