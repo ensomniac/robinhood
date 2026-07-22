@@ -344,6 +344,14 @@ issuer binding, timing, direction, conflicts, materiality, terminal semantics,
 causal market inputs, and outcomes remain unclassified and locked until a
 separately frozen semantics contract is published and inspected.
 
+Source-semantics manifest `b3c4d0ca...6ed93` now freezes deterministic review
+of the 508 transport-verified documents across all 526 source joins and all
+1,826 selected pairs. It retains 1,369 explicit no-source pairs, binds private
+selection hash `539c4f58...a2f58`, fixes financing-conflict precedence and the
+complete terminal taxonomy, and keeps all outcomes locked. The uninspected
+manifest authorizes no extraction, semantic result, catalyst claim, return, or
+maturity evidence.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

@@ -410,6 +410,13 @@ No source semantic, verified catalyst, causal market input, return, or outcome
 was derived. A separately frozen and inspected semantics contract is required
 before classification.
 
+Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
+the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
+The exact rules, implementation hashes, private selection identity, terminal
+precedence, 20-pair capacity gates, privacy boundary, and outcome lock are
+frozen. It must be independently inspected and pushed before extraction or
+classification.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by

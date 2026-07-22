@@ -1,0 +1,392 @@
+{
+  "capacity_contract": {
+    "capacity_ready": true,
+    "free_bytes_at_freeze": 421693386752,
+    "historical_deletion_allowed": false,
+    "historical_store_outside_repository": true,
+    "minimum_required_reserve_bytes": 21474836480,
+    "reserve_bytes": 21474836480
+  },
+  "classification_contract": {
+    "accepted_at_evidence_kind": "SOURCE_CONTROLLED_EXPLICIT_DATETIME",
+    "accepted_at_is_official_sec_filing_acceptance_not_generic_metadata": true,
+    "financing_or_dilution_conflict_precedes_all_positive_patterns": true,
+    "financing_pattern": "(?i)\\b(?:at-the-market|\\bATM\\b|shelf registration|public offering|registered direct|private placement|convertible note|convertible senior|dilution|going concern|liquidity warning|warrant exercise|secondary offering)\\b",
+    "negative_patterns": [
+      [
+        "bankruptcy",
+        "\\b(?:chapter\\s+11|bankruptcy|bankrupt)\\b"
+      ],
+      [
+        "going_concern",
+        "\\bsubstantial\\s+doubt\\b.{0,100}\\bcontinue\\s+as\\s+a\\s+going\\s+concern\\b"
+      ],
+      [
+        "lowered_guidance",
+        "\\b(?:lower(?:ed|s)?|reduce[sd]?)\\s+(?:its\\s+)?(?:full[- ]year\\s+)?(?:financial\\s+)?guidance\\b"
+      ],
+      [
+        "missed_expectations",
+        "\\b(?:missed|below)\\s+(?:consensus\\s+|analyst\\s+)?(?:expectations|estimates)\\b"
+      ],
+      [
+        "failed_endpoint",
+        "\\b(?:did\\s+not\\s+meet|failed\\s+to\\s+meet)\\s+(?:its\\s+|the\\s+)?(?:primary|main|key)\\s+endpoint\\b"
+      ],
+      [
+        "clinical_hold",
+        "\\b(?:clinical\\s+hold|trial\\s+suspension)\\b"
+      ],
+      [
+        "delisting",
+        "\\b(?:delisting|delist|noncompliance\\s+with\\s+(?:the\\s+)?(?:nasdaq|nyse)\\s+listing)\\b"
+      ],
+      [
+        "material_weakness",
+        "\\bmaterial\\s+weakness(?:es)?\\b"
+      ],
+      [
+        "revenue_decline",
+        "\\b(?:revenue|sales)\\s+(?:declined|decreased|fell)\\s+(?:by\\s+)?(?:approximately\\s+)?\\d+(?:\\.\\d+)?\\s*%"
+      ]
+    ],
+    "no_supported_direction_match_is_unresolved": true,
+    "non_material_patterns": [
+      [
+        "governance_only",
+        "\\b(?:appointment|election|departure)\\s+of\\s+(?:directors?|certain\\s+officers?)\\b"
+      ],
+      [
+        "bylaw_only",
+        "\\bamendments?\\s+to\\s+(?:articles\\s+of\\s+incorporation|bylaws?)\\b"
+      ]
+    ],
+    "pair_precedence": [
+      "VERIFIED_CONFLICT",
+      "VERIFIED_NEGATIVE_PRIMARY",
+      "VERIFIED_POSITIVE_PRIMARY",
+      "CAPTURE_TRANSPORT_ERROR",
+      "CAPTURE_FORBIDDEN",
+      "CAPTURE_NOT_FOUND",
+      "CAPTURE_HTTP_ERROR",
+      "SOURCE_OWNERSHIP_UNRESOLVED",
+      "ISSUER_BINDING_UNRESOLVED",
+      "PRIMARY_SOURCE_IRRELEVANT",
+      "TIMESTAMP_MISSING",
+      "TIMESTAMP_CONFLICT",
+      "SAME_DAY_TIME_UNRESOLVED",
+      "PUBLISHED_AFTER_0935",
+      "DOCUMENT_SEMANTICS_UNRESOLVED",
+      "NON_MATERIAL_OR_CONTEXT_ONLY"
+    ],
+    "positive_and_negative_match_is_mixed_or_contradictory": true,
+    "positive_patterns": [
+      [
+        "record_operating_result",
+        "\\brecord(?:\\s+(?:quarterly|annual|full[- ]year))?\\s+(?:revenue|sales|bookings|earnings|adjusted ebitda)\\b"
+      ],
+      [
+        "revenue_or_sales_growth",
+        "\\b(?:revenue|sales|bookings)\\s+(?:grew|increased|rose)\\s+(?:by\\s+)?(?:approximately\\s+)?\\d+(?:\\.\\d+)?\\s*%"
+      ],
+      [
+        "raised_guidance",
+        "\\b(?:raise[sd]?|increase[sd]?)\\s+(?:its\\s+)?(?:full[- ]year\\s+)?(?:financial\\s+)?guidance\\b"
+      ],
+      [
+        "expectations_exceeded",
+        "\\b(?:exceeded|surpassed|beat)\\s+(?:consensus\\s+|analyst\\s+)?(?:expectations|estimates)\\b"
+      ],
+      [
+        "contract_award",
+        "\\b(?:awarded|received|secured|wins?|won)\\b.{0,100}\\b(?:contract|award|order)\\b"
+      ],
+      [
+        "regulatory_approval",
+        "\\b(?:fda|food and drug administration|ema|european commission)\\b.{0,100}\\b(?:approv(?:al|ed)|clearance|authorization)\\b"
+      ],
+      [
+        "positive_trial",
+        "\\b(?:positive|favorable)\\s+(?:topline\\s+)?(?:clinical\\s+)?(?:trial|study|data|results)\\b"
+      ],
+      [
+        "endpoint_met",
+        "\\b(?:met|achieved)\\s+(?:its\\s+|the\\s+)?(?:primary|main|key)\\s+endpoint\\b"
+      ],
+      [
+        "premium_transaction",
+        "\\bdefinitive\\s+(?:merger|acquisition)\\s+agreement\\b.{0,180}\\bpremium\\b"
+      ],
+      [
+        "capital_return",
+        "\\b(?:special\\s+dividend|increased\\s+(?:quarterly\\s+)?dividend|share\\s+repurchase\\s+(?:program|authorization))\\b"
+      ]
+    ],
+    "same_day_date_only_accepted": false,
+    "sec_issuer_binding_method": "security_master_cik_to_document_cik",
+    "sec_ownership_evidence": "SEC-operated accession-bound archive endpoint"
+  },
+  "dataset_id": "dataset-development-sec-source-semantics-2026-07-21-challenger-orb-retest-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "CHALLENGER_ORB_RETEST.md",
+      "historical_batches/challenger_orb_retest_v1/catalyst_manifests/dataset-primary-source-semantics-contract-2026-07-21-challenger-orb-retest-v1-60a7d0003e63ffe6ecc18a74bcf562c60419479a53f1b1558402c3f8da299ce9.json",
+      "historical_batches/challenger_orb_retest_v1/sec_document_manifests/dataset-development-sec-primary-documents-2026-07-21-challenger-orb-retest-v1-4eb3f9c4c4454cdca09423152a00a5ac998493b981ca3d86917e1e158f85e5cc.json",
+      "research_results/2026-07-21-challenger-sec-documents-inspection.json",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "COLLECTING"
+  },
+  "implementation_contract": {
+    "dependencies": {
+      "pypdf": "6.14.2",
+      "python": "3.14.2"
+    },
+    "files": {
+      "development_semantics": {
+        "path": "development_catalyst_source_semantics.py",
+        "sha256": "0fec3acd01b46ab73a62bef46cbd659766accfda1d5288cd3ea7a651232bd432"
+      },
+      "document_collector": {
+        "path": "development_sec_document_collection.py",
+        "sha256": "c9310241f6e9b3974a785080cbb79e7bbb1be938995791466249c15538037a5b"
+      },
+      "document_contract": {
+        "path": "development_sec_documents.py",
+        "sha256": "6fde2d9047decdb6234ee7ed1a394382f805aeb97b602efc9219e69b31680494"
+      },
+      "frozen_shared_semantics": {
+        "path": "catalyst_source_semantics.py",
+        "sha256": "463f17c33a823b6e98c881a4c90734082d83916a14cb3f6c1dd867f3f99524b3"
+      }
+    },
+    "parser_version": "development-sec-source-semantics-v1"
+  },
+  "lineage_contract": {
+    "document_inspection": {
+      "path": "research_results/2026-07-21-challenger-sec-documents-inspection.json",
+      "sha256": "0c0beb32c2120bdbff28a94403ba2c277728be5b7c55130ce700a87d69cb5e36"
+    },
+    "document_manifest": {
+      "manifest_sha256": "4eb3f9c4c4454cdca09423152a00a5ac998493b981ca3d86917e1e158f85e5cc",
+      "path": "historical_batches/challenger_orb_retest_v1/sec_document_manifests/dataset-development-sec-primary-documents-2026-07-21-challenger-orb-retest-v1-4eb3f9c4c4454cdca09423152a00a5ac998493b981ca3d86917e1e158f85e5cc.json",
+      "sha256": "2ec49667b3e59a5a689994e337da1d84e2d0274eb8d077950cd47cbac0f49e73"
+    },
+    "document_status": {
+      "path": "historical_batches/challenger_orb_retest_v1/sec-documents-status.json",
+      "sha256": "c4c838eb9eee6935ddc5f06a74031724eba11de063987ef6b6272230db3583c6"
+    },
+    "private_document_collection_sha256": "05a64282f41af040e7224a4c27a8c325fa87837cb1db9f10d1ed1694239260b3",
+    "source_semantics_manifest": {
+      "manifest_sha256": "60a7d0003e63ffe6ecc18a74bcf562c60419479a53f1b1558402c3f8da299ce9",
+      "path": "historical_batches/challenger_orb_retest_v1/catalyst_manifests/dataset-primary-source-semantics-contract-2026-07-21-challenger-orb-retest-v1-60a7d0003e63ffe6ecc18a74bcf562c60419479a53f1b1558402c3f8da299ce9.json",
+      "sha256": "c3719eb6f083fab857c0d5a3c8e41de79cb7259b2dd8d1cfc0d36be8d0e872db"
+    },
+    "strategy": {
+      "path": "historical_batches/scanner_expansion/production-strategy-source.json",
+      "sha256": "3c07c051bb54612b1e172085a01e330f33a05c65e4a2c8cc274b8006d09c1fc8"
+    }
+  },
+  "manifest_sha256": "b3c4d0ca94cb1504aea207bbf611729d212236434098283fc5a51db80026ed93",
+  "outcome_lock": {
+    "complete_unchanged_v3_non_return_survivors_known": 0,
+    "fewer_than_20_verified_positive_transition": "SOURCE_RECOVERY",
+    "minimum_complete_unchanged_v3_non_return_survivors_before_outcomes": 20,
+    "minimum_verified_positive_pairs_before_any_outcome_contract": 20,
+    "outcome_contract_must_be_separately_frozen": true,
+    "outcome_contract_permitted_at_source_semantics_stage": false,
+    "positive_but_fewer_than_20_survivors_transition": "DEVELOPMENT_ACQUISITION",
+    "post_entry_data_access_allowed": false,
+    "return_fields_allowed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "pre_freeze_target_artifact_count": 0,
+  "private_record_contract": {
+    "exact_rows_outside_git": true,
+    "public_fields": "aggregate counts, hashes, and claim boundaries only",
+    "required_fields": [
+      "pair identity and rank",
+      "source hash and type",
+      "ownership evidence",
+      "issuer-binding methods",
+      "timestamp candidates and accepted UTC value",
+      "event direction and conflict",
+      "diagnostic failures",
+      "one terminal disposition"
+    ]
+  },
+  "registered_at": "2026-07-22T01:51:36.027036+00:00",
+  "requested_dates": [
+    "2023-01-26",
+    "2023-02-02",
+    "2023-02-14",
+    "2023-03-03",
+    "2023-03-22",
+    "2023-03-24",
+    "2023-03-28",
+    "2023-03-29",
+    "2023-04-03",
+    "2023-04-11",
+    "2023-04-17",
+    "2023-04-18",
+    "2023-04-24",
+    "2023-05-02",
+    "2023-05-04",
+    "2023-05-09",
+    "2023-05-10",
+    "2023-05-26",
+    "2023-06-01",
+    "2023-06-07",
+    "2023-06-14",
+    "2023-06-15",
+    "2023-06-16",
+    "2023-06-23",
+    "2023-07-05",
+    "2023-07-07",
+    "2023-07-12",
+    "2023-07-19",
+    "2023-08-04",
+    "2023-08-15",
+    "2023-08-21",
+    "2023-08-23",
+    "2023-08-29",
+    "2023-08-30",
+    "2023-09-01",
+    "2023-09-13",
+    "2023-09-25",
+    "2023-10-19",
+    "2023-10-27",
+    "2023-10-30",
+    "2023-10-31",
+    "2023-11-02",
+    "2023-11-14",
+    "2023-11-24",
+    "2023-11-28",
+    "2023-12-12",
+    "2023-12-14",
+    "2023-12-21",
+    "2024-01-02",
+    "2024-01-18",
+    "2024-01-19",
+    "2024-01-24",
+    "2024-01-25",
+    "2024-01-31",
+    "2024-02-01",
+    "2024-02-09",
+    "2024-03-05",
+    "2024-04-04",
+    "2024-04-05",
+    "2024-04-09",
+    "2024-04-19",
+    "2024-04-23",
+    "2024-04-29",
+    "2024-05-01",
+    "2024-05-02",
+    "2024-05-07",
+    "2024-05-09",
+    "2024-05-20",
+    "2024-05-22",
+    "2024-05-28",
+    "2024-06-03",
+    "2024-06-04",
+    "2024-06-10",
+    "2024-06-12",
+    "2024-06-17",
+    "2024-06-18",
+    "2024-06-20",
+    "2024-06-26",
+    "2024-07-05",
+    "2024-07-10",
+    "2024-07-18",
+    "2024-07-22",
+    "2024-07-26",
+    "2024-08-02",
+    "2024-08-05",
+    "2024-08-13",
+    "2024-08-22",
+    "2024-09-04",
+    "2024-09-06",
+    "2024-09-10",
+    "2024-09-13",
+    "2024-09-23",
+    "2024-09-27",
+    "2024-09-30",
+    "2024-10-07",
+    "2024-10-08",
+    "2024-11-07",
+    "2024-11-14",
+    "2024-11-15",
+    "2024-12-24"
+  ],
+  "schema_version": 1,
+  "selection_contract": {
+    "no_source_pair_sha256": "10d547d0e41593ba6933f3e534ac4a81f2f7b670a2862561354fcb6da2e83471",
+    "pair_identity_sha256": "335cc34895bae5b212f8631ce14271579507d59f4fa5075512aab74d3bec2b76",
+    "pair_source_join_sha256": "105884ba4da8f791a6405527bfbabc5fbcd17337b41e4bdc2182ff9f9701e9b3",
+    "pair_source_joins": 526,
+    "pairs_with_source": 457,
+    "pairs_without_source": 1369,
+    "private_selection_content_sha256": "539c4f58d7c2a83e73d6b3983feba54c090a0811417012a009b15842e55a2f58",
+    "private_selection_path": "LOCAL_HISTORICAL_DATA_ROOT/_derived/development_catalyst_sources/dataset-primary-source-semantics-contract-2026-07-21-challenger-orb-retest-v1/semantics_runs/dataset-development-sec-source-semantics-2026-07-21-challenger-orb-retest-v1/frozen-selection.json.gz",
+    "selected_pairs": 1826,
+    "source_document_sha256": "7eafb02222126fb9ba175e19f23c2ab02702cbc397089ba3ac50256887e53cd6",
+    "source_documents": 508,
+    "symbols_ciks_accessions_urls_sources_text_and_rows_public": false
+  },
+  "source_rules": {
+    "event_taxonomy": [
+      "DIRECT_POSITIVE",
+      "DIRECT_NEGATIVE",
+      "FINANCING_OR_DILUTION_CONFLICT",
+      "MIXED_OR_CONTRADICTORY",
+      "NON_MATERIAL_OR_CONTEXT_ONLY",
+      "UNRESOLVED"
+    ],
+    "financing_or_dilution_conflicts_classified_before_positive": true,
+    "issuer_binding_methods": [
+      "exchange_symbol_and_listing_identity",
+      "issuer_controlled_footer_or_identity",
+      "issuer_owned_canonical_domain",
+      "legal_company_name",
+      "point_in_time_ticker",
+      "security_master_cik_to_document_cik",
+      "unique_subsidiary_or_product_binding"
+    ],
+    "issuer_binding_required": true,
+    "metadata_headers_capture_url_and_pdf_dates_cannot_independently_prove_publication": true,
+    "one_terminal_disposition_per_pair_source_join": true,
+    "primary_evidence_only": true,
+    "same_day_date_only_fails": true,
+    "secondary_news_may_route_but_cannot_verify": true,
+    "selection_or_source_substitution_allowed": false,
+    "source_ownership_required": true,
+    "terminal_precedence": [
+      "CAPTURE_TRANSPORT_ERROR",
+      "CAPTURE_FORBIDDEN",
+      "CAPTURE_NOT_FOUND",
+      "CAPTURE_HTTP_ERROR",
+      "SOURCE_OWNERSHIP_UNRESOLVED",
+      "ISSUER_BINDING_UNRESOLVED",
+      "PRIMARY_SOURCE_IRRELEVANT",
+      "TIMESTAMP_MISSING",
+      "TIMESTAMP_CONFLICT",
+      "SAME_DAY_TIME_UNRESOLVED",
+      "PUBLISHED_AFTER_0935",
+      "DOCUMENT_SEMANTICS_UNRESOLVED",
+      "NON_MATERIAL_OR_CONTEXT_ONLY",
+      "VERIFIED_CONFLICT",
+      "VERIFIED_NEGATIVE_PRIMARY",
+      "VERIFIED_POSITIVE_PRIMARY"
+    ],
+    "timestamp_precedence": [
+      "SOURCE_CONTROLLED_EXPLICIT_DATETIME",
+      "JSON_LD_AND_VISIBLE_DATETIME",
+      "META_AND_VISIBLE_DATETIME",
+      "CONTEXTUAL_TIME_DATETIME",
+      "PDF_DATELINE_AND_REFERRER_CORROBORATION"
+    ]
+  }
+}
