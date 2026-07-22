@@ -658,6 +658,14 @@ frozen minimum of 20, so the only permitted next step is exact accession-chain
 recovery over the 365 unresolved pairs. Private result hash
 `3a69fee7...e63d2` binds the review; outcomes remain unobserved and forbidden.
 
+An isolated second-tranche accession-chain adapter now binds those exact 365
+unresolved pairs, 434 prior joins, and 425 unique accession requests to the
+unchanged base engine hash `e8800c0c...12ac`. Its preflight selection rebuilds
+pair hash `19a7a69b...e197`, request hash `f114ba25...7671`, and join hash
+`2199bf53...a31e` with the 18 prior positives and no outcomes. Separate
+zero-response and collection inspectors are included. The implementation must
+be committed and pushed before a recovery manifest may be frozen.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
