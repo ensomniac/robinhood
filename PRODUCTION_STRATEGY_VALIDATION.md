@@ -822,6 +822,13 @@ development-capacity signals, six below the immutable minimum of 50. Outcomes
 remain locked and a third exact disjoint acquisition tranche is required; no
 parameter repair is permitted.
 
+The third acquisition selector is now implemented as a hash-pinned adapter
+over the proven second-tranche selector. It adds both prior frozen selections
+to the complete repository exclusion snapshot, then deterministically samples
+100 more sessions under a new seed. The adapter has its own dataset identity,
+private exclusion namespace, public artifacts, and independent inspector. Its
+network-free preflight must pass before any manifest is frozen.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal
