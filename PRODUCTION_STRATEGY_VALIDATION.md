@@ -761,6 +761,13 @@ bar windows, 113 candidate trade windows, and 110 SPY/QQQ benchmark windows.
 The outcome lock remains closed; this implementation alone grants no market
 access, trigger, return, alpha, maturity, production, or broker claim.
 
+Pre-entry manifest `5a6ac82d...ec9108` now freezes those 113 pairs, 55
+sessions, and 336 requests before selected-market access. Private selection
+hash `f5f4801c...3385fe`, pair hash `ba33b6f0...a2ae44`, and request hash
+`3342764e...f4e66e` bind the complete graph. The manifest is uninspected and
+must be committed and pushed before independent zero-response reconstruction;
+collection and trigger derivation remain blocked.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal
