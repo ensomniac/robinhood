@@ -1154,6 +1154,12 @@ row hashes, no-substitution provider contract, and complete outcome lock while
 the private trigger namespace is empty. This manifest is uninspected and must
 be committed and pushed before independent reconstruction.
 
+Independent reconstruction marks trigger manifest `d214a021...64c37`
+`FROZEN_READY`. All 23-pair, 20-session, 86-request source bindings, 739,435
+canonical rows, implementation hashes, exact-reader compatibility fields, and
+outcome locks match, and the private trigger namespace remains empty. Trigger
+derivation remains blocked until this READY transition is committed and pushed.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
