@@ -86,6 +86,13 @@ network-free reader now requires exact provider, feed, adjustment, request-time,
 and provenance matches for those stored windows. It changes neither the frozen
 collector nor trigger rules and must be committed before inspection retries.
 
+Independent collection inspection now passes. It rebuilt all 284 terminal
+requests, rehashed every wrapper and all 3,195,784 canonical rows, matched
+private collection hash `f3a5708f...d3a`, wrapper-set hash
+`9747be6a...7753`, and canonical-row-set hash `fe752cfa...a36a`, and verified
+the outcome lock and empty trigger namespace. Trigger derivation remains closed
+until this inspection is committed and pushed.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

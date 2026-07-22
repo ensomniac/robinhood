@@ -448,6 +448,13 @@ windows, so a separate local reader now admits only exact provenance-bound
 frozen collector and trigger rules remain unchanged, and the adapter must be
 committed and pushed before inspection retries.
 
+The independent collection inspection now passes all 284 requests and
+3,195,784 canonical rows. It binds private collection hash
+`f3a5708f...d3a`, wrapper set `9747be6a...7753`, canonical-row set
+`fe752cfa...a36a`, exact implementation hashes, the outcome lock, and zero
+trigger artifacts. This inspection must be committed and pushed before causal
+trigger derivation.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
