@@ -96,10 +96,25 @@ def test_published_activation_binds_daily_and_intraday_input_graph():
     assert activation["maturity_effect"] == "NONE"
 
 
-def test_input_inspection_is_absent_before_independent_review():
+def test_published_input_inspection_authorizes_one_frozen_evaluation():
     matches = sorted(
         (ROOT / "strategy_tournament/second_wave/inspections").glob(
             "close-to-open-etf-momentum-v1-input-*.json"
         )
     )
-    assert matches == []
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["manifest_sha256"] == (
+        "1e7934f023b26213e085277cb18bb343ddc6f4655aa9cdc8a9bc0096cc95a9c6"
+    )
+    assert inspection["daily_input_symbol_dates"] == 4032
+    assert inspection["intraday_input_symbol_dates"] == 4032
+    assert inspection["evaluation_dates"] == 744
+    assert inspection["provider_requests"] == 0
+    assert inspection["returns_computed"] == 0
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["return_evaluation_authorized"] is True
+    assert inspection["valid"] is True

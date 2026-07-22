@@ -766,6 +766,13 @@ evaluation dates to private input hash
 It forbids outcome access until independent input inspection is committed and
 pushed.
 
+Input inspection
+`650887a1b75eb05a9588928452c9a1e687d384c66089184ff2273eca60b83b07`
+independently rebuilt the activation and validated every daily and 15-minute
+input, including all 744 eligible evaluation dates. It made zero provider or
+broker calls, computed zero returns, and authorizes exactly the frozen Stage 0
+evaluation after the inspection is committed and pushed.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the
