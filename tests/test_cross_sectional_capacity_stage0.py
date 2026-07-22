@@ -116,3 +116,24 @@ def test_published_reversal_capacity_inspection_authorizes_no_returns():
     assert inspection["provider_requests"] == 0
     assert inspection["returns_computed"] == 0
     assert inspection["maturity_effect"] == "NONE"
+
+
+def test_published_reversal_result_fails_without_outcome_access():
+    matches = sorted(
+        (ROOT / "research_results").glob(
+            "2026-07-21-two-to-three-day-cross-sectional-reversal-stage0-*.json"
+        )
+    )
+    assert len(matches) == 1
+    result = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert result["result_sha256"] == stage0.common._self_hash(result, "result_sha256")
+    assert result["denominator"]["decision_dates"] == 24
+    assert result["denominator"]["closed_signals"] == 0
+    assert result["denominator"]["maximum_possible_closed_signals"] == 24
+    assert result["denominator"]["closed_signal_shortfall"] == 6
+    assert result["stage0_survived"] is False
+    assert result["structural_falsification"]["provider_collection_skipped"] is True
+    assert result["structural_falsification"]["outcome_evaluation_skipped"] is True
+    assert result["market_outcomes_accessed"] is False
+    assert result["records"] == []
+    assert result["maturity_effect"] == "NONE"

@@ -1,0 +1,79 @@
+{
+  "activation_rules_hash": "11ed794d0297e7a465b5129aad0e48efd44c0c424de0644a3aafdca060260253",
+  "base_rules_hash": "4795592f6053c73bfced4521b94dfd3a6f4e0c6ea5064b76dde48afb6c63e0d6",
+  "broker_actions": 0,
+  "claim_scope": "FALSIFICATION_ONLY",
+  "confirmation_evidence_eligible": false,
+  "denominator": {
+    "closed_signal_shortfall": 6,
+    "closed_signals": 0,
+    "decision_dates": 24,
+    "maximum_possible_closed_signals": 24,
+    "minimum_required_closed_signals": 30,
+    "rule_violations": 0,
+    "unevaluated_capacity_blocked_dates": 24
+  },
+  "development_evidence_eligible": false,
+  "implementation_sha256": "44236528cc58da9710339f5750621c21a541dac0e0f2504b16c7a57745592de7",
+  "inspection_sha256": "2af0a5457dcd90a64bda0f3f887d1229605511be0c4aee34da788beeafbd3cff",
+  "manifest_sha256": "0f17a525b514518b764dade4e6f6b6ec62cbf85c766a30d9b3b78ff55169cf54",
+  "market_outcomes_accessed": false,
+  "maturity_effect": "NONE",
+  "mechanism_family": "two-to-three-day-cross-sectional-reversal",
+  "next_action": "retire this exact capacity-infeasible variant and advance to the next frozen mechanism",
+  "primary_5bps": {
+    "expectancy_r": null,
+    "maximum_drawdown_r": 0.0,
+    "profit_factor": null,
+    "profit_factor_infinite": false,
+    "signals": 0,
+    "total_r": 0,
+    "win_rate": null
+  },
+  "provider_requests": 0,
+  "records": [],
+  "result_kind": "stage0-capacity-falsification",
+  "result_sha256": "3b54a1c87305fe1e808f3852779900728d741d9062a42fe56d8677108bcca057",
+  "returns_computed": 0,
+  "schema_version": 1,
+  "stage0_blockers": [
+    "closed signals are below the Stage 0 minimum",
+    "primary expectancy is not positive",
+    "primary profit factor is below the Stage 0 minimum",
+    "20 bps-per-side total R is not positive"
+  ],
+  "stage0_survived": false,
+  "strategy_version": "0.1.0-stage0",
+  "stress": {
+    "10": {
+      "expectancy_r": null,
+      "maximum_drawdown_r": 0.0,
+      "profit_factor": null,
+      "profit_factor_infinite": false,
+      "signals": 0,
+      "total_r": 0,
+      "win_rate": null
+    },
+    "20": {
+      "expectancy_r": null,
+      "maximum_drawdown_r": 0.0,
+      "profit_factor": null,
+      "profit_factor_infinite": false,
+      "signals": 0,
+      "total_r": 0,
+      "win_rate": null
+    }
+  },
+  "structural_falsification": {
+    "closed_signal_shortfall": 6,
+    "maximum_new_entries_per_target_date": 1,
+    "maximum_possible_closed_signals": 24,
+    "minimum_required_closed_signals": 30,
+    "outcome_evaluation_skipped": true,
+    "proof": "target_date_count multiplied by maximum_new_entries_per_day; no market outcome can increase this preregistered upper bound",
+    "provider_collection_skipped": true,
+    "stage0_capacity_possible": false,
+    "target_date_count": 24
+  },
+  "variant_id": "two-to-three-day-cross-sectional-reversal-v1"
+}

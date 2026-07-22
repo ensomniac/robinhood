@@ -803,6 +803,11 @@ Capacity inspection
 independently rebuilds that ceiling and the exact membership identity. It
 authorizes only the structural disposition, explicitly leaves return access
 closed, and records zero provider calls, return calculations, or broker actions.
+The authorized result
+`3b54a1c87305fe1e808f3852779900728d741d9062a42fe56d8677108bcca057`
+records the 24-signal maximum, six-signal shortfall, and the standard Stage 0
+capacity blockers without market outcomes. It remains provisional until an
+independently committed result inspection confirms permanent retirement.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
