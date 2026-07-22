@@ -814,6 +814,14 @@ trigger hash `c6303e81...0cb4c3`. Terminal reasons retain every pair. No
 post-entry data or target outcome was accessed. Independent reconstruction is
 required before this count can contribute to cumulative development capacity.
 
+Independent result reconstruction now confirms all 113 decisions, all terminal
+reasons, and private trigger hash `c6303e81...0cb4c3`. The second tranche
+contributes 22 distinct daily signals. Combined with the first disjoint
+tranche's 22 inspected daily signals, the unchanged challenger has 44 causal
+development-capacity signals, six below the immutable minimum of 50. Outcomes
+remain locked and a third exact disjoint acquisition tranche is required; no
+parameter repair is permitted.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal
