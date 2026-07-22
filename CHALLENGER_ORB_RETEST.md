@@ -177,6 +177,13 @@ first corpus's manifest root. No provider request occurred. The locator now
 passes the second-tranche root explicitly and must be committed before outer
 freeze or collection.
 
+Outer acquisition manifest `3dbdef70...d0289c` now freezes the published inner
+scanner graph, 470 candidate reusable sessions, 60 provider-bound sessions, the
+unchanged retest trigger, source-rules hash `99843372...b4dc`, selected-symbol
+detail limits, 20-GiB reserve, single-writer path, zero substitution, and the
+outcome lock. It is uninspected and must be committed and pushed before
+independent reconstruction or market collection.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

@@ -532,6 +532,13 @@ first corpus's default manifest-root argument. The explicit second-tranche root
 repair changes no frozen scanner input and no provider request occurred; it must
 be published before outer freeze.
 
+Outer manifest `3dbdef70...d0289c` now binds the published zero-state scanner,
+470 candidate reusable sessions, 60 provider-bound sessions, the unchanged
+retest mechanism, source-rules hash `99843372...b4dc`, selected-symbol limits,
+capacity, the shared lock, no substitution, and the closed outcome boundary.
+This uninspected artifact must be committed and pushed before reconstruction or
+market collection.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
