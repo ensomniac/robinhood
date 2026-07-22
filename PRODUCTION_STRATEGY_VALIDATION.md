@@ -789,6 +789,13 @@ result, while the trigger namespace remains empty. Publication of this
 inspection permits only a separately frozen compatibility-bound trigger run;
 fill and outcome access remain forbidden.
 
+That trigger run is now implemented as a second-tranche adapter over the
+hash-pinned first runner. It binds the exact-window reader, the unchanged
+`catalyst-orb-retest-v1` engine, the inspected 336-request collection, and the
+second-tranche result inspector. Network-free preflight confirms 113 pairs, 55
+dates, 4,325,297 causal rows, and zero trigger artifact. This implementation
+must be committed and pushed before its compatibility manifest is frozen.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal
