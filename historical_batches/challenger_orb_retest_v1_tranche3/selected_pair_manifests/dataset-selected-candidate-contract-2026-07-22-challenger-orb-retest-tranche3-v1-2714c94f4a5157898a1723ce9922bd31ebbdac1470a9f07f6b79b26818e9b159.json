@@ -1,0 +1,885 @@
+{
+  "capacity_contract": {
+    "capacity_ready": true,
+    "configured_reserve_bytes": 21474836480,
+    "enforced_reserve_bytes": 21474836480,
+    "free_bytes_at_freeze": 415117864960,
+    "historical_deletion_allowed": false,
+    "historical_store_outside_repository": true,
+    "minimum_free_bytes": 21474836480
+  },
+  "dataset_id": "dataset-selected-candidate-contract-2026-07-22-challenger-orb-retest-tranche3-v1",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "evidence_paths": [
+      "research_results/2026-07-22-challenger-orb-retest-scanner-tranche3-v1.json",
+      "research_results/2026-07-22-challenger-orb-retest-scanner-tranche3-v1-inspection.json",
+      "learning/hypotheses/experiment-catalyst-orb-retest-v1-b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105.json",
+      "CHALLENGER_ORB_RETEST.md",
+      "PRODUCTION_STRATEGY_VALIDATION.md"
+    ],
+    "inspected": false,
+    "lane": "development",
+    "status": "FROZEN"
+  },
+  "downstream_zero_state": {
+    "dataset_id": "dataset-challenger-orb-retest-preentry-collection-2026-07-22-tranche3-v1",
+    "pre_freeze_artifact_count": 0,
+    "private_location": "LOCAL_HISTORICAL_DATA_ROOT/_derived/challenger_orb_retest_preentry/dataset-challenger-orb-retest-preentry-collection-2026-07-22-tranche3-v1"
+  },
+  "implementation_contract": {
+    "base_freezer": {
+      "path": "challenger_orb_retest_selected_pairs.py",
+      "sha256": "3a098d3f05b3f8569200de45686124cc84d3855a3bf0e77027dd682cb3648d03"
+    },
+    "base_inspector": {
+      "path": "challenger_orb_retest_selected_pairs_inspection.py",
+      "sha256": "91a32ffb4e50ae382a19c4e6bd4ed47b92f2fb691717f429aaa35b82ff4cc59a"
+    },
+    "freezer": {
+      "path": "challenger_orb_retest_selected_pairs3.py",
+      "sha256": "f874ab3ceb4c40a5f2a293de5bcfad58fd997d4b54900dfe6536518dfea9130d"
+    },
+    "inspector": {
+      "path": "challenger_orb_retest_selected_pairs3_inspection.py",
+      "sha256": "6ea7068c625253c340dc08ac39830c9013e741c911b37845463c8c304eca9be8"
+    },
+    "selection_primitive": {
+      "path": "scanner_selected_pairs.py",
+      "sha256": "a0500b3629b04eecbedf49d64e44ee561c99de1fe176afe77e662b37f06dceba"
+    },
+    "trigger": {
+      "path": "challenger_orb_retest.py",
+      "sha256": "84290bdc98aca16fd6d3b13d788445aff75af36b77af658fddebed1fe6974682"
+    }
+  },
+  "manifest_sha256": "2714c94f4a5157898a1723ce9922bd31ebbdac1470a9f07f6b79b26818e9b159",
+  "mechanism_contract": {
+    "decision_snapshot_seconds_after_rebreak": 10,
+    "entry_cutoff_et": "10:30:00",
+    "entry_trigger": "first condition-valid rebreak of held retest-bar high",
+    "hypothesis_contract_sha256": "b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105",
+    "initial_break_entry_allowed": false,
+    "one_trial_no_parameter_selection": true,
+    "primary_trial_id": "trial-8a93c0ab15c85248",
+    "retest_rule": "first completed later bar touches opening high and closes at or above",
+    "rule_version": "catalyst-orb-retest-v1"
+  },
+  "outcome_lock": {
+    "date_symbol_provider_or_missing_input_substitution_allowed": false,
+    "outcome_contract_must_be_separately_frozen": true,
+    "post_entry_data_access_allowed": false,
+    "return_fields_allowed": false,
+    "target_outcomes_observed_or_derived": false
+  },
+  "permitted_next_inputs": {
+    "completed_noninterpolated_retest_bars": true,
+    "condition_valid_sip_trades_through_terminal_boundary": true,
+    "full_universe_selected_detail": false,
+    "point_in_time_primary_source_evidence": true,
+    "post_entry_rows": false,
+    "preentry_structure_benchmark_halt_and_liquidity": true,
+    "quote_book_and_tape_through_final_decision": true,
+    "returns_or_outcomes": false,
+    "selected_symbols_only": true
+  },
+  "publication_contract": {
+    "base_freezer": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "challenger_orb_retest_selected_pairs.py",
+      "sha256": "3a098d3f05b3f8569200de45686124cc84d3855a3bf0e77027dd682cb3648d03"
+    },
+    "base_inspector": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "challenger_orb_retest_selected_pairs_inspection.py",
+      "sha256": "91a32ffb4e50ae382a19c4e6bd4ed47b92f2fb691717f429aaa35b82ff4cc59a"
+    },
+    "freezer": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "challenger_orb_retest_selected_pairs3.py",
+      "sha256": "f874ab3ceb4c40a5f2a293de5bcfad58fd997d4b54900dfe6536518dfea9130d"
+    },
+    "hypothesis": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "learning/hypotheses/experiment-catalyst-orb-retest-v1-b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105.json",
+      "sha256": "75a512dc3ba07cd1e314ab9dc357b9ee9d429dddfd6138b4ae6a85b0d1e27190"
+    },
+    "inspector": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "challenger_orb_retest_selected_pairs3_inspection.py",
+      "sha256": "6ea7068c625253c340dc08ac39830c9013e741c911b37845463c8c304eca9be8"
+    },
+    "outer_manifest": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "historical_batches/challenger_orb_retest_v1_tranche3/acquisition_manifests/dataset-challenger-orb-retest-acquisition-2026-07-22-tranche3-v1-898e423cff3f9f49a4ddea0c9a93bcc77c436b57516c873d887c51b2331c003e.json",
+      "sha256": "cd609ad2b97936bcf028a628eddfe1bb4e980cabb870bd02837e32fe5b375460"
+    },
+    "scanner_inspection": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "research_results/2026-07-22-challenger-orb-retest-scanner-tranche3-v1-inspection.json",
+      "sha256": "946018b747ac5d32d8fb96292fd903d2a3e418913bfa81e802cb7fae2b808b95"
+    },
+    "scanner_manifest": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "historical_batches/challenger_orb_retest_v1_tranche3/scanner_manifests/dataset-production-scanner-replay-2026-07-22-challenger-orb-retest-tranche3-v1-34029d3c40705fde3eb4fc31f698c84020657afa52643f74e22a64e557360a96.json",
+      "sha256": "fb077f7cd93104ce7a2d3116f23953d852beafe15781e7fb6987ae20dd4f4ce4"
+    },
+    "scanner_summary": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "research_results/2026-07-22-challenger-orb-retest-scanner-tranche3-v1.json",
+      "sha256": "6068140cd2ec6e42ea35b5e0e523cc9d6b7f7bebbdac8179ea344fb2ddceba28"
+    },
+    "selection_primitive": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "scanner_selected_pairs.py",
+      "sha256": "a0500b3629b04eecbedf49d64e44ee561c99de1fe176afe77e662b37f06dceba"
+    },
+    "trigger": {
+      "commit": "028241c136b5e2062264bba988ea5ab6e922a5d8",
+      "path": "challenger_orb_retest.py",
+      "sha256": "84290bdc98aca16fd6d3b13d788445aff75af36b77af658fddebed1fe6974682"
+    }
+  },
+  "registered_at": "2026-07-22T13:51:00.401377+00:00",
+  "requested_dates": [
+    "2023-02-01",
+    "2023-02-07",
+    "2023-02-09",
+    "2023-02-10",
+    "2023-02-13",
+    "2023-02-17",
+    "2023-02-24",
+    "2023-02-27",
+    "2023-03-02",
+    "2023-03-07",
+    "2023-03-16",
+    "2023-03-23",
+    "2023-03-27",
+    "2023-03-30",
+    "2023-04-05",
+    "2023-04-12",
+    "2023-04-20",
+    "2023-04-28",
+    "2023-05-11",
+    "2023-05-12",
+    "2023-05-23",
+    "2023-05-30",
+    "2023-05-31",
+    "2023-06-12",
+    "2023-06-22",
+    "2023-06-26",
+    "2023-07-06",
+    "2023-07-17",
+    "2023-07-26",
+    "2023-08-07",
+    "2023-08-08",
+    "2023-08-16",
+    "2023-08-24",
+    "2023-08-31",
+    "2023-09-18",
+    "2023-09-21",
+    "2023-09-27",
+    "2023-09-29",
+    "2023-10-03",
+    "2023-10-04",
+    "2023-10-10",
+    "2023-10-13",
+    "2023-10-16",
+    "2023-10-17",
+    "2023-10-25",
+    "2023-10-26",
+    "2023-11-03",
+    "2023-11-06",
+    "2023-11-27",
+    "2023-11-29",
+    "2023-11-30",
+    "2023-12-05",
+    "2023-12-08",
+    "2023-12-18",
+    "2023-12-29",
+    "2024-01-03",
+    "2024-01-08",
+    "2024-01-17",
+    "2024-01-29",
+    "2024-02-08",
+    "2024-03-06",
+    "2024-03-19",
+    "2024-03-27",
+    "2024-04-11",
+    "2024-04-12",
+    "2024-04-16",
+    "2024-04-18",
+    "2024-04-22",
+    "2024-04-26",
+    "2024-05-15",
+    "2024-05-29",
+    "2024-06-27",
+    "2024-07-03",
+    "2024-07-08",
+    "2024-07-15",
+    "2024-07-25",
+    "2024-08-08",
+    "2024-08-21",
+    "2024-08-26",
+    "2024-09-09",
+    "2024-09-11",
+    "2024-09-12",
+    "2024-09-19",
+    "2024-09-24",
+    "2024-09-26",
+    "2024-10-02",
+    "2024-10-09",
+    "2024-10-17",
+    "2024-10-22",
+    "2024-10-23",
+    "2024-11-01",
+    "2024-11-05",
+    "2024-11-12",
+    "2024-11-27",
+    "2024-12-04",
+    "2024-12-10",
+    "2024-12-17",
+    "2024-12-19",
+    "2024-12-23",
+    "2026-07-13"
+  ],
+  "schema_version": 1,
+  "selection_contract": {
+    "daily_shortlists": [
+      {
+        "date": "2023-02-01",
+        "shortlist_count": 20,
+        "shortlist_sha256": "4480c5287a506eb042d05c8641f84821570fc99a74b0e779849945ba7a0916ea"
+      },
+      {
+        "date": "2023-02-07",
+        "shortlist_count": 16,
+        "shortlist_sha256": "8fa0b2d7781bf4b06cb70f34cb145df473bd4399b1d256f9e9dd09029e1cd312"
+      },
+      {
+        "date": "2023-02-09",
+        "shortlist_count": 20,
+        "shortlist_sha256": "bb41ec17609194ba0c85cce770e7e907ddfc87397e5d37066d37031bd73b6ecf"
+      },
+      {
+        "date": "2023-02-10",
+        "shortlist_count": 20,
+        "shortlist_sha256": "53f76be612ff2739397586def1c1fb0d4b5dfa8355f8eb0e5b4bf9cd851f0ebb"
+      },
+      {
+        "date": "2023-02-13",
+        "shortlist_count": 19,
+        "shortlist_sha256": "ee89e1781280ad6485503916bbbf6d3879268c81fa4bf8ad3bd207d55d6fcd80"
+      },
+      {
+        "date": "2023-02-17",
+        "shortlist_count": 20,
+        "shortlist_sha256": "b7b6683ef9e2f65e54828b7d4af0e61ed65f3360be16c59bc42ccf17ff72fcce"
+      },
+      {
+        "date": "2023-02-24",
+        "shortlist_count": 8,
+        "shortlist_sha256": "8a8ce51c7950e4fb2b1d2894132b2a603cc564a5984a61f6b11aaf0ca6da41af"
+      },
+      {
+        "date": "2023-02-27",
+        "shortlist_count": 20,
+        "shortlist_sha256": "688161e1360aaf69070d9c804fc5e4656f331566b0656c8112e489e28f1e2aaf"
+      },
+      {
+        "date": "2023-03-02",
+        "shortlist_count": 15,
+        "shortlist_sha256": "cc06fb8d36ee70d989ce15b57bac8f1563e9721b37a3dab0b3a69fae82ce7b7b"
+      },
+      {
+        "date": "2023-03-07",
+        "shortlist_count": 20,
+        "shortlist_sha256": "1a00661fb5482fc696b4560dc7cf8101e9e999b08f0ccdb3cc753e919741defb"
+      },
+      {
+        "date": "2023-03-16",
+        "shortlist_count": 13,
+        "shortlist_sha256": "7662b4113277f7fecd06eb215bb72f4d302d3f372e11fddbf4301e5f3443247d"
+      },
+      {
+        "date": "2023-03-23",
+        "shortlist_count": 20,
+        "shortlist_sha256": "fa4c45a57aaf4f7b7515d29d35ac62547acf467196ff26260e4202bdb71b1cfa"
+      },
+      {
+        "date": "2023-03-27",
+        "shortlist_count": 20,
+        "shortlist_sha256": "9b2f38ea162ec7bf46100fcd403448f3f9c22f9809427896215b800cc4f72128"
+      },
+      {
+        "date": "2023-03-30",
+        "shortlist_count": 20,
+        "shortlist_sha256": "aa4874511f05e905f74eeec2b3dd230c68283d70c1085f5ce143950167d7ae27"
+      },
+      {
+        "date": "2023-04-05",
+        "shortlist_count": 15,
+        "shortlist_sha256": "b8094a13bc8d14171139ea4e175c470d2ce272d75754e70613be9516d3b49c92"
+      },
+      {
+        "date": "2023-04-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "111828cc7ec7550c504f535d1861674adaab37a6d0c828b3661b47d7f2682228"
+      },
+      {
+        "date": "2023-04-20",
+        "shortlist_count": 20,
+        "shortlist_sha256": "620249ad9ece1d945f9464b6f0753c6f4f9d6e36537917c2c757b74ed15d70c1"
+      },
+      {
+        "date": "2023-04-28",
+        "shortlist_count": 20,
+        "shortlist_sha256": "1bf407dd06ce37b45befbfc689e5eb3198b51a433d8f6a2d4444096763b20d9a"
+      },
+      {
+        "date": "2023-05-11",
+        "shortlist_count": 13,
+        "shortlist_sha256": "12abbb796e41a30a667abe059fdc20d7ea9f42a01a8aeafbde4de53c03df126a"
+      },
+      {
+        "date": "2023-05-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "bd64ef33df0e69348964d6991703abb342fe8f8275ae979e58f31b45fe3a96b6"
+      },
+      {
+        "date": "2023-05-23",
+        "shortlist_count": 20,
+        "shortlist_sha256": "d92c450eb5bffa088b3f08941b594ff170e1a6e231ceafd16b2030d77b071700"
+      },
+      {
+        "date": "2023-05-30",
+        "shortlist_count": 20,
+        "shortlist_sha256": "efe3a253cd55562f8f827146e8909f540114616efdebe20797805c65bb39d67a"
+      },
+      {
+        "date": "2023-05-31",
+        "shortlist_count": 20,
+        "shortlist_sha256": "2987749523eb6be578072d4b53fe065cc9c61eae9d755cdd35b3798d9d24314b"
+      },
+      {
+        "date": "2023-06-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "4052e5fdc953a77882c4ca3b8354ab2bb586ec5f244b4128a096912a7f70bc8e"
+      },
+      {
+        "date": "2023-06-22",
+        "shortlist_count": 6,
+        "shortlist_sha256": "531211f68d1ba28d0c3b7bda1894041546a94bc2a3b3ed5022ed49d240db33be"
+      },
+      {
+        "date": "2023-06-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "09f8f45722af18260db290b18c4967a3b83393a62fe8df5dd0ed4cf77d2662fc"
+      },
+      {
+        "date": "2023-07-06",
+        "shortlist_count": 0,
+        "shortlist_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "date": "2023-07-17",
+        "shortlist_count": 17,
+        "shortlist_sha256": "f5fbbbe9941fc910522dc6cbbb200d55c4dd222fac71ffe980e80b72adf438a0"
+      },
+      {
+        "date": "2023-07-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "4ab6de0a759dc63ef7d1ae81b3d35bbe9149781f4b62b0cd468a815674588178"
+      },
+      {
+        "date": "2023-08-07",
+        "shortlist_count": 20,
+        "shortlist_sha256": "b374e906007ee5a05911f69f01dea904605c4bd7319701431b2b60ffd0d6d7c4"
+      },
+      {
+        "date": "2023-08-08",
+        "shortlist_count": 12,
+        "shortlist_sha256": "c01909b3b91d6fe0f018fc0302264b57eb0b9cb2d39b99605fc9bd57177017b1"
+      },
+      {
+        "date": "2023-08-16",
+        "shortlist_count": 20,
+        "shortlist_sha256": "915a3774afb8d6fc5d2aa5f48aa811a95c041885f5f0786c48890a458ed285c2"
+      },
+      {
+        "date": "2023-08-24",
+        "shortlist_count": 19,
+        "shortlist_sha256": "b356fa5ca3f48cfb7d4f5d387cabc3374efd2b86176bc2821f70483b7d15ec12"
+      },
+      {
+        "date": "2023-08-31",
+        "shortlist_count": 20,
+        "shortlist_sha256": "5764bb14d01e7eb6174c23a1040cb7c4a2f061189625add1b71538ca9ff0bf77"
+      },
+      {
+        "date": "2023-09-18",
+        "shortlist_count": 10,
+        "shortlist_sha256": "ef427f74c62d67423a3e947bda00a6c41fab7af62a60ae0ac9ed0d365bdddc28"
+      },
+      {
+        "date": "2023-09-21",
+        "shortlist_count": 16,
+        "shortlist_sha256": "b012ee5a356b5d7939eaf45a68df7cbb21392063ade8c48ddb7e76b140066b28"
+      },
+      {
+        "date": "2023-09-27",
+        "shortlist_count": 20,
+        "shortlist_sha256": "67f908a641c6daa7e053f6fc962b1f15d3add322904c82b1d4756e7a45a2405b"
+      },
+      {
+        "date": "2023-09-29",
+        "shortlist_count": 20,
+        "shortlist_sha256": "ac777da8ec95e1b53356f627db0ca0761ee3a4c5e0dc33ab2ac496915608c9b5"
+      },
+      {
+        "date": "2023-10-03",
+        "shortlist_count": 8,
+        "shortlist_sha256": "527976e6636cca3cb14813b089863d4bdf5ba2a82b796ecefd97a7b5a55a43ab"
+      },
+      {
+        "date": "2023-10-04",
+        "shortlist_count": 20,
+        "shortlist_sha256": "a0c4451e306c2508cd7d46aced8e44d73664b65895d83f56abc38009d2857e95"
+      },
+      {
+        "date": "2023-10-10",
+        "shortlist_count": 20,
+        "shortlist_sha256": "59e29b4fb730a0e18f7da090b1973d00ae154171809a1900b0f61f2cdb646e98"
+      },
+      {
+        "date": "2023-10-13",
+        "shortlist_count": 20,
+        "shortlist_sha256": "ee16e11e8cdd444433a86f39528d84ffeac50997e5c4d257a1a8c35870318e1a"
+      },
+      {
+        "date": "2023-10-16",
+        "shortlist_count": 20,
+        "shortlist_sha256": "275b9f349c3e7d1a3e91a3ad9eddf2f8d17a5986a62c840ed649f1371bb39108"
+      },
+      {
+        "date": "2023-10-17",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e19e3418857e78e69b72749f90d5a9c4548829a30dccc5be0275bf83a9682b3c"
+      },
+      {
+        "date": "2023-10-25",
+        "shortlist_count": 14,
+        "shortlist_sha256": "0026138f16a4333d807b46eba4af63da1b989cc9ee1e1d15d541c7e6c68128ed"
+      },
+      {
+        "date": "2023-10-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "d14d5750f763dafc2cd1873f98b1d398c1d7c98d864d58b20146c1eb84b764a7"
+      },
+      {
+        "date": "2023-11-03",
+        "shortlist_count": 20,
+        "shortlist_sha256": "98e8361ed5d3aac7559c0cf40eead4adef2a348d7c2de1eb1dc3726bd28b55f8"
+      },
+      {
+        "date": "2023-11-06",
+        "shortlist_count": 20,
+        "shortlist_sha256": "42787a5c4179ae5489d920f3c0c716137f466540b1e1eff29a0f3c853d283420"
+      },
+      {
+        "date": "2023-11-27",
+        "shortlist_count": 12,
+        "shortlist_sha256": "238e606a106050a737407edf0ff0d7c92b52ec77a64fd3648e0fdef09dfc1240"
+      },
+      {
+        "date": "2023-11-29",
+        "shortlist_count": 20,
+        "shortlist_sha256": "d417356cdf5c9f88d809ff7325d7aae8a168349327cc2013ae04964073157193"
+      },
+      {
+        "date": "2023-11-30",
+        "shortlist_count": 20,
+        "shortlist_sha256": "9f1ecb335e6efb3ecae0fc07684cee53d24180e8100661c7fb5baf7315880c69"
+      },
+      {
+        "date": "2023-12-05",
+        "shortlist_count": 16,
+        "shortlist_sha256": "ec6450af9cc6310782d0c596933be91f3fc9839a0a0735815c0755667e3c3d31"
+      },
+      {
+        "date": "2023-12-08",
+        "shortlist_count": 20,
+        "shortlist_sha256": "a987f6ec7962ca91312a8bf1168e11457c4f48007f8e9808a8442fc5d58a82ba"
+      },
+      {
+        "date": "2023-12-18",
+        "shortlist_count": 20,
+        "shortlist_sha256": "068171348d10487df3688795e6c0c61dc86ca828adf3280404c4e5930969f3fc"
+      },
+      {
+        "date": "2023-12-29",
+        "shortlist_count": 6,
+        "shortlist_sha256": "6df0d747b6eeae27d0af7dce155b4bfd1379c6801b86198f45dcef04967d8fde"
+      },
+      {
+        "date": "2024-01-03",
+        "shortlist_count": 5,
+        "shortlist_sha256": "73033ab529ba03b4df3b55051c9afce53b7d910216fc3484171163cc8594983b"
+      },
+      {
+        "date": "2024-01-08",
+        "shortlist_count": 20,
+        "shortlist_sha256": "a955fab2a064f192f8961092684d3ec8f4f3896e6438053f2ef87b4368bf8cbc"
+      },
+      {
+        "date": "2024-01-17",
+        "shortlist_count": 20,
+        "shortlist_sha256": "00fc8a4eeefb1e8cef13c49540475ed549495efc642c3eec3d94d16b8f6ba474"
+      },
+      {
+        "date": "2024-01-29",
+        "shortlist_count": 20,
+        "shortlist_sha256": "d6c488db41b90fc068abe606cd45806a3e0ffdba67055dce0bb39d2046f6690e"
+      },
+      {
+        "date": "2024-02-08",
+        "shortlist_count": 20,
+        "shortlist_sha256": "9926efeffb2a494ef6009a9f3901e2cdd8eafcbb8c72c5c823a5fb09dc85cc64"
+      },
+      {
+        "date": "2024-03-06",
+        "shortlist_count": 20,
+        "shortlist_sha256": "978bbe750d141a14842b50dbb88e9da95da6caafdba5e1f8bd81f9b588063243"
+      },
+      {
+        "date": "2024-03-19",
+        "shortlist_count": 12,
+        "shortlist_sha256": "4ee1c203955141098296e2f93ad55c1e3fd7f1a0b6dc5b5f10649c6960ffcc9e"
+      },
+      {
+        "date": "2024-03-27",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e87a3f05057bef5fd59919669ac232912493de91c22abe94e0ef44c282d35d9e"
+      },
+      {
+        "date": "2024-04-11",
+        "shortlist_count": 20,
+        "shortlist_sha256": "1a4dcd81ca63483d97af904613f0b6fbaf18f09f483dc4c1143ff7c78c9d62e1"
+      },
+      {
+        "date": "2024-04-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "1218c0bf37632a6d43c18fe76ff7583b9d6f9b3419c6a2a945c34d77f817f913"
+      },
+      {
+        "date": "2024-04-16",
+        "shortlist_count": 20,
+        "shortlist_sha256": "8daa8b46b67cf1a6a4e273305132c6f6f163cf6b26deaf299312d34610f1049b"
+      },
+      {
+        "date": "2024-04-18",
+        "shortlist_count": 14,
+        "shortlist_sha256": "47b68a7865ed2c240e04c766862331a15bdc858aea0ce39b6425ae706bb14c38"
+      },
+      {
+        "date": "2024-04-22",
+        "shortlist_count": 20,
+        "shortlist_sha256": "bc2f120f37e5255c59eb8e8095e5b17b637fe8a313baadf34f5c4f7ab49455fa"
+      },
+      {
+        "date": "2024-04-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "85778dc3db3201603c00e1e71a55089bf038f684577e2d60cea5e0a68d0e7d5f"
+      },
+      {
+        "date": "2024-05-15",
+        "shortlist_count": 20,
+        "shortlist_sha256": "0120d89e4025969662599ece9e66a893ccb9d14c478a06d4a79f08474e4697c7"
+      },
+      {
+        "date": "2024-05-29",
+        "shortlist_count": 11,
+        "shortlist_sha256": "a481b677aa952447f879bb6b79a9385e8d30714b6355d423743b5095de0ecc80"
+      },
+      {
+        "date": "2024-06-27",
+        "shortlist_count": 11,
+        "shortlist_sha256": "5fb7f940803bc62ce545b2a9b569e0be4dff820ef0ab29f175dee0de0b4ca39f"
+      },
+      {
+        "date": "2024-07-03",
+        "shortlist_count": 19,
+        "shortlist_sha256": "75c91deefed88bc489f818ac86020d38455ae3abf8a9c4b2a937edb995a1116f"
+      },
+      {
+        "date": "2024-07-08",
+        "shortlist_count": 20,
+        "shortlist_sha256": "6847ae297f78dade8dfbf933e44ba025323348db062583cb10dba197d7ce1c5a"
+      },
+      {
+        "date": "2024-07-15",
+        "shortlist_count": 20,
+        "shortlist_sha256": "1ea9c5f401b9ffb39bfebeb2b5948e835b3ccf030c8e023233253c64a52d7ad7"
+      },
+      {
+        "date": "2024-07-25",
+        "shortlist_count": 20,
+        "shortlist_sha256": "0b23b924f24ed4efb7fadb2cb24b95ac34b0130443efd1c6b533741459cf3c40"
+      },
+      {
+        "date": "2024-08-08",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e7d9fb3f61d83889c9b1c90747747e3f7789491c66f2cd4ed8ad1eef96841073"
+      },
+      {
+        "date": "2024-08-21",
+        "shortlist_count": 17,
+        "shortlist_sha256": "5141dda222ea4a29bc749092b50dae3489ff7766f0c48ec9c95f3476e33d5ecf"
+      },
+      {
+        "date": "2024-08-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "ffc2508bcb3d148eea7af37bdcae6fb02a534b5247d3610c4c3042a80e03fbc0"
+      },
+      {
+        "date": "2024-09-09",
+        "shortlist_count": 20,
+        "shortlist_sha256": "1f1aa96895b5fb79cd016d75aad693b6f8e9156643bfb799925f6ccfeb78eefd"
+      },
+      {
+        "date": "2024-09-11",
+        "shortlist_count": 20,
+        "shortlist_sha256": "bdfaa65f53839f5551796155eabeee70c1f6fdb08c78a7a9c050b81badba03e0"
+      },
+      {
+        "date": "2024-09-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "fe8379abd2e6dc427b7f29e161c0f9d24938289943413d8c770f6b1fcd1d364c"
+      },
+      {
+        "date": "2024-09-19",
+        "shortlist_count": 20,
+        "shortlist_sha256": "44aa1af19ec7ffb16b91b3c42095a637e52edbe265ef1ff51e0e0de3d6a53390"
+      },
+      {
+        "date": "2024-09-24",
+        "shortlist_count": 20,
+        "shortlist_sha256": "e7562d6a5c4bd88cccbbff3b34ce5996a74313c36d47e63125c09d537f142422"
+      },
+      {
+        "date": "2024-09-26",
+        "shortlist_count": 20,
+        "shortlist_sha256": "62a43e6ff0233718530c6ecf9ebfa9417ccc76c93d6567748d94ffc6f8c1363d"
+      },
+      {
+        "date": "2024-10-02",
+        "shortlist_count": 10,
+        "shortlist_sha256": "a9a245aa98e36fd39b885f23c314089ff4955482c40fa658f338673ff8b5e554"
+      },
+      {
+        "date": "2024-10-09",
+        "shortlist_count": 12,
+        "shortlist_sha256": "26c005b6f52caa662d04b3ef589d9e276b718ef039a7e24d60623858cc72dbbc"
+      },
+      {
+        "date": "2024-10-17",
+        "shortlist_count": 20,
+        "shortlist_sha256": "d877b15b56ebdf46a37a29708a8518707388959494e3bd70e2a12c0dafcb3477"
+      },
+      {
+        "date": "2024-10-22",
+        "shortlist_count": 20,
+        "shortlist_sha256": "9340231319b313b035b841644d5b88993aeacd836ca60fdf1248b963dc139d21"
+      },
+      {
+        "date": "2024-10-23",
+        "shortlist_count": 20,
+        "shortlist_sha256": "b743ab176beb5fdce2c3d88c8009c6da21bd4afc9d7ccf34a7c3851a98fd5d0b"
+      },
+      {
+        "date": "2024-11-01",
+        "shortlist_count": 20,
+        "shortlist_sha256": "b97ce3d7c0d7284d05c87f477178b1942f11fe543fc3eec339162d12acab91e5"
+      },
+      {
+        "date": "2024-11-05",
+        "shortlist_count": 20,
+        "shortlist_sha256": "9559e22137c2ca8daa4bf89a4bca26f334ddb5d7d89ab36ae6c93c6447051579"
+      },
+      {
+        "date": "2024-11-12",
+        "shortlist_count": 20,
+        "shortlist_sha256": "20a68711c4df9fb16b4935b85d978a2bfcbb1f6e077eecc5ebeb1199418b1178"
+      },
+      {
+        "date": "2024-11-27",
+        "shortlist_count": 20,
+        "shortlist_sha256": "25e18250be989af068864bee753041aa5d859acb86cd385fe085866c5964e0ce"
+      },
+      {
+        "date": "2024-12-04",
+        "shortlist_count": 20,
+        "shortlist_sha256": "6e4ffdaf8edcc051d4e4cf1fec7a0808f04bfab369f2be99377f81f4f24a9865"
+      },
+      {
+        "date": "2024-12-10",
+        "shortlist_count": 20,
+        "shortlist_sha256": "69d0b06c1f07a02d5aba99f22ad6f64490d10514e630db806d482a1532e92067"
+      },
+      {
+        "date": "2024-12-17",
+        "shortlist_count": 20,
+        "shortlist_sha256": "303be499815be6eb6417074446011006870552bee4843e12e8741c63fc6c1c44"
+      },
+      {
+        "date": "2024-12-19",
+        "shortlist_count": 20,
+        "shortlist_sha256": "5a0b13554701c8ef471c282ca5ab6dfccc9dc83520f9051287a4789ead9efdb2"
+      },
+      {
+        "date": "2024-12-23",
+        "shortlist_count": 15,
+        "shortlist_sha256": "fbbee656f6453cda519ce01b6135953fe3bf910c3dccc50fcfa0cc40feeeaf21"
+      },
+      {
+        "date": "2026-07-13",
+        "shortlist_count": 20,
+        "shortlist_sha256": "ea51b97c82c0e80653ada3461860d17032a96b9b1c714847d98bdf8120c59bc2"
+      }
+    ],
+    "hypothesis_contract_sha256": "b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105",
+    "primary_trial_id": "trial-8a93c0ab15c85248",
+    "private_selection_content_sha256": "76e8e4d19f7da14c9e1a10528c1112452d93f09ad1b8faeafadb43ec08529fb7",
+    "requested_dates": [
+      "2023-02-01",
+      "2023-02-07",
+      "2023-02-09",
+      "2023-02-10",
+      "2023-02-13",
+      "2023-02-17",
+      "2023-02-24",
+      "2023-02-27",
+      "2023-03-02",
+      "2023-03-07",
+      "2023-03-16",
+      "2023-03-23",
+      "2023-03-27",
+      "2023-03-30",
+      "2023-04-05",
+      "2023-04-12",
+      "2023-04-20",
+      "2023-04-28",
+      "2023-05-11",
+      "2023-05-12",
+      "2023-05-23",
+      "2023-05-30",
+      "2023-05-31",
+      "2023-06-12",
+      "2023-06-22",
+      "2023-06-26",
+      "2023-07-06",
+      "2023-07-17",
+      "2023-07-26",
+      "2023-08-07",
+      "2023-08-08",
+      "2023-08-16",
+      "2023-08-24",
+      "2023-08-31",
+      "2023-09-18",
+      "2023-09-21",
+      "2023-09-27",
+      "2023-09-29",
+      "2023-10-03",
+      "2023-10-04",
+      "2023-10-10",
+      "2023-10-13",
+      "2023-10-16",
+      "2023-10-17",
+      "2023-10-25",
+      "2023-10-26",
+      "2023-11-03",
+      "2023-11-06",
+      "2023-11-27",
+      "2023-11-29",
+      "2023-11-30",
+      "2023-12-05",
+      "2023-12-08",
+      "2023-12-18",
+      "2023-12-29",
+      "2024-01-03",
+      "2024-01-08",
+      "2024-01-17",
+      "2024-01-29",
+      "2024-02-08",
+      "2024-03-06",
+      "2024-03-19",
+      "2024-03-27",
+      "2024-04-11",
+      "2024-04-12",
+      "2024-04-16",
+      "2024-04-18",
+      "2024-04-22",
+      "2024-04-26",
+      "2024-05-15",
+      "2024-05-29",
+      "2024-06-27",
+      "2024-07-03",
+      "2024-07-08",
+      "2024-07-15",
+      "2024-07-25",
+      "2024-08-08",
+      "2024-08-21",
+      "2024-08-26",
+      "2024-09-09",
+      "2024-09-11",
+      "2024-09-12",
+      "2024-09-19",
+      "2024-09-24",
+      "2024-09-26",
+      "2024-10-02",
+      "2024-10-09",
+      "2024-10-17",
+      "2024-10-22",
+      "2024-10-23",
+      "2024-11-01",
+      "2024-11-05",
+      "2024-11-12",
+      "2024-11-27",
+      "2024-12-04",
+      "2024-12-10",
+      "2024-12-17",
+      "2024-12-19",
+      "2024-12-23",
+      "2026-07-13"
+    ],
+    "selected_pair_count": 1781,
+    "source_dataset_id": "dataset-production-scanner-replay-2026-07-22-challenger-orb-retest-tranche3-v1",
+    "source_detail_sha256": "9ed5608a826afd8afbba5c0221fda058735140461d80e88b3985f33724cb77b9",
+    "source_inspection_sha256": "946018b747ac5d32d8fb96292fd903d2a3e418913bfa81e802cb7fae2b808b95",
+    "source_manifest_sha256": "34029d3c40705fde3eb4fc31f698c84020657afa52643f74e22a64e557360a96",
+    "source_outer_manifest_sha256": "cd609ad2b97936bcf028a628eddfe1bb4e980cabb870bd02837e32fe5b375460",
+    "source_summary_sha256": "6068140cd2ec6e42ea35b5e0e523cc9d6b7f7bebbdac8179ea344fb2ddceba28"
+  },
+  "source_bindings": {
+    "hypothesis": {
+      "path": "learning/hypotheses/experiment-catalyst-orb-retest-v1-b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105.json",
+      "sha256": "75a512dc3ba07cd1e314ab9dc357b9ee9d429dddfd6138b4ae6a85b0d1e27190"
+    },
+    "outer_manifest": {
+      "path": "historical_batches/challenger_orb_retest_v1_tranche3/acquisition_manifests/dataset-challenger-orb-retest-acquisition-2026-07-22-tranche3-v1-898e423cff3f9f49a4ddea0c9a93bcc77c436b57516c873d887c51b2331c003e.json",
+      "sha256": "cd609ad2b97936bcf028a628eddfe1bb4e980cabb870bd02837e32fe5b375460"
+    },
+    "scanner_inspection": {
+      "path": "research_results/2026-07-22-challenger-orb-retest-scanner-tranche3-v1-inspection.json",
+      "sha256": "946018b747ac5d32d8fb96292fd903d2a3e418913bfa81e802cb7fae2b808b95"
+    },
+    "scanner_manifest": {
+      "path": "historical_batches/challenger_orb_retest_v1_tranche3/scanner_manifests/dataset-production-scanner-replay-2026-07-22-challenger-orb-retest-tranche3-v1-34029d3c40705fde3eb4fc31f698c84020657afa52643f74e22a64e557360a96.json",
+      "sha256": "fb077f7cd93104ce7a2d3116f23953d852beafe15781e7fb6987ae20dd4f4ce4"
+    },
+    "scanner_summary": {
+      "path": "research_results/2026-07-22-challenger-orb-retest-scanner-tranche3-v1.json",
+      "sha256": "6068140cd2ec6e42ea35b5e0e523cc9d6b7f7bebbdac8179ea344fb2ddceba28"
+    }
+  }
+}

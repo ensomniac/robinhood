@@ -911,6 +911,16 @@ implementation slice. The adapter and tests must be committed and pushed
 before the default freezer may materialize or hash the private exact-pair
 contract.
 
+Selected-pair manifest `2714c94f...9b159` now freezes all 1,781 exact ordered
+third-tranche selections across the 100 inspected scanner dates. Private
+selection hash `76e8e4d1...29fb7` binds the omitted date-security graph; the
+public manifest also binds every daily shortlist, published scanner input,
+implementation file, hypothesis, one-trial trigger, capacity reserve,
+zero-substitution rule, empty downstream namespace, and outcome lock. It is
+`FROZEN_AWAITING_INSPECTION` and must be committed and pushed before the
+separate inspector may reopen the private graph. No causal detail, source,
+trigger, post-entry data, or outcome has been accessed.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
