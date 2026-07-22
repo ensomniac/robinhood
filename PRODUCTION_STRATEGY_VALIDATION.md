@@ -775,6 +775,13 @@ one frozen selection and zero wrappers, collection indexes, or trigger indexes.
 This READY state must be committed and pushed before the exact bounded
 collection may begin.
 
+The published collector has completed all 336 frozen requests with 336 Alpaca
+downloads, zero failures, zero pending requests, and zero substitutions,
+retaining 4,325,297 causal rows through 10:30 ET. Private collection hash
+`c8471a11...d65e6` binds the uninspected transport result. Independent
+network-free reconstruction of every wrapper and canonical row is required
+before trigger derivation; outcomes remain locked.
+
 Semantics manifest `b3c4d0ca...6ed93` now binds deterministic classification of
 the 508 documents, 526 pair/source joins, and 1,369 explicit no-source pairs.
 The exact rules, implementation hashes, private selection identity, terminal
