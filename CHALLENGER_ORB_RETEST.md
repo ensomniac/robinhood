@@ -352,6 +352,12 @@ complete terminal taxonomy, and keeps all outcomes locked. The uninspected
 manifest authorizes no extraction, semantic result, catalyst claim, return, or
 maturity evidence.
 
+Independent contract inspection now marks `b3c4d0ca...6ed93` `FROZEN_READY`.
+It rebuilds the 1,826-pair denominator, 508 source documents, 526 joins, every
+private aggregate hash, implementation and lineage binding, zero-target state,
+and closed outcome contract. The exact extraction may run only after this READY
+status is committed and pushed.
+
 ```sh
 python3 challenger_orb_retest_acquisition.py collect-reference
 python3 challenger_orb_retest_acquisition.py reference-status

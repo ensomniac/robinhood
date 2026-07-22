@@ -417,6 +417,11 @@ precedence, 20-pair capacity gates, privacy boundary, and outcome lock are
 frozen. It must be independently inspected and pushed before extraction or
 classification.
 
+Independent zero-result inspection now marks the contract `FROZEN_READY`, with
+all 1,826 pair identities, 508 document identities, 526 joins, private hashes,
+implementation bindings, and outcome locks intact. Extraction remains blocked
+until that READY status is committed and pushed.
+
 The first corpus has completed that ordered recovery with only three exact
 deduplicated positive pairs, so its outcomes remain locked. The active
 `DEVELOPMENT_ACQUISITION` handoff is implemented by
