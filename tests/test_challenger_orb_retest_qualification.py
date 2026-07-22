@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 import challenger_orb_retest_qualification as qualification
+from learning_registry import current_entities
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -119,3 +120,26 @@ def test_qualification_clis_are_available() -> None:
             text=True,
         )
         assert completed.returncode == 0
+
+
+def test_published_qualification_retires_exact_challenger_without_outcomes() -> None:
+    result = qualification.base._read_json(qualification.DEFAULT_RESULT)
+    status = qualification.base._read_json(qualification.DEFAULT_QUALIFICATION_STATUS)
+    assert result == status
+    assert result["status"] == "INSUFFICIENT_CAPACITY"
+    assert result["inspected"] is True
+    assert result["eligible_signals"] == 2
+    assert result["minimum_eligible_signals"] == 50
+    assert result["next_phase"] == "RETIRE_INSUFFICIENT_CAPACITY"
+    assert result["outcome_contract_permitted"] is False
+    assert result["post_entry_data_access_allowed"] is False
+    assert result["target_outcomes_observed_or_derived"] is False
+
+    experiment = current_entities("experiments")[
+        "experiment-catalyst-orb-retest-v1"
+    ]
+    strategy = current_entities("strategies")["strategy-catalyst-orb-retest-v1"]
+    assert experiment["event_type"] == "retired"
+    assert experiment["payload"]["status"] == "FAILED"
+    assert strategy["event_type"] == "retired"
+    assert strategy["payload"]["alpha_state"] == "RETIRED"

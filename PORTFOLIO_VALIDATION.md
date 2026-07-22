@@ -877,6 +877,17 @@ catalyst ORB challenger: its preserved outcome-locked evidence lane may
 continue under its own frozen lineage, but it receives no Stage 0 or maturity
 credit unless it independently clears the portfolio evidence gates.
 
+That separately preregistered challenger has now reached its own inspected
+capacity disposition. The frozen retest-specific evaluator retained 2 of 60
+causal pairs across 52 sessions, below its immutable 50-signal threshold, and
+accessed no post-entry outcomes. Catalyst ORB retest v1 is therefore retired for
+insufficient capacity with no parameter repair. With the first wave, the sole
+development survivor, the one permitted second wave, and this preserved
+challenger all exhausted, the campaign has no authorized active discovery,
+development, confirmation, or shadow lane. A new mechanism family, third wave,
+or repaired version requires a superseding research-campaign authorization;
+none may be inferred from the portfolio objective.
+
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
 start, safety pause, or terminal milestone. The funnel exposes whether the

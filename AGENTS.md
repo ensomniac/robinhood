@@ -1,6 +1,6 @@
 # Robinhood Codex Trading Context
 
-Research refreshed: 2026-07-21
+Research refreshed: 2026-07-22
 
 Strategy version: `2026-07-15-orb-v3`
 
@@ -8,6 +8,11 @@ ORB v3 maturity: `UNVALIDATED` until its frozen promotion rules are met.
 
 Portfolio campaign: `RESEARCH` until `portfolio_maturity.py report` earns the
 next milestone.
+
+Catalyst ORB retest v1: `RETIRED_INSUFFICIENT_CAPACITY`; its inspected causal
+entry qualification retained 2 of 60 pairs across 52 sessions versus the
+frozen 50-signal minimum, with no post-entry outcome access. No parameter
+repair or outcome collection is permitted for that exact version.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

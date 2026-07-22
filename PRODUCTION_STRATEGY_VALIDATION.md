@@ -1329,6 +1329,16 @@ and public aggregate must be committed and pushed as-is before the bound
 inspector independently rebuilds all 60 records, terminal precedence, ranking,
 and denominators. The outcome lock remains closed.
 
+Independent reconstruction now confirms the complete aggregate and every
+private per-pair gate record. Only two distinct sessions survive, versus the
+frozen minimum of 50; 40 pairs are input-unresolved and the remaining failures
+occur at retest VWAP, quote/A+ spread, rebreak chase, relative strength,
+structural stop, or resistance gates. The inspected status is
+`INSUFFICIENT_CAPACITY`, and the exact catalyst ORB retest v1 challenger is
+retired without accessing any fill, return, post-entry price, or target outcome.
+No parameter repair, alternate terminal precedence, date substitution, or
+outcome contract is permitted on this corpus.
+
 Independent reconstruction now marks the third-tranche selection
 `FROZEN_READY`: the live exclusion snapshot, both prior selections, all 100
 selected dates, and all 502 required sessions match, with zero overlap,
