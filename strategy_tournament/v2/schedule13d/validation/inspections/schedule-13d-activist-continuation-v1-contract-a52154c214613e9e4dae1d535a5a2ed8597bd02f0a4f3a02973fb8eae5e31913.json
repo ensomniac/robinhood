@@ -1,0 +1,22 @@
+{
+  "broker_actions_permitted": false,
+  "confirmation_embargo_trading_days": 5,
+  "confirmation_input_access_permitted": false,
+  "contract_file_sha256": "b0db3a61f1ee1bca0ba038114323bed8d4346c273b3f05f4181a76aeaf3da6d7",
+  "contract_sha256": "214bf5d1e93d0a9f0eaa6df5c93d8bc29ca047667fdd18820c03a98bd8ba7684",
+  "development_evaluation_permitted": false,
+  "development_input_access_permitted": true,
+  "inspection_kind": "representative-validation-zero-result-contract-inspection",
+  "inspection_sha256": "a52154c214613e9e4dae1d535a5a2ed8597bd02f0a4f3a02973fb8eae5e31913",
+  "market_outcomes_accessed": false,
+  "phase_denominator": {
+    "confirmation": 20,
+    "development": 54
+  },
+  "returns_computed": 0,
+  "rules_hash": "a3ebd0c4025889a0f2ec5d2e56d694bdf3f537838db9ef872dfb21e25dec46e7",
+  "schema_version": 1,
+  "strategy_id": "schedule-13d-activist-continuation",
+  "strategy_version": "2026-07-22-schedule-13d-activist-continuation-v1",
+  "valid": true
+}
