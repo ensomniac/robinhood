@@ -1,9 +1,29 @@
 {
   "dataset_id": "dataset-challenger-orb-retest-acquisition-2026-07-21-tranche2-v1",
-  "inspected": false,
+  "input_evidence": {
+    "capacity_ready": true,
+    "logical_snapshot_set_sha256": "03c2ffc68cbbbc7ce48ebc363ec26eb0b0c71ec073da119a42d57044dabc5533",
+    "pre_freeze_target_market_artifacts": 0,
+    "security_master_records": 7995,
+    "security_master_sha256": "92500496e15dac466ac46fc431dddce141f67e4dfc4178d3fdb5c048e4e4ddc2",
+    "snapshot_count": 100,
+    "snapshot_set_sha256": "bb6e5053cd84250b911a8da22de849b8e0a28ea38b0396b24e089b81daf31a52",
+    "split_action_events": 4933,
+    "split_actions_sha256": "d2b7ea6ef586800d909092ee22b2518c160d05d6441e87a854e620b0e6bdbadb",
+    "split_query_range": {
+      "execution_date_gte": "2023-01-03",
+      "execution_date_lte": "2026-07-17"
+    }
+  },
+  "inspected": true,
   "manifest_sha256": "3dbdef70b6b9a5f95599d55dc843e1dd9620e144daacc53219dc7eadb9d0289c",
-  "path": "historical_batches/challenger_orb_retest_v1_tranche2/acquisition_manifests/dataset-challenger-orb-retest-acquisition-2026-07-21-tranche2-v1-3dbdef70b6b9a5f95599d55dc843e1dd9620e144daacc53219dc7eadb9d0289c.json",
+  "pre_freeze_target_market_artifacts": 0,
+  "requested_dates": 100,
+  "required_sessions": 530,
   "schema_version": 1,
+  "source_rules_sha256": "998433724e8dfc26be129fb7c105a7f11a949641fbcef9032dd751e3a731b4dc",
   "status": "FROZEN_READY",
-  "target_outcomes_observed_or_derived": false
+  "substitutions_allowed": false,
+  "target_outcomes_observed_or_derived": false,
+  "valid": true
 }

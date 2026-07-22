@@ -184,6 +184,13 @@ detail limits, 20-GiB reserve, single-writer path, zero substitution, and the
 outcome lock. It is uninspected and must be committed and pushed before
 independent reconstruction or market collection.
 
+Independent reconstruction from pushed commit `d89a40e` passed every outer
+binding and reopened all 100 dated identity snapshots, 7,995 master records,
+4,933 split events, and all 530 exact scanner sessions. Status is
+`FROZEN_READY`: target-market artifacts remain zero, capacity is valid,
+substitution is forbidden, and outcomes remain locked. Scanner collection may
+begin only after this inspection is itself committed and pushed.
+
 Contract: `b766000bc84aff7ae836c8dcdc516d4b1c7dc4fb3dcb5f179bb5eb452656d105`
 
 Primary trial: `trial-8a93c0ab15c85248`

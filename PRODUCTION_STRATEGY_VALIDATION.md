@@ -539,6 +539,13 @@ capacity, the shared lock, no substitution, and the closed outcome boundary.
 This uninspected artifact must be committed and pushed before reconstruction or
 market collection.
 
+The independent outer inspection now reports `FROZEN_READY` from pushed commit
+`d89a40e`. It revalidated every implementation and upstream hash, all 100
+reference snapshots, 7,995 master rows, 4,933 split events, 530 required
+sessions, the 20-GiB reserve, zero target-market artifacts, no substitution,
+and no outcome access. This inspection must be published before the exact
+scanner collection starts.
+
 The network-free challenger SEC identity graph is now frozen as manifest
 `ddf298d1...227860`. It exactly maps all 1,826 selected pairs, preserves eight
 missing-CIK rows, and privately binds 529 SEC-operated submissions requests,
