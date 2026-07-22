@@ -159,10 +159,23 @@ def test_published_result_fails_only_twenty_bps_cost_stress():
     assert result["maturity_effect"] == "NONE"
 
 
-def test_result_inspection_is_absent_before_independent_review():
+def test_published_result_inspection_rebuilds_failed_disposition():
     matches = sorted(
         (ROOT / "strategy_tournament/second_wave/inspections").glob(
             "broad-etf-trend-pullback-v1-result-*.json"
         )
     )
-    assert matches == []
+    assert len(matches) == 1
+    inspection = json.loads(matches[0].read_text(encoding="utf-8"))
+    assert inspection["inspection_sha256"] == stage0.common._self_hash(
+        inspection, "inspection_sha256"
+    )
+    assert inspection["result_sha256"] == (
+        "2aa31af9eb16c6a268b19df57b5bfc3b9d6950b69fa00cddcbfcb12386a41209"
+    )
+    assert inspection["closed_signals"] == 77
+    assert inspection["stage0_survived"] is False
+    assert inspection["provider_requests"] == 0
+    assert inspection["broker_actions"] == 0
+    assert inspection["maturity_effect"] == "NONE"
+    assert inspection["valid"] is True

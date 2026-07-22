@@ -740,9 +740,12 @@ evaluation after the inspection is committed and pushed.
 The one authorized evaluation produced 77 closed signals across 752 fully
 reconciled decision sessions. At 5 bps per side it returned +0.1117R
 expectancy, 1.4376 profit factor, +8.5995R total, and 4.5892R maximum drawdown.
-At 20 bps per side it lost 2.6012R. The exact variant fails only the mandatory
-cost-stress gate, remains outside maturity, and awaits independent result
-inspection before permanent retirement.
+At 20 bps per side it lost 2.6012R. Independent inspection rebuilt the complete
+denominator, all 77 signals, and the sole failed gate with zero provider or
+broker calls. The exact variant is permanently retired outside maturity, and
+close-to-open ETF momentum is next in the frozen queue. This was the twelfth
+Stage 0 disposition; the cadence email was attempted and correctly skipped by
+the current `trades` notification setting.
 
 Send a concise privacy-safe campaign email after every three Stage 0
 dispositions and immediately for a new survivor, `PILOT_READY` award, live
