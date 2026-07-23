@@ -109,9 +109,9 @@ explicitly contaminated development partition and disjoint untouched
 confirmation. This does not consume a new-family weekly slot and does not wait
 for the next ISO week.
 
-## Active liquid-ETF cross-sectional successor
+## Liquid-ETF cross-sectional successor disposition
 
-The active successor is
+The latest liquid-ETF successor was
 `cross-sectional-momentum-v3-liquid-index-etf`, runtime family
 `liquid-etf-cross-sectional-momentum`. The prior equity version had positive
 5/10/20-bps results but failed only its Stage 0 drawdown gate; its exact version
@@ -143,13 +143,66 @@ conservative filled-signal set and the 5/10/20-bps scenarios apply their exact
 costs to that identical set. Capital-blocked candidates remain explicit in
 trial accounting.
 
+Development result
+`8d3470d29b0138fac583e660bdf295ce9cc99c390e6ce2fb828c498a0a3d950c`
+evaluated all 32 trials from one shared dataset load in 23.2 seconds with zero
+provider requests. Independent inspection
+`9ebc37a593b65c10697572cf23f6710c985e056861ec9624a44c69dd576155ef`
+is `REJECTED`: all 32 trials had complete rule and trial accounting, but none
+had positive 20-bps growth, stressed profit factor of at least 1.20, drawdown at
+or below 6R, DSR probability of at least 0.90, Holm rejection, positive growth
+in every rolling fold, or stable one-step neighbors. No winner or evidence
+target was frozen, and the 500-session confirmation reserve remains untouched
+and inaccessible.
+
+The exact v3 successor is terminal and cannot be repaired on its evaluated
+corpus.
+
+## Active equity-gap-continuation search successor
+
+Continuous work now returns to the existing equity-gap-continuation mechanism.
+Its v1 production rule failed representative development, but its earlier
+falsification lane showed enough directional signal to justify one
+selection-aware development family rather than inventing a new mechanism or
+waiting for a calendar reset.
+
+The active successor must freeze:
+
+- The already exposed 120-session, 4,833-candidate minute-bar corpus as
+  contaminated development training only.
+- The unchanged five-session embargo and untouched 75-session,
+  3,192-candidate confirmation reserve from 2025-08-14 through 2025-12-31.
+- A 32-trial grid: minimum opening gap `{2%,4%}` × opening range `{5,15}`
+  minutes × breakout volume multiple `{1.5,2.5}` × signal cutoff
+  `{10:30,11:30}` ET × target `{1.5,2.0}R`.
+- The existing 8% maximum gap, next-minute entry, opening-range-low stop,
+  stop-first same-interval ambiguity, 15:50 ET force-flat, one entry per day,
+  complete no-signal accounting, 5/10/20-bps costs, and portfolio account
+  simulation.
+- The same deterministic daily ranking: earliest completed trigger, higher
+  breakout volume multiple, larger opening gap, then canonical symbol.
+- Selection-aware DSR, Holm, PBO, rolling-fold, neighbor-stability,
+  concentration, profit-factor, drawdown, stationary-bootstrap, and power gates.
+
+The v1 exact rule
+`{2%, 15 minutes, 1.5x volume, 11:30 ET, 2.0R}` remains adverse training inside
+the complete family. No confirmation minute bar may be collected unless an
+independent development inspection selects one exact immutable winner and
+freezes its rules hash and evidence counts first.
+
+Before the next development evaluation, the discovery controller must store
+row-level and repeated statistical evidence in the ignored content-addressed
+historical store while Git retains a compact hash-bound result and inspection.
+The already published large ETF development artifact remains auditable history;
+it is not a precedent for placing another large row-level result in Git.
+
 Freeze and commit the exact successor before generic preflight:
 
 ```sh
-python3 etf_cross_sectional_momentum_discovery.py freeze \
+python3 equity_gap_continuation_discovery.py freeze \
   --created-at <actual-current-ISO8601-timestamp>
 python3 strategy_discovery.py preflight \
-  strategy_tournament/v2/continuous/cross-sectional-momentum-v3-liquid-index-etf/family-contract/contract-<sha256>.json
+  strategy_tournament/v2/continuous/equity-gap-continuation-v2-development-search/family-contract/contract-<sha256>.json
 ```
 
 After committing preflight, use `strategy_discovery.py freeze-search`,

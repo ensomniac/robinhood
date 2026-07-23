@@ -50,24 +50,19 @@ changes only canonical path serialization and binds that failure. It may reuse
 the already exposed 120-session, 4,833-candidate gap corpus only as explicitly
 contaminated development training. Its later 75-session, 3,192-candidate
 confirmation reserve remains globally untouched and cannot be repurposed for a
-repaired oversold rule. The next immediate lane must be another existing-family
-successor using an explicitly contaminated development partition and disjoint
-untouched confirmation; the weekly new-family reset is not a work pause.
-The selected lane is
-`cross-sectional-momentum-v3-liquid-index-etf`. Its v2 predecessor failed
-closed on the first development trial because independent 5/10/20-bps account
-paths selected different signals under cost-sensitive capital contention. No
-trial metrics or result were returned, selection did not run, and confirmation
-remained untouched. V3 changes only the account simulator: the conservative
-20-bps path freezes one cost-blind filled-signal set, then all three scenarios
-charge their own costs to those same trades. It retains the previously tested
-cross-sectional-momentum mechanism while replacing concentrated microcap equity
-exposure with the complete `DIA`, `IWM`, `QQQ`, and `SPY` universe. Its 32-trial
-grid uses 20/60-session returns, SPY 100/200-session trend gates, 1%/2%
-cross-sectional excess floors, 1.5/2.0 ATR14 stops, and three/five-session
-holds. Its 2016-2020 partition is contaminated training only; its frozen
-2021-2022 reserve remains untouched. This is an existing-family successor,
-consumes no weekly new-family slot, and authorizes no broker action.
+repaired oversold rule. The liquid-index-ETF cross-sectional-momentum v3
+successor is also retired after independent inspection rejected all 32 frozen
+trials: none had positive 20-bps growth, acceptable stressed profit factor or
+drawdown, DSR, Holm rejection, rolling-fold stability, or neighbor stability.
+Its 500-session confirmation reserve remains untouched.
+
+The next immediate lane is a selection-aware successor inside the existing
+equity-gap-continuation family. It may use the already exposed 120-session,
+4,833-candidate development corpus only as contaminated training while
+preserving the frozen five-session embargo and 75-session, 3,192-candidate
+confirmation reserve. The full search, exact winner, and confirmation collection
+contract must freeze before accessing any new outcome. This consumes no new
+mechanism-family slot, so the weekly reset is not a work pause.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
