@@ -1,0 +1,48 @@
+{
+  "artifact_kind": "dense-calendar-allocation-inspection",
+  "artifact_sha256": "5920eedbba8149183cfdfe4dd5ea2468def96316fa1701803958a22348667c50",
+  "broker_actions": 0,
+  "calendar_path": "historical_batches/dense_v2/session-calendar-2020-01-through-2026-07.json",
+  "calendar_sha256": "01b25b1b8192fe8fb9f416d6e8a229a23f80dec1013673049c8e7726252c64d4",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "calendar_hash_rebuilt": true,
+    "implementation_hashes_rebuilt": true,
+    "target_blocks_mutually_disjoint": true,
+    "target_dates_globally_untouched": true,
+    "target_outcomes_absent": true,
+    "three_target_blocks_rebuilt": true,
+    "warmups_complete_and_causal": true,
+    "warmups_excluded_from_target_evidence": true
+  },
+  "collection_path": "strategy_tournament/v2/calendar/collection/dense-session-calendar-collection-95b4cba195ad5d472d397a64e38f4ea9f025efa3bf58d232f966c3b5d5213a05.json",
+  "collection_sha256": "95b4cba195ad5d472d397a64e38f4ea9f025efa3bf58d232f966c3b5d5213a05",
+  "contract_path": "strategy_tournament/v2/calendar/allocation/contract/dense-calendar-allocation-contract-ad65f63cc06e30ee419892ef032deb821ce6d614cf52739e06af0dc981479ca7.json",
+  "contract_sha256": "ad65f63cc06e30ee419892ef032deb821ce6d614cf52739e06af0dc981479ca7",
+  "family_counts": {
+    "intraday-index-etf-opening-reversal": {
+      "target_sessions": 160,
+      "warmup_sessions": 60
+    },
+    "liquid-equity-market-residual-reversal": {
+      "target_sessions": 160,
+      "warmup_sessions": 200
+    },
+    "liquid-etf-trend-pullback-cost-floor": {
+      "target_sessions": 160,
+      "warmup_sessions": 200
+    }
+  },
+  "inspected_at": "2026-07-23T19:23:00-04:00",
+  "market_prices_accessed": false,
+  "outcome_exposure_index_sha256": "cc4a6c5d802f3fa5fb84aad18a690234f6194aeadb917a567119aa5ab5da28ba",
+  "plan_sha256": "d366f156c9d8c5a899c864a1572a370b99b544335be6f835b57c63836bf195a5",
+  "provider_requests_added": 0,
+  "rolling_authorization_sha256": "bedfb0ea139cfe806b1b780828e59f1d98e3a125c50ae2b8d86b662d5d5e5585",
+  "schema_version": 1,
+  "state": "CALENDAR_ALLOCATION_INSPECTED_READY",
+  "target_outcomes_accessed": false,
+  "unique_warmup_sessions": 420,
+  "untouched_target_sessions": 480,
+  "warmup_observations": 460
+}
