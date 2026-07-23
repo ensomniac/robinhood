@@ -147,6 +147,30 @@ def _find_single(directory: Path, pattern: str, *, kind: str) -> tuple[Path, dic
     return paths[0], load_artifact(paths[0], expected_kind=kind)
 
 
+def _find_contract_preflight(
+    directory: Path,
+    family_contract_path: Path,
+) -> tuple[Path, dict[str, Any]]:
+    expected_path = _relative(family_contract_path)
+    expected_file_hash = _file_hash(family_contract_path)
+    matches: list[tuple[Path, dict[str, Any]]] = []
+    for path in sorted(directory.glob("*.json")):
+        artifact = load_artifact(
+            path, expected_kind="discovery-preflight-inspection"
+        )
+        if (
+            artifact.get("family_contract_path") == expected_path
+            and artifact.get("family_contract_sha256") == expected_file_hash
+        ):
+            matches.append((path, artifact))
+    if len(matches) != 1:
+        raise StrategyDiscoveryError(
+            "expected exactly one discovery-preflight-inspection artifact "
+            f"bound to {expected_path}; found {len(matches)}"
+        )
+    return matches[0]
+
+
 def _validate_family_contract(value: Mapping[str, Any]) -> dict[str, Any]:
     try:
         contract = validate_hypothesis_contract(value)
@@ -398,10 +422,9 @@ def freeze_search(
         require_committed(family_contract_path)
     contract = _validate_family_contract(_read_object(family_contract_path))
     _assert_implementation_current(contract, enforce_commit=enforce_commit)
-    preflight_path, preflight = _find_single(
+    preflight_path, preflight = _find_contract_preflight(
         root / str(contract["family_id"]) / "preflight",
-        "*.json",
-        kind="discovery-preflight-inspection",
+        family_contract_path,
     )
     if enforce_commit:
         require_committed(preflight_path)

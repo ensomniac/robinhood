@@ -664,6 +664,44 @@ def test_search_freeze_rejects_implementation_drift_after_preflight(monkeypatch)
             )
 
 
+def test_search_freeze_selects_preflight_bound_to_superseding_contract():
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        family_id = "superseding-contract"
+        first = family_contract(_dataset(work), family_id=family_id)
+        first_path = work / "first.json"
+        first_path.write_text(
+            json.dumps(first, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        _, first_preflight = discovery.run_preflight(
+            first_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        second = {**first, "created_at": "2026-07-22T20:00:00-04:00"}
+        second_path = work / "second.json"
+        second_path.write_text(
+            json.dumps(second, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        _, second_preflight = discovery.run_preflight(
+            second_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+
+        _, search = discovery.freeze_search(
+            second_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+
+        assert search["preflight_sha256"] == second_preflight["artifact_sha256"]
+        assert search["preflight_sha256"] != first_preflight["artifact_sha256"]
+
+
 def test_evaluations_reject_code_drift_from_frozen_implementation(monkeypatch):
     with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
         work = Path(directory)
