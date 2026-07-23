@@ -64,11 +64,14 @@ The inspected `broad-etf-trend-pullback-v2-cost-floor` development family is
 rejected: all 32 trials had negative 20-bps growth and none passed the complete
 selection-aware gates. Do not repair it or access its confirmation reserve.
 
-Continue immediately with the existing close-to-open ETF momentum successor
-defined in `CONTINUOUS_STRATEGY_DISCOVERY_V2.md`. Freeze and independently
-inspect its disjoint 2022 universe, dates, complete grid, and minimum formal
-capacity before any target-return access. The predeclared residual-equity and
-intraday-ETF new-family lanes continue separately when their weekly gate opens.
+The close-to-open ETF successor is now rejected after all 32 trials produced
+negative 20-bps growth and failed the complete selection-aware gates. Continue
+immediately with the liquid-equity cross-sectional-momentum successor defined
+in `CONTINUOUS_STRATEGY_DISCOVERY_V2.md`. Its universe-liquidity restriction,
+complete grid, exposed development dates, five-session embargo, untouched later
+confirmation dates, and implementation hashes must freeze before any additional
+daily price row is opened. The predeclared residual-equity and intraday-ETF
+new-family lanes continue separately when their weekly gate opens.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`

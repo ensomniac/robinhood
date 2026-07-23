@@ -69,6 +69,27 @@ retired with its confirmation reserve untouched. Continuous work must advance
 another existing-family successor; this consumes no new mechanism-family slot,
 so the weekly reset is not a work pause.
 
+Subsequent liquid-index-ETF successors for cross-sectional reversal, 52-week-
+high continuation, volatility-compression breakout, turn-of-month seasonality,
+sector rotation, and close-to-open momentum are also terminal after independent
+development rejection. The close-to-open inspection
+`491e629f...33dd44` rebuilt all 32 trials: every 20-bps account path and rolling
+fold set was non-positive, no trial passed stressed profit factor, Deflated
+Sharpe, Holm, or neighbor stability, and the least-adverse path still lost
+0.01306 log-return with profit factor 0.198. Its 66-session confirmation reserve
+remains untouched.
+
+Continuous work now advances a liquid-equity successor inside the existing
+cross-sectional-momentum mechanism. The predecessor's 72 signals were positive
+at 5/10/20 bps but concentrated in thin names and failed the drawdown gate; its
+exact version remains retired. The successor must prospectively restrict the
+point-in-time universe to prior close at least $10, prior 20-session median
+dollar volume at least $50 million, and the top 250 by prior 60-session dollar
+volume. It must freeze the complete grid, exposed development dates, five-
+session embargo, untouched later confirmation dates, and implementation hashes
+before opening any additional daily price row. This existing mechanism consumes
+no new-family slot and requires no calendar wait.
+
 The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1
 predecessor was retired only because 24 frozen decision dates could not meet

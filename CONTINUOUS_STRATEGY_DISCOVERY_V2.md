@@ -311,6 +311,31 @@ daily entry remain mandatory, and no position may remain beyond the next
 session. This existing mechanism consumes no new-family weekly slot and
 requires no calendar wait.
 
+Independent inspection
+`491e629fe308683f25e45e6e37eb876a96b5fc20009ca67c40a44cc2ef33dd44`
+is `REJECTED`. All 32 trials had complete rule and accounting records, but every
+20-bps account path was negative, every trial had at least one non-positive
+rolling fold, and none passed stressed profit factor, Deflated Sharpe, Holm, or
+neighbor stability. The least-adverse trial still had -0.013056 log growth,
+0.1978 profit factor, a negative stationary-bootstrap lower bound, and only nine
+fills. No winner or evidence target was frozen, and all 66 confirmation sessions
+remain untouched.
+
+Continuous discovery now advances `liquid-equity-cross-sectional-momentum-v2`
+inside the existing cross-sectional-momentum mechanism. Its v1 predecessor
+produced positive 5/10/20-bps returns across 72 signals but failed the drawdown
+gate and concentrated gains in thin securities. The successor therefore tests
+the same completed-close ranking and next-open continuation mechanism on a
+prospectively frozen liquid common-stock universe: prior close at least $10,
+prior 20-session median dollar volume at least $50 million, and the top 250 by
+prior 60-session dollar volume. Development uses dates already exposed by the
+legacy portfolio baseline as contaminated training; the five-session embargo and
+later date/symbol scope remain untouched and inaccessible unless independent
+selection freezes one exact winner. The complete grid and exact production
+semantics must be committed before any additional row from the existing
+content-addressed 2025 daily source is opened. This is an existing-family
+successor, consumes no new-family weekly slot, and requires no calendar wait.
+
 ## Transition chain
 
 Run the lane from the repository root:
