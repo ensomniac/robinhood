@@ -194,6 +194,7 @@ class PortfolioMaturityTests(unittest.TestCase):
                     "mechanism_family": family,
                     "rules_hash": RULES_HASH,
                     "date": day.isoformat(),
+                    "closed_date": day.isoformat(),
                     "sample_phase": phase,
                     "mode": "historical",
                     "signal_id": f"{day.isoformat()}-{strategy_id}-signal",
@@ -678,6 +679,43 @@ maximum_second_wave_families = 6
                 "differs from its account return",
             ):
                 maturity.validate_record(signal, root=root)
+
+    def test_schema_two_account_bootstrap_uses_trade_closure_order(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            signals = [
+                record
+                for record in records
+                if record.get("mode") == "historical"
+                and record.get("record_type") == "signal"
+            ][:2]
+            signals[0]["closed_date"] = "2025-03-02"
+            signals[1]["closed_date"] = "2025-03-01"
+            observed = []
+
+            def capture(values, **_kwargs):
+                observed.append(list(values))
+                return {"lower_one_sided": min(values)}
+
+            with patch.object(maturity, "stationary_bootstrap_summary", capture):
+                maturity._account_growth_metrics(
+                    [
+                        record
+                        for record in records
+                        if record.get("record_type") == "session"
+                    ]
+                    + signals,
+                    0.90,
+                )
+
+        self.assertEqual(
+            observed[0],
+            [
+                signals[1]["net_account_return_fraction"],
+                signals[0]["net_account_return_fraction"],
+            ],
+        )
 
     def test_live_close_without_flat_terminal_reconciliation_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -25,6 +25,9 @@ override failed account growth.
 Every filled historical trade records its net account-return fraction and exact
 `log1p` growth at 5, 10, and 20 bps; schema-2 validation rejects a return/log
 mismatch before admission.
+It also records the frozen closure date. Serial bootstrap and chronological
+trade diagnostics use closure order, matching the independently rebuilt account
+path even when overlapping positions exit in a different order from entry.
 The legacy independent-trade bootstrap remains reportable diagnostics but is not
 an active schema-2 promotion gate; its one-sided stationary account-return
 replacement is the confidence authority. Schema-1 maturity semantics are

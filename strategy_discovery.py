@@ -1058,6 +1058,11 @@ def _phase_maturity_records(
                 raise StrategyDiscoveryError(
                     f"{phase} closed signal date is outside the frozen dates"
                 )
+            closed_date = str(signal.get("closed_date", day))
+            if closed_date not in expected_dates or closed_date < signal_date:
+                raise StrategyDiscoveryError(
+                    f"{phase} signal closure date is outside the frozen chronology"
+                )
             signal_id = signal.get("signal_id")
             if not isinstance(signal_id, str) or not signal_id:
                 signal_id = (
@@ -1066,6 +1071,7 @@ def _phase_maturity_records(
             records.append({
                 **common,
                 "date": signal_date,
+                "closed_date": closed_date,
                 "record_type": "signal",
                 "signal_id": signal_id,
                 "closed": True,

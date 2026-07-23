@@ -1372,6 +1372,7 @@ def _trade_signal(
 
     return {
         "date": primary["entry_date"],
+        "closed_date": primary["exit_date"],
         "signal_id": primary["signal_id"],
         "primary_account_return_fraction": primary[
             "net_account_return_fraction"

@@ -590,6 +590,9 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
     for field in ("net_r", "stress_10bps_r", "stress_20bps_r"):
         _finite(record.get(field), field)
     if record_schema == SCHEMA_VERSION and mode == "historical":
+        closed_date = _iso_date(record.get("closed_date"), "closed_date")
+        if closed_date < record_date:
+            raise PortfolioMaturityError("closed_date cannot precede signal date")
         return_and_log_fields = (
             ("net_account_return_fraction", "net_account_log_growth"),
             (
@@ -977,7 +980,12 @@ def _robustness_metrics(
         and record["closed"]
         and record["eligible"]
     ]
-    signals.sort(key=lambda item: (str(item["date"]), str(item["signal_id"])))
+    signals.sort(
+        key=lambda item: (
+            str(item.get("closed_date") or item["date"]),
+            str(item["signal_id"]),
+        )
+    )
     values = [float(record["net_r"]) for record in signals]
     midpoint = len(values) // 2
     without_best = sorted(values, reverse=True)[5:]
@@ -1032,7 +1040,10 @@ def _account_growth_metrics(
             and record.get("closed") is True
             and record.get("eligible") is True
         ),
-        key=lambda item: (str(item["date"]), str(item["signal_id"])),
+        key=lambda item: (
+            str(item.get("closed_date") or item["date"]),
+            str(item["signal_id"]),
+        ),
     )
     if not sessions or any(record.get("schema_version") != SCHEMA_VERSION for record in records):
         return {
