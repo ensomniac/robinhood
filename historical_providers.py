@@ -363,6 +363,91 @@ class MassiveHistoricalClient:
             )
         return sorted(rows, key=lambda item: str(item["symbol"]))
 
+    def fetch_daily_bars(
+        self,
+        symbol: str,
+        start_date: str,
+        end_date: str,
+        *,
+        adjusted: bool = True,
+    ) -> list[dict[str, Any]]:
+        """Return one ticker's exhausted daily aggregate range."""
+
+        try:
+            requested_start = datetime.fromisoformat(start_date).date()
+            requested_end = datetime.fromisoformat(end_date).date()
+        except ValueError as exc:
+            raise HistoricalProviderError(
+                "daily range dates must be ISO formatted",
+                category="local_configuration",
+            ) from exc
+        if requested_end < requested_start:
+            raise HistoricalProviderError(
+                "daily range end must not precede start",
+                category="local_configuration",
+            )
+        normalized_symbol = str(symbol).strip().upper()
+        if not normalized_symbol:
+            raise HistoricalProviderError(
+                "daily range symbol is required",
+                category="local_configuration",
+            )
+        raw = self._request_pages(
+            (
+                f"/v2/aggs/ticker/{normalized_symbol}/range/1/day/"
+                f"{requested_start.isoformat()}/{requested_end.isoformat()}"
+            ),
+            params={
+                "adjusted": str(bool(adjusted)).lower(),
+                "sort": "asc",
+                "limit": 50000,
+            },
+        )
+        rows: list[dict[str, Any]] = []
+        dates: set[str] = set()
+        for row in raw:
+            try:
+                observed = datetime.fromtimestamp(float(row["t"]) / 1000, UTC)
+                session_date = observed.astimezone(EASTERN).date()
+                values = {
+                    "symbol": normalized_symbol,
+                    "date": session_date.isoformat(),
+                    "open": float(row["o"]),
+                    "high": float(row["h"]),
+                    "low": float(row["l"]),
+                    "close": float(row["c"]),
+                    "volume": int(float(row["v"])),
+                    "count": int(row.get("n") or 0),
+                    "wap": float(row.get("vw") or 0),
+                }
+            except (KeyError, TypeError, ValueError) as exc:
+                raise HistoricalProviderError(
+                    "Massive daily aggregate row is malformed",
+                    category="permanent_fidelity",
+                ) from exc
+            if (
+                session_date < requested_start
+                or session_date > requested_end
+                or values["date"] in dates
+                or values["open"] <= 0
+                or values["high"] <= 0
+                or values["low"] <= 0
+                or values["close"] <= 0
+                or values["volume"] < 0
+            ):
+                raise HistoricalProviderError(
+                    "Massive daily aggregate scope or values are invalid",
+                    category="permanent_fidelity",
+                )
+            dates.add(values["date"])
+            rows.append(values)
+        if not rows:
+            raise HistoricalProviderError(
+                "Massive daily aggregate response is empty",
+                category="permanent_fidelity",
+            )
+        return sorted(rows, key=lambda item: str(item["date"]))
+
     @staticmethod
     def _aggregate_rows(
         rows: Sequence[Mapping[str, Any]], bar_size: str

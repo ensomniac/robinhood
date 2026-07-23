@@ -323,6 +323,15 @@ def freeze_plan(
             raise DenseDataCollectionError(
                 "existing ETF successor needs a frozen symbol universe"
             )
+        historical_data_contract = contract.get("historical_data_contract")
+        if not isinstance(historical_data_contract, Mapping) or (
+            historical_data_contract.get("daily_provider") != "massive"
+            or historical_data_contract.get("daily_adjusted") is not False
+            or historical_data_contract.get("split_provider") != "massive"
+        ):
+            raise DenseDataCollectionError(
+                "existing ETF successor historical data contract is invalid"
+            )
         split_task = _task("split_actions", required_dates[-1])
         split_task["start"] = required_dates[0]
         split_task["task_id"] = canonical_sha256(
@@ -331,7 +340,7 @@ def freeze_plan(
         tasks = [split_task]
         for symbol in symbols:
             task = {
-                "kind": "daily_symbol_bars",
+                "kind": "massive_daily_symbol_bars",
                 "date": required_dates[-1],
                 "start": required_dates[0],
                 "symbol": symbol,
@@ -339,7 +348,7 @@ def freeze_plan(
             task["task_id"] = canonical_sha256(task)
             tasks.append(task)
         providers = [
-            "Alpaca SIP raw-adjustment daily bars by frozen symbol range",
+            "Massive SIP unadjusted daily bars by frozen symbol range",
             "Massive point-in-time split actions through the final frozen session",
         ]
     else:
@@ -572,6 +581,13 @@ class ProviderBackend:
                 }
                 for row in rows
             ]
+        if kind == "massive_daily_symbol_bars":
+            return self.massive.fetch_daily_bars(
+                str(task["symbol"]),
+                str(task["start"]),
+                day,
+                adjusted=False,
+            )
         raise DenseDataCollectionError(f"unsupported collection task: {kind}")
 
     def close(self) -> None:
@@ -707,7 +723,11 @@ def _load_checkpoint(path: Path, task: Mapping[str, Any]) -> list[dict[str, Any]
 def _daily_rows(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, dict[str, dict[str, Any]]]:
     result: dict[str, dict[str, dict[str, Any]]] = {}
     for task in plan["tasks"]:
-        if task["kind"] not in {"grouped_daily_bars", "daily_symbol_bars"}:
+        if task["kind"] not in {
+            "grouped_daily_bars",
+            "daily_symbol_bars",
+            "massive_daily_symbol_bars",
+        }:
             continue
         rows = _load_checkpoint(_checkpoint_path(checkpoint_root, task), task)
         if task["kind"] == "grouped_daily_bars":
@@ -927,22 +947,24 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         plan.get("research_generation")
         == continuous_strategy_discovery.RESEARCH_GENERATION
     )
+    successor_feed = (
+        "Massive SIP daily symbol range"
+        if successor_daily
+        else "Massive SIP grouped daily"
+    )
+    successor_adjustment = (
+        "raw Massive bars adjusted only by frozen split actions through the dataset end"
+        if successor_daily
+        else "raw grouped bars adjusted only by frozen split actions through the dataset end"
+    )
     dataset: dict[str, Any] = {
         "schema_version": 1,
         "family_id": family_id,
         "evaluation_dates": list(plan["evaluation_dates"]),
         "daily_bars": bars,
         "source_semantics": {
-            "feed": (
-                "Alpaca SIP daily symbol range"
-                if successor_daily
-                else "Massive SIP grouped daily"
-            ),
-            "adjustment": (
-                "raw Alpaca bars adjusted only by frozen split actions through the dataset end"
-                if successor_daily
-                else "raw grouped bars adjusted only by frozen split actions through the dataset end"
-            ),
+            "feed": successor_feed,
+            "adjustment": successor_adjustment,
         },
     }
     if family_id == runtime.ETF_PULLBACK_FAMILY:

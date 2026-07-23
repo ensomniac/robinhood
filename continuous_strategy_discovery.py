@@ -665,6 +665,15 @@ def freeze_successor_contract(
         "confirmation_scope": confirmation_scope,
         "outcome_exposure_index_sha256": outcome_exposure.audit()["index_sha256"],
         "universe": {"symbols": list(SYMBOLS), "point_in_time": True},
+        "historical_data_contract": {
+            "daily_provider": "massive",
+            "daily_endpoint": (
+                "/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
+            ),
+            "daily_adjusted": False,
+            "split_provider": "massive",
+            "provider_substitutions_allowed": False,
+        },
         "costs_bps_per_side": [5, 10, 20],
         "partitions": {
             "rolling_origin": True,
@@ -725,6 +734,16 @@ def validate_existing_successor_contract(
         and contract.get("prior_family_attempt_count") == 1
         and contract.get("selection_mode") == "development_search"
         and len(contract.get("trial_family", [])) == 32
+        and contract.get("historical_data_contract")
+        == {
+            "daily_provider": "massive",
+            "daily_endpoint": (
+                "/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
+            ),
+            "daily_adjusted": False,
+            "split_provider": "massive",
+            "provider_substitutions_allowed": False,
+        }
     ):
         raise ContinuousDiscoveryError("existing-family successor identity drifted")
     predecessor = contract.get("predecessor")

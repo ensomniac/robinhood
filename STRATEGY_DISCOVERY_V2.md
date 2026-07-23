@@ -246,9 +246,11 @@ contract can freeze.
 `dense_data_collection.py` recognizes that exact successor only after rebuilding
 the predecessor and global exposure bindings. Before the weekly reset it
 continues rejecting every other family. The successor's fixed-ETF daily plan
-uses four symbol-range requests plus split metadata rather than one grouped-data
-request per date. See `CONTINUOUS_STRATEGY_DISCOVERY_V2.md` for the exact
-transition chain.
+uses four Massive unadjusted symbol-range requests plus split metadata rather
+than one grouped-data request per date. The failed Alpaca plan remains preserved;
+its provider-wide 2016 start cannot authorize dropping the exact 2015 warmup or
+changing the untouched confirmation reserve. See
+`CONTINUOUS_STRATEGY_DISCOVERY_V2.md` for the exact transition chain.
 The active hardened calendar contract is `14521284...96d67`, with independent
 inspection `3dbfeb5a...2bf2f`; preserved contract `31f2226b...4ea10` and
 inspection `f78c0896...3f7` are superseded before any request.

@@ -107,6 +107,15 @@ def test_existing_family_successor_freezes_without_waiting_or_reusing_v1(
         assert capacity_path.is_file()
         assert family["mechanism_family"] == "broad-etf-trend-pullback"
         assert family["research_generation"] == "existing_family_successor"
+        assert family["historical_data_contract"] == {
+            "daily_provider": "massive",
+            "daily_endpoint": (
+                "/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
+            ),
+            "daily_adjusted": False,
+            "split_provider": "massive",
+            "provider_substitutions_allowed": False,
+        }
         assert family["new_mechanism_family_slot_consumed"] is False
         assert family["predecessor"]["promotion_evidence_reused"] is False
         assert len(validated["trial_family"]) == 32

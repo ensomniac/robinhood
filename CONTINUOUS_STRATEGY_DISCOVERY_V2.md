@@ -37,6 +37,9 @@ The successor freezes:
   five-session embargo, and 500 untouched confirmation sessions.
 - Evidence ending before 2022, chronologically and outcome-disjoint from the
   retired predecessor.
+- Massive SIP unadjusted daily symbol ranges plus point-in-time split actions,
+  frozen before provider access and held constant across development and
+  confirmation.
 - All existing account-growth, 5/10/20-bps, stationary-bootstrap, DSR, Holm,
   PBO, neighbor-stability, power, profit-factor, drawdown, concentration, and
   execution gates.
@@ -90,9 +93,18 @@ the development dataset, inspect it, evaluate all 32 trials, independently
 select or retire, freeze one exact winner if earned, and only then collect the
 preregistered confirmation reserve.
 
-The daily fixed-ETF collection plane uses four frozen symbol-range requests plus
-split metadata, then loads the resulting dataset once for all trials. It does
-not issue one provider request per date.
+The daily fixed-ETF collection plane uses four frozen Massive symbol-range
+requests plus split metadata, then loads the resulting dataset once for all
+trials. It does not issue one provider request per date.
+
+The first committed development collection plan used Alpaca SIP daily bars and
+failed closed before trial evaluation because all four symbols began on
+2016-01-04 instead of the frozen 2015-03-09 warmup boundary. That plan remains
+adverse data-readiness history. A provider recovery must freeze a new
+implementation hash, family contract, preflight, search, and collection plan
+before accessing Massive. It must retain every frozen date and symbol, make no
+substitution, leave the 2020-2021 confirmation reserve untouched, and reuse no
+artifact from the superseded search chain as promotion evidence.
 
 ## Parallel lanes
 

@@ -137,6 +137,42 @@ class MassiveNormalizationTests(unittest.TestCase):
         self.assertEqual(session.calls[0][1]["adjusted"], "false")
         self.assertEqual(session.calls[0][1]["include_otc"], "false")
 
+    def test_daily_range_normalizes_unadjusted_symbol_bars(self):
+        first = datetime(2024, 1, 2, 0, 0, tzinfo=EASTERN)
+        second = datetime(2024, 1, 3, 0, 0, tzinfo=EASTERN)
+        session = FakeSession(
+            [
+                FakeResponse(
+                    {
+                        "status": "OK",
+                        "results": [
+                            aggregate(first),
+                            aggregate(second, price=20.0),
+                        ],
+                    }
+                )
+            ]
+        )
+        client = MassiveHistoricalClient(
+            MassiveConfig(api_key="secret"), session=session
+        )
+
+        rows = client.fetch_daily_bars(
+            "spy", "2024-01-02", "2024-01-03", adjusted=False
+        )
+
+        self.assertEqual(
+            [(row["symbol"], row["date"]) for row in rows],
+            [("SPY", "2024-01-02"), ("SPY", "2024-01-03")],
+        )
+        self.assertIn(
+            "/v2/aggs/ticker/SPY/range/1/day/2024-01-02/2024-01-03",
+            session.calls[0][0],
+        )
+        self.assertEqual(session.calls[0][1]["adjusted"], "false")
+        self.assertEqual(session.calls[0][1]["sort"], "asc")
+        self.assertEqual(session.calls[0][1]["limit"], 50000)
+
     def test_normalizes_adjusted_minute_aggregates_and_resamples(self):
         start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
         raw = [aggregate(start + timedelta(minutes=index)) for index in range(5)]

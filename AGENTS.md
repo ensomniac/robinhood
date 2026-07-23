@@ -89,9 +89,14 @@ development sessions plus a five-session embargo and 500 untouched confirmation
 sessions, and pass the unchanged 32-trial selection-aware gates. It does not
 consume a new-mechanism-family slot. The W31 residual-equity and intraday-ETF
 new-family lanes remain parallel and may not block this successor. The next
-bounded action is to freeze and independently inspect the successor's zero-price
-2014-2021 session-calendar contract; no target outcome or broker action is
-permitted by that step.
+bounded action is to freeze a superseding successor contract and development
+chain after the first exact collection plan established that Alpaca SIP daily
+history starts in 2016 instead of the frozen 2015 warmup. Preserve that failed
+plan as adverse data-readiness history. The new contract must retain the exact
+dates and symbols while binding Massive unadjusted daily ranges plus frozen
+split actions before any further market-price request. No target outcome,
+confirmation-reserve access, date substitution, or broker action is permitted
+by that recovery.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
