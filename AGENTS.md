@@ -41,9 +41,12 @@ global outcome-exposure baseline conservatively marks all 226 dates in the
 preserved portfolio and legacy strategy ledgers as wildcard-symbol
 contamination. No new family or v2 outcome
 evidence has been admitted by this engineering change. After the 2026-07-27
-ISO-week reset, `dense_family_contracts.py` is the only next batch activation
-path; it must freeze all three disjoint scopes against that exposure index before
-provider access.
+ISO-week reset, `dense_capacity_inventory.py` deterministically allocates three
+contiguous 120-development/5-embargo/35-confirmation blocks from the committed
+full-session calendar after excluding every globally exposed date.
+`dense_family_contracts.py` is the only family-contract activation path; it must
+freeze all three disjoint scopes against that exposure index before provider
+access.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

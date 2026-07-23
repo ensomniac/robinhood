@@ -131,14 +131,30 @@ silently become v2 confirmation.
 Every inspected development or confirmation result adds its exact frozen scope.
 An absent, mutated, or stale baseline fails the default audit.
 
-At or after the reset, build one zero-outcome inventory containing the exact
-three family IDs, each capacity-manifest path, chronological development dates,
-five embargo sessions, confirmation dates, and matching `development_scope` and
-`confirmation_scope`. Bind the current exposure-index SHA-256 and self-hash the
-inventory as `inventory_sha256`, then run:
+At or after the reset, `dense_capacity_inventory.py` builds the zero-outcome
+inventory from the committed full-session calendar and current exposure index.
+It requires one contiguous 480-session untouched run, takes the most recent
+eligible run, and deterministically divides it into three disjoint blocks. Each
+block contains 120 development sessions, five embargo sessions, and 35 reserved
+confirmation sessions. It freezes a capacity manifest for every family without
+provider, price, outcome, or broker access:
 
 ```sh
-python3 dense_family_contracts.py path/to/inventory.json --as-of 2026-07-27
+python3 dense_capacity_inventory.py \
+  --as-of 2026-07-27 \
+  --created-at 2026-07-27T08:00:00-04:00
+```
+
+The allocator fails before the reset, on a calendar or exposure-index error, or
+when contamination leaves no complete contiguous run. Its inventory contains
+the exact three family IDs, capacity-manifest paths, chronological development,
+embargo, and confirmation dates, matching exposure scopes, the current
+exposure-index SHA-256, and a self-hash. Pass that content-addressed inventory to:
+
+```sh
+python3 dense_family_contracts.py \
+  strategy_tournament/v2/next_batch/capacity/w31-capacity-inventory-<sha256>.json \
+  --as-of 2026-07-27
 ```
 
 The command fails before the reset, below 100 formal observations, on any
