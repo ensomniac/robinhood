@@ -369,13 +369,14 @@ is one of the explicitly supported cases. A failure after development price
 access must also be committed to the global outcome-exposure index before any
 scope can be considered untouched.
 
-The outcome-blind ETF pullback split-endpoint failure has one bounded recovery:
-keep the exact symbols, dates, search, and raw Alpaca SIP outcome bars, and add
-one split-adjusted diagnostic range per frozen symbol. The collector requires
-the adjusted/raw OHLC ratio to remain constant across the complete frozen
-range. Any ratio discontinuity—evidence of an in-range split—fails closed. The
-diagnostic bars never become strategy outcomes. This recovery must bind a
-committed failure artifact and be frozen and committed before provider access:
+The outcome-blind ETF pullback grouped-daily endpoint failure has one bounded
+recovery. The original plan successfully captured its exact Massive split
+actions through the dataset end, then stopped on the first grouped price
+request before any price row was accessed. Recovery keeps those same split
+semantics, exact symbols, dates, and search, but uses one raw Alpaca SIP daily
+range per frozen ETF instead of a market-wide grouped response. It does not
+alter, substitute, or shrink evidence. This recovery must bind a committed
+failure artifact and be frozen and committed before provider access:
 
 ```sh
 python3 dense_collection_recovery.py record-failure \

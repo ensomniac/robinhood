@@ -24,7 +24,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_PUBLIC_ROOT = collection.DEFAULT_PUBLIC_ROOT
 FAILURE_KIND = "dense-data-collection-failure"
 FAILURE_STATE = "COLLECTION_FAILED_NO_STRATEGY_METRICS"
-SPLIT_TASK_FAILURE = "SPLIT_ACTION_TASK_FAILED_BEFORE_PRICE_ACCESS"
+GROUPED_DAILY_FAILURE = "GROUPED_DAILY_TASK_FAILED_BEFORE_PRICE_ACCESS"
 INCOMPLETE_INTRADAY = "INCOMPLETE_SIP_REGULAR_SESSION"
 RECOVERY_IMPLEMENTATION_FILES = (
     "dense_collection_recovery.py",
@@ -110,6 +110,8 @@ def _failure_facts(
 ) -> dict[str, Any]:
     completed = 0
     rows_accessed = 0
+    corporate_action_rows_accessed = 0
+    market_price_tasks_completed = 0
     evaluation_tasks_completed = 0
     intraday_gaps: list[dict[str, Any]] = []
     evaluation_dates = set(map(str, plan["evaluation_dates"]))
@@ -118,7 +120,16 @@ def _failure_facts(
         if rows is None:
             continue
         completed += 1
-        rows_accessed += len(rows)
+        if task["kind"] == "split_actions":
+            corporate_action_rows_accessed += len(rows)
+        elif task["kind"] in {
+            "grouped_daily_bars",
+            "daily_symbol_bars",
+            "massive_daily_symbol_bars",
+            "sip_minute_bars",
+        }:
+            market_price_tasks_completed += 1
+            rows_accessed += len(rows)
         if str(task["date"]) in evaluation_dates:
             evaluation_tasks_completed += 1
         if (
@@ -134,21 +145,25 @@ def _failure_facts(
                 }
             )
     failures = int(telemetry.get("failures", 0))
-    first_kind = str(plan["tasks"][0]["kind"])
     if (
-        first_kind == "split_actions"
-        and completed == 0
+        str(plan["tasks"][0]["kind"]) == "split_actions"
+        and completed == 1
+        and market_price_tasks_completed == 0
         and failures >= 1
     ):
         return {
-            "failure_code": SPLIT_TASK_FAILURE,
-            "completed_tasks": 0,
+            "failure_code": GROUPED_DAILY_FAILURE,
+            "completed_tasks": 1,
             "market_price_rows_accessed": 0,
             "evaluation_tasks_completed": 0,
             "data_outcomes_accessed": False,
             "exposure_scope": None,
             "failure_details": {
-                "failed_task_kind": "split_actions",
+                "completed_metadata_task_kind": "split_actions",
+                "corporate_action_rows_accessed": (
+                    corporate_action_rows_accessed
+                ),
+                "failed_task_kind": "grouped_daily_bars",
                 "price_tasks_started": 0,
                 "provider_failures": failures,
             },
@@ -273,12 +288,12 @@ def freeze_pullback_recovery(
     if not (
         failure.get("family_id") == runtime.ETF_PULLBACK_FAMILY
         and failure.get("lane") == "development"
-        and failure.get("failure_code") == SPLIT_TASK_FAILURE
+        and failure.get("failure_code") == GROUPED_DAILY_FAILURE
         and failure.get("data_outcomes_accessed") is False
-        and failure.get("completed_tasks") == 0
+        and failure.get("completed_tasks") == 1
     ):
         raise DenseCollectionRecoveryError(
-            "only the outcome-blind ETF pullback split-task failure is recoverable"
+            "only the outcome-blind ETF pullback grouped-daily failure is recoverable"
         )
     original_path = PROJECT_ROOT / str(failure["plan_path"])
     plan = collection._validate_plan(
@@ -294,17 +309,16 @@ def freeze_pullback_recovery(
     symbols = sorted(map(str, plan["symbols"]))
     if not symbols:
         raise DenseCollectionRecoveryError("pullback recovery lacks frozen symbols")
-    tasks: list[dict[str, Any]] = []
-    for kind in ("daily_symbol_bars", "split_adjusted_daily_symbol_bars"):
-        for symbol in symbols:
-            task = {
-                "kind": kind,
-                "date": plan["required_dates"][-1],
-                "start": plan["required_dates"][0],
-                "symbol": symbol,
-            }
-            task["task_id"] = canonical_sha256(task)
-            tasks.append(task)
+    tasks: list[dict[str, Any]] = [dict(plan["tasks"][0])]
+    for symbol in symbols:
+        task = {
+            "kind": "daily_symbol_bars",
+            "date": plan["required_dates"][-1],
+            "start": plan["required_dates"][0],
+            "symbol": symbol,
+        }
+        task["task_id"] = canonical_sha256(task)
+        tasks.append(task)
     payload = {
         key: value
         for key, value in plan.items()
@@ -325,7 +339,7 @@ def freeze_pullback_recovery(
             "task_count": len(tasks),
             "providers": [
                 "Alpaca SIP raw-adjustment daily bars by frozen symbol range",
-                "Alpaca SIP split-adjusted daily bars used only for a frozen ratio-constancy diagnostic",
+                "Massive point-in-time split actions through the final frozen session",
             ],
             "adjustment_semantics": collection.RECOVERY_ADJUSTMENT,
             "recovery_failure_path": collection._repo_path(failure_path),

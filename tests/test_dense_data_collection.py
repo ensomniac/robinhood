@@ -665,14 +665,14 @@ def test_collection_does_not_retry_permanent_provider_failure(tmp_path, monkeypa
     assert backend.telemetry["failures"] == 1
 
 
-def test_failed_split_task_is_recorded_without_outcome_exposure(
+def test_failed_grouped_daily_task_is_recorded_without_outcome_exposure(
     tmp_path,
     monkeypatch,
 ):
     plan_path, _plan, symbols = _artifacts(tmp_path, monkeypatch)
     config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
-    backend = RetryBackend(symbols, 1, retryable=False)
-    with pytest.raises(collection.DenseDataCollectionError, match="provider failure"):
+    backend = FakeBackend(symbols, fail_after=1)
+    with pytest.raises(collection.DenseDataCollectionError, match="interruption"):
         collection.collect(
             plan_path,
             as_of=date(2026, 7, 27),
@@ -692,18 +692,18 @@ def test_failed_split_task_is_recorded_without_outcome_exposure(
     )
 
     assert failure_path.is_file()
-    assert failure["failure_code"] == recovery.SPLIT_TASK_FAILURE
-    assert failure["completed_tasks"] == 0
+    assert failure["failure_code"] == recovery.GROUPED_DAILY_FAILURE
+    assert failure["completed_tasks"] == 1
     assert failure["market_price_rows_accessed"] == 0
+    assert failure["failure_details"]["corporate_action_rows_accessed"] == 0
     assert failure["data_outcomes_accessed"] is False
     assert failure["strategy_metrics_accessed"] is False
     assert failure["confirmation_outcomes_accessed"] is False
 
 
 class DailyRangeBackend:
-    def __init__(self, dates, *, discontinuity=False):
+    def __init__(self, dates):
         self.dates = dates
-        self.discontinuity = discontinuity
         self.telemetry = {
             "requests": 0,
             "request_seconds": 0.0,
@@ -714,27 +714,21 @@ class DailyRangeBackend:
 
     def fetch(self, task):
         self.telemetry["requests"] += 1
-        adjusted = task["kind"] == "split_adjusted_daily_symbol_bars"
+        if task["kind"] == "split_actions":
+            return []
         result = []
-        for index, day in enumerate(self.dates):
-            factor = (
-                0.5
-                if adjusted
-                and self.discontinuity
-                and index < len(self.dates) // 2
-                else 1.0
-            )
+        for day in self.dates:
             result.append(
                 {
                     "symbol": task["symbol"],
                     "date": day,
-                    "open": 100.0 * factor,
-                    "high": 101.0 * factor,
-                    "low": 99.0 * factor,
-                    "close": 100.5 * factor,
+                    "open": 100.0,
+                    "high": 101.0,
+                    "low": 99.0,
+                    "close": 100.5,
                     "volume": 2_000_000,
                     "count": 100,
-                    "wap": 100.25 * factor,
+                    "wap": 100.25,
                 }
             )
         return result
@@ -765,8 +759,8 @@ def _pullback_recovery_plan(tmp_path, monkeypatch):
             "plan_sha256": plan["artifact_sha256"],
             "authority_sha256": plan["authority_sha256"],
             "binding_sha256": plan["binding_sha256"],
-            "failure_code": recovery.SPLIT_TASK_FAILURE,
-            "completed_tasks": 0,
+            "failure_code": recovery.GROUPED_DAILY_FAILURE,
+            "completed_tasks": 1,
             "task_count": plan["task_count"],
             "market_price_rows_accessed": 0,
             "evaluation_tasks_completed": 0,
@@ -790,11 +784,11 @@ def _pullback_recovery_plan(tmp_path, monkeypatch):
     )
     assert recovery_plan["recovery_failure_sha256"] == failure["artifact_sha256"]
     assert recovery_plan["supersedes_plan_sha256"] == plan["artifact_sha256"]
-    assert recovery_plan["task_count"] == len(symbols) * 2
+    assert recovery_plan["task_count"] == len(symbols) + 1
     return recovery_path, recovery_plan
 
 
-def test_pullback_recovery_uses_raw_bars_only_after_split_neutrality_check(
+def test_pullback_recovery_uses_raw_alpaca_bars_and_frozen_split_actions(
     tmp_path,
     monkeypatch,
 ):
@@ -811,40 +805,54 @@ def test_pullback_recovery_uses_raw_bars_only_after_split_neutrality_check(
         clock=_collection_clock,
     )
 
-    assert status["completed_tasks"] == status["task_count"] == 38
+    assert status["completed_tasks"] == status["task_count"] == 20
     external = (
         config.root / status["external_relative_path"]
     )
     dataset = inspection._load_external(external)
-    attestation = dataset["source_semantics"]["split_neutrality_attestation"]
-    assert attestation["within_range_split_discontinuities"] == 0
-    assert attestation["symbols_checked"] == 19
+    assert dataset["source_semantics"]["feed"] == (
+        "Alpaca SIP daily symbol range"
+    )
+    assert "frozen Massive split actions" in dataset["source_semantics"][
+        "adjustment"
+    ]
     assert dataset["daily_bars"]["SPY"][0]["close"] == 100.5
 
 
-def test_pullback_recovery_fails_closed_on_split_discontinuity(
+def test_pullback_recovery_rejects_implementation_hash_drift(
     tmp_path,
     monkeypatch,
 ):
-    recovery_path, plan = _pullback_recovery_plan(tmp_path, monkeypatch)
-    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
-
+    recovery_path, _plan = _pullback_recovery_plan(tmp_path, monkeypatch)
+    artifact = json.loads(recovery_path.read_text(encoding="utf-8"))
+    artifact["recovery_implementation_hashes"]["dense_data_collection.py"] = (
+        "0" * 64
+    )
+    artifact.pop("artifact_sha256")
+    drifted_path, _drifted = strategy_discovery._write_artifact(
+        artifact,
+        tmp_path / "drifted",
+        "recovery",
+    )
+    monkeypatch.setattr(
+        strategy_discovery,
+        "require_committed",
+        lambda _path: None,
+    )
+    monkeypatch.setattr(
+        strategy_discovery,
+        "_file_hash",
+        lambda path: (
+            "c" * 64
+            if path.name == "dense_collection_recovery.py"
+            else "d" * 64
+        ),
+    )
     with pytest.raises(
         collection.DenseDataCollectionError,
-        match="split adjustment changes inside the frozen range",
+        match="recovery implementation drifted",
     ):
-        collection.collect(
-            recovery_path,
-            as_of=date(2026, 7, 27),
-            store_config=config,
-            public_root=tmp_path / "public",
-            backend=DailyRangeBackend(
-                plan["required_dates"],
-                discontinuity=True,
-            ),
-            enforce_commit=False,
-            clock=_collection_clock,
-        )
+        collection._validate_plan(drifted_path, enforce_commit=True)
 
 
 def test_incomplete_intraday_collection_is_indexed_as_development_exposure(
