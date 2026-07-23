@@ -93,6 +93,15 @@ the development dataset, inspect it, evaluate all 32 trials, independently
 select or retire, freeze one exact winner if earned, and only then collect the
 preregistered confirmation reserve.
 
+This lane has a separate committed pre-2022 calendar from the future W31 batch,
+so pass it explicitly when freezing either collection plan:
+
+```sh
+python3 dense_data_collection.py \
+  --calendar historical_batches/continuous_v2/session-calendar-2014-01-through-2021-12.json \
+  freeze-development path/to/committed-successor-search.json
+```
+
 The daily fixed-ETF collection plane uses four frozen Massive symbol-range
 requests plus split metadata, then loads the resulting dataset once for all
 trials. It does not issue one provider request per date.
