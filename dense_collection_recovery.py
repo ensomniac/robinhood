@@ -26,10 +26,24 @@ FAILURE_KIND = "dense-data-collection-failure"
 FAILURE_STATE = "COLLECTION_FAILED_NO_STRATEGY_METRICS"
 SPLIT_TASK_FAILURE = "SPLIT_ACTION_TASK_FAILED_BEFORE_PRICE_ACCESS"
 INCOMPLETE_INTRADAY = "INCOMPLETE_SIP_REGULAR_SESSION"
+RECOVERY_IMPLEMENTATION_FILES = (
+    "dense_collection_recovery.py",
+    "dense_data_collection.py",
+)
 
 
 class DenseCollectionRecoveryError(RuntimeError):
     """A failure record or recovery plan cannot be proven safe."""
+
+
+def _implementation_hashes(*, enforce_commit: bool) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for name in RECOVERY_IMPLEMENTATION_FILES:
+        path = PROJECT_ROOT / name
+        if enforce_commit:
+            strategy_discovery.require_committed(path)
+        result[name] = strategy_discovery._file_hash(path)
+    return result
 
 
 def _timestamp(value: str, field: str) -> datetime:
@@ -317,6 +331,9 @@ def freeze_pullback_recovery(
             "recovery_failure_path": collection._repo_path(failure_path),
             "recovery_failure_sha256": failure["artifact_sha256"],
             "supersedes_plan_sha256": plan["artifact_sha256"],
+            "recovery_implementation_hashes": _implementation_hashes(
+                enforce_commit=enforce_commit
+            ),
             "provider_requests_before_plan_freeze": 0,
             "market_outcomes_accessed": False,
             "substitutions_allowed": False,

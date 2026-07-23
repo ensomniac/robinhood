@@ -745,6 +745,14 @@ class DailyRangeBackend:
 
 def _pullback_recovery_plan(tmp_path, monkeypatch):
     plan_path, plan, symbols = _artifacts(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        recovery,
+        "_implementation_hashes",
+        lambda **_kwargs: {
+            "dense_collection_recovery.py": "c" * 64,
+            "dense_data_collection.py": "d" * 64,
+        },
+    )
     failure_path, failure = strategy_discovery._write_artifact(
         {
             "schema_version": 1,

@@ -518,6 +518,31 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
             raise DenseDataCollectionError(
                 "collection recovery is outside its frozen outcome-blind scope"
             )
+        implementation_hashes = plan.get("recovery_implementation_hashes")
+        if not (
+            isinstance(implementation_hashes, Mapping)
+            and set(implementation_hashes)
+            == {"dense_collection_recovery.py", "dense_data_collection.py"}
+            and all(
+                isinstance(value, str) and len(value) == 64
+                for value in implementation_hashes.values()
+            )
+        ):
+            raise DenseDataCollectionError(
+                "collection recovery implementation binding is invalid"
+            )
+        if enforce_commit:
+            expected_hashes: dict[str, str] = {}
+            for name in sorted(implementation_hashes):
+                implementation_path = PROJECT_ROOT / name
+                strategy_discovery.require_committed(implementation_path)
+                expected_hashes[name] = strategy_discovery._file_hash(
+                    implementation_path
+                )
+            if dict(implementation_hashes) != expected_hashes:
+                raise DenseDataCollectionError(
+                    "collection recovery implementation drifted"
+                )
     task_ids = [item.get("task_id") for item in plan["tasks"]]
     if len(task_ids) != len(set(task_ids)) or any(
         not isinstance(item, Mapping)
