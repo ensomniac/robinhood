@@ -25,6 +25,7 @@ EQUITY_RESIDUAL_FAMILY = "liquid-equity-market-residual-reversal"
 INTRADAY_ETF_FAMILY = "intraday-index-etf-opening-reversal"
 ETF_PULLBACK_FAMILY = "liquid-etf-trend-pullback-cost-floor"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
+LIQUID_EQUITY_MOMENTUM_FAMILY = "liquid-equity-cross-sectional-momentum"
 ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
 ETF_HIGH_CONTINUATION_FAMILY = "liquid-etf-52-week-high-continuation"
 ETF_TURN_OF_MONTH_FAMILY = "liquid-etf-turn-of-month-seasonality"
@@ -41,6 +42,7 @@ SUPPORTED_FAMILIES = {
     INTRADAY_ETF_FAMILY,
     ETF_PULLBACK_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
+    LIQUID_EQUITY_MOMENTUM_FAMILY,
     ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
     ETF_HIGH_CONTINUATION_FAMILY,
     ETF_TURN_OF_MONTH_FAMILY,
@@ -769,6 +771,268 @@ def _etf_cross_sectional_momentum_candidates(
             candidates.append(
                 _daily_candidate(
                     family_id=ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
+                    symbol=symbol,
+                    decision_date=decision_date,
+                    entry_date=entry_date,
+                    bars=bars,
+                    entry_index=entry_index,
+                    stop_atr=stop_atr,
+                    atr14=atr14,
+                    hold_sessions=hold,
+                    rank=rank,
+                    score=-negative_return,
+                )
+            )
+    return candidates
+
+
+def _liquid_equity_momentum_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    """Rank a point-in-time liquid common-stock universe without lookahead."""
+
+    calendar = _calendar(dataset)
+    session_dates = dataset.get("session_dates")
+    if (
+        not isinstance(session_dates, list)
+        or session_dates != sorted(set(map(str, session_dates)))
+        or not set(calendar).issubset(session_dates)
+    ):
+        raise DenseStrategyRuntimeError(
+            "liquid-equity momentum needs a complete frozen session calendar"
+        )
+    daily = _daily_series(dataset)
+    universe = dataset.get("universe_by_date")
+    identities = dataset.get("universe_identity_by_date")
+    split_dates = dataset.get("split_execution_dates_by_symbol")
+    if not (
+        isinstance(universe, Mapping)
+        and isinstance(identities, Mapping)
+        and set(universe) == set(identities)
+        and isinstance(split_dates, Mapping)
+    ):
+        raise DenseStrategyRuntimeError(
+            "liquid-equity momentum needs point-in-time universe identities "
+            "and split actions"
+        )
+    if not set(universe).issubset(calendar):
+        raise DenseStrategyRuntimeError(
+            "liquid-equity momentum decision dates escaped the account calendar"
+        )
+    lookback = int(parameters["return_lookback_sessions"])
+    trend_period = int(parameters["trend_sma_sessions"])
+    excess_floor = float(parameters["minimum_excess_return_fraction"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    if (
+        lookback not in {20, 60}
+        or trend_period not in {50, 100}
+        or excess_floor not in {0.01, 0.02}
+        or stop_atr not in {1.5, 2.0}
+        or hold not in {3, 5}
+    ):
+        raise DenseStrategyRuntimeError(
+            "liquid-equity momentum parameters escaped the frozen grid"
+        )
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    session_index = {day: index for index, day in enumerate(session_dates)}
+    universe_cache: dict[int, dict[str, list[str]]] | None = None
+    feature_cache: dict[
+        tuple[int, int, int], dict[str, list[tuple[float, str, float]]]
+    ] | None = None
+    if isinstance(dataset, dict) and "_prepared_daily_bars" in dataset:
+        raw_universe_cache = dataset.setdefault(
+            "_liquid_equity_momentum_universe_cache", {}
+        )
+        raw_feature_cache = dataset.setdefault(
+            "_liquid_equity_momentum_feature_cache", {}
+        )
+        if isinstance(raw_universe_cache, dict):
+            universe_cache = raw_universe_cache
+        if isinstance(raw_feature_cache, dict):
+            feature_cache = raw_feature_cache
+
+    cached_universe = (
+        universe_cache.get(hold) if universe_cache is not None else None
+    )
+    if cached_universe is not None:
+        selected_by_date = cached_universe
+    else:
+        selected_by_date: dict[str, list[str]] = {}
+        for decision_date in sorted(universe):
+            decision_index = session_index.get(decision_date)
+            raw_symbols = universe[decision_date]
+            raw_identities = identities[decision_date]
+            if (
+                decision_index is None
+                or decision_index < 60
+                or not isinstance(raw_symbols, list)
+                or raw_symbols != sorted(set(map(str, raw_symbols)))
+                or not isinstance(raw_identities, Mapping)
+                or set(raw_identities) != set(raw_symbols)
+            ):
+                raise DenseStrategyRuntimeError(
+                    f"liquid-equity universe is invalid for {decision_date}"
+                )
+            expected_history = session_dates[decision_index - 59 : decision_index + 1]
+            ranked_liquidity: list[tuple[float, str, str]] = []
+            for symbol in map(str, raw_symbols):
+                identity = raw_identities.get(symbol)
+                bars = daily.get(symbol)
+                symbol_index = indices.get(symbol, {}).get(decision_date)
+                if (
+                    not isinstance(identity, str)
+                    or not identity
+                    or bars is None
+                    or symbol_index is None
+                    or symbol_index < 59
+                    or [
+                        str(bar["date"])
+                        for bar in bars[symbol_index - 59 : symbol_index + 1]
+                    ]
+                    != expected_history
+                ):
+                    continue
+                history = bars[symbol_index - 59 : symbol_index + 1]
+                close = float(history[-1]["close"])
+                dollar_volume = [
+                    float(bar["close"]) * float(bar["volume"]) for bar in history
+                ]
+                if (
+                    close < 10
+                    or statistics.median(dollar_volume[-20:]) < 50_000_000
+                ):
+                    continue
+                raw_splits = split_dates.get(symbol, [])
+                if (
+                    not isinstance(raw_splits, list)
+                    or raw_splits != sorted(set(map(str, raw_splits)))
+                ):
+                    raise DenseStrategyRuntimeError(
+                        f"split actions are invalid for {symbol}"
+                    )
+                action_start = expected_history[0]
+                hold_end_index = decision_index + hold
+                if hold_end_index >= len(session_dates):
+                    continue
+                action_end = session_dates[hold_end_index]
+                if any(action_start <= day <= action_end for day in raw_splits):
+                    continue
+                ranked_liquidity.append(
+                    (statistics.median(dollar_volume), symbol, identity)
+                )
+            selected = sorted(
+                ranked_liquidity,
+                key=lambda item: (-item[0], item[1]),
+            )[:250]
+            if len(selected) != 250:
+                raise DenseStrategyRuntimeError(
+                    f"{decision_date}: fewer than 250 liquid common stocks"
+                )
+            selected_identities = [item[2] for item in selected]
+            if len(selected_identities) != len(set(selected_identities)):
+                raise DenseStrategyRuntimeError(
+                    f"{decision_date}: duplicate listing identity"
+                )
+            selected_by_date[decision_date] = [item[1] for item in selected]
+        if universe_cache is not None:
+            universe_cache[hold] = selected_by_date
+
+    feature_key = (lookback, trend_period, hold)
+    features_by_date = (
+        feature_cache.get(feature_key) if feature_cache is not None else None
+    )
+    if features_by_date is None:
+        features_by_date = {}
+        for decision_date, symbols in selected_by_date.items():
+            features: list[tuple[float, str, float]] = []
+            for symbol in symbols:
+                bars = daily[symbol]
+                symbol_index = indices[symbol][decision_date]
+                if symbol_index < max(lookback, trend_period - 1):
+                    continue
+                trend = _sma(bars, symbol_index, trend_period)
+                atr14 = _atr(bars, symbol_index)
+                if (
+                    trend is None
+                    or atr14 is None
+                    or float(bars[symbol_index]["close"]) <= trend
+                ):
+                    continue
+                trailing_return = (
+                    float(bars[symbol_index]["close"])
+                    / float(bars[symbol_index - lookback]["close"])
+                    - 1
+                )
+                features.append((trailing_return, symbol, atr14))
+            features_by_date[decision_date] = features
+        if feature_cache is not None:
+            feature_cache[feature_key] = features_by_date
+
+    candidates: list[dict[str, Any]] = []
+    for decision_date in sorted(features_by_date):
+        features = features_by_date[decision_date]
+        if not features:
+            continue
+        benchmark = statistics.median(item[0] for item in features)
+        ranked = sorted(
+            (
+                (-trailing_return, symbol, atr14)
+                for trailing_return, symbol, atr14 in features
+                if trailing_return - benchmark >= excess_floor
+                and _cost_floor(trailing_return - benchmark)
+            ),
+            key=lambda item: (item[0], item[1]),
+        )
+        decision_index = session_index[decision_date]
+        if decision_index + hold >= len(session_dates):
+            continue
+        entry_date = session_dates[decision_index + 1]
+        expected_dates = session_dates[
+            decision_index + 1 : decision_index + 1 + hold
+        ]
+        for rank, (negative_return, symbol, atr14) in enumerate(ranked, 1):
+            bars = daily[symbol]
+            entry_index = indices[symbol].get(entry_date)
+            signal_id = (
+                f"{entry_date}-{LIQUID_EQUITY_MOMENTUM_FAMILY}-{symbol}"
+            )
+            if entry_index is None:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "missing_next_open",
+                    }
+                )
+                continue
+            observed_dates = [
+                str(bar["date"])
+                for bar in bars[entry_index : entry_index + hold]
+            ]
+            if observed_dates != expected_dates:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "incomplete_holding_bars",
+                    }
+                )
+                continue
+            candidates.append(
+                _daily_candidate(
+                    family_id=LIQUID_EQUITY_MOMENTUM_FAMILY,
                     symbol=symbol,
                     decision_date=decision_date,
                     entry_date=entry_date,
@@ -1657,6 +1921,36 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             )
     else:
         daily = _daily_series(dataset)
+        if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
+            universe = dataset.get("universe_by_date")
+            identities = dataset.get("universe_identity_by_date")
+            split_dates = dataset.get("split_execution_dates_by_symbol")
+            session_dates = dataset.get("session_dates")
+            if not (
+                isinstance(universe, Mapping)
+                and isinstance(identities, Mapping)
+                and set(universe) == set(identities)
+                and isinstance(split_dates, Mapping)
+                and isinstance(session_dates, list)
+                and session_dates == sorted(set(map(str, session_dates)))
+                and set(calendar).issubset(session_dates)
+            ):
+                raise DenseStrategyRuntimeError(
+                    "liquid-equity momentum metadata is incomplete"
+                )
+            for decision_date, symbols in universe.items():
+                if (
+                    decision_date not in calendar
+                    or not isinstance(symbols, list)
+                    or symbols != sorted(set(map(str, symbols)))
+                    or not isinstance(identities[decision_date], Mapping)
+                    or set(identities[decision_date]) != set(symbols)
+                ):
+                    raise DenseStrategyRuntimeError(
+                        f"liquid-equity momentum universe is invalid for {decision_date}"
+                    )
+            prepared["_liquid_equity_momentum_universe_cache"] = {}
+            prepared["_liquid_equity_momentum_feature_cache"] = {}
         if family_id in {
             ETF_PULLBACK_FAMILY,
             ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
@@ -2570,6 +2864,8 @@ def build_candidates(
         return _etf_pullback_candidates(dataset, parameters)
     if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY:
         return _etf_cross_sectional_momentum_candidates(dataset, parameters)
+    if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
+        return _liquid_equity_momentum_candidates(dataset, parameters)
     if family_id == ETF_CROSS_SECTIONAL_REVERSAL_FAMILY:
         return _etf_cross_sectional_reversal_candidates(dataset, parameters)
     if family_id == ETF_HIGH_CONTINUATION_FAMILY:
@@ -2594,6 +2890,8 @@ def _production_equity_universe(
     references: Any,
     decision_date: str,
     calendar_dates: Sequence[str],
+    *,
+    excluded_symbols: Sequence[str] = (),
 ) -> list[str]:
     if not isinstance(references, Mapping):
         raise DenseStrategyRuntimeError(
@@ -2604,9 +2902,14 @@ def _production_equity_universe(
             "point-in-time common-stock reference snapshot is implausibly small"
         )
     candidates: list[tuple[float, str, str]] = []
+    excluded = set(map(str, excluded_symbols))
     for raw_symbol, raw_reference in references.items():
         symbol = str(raw_symbol)
-        if symbol == "SPY" or not isinstance(raw_reference, Mapping):
+        if (
+            symbol == "SPY"
+            or symbol in excluded
+            or not isinstance(raw_reference, Mapping)
+        ):
             continue
         if set(raw_reference) != {"active", "type", "listing_identity"}:
             raise DenseStrategyRuntimeError(
@@ -2664,7 +2967,10 @@ def _production_daily_signal(
         "daily_history_complete",
         "daily_bars",
     }
-    if family_id == EQUITY_RESIDUAL_FAMILY:
+    if family_id in {
+        EQUITY_RESIDUAL_FAMILY,
+        LIQUID_EQUITY_MOMENTUM_FAMILY,
+    }:
         expected.update(
             {
                 "reference_snapshot",
@@ -2672,6 +2978,13 @@ def _production_daily_signal(
                 "reference_source_total",
             }
         )
+        if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
+            expected.update(
+                {
+                    "corporate_actions_complete",
+                    "recent_split_symbols",
+                }
+            )
     else:
         expected.add("symbols")
     if family_id == ETF_TURN_OF_MONTH_FAMILY:
@@ -2720,6 +3033,115 @@ def _production_daily_signal(
         symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
         for symbol, bars in daily.items()
     }
+    if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
+        references = decision_data["reference_snapshot"]
+        recent_splits = decision_data["recent_split_symbols"]
+        expected_universe = {
+            "point_in_time": True,
+            "security_type": "CS",
+            "minimum_prior_close": 10.0,
+            "minimum_median_20_session_dollar_volume": 50_000_000.0,
+            "liquidity_ranking_sessions": 60,
+            "maximum_names": 250,
+            "split_affected_windows": "excluded",
+        }
+        if frozen_universe != expected_universe:
+            raise DenseStrategyRuntimeError(
+                "production liquid-equity universe rules drifted"
+            )
+        if (
+            not isinstance(references, Mapping)
+            or decision_data.get("reference_snapshot_complete") is not True
+            or isinstance(decision_data.get("reference_source_total"), bool)
+            or decision_data.get("reference_source_total") != len(references)
+            or decision_data.get("corporate_actions_complete") is not True
+            or not isinstance(recent_splits, list)
+            or recent_splits != sorted(set(map(str, recent_splits)))
+        ):
+            raise DenseStrategyRuntimeError(
+                "production liquid-equity reference or split snapshot is incomplete"
+            )
+        lookback = int(parameters["return_lookback_sessions"])
+        trend_period = int(parameters["trend_sma_sessions"])
+        excess_floor = float(parameters["minimum_excess_return_fraction"])
+        stop_atr = float(parameters["stop_atr14"])
+        hold = int(parameters["maximum_hold_sessions"])
+        if (
+            lookback not in {20, 60}
+            or trend_period not in {50, 100}
+            or excess_floor not in {0.01, 0.02}
+            or stop_atr not in {1.5, 2.0}
+            or hold not in {3, 5}
+        ):
+            raise DenseStrategyRuntimeError(
+                "production liquid-equity parameters escaped the frozen grid"
+            )
+        selected = _production_equity_universe(
+            daily,
+            references,
+            decision_date,
+            calendar_dates,
+            excluded_symbols=recent_splits,
+        )
+        features: list[tuple[float, str, float]] = []
+        for symbol in selected:
+            bars = daily[symbol]
+            symbol_index = indices[symbol].get(decision_date)
+            if symbol_index is None or symbol_index < max(
+                lookback, trend_period - 1
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production liquid-equity momentum history is incomplete"
+                )
+            trend = _sma(bars, symbol_index, trend_period)
+            atr14 = _atr(bars, symbol_index)
+            if (
+                trend is None
+                or atr14 is None
+                or float(bars[symbol_index]["close"]) <= trend
+            ):
+                continue
+            trailing_return = (
+                float(bars[symbol_index]["close"])
+                / float(bars[symbol_index - lookback]["close"])
+                - 1
+            )
+            features.append((trailing_return, symbol, atr14))
+        if not features:
+            raise DenseStrategyRuntimeError(
+                "production liquid-equity trend gates produced no ranks"
+            )
+        benchmark = statistics.median(item[0] for item in features)
+        qualified = [
+            (trailing_return, symbol, atr14, trailing_return - benchmark)
+            for trailing_return, symbol, atr14 in features
+            if trailing_return - benchmark >= excess_floor
+            and _cost_floor(trailing_return - benchmark)
+        ]
+        if not qualified:
+            raise DenseStrategyRuntimeError(
+                "no exact production liquid-equity momentum signal"
+            )
+        trailing_return, symbol, atr14, excess_return = sorted(
+            qualified,
+            key=lambda item: (-item[0], item[1]),
+        )[0]
+        return {
+            "symbol": symbol,
+            "rank": 1,
+            "score": trailing_return,
+            "expected_gross_move_fraction": excess_return,
+            "atr": atr14,
+            "stop_atr_multiple": stop_atr,
+            "holding_trading_days": hold,
+            "decision_date": decision_date,
+            "next_session_date": next_session_date,
+            "exit_plan": {
+                "type": "stop_or_maximum_hold_close",
+                "maximum_hold_sessions": hold,
+                "same_interval_ambiguity": "stop_first",
+            },
+        }
     if family_id in {
         ETF_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
@@ -3545,6 +3967,7 @@ def evaluate_production_signal(
         )
     if family_id in {
         EQUITY_RESIDUAL_FAMILY,
+        LIQUID_EQUITY_MOMENTUM_FAMILY,
         ETF_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,

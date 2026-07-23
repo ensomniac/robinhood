@@ -85,10 +85,17 @@ at 5/10/20 bps but concentrated in thin names and failed the drawdown gate; its
 exact version remains retired. The successor must prospectively restrict the
 point-in-time universe to prior close at least $10, prior 20-session median
 dollar volume at least $50 million, and the top 250 by prior 60-session dollar
-volume. It must freeze the complete grid, exposed development dates, five-
-session embargo, untouched later confirmation dates, and implementation hashes
-before opening any additional daily price row. This existing mechanism consumes
-no new-family slot and requires no calendar wait.
+volume. `liquid_equity_momentum_discovery.py` freezes 80 contaminated
+development decision dates, their complete zero-day and mark-to-market account
+calendar, a five-session embargo after final settlement, and 25 untouched
+confirmation opportunities. Its 32-trial grid covers 20/60-session return,
+50/100-session trend, 1%/2% cross-sectional excess, 1.5/2.0 ATR14 stop, and
+three/five-session hold. Split-affected windows are missed, never adjusted
+after outcomes. Account-calendar days and maximum signal capacity are recorded
+separately so power cannot count no-trade days as potential fills. Freeze the
+complete grid, scopes, and implementation hashes before opening the cached
+daily price file. This existing mechanism consumes no new-family slot and
+requires no calendar wait.
 
 The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1

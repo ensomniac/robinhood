@@ -321,95 +321,61 @@ neighbor stability. The least-adverse trial still had -0.013056 log growth,
 fills. No winner or evidence target was frozen, and all 66 confirmation sessions
 remain untouched.
 
-Continuous discovery now advances `liquid-equity-cross-sectional-momentum-v2`
-inside the existing cross-sectional-momentum mechanism. Its v1 predecessor
+Continuous discovery now advances
+`cross-sectional-momentum-v4-liquid-common-stock` inside the existing
+cross-sectional-momentum mechanism. Its v1 equity predecessor
 produced positive 5/10/20-bps returns across 72 signals but failed the drawdown
 gate and concentrated gains in thin securities. The successor therefore tests
 the same completed-close ranking and next-open continuation mechanism on a
 prospectively frozen liquid common-stock universe: prior close at least $10,
 prior 20-session median dollar volume at least $50 million, and the top 250 by
-prior 60-session dollar volume. Development uses dates already exposed by the
-legacy portfolio baseline as contaminated training; the five-session embargo and
-later date/symbol scope remain untouched and inaccessible unless independent
-selection freezes one exact winner. The complete grid and exact production
-semantics must be committed before any additional row from the existing
-content-addressed 2025 daily source is opened. This is an existing-family
-successor, consumes no new-family weekly slot, and requires no calendar wait.
+prior 60-session median dollar volume. The 32-trial grid covers 20/60-session
+return, 50/100-session trend, 1%/2% cross-sectional excess, 1.5/2.0 ATR14 stop,
+and three/five-session hold.
+
+Development has 80 already-exposed decision dates inside a complete account
+calendar that preserves no-trade days, overlapping positions, mark-to-market
+drawdown, and compounding. Five embargo sessions begin only after the final
+development position can settle. The later reserve contains 25 untouched
+decision dates. `confirmation_signal_capacity` is separate from the account
+calendar, so zero days cannot inflate the frozen power inventory. The complete
+grid and exact production semantics must be committed before any additional row
+from the existing content-addressed 2025 daily source is opened. This is an
+existing-family successor, consumes no new-family weekly slot, and requires no
+calendar wait.
 
 ## Transition chain
 
-Run the lane from the repository root:
+After the implementation commit is pushed, run:
 
 ```sh
-python3 continuous_strategy_discovery.py status
-python3 continuous_strategy_discovery.py freeze-calendar \
-  --created-at <actual-current-ISO8601-timestamp>
-```
-
-Commit the zero-price calendar contract, then independently inspect and commit
-it:
-
-```sh
-python3 continuous_strategy_discovery_inspection.py inspect-contract \
-  strategy_tournament/v2/continuous/broad-etf-trend-pullback-v2-cost-floor/calendar/contract/continuous-successor-calendar-contract-<sha256>.json \
-  --inspected-at <actual-current-ISO8601-timestamp>
-```
-
-Only then may the single public-calendar request run. Commit its calendar,
-source attestation, and collection status before independent data inspection:
-
-```sh
-python3 continuous_strategy_discovery.py collect-calendar \
-  strategy_tournament/v2/continuous/broad-etf-trend-pullback-v2-cost-floor/calendar/contract/continuous-successor-calendar-contract-<sha256>.json \
-  --collected-at <actual-current-ISO8601-timestamp>
-python3 continuous_strategy_discovery_inspection.py inspect-calendar \
-  strategy_tournament/v2/continuous/broad-etf-trend-pullback-v2-cost-floor/calendar/collection/continuous-successor-calendar-collection-<sha256>.json \
-  --inspected-at <actual-current-ISO8601-timestamp>
-```
-
-After the inspected calendar is committed, freeze and commit the exact family
-contract and capacity manifest:
-
-```sh
-python3 continuous_strategy_discovery.py freeze-successor \
+python3 liquid_equity_momentum_discovery.py freeze \
   --created-at <actual-current-ISO8601-timestamp>
 python3 strategy_discovery.py preflight \
-  strategy_tournament/v2/continuous/broad-etf-trend-pullback-v2-cost-floor/family-contract/contract-<sha256>.json
+  strategy_tournament/v2/continuous/cross-sectional-momentum-v4-liquid-common-stock/family-contract/contract-<sha256>.json
+python3 strategy_discovery.py freeze-search \
+  strategy_tournament/v2/continuous/cross-sectional-momentum-v4-liquid-common-stock/family-contract/contract-<sha256>.json
+python3 strategy_discovery.py evaluate-development \
+  strategy_tournament/v2/discovery/liquid-equity-cross-sectional-momentum/search/liquid-equity-cross-sectional-momentum-search-<sha256>.json
+python3 strategy_discovery.py inspect-development \
+  strategy_tournament/v2/discovery/liquid-equity-cross-sectional-momentum/development/liquid-equity-cross-sectional-momentum-development-<sha256>.json
 ```
 
-The normal discovery chain then applies: freeze search, freeze and collect only
-the development dataset, inspect it, evaluate all 32 trials, independently
-select or retire, freeze one exact winner if earned, and only then collect the
-preregistered confirmation reserve.
-
-This lane has a separate committed pre-2023 calendar from the future W31 batch,
-so pass it explicitly when freezing either collection plan:
+Commit and push each transition before its successor. If and only if independent
+development inspection selects a winner, freeze and commit that exact winner,
+then bind the reserve to its rules hash before any confirmation outcome access:
 
 ```sh
-python3 dense_data_collection.py \
-  --calendar historical_batches/continuous_v2/session-calendar-2014-01-through-2022-12.json \
-  freeze-development path/to/committed-successor-search.json
+python3 strategy_discovery.py freeze-winner \
+  strategy_tournament/v2/discovery/liquid-equity-cross-sectional-momentum/development-inspection/liquid-equity-cross-sectional-momentum-development-inspection-<sha256>.json
+python3 liquid_equity_momentum_discovery.py freeze-confirmation \
+  strategy_tournament/v2/discovery/liquid-equity-cross-sectional-momentum/winner/liquid-equity-cross-sectional-momentum-winner-<sha256>.json \
+  --created-at <actual-current-ISO8601-timestamp>
 ```
 
-The daily fixed-ETF collection plane uses four frozen Alpaca symbol-range
-requests plus split metadata, then loads the resulting dataset once for all
-trials. It does not issue one provider request per date.
-
-The first committed development collection plan used Alpaca SIP daily bars and
-failed closed before trial evaluation because all four symbols began on
-2016-01-04 instead of the frozen 2015-03-09 warmup boundary. That plan remains
-adverse data-readiness history. The second exact plan preserved those dates and
-bound Massive daily ranges, but the configured plan returned HTTP 403 on its
-first price task after split metadata completed. It also remains adverse history.
-Neither plan evaluated a trial or touched its confirmation reserve.
-
-The active recovery first extends the independently inspected zero-price calendar
-through 2022. Only after that inspection may a new exact contract select its
-complete 200-warmup, 1,000-development, five-embargo, and 500-confirmation
-partition from 2016-2022 and bind Alpaca raw SIP daily ranges. The global
-outcome-exposure index currently has no 2016-2022 records and the predecessor's
-first evaluated signal is in 2023. Every prior artifact remains preserved, but
-none can count as promotion evidence for the new chain.
+The cached daily file is loaded once per development or confirmation process.
+No provider request is needed. Preflight opens only committed metadata; the
+price file remains closed until the committed search authorizes development.
 
 ## Parallel lanes
 

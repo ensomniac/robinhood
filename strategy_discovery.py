@@ -434,6 +434,39 @@ def _validate_family_contract(value: Mapping[str, Any]) -> dict[str, Any]:
         raise StrategyDiscoveryError("development, embargo, and confirmation overlap")
     if not (max(development) < min(embargo) < min(confirmation)):
         raise StrategyDiscoveryError("evidence partitions are not chronological")
+    for phase, partition in (
+        ("development", development),
+        ("confirmation", confirmation),
+    ):
+        field = f"{phase}_signal_dates"
+        raw_signal_dates = contract.get(field)
+        if raw_signal_dates is None:
+            continue
+        signal_dates = _date_list(raw_signal_dates, field)
+        if not set(signal_dates).issubset(partition):
+            raise StrategyDiscoveryError(
+                f"{field} must be a subset of the {phase} account calendar"
+            )
+    confirmation_capacity = contract.get(
+        "confirmation_signal_capacity",
+        len(contract["confirmation_dates"]),
+    )
+    if (
+        isinstance(confirmation_capacity, bool)
+        or not isinstance(confirmation_capacity, int)
+        or confirmation_capacity < 1
+    ):
+        raise StrategyDiscoveryError(
+            "confirmation_signal_capacity must be a positive integer"
+        )
+    maximum_confirmation_capacity = len(
+        contract.get("confirmation_signal_dates", contract["confirmation_dates"])
+    )
+    if confirmation_capacity > maximum_confirmation_capacity:
+        raise StrategyDiscoveryError(
+            "confirmation signal capacity exceeds frozen signal dates"
+        )
+    contract["confirmation_signal_capacity"] = confirmation_capacity
     if not (
         isinstance(contract["partitions"], Mapping)
         and contract["partitions"].get("rolling_origin") is True
@@ -883,7 +916,7 @@ def inspect_development(
         )
         if not development_account_inspection["passed"]:
             state = "RETIRED_DEVELOPMENT_ACCOUNT_GATES"
-    confirmation_inventory = len(contract["confirmation_dates"])
+    confirmation_inventory = int(contract["confirmation_signal_capacity"])
     maximum_total_signal_capacity = (
         int(selection.get("development_filled_signals", 0))
         + confirmation_inventory
@@ -1043,6 +1076,15 @@ def freeze_winner(
         "rolling_origin_plan": contract["rolling_origin_plan"],
         "embargo_dates": contract["embargo_dates"],
         "confirmation_dates": contract["confirmation_dates"],
+        "development_signal_dates": contract.get(
+            "development_signal_dates", contract["development_dates"]
+        ),
+        "confirmation_signal_dates": contract.get(
+            "confirmation_signal_dates", contract["confirmation_dates"]
+        ),
+        "confirmation_signal_capacity": contract[
+            "confirmation_signal_capacity"
+        ],
         "development_scope": contract.get("development_scope"),
         "confirmation_scope": contract.get("confirmation_scope"),
         "plugin": contract["plugin"],
@@ -2045,10 +2087,13 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
                         winner.get("required_confirmation_signals")
                         or selection.get("required_confirmation_signals")
                     ),
-                    "confirmation_reserved_sessions": len(
+                    "confirmation_reserved_sessions": int(
                         winner.get(
-                            "confirmation_dates",
-                            contract.get("confirmation_dates", []),
+                            "confirmation_signal_capacity",
+                            contract.get(
+                                "confirmation_signal_capacity",
+                                len(contract.get("confirmation_dates", [])),
+                            ),
                         )
                     ),
                     "confirmation_state": confirmation_inspection.get("state"),

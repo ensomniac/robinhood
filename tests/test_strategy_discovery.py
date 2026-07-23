@@ -152,6 +152,27 @@ def _freeze_synthetic_winner(work: Path, *, confirmation_count: int = 30):
     return artifact_root, winner_path, inspection, winner
 
 
+def test_signal_capacity_is_distinct_from_account_calendar_days():
+    contract = family_contract(
+        Path("unused-dataset.json"),
+        family_id="signal-capacity-contract",
+        confirmation_count=30,
+    )
+    contract["development_signal_dates"] = contract["development_dates"][::2]
+    contract["confirmation_signal_dates"] = contract["confirmation_dates"][:7]
+    contract["confirmation_signal_capacity"] = 7
+
+    validated = discovery._validate_family_contract(contract)
+
+    assert validated["confirmation_signal_capacity"] == 7
+    contract["confirmation_signal_capacity"] = 8
+    with pytest.raises(
+        discovery.StrategyDiscoveryError,
+        match="exceeds frozen signal dates",
+    ):
+        discovery._validate_family_contract(contract)
+
+
 def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
     with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
         work = Path(directory)
