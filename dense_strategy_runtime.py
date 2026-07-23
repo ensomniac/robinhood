@@ -29,6 +29,9 @@ ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
 ETF_HIGH_CONTINUATION_FAMILY = "liquid-etf-52-week-high-continuation"
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
 EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
+VOLATILITY_COMPRESSION_FAMILY = (
+    "gap-universe-volatility-compression-breakout"
+)
 SUPPORTED_FAMILIES = {
     EQUITY_RESIDUAL_FAMILY,
     INTRADAY_ETF_FAMILY,
@@ -38,6 +41,7 @@ SUPPORTED_FAMILIES = {
     ETF_HIGH_CONTINUATION_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
+    VOLATILITY_COMPRESSION_FAMILY,
 }
 PRIMARY_ROUND_TRIP_COST_FRACTION = 0.001
 MINIMUM_GROSS_TO_COST_MULTIPLE = 5.0
@@ -47,6 +51,7 @@ OVERSOLD_SIGNAL_END_INDEX = 300
 OVERSOLD_FORCE_FLAT_INDEX = 380
 GAP_VOLUME_LOOKBACK_BARS = 15
 GAP_FORCE_FLAT_INDEX = 380
+COMPRESSION_SIGNAL_START_INDEX = 45
 
 
 class DenseStrategyRuntimeError(ValueError):
@@ -1034,6 +1039,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         INTRADAY_ETF_FAMILY,
         OVERSOLD_REVERSAL_FAMILY,
         EQUITY_GAP_CONTINUATION_FAMILY,
+        VOLATILITY_COMPRESSION_FAMILY,
     }:
         sessions = _minute_sessions(dataset)
         if family_id == INTRADAY_ETF_FAMILY:
@@ -1111,6 +1117,10 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         elif family_id == EQUITY_GAP_CONTINUATION_FAMILY:
             prepared["_gap_continuation_feature_cache"] = (
                 _gap_continuation_feature_cache(sessions)
+            )
+        elif family_id == VOLATILITY_COMPRESSION_FAMILY:
+            prepared["_compression_feature_cache"] = (
+                _compression_feature_cache(sessions)
             )
     else:
         daily = _daily_series(dataset)
@@ -1784,6 +1794,230 @@ def _gap_continuation_candidates(
     return candidates
 
 
+def _compression_feature_cache(
+    sessions: Mapping[str, Mapping[str, Sequence[Mapping[str, Any]]]],
+) -> dict[str, dict[str, dict[str, list[dict[str, Any]]]]]:
+    """Precompute the union of observations usable by the frozen 32-trial grid."""
+
+    result: dict[str, dict[str, dict[str, list[dict[str, Any]]]]] = {}
+    for day, symbols in sessions.items():
+        result[day] = {}
+        for symbol, bars in symbols.items():
+            if len(bars) != 390:
+                raise DenseStrategyRuntimeError(
+                    f"compression input must contain 390 exact bars: {day} {symbol}"
+                )
+            first_thirty_high = max(float(bar["high"]) for bar in bars[:30])
+            first_thirty_low = min(float(bar["low"]) for bar in bars[:30])
+            first_thirty_range = first_thirty_high - first_thirty_low
+            by_window: dict[str, list[dict[str, Any]]] = {
+                "10": [],
+                "20": [],
+            }
+            if first_thirty_range <= 0:
+                result[day][symbol] = by_window
+                continue
+            numerator = 0.0
+            denominator = 0.0
+            vwap_by_index: list[float | None] = []
+            for bar in bars:
+                numerator += float(bar["vwap_numerator"])
+                denominator += float(bar["vwap_denominator"])
+                vwap_by_index.append(
+                    numerator / denominator if denominator > 0 else None
+                )
+            for compression_bars in (10, 20):
+                features = by_window[str(compression_bars)]
+                for index in range(
+                    COMPRESSION_SIGNAL_START_INDEX,
+                    301,
+                ):
+                    window = bars[index - compression_bars : index]
+                    compression_high = max(
+                        float(bar["high"]) for bar in window
+                    )
+                    compression_low = min(
+                        float(bar["low"]) for bar in window
+                    )
+                    compression_ratio = (
+                        compression_high - compression_low
+                    ) / first_thirty_range
+                    mean_volume = statistics.fmean(
+                        float(bar["volume"]) for bar in window
+                    )
+                    volume_multiple = (
+                        float(bars[index]["volume"]) / mean_volume
+                        if mean_volume > 0
+                        else 0.0
+                    )
+                    vwap = vwap_by_index[index]
+                    close = float(bars[index]["close"])
+                    if (
+                        vwap is None
+                        or compression_ratio > 0.6 + 1e-12
+                        or volume_multiple + 1e-12 < 1.5
+                        or close <= compression_high
+                        or close <= vwap
+                    ):
+                        continue
+                    features.append(
+                        {
+                            "trigger_index": index,
+                            "entry_index": index + 1,
+                            "compression_high": compression_high,
+                            "compression_low": compression_low,
+                            "compression_ratio": compression_ratio,
+                            "volume_multiple": volume_multiple,
+                        }
+                    )
+            result[day][symbol] = by_window
+    return result
+
+
+def _compression_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    sessions = _minute_sessions(dataset)
+    cache = dataset.get("_compression_feature_cache")
+    if not isinstance(cache, Mapping):
+        cache = _compression_feature_cache(sessions)
+    raw_universe = dataset.get("candidate_symbols_by_date")
+    if not isinstance(raw_universe, Mapping):
+        raise DenseStrategyRuntimeError(
+            "compression dataset lacks its frozen candidate universe"
+        )
+    compression_bars = int(parameters["compression_bars"])
+    maximum_ratio = float(parameters["maximum_compression_ratio"])
+    volume_threshold = float(parameters["breakout_volume_multiple"])
+    signal_cutoff = int(parameters["signal_cutoff_minutes"])
+    target_r = float(parameters["target_r"])
+    if (
+        compression_bars not in {10, 20}
+        or maximum_ratio not in {0.4, 0.6}
+        or volume_threshold not in {1.5, 2.5}
+        or signal_cutoff not in {120, 300}
+        or target_r not in {1.5, 2.0}
+    ):
+        raise DenseStrategyRuntimeError(
+            "compression trial parameters escaped the grid"
+        )
+    candidates: list[dict[str, Any]] = []
+    for day in calendar:
+        qualified: list[
+            tuple[int, float, float, str, dict[str, Any]]
+        ] = []
+        for symbol in map(str, raw_universe[day]):
+            for feature in (
+                cache.get(day, {})
+                .get(symbol, {})
+                .get(str(compression_bars), [])
+            ):
+                if int(feature["trigger_index"]) > signal_cutoff:
+                    break
+                ratio = float(feature["compression_ratio"])
+                volume_multiple = float(feature["volume_multiple"])
+                if (
+                    ratio > maximum_ratio + 1e-12
+                    or volume_multiple + 1e-12 < volume_threshold
+                ):
+                    continue
+                qualified.append(
+                    (
+                        int(feature["entry_index"]),
+                        ratio,
+                        -volume_multiple,
+                        symbol,
+                        dict(feature),
+                    )
+                )
+                break
+        if not qualified:
+            continue
+        (
+            entry_index,
+            compression_ratio,
+            negative_volume,
+            symbol,
+            selected,
+        ) = sorted(qualified)[0]
+        volume_multiple = -negative_volume
+        signal_id = f"{day}-{VOLATILITY_COMPRESSION_FAMILY}-{symbol}"
+        bars = sessions.get(day, {}).get(symbol)
+        if bars is None or entry_index >= len(bars):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_bar",
+                }
+            )
+            continue
+        entry_price = float(bars[entry_index]["open"])
+        stop_price = float(selected["compression_low"])
+        if stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        target_price = entry_price + target_r * (entry_price - stop_price)
+        expected_gross = (target_price - entry_price) / entry_price
+        if not _cost_floor(expected_gross):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "expected_move_below_cost_floor",
+                }
+            )
+            continue
+        exit_price, stop_executed = _gap_continuation_exit(
+            bars,
+            entry_index=entry_index,
+            stop_price=stop_price,
+            target_price=target_price,
+        )
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": day,
+                "decision_date": day,
+                "symbol": symbol,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": -compression_ratio + volume_multiple / 100.0,
+                "compression_ratio": compression_ratio,
+                "volume_multiple": volume_multiple,
+                "trigger_index": int(selected["trigger_index"]),
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "target_price": target_price,
+                "exit_date": day,
+                "exit_price": exit_price,
+                "marks": {day: exit_price},
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+            }
+        )
+    return candidates
+
+
 def build_candidates(
     dataset: Mapping[str, Any],
     family_id: str,
@@ -1809,6 +2043,8 @@ def build_candidates(
         return _oversold_candidates(dataset, parameters)
     if family_id == EQUITY_GAP_CONTINUATION_FAMILY:
         return _gap_continuation_candidates(dataset, parameters)
+    if family_id == VOLATILITY_COMPRESSION_FAMILY:
+        return _compression_candidates(dataset, parameters)
     raise DenseStrategyRuntimeError(f"unsupported dense family: {family_id}")
 
 

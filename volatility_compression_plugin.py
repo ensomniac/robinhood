@@ -1,10 +1,4 @@
-"""Discovery plugin for the selection-aware equity-gap-continuation successor.
-
-Development reuses the already exposed representative 2025 minute corpus only
-as contaminated training. Confirmation is a separately frozen, winner-bound
-phase. Historical and production evaluation share the exact gap, opening-range,
-volume, ranking, stop, target, and force-flat semantics.
-"""
+"""Discovery plugin for the gap-universe volatility-compression successor."""
 
 from __future__ import annotations
 
@@ -15,9 +9,8 @@ from pathlib import Path
 from typing import Any
 
 import dense_strategy_runtime as runtime
-import equity_gap_continuation_validation as gap
+import equity_gap_continuation_plugin as source_plugin
 import portfolio_maturity
-from historical_store import HistoricalDayStore, canonical_sha256, sha256_file
 from learning_data import LearningDataError, load_frozen_dataset_contract
 
 
@@ -25,17 +18,17 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_MANIFEST_ROOT = (
     PROJECT_ROOT
     / "strategy_tournament/v2/discovery"
-    / runtime.EQUITY_GAP_CONTINUATION_FAMILY
+    / runtime.VOLATILITY_COMPRESSION_FAMILY
 )
 
 
-class EquityGapContinuationPluginError(RuntimeError):
-    """A frozen gap-continuation input, rule, or live fact is incomplete."""
+class VolatilityCompressionPluginError(RuntimeError):
+    """A frozen compression input, exact rule, or live fact is incomplete."""
 
 
 def _path(value: Any) -> Path:
     if not isinstance(value, str) or not value:
-        raise EquityGapContinuationPluginError("frozen path is missing")
+        raise VolatilityCompressionPluginError("frozen path is missing")
     path = Path(value)
     return path if path.is_absolute() else PROJECT_ROOT / path
 
@@ -44,8 +37,8 @@ def _require_committed(path: Path) -> None:
     try:
         relative = str(path.resolve().relative_to(PROJECT_ROOT.resolve()))
     except ValueError as exc:
-        raise EquityGapContinuationPluginError(
-            "gap-continuation evidence must remain inside the repository"
+        raise VolatilityCompressionPluginError(
+            "compression evidence must remain inside the repository"
         ) from exc
     tracked = subprocess.run(
         ["git", "ls-files", "--error-unmatch", "--", relative],
@@ -57,9 +50,8 @@ def _require_committed(path: Path) -> None:
         cwd=PROJECT_ROOT,
     )
     if tracked.returncode != 0 or clean.returncode != 0:
-        raise EquityGapContinuationPluginError(
-            "gap-continuation evidence must be committed and unchanged: "
-            f"{relative}"
+        raise VolatilityCompressionPluginError(
+            f"compression evidence must be committed and unchanged: {relative}"
         )
 
 
@@ -67,8 +59,8 @@ def _manifest(path: Path) -> dict[str, Any]:
     try:
         return load_frozen_dataset_contract(path)
     except (LearningDataError, OSError) as exc:
-        raise EquityGapContinuationPluginError(
-            f"gap-continuation dataset manifest is invalid: {exc}"
+        raise VolatilityCompressionPluginError(
+            f"compression dataset manifest is invalid: {exc}"
         ) from exc
 
 
@@ -103,23 +95,23 @@ def _telemetry(*, dataset_loads: int) -> dict[str, Any]:
 
 
 def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
-    """Inspect committed public metadata without opening minute bars."""
+    """Inspect only committed outcome-blind capacity metadata."""
 
     path = _path(contract.get("capacity_manifest"))
     _require_committed(path)
     manifest = _manifest(path)
     payload = manifest["dataset_payload"]
-    capacity = payload.get("gap_continuation_capacity")
+    capacity = payload.get("volatility_compression_capacity")
     if not isinstance(capacity, Mapping):
-        raise EquityGapContinuationPluginError(
-            "gap-continuation capacity binding is missing"
+        raise VolatilityCompressionPluginError(
+            "compression capacity binding is missing"
         )
     for evidence in payload.get("evidence_paths", []):
         _require_committed(_path(evidence))
     checks = {
         "development_lane": payload.get("lane") == "development",
         "family_bound": capacity.get("family_id")
-        == runtime.EQUITY_GAP_CONTINUATION_FAMILY,
+        == runtime.VOLATILITY_COMPRESSION_FAMILY,
         "dates_bound": manifest.get("requested_dates")
         == contract.get("development_dates"),
         "point_in_time": payload.get("point_in_time_evidence") is True,
@@ -136,8 +128,8 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
         or not isinstance(formal_capacity, int)
         or formal_capacity < 0
     ):
-        raise EquityGapContinuationPluginError(
-            "gap-continuation formal capacity is invalid"
+        raise VolatilityCompressionPluginError(
+            "compression formal capacity is invalid"
         )
     return {
         "verified_capacity": formal_capacity,
@@ -148,162 +140,20 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _load_bound_dataset(
+def _load_dataset(
     manifest_path: Path,
     *,
     lane: str,
     expected_dates: Sequence[str],
     preregistration_sha256: str | None = None,
-    target_family_id: str = runtime.EQUITY_GAP_CONTINUATION_FAMILY,
 ) -> dict[str, Any]:
-    _require_committed(manifest_path)
-    manifest = _manifest(manifest_path)
-    payload = manifest["dataset_payload"]
-    binding = payload.get("gap_continuation_runtime")
-    if not isinstance(binding, Mapping):
-        raise EquityGapContinuationPluginError(
-            "gap-continuation runtime binding is missing"
-        )
-    if not (
-        manifest.get("requested_dates") == list(expected_dates)
-        and payload.get("lane") == lane
-        and payload.get("inspected") is True
-        and payload.get("point_in_time_evidence") is True
-        and binding.get("family_id") == target_family_id
-        and binding.get("sample_phase") == lane
-    ):
-        raise EquityGapContinuationPluginError(
-            "gap-continuation dataset scope drifted"
-        )
-    if lane == "confirmation" and not (
-        payload.get("claim_scope") == "EXACT_PREREGISTERED_CONTRACT_ONLY"
-        and payload.get("preregistration_sha256")
-        == preregistration_sha256
-        and payload.get("capture_after_preregistration_attested") is True
-    ):
-        raise EquityGapContinuationPluginError(
-            "confirmation dataset is not winner-bound"
-        )
-    source_manifest_path = _path(
-        binding.get("source_selection_manifest_path")
+    return source_plugin._load_bound_dataset(
+        manifest_path,
+        lane=lane,
+        expected_dates=expected_dates,
+        preregistration_sha256=preregistration_sha256,
+        target_family_id=runtime.VOLATILITY_COMPRESSION_FAMILY,
     )
-    input_inspection_path = _path(binding.get("input_inspection_path"))
-    _require_committed(source_manifest_path)
-    _require_committed(input_inspection_path)
-    if (
-        sha256_file(source_manifest_path)
-        != binding.get("source_selection_manifest_file_sha256")
-        or sha256_file(input_inspection_path)
-        != binding.get("input_inspection_file_sha256")
-    ):
-        raise EquityGapContinuationPluginError(
-            "gap-continuation source binding drifted"
-        )
-    source_manifest = gap._load_json(source_manifest_path)
-    selection_hash = source_manifest.get("private_selection", {}).get(
-        "content_sha256"
-    )
-    store = HistoricalDayStore.from_env()
-    selection = gap._load_gzip(gap._selection_path(store))
-    if (
-        canonical_sha256(selection) != selection_hash
-        or selection["phases"][lane]["dates"] != list(expected_dates)
-    ):
-        raise EquityGapContinuationPluginError(
-            "gap-continuation private selection graph drifted"
-        )
-    inspection = gap._load_json(input_inspection_path)
-    input_index = gap._load_gzip(gap._input_index_path(store, lane))
-    if (
-        canonical_sha256(input_index)
-        != inspection.get("private_input_index_content_sha256")
-        or input_index.get("sample_phase") != lane
-    ):
-        raise EquityGapContinuationPluginError(
-            "gap-continuation inspected input index drifted"
-        )
-    indexed = {
-        (str(row["date"]), str(row["symbol"])): row
-        for row in input_index["input_rows"]
-    }
-    candidate_symbols_by_date: dict[str, list[str]] = {}
-    candidate_metadata_by_date: dict[
-        str, dict[str, dict[str, Any]]
-    ] = {}
-    minute_bars: dict[str, dict[str, list[dict[str, Any]]]] = {}
-    for day in expected_dates:
-        frozen_candidates = selection["phases"][lane][
-            "candidates_by_date"
-        ][day]
-        symbols = sorted(str(item["symbol"]) for item in frozen_candidates)
-        candidate_symbols_by_date[day] = symbols
-        candidate_metadata_by_date[day] = {
-            str(item["symbol"]): {
-                "symbol": str(item["symbol"]),
-                "gap_fraction": float(item["gap_fraction"]),
-            }
-            for item in frozen_candidates
-        }
-        minute_bars[day] = {}
-        for symbol in symbols:
-            frozen_input = indexed.get((day, symbol))
-            dataset = gap._full_minute_dataset(store, symbol, day)
-            if frozen_input is None or dataset is None:
-                raise EquityGapContinuationPluginError(
-                    f"inspected gap-continuation input is missing: {day} {symbol}"
-                )
-            if not (
-                dataset["id"] == frozen_input["dataset_id"]
-                and dataset["content_sha256"]
-                == frozen_input["dataset_sha256"]
-            ):
-                raise EquityGapContinuationPluginError(
-                    f"inspected gap-continuation input drifted: {day} {symbol}"
-                )
-            rows, exact = gap._dataset_rows(dataset, day, symbol)
-            if not exact:
-                continue
-            minute_bars[day][symbol] = [
-                {
-                    "timestamp": str(row["time_et"]),
-                    "open": float(row["open"]),
-                    "high": float(row["high"]),
-                    "low": float(row["low"]),
-                    "close": float(row["close"]),
-                    "volume": int(row.get("volume", 0)),
-                    "vwap_numerator": (
-                        (
-                            float(row["high"])
-                            + float(row["low"])
-                            + float(row["close"])
-                        )
-                        / 3.0
-                        * int(row.get("volume", 0))
-                    ),
-                    "vwap_denominator": int(row.get("volume", 0)),
-                }
-                for row in rows
-            ]
-    return {
-        "schema_version": 1,
-        "family_id": target_family_id,
-        "evaluation_dates": list(expected_dates),
-        "candidate_symbols_by_date": candidate_symbols_by_date,
-        "candidate_metadata_by_date": candidate_metadata_by_date,
-        "regular_session_minutes_by_date": {
-            day: 390 for day in expected_dates
-        },
-        "minute_bars": minute_bars,
-        "source_semantics": {
-            "universe": (
-                "point-in-time common stocks opening above 5 dollars and "
-                "2-8% above prior close at 09:35 ET"
-            ),
-            "feed": "Alpaca SIP",
-            "adjustment": "raw",
-            "sparse_policy": "retained_in_denominator_no_signal",
-        },
-    }
 
 
 def evaluate_development(
@@ -311,7 +161,7 @@ def evaluate_development(
 ) -> dict[str, Any]:
     manifest_path = _path(contract.get("dataset_manifest"))
     dataset = runtime.prepare_dataset(
-        _load_bound_dataset(
+        _load_dataset(
             manifest_path,
             lane="development",
             expected_dates=contract["development_dates"],
@@ -323,7 +173,7 @@ def evaluate_development(
         "trials": [
             runtime.evaluate_trial(
                 dataset,
-                family_id=runtime.EQUITY_GAP_CONTINUATION_FAMILY,
+                family_id=runtime.VOLATILITY_COMPRESSION_FAMILY,
                 trial_id=str(trial["trial_id"]),
                 parameters=trial["parameters"],
                 account_policy=policy,
@@ -340,8 +190,8 @@ def _confirmation_manifest() -> Path:
         (DEFAULT_MANIFEST_ROOT / "confirmation-dataset").glob("*.json")
     )
     if len(paths) != 1:
-        raise EquityGapContinuationPluginError(
-            "expected one frozen gap-continuation confirmation dataset manifest"
+        raise VolatilityCompressionPluginError(
+            "expected one frozen compression confirmation dataset manifest"
         )
     return paths[0]
 
@@ -349,7 +199,7 @@ def _confirmation_manifest() -> Path:
 def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
     manifest_path = _confirmation_manifest()
     dataset = runtime.prepare_dataset(
-        _load_bound_dataset(
+        _load_dataset(
             manifest_path,
             lane="confirmation",
             expected_dates=winner["confirmation_dates"],
@@ -358,7 +208,7 @@ def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
     )
     exact = runtime.evaluate_trial(
         dataset,
-        family_id=runtime.EQUITY_GAP_CONTINUATION_FAMILY,
+        family_id=runtime.VOLATILITY_COMPRESSION_FAMILY,
         trial_id=str(winner["exact_rules"]["selected_trial_id"]),
         parameters=winner["exact_rules"]["parameters"],
         account_policy=_account_policy(),
@@ -383,27 +233,27 @@ def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
 
 def _live_trigger(
     bars_by_symbol: Mapping[str, Sequence[Mapping[str, Any]]],
-    metadata_by_symbol: Mapping[str, Mapping[str, Any]],
     parameters: Mapping[str, Any],
 ) -> dict[str, Any]:
-    minimum_gap = float(parameters["minimum_gap_fraction"])
-    opening_range = int(parameters["opening_range_minutes"])
+    compression_bars = int(parameters["compression_bars"])
+    maximum_ratio = float(parameters["maximum_compression_ratio"])
     volume_threshold = float(parameters["breakout_volume_multiple"])
     signal_cutoff = int(parameters["signal_cutoff_minutes"])
     target_r = float(parameters["target_r"])
     qualified: list[tuple[int, float, float, str, float]] = []
     for symbol, bars in bars_by_symbol.items():
-        if len(bars) <= max(opening_range, runtime.GAP_VOLUME_LOOKBACK_BARS):
+        if len(bars) <= runtime.COMPRESSION_SIGNAL_START_INDEX:
             continue
-        gap_fraction = float(metadata_by_symbol[symbol]["gap_fraction"])
-        if gap_fraction + 1e-12 < minimum_gap:
+        first_thirty_range = (
+            max(float(bar["high"]) for bar in bars[:30])
+            - min(float(bar["low"]) for bar in bars[:30])
+        )
+        if first_thirty_range <= 0:
             continue
-        range_high = max(float(bar["high"]) for bar in bars[:opening_range])
-        range_low = min(float(bar["low"]) for bar in bars[:opening_range])
         numerator = 0.0
         denominator = 0.0
         for index, bar in enumerate(bars):
-            volume = int(bar["volume"])
+            volume = float(bar["volume"])
             numerator += (
                 (
                     float(bar["high"])
@@ -415,54 +265,51 @@ def _live_trigger(
             )
             denominator += volume
             if not (
-                max(opening_range, runtime.GAP_VOLUME_LOOKBACK_BARS)
+                runtime.COMPRESSION_SIGNAL_START_INDEX
                 <= index
                 <= signal_cutoff
+                and index >= compression_bars
             ):
                 continue
-            prior = bars[
-                index - runtime.GAP_VOLUME_LOOKBACK_BARS : index
-            ]
-            mean_volume = sum(float(item["volume"]) for item in prior) / len(
-                prior
+            window = bars[index - compression_bars : index]
+            compression_high = max(float(item["high"]) for item in window)
+            compression_low = min(float(item["low"]) for item in window)
+            ratio = (
+                compression_high - compression_low
+            ) / first_thirty_range
+            mean_volume = sum(float(item["volume"]) for item in window) / len(
+                window
             )
-            volume_multiple = (
-                volume / mean_volume if mean_volume > 0 else 0.0
-            )
+            volume_multiple = volume / mean_volume if mean_volume > 0 else 0.0
             close = float(bar["close"])
             if (
                 denominator > 0
-                and close > range_high
-                and close > numerator / denominator
+                and ratio <= maximum_ratio + 1e-12
                 and volume_multiple + 1e-12 >= volume_threshold
+                and close > compression_high
+                and close > numerator / denominator
             ):
                 qualified.append(
                     (
                         index + 1,
+                        ratio,
                         -volume_multiple,
-                        -gap_fraction,
                         symbol,
-                        range_low,
+                        compression_low,
                     )
                 )
                 break
     if not qualified:
-        raise EquityGapContinuationPluginError(
-            "no exact live gap-continuation trigger"
+        raise VolatilityCompressionPluginError(
+            "no exact live volatility-compression trigger"
         )
-    (
-        entry_index,
-        negative_volume,
-        negative_gap,
-        symbol,
-        stop,
-    ) = sorted(qualified)[0]
+    entry_index, ratio, negative_volume, symbol, stop = sorted(qualified)[0]
     return {
         "symbol": symbol,
         "trigger_index": entry_index - 1,
         "entry_index": entry_index,
+        "compression_ratio": ratio,
         "volume_multiple": -negative_volume,
-        "gap_fraction": -negative_gap,
         "stop_price": stop,
         "target_r": target_r,
     }
@@ -471,22 +318,21 @@ def _live_trigger(
 def evaluate_production(
     winner: Mapping[str, Any], market_facts: Mapping[str, Any]
 ) -> dict[str, Any]:
-    """Evaluate the exact frozen rule from complete observable live facts."""
+    """Evaluate the immutable rule from one synchronized live decision boundary."""
 
     expected = {
         "selected_trial_id",
         "parameters",
         "session_date",
         "candidate_symbols",
-        "candidate_metadata",
         "selection_complete",
         "bars_by_symbol",
         "quote",
         "operational",
     }
     if set(market_facts) != expected:
-        raise EquityGapContinuationPluginError(
-            "live gap-continuation fact schema drifted"
+        raise VolatilityCompressionPluginError(
+            "live compression fact schema drifted"
         )
     if (
         market_facts["selected_trial_id"]
@@ -494,21 +340,18 @@ def evaluate_production(
         or market_facts["parameters"] != winner["exact_rules"]["parameters"]
         or market_facts["selection_complete"] is not True
     ):
-        raise EquityGapContinuationPluginError(
-            "live gap-continuation exact rules drifted"
+        raise VolatilityCompressionPluginError(
+            "live compression exact rules drifted"
         )
     symbols = market_facts["candidate_symbols"]
     bars = market_facts["bars_by_symbol"]
-    metadata = market_facts["candidate_metadata"]
     if (
         not isinstance(symbols, list)
         or symbols != sorted(set(map(str, symbols)))
         or not isinstance(bars, Mapping)
-        or not isinstance(metadata, Mapping)
         or set(bars) != set(symbols)
-        or set(metadata) != set(symbols)
     ):
-        raise EquityGapContinuationPluginError(
+        raise VolatilityCompressionPluginError(
             "live point-in-time candidate denominator is incomplete"
         )
     bar_lengths = {
@@ -529,13 +372,13 @@ def evaluate_production(
         or len(last_timestamps) != 1
         or len(bar_lengths) != len(last_timestamps)
     ):
-        raise EquityGapContinuationPluginError(
-            "live candidate bars do not share one completed decision boundary"
+        raise VolatilityCompressionPluginError(
+            "live candidate bars do not share one completed boundary"
         )
-    trigger = _live_trigger(bars, metadata, market_facts["parameters"])
+    trigger = _live_trigger(bars, market_facts["parameters"])
     if trigger["trigger_index"] != next(iter(bar_lengths)) - 1:
-        raise EquityGapContinuationPluginError(
-            "live gap-continuation trigger was not discovered at the current boundary"
+        raise VolatilityCompressionPluginError(
+            "live compression trigger was observable on an earlier bar"
         )
     quote = market_facts["quote"]
     if not isinstance(quote, Mapping) or set(quote) != {
@@ -548,22 +391,26 @@ def evaluate_production(
         "executable_ask_depth",
         "recent_real_minute_volume",
     }:
-        raise EquityGapContinuationPluginError("live quote schema drifted")
-    if quote["symbol"] != trigger["symbol"]:
-        raise EquityGapContinuationPluginError(
-            "live quote symbol is not ranked first"
+        raise VolatilityCompressionPluginError("live quote schema drifted")
+    if (
+        quote["symbol"] != trigger["symbol"]
+        or quote["halted"] is not False
+        or quote["tradable"] is not True
+        or float(quote["bid"]) <= 0
+        or float(quote["ask"]) < float(quote["bid"])
+        or int(quote["executable_ask_depth"]) <= 0
+        or int(quote["recent_real_minute_volume"]) <= 0
+    ):
+        raise VolatilityCompressionPluginError(
+            "live ranked quote is not executable"
         )
     try:
         observed = datetime.fromisoformat(str(quote["observed_at"]))
         trigger_bar = datetime.fromisoformat(
-            str(
-                bars[trigger["symbol"]][trigger["trigger_index"]][
-                    "timestamp"
-                ]
-            )
+            str(bars[trigger["symbol"]][trigger["trigger_index"]]["timestamp"])
         )
     except ValueError as exc:
-        raise EquityGapContinuationPluginError(
+        raise VolatilityCompressionPluginError(
             "live timestamps are invalid"
         ) from exc
     if (
@@ -572,7 +419,7 @@ def evaluate_production(
         or observed < trigger_bar + timedelta(minutes=1)
         or observed >= trigger_bar + timedelta(minutes=2)
     ):
-        raise EquityGapContinuationPluginError(
+        raise VolatilityCompressionPluginError(
             "live quote is not in the next observable minute"
         )
     operational = market_facts["operational"]
@@ -594,14 +441,14 @@ def evaluate_production(
             for field in required_operational - {"safe_cutoff"}
         )
     ):
-        raise EquityGapContinuationPluginError(
+        raise VolatilityCompressionPluginError(
             "live operational gates are incomplete"
         )
     entry = float(quote["ask"])
     stop = float(trigger["stop_price"])
     target = entry + float(trigger["target_r"]) * (entry - stop)
     if not 0 < stop < entry < target:
-        raise EquityGapContinuationPluginError(
+        raise VolatilityCompressionPluginError(
             "live entry protection is invalid"
         )
     expected_gross = (target - entry) / entry
@@ -609,7 +456,7 @@ def evaluate_production(
         runtime.MINIMUM_GROSS_TO_COST_MULTIPLE
         * runtime.PRIMARY_ROUND_TRIP_COST_FRACTION
     ):
-        raise EquityGapContinuationPluginError(
+        raise VolatilityCompressionPluginError(
             "live expected move misses cost floor"
         )
     return {
@@ -621,7 +468,10 @@ def evaluate_production(
         "observed_at": quote["observed_at"],
         "symbol": trigger["symbol"],
         "rank": 1,
-        "score": trigger["volume_multiple"] + trigger["gap_fraction"],
+        "score": (
+            -trigger["compression_ratio"]
+            + trigger["volume_multiple"] / 100.0
+        ),
         "halted": quote["halted"],
         "tradable": quote["tradable"],
         "bid": quote["bid"],
