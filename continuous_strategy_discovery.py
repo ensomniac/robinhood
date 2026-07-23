@@ -54,16 +54,16 @@ CALENDAR_ROOT = DEFAULT_ROOT / SUCCESSOR_ID / "calendar"
 CALENDAR_PATH = (
     PROJECT_ROOT
     / "historical_batches/continuous_v2/"
-    "session-calendar-2014-01-through-2021-12.json"
+    "session-calendar-2014-01-through-2022-12.json"
 )
 CALENDAR_SOURCE_PATH = (
     PROJECT_ROOT
     / "historical_batches/continuous_v2/"
-    "session-calendar-source.json"
+    "session-calendar-2014-01-through-2022-12-source.json"
 )
 CALENDAR_START = "2014-01-01"
-CALENDAR_END = "2021-12-31"
-MINIMUM_CALENDAR_SESSIONS = 1_950
+CALENDAR_END = "2022-12-31"
+MINIMUM_CALENDAR_SESSIONS = 2_200
 CALENDAR_ENDPOINT = "https://api.alpaca.markets/v2/calendar"
 CALENDAR_CONTRACT_KIND = "continuous-successor-calendar-contract"
 CALENDAR_CONTRACT_INSPECTION_KIND = (
@@ -329,16 +329,19 @@ def collect_calendar(
     )
     calendar_path = PROJECT_ROOT / str(contract["calendar_path"])
     source_path = PROJECT_ROOT / str(contract["source_path"])
-    existing = sorted((root / "collection").glob("*.json"))
-    if existing:
-        if len(existing) != 1:
-            raise ContinuousDiscoveryError("multiple successor calendar statuses exist")
+    existing: list[tuple[Path, dict[str, Any]]] = []
+    for path in sorted((root / "collection").glob("*.json")):
         status = strategy_discovery.load_artifact(
-            existing[0], expected_kind=CALENDAR_COLLECTION_KIND
+            path, expected_kind=CALENDAR_COLLECTION_KIND
         )
-        if status.get("contract_sha256") != contract["artifact_sha256"]:
-            raise ContinuousDiscoveryError("existing calendar status is unrelated")
-        return existing[0], status
+        if status.get("contract_sha256") == contract["artifact_sha256"]:
+            existing.append((path, status))
+    if len(existing) > 1:
+        raise ContinuousDiscoveryError(
+            "multiple calendar statuses bind the exact successor contract"
+        )
+    if existing:
+        return existing[0]
     config = AlpacaConfig.optional_from_env(env_path)
     if config is None:
         raise ContinuousDiscoveryError("Alpaca calendar credentials are unavailable")
@@ -437,22 +440,31 @@ def _full_sessions(path: Path) -> list[str]:
     return dates
 
 
-def _single_data_inspection(
+def _data_inspection_for_calendar(
+    calendar_path: Path,
     *,
     root: Path,
     enforce_commit: bool,
 ) -> tuple[Path, dict[str, Any]]:
-    paths = sorted((root / "data-inspection").glob("*.json"))
-    if len(paths) != 1:
-        raise ContinuousDiscoveryError(
-            "expected one independently inspected successor calendar"
+    expected_path = _repo_path(calendar_path)
+    expected_hash = strategy_discovery._file_hash(calendar_path)
+    matches: list[tuple[Path, dict[str, Any]]] = []
+    for path in sorted((root / "data-inspection").glob("*.json")):
+        value = strategy_discovery.load_artifact(
+            path, expected_kind=CALENDAR_DATA_INSPECTION_KIND
         )
-    path = paths[0]
+        if (
+            value.get("calendar_path") == expected_path
+            and value.get("calendar_sha256") == expected_hash
+        ):
+            matches.append((path, value))
+    if len(matches) != 1:
+        raise ContinuousDiscoveryError(
+            "expected one independent inspection for the exact successor calendar"
+        )
+    path, value = matches[0]
     if enforce_commit:
         strategy_discovery.require_committed(path)
-    value = strategy_discovery.load_artifact(
-        path, expected_kind=CALENDAR_DATA_INSPECTION_KIND
-    )
     if value.get("state") != "CALENDAR_INSPECTED_READY":
         raise ContinuousDiscoveryError("successor calendar inspection is not ready")
     return path, value
@@ -473,8 +485,10 @@ def freeze_successor_contract(
 
     _timestamp(created_at, "created_at")
     result, inspection = _predecessor(enforce_commit=enforce_commit)
-    data_inspection_path, data_inspection = _single_data_inspection(
-        root=CALENDAR_ROOT, enforce_commit=enforce_commit
+    data_inspection_path, data_inspection = _data_inspection_for_calendar(
+        calendar_path,
+        root=CALENDAR_ROOT,
+        enforce_commit=enforce_commit,
     )
     if enforce_commit:
         strategy_discovery.require_committed(calendar_path)
@@ -499,8 +513,12 @@ def freeze_successor_contract(
     embargo_start = DEVELOPMENT_WARMUP_SESSIONS + DEVELOPMENT_SESSIONS
     embargo = selected[embargo_start:embargo_start + EMBARGO_SESSIONS]
     confirmation = selected[-CONFIRMATION_SESSIONS:]
+    predecessor_start = min(
+        str(item["signal_date"]) for item in result["records"]
+    )
     if (
-        confirmation[-1] >= "2022-01-01"
+        confirmation[-1] > "2022-12-31"
+        or confirmation[-1] >= predecessor_start
         or development[0] <= warmup[0]
         or not development[-1] < embargo[0] < confirmation[0]
     ):
@@ -642,7 +660,7 @@ def freeze_successor_contract(
         },
         "contamination_risks": [
             "The predecessor corpus is hypothesis-generating only and cannot count toward promotion.",
-            "No 2022-or-later date may enter this successor search or confirmation.",
+            "No date from the predecessor's 2023-2025 evaluated corpus may enter this successor.",
             "Any globally exposed date-symbol pair disqualifies confirmation.",
         ],
         "production_compatibility_risks": [
@@ -666,11 +684,10 @@ def freeze_successor_contract(
         "outcome_exposure_index_sha256": outcome_exposure.audit()["index_sha256"],
         "universe": {"symbols": list(SYMBOLS), "point_in_time": True},
         "historical_data_contract": {
-            "daily_provider": "massive",
-            "daily_endpoint": (
-                "/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
-            ),
-            "daily_adjusted": False,
+            "daily_provider": "alpaca",
+            "daily_endpoint": "/v2/stocks/{symbol}/bars",
+            "daily_feed": "sip",
+            "daily_adjustment": "raw",
             "split_provider": "massive",
             "provider_substitutions_allowed": False,
         },
@@ -736,11 +753,10 @@ def validate_existing_successor_contract(
         and len(contract.get("trial_family", [])) == 32
         and contract.get("historical_data_contract")
         == {
-            "daily_provider": "massive",
-            "daily_endpoint": (
-                "/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
-            ),
-            "daily_adjusted": False,
+            "daily_provider": "alpaca",
+            "daily_endpoint": "/v2/stocks/{symbol}/bars",
+            "daily_feed": "sip",
+            "daily_adjustment": "raw",
             "split_provider": "massive",
             "provider_substitutions_allowed": False,
         }
@@ -756,8 +772,12 @@ def validate_existing_successor_contract(
         == strategy_discovery._file_hash(PREDECESSOR_INSPECTION)
     ):
         raise ContinuousDiscoveryError("successor predecessor binding drifted")
-    if max(map(str, contract["confirmation_dates"])) >= "2022-01-01":
-        raise ContinuousDiscoveryError("successor confirmation is not pre-predecessor")
+    if max(map(str, contract["confirmation_dates"])) >= str(
+        predecessor["evaluated_outcome_start"]
+    ):
+        raise ContinuousDiscoveryError(
+            "successor confirmation is not pre-predecessor"
+        )
     if contract.get("outcome_exposure_index_sha256") != outcome_exposure.audit()[
         "index_sha256"
     ]:

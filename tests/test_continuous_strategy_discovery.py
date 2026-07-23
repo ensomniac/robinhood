@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import tempfile
 from datetime import date, timedelta
 from pathlib import Path
@@ -108,11 +109,10 @@ def test_existing_family_successor_freezes_without_waiting_or_reusing_v1(
         assert family["mechanism_family"] == "broad-etf-trend-pullback"
         assert family["research_generation"] == "existing_family_successor"
         assert family["historical_data_contract"] == {
-            "daily_provider": "massive",
-            "daily_endpoint": (
-                "/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
-            ),
-            "daily_adjusted": False,
+            "daily_provider": "alpaca",
+            "daily_endpoint": "/v2/stocks/{symbol}/bars",
+            "daily_feed": "sip",
+            "daily_adjustment": "raw",
             "split_provider": "massive",
             "provider_substitutions_allowed": False,
         }
@@ -121,7 +121,7 @@ def test_existing_family_successor_freezes_without_waiting_or_reusing_v1(
         assert len(validated["trial_family"]) == 32
         assert len(family["development_dates"]) == 1_000
         assert len(family["confirmation_dates"]) == 500
-        assert max(family["confirmation_dates"]) < "2022-01-01"
+        assert max(family["confirmation_dates"]) < "2023-01-01"
         assert set(family["development_dates"]).isdisjoint(
             family["confirmation_dates"]
         )
@@ -147,3 +147,39 @@ def test_status_keeps_new_family_wait_separate_from_continuous_lane(tmp_path: Pa
     assert status["successor"]["calendar_wait_required"] is False
     assert status["successor"]["new_mechanism_family_slot_consumed"] is False
     assert status["new_family_batch"]["state"] == "WAITING_ISO_WEEK_RESET"
+
+
+def test_calendar_inspection_resolution_preserves_superseded_calendar(
+    tmp_path: Path,
+    monkeypatch,
+):
+    monkeypatch.setattr(continuous, "PROJECT_ROOT", tmp_path)
+    root = tmp_path / "calendar-artifacts"
+    old_calendar = tmp_path / "old-calendar.json"
+    current_calendar = tmp_path / "current-calendar.json"
+    old_calendar.write_text("[]\n", encoding="utf-8")
+    current_calendar.write_text(
+        json.dumps([{"date": "2022-01-03"}]) + "\n",
+        encoding="utf-8",
+    )
+    for calendar in (old_calendar, current_calendar):
+        strategy_discovery._write_artifact(
+            {
+                "schema_version": 1,
+                "artifact_kind": continuous.CALENDAR_DATA_INSPECTION_KIND,
+                "state": "CALENDAR_INSPECTED_READY",
+                "calendar_path": continuous._repo_path(calendar),
+                "calendar_sha256": strategy_discovery._file_hash(calendar),
+            },
+            root / "data-inspection",
+            "calendar-inspection",
+        )
+
+    path, selected = continuous._data_inspection_for_calendar(
+        current_calendar,
+        root=root,
+        enforce_commit=False,
+    )
+
+    assert path.is_file()
+    assert selected["calendar_path"] == "current-calendar.json"

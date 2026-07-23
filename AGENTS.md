@@ -84,19 +84,20 @@ The ISO-week ceiling applies to newly introduced mechanism families, not to all
 historical strategy discovery. `CONTINUOUS_STRATEGY_DISCOVERY_V2.md` and
 `continuous_strategy_discovery.py` govern one immediate existing-family
 successor lane. `broad-etf-trend-pullback-v2-cost-floor` must bind the retired v1
-attempt, reuse none of its 2023-2025 outcome corpus, freeze 1,000 pre-2022
-development sessions plus a five-session embargo and 500 untouched confirmation
-sessions, and pass the unchanged 32-trial selection-aware gates. It does not
-consume a new-mechanism-family slot. The W31 residual-equity and intraday-ETF
-new-family lanes remain parallel and may not block this successor. The next
-bounded action is to freeze a superseding successor contract and development
-chain after the first exact collection plan established that Alpaca SIP daily
-history starts in 2016 instead of the frozen 2015 warmup. Preserve that failed
-plan as adverse data-readiness history. The new contract must retain the exact
-dates and symbols while binding Massive unadjusted daily ranges plus frozen
-split actions before any further market-price request. No target outcome,
-confirmation-reserve access, date substitution, or broker action is permitted
-by that recovery.
+attempt, reuse none of its 2023-2025 outcome corpus, freeze 1,000 development
+sessions plus a five-session embargo and 500 untouched confirmation sessions
+inside 2016-2022, and pass the unchanged 32-trial selection-aware gates. It does
+not consume a new-mechanism-family slot. The W31 residual-equity and intraday-ETF
+new-family lanes remain parallel and may not block this successor. Preserve the
+first exact plan's incomplete pre-2016 Alpaca coverage and the second plan's
+Massive historical-price HTTP 403 as adverse data-readiness history; neither
+evaluated a trial or opened confirmation. The next bounded action is to freeze,
+inspect, collect, and inspect the zero-price 2014-2022 calendar extension. Only
+then may a new exact contract select the last 1,705 pre-predecessor full sessions
+and bind Alpaca raw SIP daily bars plus frozen Massive split actions. This is a
+new prospectively frozen evidence version, not a date substitution inside either
+failed plan. No target outcome, confirmation-reserve access, or broker action is
+permitted by that recovery.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

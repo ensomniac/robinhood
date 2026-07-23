@@ -35,9 +35,9 @@ The successor freezes:
   decline `{2%,3%}` × stop `{1.0,1.5}×ATR14` × hold `{3,5}` sessions.
 - 200 warmup sessions, 1,000 rolling-origin development sessions, a
   five-session embargo, and 500 untouched confirmation sessions.
-- Evidence ending before 2022, chronologically and outcome-disjoint from the
-  retired predecessor.
-- Massive SIP unadjusted daily symbol ranges plus point-in-time split actions,
+- Evidence ending before 2023, chronologically and outcome-disjoint from the
+  retired predecessor's first 2023 signal.
+- Alpaca raw SIP daily symbol ranges plus point-in-time Massive split actions,
   frozen before provider access and held constant across development and
   confirmation.
 - All existing account-growth, 5/10/20-bps, stationary-bootstrap, DSR, Holm,
@@ -93,27 +93,34 @@ the development dataset, inspect it, evaluate all 32 trials, independently
 select or retire, freeze one exact winner if earned, and only then collect the
 preregistered confirmation reserve.
 
-This lane has a separate committed pre-2022 calendar from the future W31 batch,
+This lane has a separate committed pre-2023 calendar from the future W31 batch,
 so pass it explicitly when freezing either collection plan:
 
 ```sh
 python3 dense_data_collection.py \
-  --calendar historical_batches/continuous_v2/session-calendar-2014-01-through-2021-12.json \
+  --calendar historical_batches/continuous_v2/session-calendar-2014-01-through-2022-12.json \
   freeze-development path/to/committed-successor-search.json
 ```
 
-The daily fixed-ETF collection plane uses four frozen Massive symbol-range
+The daily fixed-ETF collection plane uses four frozen Alpaca symbol-range
 requests plus split metadata, then loads the resulting dataset once for all
 trials. It does not issue one provider request per date.
 
 The first committed development collection plan used Alpaca SIP daily bars and
 failed closed before trial evaluation because all four symbols began on
 2016-01-04 instead of the frozen 2015-03-09 warmup boundary. That plan remains
-adverse data-readiness history. A provider recovery must freeze a new
-implementation hash, family contract, preflight, search, and collection plan
-before accessing Massive. It must retain every frozen date and symbol, make no
-substitution, leave the 2020-2021 confirmation reserve untouched, and reuse no
-artifact from the superseded search chain as promotion evidence.
+adverse data-readiness history. The second exact plan preserved those dates and
+bound Massive daily ranges, but the configured plan returned HTTP 403 on its
+first price task after split metadata completed. It also remains adverse history.
+Neither plan evaluated a trial or touched its confirmation reserve.
+
+The active recovery first extends the independently inspected zero-price calendar
+through 2022. Only after that inspection may a new exact contract select its
+complete 200-warmup, 1,000-development, five-embargo, and 500-confirmation
+partition from 2016-2022 and bind Alpaca raw SIP daily ranges. The global
+outcome-exposure index currently has no 2016-2022 records and the predecessor's
+first evaluated signal is in 2023. Every prior artifact remains preserved, but
+none can count as promotion evidence for the new chain.
 
 ## Parallel lanes
 

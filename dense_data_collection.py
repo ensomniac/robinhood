@@ -325,12 +325,36 @@ def freeze_plan(
             )
         historical_data_contract = contract.get("historical_data_contract")
         if not isinstance(historical_data_contract, Mapping) or (
-            historical_data_contract.get("daily_provider") != "massive"
-            or historical_data_contract.get("daily_adjusted") is not False
-            or historical_data_contract.get("split_provider") != "massive"
+            historical_data_contract.get("split_provider") != "massive"
         ):
             raise DenseDataCollectionError(
                 "existing ETF successor historical data contract is invalid"
+            )
+        daily_provider = historical_data_contract.get("daily_provider")
+        if daily_provider == "alpaca":
+            if not (
+                historical_data_contract.get("daily_feed") == "sip"
+                and historical_data_contract.get("daily_adjustment") == "raw"
+            ):
+                raise DenseDataCollectionError(
+                    "existing ETF successor Alpaca data contract is invalid"
+                )
+            daily_kind = "daily_symbol_bars"
+            daily_provider_label = (
+                "Alpaca SIP raw-adjustment daily bars by frozen symbol range"
+            )
+        elif daily_provider == "massive":
+            if historical_data_contract.get("daily_adjusted") is not False:
+                raise DenseDataCollectionError(
+                    "existing ETF successor Massive data contract is invalid"
+                )
+            daily_kind = "massive_daily_symbol_bars"
+            daily_provider_label = (
+                "Massive SIP unadjusted daily bars by frozen symbol range"
+            )
+        else:
+            raise DenseDataCollectionError(
+                "existing ETF successor daily provider is unsupported"
             )
         split_task = _task("split_actions", required_dates[-1])
         split_task["start"] = required_dates[0]
@@ -340,7 +364,7 @@ def freeze_plan(
         tasks = [split_task]
         for symbol in symbols:
             task = {
-                "kind": "massive_daily_symbol_bars",
+                "kind": daily_kind,
                 "date": required_dates[-1],
                 "start": required_dates[0],
                 "symbol": symbol,
@@ -348,7 +372,7 @@ def freeze_plan(
             task["task_id"] = canonical_sha256(task)
             tasks.append(task)
         providers = [
-            "Massive SIP unadjusted daily bars by frozen symbol range",
+            daily_provider_label,
             "Massive point-in-time split actions through the final frozen session",
         ]
     else:
@@ -386,6 +410,11 @@ def freeze_plan(
         "task_count": len(tasks),
         "providers": providers,
         "research_generation": contract.get("research_generation", "new_family"),
+        "daily_provider": (
+            contract.get("historical_data_contract", {}).get("daily_provider")
+            if existing_successor
+            else None
+        ),
         "universe_semantics": (
             {
                 "security_type": "point-in-time active U.S. common stock",
@@ -947,14 +976,19 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         plan.get("research_generation")
         == continuous_strategy_discovery.RESEARCH_GENERATION
     )
+    successor_provider = plan.get("daily_provider")
     successor_feed = (
-        "Massive SIP daily symbol range"
-        if successor_daily
+        "Alpaca SIP daily symbol range"
+        if successor_daily and successor_provider == "alpaca"
+        else "Massive SIP daily symbol range"
+        if successor_daily and successor_provider == "massive"
         else "Massive SIP grouped daily"
     )
     successor_adjustment = (
-        "raw Massive bars adjusted only by frozen split actions through the dataset end"
-        if successor_daily
+        "raw Alpaca bars adjusted only by frozen split actions through the dataset end"
+        if successor_daily and successor_provider == "alpaca"
+        else "raw Massive bars adjusted only by frozen split actions through the dataset end"
+        if successor_daily and successor_provider == "massive"
         else "raw grouped bars adjusted only by frozen split actions through the dataset end"
     )
     dataset: dict[str, Any] = {

@@ -460,6 +460,79 @@ def test_frozen_search_derives_exact_warmup_and_request_plan(
     assert plan["provider_requests_before_plan_freeze"] == 0
 
 
+def test_existing_successor_plan_uses_frozen_alpaca_daily_provider(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
+    days = _dates(1_200)
+    calendar = tmp_path / "calendar.json"
+    calendar.write_text(
+        json.dumps(
+            [
+                {"date": day, "open_et": "09:30", "close_et": "16:00"}
+                for day in days
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    authority_path = tmp_path / "search.json"
+    authority_path.write_text("{}\n", encoding="utf-8")
+    contract = {
+        "family_id": runtime.ETF_PULLBACK_FAMILY,
+        "research_generation": (
+            collection.continuous_strategy_discovery.RESEARCH_GENERATION
+        ),
+        "development_dates": days[200:],
+        "development_warmup_dates": days[:200],
+        "universe": {"symbols": ["SPY", "QQQ", "IWM", "DIA"]},
+        "historical_data_contract": {
+            "daily_provider": "alpaca",
+            "daily_endpoint": "/v2/stocks/{symbol}/bars",
+            "daily_feed": "sip",
+            "daily_adjustment": "raw",
+            "split_provider": "massive",
+            "provider_substitutions_allowed": False,
+        },
+    }
+    authority = {"artifact_sha256": "a" * 64}
+    monkeypatch.setattr(
+        collection,
+        "_authority",
+        lambda *_args, **_kwargs: (authority, contract, authority["artifact_sha256"]),
+    )
+    monkeypatch.setattr(
+        collection,
+        "_existing_successor_authorized",
+        lambda *_args, **_kwargs: True,
+    )
+    monkeypatch.setattr(
+        collection,
+        "_capacity_calendar_hash",
+        lambda *_args, **_kwargs: collection._file_hash(calendar),
+    )
+
+    _path, plan = collection.freeze_plan(
+        authority_path,
+        as_of=date(2026, 7, 23),
+        actual_today=date(2026, 7, 23),
+        calendar_path=calendar,
+        public_root=tmp_path / "public",
+        enforce_commit=False,
+    )
+
+    assert plan["daily_provider"] == "alpaca"
+    assert plan["task_count"] == 5
+    assert [task["kind"] for task in plan["tasks"]] == [
+        "split_actions",
+        "daily_symbol_bars",
+        "daily_symbol_bars",
+        "daily_symbol_bars",
+        "daily_symbol_bars",
+    ]
+
+
 def test_collection_is_resumable_idempotent_and_independently_inspected(
     tmp_path, monkeypatch
 ):

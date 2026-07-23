@@ -60,9 +60,9 @@ discovery immediately through the existing-family successor lane defined in
 `CONTINUOUS_STRATEGY_DISCOVERY_V2.md`; the weekly new-family ceiling does not
 require all historical research to wait for an ISO-week boundary.
 
-Freeze and independently inspect the zero-price 2014-2021 session-calendar
+Freeze and independently inspect the zero-price 2014-2022 session-calendar
 contract for `broad-etf-trend-pullback-v2-cost-floor`. Its 32-trial rules and
-pre-2022 evidence partitions may freeze only after that inspection. The retired
+pre-2023 evidence partitions may freeze only after that inspection. The retired
 v1 result is hypothesis-generating contamination and cannot contribute any
 promotion record. The predeclared residual-equity and intraday-ETF new-family
 lanes continue separately when their weekly gate opens.

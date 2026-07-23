@@ -238,7 +238,7 @@ confirmation evidence.
 The immediate lane is
 `broad-etf-trend-pullback-v2-cost-floor`. Its 32-trial cost-floor grid uses
 1,000 rolling-origin development sessions, a five-session embargo, and 500
-untouched confirmation sessions ending before 2022. The retired v1's 2023-2025
+untouched confirmation sessions ending before 2023. The retired v1's 2023-2025
 outcomes remain contaminated hypothesis evidence only. Its zero-price calendar
 contract and rows are independently inspected before the successor family
 contract can freeze.
@@ -246,10 +246,11 @@ contract can freeze.
 `dense_data_collection.py` recognizes that exact successor only after rebuilding
 the predecessor and global exposure bindings. Before the weekly reset it
 continues rejecting every other family. The successor's fixed-ETF daily plan
-uses four Massive unadjusted symbol-range requests plus split metadata rather
-than one grouped-data request per date. The failed Alpaca plan remains preserved;
-its provider-wide 2016 start cannot authorize dropping the exact 2015 warmup or
-changing the untouched confirmation reserve. See
+uses four Alpaca raw SIP symbol-range requests plus Massive split metadata rather
+than one grouped-data request per date. The incomplete pre-2016 Alpaca plan and
+the exact-date Massive plan rejected by HTTP 403 remain preserved. Neither
+evaluated a strategy outcome. The active chain freezes a new 2016-2022 evidence
+version only after an independently inspected calendar extension. See
 `CONTINUOUS_STRATEGY_DISCOVERY_V2.md` for the exact transition chain.
 The active hardened calendar contract is `14521284...96d67`, with independent
 inspection `3dbfeb5a...2bf2f`; preserved contract `31f2226b...4ea10` and
