@@ -168,9 +168,18 @@ reserved confirmation sessions. It freezes a capacity manifest for every family
 without price, return, or broker access:
 
 ```sh
+python3 dense_session_calendar.py collect \
+  strategy_tournament/v2/calendar/contract/dense-session-calendar-contract-<sha256>.json \
+  --as-of 2026-07-27 \
+  --collected-at 2026-07-27T08:00:00-04:00
+# Commit the collection status, then independently inspect its ignored rows.
+python3 dense_session_calendar_inspection.py \
+  strategy_tournament/v2/calendar/collection/dense-session-calendar-collection-<sha256>.json \
+  --inspected-at 2026-07-27T08:05:00-04:00
+# Commit the inspection before allocating any evidence dates.
 python3 dense_capacity_inventory.py \
   --as-of 2026-07-27 \
-  --created-at 2026-07-27T08:00:00-04:00
+  --created-at 2026-07-27T08:10:00-04:00
 ```
 
 The allocator fails before the reset, on a calendar or exposure-index error, or
@@ -216,6 +225,41 @@ python3 dense_data_collection_inspection.py \
 Independent inspection rebuilds the runtime dataset from every checkpoint,
 rehashes the ignored gzip payload, revalidates full point-in-time scope, and
 only then freezes the Git-visible development or confirmation dataset manifest.
+Commit that manifest before evaluation. The complete development transition for
+each family is then:
+
+```sh
+python3 strategy_discovery.py preflight path/to/committed-family-contract.json
+# Commit after every successful transition below.
+python3 strategy_discovery.py freeze-search path/to/committed-family-contract.json
+python3 dense_data_collection.py --as-of 2026-07-27 \
+  freeze-development path/to/committed-search.json
+python3 dense_data_collection.py --as-of 2026-07-27 \
+  collect path/to/committed-development-collection-plan.json
+python3 dense_data_collection_inspection.py \
+  path/to/committed-development-collection-status.json \
+  --inspected-at 2026-07-27T12:00:00-04:00
+python3 strategy_discovery.py evaluate-development path/to/committed-search.json
+python3 strategy_discovery.py inspect-development path/to/committed-development-result.json
+```
+
+If inspection selects a winner, freeze and commit it before any confirmation
+request. Confirmation planning copies the winner preregistration timestamp and
+rules hash; independent inspection attests that capture occurred afterward:
+
+```sh
+python3 strategy_discovery.py freeze-winner path/to/committed-development-inspection.json
+python3 dense_data_collection.py --as-of 2026-07-27 \
+  freeze-confirmation path/to/committed-winner.json
+python3 dense_data_collection.py --as-of 2026-07-27 \
+  collect path/to/committed-confirmation-collection-plan.json
+python3 dense_data_collection_inspection.py \
+  path/to/committed-confirmation-collection-status.json \
+  --inspected-at 2026-07-27T16:00:00-04:00
+python3 strategy_discovery.py evaluate-confirmation path/to/committed-winner.json
+python3 strategy_discovery.py inspect-confirmation path/to/committed-confirmation-result.json
+python3 strategy_discovery.py queue-shadow path/to/committed-winner.json
+```
 
 After an exact winner passes committed untouched confirmation,
 `strategy_discovery.py queue-shadow` freezes its five-shadow queue and exact

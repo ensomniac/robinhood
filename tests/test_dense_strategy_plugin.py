@@ -45,7 +45,13 @@ def _dataset() -> dict:
     }
 
 
-def _manifest(tmp_path: Path, dataset: dict, *, external_exists: bool = True) -> Path:
+def _manifest(
+    tmp_path: Path,
+    dataset: dict,
+    *,
+    external_exists: bool = True,
+    lane: str = "development",
+) -> Path:
     store = tmp_path / "historical-store"
     external = store / "_derived/dense/pullback.json.gz"
     if external_exists:
@@ -58,12 +64,16 @@ def _manifest(tmp_path: Path, dataset: dict, *, external_exists: bool = True) ->
     path, _ = freeze_dataset_contract(
         {
             "schema_version": 1,
-            "dataset_id": "dataset-dense-pullback-development",
+            "dataset_id": f"dataset-dense-pullback-{lane}",
             "registered_at": "2026-07-22T19:00:00-04:00",
             "requested_dates": dataset["evaluation_dates"],
             "dataset_payload": {
-                "lane": "development",
-                "claim_scope": "DEVELOPMENT_ONLY",
+                "lane": lane,
+                "claim_scope": (
+                    "DEVELOPMENT_ONLY"
+                    if lane == "development"
+                    else "EXACT_PREREGISTERED_CONTRACT_ONLY"
+                ),
                 "evidence_paths": ["tests/test_dense_strategy_plugin.py"],
                 "inspected": True,
                 "point_in_time_evidence": True,
@@ -75,6 +85,15 @@ def _manifest(tmp_path: Path, dataset: dict, *, external_exists: bool = True) ->
                     "format": "json.gz",
                     "formal_capacity": 120,
                 },
+                **(
+                    {
+                        "preregistration_sha256": "a" * 64,
+                        "preregistered_at": "2026-07-22T18:00:00-04:00",
+                        "capture_after_preregistration_attested": True,
+                    }
+                    if lane == "confirmation"
+                    else {}
+                ),
             },
         },
         tmp_path / "manifests",
@@ -147,6 +166,41 @@ def test_development_loads_dataset_once_and_runs_all_declared_trials(
     ]
     assert result["provider_telemetry"]["requests"] == 0
     assert result["provider_telemetry"]["dataset_loads"] == 1
+
+
+def test_confirmation_manifest_runs_only_the_exact_frozen_winner(
+    tmp_path, monkeypatch
+):
+    dataset = _dataset()
+    manifest = _manifest(tmp_path, dataset, lane="confirmation")
+    monkeypatch.setattr(plugin, "_require_committed", lambda _path: None)
+    monkeypatch.setenv(
+        "LOCAL_HISTORICAL_DATA_ROOT", str(tmp_path / "historical-store")
+    )
+    monkeypatch.setenv("LOCAL_HISTORICAL_MIN_FREE_GIB", "1")
+    winner = {
+        "family_id": runtime.ETF_PULLBACK_FAMILY,
+        "rules_hash": "a" * 64,
+        "confirmation_dates": dataset["evaluation_dates"],
+        "confirmation_dataset_manifest": str(manifest),
+        "exact_rules": {
+            "selected_trial_id": "pullback-trial",
+            "parameters": {
+                "trend_sma": 100,
+                "rsi2_maximum": 10,
+                "three_session_decline_fraction": 0.02,
+                "stop_atr14": 1.0,
+                "maximum_hold_sessions": 3,
+            },
+        },
+    }
+
+    result = plugin.evaluate_confirmation(winner)
+
+    assert result["rules_hash"] == winner["rules_hash"]
+    assert result["parameter_alternatives"] == 0
+    assert result["observed_dates"] == dataset["evaluation_dates"]
+    assert result["dataset_manifest"] == str(manifest)
 
 
 def test_exact_pullback_winner_rebuilds_live_rank_stop_exit_and_sizing():
