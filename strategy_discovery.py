@@ -7,6 +7,7 @@ frozen plugin contract after an inspected preflight opens that exact scope.
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import importlib
 import json
@@ -32,6 +33,7 @@ from learning_experiment import (
 )
 from learning_statistics import maximum_drawdown_fraction, stationary_bootstrap_summary
 from learning_data import LearningDataError, load_frozen_dataset_contract
+from historical_store import HistoricalStoreConfig, HistoricalStoreError
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -43,6 +45,11 @@ SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 PROHIBITED_PREFLIGHT_KEYS = re.compile(
     r"(?:price|return|pnl|profit|drawdown|sharpe|outcome)", re.IGNORECASE
 )
+FULL_EVALUATION_NAMESPACE = Path(
+    "_derived/strategy_discovery_evaluations"
+)
+FULL_EVALUATION_STORAGE = "LOCAL_HISTORICAL_DATA_ROOT"
+TEST_EVALUATION_STORAGE = "DISCOVERY_ARTIFACT_ROOT_PARENT"
 
 
 class StrategyDiscoveryError(RuntimeError):
@@ -112,6 +119,218 @@ def load_artifact(path: Path, *, expected_kind: str | None = None) -> dict[str, 
             f"expected {expected_kind}, found {value.get('artifact_kind')}"
         )
     return value
+
+
+def _evaluation_storage_base(
+    *, root: Path, storage: str | None = None, production: bool = False
+) -> tuple[Path, str]:
+    if storage == TEST_EVALUATION_STORAGE or (
+        storage is None and not production
+    ):
+        return root.parent / ".strategy-discovery-test-evidence", (
+            TEST_EVALUATION_STORAGE
+        )
+    if storage not in {None, FULL_EVALUATION_STORAGE}:
+        raise StrategyDiscoveryError("development evidence storage is invalid")
+    try:
+        configured = HistoricalStoreConfig.from_env()
+    except HistoricalStoreError as exc:
+        raise StrategyDiscoveryError(
+            f"cannot open the external development evidence store: {exc}"
+        ) from exc
+    return configured.root, FULL_EVALUATION_STORAGE
+
+
+def _external_evaluation_path(
+    binding: Mapping[str, Any], *, root: Path
+) -> Path:
+    relative = binding.get("relative_path")
+    if not isinstance(relative, str) or not relative:
+        raise StrategyDiscoveryError(
+            "external development evaluation path is missing"
+        )
+    relative_path = Path(relative)
+    if relative_path.is_absolute() or ".." in relative_path.parts:
+        raise StrategyDiscoveryError(
+            "external development evaluation path is unsafe"
+        )
+    base, _storage = _evaluation_storage_base(
+        root=root,
+        storage=str(binding.get("storage")),
+    )
+    return base / relative_path
+
+
+def _store_development_evaluation(
+    evaluation: Mapping[str, Any],
+    *,
+    root: Path,
+    production: bool,
+) -> dict[str, Any]:
+    normalized = dict(evaluation)
+    content_sha256 = _hash(normalized)
+    base, storage = _evaluation_storage_base(
+        root=root,
+        production=production,
+    )
+    relative = (
+        FULL_EVALUATION_NAMESPACE
+        / content_sha256
+        / "evaluation.json.gz"
+    )
+    path = base / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists():
+        temporary = path.with_suffix(".json.gz.tmp")
+        with temporary.open("wb") as target:
+            with gzip.GzipFile(
+                filename="",
+                mode="wb",
+                fileobj=target,
+                mtime=0,
+            ) as compressed:
+                compressed.write(_canonical(normalized))
+        temporary.replace(path)
+    binding = {
+        "schema_version": 1,
+        "kind": "external-development-evaluation",
+        "storage": storage,
+        "relative_path": str(relative),
+        "format": "canonical-json",
+        "compression": "gzip",
+        "content_sha256": content_sha256,
+        "file_sha256": _file_hash(path),
+    }
+    _load_development_evaluation(
+        {"evaluation_binding": binding},
+        root=root,
+    )
+    return binding
+
+
+def _load_development_evaluation(
+    result: Mapping[str, Any],
+    *,
+    root: Path,
+) -> dict[str, Any]:
+    embedded = result.get("evaluation")
+    if isinstance(embedded, Mapping):
+        return dict(embedded)
+    binding = result.get("evaluation_binding")
+    if not isinstance(binding, Mapping):
+        raise StrategyDiscoveryError(
+            "development result lacks full evaluation evidence"
+        )
+    if not (
+        binding.get("schema_version") == 1
+        and binding.get("kind") == "external-development-evaluation"
+        and binding.get("format") == "canonical-json"
+        and binding.get("compression") == "gzip"
+        and isinstance(binding.get("content_sha256"), str)
+        and SHA256_PATTERN.fullmatch(str(binding["content_sha256"]))
+        and isinstance(binding.get("file_sha256"), str)
+        and SHA256_PATTERN.fullmatch(str(binding["file_sha256"]))
+    ):
+        raise StrategyDiscoveryError(
+            "external development evaluation binding is invalid"
+        )
+    path = _external_evaluation_path(binding, root=root)
+    if not path.is_file():
+        raise StrategyDiscoveryError(
+            "external development evaluation is missing"
+        )
+    if _file_hash(path) != binding["file_sha256"]:
+        raise StrategyDiscoveryError(
+            "external development evaluation file hash drifted"
+        )
+    try:
+        with gzip.open(path, "rb") as source:
+            value = json.loads(source.read())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise StrategyDiscoveryError(
+            f"cannot read external development evaluation: {exc}"
+        ) from exc
+    if not isinstance(value, dict) or _hash(value) != binding["content_sha256"]:
+        raise StrategyDiscoveryError(
+            "external development evaluation content hash drifted"
+        )
+    return value
+
+
+def _compact_development_evaluation(
+    evaluation: Mapping[str, Any],
+) -> dict[str, Any]:
+    trial_summaries: list[dict[str, Any]] = []
+    for trial in evaluation.get("trials", []):
+        metrics = trial.get("metrics", {})
+        arrays = {
+            key: len(value)
+            for key, value in metrics.items()
+            if isinstance(value, list)
+        }
+        trial_summaries.append(
+            {
+                "trial_id": trial.get("trial_id"),
+                "parameters": trial.get("parameters"),
+                "metrics": {
+                    key: value
+                    for key, value in metrics.items()
+                    if not isinstance(value, list)
+                },
+                "evidence_array_lengths": arrays,
+                "trial_accounting_rows": len(
+                    trial.get("trial_accounting", [])
+                ),
+                "maturity_rows": len(trial.get("maturity_rows", [])),
+            }
+        )
+    return {
+        "experiment_id": evaluation.get("experiment_id"),
+        "dataset_manifest": evaluation.get("dataset_manifest"),
+        "implementation_sha256": evaluation.get("implementation_sha256"),
+        "trial_count": len(trial_summaries),
+        "trials": trial_summaries,
+    }
+
+
+def _compact_selection(selection: Mapping[str, Any]) -> dict[str, Any]:
+    compact = {
+        key: value
+        for key, value in selection.items()
+        if key != "trial_classifications"
+    }
+    classifications: list[dict[str, Any]] = []
+    for classification in selection.get("trial_classifications", []):
+        rebuilt = classification.get("rebuilt_metrics", {})
+        classifications.append(
+            {
+                **{
+                    key: value
+                    for key, value in classification.items()
+                    if key != "rebuilt_metrics"
+                },
+                "rebuilt_metrics": {
+                    key: value
+                    for key, value in rebuilt.items()
+                    if key
+                    not in {
+                        "oof_daily_account_returns",
+                        "oof_filled_account_returns",
+                        "oof_net_pnl_dollars",
+                    }
+                },
+                "evidence_array_lengths": {
+                    key: len(rebuilt.get(key, []))
+                    for key in (
+                        "oof_daily_account_returns",
+                        "oof_filled_account_returns",
+                        "oof_net_pnl_dollars",
+                    )
+                },
+            }
+        )
+    compact["trial_classifications"] = classifications
+    return compact
 
 
 def _relative(path: Path) -> str:
@@ -574,6 +793,11 @@ def evaluate_development(
     telemetry = result.get("provider_telemetry", {})
     if not isinstance(telemetry, Mapping):
         raise StrategyDiscoveryError("provider telemetry must be an object")
+    evaluation_binding = _store_development_evaluation(
+        evaluation,
+        root=root,
+        production=enforce_commit,
+    )
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact_kind": "development-search-result",
@@ -582,7 +806,8 @@ def evaluate_development(
         "state": "DEVELOPMENT_EVALUATED",
         "search_path": _relative(search_path),
         "search_sha256": search["artifact_sha256"],
-        "evaluation": evaluation,
+        "evaluation_binding": evaluation_binding,
+        "evaluation_summary": _compact_development_evaluation(evaluation),
         "provider_telemetry": dict(telemetry),
         "elapsed_seconds": time.monotonic() - started,
         "confirmation_access_permitted": False,
@@ -611,14 +836,15 @@ def inspect_development(
     if search["artifact_sha256"] != result["search_sha256"]:
         raise StrategyDiscoveryError("development result search binding drifted")
     contract = search["family_contract"]
+    evaluation = _load_development_evaluation(result, root=root)
     development_manifest_path = Path(
-        str(result["evaluation"]["dataset_manifest"])
+        str(evaluation["dataset_manifest"])
     )
     if enforce_commit:
         require_committed(development_manifest_path)
     evidence_dates = _development_evidence_dates(contract)
     try:
-        selection = select_development_winner(contract, result["evaluation"])
+        selection = select_development_winner(contract, evaluation)
     except LearningExperimentError as exc:
         raise StrategyDiscoveryError(str(exc)) from exc
     state = selection["status"]
@@ -627,7 +853,7 @@ def inspect_development(
         selected_trial_id = selection["selected_trial_id"]
         selected_trials = [
             trial
-            for trial in result["evaluation"]["trials"]
+            for trial in evaluation["trials"]
             if trial["trial_id"] == selected_trial_id
         ]
         if len(selected_trials) != 1:
@@ -675,7 +901,7 @@ def inspect_development(
         "state": state,
         "result_path": _relative(result_path),
         "result_sha256": result["artifact_sha256"],
-        "selection": selection,
+        "selection": _compact_selection(selection),
         "confirmation_inventory": confirmation_inventory,
         "maximum_total_signal_capacity": maximum_total_signal_capacity,
         "development_account_inspection": development_account_inspection,
@@ -747,8 +973,9 @@ def freeze_winner(
     )
     if search["artifact_sha256"] != result.get("search_sha256"):
         raise StrategyDiscoveryError("winner development search binding drifted")
+    evaluation = _load_development_evaluation(result, root=root)
     development_manifest_path = Path(
-        str(result["evaluation"]["dataset_manifest"])
+        str(evaluation["dataset_manifest"])
     )
     if enforce_commit:
         require_committed(development_manifest_path)
@@ -820,7 +1047,7 @@ def freeze_winner(
         "confirmation_scope": contract.get("confirmation_scope"),
         "plugin": contract["plugin"],
         "implementation_hashes": contract["implementation_hashes"],
-        "development_dataset_manifest": result["evaluation"]["dataset_manifest"],
+        "development_dataset_manifest": evaluation["dataset_manifest"],
         "confirmation_parameter_alternatives": 0,
         "confirmation_access_permitted": True,
         "broker_actions_permitted": False,
@@ -1286,10 +1513,14 @@ def _write_historical_maturity_ledger(
         PROJECT_ROOT / str(development_inspection["result_path"]),
         expected_kind="development-search-result",
     )
+    development_evaluation = _load_development_evaluation(
+        development_result,
+        root=root,
+    )
     selected_trial_id = development_inspection["selection"]["selected_trial_id"]
     matches = [
         item
-        for item in development_result["evaluation"]["trials"]
+        for item in development_evaluation["trials"]
         if item["trial_id"] == selected_trial_id
     ]
     if len(matches) != 1:

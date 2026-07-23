@@ -175,10 +175,28 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
             search_path, root=artifact_root, enforce_commit=False
         )
         assert development["provider_telemetry"]["requests"] == 0
+        assert "evaluation" not in development
+        assert development["evaluation_summary"]["trial_count"] == 4
+        assert development["evaluation_binding"]["storage"] == (
+            discovery.TEST_EVALUATION_STORAGE
+        )
+        assert not Path(
+            development["evaluation_binding"]["relative_path"]
+        ).is_absolute()
+        assert development_path.stat().st_size < 100_000
         inspection_path, inspection = discovery.inspect_development(
             development_path, root=artifact_root, enforce_commit=False
         )
         assert inspection["state"] == "WINNER_SELECTED"
+        assert inspection_path.stat().st_size < 100_000
+        for classification in inspection["selection"]["trial_classifications"]:
+            rebuilt = classification["rebuilt_metrics"]
+            assert "oof_daily_account_returns" not in rebuilt
+            assert "oof_filled_account_returns" not in rebuilt
+            assert "oof_net_pnl_dollars" not in rebuilt
+            assert classification["evidence_array_lengths"][
+                "oof_daily_account_returns"
+            ] > 0
         assert inspection["selection"]["required_total_signals"] >= 50
         with pytest.raises(
             discovery.StrategyDiscoveryError,
@@ -481,6 +499,59 @@ def test_development_transitions_reopen_every_committed_predecessor(monkeypatch)
             search_path.resolve(),
             dataset_path.resolve(),
         ]
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("missing", "external development evaluation is missing"),
+        ("tampered", "external development evaluation file hash drifted"),
+    ),
+)
+def test_development_inspection_rejects_missing_or_tampered_external_evidence(
+    mutation,
+    message,
+):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        contract_path = _write_contract(
+            work,
+            family_contract(
+                _dataset(work),
+                family_id=f"external-evidence-{mutation}",
+            ),
+        )
+        discovery.run_preflight(
+            contract_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        search_path, _ = discovery.freeze_search(
+            contract_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        development_path, development = discovery.evaluate_development(
+            search_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        evidence_path = discovery._external_evaluation_path(
+            development["evaluation_binding"],
+            root=artifact_root,
+        )
+        if mutation == "missing":
+            evidence_path.unlink()
+        else:
+            evidence_path.write_bytes(b"tampered")
+
+        with pytest.raises(discovery.StrategyDiscoveryError, match=message):
+            discovery.inspect_development(
+                development_path,
+                root=artifact_root,
+                enforce_commit=False,
+            )
 
 
 def test_winner_freeze_rejects_forged_development_result_binding():

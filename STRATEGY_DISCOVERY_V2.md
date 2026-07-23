@@ -89,10 +89,18 @@ Every transition verifies a content hash and, except for the initial read-only
 status, requires its predecessor artifact to be committed and unchanged. The
 controller is broker-inert. Development evaluation, independent inspection, and
 winner freeze each reopen the exact committed search, dataset manifest, result,
-and inspection predecessors applicable at that stage; winner freeze independently
-checks the result and search hashes again. Preflight rejects outcome-like fields,
-development requires every declared trial and explicit zero-return accounting,
-confirmation accepts no parameter alternatives or date substitutions.
+and inspection predecessors applicable at that stage. The compact public
+development result binds the full evaluation in
+`LOCAL_HISTORICAL_DATA_ROOT/_derived/strategy_discovery_evaluations/` by both
+canonical content SHA-256 and deterministic gzip-file SHA-256. Inspection,
+winner freeze, and maturity-ledger creation reopen and verify that external
+evidence; a missing or changed file fails closed. Public trial summaries and
+classifications retain parameters, aggregate metrics, gate decisions, and
+evidence-array counts without repeating row-level account paths. Winner freeze
+independently checks the result and search hashes again. Preflight rejects
+outcome-like fields, development requires every declared trial and explicit
+zero-return accounting, confirmation accepts no parameter alternatives or date
+substitutions.
 Confirmation inspection reopens the committed winner, confirmation dataset, and
 development inspection; historical admission reopens its committed confirmation
 result and winner before any ledger append. Shadow queueing requires a committed
@@ -159,7 +167,9 @@ derived from the exact winner rather than supplied as discretionary live facts.
 relative path, compressed-file SHA-256, canonical dataset SHA-256, exact family,
 dates, lane, and formal capacity. Development data must also bind the committed
 search hash. Confirmation data must be captured after and bind the exact winner
-rules hash. Warm trial evaluation loads that frozen dataset once and makes zero
+rules hash. The discovery controller applies the same external-storage rule to
+the full multi-trial evaluation, so Git receives only compact aggregate evidence
+and hashes. Warm trial evaluation loads that frozen dataset once and makes zero
 provider requests. Parameter-invariant residual-return, rolling-z, and ATR
 features are shared across the 48 equity trials; a real 250-symbol, 325-session
 fixture enforces the local 60-second acceptance and checks cached/uncached parity.
