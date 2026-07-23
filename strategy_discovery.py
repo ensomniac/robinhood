@@ -1288,12 +1288,35 @@ def inspect_confirmation(
     if enforce_commit:
         require_committed(result_path)
     artifact = load_artifact(result_path, expected_kind="confirmation-result")
+    winner_path = PROJECT_ROOT / str(artifact["winner_path"])
+    if enforce_commit:
+        require_committed(winner_path)
     winner = load_artifact(
-        PROJECT_ROOT / str(artifact["winner_path"]),
+        winner_path,
         expected_kind="frozen-strategy-winner",
     )
     if winner["artifact_sha256"] != artifact["winner_sha256"]:
         raise StrategyDiscoveryError("confirmation winner binding drifted")
+    confirmation_manifest_path = Path(
+        str(artifact["result"]["dataset_manifest"])
+    )
+    development_inspection_path = PROJECT_ROOT / str(
+        winner["development_inspection_path"]
+    )
+    if enforce_commit:
+        require_committed(confirmation_manifest_path)
+        require_committed(development_inspection_path)
+    development_inspection = load_artifact(
+        development_inspection_path,
+        expected_kind="development-search-inspection",
+    )
+    if (
+        development_inspection["artifact_sha256"]
+        != winner["development_inspection_sha256"]
+    ):
+        raise StrategyDiscoveryError(
+            "confirmation development-inspection binding drifted"
+        )
     inspection = inspect_confirmation_metrics(
         artifact["result"],
         required_signals=int(winner["required_confirmation_signals"]),
@@ -1427,6 +1450,23 @@ def admit_historical(
     ):
         raise StrategyDiscoveryError(
             "historical maturity confirmation binding is invalid"
+        )
+    confirmation_result_path = PROJECT_ROOT / str(inspection["result_path"])
+    winner_path = PROJECT_ROOT / str(inspection["winner_path"])
+    if enforce_commit:
+        require_committed(confirmation_result_path)
+        require_committed(winner_path)
+    confirmation_result = load_artifact(
+        confirmation_result_path, expected_kind="confirmation-result"
+    )
+    winner = load_artifact(winner_path, expected_kind="frozen-strategy-winner")
+    if (
+        confirmation_result["artifact_sha256"] != inspection.get("result_sha256")
+        or winner["artifact_sha256"] != inspection.get("winner_sha256")
+        or confirmation_result.get("winner_sha256") != winner["artifact_sha256"]
+    ):
+        raise StrategyDiscoveryError(
+            "historical maturity predecessor chain is invalid"
         )
     try:
         admission = portfolio_maturity.append_records(

@@ -515,6 +515,46 @@ def test_winner_freeze_rejects_forged_development_result_binding():
             )
 
 
+def test_confirmation_inspection_reopens_committed_winner_evidence(monkeypatch):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root, winner_path, inspection, winner = (
+            _freeze_synthetic_winner(work)
+        )
+        assert inspection["state"] == "WINNER_SELECTED"
+        confirmation_path, confirmation = discovery.evaluate_confirmation(
+            winner_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        confirmation_manifest = Path(
+            confirmation["result"]["dataset_manifest"]
+        )
+        development_inspection_path = (
+            discovery.PROJECT_ROOT
+            / str(winner["development_inspection_path"])
+        )
+        checked: list[Path] = []
+        monkeypatch.setattr(
+            discovery,
+            "require_committed",
+            lambda path: checked.append(Path(path).resolve()),
+        )
+
+        _path, result = discovery.inspect_confirmation(
+            confirmation_path,
+            root=artifact_root,
+        )
+
+        assert result["state"] == "CONFIRMATION_PASSED"
+        assert checked == [
+            confirmation_path.resolve(),
+            winner_path.resolve(),
+            confirmation_manifest.resolve(),
+            development_inspection_path.resolve(),
+        ]
+
+
 def test_overfit_family_is_rejected_before_winner_or_confirmation():
     with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
         work = Path(directory)

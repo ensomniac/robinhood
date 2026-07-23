@@ -42,7 +42,10 @@ on its first completed reclaim bar, derives stop/target/hold paths from the exac
 parameters, and rejects stale-session or incomplete-denominator inputs. The
 generic discovery controller reopens the committed search, dataset, result, and
 inspection chain and rechecks its hashes before an exact winner can be frozen. The
-48-trial equity runtime shares only parameter-invariant features and must remain
+same controller reopens the winner, confirmation dataset, development inspection,
+and confirmation result again before confirmation inspection or historical
+ledger admission. The 48-trial equity runtime shares only
+parameter-invariant features and must remain
 under the local 60-second acceptance without provider requests. Schema-1 portfolio
 evidence remains immutable adverse history and cannot satisfy v2 maturity. The
 global outcome-exposure baseline conservatively marks all 226 dates in the

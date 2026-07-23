@@ -92,8 +92,11 @@ winner freeze each reopen the exact committed search, dataset manifest, result,
 and inspection predecessors applicable at that stage; winner freeze independently
 checks the result and search hashes again. Preflight rejects outcome-like fields,
 development requires every declared trial and explicit zero-return accounting,
-confirmation accepts no parameter alternatives or date substitutions, and shadow
-queueing requires a committed passing confirmation inspection.
+confirmation accepts no parameter alternatives or date substitutions.
+Confirmation inspection reopens the committed winner, confirmation dataset, and
+development inspection; historical admission reopens its committed confirmation
+result and winner before any ledger append. Shadow queueing requires a committed
+passing confirmation inspection.
 
 For `selection_mode = "development_search"`, a family may contain at most 64
 trials. A trial must first retain positive 20-bps log growth, stressed profit
