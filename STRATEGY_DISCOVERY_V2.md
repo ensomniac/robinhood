@@ -224,6 +224,10 @@ equity membership adds dated active-common-stock reference snapshots. The
 intraday family uses complete Alpaca SIP minute bars. Task checkpoints and
 cumulative telemetry live outside Git under the configured historical store;
 completed plans are idempotent and make zero repeated provider requests.
+Retryable transport, 429, and 5xx failures receive at most five attempts for the
+same exact task with bounded exponential pacing and any larger numeric
+`Retry-After` delay. Every failed attempt and wait is persisted before another
+request; permanent fidelity and permission failures still stop immediately.
 
 ```sh
 python3 dense_data_collection.py --as-of 2026-07-27 \

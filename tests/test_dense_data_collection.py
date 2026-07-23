@@ -9,6 +9,7 @@ import dense_data_collection as collection
 import dense_data_collection_inspection as inspection
 import dense_strategy_runtime as runtime
 import strategy_discovery
+from historical_providers import HistoricalProviderError
 from historical_store import HistoricalStoreConfig, canonical_sha256
 from learning_data import freeze_dataset_contract
 
@@ -51,6 +52,30 @@ class FakeBackend:
 
     def close(self):
         return None
+
+
+class RetryBackend(FakeBackend):
+    def __init__(self, symbols, failures, *, retryable=True, retry_after=None):
+        super().__init__(symbols)
+        self.remaining_failures = failures
+        self.retryable = retryable
+        self.retry_after = retry_after
+
+    def fetch(self, task):
+        if self.remaining_failures:
+            self.calls.append(task["task_id"])
+            self.telemetry["requests"] += 1
+            self.remaining_failures -= 1
+            raise HistoricalProviderError(
+                "injected provider failure",
+                category=(
+                    "retryable_provider"
+                    if self.retryable
+                    else "permanent_fidelity"
+                ),
+                retry_after_seconds=self.retry_after,
+            )
+        return super().fetch(task)
 
 
 def _dates(count):
@@ -348,6 +373,52 @@ def test_collection_is_resumable_idempotent_and_independently_inspected(
         "binding_sha256"
     ]
     assert manifest["dataset_payload"]["dense_runtime"]["formal_capacity"] == 105
+
+
+def test_collection_retries_retryable_provider_failures_with_visible_pacing(
+    tmp_path, monkeypatch
+):
+    plan_path, _plan, symbols = _artifacts(tmp_path, monkeypatch)
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    backend = RetryBackend(symbols, 2, retry_after=2.5)
+    waits = []
+
+    _status_path, status = collection.collect(
+        plan_path,
+        as_of=date(2026, 7, 27),
+        store_config=config,
+        public_root=tmp_path / "public",
+        backend=backend,
+        enforce_commit=False,
+        retry_sleeper=waits.append,
+    )
+
+    assert waits == [2.5, 2.5]
+    assert status["provider_telemetry"]["failures"] == 2
+    assert status["provider_telemetry"]["pacing_wait_seconds"] == 5.0
+    assert status["completed_tasks"] == status["task_count"]
+
+
+def test_collection_does_not_retry_permanent_provider_failure(tmp_path, monkeypatch):
+    plan_path, _plan, symbols = _artifacts(tmp_path, monkeypatch)
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    backend = RetryBackend(symbols, 1, retryable=False)
+    waits = []
+
+    with pytest.raises(collection.DenseDataCollectionError, match="provider failure"):
+        collection.collect(
+            plan_path,
+            as_of=date(2026, 7, 27),
+            store_config=config,
+            public_root=tmp_path / "public",
+            backend=backend,
+            enforce_commit=False,
+            retry_sleeper=waits.append,
+        )
+
+    assert waits == []
+    assert len(backend.calls) == 1
+    assert backend.telemetry["failures"] == 1
 
 
 def test_confirmation_manifest_attests_capture_after_frozen_winner(

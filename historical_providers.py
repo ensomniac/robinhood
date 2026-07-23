@@ -25,10 +25,29 @@ DEFAULT_ALPACA_DATA_URL = "https://data.alpaca.markets"
 class HistoricalProviderError(RuntimeError):
     """A sanitized provider failure with an explicit retry classification."""
 
-    def __init__(self, message: str, *, category: str):
+    def __init__(
+        self,
+        message: str,
+        *,
+        category: str,
+        retry_after_seconds: float | None = None,
+    ):
         super().__init__(message)
         self.category = category
         self.retryable = category.startswith("retryable_")
+        self.retry_after_seconds = retry_after_seconds
+
+
+def _retry_after_seconds(response: requests.Response) -> float | None:
+    headers = getattr(response, "headers", None)
+    raw = headers.get("Retry-After") if headers is not None else None
+    if raw is None:
+        return None
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None
+    return max(value, 0.0)
 
 
 @runtime_checkable
@@ -183,6 +202,7 @@ class MassiveHistoricalClient:
                 raise HistoricalProviderError(
                     f"Massive HTTP {response.status_code}",
                     category="retryable_provider",
+                    retry_after_seconds=_retry_after_seconds(response),
                 )
             if response.status_code >= 400:
                 category = (
@@ -727,6 +747,7 @@ class AlpacaHistoricalClient:
                 raise HistoricalProviderError(
                     f"Alpaca HTTP {response.status_code}",
                     category="retryable_provider",
+                    retry_after_seconds=_retry_after_seconds(response),
                 )
             if response.status_code >= 400:
                 category = (

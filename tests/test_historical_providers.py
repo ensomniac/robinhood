@@ -14,9 +14,10 @@ from historical_providers import (
 
 
 class FakeResponse:
-    def __init__(self, payload, status_code=200):
+    def __init__(self, payload, status_code=200, headers=None):
         self.payload = payload
         self.status_code = status_code
+        self.headers = dict(headers or {})
 
     def json(self):
         return self.payload
@@ -276,7 +277,9 @@ class MassiveNormalizationTests(unittest.TestCase):
         self.assertEqual(len(session.calls), 1)
 
     def test_rate_limit_is_explicitly_retryable(self):
-        session = FakeSession([FakeResponse({}, status_code=429)])
+        session = FakeSession(
+            [FakeResponse({}, status_code=429, headers={"Retry-After": "4.5"})]
+        )
         client = MassiveHistoricalClient(
             MassiveConfig(api_key="secret"), session=session
         )
@@ -287,6 +290,7 @@ class MassiveNormalizationTests(unittest.TestCase):
 
         self.assertTrue(raised.exception.retryable)
         self.assertEqual(raised.exception.category, "retryable_provider")
+        self.assertEqual(raised.exception.retry_after_seconds, 4.5)
 
 
 class AlpacaNormalizationTests(unittest.TestCase):
@@ -431,7 +435,9 @@ class AlpacaNormalizationTests(unittest.TestCase):
         self.assertEqual(quotes[0]["tape"], "C")
 
     def test_rate_limit_is_explicitly_retryable(self):
-        session = FakeSession([FakeResponse({}, status_code=429)])
+        session = FakeSession(
+            [FakeResponse({}, status_code=429, headers={"Retry-After": "4.5"})]
+        )
         client = AlpacaHistoricalClient(
             AlpacaConfig(api_key="key", api_secret="secret"), session=session
         )
@@ -442,6 +448,7 @@ class AlpacaNormalizationTests(unittest.TestCase):
 
         self.assertTrue(raised.exception.retryable)
         self.assertEqual(raised.exception.category, "retryable_provider")
+        self.assertEqual(raised.exception.retry_after_seconds, 4.5)
 
     def test_raw_trades_preserve_sip_ordering_and_conditions(self):
         start = datetime(2026, 3, 3, 9, 35, tzinfo=EASTERN)

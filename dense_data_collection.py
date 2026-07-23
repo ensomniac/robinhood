@@ -49,6 +49,9 @@ PLAN_KIND = "dense-data-collection-plan"
 STATUS_KIND = "dense-data-collection-status"
 DAILY_WARMUP_SESSIONS = 200
 INTRADAY_WARMUP_SESSIONS = runtime.STANDARDIZATION_LOOKBACK
+MAX_TASK_ATTEMPTS = 5
+INITIAL_RETRY_DELAY_SECONDS = 1.0
+MAX_RETRY_DELAY_SECONDS = 30.0
 
 
 class DenseDataCollectionError(RuntimeError):
@@ -519,6 +522,7 @@ def _write_telemetry_state(
         )
         + "\n"
     ).encode()
+    config.root.mkdir(parents=True, exist_ok=True)
     free = shutil.disk_usage(config.root).free
     if free - len(rendered) < config.min_free_bytes:
         raise DenseDataCollectionError("telemetry write would breach disk reserve")
@@ -792,6 +796,7 @@ def collect(
     public_root: Path = DEFAULT_PUBLIC_ROOT,
     backend: DenseCollectionBackend | None = None,
     enforce_commit: bool = True,
+    retry_sleeper: Any = time.sleep,
 ) -> tuple[Path, dict[str, Any]]:
     current = as_of or date.today()
     if current < batch.ACTIVATION_NOT_BEFORE:
@@ -824,19 +829,38 @@ def collect(
                 _load_checkpoint(path, task)
                 client.telemetry["cache_hits"] += 1
             else:
-                try:
-                    rows = client.fetch(task)
-                except Exception:
-                    client.telemetry["failures"] += 1
-                    _write_telemetry_state(
-                        telemetry_path,
-                        plan_sha256=str(plan["artifact_sha256"]),
-                        telemetry=_combined_telemetry(
-                            baseline_telemetry, client.telemetry
-                        ),
-                        config=config,
-                    )
-                    raise
+                attempts = 0
+                while True:
+                    attempts += 1
+                    try:
+                        rows = client.fetch(task)
+                        break
+                    except Exception as exc:
+                        client.telemetry["failures"] += 1
+                        retryable = isinstance(exc, HistoricalProviderError) and bool(
+                            exc.retryable
+                        )
+                        if retryable and attempts < MAX_TASK_ATTEMPTS:
+                            exponential = min(
+                                INITIAL_RETRY_DELAY_SECONDS * (2 ** (attempts - 1)),
+                                MAX_RETRY_DELAY_SECONDS,
+                            )
+                            delay = max(
+                                exponential,
+                                float(exc.retry_after_seconds or 0.0),
+                            )
+                            client.telemetry["pacing_wait_seconds"] += delay
+                        _write_telemetry_state(
+                            telemetry_path,
+                            plan_sha256=str(plan["artifact_sha256"]),
+                            telemetry=_combined_telemetry(
+                                baseline_telemetry, client.telemetry
+                            ),
+                            config=config,
+                        )
+                        if not retryable or attempts >= MAX_TASK_ATTEMPTS:
+                            raise
+                        retry_sleeper(delay)
                 if not isinstance(rows, list):
                     raise DenseDataCollectionError("provider task did not return rows")
                 _write_external(
