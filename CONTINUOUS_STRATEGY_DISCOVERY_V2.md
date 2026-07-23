@@ -263,6 +263,22 @@ five-session exit. Development reuses only the contaminated 2016-2020
 partition; the five-session embargo and all 500 confirmation sessions remain
 locked.
 
+Independent inspection
+`711fc09695abe7fb7c8ed20a167e7f14d335f7ee9c15b0c3c7743689f2f05be4`
+is `REJECTED`. Only two trials had positive stressed growth and acceptable
+drawdown; none passed stressed profit factor, DSR, Holm, every rolling fold, or
+neighbor stability. The best trial had only 29 fills, +0.001562 log growth,
+1.0360 profit factor, 5.56R drawdown, and DSR 0.472. No winner or evidence
+target was frozen, and all 500 confirmation sessions remain untouched.
+
+Continuous discovery now moves to an existing volatility-compression-breakout
+successor on the disjoint 120-session gap-universe minute corpus. The v1 exact
+rule was adverse on 95 dates, none of which overlap this development partition.
+The successor retains next-minute entry, compression-low structural stop,
+stop-first ambiguity, and 15:50 force-flat while prospectively searching only
+compression length, compression ratio, breakout volume, cutoff, and target.
+Its 75-session confirmation reserve remains globally untouched.
+
 ## Transition chain
 
 Run the lane from the repository root:
