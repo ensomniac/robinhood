@@ -118,7 +118,8 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
             + family["confirmation_dates"]
         )
     assert len(all_dates) == len(set(all_dates)) == capacity.SESSIONS_PER_FAMILY * 3
-    assert len(all_collection_dates) == len(set(all_collection_dates)) == 940
+    assert len(all_collection_dates) == 940
+    assert len(set(all_collection_dates)) == 680
     contracts, status = family_contracts.freeze_batch(
         path,
         as_of=date(2026, 7, 23),
@@ -138,13 +139,16 @@ def test_known_outcome_date_splits_runs_and_can_make_capacity_insufficient(tmp_p
     rows = json.loads(calendar.read_text(encoding="utf-8"))
     outcome_exposure.append_record(
         outcome_exposure.build_record(
-            exposure_id="middle",
+            exposure_id="split-runs",
             campaign_id="legacy",
             lane="legacy",
             recorded_at="2026-07-22T19:00:00-04:00",
             source_path="test",
             source_sha256="a" * 64,
-            scope={"dates": [rows[500]["date"]], "symbols": ["*"]},
+            scope={
+                "dates": [rows[400]["date"], rows[800]["date"]],
+                "symbols": ["*"],
+            },
         ),
         index,
     )

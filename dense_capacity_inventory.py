@@ -24,7 +24,7 @@ DEFAULT_CALENDAR = (
     "session-calendar-2020-01-through-2026-07.json"
 )
 DEFAULT_CALENDAR_INSPECTION_ROOT = (
-    PROJECT_ROOT / "strategy_tournament/v2/calendar/data-inspection"
+    PROJECT_ROOT / "strategy_tournament/v2/calendar/allocation/inspection"
 )
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/next_batch/capacity"
 DEVELOPMENT_SESSIONS = 120
@@ -122,25 +122,31 @@ def _allocate(
     calendar: Sequence[str], exposed_dates: set[str]
 ) -> list[dict[str, list[str]]]:
     plan = batch.build_plan()
-    required = sum(
-        FAMILY_WARMUP_SESSIONS[str(family["family_id"])] + SESSIONS_PER_FAMILY
-        for family in plan["families"]
-    )
-    candidates = [run for run in _untouched_runs(calendar, exposed_dates) if len(run) >= required]
+    required = SESSIONS_PER_FAMILY * len(plan["families"])
+    candidates = [
+        run
+        for run in _untouched_runs(calendar, exposed_dates)
+        if len(run) >= required
+    ]
     if not candidates:
         raise DenseCapacityInventoryError(
-            f"no contiguous untouched calendar run has {required} full sessions"
+            f"no contiguous untouched target-evidence run has {required} sessions"
         )
     selected = candidates[-1][-required:]
+    calendar_index = {day: index for index, day in enumerate(calendar)}
     allocated: list[dict[str, list[str]]] = []
     cursor = 0
     for family in plan["families"]:
         family_id = str(family["family_id"])
         warmup_count = FAMILY_WARMUP_SESSIONS[family_id]
-        warmup = selected[cursor : cursor + warmup_count]
-        cursor += warmup_count
         evidence = selected[cursor : cursor + SESSIONS_PER_FAMILY]
         cursor += SESSIONS_PER_FAMILY
+        evidence_start = calendar_index[evidence[0]]
+        warmup = list(calendar[evidence_start - warmup_count : evidence_start])
+        if len(warmup) != warmup_count:
+            raise DenseCapacityInventoryError(
+                f"{family_id} lacks complete causal indicator warmup"
+            )
         allocated.append({"warmup": warmup, "evidence": evidence})
     return allocated
 
@@ -211,26 +217,40 @@ def _calendar_inspection(
 ) -> str | None:
     if calendar_path.resolve() != DEFAULT_CALENDAR.resolve():
         return None
-    paths = sorted(DEFAULT_CALENDAR_INSPECTION_ROOT.glob("*.json"))
-    if len(paths) != 1:
+    import dense_calendar_allocation
+
+    matches: list[Path] = []
+    exposure_sha256 = outcome_exposure.audit(index_path)["index_sha256"]
+    for path in sorted(DEFAULT_CALENDAR_INSPECTION_ROOT.glob("*.json")):
+        try:
+            inspection = strategy_discovery.load_artifact(
+                path,
+                expected_kind=dense_calendar_allocation.INSPECTION_KIND,
+            )
+        except strategy_discovery.StrategyDiscoveryError:
+            continue
+        if (
+            inspection.get("state")
+            == "CALENDAR_ALLOCATION_INSPECTED_READY"
+            and inspection.get("calendar_sha256") == _file_hash(calendar_path)
+            and inspection.get("outcome_exposure_index_sha256")
+            == exposure_sha256
+            and inspection.get("plan_sha256")
+            == batch.build_plan()["plan_sha256"]
+            and all(inspection.get("checks", {}).values())
+            and inspection.get("target_outcomes_accessed") is False
+            and inspection.get("broker_actions") == 0
+        ):
+            matches.append(path)
+    if len(matches) != 1:
         raise DenseCapacityInventoryError(
-            "extended dense calendar needs exactly one independent inspection"
+            "extended dense calendar needs one current allocation inspection"
         )
-    path = paths[0]
+    path = matches[0]
     try:
         strategy_discovery.require_committed(path)
-        inspection = strategy_discovery.load_artifact(
-            path, expected_kind="dense-session-calendar-data-inspection"
-        )
     except strategy_discovery.StrategyDiscoveryError as exc:
         raise DenseCapacityInventoryError(str(exc)) from exc
-    if not (
-        inspection.get("state") == "CALENDAR_INSPECTED_READY"
-        and inspection.get("calendar_sha256") == _file_hash(calendar_path)
-        and inspection.get("outcome_exposure_index_sha256")
-        == outcome_exposure.audit(index_path)["index_sha256"]
-    ):
-        raise DenseCapacityInventoryError("extended dense calendar inspection drifted")
     return _repo_path(path)
 
 
@@ -267,7 +287,6 @@ def build_inventory(
     blocks = _allocate(_calendar(calendar_path), _globally_exposed_dates(records))
     plan = batch.build_plan()
     families: list[dict[str, Any]] = []
-    collection_scopes: list[dict[str, Any]] = []
     for family, allocation in zip(plan["families"], blocks, strict=True):
         warmup = allocation["warmup"]
         block = allocation["evidence"]
@@ -299,18 +318,22 @@ def build_inventory(
                 "development_dates": development,
                 "embargo_dates": embargo,
                 "confirmation_dates": confirmation,
-                "development_scope": _scope(family, [*warmup, *development]),
+                "development_scope": _scope(family, development),
                 "confirmation_scope": _scope(family, confirmation),
+                "warmup_contract": {
+                    "point_in_time_features_only": True,
+                    "target_outcomes_eligible": False,
+                    "prior_exposure_allowed": True,
+                    "cross_family_overlap_allowed": True,
+                },
             }
         )
-        collection_scopes.append(_scope(family, combined))
     outcome_exposure.assert_disjoint(
         [family["development_scope"] for family in families]
     )
     outcome_exposure.assert_disjoint(
         [family["confirmation_scope"] for family in families]
     )
-    outcome_exposure.assert_disjoint(collection_scopes)
     inventory = {
         "schema_version": 1,
         "campaign_id": batch.CAMPAIGN_ID,

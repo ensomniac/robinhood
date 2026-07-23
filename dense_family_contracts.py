@@ -248,13 +248,19 @@ def _validate_inventory(
         confirmation_scope = outcome_exposure.validate_scope(
             family.get("confirmation_scope")
         )
-        if development_scope["dates"] != [
-            *development_warmup_dates,
-            *development_dates,
-        ]:
+        if development_scope["dates"] != development_dates:
             raise DenseFamilyContractError("development exposure scope dates drifted")
         if confirmation_scope["dates"] != confirmation_dates:
             raise DenseFamilyContractError("confirmation exposure scope dates drifted")
+        if family.get("warmup_contract") != {
+            "point_in_time_features_only": True,
+            "target_outcomes_eligible": False,
+            "prior_exposure_allowed": True,
+            "cross_family_overlap_allowed": True,
+        }:
+            raise DenseFamilyContractError(
+                f"{family_id} warmup evidence boundary drifted"
+            )
         try:
             outcome_exposure.assert_untouched(confirmation_scope, records)
         except outcome_exposure.OutcomeExposureError as exc:

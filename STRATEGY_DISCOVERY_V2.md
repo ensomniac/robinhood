@@ -238,6 +238,17 @@ hash, and pass that exact new contract to collection. Collection selects the
 one inspection bound to the supplied contract instead of treating a preserved
 older inspection as ambiguous authority.
 
+Calendar collection `95b4cba1...213a05` returned 1,643 sessions with one
+outcome-blind request. The original capacity inspection failed before producing
+an artifact because it incorrectly required one 940-session untouched run for
+all three families; preserved wildcard exposures split the calendar and the
+largest run has 567 sessions. The corrected allocation contract freezes the
+statistically relevant boundary before rerun: all three 160-session target
+blocks are mutually disjoint and globally untouched. Indicator warmups must be
+complete and strictly earlier, but may overlap prior exposed dates or another
+family's earlier target block only as causal point-in-time features. Warmup rows
+are ineligible as target evidence, confirmation, power, or maturity.
+
 ## Continuous existing-family successors
 
 The rolling three-active-family limit is an evidence-concurrency control, not a

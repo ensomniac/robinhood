@@ -435,8 +435,10 @@ residual parameters after these outcomes would be selection leakage. The
 continuous lane now activates the already predeclared dense batch under rolling
 authorization `bedfb0ea...5e5585`. The three terminal predecessor families
 released all three slots. The immediate transition is the single outcome-blind
-calendar collection and independent inspection, followed by disjoint capacity
-allocation and exact family-contract freeze. No literal date wait remains.
+calendar collection, now complete as `95b4cba1...213a05`, followed by a frozen
+causal allocation contract and exact family-contract freeze. Target blocks
+remain disjoint and untouched; lagged warmups may overlap only as ineligible
+point-in-time feature input. No literal date wait remains.
 
 Run `python3 dense_batch_readiness.py status` for the exact machine handoff.
 It verifies the current committed plan, calendar contract and inspection,

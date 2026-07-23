@@ -9,6 +9,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+import dense_calendar_allocation
 import dense_capacity_inventory
 import dense_data_collection
 import dense_family_contracts
@@ -26,6 +27,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 IMPLEMENTATION_PATHS = (
     Path(__file__).resolve(),
     Path(batch.__file__).resolve(),
+    Path(dense_calendar_allocation.__file__).resolve(),
     Path(dense_session_calendar.__file__).resolve(),
     Path(dense_session_calendar_inspection.__file__).resolve(),
     Path(dense_capacity_inventory.__file__).resolve(),
@@ -155,6 +157,36 @@ def _calendar_boundary(
     return contract_path, contract, inspection_path, inspection
 
 
+def _calendar_collection(
+    contract: dict[str, Any],
+) -> tuple[Path, dict[str, Any]] | None:
+    matches: list[tuple[Path, dict[str, Any]]] = []
+    for path in sorted(
+        (dense_session_calendar.DEFAULT_ROOT / "collection").glob("*.json")
+    ):
+        try:
+            status = strategy_discovery.load_artifact(
+                path,
+                expected_kind=dense_session_calendar.COLLECTION_KIND,
+            )
+        except strategy_discovery.StrategyDiscoveryError:
+            continue
+        if (
+            status.get("contract_sha256") == contract["artifact_sha256"]
+            and status.get("state") == "CALENDAR_COLLECTED_UNINSPECTED"
+            and status.get("provider_requests") == 1
+            and status.get("market_prices_accessed") is False
+            and status.get("target_outcomes_accessed") is False
+            and status.get("broker_actions") == 0
+        ):
+            matches.append((path, status))
+    if len(matches) > 1:
+        raise DenseBatchReadinessError(
+            "multiple collections bind the current calendar contract"
+        )
+    return matches[0] if matches else None
+
+
 def plan_activation_policy() -> str:
     return str(batch.build_plan()["activation_policy"])
 
@@ -175,6 +207,9 @@ def build_status(
     contract_path, contract, inspection_path, inspection = _calendar_boundary(
         require_committed=require_committed
     )
+    collection = _calendar_collection(contract)
+    if collection is not None and require_committed:
+        strategy_discovery.require_committed(collection[0])
     implementation_hashes = {
         _repo_path(path): strategy_discovery._file_hash(path)
         for path in IMPLEMENTATION_PATHS
@@ -210,9 +245,13 @@ def build_status(
     calendar_path = PROJECT_ROOT / str(contract["calendar_path"])
     source_path = PROJECT_ROOT / str(contract["source_path"])
     output_state = (
-        "ABSENT_READY_FOR_SINGLE_COLLECTION"
-        if not calendar_path.exists() and not source_path.exists()
-        else "COLLECTION_OUTPUT_PRESENT"
+        "COLLECTED_READY_FOR_ALLOCATION_CONTRACT"
+        if collection is not None
+        else (
+            "ABSENT_READY_FOR_SINGLE_COLLECTION"
+            if not calendar_path.exists() and not source_path.exists()
+            else "UNBOUND_COLLECTION_OUTPUT_PRESENT"
+        )
     )
     activation = batch.activation_status(today=current)
     activation_permitted = activation.get("activation_permitted") is True
@@ -220,16 +259,34 @@ def build_status(
         blockers.extend(str(item) for item in activation.get("blockers", []))
     if blockers:
         state = "PREACTIVATION_BLOCKED"
+    elif collection is not None:
+        state = "ALLOCATION_CONTRACT_READY"
     elif activation_permitted:
         state = "ACTIVATION_READY"
     else:
         state = "PREACTIVATION_READY"
-    collection_command = (
-        "python3 dense_session_calendar.py collect "
-        f"{_repo_path(contract_path)} --as-of "
-        f"{batch.ACTIVATION_NOT_BEFORE.isoformat()} --collected-at "
-        "<actual-current-ISO8601-timestamp>"
-    )
+    if collection is None:
+        first_commands = [
+            (
+                "python3 dense_session_calendar.py collect "
+                f"{_repo_path(contract_path)} --as-of "
+                f"{batch.ACTIVATION_NOT_BEFORE.isoformat()} --collected-at "
+                "<actual-current-ISO8601-timestamp>"
+            )
+        ]
+    else:
+        first_commands = [
+            (
+                "python3 dense_calendar_allocation.py freeze "
+                f"{_repo_path(collection[0])} --frozen-at "
+                "<actual-current-ISO8601-timestamp>"
+            ),
+            (
+                "python3 dense_calendar_allocation.py inspect "
+                "<committed-allocation-contract> --inspected-at "
+                "<actual-current-ISO8601-timestamp>"
+            ),
+        ]
     return {
         "schema_version": 1,
         "campaign_id": batch.CAMPAIGN_ID,
@@ -256,9 +313,21 @@ def build_status(
             "inspection_path": _repo_path(inspection_path),
             "inspection_sha256": inspection["artifact_sha256"],
             "output_state": output_state,
-            "provider_requests_so_far": 0,
+            "provider_requests_so_far": (
+                int(collection[1]["provider_requests"])
+                if collection is not None
+                else 0
+            ),
             "market_prices_accessed": False,
             "target_outcomes_accessed": False,
+            "collection_path": (
+                _repo_path(collection[0]) if collection is not None else None
+            ),
+            "collection_sha256": (
+                collection[1]["artifact_sha256"]
+                if collection is not None
+                else None
+            ),
         },
         "implementation_hashes": implementation_hashes,
         "credentials_ready": credentials_ready,
@@ -271,18 +340,22 @@ def build_status(
             "performance and production-evaluator verification",
             "repository and sensitive-data audits",
         ],
-        "remaining_transition_order": [
-            "collect and inspect the outcome-blind session calendar",
-            "freeze disjoint family evidence and exact family contracts",
-            "collect development inputs only from committed exact contracts",
-        ],
+        "remaining_transition_order": (
+            [
+                "collect the outcome-blind session calendar once",
+                "freeze and inspect its causal allocation contract",
+                "freeze disjoint family evidence and exact family contracts",
+                "collect development inputs only from committed exact contracts",
+            ]
+            if collection is None
+            else [
+                "freeze and inspect the causal allocation contract",
+                "freeze disjoint family evidence and exact family contracts",
+                "collect development inputs only from committed exact contracts",
+            ]
+        ),
         "next_commands": [
-            collection_command,
-            (
-                "python3 dense_session_calendar_inspection.py "
-                "<calendar-collection-artifact> --inspected-at "
-                "<actual-current-ISO8601-timestamp>"
-            ),
+            *first_commands,
             (
                 "python3 dense_capacity_inventory.py --as-of "
                 f"{batch.ACTIVATION_NOT_BEFORE.isoformat()} --created-at "
@@ -298,7 +371,9 @@ def build_status(
                 "<committed-family-contract>"
             ),
         ],
-        "provider_access_permitted": activation_permitted and not blockers,
+        "provider_access_permitted": (
+            activation_permitted and not blockers and collection is None
+        ),
         "target_outcome_access_permitted": False,
         "broker_actions_permitted": False,
     }

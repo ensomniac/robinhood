@@ -174,11 +174,11 @@ def test_status_turns_rejected_successor_into_non_waiting_readiness_work():
     assert status["successor"]["outcome_access_wait_required"] is False
     assert status["successor"]["outcome_access_prerequisites_remaining"] is True
     readiness = status["preactivation_readiness"]
-    assert readiness["state"] == "ACTIVATION_READY"
+    assert readiness["state"] == "ALLOCATION_CONTRACT_READY"
     assert readiness["blockers"] == []
     assert readiness["preactivation_work_complete"] is True
     assert readiness["credentials_ready"] is True
-    assert readiness["provider_access_permitted"] is True
+    assert readiness["provider_access_permitted"] is False
     assert readiness["target_outcome_access_permitted"] is False
     assert readiness["broker_actions_permitted"] is False
 

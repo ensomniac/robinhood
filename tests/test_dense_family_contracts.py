@@ -92,16 +92,22 @@ def _inventory(tmp_path, index_path, *, overlap: bool = False):
                 "development_dates": development,
                 "embargo_dates": embargo,
                 "confirmation_dates": confirmation,
-                "development_scope": {
-                    "dates": [*development_warmup, *development],
-                    "symbols": family_symbols,
-                },
-                "confirmation_scope": {
-                    "dates": confirmation,
-                    "symbols": family_symbols,
-                },
-            }
-        )
+                    "development_scope": {
+                        "dates": development,
+                        "symbols": family_symbols,
+                    },
+                    "confirmation_scope": {
+                        "dates": confirmation,
+                        "symbols": family_symbols,
+                    },
+                    "warmup_contract": {
+                        "point_in_time_features_only": True,
+                        "target_outcomes_eligible": False,
+                        "prior_exposure_allowed": True,
+                        "cross_family_overlap_allowed": True,
+                    },
+                }
+            )
     value = {
         "schema_version": 1,
         "campaign_id": batch.CAMPAIGN_ID,

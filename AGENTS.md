@@ -147,10 +147,16 @@ enter confirmation; all 25 confirmation opportunities remain untouched.
 
 Do not manufacture another residual-reversal version from those outcomes.
 The immediate work is the already predeclared dense batch under three released
-rolling slots. Collect and independently inspect the one outcome-blind session
-calendar, allocate disjoint development/embargo/confirmation evidence, freeze
-all three exact contracts, and then collect development inputs. There is no
-calendar wait.
+rolling slots. The one outcome-blind session calendar is collected in status
+`95b4cba1...213a05`. The first allocation inspection correctly failed because
+the old allocator demanded one 940-session run containing all three warmups and
+target blocks; the largest untouched run has 567 sessions. No target outcome or
+strategy metric was accessed. Freeze and inspect the corrected allocation
+contract: each family receives a mutually disjoint 160-session target block,
+while causal lagged warmup may overlap prior exposed dates or another family's
+earlier target dates only as point-in-time feature input and can never count as
+target evidence. Then freeze all three exact contracts and collect development
+inputs. There is no calendar wait.
 
 `python3 dense_batch_readiness.py status` is the fail-closed handoff authority
 for that work. It must resolve one current

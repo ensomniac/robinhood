@@ -873,8 +873,8 @@ def build_status(
     ) == "REJECTED":
         state = "EXISTING_FAMILY_QUEUE_EXHAUSTED"
         next_action = (
-            "collect and independently inspect the rolling batch session "
-            "calendar, then freeze all three disjoint evidence contracts"
+            "freeze and independently inspect the rolling calendar allocation "
+            "contract, then freeze all three disjoint evidence contracts"
         )
     elif not family_discovery_root.exists():
         state = "SUCCESSOR_CONTRACT_FROZEN"
