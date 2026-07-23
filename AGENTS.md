@@ -111,7 +111,7 @@ The exact v5 successor is terminal; its 25 confirmation opportunities remain
 untouched.
 
 Continuous work now advances
-`two-to-three-day-cross-sectional-reversal-v3-liquid-common-stock-residual`.
+`two-to-three-day-cross-sectional-reversal-v4-liquid-common-stock-residual-spy`.
 This is an existing-family successor, not a new mechanism-family activation.
 It reuses the same committed point-in-time liquid-common-stock source and the
 80 now contaminated development decision dates, while retaining the five
@@ -121,7 +121,13 @@ the complete 48-trial residual-reversal grid from the authorized discovery
 plan: prior return `{1,3}` sessions, residual z threshold
 `{-1.5,-2.0,-2.5}`, SPY trend `{SMA100,SMA200}`, stop `{1.0,1.5}×ATR14`,
 and hold `{2,5}` sessions. It consumes no new-family slot and requires no
-calendar wait.
+calendar wait. V3 froze and committed that exact grid, then failed closed on
+its first evaluation boundary because the common-stock source omitted SPY.
+Failure `f5596e4e...5a081` records that the source file opened but no candidate,
+return, trial metric, selection, or result was produced and confirmation
+remained closed. V4 changes only the missing reference boundary by binding a
+complete, content-addressed SPY daily series; its grid, partitions, costs,
+selection algorithm, and confirmation reserve cannot change.
 
 The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1

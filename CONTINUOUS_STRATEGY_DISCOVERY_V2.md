@@ -398,7 +398,7 @@ positive. No Holm-adjusted test rejected. No winner or evidence target was
 frozen, and the 25 confirmation opportunities remain untouched.
 
 Continuous work now proceeds with
-`two-to-three-day-cross-sectional-reversal-v3-liquid-common-stock-residual`.
+`two-to-three-day-cross-sectional-reversal-v4-liquid-common-stock-residual-spy`.
 The mechanism is the already evaluated short-horizon cross-sectional reversal,
 not a new family. Its material successor change is the prospectively frozen
 top-250 liquid common-stock denominator and market-residual standardization.
@@ -409,6 +409,14 @@ freeze all 48 combinations of prior return `{1,3}` sessions, downside residual
 z `{-1.5,-2.0,-2.5}`, SPY trend `{SMA100,SMA200}`, stop
 `{1.0,1.5}×ATR14`, and hold `{2,5}` sessions. It consumes no new-family slot
 and does not wait for an ISO-week boundary.
+
+V3 committed that exact search and opened the cached common-stock file once,
+then failed before the first candidate because SPY was absent. Failure
+`f5596e4e0aaca3208541fb3ab1ee4995e5b6bc9c7bfbd735637635622125a081`
+records zero returned trials, zero surfaced metrics, no selection, no result,
+no confirmation access, and no broker or provider action. V4 is limited to
+binding a complete SPY daily reference series. No grid, date, cost, selection,
+or confirmation-reserve change is permitted.
 
 ## Parallel lanes
 
