@@ -36,12 +36,17 @@ families; it is never a reason to wait before continuing historical work on an
 existing family. The first continuous broad-ETF pullback successor is retired
 after all 32 trials failed its inspected selection-aware development gates. The
 active immediate lane is
-`short-horizon-oversold-reversal-v2-gap-universe`. It may reuse the already
-exposed 120-session, 4,833-candidate gap corpus only as explicitly contaminated
-development training. Its later 75-session, 3,192-candidate confirmation
-reserve is globally untouched and must remain unopened until the generic
-development engine selects and freezes one exact winner. This successor consumes
-no new-family slot and authorizes no broker action.
+`short-horizon-oversold-reversal-v3-gap-universe`. Its v2 predecessor failed
+closed only after computing the full development family because the plugin
+returned the correct dataset manifest as an absolute path while the contract
+stored the same path repository-relative. No metrics were surfaced, no result
+or selection artifact was written, and confirmation remained untouched. V3
+changes only canonical path serialization and binds that failure. It may reuse
+the already exposed 120-session, 4,833-candidate gap corpus only as explicitly
+contaminated development training. Its later 75-session, 3,192-candidate
+confirmation reserve is globally untouched and must remain unopened until the
+generic development engine selects and freezes one exact winner. This successor
+consumes no new-family slot and authorizes no broker action.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and

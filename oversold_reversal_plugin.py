@@ -295,7 +295,7 @@ def evaluate_development(
     )
     policy = _account_policy()
     return {
-        "dataset_manifest": str(manifest_path),
+        "dataset_manifest": str(contract["dataset_manifest"]),
         "trials": [
             runtime.evaluate_trial(
                 dataset,

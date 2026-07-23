@@ -64,3 +64,29 @@ def test_status_never_waits_for_a_calendar_reset(tmp_path):
     assert result["calendar_wait_required"] is False
     assert result["new_mechanism_family_slot_consumed"] is False
     assert result["confirmation_outcomes_accessed"] is False
+
+
+def test_development_reports_the_contract_canonical_manifest_path(monkeypatch):
+    canonical = (
+        "strategy_tournament/v2/continuous/example/"
+        "dataset-example-development.json"
+    )
+    monkeypatch.setattr(plugin, "_load_bound_dataset", lambda *args, **kwargs: {})
+    monkeypatch.setattr(plugin.runtime, "prepare_dataset", lambda value: value)
+    monkeypatch.setattr(
+        plugin.runtime,
+        "evaluate_trial",
+        lambda *args, **kwargs: {"trial_id": kwargs["trial_id"]},
+    )
+    monkeypatch.setattr(plugin, "_account_policy", lambda: {})
+
+    result = plugin.evaluate_development(
+        {
+            "dataset_manifest": canonical,
+            "development_dates": ["2025-01-02"],
+            "rolling_origin_plan": [],
+        },
+        [{"trial_id": "trial-a", "parameters": {}}],
+    )
+
+    assert result["dataset_manifest"] == canonical

@@ -33,7 +33,7 @@ CAMPAIGN_ID = portfolio_maturity.V2_CAMPAIGN_ID
 FAMILY_ID = runtime.OVERSOLD_REVERSAL_FAMILY
 MECHANISM_FAMILY = "short-horizon-oversold-reversal"
 STRATEGY_ID = MECHANISM_FAMILY
-SUCCESSOR_ID = "short-horizon-oversold-reversal-v2-gap-universe"
+SUCCESSOR_ID = "short-horizon-oversold-reversal-v3-gap-universe"
 RESEARCH_GENERATION = "existing_family_successor"
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/continuous"
 
@@ -79,6 +79,18 @@ SOURCE_DEVELOPMENT_RESULT_INSPECTION = (
     / "strategy_validation/equity_gap_continuation/inspections/"
     "equity-gap-continuation-v1-development-result-"
     "bf1050d3d88b2402890befd5c583f2b623b14fa1b33f2edc9f89692e130db8c6.json"
+)
+FAILED_V2_SEARCH = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/gap-universe-oversold-reversal/search/"
+    "gap-universe-oversold-reversal-search-"
+    "f914253ee7f58d8d6abaab028fbe6d09dc1a561ed87b341876a04ec9ad6b6dd7.json"
+)
+FAILED_V2_TRANSITION = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/gap-universe-oversold-reversal/"
+    "development-failures/gap-universe-oversold-reversal-development-failure-"
+    "9f907241783e940b84e6fcdfa08529a495539ea05daaf2da6d86fe091a9820bc.json"
 )
 
 
@@ -146,6 +158,8 @@ def _source_graph(
         SOURCE_DEVELOPMENT_INPUT_INSPECTION,
         SOURCE_DEVELOPMENT_RESULT,
         SOURCE_DEVELOPMENT_RESULT_INSPECTION,
+        FAILED_V2_SEARCH,
+        FAILED_V2_TRANSITION,
     )
     if enforce_commit:
         for path in paths:
@@ -170,6 +184,10 @@ def _source_graph(
     source_input_inspection = _read(SOURCE_DEVELOPMENT_INPUT_INSPECTION)
     source_result = _read(SOURCE_DEVELOPMENT_RESULT)
     source_result_inspection = _read(SOURCE_DEVELOPMENT_RESULT_INSPECTION)
+    failed_transition = strategy_discovery.load_artifact(
+        FAILED_V2_TRANSITION,
+        expected_kind="development-evaluation-failure",
+    )
     if not (
         source_manifest.get("private_selection", {}).get(
             "contains_target_returns"
@@ -191,6 +209,15 @@ def _source_graph(
         and source_result_inspection.get("result_sha256")
         == source_result.get("result_sha256")
         and source_result_inspection.get("valid") is True
+        and failed_transition.get("state")
+        == "FAILED_ARTIFACT_BINDING_AFTER_OUTCOME_COMPUTATION"
+        and failed_transition.get("search_path") == _repo_path(FAILED_V2_SEARCH)
+        and failed_transition.get("trial_metrics_surfaced") is False
+        and failed_transition.get("confirmation_accessed") is False
+        and failed_transition.get(
+            "strategy_grid_dates_rules_costs_changed_after_failure"
+        )
+        is False
     ):
         raise OversoldDiscoveryError("contaminated source graph is invalid")
     return predecessor, source_manifest, source_input_inspection
@@ -267,6 +294,8 @@ def freeze_successor_contract(
         _repo_path(SOURCE_DEVELOPMENT_INPUT_INSPECTION),
         _repo_path(SOURCE_DEVELOPMENT_RESULT),
         _repo_path(SOURCE_DEVELOPMENT_RESULT_INSPECTION),
+        _repo_path(FAILED_V2_SEARCH),
+        _repo_path(FAILED_V2_TRANSITION),
         "strategy_tournament/v2/OUTCOME_EXPOSURE_INDEX.jsonl",
     ]
     capacity_path, _capacity = freeze_dataset_contract(
@@ -333,7 +362,25 @@ def freeze_successor_contract(
         "research_generation": RESEARCH_GENERATION,
         "successor_id": SUCCESSOR_ID,
         "new_mechanism_family_slot_consumed": False,
-        "prior_family_attempt_count": 1,
+        "prior_family_attempt_count": 2,
+        "supersedes_failed_transition": {
+            "successor_id": "short-horizon-oversold-reversal-v2-gap-universe",
+            "search_path": _repo_path(FAILED_V2_SEARCH),
+            "search_file_sha256": sha256_file(FAILED_V2_SEARCH),
+            "failure_path": _repo_path(FAILED_V2_TRANSITION),
+            "failure_file_sha256": sha256_file(FAILED_V2_TRANSITION),
+            "failure_sha256": strategy_discovery.load_artifact(
+                FAILED_V2_TRANSITION,
+                expected_kind="development-evaluation-failure",
+            )["artifact_sha256"],
+            "trial_metrics_surfaced": False,
+            "confirmation_accessed": False,
+            "strategy_grid_dates_rules_costs_changed": False,
+            "implementation_change": (
+                "return the already bound dataset manifest using its contract-"
+                "canonical repository-relative path"
+            ),
+        },
         "pre_freeze_training_diagnostic": {
             "purpose": (
                 "I/O and semantic dry run on the already contaminated development "

@@ -63,9 +63,19 @@ cannot be relabeled as untouched evidence.
 ## Active immediate lane
 
 The active successor is
-`short-horizon-oversold-reversal-v2-gap-universe`, implemented under runtime
+`short-horizon-oversold-reversal-v3-gap-universe`, implemented under runtime
 family ID `gap-universe-oversold-reversal`. It remains inside the already tested
 `short-horizon-oversold-reversal` mechanism and consumes no new-family slot.
+
+The preceding v2 search failed closed after the plugin computed the deterministic
+development family but before a result artifact was written: it returned the
+correct dataset manifest as an absolute path while the contract stored the same
+path repository-relative. Failure artifact
+`9f907241783e940b84e6fcdfa08529a495539ea05daaf2da6d86fe091a9820bc`
+records that no metrics were surfaced, selection did not run, and confirmation
+remained untouched. V3 changes only canonical path serialization, binds the v2
+failure, preserves the exact grid, dates, rules, and costs, and must repeat the
+full freeze/preflight/search chain before deterministic recovery.
 
 The shortest defensible evidence path reuses the point-in-time input graph
 previously frozen for representative equity-gap research:
@@ -100,7 +110,7 @@ Freeze and commit the exact successor before generic preflight:
 python3 oversold_reversal_discovery.py freeze \
   --created-at <actual-current-ISO8601-timestamp>
 python3 strategy_discovery.py preflight \
-  strategy_tournament/v2/continuous/short-horizon-oversold-reversal-v2-gap-universe/family-contract/contract-<sha256>.json
+  strategy_tournament/v2/continuous/short-horizon-oversold-reversal-v3-gap-universe/family-contract/contract-<sha256>.json
 ```
 
 After committing preflight, use `strategy_discovery.py freeze-search`,
