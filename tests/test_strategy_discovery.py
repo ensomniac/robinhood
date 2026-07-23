@@ -241,9 +241,13 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
             root=artifact_root,
             ledger_path=portfolio_ledger,
             enforce_commit=False,
+            queued_at="2026-07-24T00:00:00-04:00",
         )
         assert queue_path.is_file()
         assert queue["state"] == "SHADOW_QUEUED"
+        assert datetime.fromisoformat(
+            queue["queued_at"].replace("Z", "+00:00")
+        ) > datetime.fromisoformat(winner["recorded_at"])
         assert queue["required_clean_closed_shadows"] == 5
         assert queue["historical_admission_verified"] is True
         assert queue["historical_records_admitted"] == admission["total_requested"]
@@ -287,7 +291,7 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
         ]
         for index in range(5):
             shadow_now = datetime(
-                2025, 8, 1 + index * 3, 14, 0, 4, tzinfo=UTC
+                2026, 8, 1 + index * 3, 14, 0, 4, tzinfo=UTC
             )
             setup = {
                 "schema_version": 1,

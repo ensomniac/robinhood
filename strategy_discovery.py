@@ -1429,6 +1429,7 @@ def queue_shadow(
     root: Path = DEFAULT_ROOT,
     ledger_path: Path = portfolio_maturity.DEFAULT_LEDGER_PATH,
     enforce_commit: bool = True,
+    queued_at: str | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     if enforce_commit:
         require_committed(winner_path)
@@ -1463,6 +1464,28 @@ def queue_shadow(
             "historical maturity gates did not clear for shadow qualification: "
             + "; ".join(historical_assessment.get("current_phase_blockers", []))
         )
+    activation = queued_at or datetime.now(timezone.utc).isoformat().replace(
+        "+00:00", "Z"
+    )
+    try:
+        activation_timestamp = datetime.fromisoformat(
+            activation.replace("Z", "+00:00")
+        )
+        winner_timestamp = datetime.fromisoformat(
+            str(winner["recorded_at"]).replace("Z", "+00:00")
+        )
+    except (KeyError, ValueError) as exc:
+        raise StrategyDiscoveryError(
+            "shadow queue and winner timestamps must be valid ISO timestamps"
+        ) from exc
+    if activation_timestamp.tzinfo is None or winner_timestamp.tzinfo is None:
+        raise StrategyDiscoveryError(
+            "shadow queue and winner timestamps must include timezones"
+        )
+    if activation_timestamp <= winner_timestamp:
+        raise StrategyDiscoveryError(
+            "shadow queue activation must follow winner preregistration"
+        )
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact_kind": "prospective-shadow-queue",
@@ -1472,6 +1495,7 @@ def queue_shadow(
         "strategy_version": winner["strategy_version"],
         "rules_hash": winner["rules_hash"],
         "state": "SHADOW_QUEUED",
+        "queued_at": activation,
         "winner_path": _relative(winner_path),
         "winner_sha256": winner["artifact_sha256"],
         "required_clean_closed_shadows": 5,

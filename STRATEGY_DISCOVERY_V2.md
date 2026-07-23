@@ -330,7 +330,9 @@ historical evidence exists only in a side artifact.
 
 After admission,
 `strategy_discovery.py queue-shadow` freezes its five-shadow queue and exact
-winner binding. Each prospective signal then uses a committed admission chain:
+winner binding. The queue records its activation timestamp, which must follow
+winner preregistration; fresh signal and fill observations must occur after that
+activation. Each prospective signal then uses a committed admission chain:
 
 ```sh
 python3 portfolio_shadow.py start path/to/committed-shadow-queue.json \
@@ -348,7 +350,10 @@ python3 portfolio_shadow_inspection.py admit \
 The runner imports no broker connector and hard-codes zero broker actions.
 Entry and exit prices come from fresh ask and bid observations respectively;
 partial fills, missed limits, protection timing, 5/10/20-bps costs, monitoring,
-and journaling are explicit. Missed limits remain nonqualifying observations.
+and journaling are explicit. Independent inspection reopens and hash-validates
+the committed queue, passing confirmation inspection, historical maturity
+ledger, winner, entry, and final artifacts before ledger admission. Missed
+limits remain nonqualifying observations.
 Any capture or rule violation resets the clean consecutive-shadow streak for
 that exact version; five new clean closed fills are required afterward.
 

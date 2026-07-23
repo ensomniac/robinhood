@@ -28,6 +28,7 @@ def _winner_and_queue(work: Path):
             "strategy_version": "synthetic-shadow-edge-v1",
             "rules_hash": "a" * 64,
             "state": "WINNER_FROZEN",
+            "recorded_at": (NOW - timedelta(minutes=1)).isoformat(),
             "plugin": {
                 "module": "tests.synthetic_discovery_plugin",
                 "evaluate_production": "evaluate_production",
@@ -41,6 +42,42 @@ def _winner_and_queue(work: Path):
         work / "winner",
         "synthetic-winner",
     )
+    confirmation_path, confirmation = strategy_discovery._write_artifact(
+        {
+            "schema_version": 1,
+            "artifact_kind": "confirmation-inspection",
+            "campaign_id": strategy_discovery.CAMPAIGN_ID,
+            "family_id": winner["family_id"],
+            "strategy_id": winner["strategy_id"],
+            "strategy_version": winner["strategy_version"],
+            "rules_hash": winner["rules_hash"],
+            "state": "CONFIRMATION_PASSED",
+            "winner_sha256": winner["artifact_sha256"],
+            "shadow_queue_permitted": True,
+            "broker_actions_permitted": False,
+        },
+        work / "confirmation",
+        "synthetic-confirmation",
+    )
+    historical_path, historical = strategy_discovery._write_artifact(
+        {
+            "schema_version": 1,
+            "artifact_kind": "historical-maturity-ledger",
+            "campaign_id": strategy_discovery.CAMPAIGN_ID,
+            "family_id": winner["family_id"],
+            "strategy_id": winner["strategy_id"],
+            "strategy_version": winner["strategy_version"],
+            "rules_hash": winner["rules_hash"],
+            "state": "HISTORICAL_EVIDENCE_INSPECTED",
+            "confirmation_inspection_path": strategy_discovery._relative(
+                confirmation_path
+            ),
+            "append_permitted": True,
+            "broker_actions_permitted": False,
+        },
+        work / "historical",
+        "synthetic-historical",
+    )
     queue_path, queue = strategy_discovery._write_artifact(
         {
             "schema_version": 1,
@@ -51,10 +88,22 @@ def _winner_and_queue(work: Path):
             "strategy_version": winner["strategy_version"],
             "rules_hash": winner["rules_hash"],
             "state": "SHADOW_QUEUED",
+            "queued_at": (NOW - timedelta(seconds=10)).isoformat(),
             "winner_path": strategy_discovery._relative(winner_path),
             "winner_sha256": winner["artifact_sha256"],
             "required_clean_closed_shadows": 5,
             "completed_clean_closed_shadows": 0,
+            "confirmation_inspection_path": strategy_discovery._relative(
+                confirmation_path
+            ),
+            "confirmation_inspection_sha256": confirmation["artifact_sha256"],
+            "historical_maturity_ledger_path": strategy_discovery._relative(
+                historical_path
+            ),
+            "historical_maturity_ledger_sha256": historical["artifact_sha256"],
+            "historical_records_admitted": 1,
+            "historical_admission_verified": True,
+            "historical_validation_phase": "SHADOW_QUALIFICATION",
             "broker_actions_permitted": False,
         },
         work / "queue",
@@ -163,6 +212,7 @@ def test_shadow_lifecycle_replays_and_only_inspection_admits_ledger_row():
             final_path, root=root, enforce_commit=False
         )
         assert inspection["inspection"]["valid"] is True
+        assert inspection["inspection"]["committed_shadow_queue_rebuilt"] is True
         ledger = work / "signals.jsonl"
         admitted = portfolio_shadow_inspection.admit_shadow(
             inspection_path, ledger_path=ledger, enforce_commit=False
@@ -228,6 +278,122 @@ def test_shadow_start_rejects_stale_quote_and_private_identifier_fields():
                 root=work / "artifacts",
                 enforce_commit=False,
                 now=NOW,
+            )
+
+
+def test_shadow_start_rejects_prequeue_observation_and_predecessor_drift():
+    with tempfile.TemporaryDirectory(dir=portfolio_shadow.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        queue_path, queue = _winner_and_queue(work)
+        future_queue = {
+            key: value for key, value in queue.items() if key != "artifact_sha256"
+        }
+        future_queue["queued_at"] = (NOW + timedelta(seconds=1)).isoformat()
+        future_path, _ = strategy_discovery._write_artifact(
+            future_queue, work / "future-queue", "future-queue"
+        )
+        with pytest.raises(
+            portfolio_shadow.PortfolioShadowError,
+            match="follow queue activation",
+        ):
+            portfolio_shadow.start_shadow(
+                future_path,
+                _setup(),
+                root=work / "artifacts",
+                enforce_commit=False,
+                now=NOW,
+            )
+
+        drifted_queue = {
+            key: value for key, value in queue.items() if key != "artifact_sha256"
+        }
+        drifted_queue["confirmation_inspection_sha256"] = "b" * 64
+        drifted_path, _ = strategy_discovery._write_artifact(
+            drifted_queue, work / "drifted-queue", "drifted-queue"
+        )
+        with pytest.raises(
+            portfolio_shadow.PortfolioShadowError,
+            match="confirmation-inspection binding drifted",
+        ):
+            portfolio_shadow.start_shadow(
+                drifted_path,
+                _setup(),
+                root=work / "artifacts",
+                enforce_commit=False,
+                now=NOW,
+            )
+
+        assert queue_path.is_file()
+
+
+def test_shadow_inspection_reopens_exact_queue_binding():
+    with tempfile.TemporaryDirectory(dir=portfolio_shadow.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        root = work / "artifacts"
+        queue_path, _ = _winner_and_queue(work)
+        entry_path, entry = portfolio_shadow.start_shadow(
+            queue_path,
+            _setup(),
+            root=root,
+            enforce_commit=False,
+            now=NOW,
+        )
+        forged_entry = {
+            key: value for key, value in entry.items() if key != "artifact_sha256"
+        }
+        forged_entry["queue_sha256"] = "c" * 64
+        forged_entry_path, forged_entry_artifact = strategy_discovery._write_artifact(
+            forged_entry, root / "forged-entry", "forged-entry"
+        )
+        close_now = NOW + timedelta(hours=1)
+        final_path, _ = portfolio_shadow.close_shadow(
+            forged_entry_path,
+            _closure(forged_entry_artifact, close_now),
+            root=root,
+            enforce_commit=False,
+            now=close_now,
+        )
+        with pytest.raises(
+            portfolio_shadow_inspection.PortfolioShadowInspectionError,
+            match="queue binding drifted",
+        ):
+            portfolio_shadow_inspection.inspect_shadow(
+                final_path, root=root, enforce_commit=False
+            )
+        assert entry_path.is_file()
+
+
+def test_missed_shadow_close_cannot_predate_evaluation():
+    with tempfile.TemporaryDirectory(dir=portfolio_shadow.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        root = work / "artifacts"
+        queue_path, _ = _winner_and_queue(work)
+        entry_path, _ = portfolio_shadow.start_shadow(
+            queue_path,
+            _setup(ask=100.02),
+            root=root,
+            enforce_commit=False,
+            now=NOW,
+        )
+        closure = {
+            "schema_version": 1,
+            "protection_observation": None,
+            "exit_observation": None,
+            "monitoring_complete": True,
+            "journal_complete": True,
+            "session_capture_complete": True,
+            "rule_violations": [],
+        }
+        with pytest.raises(
+            portfolio_shadow.PortfolioShadowError,
+            match="close predates its evaluation",
+        ):
+            portfolio_shadow.close_shadow(
+                entry_path,
+                closure,
+                root=root,
+                enforce_commit=False,
+                now=NOW - timedelta(seconds=1),
             )
 
 

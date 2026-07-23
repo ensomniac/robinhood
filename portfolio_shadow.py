@@ -151,6 +151,9 @@ def _load_queue_and_winner(
     )
     if queue.get("state") != "SHADOW_QUEUED":
         raise PortfolioShadowError("shadow queue is not active")
+    if queue.get("campaign_id") != strategy_discovery.CAMPAIGN_ID:
+        raise PortfolioShadowError("shadow queue campaign drifted")
+    queued_at = _timestamp(queue.get("queued_at"), "shadow queue queued_at")
     raw_winner_path = queue.get("winner_path")
     if not isinstance(raw_winner_path, str):
         raise PortfolioShadowError("shadow queue does not bind its winner path")
@@ -165,8 +168,72 @@ def _load_queue_and_winner(
     for field in ("strategy_id", "strategy_version", "rules_hash", "family_id"):
         if winner.get(field) != queue.get(field):
             raise PortfolioShadowError(f"shadow queue winner {field} drifted")
+    winner_recorded_at = _timestamp(
+        winner.get("recorded_at"), "winner recorded_at"
+    )
+    if queued_at <= winner_recorded_at:
+        raise PortfolioShadowError(
+            "shadow queue activation does not follow winner preregistration"
+        )
     if queue.get("broker_actions_permitted") is not False:
         raise PortfolioShadowError("shadow queue does not preserve zero broker actions")
+    admitted = queue.get("historical_records_admitted")
+    if (
+        queue.get("required_clean_closed_shadows") != 5
+        or queue.get("completed_clean_closed_shadows") != 0
+        or isinstance(admitted, bool)
+        or not isinstance(admitted, int)
+        or admitted < 1
+        or queue.get("historical_admission_verified") is not True
+        or queue.get("historical_validation_phase") != "SHADOW_QUALIFICATION"
+    ):
+        raise PortfolioShadowError("shadow queue qualification contract is invalid")
+
+    predecessor_specs = (
+        (
+            "confirmation_inspection_path",
+            "confirmation_inspection_sha256",
+            "confirmation-inspection",
+        ),
+        (
+            "historical_maturity_ledger_path",
+            "historical_maturity_ledger_sha256",
+            "historical-maturity-ledger",
+        ),
+    )
+    predecessors: dict[str, dict[str, Any]] = {}
+    for path_field, hash_field, kind in predecessor_specs:
+        relative = queue.get(path_field)
+        if not isinstance(relative, str):
+            raise PortfolioShadowError(f"shadow queue {path_field} is missing")
+        path = PROJECT_ROOT / relative
+        if enforce_commit:
+            strategy_discovery.require_committed(path)
+        artifact = strategy_discovery.load_artifact(path, expected_kind=kind)
+        if artifact.get("artifact_sha256") != queue.get(hash_field):
+            raise PortfolioShadowError(f"shadow queue {kind} binding drifted")
+        predecessors[kind] = artifact
+
+    confirmation = predecessors["confirmation-inspection"]
+    historical = predecessors["historical-maturity-ledger"]
+    if not (
+        confirmation.get("state") == "CONFIRMATION_PASSED"
+        and confirmation.get("shadow_queue_permitted") is True
+        and confirmation.get("broker_actions_permitted") is False
+        and confirmation.get("winner_sha256") == winner.get("artifact_sha256")
+        and historical.get("state") == "HISTORICAL_EVIDENCE_INSPECTED"
+        and historical.get("append_permitted") is True
+        and historical.get("broker_actions_permitted") is False
+        and historical.get("confirmation_inspection_path")
+        == queue.get("confirmation_inspection_path")
+    ):
+        raise PortfolioShadowError("shadow queue predecessor state is invalid")
+    for predecessor in (confirmation, historical):
+        for field in ("campaign_id", "family_id", "strategy_id", "strategy_version", "rules_hash"):
+            if predecessor.get(field) != queue.get(field):
+                raise PortfolioShadowError(
+                    f"shadow queue predecessor {field} drifted"
+                )
     return queue, winner_path, winner
 
 
@@ -243,6 +310,11 @@ def start_shadow(
     if set(account) != {"equity", "buying_power"}:
         raise PortfolioShadowError("shadow account permits only equity and buying_power")
     current = (now or datetime.now(UTC)).astimezone(UTC)
+    queued_at = _timestamp(queue["queued_at"], "shadow queue queued_at")
+    if current <= queued_at:
+        raise PortfolioShadowError(
+            "shadow evaluation must follow queue activation"
+        )
     config = portfolio_maturity.load_config()
     try:
         evaluation = portfolio_execution.evaluate_frozen_winner(
@@ -257,6 +329,12 @@ def start_shadow(
     market_day = _timestamp(
         evaluation["market"]["observed_at"], "production market observed_at"
     ).date()
+    if _timestamp(
+        evaluation["market"]["observed_at"], "production market observed_at"
+    ) < queued_at:
+        raise PortfolioShadowError(
+            "production market observation predates shadow queue activation"
+        )
     if market_day != session_date:
         raise PortfolioShadowError("session_date differs from the fresh market date")
     fill = _fill_from_observation(
@@ -415,6 +493,9 @@ def rebuild_final(
     if "close_now" not in closure:
         raise PortfolioShadowError("internal closure is missing close_now")
     close_now = _timestamp(closure["close_now"], "close_now")
+    evaluation_now = _timestamp(entry.get("evaluation_now"), "evaluation_now")
+    if close_now < evaluation_now:
+        raise PortfolioShadowError("shadow close predates its evaluation")
     protection = _protection_result(
         entry, closure["protection_observation"], close_now=close_now
     )

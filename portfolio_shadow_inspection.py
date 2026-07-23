@@ -59,15 +59,48 @@ def inspect_shadow(
         "prospective-shadow-entry",
         enforce_commit=enforce_commit,
     )
-    _, winner = _load_bound_artifact(
-        entry.get("winner_path"),
-        entry.get("winner_sha256"),
-        "frozen-strategy-winner",
-        enforce_commit=enforce_commit,
+    raw_queue_path = entry.get("queue_path")
+    if not isinstance(raw_queue_path, str):
+        raise PortfolioShadowInspectionError("shadow entry queue path is missing")
+    queue_path = portfolio_shadow.PROJECT_ROOT / raw_queue_path
+    try:
+        queue, winner_path, winner = portfolio_shadow._load_queue_and_winner(
+            queue_path, enforce_commit=enforce_commit
+        )
+    except (
+        portfolio_shadow.PortfolioShadowError,
+        strategy_discovery.StrategyDiscoveryError,
+    ) as exc:
+        raise PortfolioShadowInspectionError(str(exc)) from exc
+    if queue.get("artifact_sha256") != entry.get("queue_sha256"):
+        raise PortfolioShadowInspectionError("shadow entry queue binding drifted")
+    if (
+        strategy_discovery._relative(winner_path) != entry.get("winner_path")
+        or winner.get("artifact_sha256") != entry.get("winner_sha256")
+    ):
+        raise PortfolioShadowInspectionError("shadow entry winner binding drifted")
+    for field in (
+        "campaign_id",
+        "family_id",
+        "strategy_id",
+        "strategy_version",
+        "rules_hash",
+        "signal_id",
+    ):
+        if final.get(field) != entry.get(field):
+            raise PortfolioShadowInspectionError(
+                f"shadow final {field} binding drifted"
+            )
+    queued_at = portfolio_shadow._timestamp(
+        queue.get("queued_at"), "shadow queue queued_at"
     )
     evaluation_now = portfolio_shadow._timestamp(
         entry.get("evaluation_now"), "evaluation_now"
     )
+    if evaluation_now <= queued_at:
+        raise PortfolioShadowInspectionError(
+            "shadow evaluation does not follow queue activation"
+        )
     try:
         rebuilt_evaluation = portfolio_execution.evaluate_frozen_winner(
             winner,
@@ -110,10 +143,13 @@ def inspect_shadow(
         "state": "SHADOW_INSPECTED_ADMISSION_READY",
         "final_path": strategy_discovery._relative(final_path),
         "final_sha256": final["artifact_sha256"],
+        "queue_path": strategy_discovery._relative(queue_path),
+        "queue_sha256": queue["artifact_sha256"],
         "entry_path": strategy_discovery._relative(entry_path),
         "entry_sha256": entry["artifact_sha256"],
         "inspection": {
             "exact_plugin_replayed": True,
+            "committed_shadow_queue_rebuilt": True,
             "production_evaluation_rebuilt": True,
             "bid_ask_fill_rebuilt": True,
             "protection_timing_rebuilt": True,
