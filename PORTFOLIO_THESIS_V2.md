@@ -60,12 +60,16 @@ discovery immediately through the existing-family successor lane defined in
 `CONTINUOUS_STRATEGY_DISCOVERY_V2.md`; the weekly new-family ceiling does not
 require all historical research to wait for an ISO-week boundary.
 
-Freeze and independently inspect the zero-price 2014-2022 session-calendar
-contract for `broad-etf-trend-pullback-v2-cost-floor`. Its 32-trial rules and
-pre-2023 evidence partitions may freeze only after that inspection. The retired
-v1 result is hypothesis-generating contamination and cannot contribute any
-promotion record. The predeclared residual-equity and intraday-ETF new-family
-lanes continue separately when their weekly gate opens.
+The inspected `broad-etf-trend-pullback-v2-cost-floor` development family is
+rejected: all 32 trials had negative 20-bps growth and none passed the complete
+selection-aware gates. Do not repair it or access its confirmation reserve.
+
+Continue immediately with an outcome-blind capacity successor to
+`short-horizon-oversold-reversal-v1`. Its ten predecessor signals are
+hypothesis-generating contamination only. Freeze and independently inspect the
+new universe, dates, provider plan, and minimum formal capacity before any new
+price or return access. The predeclared residual-equity and intraday-ETF
+new-family lanes continue separately when their weekly gate opens.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`

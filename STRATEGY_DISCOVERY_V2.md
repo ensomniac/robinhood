@@ -252,6 +252,13 @@ the exact-date Massive plan rejected by HTTP 403 remain preserved. Neither
 evaluated a strategy outcome. The active chain freezes a new 2016-2022 evidence
 version only after an independently inspected calendar extension. See
 `CONTINUOUS_STRATEGY_DISCOVERY_V2.md` for the exact transition chain.
+
+That lane is now `REJECTED_DEVELOPMENT`: all 32 trials had negative 20-bps
+growth and no trial passed the complete selection-aware gates. Its confirmation
+reserve remains unopened. The active continuous successor is therefore the
+outcome-blind capacity expansion for the already-tested
+short-horizon-oversold-reversal mechanism; its positive but undersized ten-signal
+predecessor sample cannot count toward promotion.
 The active hardened calendar contract is `14521284...96d67`, with independent
 inspection `3dbfeb5a...2bf2f`; preserved contract `31f2226b...4ea10` and
 inspection `f78c0896...3f7` are superseded before any request.

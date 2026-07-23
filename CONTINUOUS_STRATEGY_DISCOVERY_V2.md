@@ -47,6 +47,19 @@ The successor freezes:
 The prior family attempt remains explicit in the contract. This successor does
 not consume a new-mechanism-family slot.
 
+## ETF successor disposition
+
+The independently inspected development result
+`650511bc77dc31fa3a9aeeab0029f9df7d6ffb99dfd165fbeb36b9908987665b`
+is `REJECTED`. Every one of the 32 trials had negative 20-bps total log growth.
+The best trial produced -0.006642 log growth, 0.8766 profit factor, and 6.799R
+drawdown. No trial passed the DSR, Holm, rolling-fold, stressed PF/drawdown, or
+neighbor-stability gates. Trial and rule accounting were complete.
+
+This exact family version is retired without confirmation access. Its
+development scope is now recorded in the global outcome-exposure index and
+cannot be relabeled as untouched evidence.
+
 ## Transition chain
 
 Run the lane from the repository root:
@@ -128,10 +141,12 @@ The predeclared residual-equity and intraday-ETF families remain subject to the
 new-family weekly budget. Their calendar gate is independent of this successor
 lane and cannot block it.
 
-The short-horizon oversold-reversal family remains the next outcome-blind
+The short-horizon oversold-reversal family is the active next outcome-blind
 capacity lane because its retired v1 produced only ten signals despite positive
-5/10/20-bps diagnostics. It cannot access new target returns until a separate
-capacity expansion and exact successor contract are frozen and inspected.
+5/10/20-bps diagnostics. Its capacity expansion must use evidence disjoint from
+the v1 corpus and freeze its universe, dates, inclusion semantics, and provider
+plan before new price or return access. It cannot access target returns until
+that capacity contract is independently inspected.
 
 ## Completion
 
