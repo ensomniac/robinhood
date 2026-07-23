@@ -143,35 +143,74 @@ def _authority(
     )
     if winner.get("state") != "WINNER_FROZEN":
         raise DenseDataCollectionError("confirmation winner is not frozen")
+    inspection_path = PROJECT_ROOT / str(winner["development_inspection_path"])
+    if enforce_commit:
+        strategy_discovery.require_committed(inspection_path)
     inspection = strategy_discovery.load_artifact(
-        PROJECT_ROOT / str(winner["development_inspection_path"]),
+        inspection_path,
         expected_kind="development-search-inspection",
     )
+    if not (
+        inspection.get("state") == "WINNER_SELECTED"
+        and inspection.get("artifact_sha256")
+        == winner.get("development_inspection_sha256")
+    ):
+        raise DenseDataCollectionError(
+            "winner development inspection binding drifted"
+        )
+    result_path = PROJECT_ROOT / str(inspection["result_path"])
+    if enforce_commit:
+        strategy_discovery.require_committed(result_path)
     result = strategy_discovery.load_artifact(
-        PROJECT_ROOT / str(inspection["result_path"]),
+        result_path,
         expected_kind="development-search-result",
     )
+    if result.get("artifact_sha256") != inspection.get("result_sha256"):
+        raise DenseDataCollectionError("winner development result binding drifted")
+    search_path = PROJECT_ROOT / str(result["search_path"])
+    if enforce_commit:
+        strategy_discovery.require_committed(search_path)
     search = strategy_discovery.load_artifact(
-        PROJECT_ROOT / str(result["search_path"]),
+        search_path,
         expected_kind="frozen-development-search",
     )
+    if not (
+        search.get("state") == "SEARCH_FROZEN"
+        and search.get("artifact_sha256") == result.get("search_sha256")
+    ):
+        raise DenseDataCollectionError("winner development search binding drifted")
     contract = dict(search["family_contract"])
-    if contract["family_id"] != winner["family_id"]:
+    if not (
+        contract["family_id"] == winner["family_id"]
+        and contract["development_dates"] == winner["development_dates"]
+        and contract["confirmation_dates"] == winner["confirmation_dates"]
+        and contract.get("development_scope") == winner.get("development_scope")
+        and contract.get("confirmation_scope") == winner.get("confirmation_scope")
+        and contract["implementation_hashes"] == winner["implementation_hashes"]
+    ):
         raise DenseDataCollectionError("winner family drifted from its frozen search")
     return winner, contract, str(winner["rules_hash"])
 
 
-def _capacity_calendar_hash(contract: Mapping[str, Any]) -> str:
+def _capacity_calendar_hash(
+    contract: Mapping[str, Any],
+    *,
+    enforce_commit: bool,
+) -> str:
     raw = contract.get("capacity_manifest")
     if not isinstance(raw, str) or not raw:
         raise DenseDataCollectionError("family contract lacks a capacity manifest")
     path = Path(raw)
     if not path.is_absolute():
         path = PROJECT_ROOT / path
+    if enforce_commit:
+        strategy_discovery.require_committed(path)
     manifest = load_frozen_dataset_contract(path)
     capacity = manifest["dataset_payload"].get("dense_capacity")
-    if not isinstance(capacity, Mapping) or not isinstance(
-        capacity.get("calendar_sha256"), str
+    if not (
+        isinstance(capacity, Mapping)
+        and capacity.get("family_id") == contract.get("family_id")
+        and isinstance(capacity.get("calendar_sha256"), str)
     ):
         raise DenseDataCollectionError("capacity manifest lacks its calendar hash")
     return str(capacity["calendar_sha256"])
@@ -228,7 +267,10 @@ def freeze_plan(
         except outcome_exposure.OutcomeExposureError as exc:
             raise DenseDataCollectionError(str(exc)) from exc
     calendar_hash = _file_hash(calendar_path)
-    if calendar_hash != _capacity_calendar_hash(contract):
+    if calendar_hash != _capacity_calendar_hash(
+        contract,
+        enforce_commit=enforce_commit,
+    ):
         raise DenseDataCollectionError("collection calendar drifted from capacity freeze")
     evaluation_dates = list(contract[f"{lane}_dates"])
     family_id = str(contract["family_id"])

@@ -338,7 +338,12 @@ request. Confirmation planning copies the winner preregistration timestamp and
 rules hash; the winner timestamp is generated at the actual freeze transition,
 not inherited from family-contract creation. Collection records its earliest
 resumable provider attempt, and independent inspection verifies that capture
-started afterward:
+started afterward. Before freezing that plan, the collector reopens the
+committed winner, development inspection, development result, frozen search,
+and capacity manifest; it verifies every recorded artifact hash plus the exact
+family, partitions, exposure scopes, implementation hashes, and calendar
+binding. A detached or uncommitted development chain cannot determine
+confirmation requests.
 
 ```sh
 python3 strategy_discovery.py freeze-winner path/to/committed-development-inspection.json

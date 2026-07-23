@@ -70,7 +70,10 @@ contract path and validated implementation hashes; search freeze and every
 development or confirmation plugin evaluation must rehash the committed
 implementation and fail on drift. Dense-family preflight must separately reopen
 the committed, unchanged capacity manifest before accepting its outcome-blind
-count.
+count. Confirmation data planning must reopen the committed winner,
+development inspection, development result, frozen search, and capacity
+manifest and verify their recorded hashes and exact partitions before provider
+access.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

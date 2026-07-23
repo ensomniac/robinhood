@@ -221,6 +221,131 @@ def test_plan_and_provider_access_fail_before_week_reset(tmp_path):
         )
 
 
+def test_confirmation_authority_reopens_committed_development_chain(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(strategy_discovery, "PROJECT_ROOT", tmp_path)
+    contract = {
+        "family_id": runtime.ETF_PULLBACK_FAMILY,
+        "development_dates": _dates(6),
+        "confirmation_dates": _dates(6),
+        "development_scope": {"dates": _dates(6), "symbols": ["SPY"]},
+        "confirmation_scope": {"dates": _dates(6), "symbols": ["QQQ"]},
+        "implementation_hashes": {"dense_strategy_plugin.py": "a" * 64},
+    }
+    search_path, search = strategy_discovery._write_artifact(
+        {
+            "artifact_kind": "frozen-development-search",
+            "state": "SEARCH_FROZEN",
+            "family_contract": contract,
+        },
+        tmp_path / "chain",
+        "search",
+    )
+    result_path, result = strategy_discovery._write_artifact(
+        {
+            "artifact_kind": "development-search-result",
+            "search_path": str(search_path.relative_to(tmp_path)),
+            "search_sha256": search["artifact_sha256"],
+        },
+        tmp_path / "chain",
+        "result",
+    )
+    inspection_path, inspected = strategy_discovery._write_artifact(
+        {
+            "artifact_kind": "development-search-inspection",
+            "state": "WINNER_SELECTED",
+            "result_path": str(result_path.relative_to(tmp_path)),
+            "result_sha256": result["artifact_sha256"],
+        },
+        tmp_path / "chain",
+        "inspection",
+    )
+    winner_path, winner = strategy_discovery._write_artifact(
+        {
+            "artifact_kind": "frozen-strategy-winner",
+            "state": "WINNER_FROZEN",
+            "family_id": contract["family_id"],
+            "rules_hash": "b" * 64,
+            "development_inspection_path": str(
+                inspection_path.relative_to(tmp_path)
+            ),
+            "development_inspection_sha256": inspected["artifact_sha256"],
+            "development_dates": contract["development_dates"],
+            "confirmation_dates": contract["confirmation_dates"],
+            "development_scope": contract["development_scope"],
+            "confirmation_scope": contract["confirmation_scope"],
+            "implementation_hashes": contract["implementation_hashes"],
+        },
+        tmp_path / "chain",
+        "winner",
+    )
+    checked = []
+    monkeypatch.setattr(
+        strategy_discovery,
+        "require_committed",
+        lambda path: checked.append(path.resolve()),
+    )
+
+    authority, observed_contract, binding = collection._authority(
+        winner_path,
+        lane="confirmation",
+        enforce_commit=True,
+    )
+
+    assert authority == winner
+    assert observed_contract == contract
+    assert binding == winner["rules_hash"]
+    assert checked == [
+        winner_path.resolve(),
+        inspection_path.resolve(),
+        result_path.resolve(),
+        search_path.resolve(),
+    ]
+
+
+def test_confirmation_authority_rejects_detached_development_chain(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(strategy_discovery, "PROJECT_ROOT", tmp_path)
+    inspection_path, _inspection = strategy_discovery._write_artifact(
+        {
+            "artifact_kind": "development-search-inspection",
+            "state": "WINNER_SELECTED",
+            "result_path": "unused.json",
+            "result_sha256": "a" * 64,
+        },
+        tmp_path / "chain",
+        "inspection",
+    )
+    winner_path, _winner = strategy_discovery._write_artifact(
+        {
+            "artifact_kind": "frozen-strategy-winner",
+            "state": "WINNER_FROZEN",
+            "development_inspection_path": str(
+                inspection_path.relative_to(tmp_path)
+            ),
+            "development_inspection_sha256": "0" * 64,
+        },
+        tmp_path / "chain",
+        "winner",
+    )
+
+    with pytest.raises(
+        collection.DenseDataCollectionError,
+        match="inspection binding drifted",
+    ):
+        collection._authority(
+            winner_path,
+            lane="confirmation",
+            enforce_commit=False,
+        )
+
+
 @pytest.mark.parametrize(
     ("family_id", "symbols", "expected_tasks"),
     [
