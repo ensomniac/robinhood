@@ -279,18 +279,24 @@ profit factor reached 0.52, every drawdown exceeded 21R, DSR was zero, and PBO
 was 1.0. No winner or evidence target was frozen, and all 75 confirmation
 sessions remain untouched.
 
-Continuous discovery proceeds immediately to an existing turn-of-month ETF
-seasonality successor. Its v1 exact version entered SPY once per month from
-2023 through 2025 and remains retired. The successor uses only the disjoint,
-already exposed 2016-2020 liquid-ETF partition as contaminated development,
-with the five-session embargo and all 500 sessions in the 2021-2022 reserve
-remaining untouched. It must prospectively freeze 32 combinations of
-one/three sessions before month end, one/three sessions after month start,
-SPY SMA100/SMA200 regime, 1.0/1.5 ATR14 stop, and two/four-session hold.
-Signals enter SPY at the next open, resolve daily ambiguity stop-first, and
-remain subject to the authoritative cost, account-growth, selection-aware,
-concentration, and power gates. This existing mechanism consumes no new-family
-weekly slot and requires no calendar wait.
+The turn-of-month successor is now terminal after independent inspection
+`825e870d747bfed3d73fca0e27f6cbb2efea770f21517e66030c453c0f839ce8`.
+Signal capacity was adequate at 60-206 fills per trial, but every 20-bps path
+was negative, no stressed PF reached 0.81, every drawdown exceeded 14R, DSR was
+zero, and PBO was 1.0. No winner or power target was frozen, and all 500
+confirmation sessions remain untouched.
+
+Continuous discovery proceeds to the existing sector-ETF-rotation mechanism.
+Its v1 exact version on 2023-2025 data had slightly positive primary expectancy
+but failed stressed costs, profit factor, and drawdown. The successor must use
+only disjoint 2022 sessions from the already inspected local sector-SPDR daily
+source. Before target-return access it must freeze the complete sector
+universe, warmup, development, five-session embargo, untouched confirmation,
+and 32 combinations of 5/20-session relative strength, zero/1% excess versus
+SPY, SPY SMA20/SMA60 regime, 1.0/1.5 ATR14 stop, and one/three-session hold.
+Ranking is strongest completed relative return then lexical symbol; entry is
+the next open and ambiguity is stop-first. This existing mechanism consumes no
+new-family weekly slot and requires no calendar wait.
 
 ## Transition chain
 

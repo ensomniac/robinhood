@@ -108,16 +108,20 @@ above 21R, zero DSR probability, and PBO 1.0. Its exact rules cannot be repaired
 on the evaluated 120-session gap corpus, and its 75-session confirmation reserve
 remains untouched.
 
-The active next lane is an existing turn-of-month ETF seasonality successor on
-the already inspected, disjoint 2016-2020 liquid-ETF development partition.
-The retired v1 rule used one SPY entry per month from 2023-2025. The successor
-must prospectively freeze a 32-cell grid across one/three sessions before and
-after month end, SPY SMA100/SMA200 regime, 1.0/1.5 ATR14 stop, and two/four
-session hold. It retains SPY-only next-open entry, stop-first ambiguity,
-five-session-or-shorter holding, complete no-signal/contention accounting, and
-the untouched five-session embargo plus 500-session 2021-2022 reserve. This
-existing mechanism consumes no new-family weekly slot and requires no calendar
-wait.
+The turn-of-month ETF seasonality successor is also retired after independent
+inspection rejected all 32 frozen trials despite adequate 60-206-signal
+capacity. Every 20-bps path was negative, stressed PF stayed below 0.81,
+drawdown exceeded 14R, DSR was zero, and PBO was 1.0. Its 500-session
+confirmation reserve remains untouched.
+
+The active next lane is an existing sector-ETF-rotation successor using only
+the local, already inspected sector-SPDR daily source. Its 2023-2025 v1 exact
+rule had slightly positive primary expectancy but failed costs and drawdown.
+The successor must use a disjoint 2022 split, prospectively freeze the complete
+sector universe, development dates, embargo, untouched confirmation dates,
+5/20-session relative-strength lookback, zero/1% excess floor, SPY SMA20/SMA60
+regime, 1.0/1.5 ATR14 stop, and one/three-session hold before accessing target
+returns. It consumes no new-family weekly slot and requires no calendar wait.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
