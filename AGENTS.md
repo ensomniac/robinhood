@@ -31,6 +31,18 @@ insufficient source completeness before pagination or document access. It may
 not be repaired on the observed provider corpus; target outcomes and broker
 actions remain forbidden.
 
+The weekly three-family ceiling applies only to newly introduced mechanism
+families; it is never a reason to wait before continuing historical work on an
+existing family. The first continuous broad-ETF pullback successor is retired
+after all 32 trials failed its inspected selection-aware development gates. The
+active immediate lane is
+`short-horizon-oversold-reversal-v2-gap-universe`. It may reuse the already
+exposed 120-session, 4,833-candidate gap corpus only as explicitly contaminated
+development training. Its later 75-session, 3,192-candidate confirmation
+reserve is globally untouched and must remain unopened until the generic
+development engine selects and freezes one exact winner. This successor consumes
+no new-family slot and authorizes no broker action.
+
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
 `portfolio_execution.py`. `dense_strategy_runtime.py` and

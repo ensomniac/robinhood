@@ -24,14 +24,19 @@ from learning_statistics import (
 EQUITY_RESIDUAL_FAMILY = "liquid-equity-market-residual-reversal"
 INTRADAY_ETF_FAMILY = "intraday-index-etf-opening-reversal"
 ETF_PULLBACK_FAMILY = "liquid-etf-trend-pullback-cost-floor"
+OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
 SUPPORTED_FAMILIES = {
     EQUITY_RESIDUAL_FAMILY,
     INTRADAY_ETF_FAMILY,
     ETF_PULLBACK_FAMILY,
+    OVERSOLD_REVERSAL_FAMILY,
 }
 PRIMARY_ROUND_TRIP_COST_FRACTION = 0.001
 MINIMUM_GROSS_TO_COST_MULTIPLE = 5.0
 STANDARDIZATION_LOOKBACK = 60
+OVERSOLD_SIGNAL_START_INDEX = 30
+OVERSOLD_SIGNAL_END_INDEX = 300
+OVERSOLD_FORCE_FLAT_INDEX = 380
 
 
 class DenseStrategyRuntimeError(ValueError):
@@ -645,19 +650,51 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         raise DenseStrategyRuntimeError("dataset family binding is unsupported")
     _calendar(dataset)
     prepared = dict(dataset)
-    if family_id == INTRADAY_ETF_FAMILY:
+    if family_id in {INTRADAY_ETF_FAMILY, OVERSOLD_REVERSAL_FAMILY}:
         sessions = _minute_sessions(dataset)
-        symbols = dataset.get("symbols")
-        if not isinstance(symbols, list) or not symbols:
-            raise DenseStrategyRuntimeError(
-                "intraday dataset must name its complete frozen symbols"
-            )
-        expected_symbols = {str(symbol) for symbol in symbols}
-        if any(set(day_symbols) != expected_symbols for day_symbols in sessions.values()):
-            raise DenseStrategyRuntimeError(
-                "intraday sessions do not cover the complete frozen universe"
-            )
+        if family_id == INTRADAY_ETF_FAMILY:
+            symbols = dataset.get("symbols")
+            if not isinstance(symbols, list) or not symbols:
+                raise DenseStrategyRuntimeError(
+                    "intraday dataset must name its complete frozen symbols"
+                )
+            expected_symbols = {str(symbol) for symbol in symbols}
+            if any(
+                set(day_symbols) != expected_symbols
+                for day_symbols in sessions.values()
+            ):
+                raise DenseStrategyRuntimeError(
+                    "intraday sessions do not cover the complete frozen universe"
+                )
+        else:
+            candidates = dataset.get("candidate_symbols_by_date")
+            calendar = _calendar(dataset)
+            if (
+                not isinstance(candidates, Mapping)
+                or set(candidates) != set(calendar)
+            ):
+                raise DenseStrategyRuntimeError(
+                    "oversold dataset must bind every frozen daily candidate universe"
+                )
+            for day in calendar:
+                raw_symbols = candidates[day]
+                if (
+                    not isinstance(raw_symbols, list)
+                    or not raw_symbols
+                    or raw_symbols != sorted(set(map(str, raw_symbols)))
+                ):
+                    raise DenseStrategyRuntimeError(
+                        f"oversold candidate universe is invalid for {day}"
+                    )
+                if not set(sessions.get(day, {})).issubset(set(raw_symbols)):
+                    raise DenseStrategyRuntimeError(
+                        f"oversold minute inputs escaped the frozen universe for {day}"
+                    )
         prepared["_prepared_minute_bars"] = sessions
+        if family_id == OVERSOLD_REVERSAL_FAMILY:
+            prepared["_oversold_feature_cache"] = _oversold_feature_cache(
+                sessions
+            )
     else:
         daily = _daily_series(dataset)
         if family_id == ETF_PULLBACK_FAMILY:
@@ -851,6 +888,238 @@ def _intraday_candidates(
     return candidates
 
 
+def _simple_rsi(
+    bars: Sequence[Mapping[str, Any]], index: int, period: int
+) -> float | None:
+    if index < period:
+        return None
+    changes = [
+        float(bars[offset]["close"]) - float(bars[offset - 1]["close"])
+        for offset in range(index - period + 1, index + 1)
+    ]
+    gains = statistics.fmean(max(change, 0.0) for change in changes)
+    losses = statistics.fmean(max(-change, 0.0) for change in changes)
+    if gains == 0 and losses == 0:
+        return 50.0
+    if losses == 0:
+        return 100.0
+    return 100.0 - 100.0 / (1.0 + gains / losses)
+
+
+def _oversold_feature_cache(
+    sessions: Mapping[str, Mapping[str, Sequence[Mapping[str, Any]]]],
+) -> dict[str, dict[str, list[dict[str, Any]]]]:
+    """Precompute parameter-invariant trigger inputs once for all 32 trials."""
+
+    result: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for day, symbols in sessions.items():
+        result[day] = {}
+        for symbol, bars in symbols.items():
+            if len(bars) != 390:
+                raise DenseStrategyRuntimeError(
+                    f"oversold input must contain 390 exact bars: {day} {symbol}"
+                )
+            numerator = 0.0
+            denominator = 0.0
+            session_low = math.inf
+            features: list[dict[str, Any]] = []
+            for index, bar in enumerate(bars):
+                numerator += float(bar["vwap_numerator"])
+                denominator += float(bar["vwap_denominator"])
+                session_low = min(session_low, float(bar["low"]))
+                if not (
+                    OVERSOLD_SIGNAL_START_INDEX
+                    <= index
+                    <= OVERSOLD_SIGNAL_END_INDEX
+                ):
+                    continue
+                if denominator <= 0:
+                    continue
+                close = float(bar["close"])
+                if (
+                    close <= float(bar["open"])
+                    or close <= float(bars[index - 1]["high"])
+                    or close <= numerator / denominator
+                ):
+                    continue
+                selloffs = {
+                    str(lookback): (
+                        float(bars[index - 1]["close"])
+                        / float(bars[index - lookback]["close"])
+                        - 1.0
+                    )
+                    for lookback in (15, 30)
+                }
+                rsis = {
+                    str(period): _simple_rsi(bars, index - 1, period)
+                    for period in (3, 5)
+                }
+                features.append(
+                    {
+                        "trigger_index": index,
+                        "entry_index": index + 1,
+                        "selloff_returns": selloffs,
+                        "simple_rsi": rsis,
+                        "session_low": session_low,
+                    }
+                )
+            result[day][symbol] = features
+    return result
+
+
+def _oversold_exit(
+    bars: Sequence[Mapping[str, Any]],
+    *,
+    entry_index: int,
+    stop_price: float,
+    target_price: float,
+) -> tuple[float, bool]:
+    for index in range(entry_index, len(bars)):
+        bar = bars[index]
+        opening = float(bar["open"])
+        if opening <= stop_price:
+            return opening, True
+        if index >= OVERSOLD_FORCE_FLAT_INDEX:
+            return opening, False
+        stop_hit = float(bar["low"]) <= stop_price
+        target_hit = float(bar["high"]) >= target_price
+        if stop_hit:
+            return stop_price, True
+        if target_hit:
+            return target_price, False
+    raise DenseStrategyRuntimeError("oversold trade did not flatten by 15:50")
+
+
+def _oversold_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    sessions = _minute_sessions(dataset)
+    cache = dataset.get("_oversold_feature_cache")
+    if not isinstance(cache, Mapping):
+        cache = _oversold_feature_cache(sessions)
+    raw_universe = dataset.get("candidate_symbols_by_date")
+    if not isinstance(raw_universe, Mapping):
+        raise DenseStrategyRuntimeError(
+            "oversold dataset lacks its frozen candidate universe"
+        )
+    lookback = int(parameters["lookback_minutes"])
+    selloff_threshold = float(parameters["selloff_threshold"])
+    rsi_period = int(parameters["rsi_period"])
+    rsi_maximum = float(parameters["rsi_maximum"])
+    target_r = float(parameters["target_r"])
+    if (
+        lookback not in {15, 30}
+        or selloff_threshold not in {-0.02, -0.03}
+        or rsi_period not in {3, 5}
+        or rsi_maximum not in {15.0, 20.0}
+        or target_r not in {1.0, 1.5}
+    ):
+        raise DenseStrategyRuntimeError("oversold trial parameters escaped the grid")
+    candidates: list[dict[str, Any]] = []
+    for day in calendar:
+        qualified: list[tuple[int, float, float, str, dict[str, Any]]] = []
+        for symbol in map(str, raw_universe[day]):
+            for feature in cache.get(day, {}).get(symbol, []):
+                selloff = float(
+                    feature["selloff_returns"][str(lookback)]
+                )
+                rsi = feature["simple_rsi"][str(rsi_period)]
+                if (
+                    rsi is None
+                    or selloff > selloff_threshold + 1e-12
+                    or float(rsi) > rsi_maximum + 1e-12
+                ):
+                    continue
+                qualified.append(
+                    (
+                        int(feature["entry_index"]),
+                        selloff,
+                        float(rsi),
+                        symbol,
+                        dict(feature),
+                    )
+                )
+                break
+        if not qualified:
+            continue
+        entry_index, selloff, rsi, symbol, selected = sorted(qualified)[0]
+        signal_id = f"{day}-{OVERSOLD_REVERSAL_FAMILY}-{symbol}"
+        bars = sessions.get(day, {}).get(symbol)
+        if bars is None or entry_index >= len(bars):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_bar",
+                }
+            )
+            continue
+        entry_price = float(bars[entry_index]["open"])
+        stop_price = float(selected["session_low"])
+        if stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        target_price = entry_price + target_r * (entry_price - stop_price)
+        expected_gross = (target_price - entry_price) / entry_price
+        if not _cost_floor(expected_gross):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "expected_move_below_cost_floor",
+                }
+            )
+            continue
+        exit_price, stop_executed = _oversold_exit(
+            bars,
+            entry_index=entry_index,
+            stop_price=stop_price,
+            target_price=target_price,
+        )
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": day,
+                "decision_date": day,
+                "symbol": symbol,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": selloff + rsi / 100.0,
+                "selloff_return": selloff,
+                "rsi": rsi,
+                "trigger_index": int(selected["trigger_index"]),
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "target_price": target_price,
+                "exit_date": day,
+                "exit_price": exit_price,
+                "marks": {day: exit_price},
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+            }
+        )
+    return candidates
+
+
 def build_candidates(
     dataset: Mapping[str, Any],
     family_id: str,
@@ -866,6 +1135,8 @@ def build_candidates(
         return _intraday_candidates(dataset, parameters)
     if family_id == ETF_PULLBACK_FAMILY:
         return _etf_pullback_candidates(dataset, parameters)
+    if family_id == OVERSOLD_REVERSAL_FAMILY:
+        return _oversold_candidates(dataset, parameters)
     raise DenseStrategyRuntimeError(f"unsupported dense family: {family_id}")
 
 

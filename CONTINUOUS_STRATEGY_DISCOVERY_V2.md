@@ -16,7 +16,7 @@ development grid, deterministic selection rule, dates, confirmation reserve,
 costs, falsifiers, implementation hashes, and production semantics must freeze
 before any new outcome access.
 
-## Immediate lane
+## First completed lane
 
 The first continuous lane is
 `broad-etf-trend-pullback-v2-cost-floor`, implemented by the dense runtime under
@@ -59,6 +59,56 @@ neighbor-stability gates. Trial and rule accounting were complete.
 This exact family version is retired without confirmation access. Its
 development scope is now recorded in the global outcome-exposure index and
 cannot be relabeled as untouched evidence.
+
+## Active immediate lane
+
+The active successor is
+`short-horizon-oversold-reversal-v2-gap-universe`, implemented under runtime
+family ID `gap-universe-oversold-reversal`. It remains inside the already tested
+`short-horizon-oversold-reversal` mechanism and consumes no new-family slot.
+
+The shortest defensible evidence path reuses the point-in-time input graph
+previously frozen for representative equity-gap research:
+
+- Development is the already outcome-exposed 120-session 2025 corpus containing
+  4,833 common-stock symbol-sessions selected at 09:35 ET by a frozen opening
+  price above $5 and 2-8% opening-gap rule. It is explicitly contaminated
+  training and cannot itself become untouched evidence.
+- The next five frozen sessions remain the embargo.
+- The final 75 sessions, from 2025-08-14 through 2025-12-31, contain 3,192
+  candidate symbol-sessions and currently have no overlap with the global
+  outcome-exposure index. They remain unopened until one exact development
+  winner is frozen.
+- The complete 32-trial grid is lookback `{15,30}` minutes × selloff threshold
+  `{-2%,-3%}` × simple RSI period `{3,5}` × RSI maximum `{15,20}` × target
+  `{1.0,1.5}R`.
+- Every trial uses a completed bullish close above the prior high and session
+  VWAP, next-minute entry, the completed session low as stop, stop-first
+  ambiguity, a 15:50 ET force-flat, the five-times-cost floor, one daily entry,
+  chronological account compounding, and 5/10/20-bps costs.
+
+Before the formal freeze, one unchanged predecessor-like setting was exercised
+solely to validate local I/O and semantics on this already contaminated training
+corpus. It produced 13 rolling-origin fills and -0.002737 total log growth at
+20 bps per side. The exact diagnostic is disclosed in the successor contract,
+the grid was not changed afterward, and the observation is ineligible for
+untouched or maturity evidence.
+
+Freeze and commit the exact successor before generic preflight:
+
+```sh
+python3 oversold_reversal_discovery.py freeze \
+  --created-at <actual-current-ISO8601-timestamp>
+python3 strategy_discovery.py preflight \
+  strategy_tournament/v2/continuous/short-horizon-oversold-reversal-v2-gap-universe/family-contract/contract-<sha256>.json
+```
+
+After committing preflight, use `strategy_discovery.py freeze-search`,
+`evaluate-development`, and `inspect-development` in order. Development loads
+the inspected local corpus once and makes zero provider requests. Confirmation
+data collection remains fail-closed unless the independent development
+inspection returns `WINNER_SELECTED`; it must then bind the exact winner rules
+hash before any confirmation bar is requested.
 
 ## Transition chain
 
@@ -141,12 +191,10 @@ The predeclared residual-equity and intraday-ETF families remain subject to the
 new-family weekly budget. Their calendar gate is independent of this successor
 lane and cannot block it.
 
-The short-horizon oversold-reversal family is the active next outcome-blind
-capacity lane because its retired v1 produced only ten signals despite positive
-5/10/20-bps diagnostics. Its capacity expansion must use evidence disjoint from
-the v1 corpus and freeze its universe, dates, inclusion semantics, and provider
-plan before new price or return access. It cannot access target returns until
-that capacity contract is independently inspected.
+The short-horizon oversold-reversal successor above is active now. Its retired
+v1 ten-signal result is hypothesis evidence only, and the already exposed gap
+corpus is contaminated development only. Neither may count toward confirmation
+or maturity.
 
 ## Completion
 

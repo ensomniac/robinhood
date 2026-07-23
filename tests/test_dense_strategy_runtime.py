@@ -204,6 +204,86 @@ def test_intraday_selects_the_first_observable_reclaim_without_future_ranking():
     )
 
 
+def _oversold_session(day: str) -> list[dict]:
+    bars: list[dict] = []
+    previous = 100.0
+    for minute in range(30):
+        close = 100.0 - 4.0 * (minute + 1) / 30
+        bars.append(
+            _minute_bar(
+                day,
+                minute,
+                opening=previous,
+                close=close,
+                low=close - 0.2,
+                high=max(previous, close) + 0.02,
+            )
+        )
+        previous = close
+    bars.append(
+        _minute_bar(
+            day,
+            30,
+            opening=96.0,
+            close=100.5,
+            low=95.9,
+            high=100.6,
+        )
+    )
+    bars.append(
+        _minute_bar(
+            day,
+            31,
+            opening=100.6,
+            close=100.6,
+            low=95.0,
+            high=108.0,
+        )
+    )
+    for minute in range(32, 390):
+        bars.append(
+            _minute_bar(
+                day,
+                minute,
+                opening=100.6,
+                close=100.6,
+            )
+        )
+    return bars
+
+
+def test_oversold_reversal_enters_next_bar_and_resolves_stop_first():
+    day = _days(1)[0]
+    dataset = runtime.prepare_dataset(
+        {
+            "family_id": runtime.OVERSOLD_REVERSAL_FAMILY,
+            "evaluation_dates": [day],
+            "candidate_symbols_by_date": {day: ["AAA"]},
+            "regular_session_minutes_by_date": {day: 390},
+            "minute_bars": {day: {"AAA": _oversold_session(day)}},
+        }
+    )
+
+    candidates = runtime.build_candidates(
+        dataset,
+        runtime.OVERSOLD_REVERSAL_FAMILY,
+        {
+            "lookback_minutes": 30,
+            "selloff_threshold": -0.03,
+            "rsi_period": 5,
+            "rsi_maximum": 20.0,
+            "target_r": 1.5,
+        },
+    )
+
+    assert len(candidates) == 1
+    candidate = candidates[0]
+    assert candidate["trigger_index"] == 30
+    assert candidate["entry_price"] == pytest.approx(100.6)
+    assert candidate["stop_executed"] is True
+    assert candidate["exit_price"] == pytest.approx(candidate["stop_price"])
+
+
 def test_trial_compounds_account_and_cost_stress_is_monotonic():
     result = runtime.evaluate_trial(
         _intraday_dataset(),

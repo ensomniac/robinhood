@@ -41,6 +41,16 @@ def _weekdays() -> list[dict[str, str]]:
 def test_existing_family_successor_freezes_without_waiting_or_reusing_v1(
     monkeypatch,
 ):
+    monkeypatch.setattr(
+        continuous.outcome_exposure,
+        "read_index",
+        lambda: [],
+    )
+    monkeypatch.setattr(
+        continuous.outcome_exposure,
+        "audit",
+        lambda: {"index_sha256": "a" * 64},
+    )
     with tempfile.TemporaryDirectory(dir=continuous.PROJECT_ROOT) as directory:
         work = Path(directory)
         root = work / "continuous"
