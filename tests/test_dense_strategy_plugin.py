@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
 import json
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+
+import pytest
 
 import dense_strategy_plugin as plugin
 import dense_strategy_runtime as runtime
+import portfolio_execution
+import portfolio_maturity
 from historical_store import canonical_sha256, sha256_file
 from learning_data import freeze_dataset_contract
 
@@ -142,3 +147,118 @@ def test_development_loads_dataset_once_and_runs_all_declared_trials(
     ]
     assert result["provider_telemetry"]["requests"] == 0
     assert result["provider_telemetry"]["dataset_loads"] == 1
+
+
+def test_exact_pullback_winner_rebuilds_live_rank_stop_exit_and_sizing():
+    dataset = _dataset()
+    parameters = {
+        "trend_sma": 100,
+        "rsi2_maximum": 10,
+        "three_session_decline_fraction": 0.02,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 3,
+    }
+    decision_date = dataset["evaluation_dates"][0]
+    historical = runtime.build_candidates(
+        dataset, runtime.ETF_PULLBACK_FAMILY, parameters
+    )[0]
+    observed = datetime.combine(
+        date.fromisoformat(historical["signal_date"]),
+        datetime.min.time(),
+        tzinfo=UTC,
+    ) + timedelta(hours=14)
+    implementation_paths = [
+        Path("dense_strategy_plugin.py"),
+        Path("dense_strategy_runtime.py"),
+        Path("learning_statistics.py"),
+    ]
+    winner = {
+        "family_id": runtime.ETF_PULLBACK_FAMILY,
+        "strategy_id": runtime.ETF_PULLBACK_FAMILY,
+        "strategy_version": "pullback-production-v1",
+        "rules_hash": "a" * 64,
+        "exact_rules": {
+            "selected_trial_id": "pullback-trial",
+            "parameters": parameters,
+            "universe": {"symbols": ["SPY"]},
+        },
+        "plugin": {
+            "module": "dense_strategy_plugin",
+            "evaluate_production": "evaluate_production",
+        },
+        "implementation_hashes": {
+            str(path): hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in implementation_paths
+        },
+    }
+    market_facts = {
+        "selected_trial_id": "pullback-trial",
+        "parameters": parameters,
+        "decision_data": {
+            "family_id": runtime.ETF_PULLBACK_FAMILY,
+            "decision_date": decision_date,
+            "next_session_date": historical["signal_date"],
+            "calendar_dates": [
+                bar["date"]
+                for bar in dataset["daily_bars"]["SPY"]
+                if bar["date"] <= decision_date
+            ],
+            "daily_history_complete": True,
+            "symbols": ["SPY"],
+            "daily_bars": {
+                "SPY": [
+                    bar
+                    for bar in dataset["daily_bars"]["SPY"]
+                    if bar["date"] <= decision_date
+                ]
+            },
+        },
+        "quote": {
+            "symbol": "SPY",
+            "observed_at": observed.isoformat(),
+            "halted": False,
+            "tradable": True,
+            "bid": historical["entry_price"] - 0.02,
+            "ask": historical["entry_price"],
+            "executable_ask_depth": 20_000,
+            "recent_real_minute_volume": 30_000,
+        },
+        "operational": {
+            "before_open_account_reconciled": True,
+            "before_open_orders_reconciled": True,
+            "before_open_protection_reconciled": True,
+            "before_open_tradability_reconciled": True,
+            "before_open_news_reconciled": True,
+            "protective_order_route_ready": True,
+            "monitoring_ready": True,
+            "protection_failure_safe_cutoff": "15:45 ET",
+        },
+    }
+
+    result = portfolio_execution.evaluate_frozen_winner(
+        winner,
+        market_facts,
+        {"equity": 100_000, "buying_power": 100_000},
+        portfolio_maturity.load_config(),
+        now=observed,
+    )
+
+    assert result["status"] == "PRODUCTION_EVALUATION_READY"
+    assert result["symbol"] == historical["symbol"] == "SPY"
+    assert result["protection"]["stop_price"] == historical["stop_price"]
+    assert result["protection"]["time_in_force"] == "gtc"
+    assert result["exit"]["maximum_hold_sessions"] == 3
+    assert result["broker_actions_performed"] == 0
+
+    market_facts["decision_data"]["symbols"] = ["QQQ"]
+    with pytest.raises(
+        portfolio_execution.PortfolioExecutionError,
+        match="universe drifted",
+    ):
+        portfolio_execution.evaluate_frozen_winner(
+            winner,
+            market_facts,
+            {"equity": 100_000, "buying_power": 100_000},
+            portfolio_maturity.load_config(),
+            now=observed,
+        )

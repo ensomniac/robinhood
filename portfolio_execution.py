@@ -69,7 +69,12 @@ def evaluate_frozen_winner(
         raise PortfolioExecutionError("winner production plugin cannot be loaded") from exc
     if not callable(evaluator):
         raise PortfolioExecutionError("winner production plugin is not callable")
-    candidate = evaluator(winner, market_facts)
+    try:
+        candidate = evaluator(winner, market_facts)
+    except (KeyError, RuntimeError, TypeError, ValueError) as exc:
+        raise PortfolioExecutionError(
+            f"winner production plugin rejected current facts: {exc}"
+        ) from exc
     if not isinstance(candidate, Mapping):
         raise PortfolioExecutionError("winner production plugin returned invalid facts")
     return evaluate_production_candidate(winner, candidate, account, config, now=now)
@@ -180,6 +185,9 @@ def evaluate_production_candidate(
     safe_cutoff = candidate.get("protection_failure_safe_cutoff")
     if not isinstance(safe_cutoff, str) or not safe_cutoff:
         raise PortfolioExecutionError("protection failure safe cutoff is missing")
+    exit_plan = candidate.get("exit_plan")
+    if not isinstance(exit_plan, Mapping) or not exit_plan:
+        raise PortfolioExecutionError("frozen production exit plan is missing")
     equity = _number(account.get("equity"), "equity", positive=True)
     buying_power = _number(
         account.get("buying_power"), "buying_power", positive=True
@@ -233,6 +241,7 @@ def evaluate_production_candidate(
             "route_ready": True,
             "failure_safe_cutoff": safe_cutoff,
         },
+        "exit": dict(exit_plan),
         "risk": {
             "planned_loss_fraction": planned_loss_fraction,
             "gross_notional_fraction": gross_notional_fraction,

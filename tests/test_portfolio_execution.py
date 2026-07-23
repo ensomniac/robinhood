@@ -55,6 +55,11 @@ def candidate(**overrides):
         "monitoring_ready": True,
         "protection_time_in_force": "gtc",
         "protection_failure_safe_cutoff": "15:45 ET",
+        "exit_plan": {
+            "type": "stop_or_maximum_hold_close",
+            "maximum_hold_sessions": 2,
+            "same_interval_ambiguity": "stop_first",
+        },
         "executable_ask_depth": 20_000,
         "recent_real_minute_volume": 30_000,
     }

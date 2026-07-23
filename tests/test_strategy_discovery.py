@@ -150,9 +150,8 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
     with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
         work = Path(directory)
         artifact_root = work / "artifacts"
-        contract_path = _write_contract(
-            work, family_contract(_dataset(work), family_id="genuine-edge")
-        )
+        contract = family_contract(_dataset(work), family_id="genuine-edge")
+        contract_path = _write_contract(work, contract)
         preflight_path, preflight = discovery.run_preflight(
             contract_path, root=artifact_root, enforce_commit=False
         )
@@ -174,6 +173,7 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
             inspection_path, root=artifact_root, enforce_commit=False
         )
         assert winner["confirmation_parameter_alternatives"] == 0
+        assert winner["exact_rules"]["universe"] == contract["universe"]
         confirmation_path, _ = discovery.evaluate_confirmation(
             winner_path, root=artifact_root, enforce_commit=False
         )

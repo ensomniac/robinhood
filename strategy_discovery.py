@@ -528,6 +528,7 @@ def freeze_winner(
         "exit_rule": contract["exit_rule"],
         "ranking_rule": contract["ranking_rule"],
         "selection_rule": contract["selection_rule"],
+        "universe": contract["universe"],
         "execution_assumptions": contract["execution_assumptions"],
         "costs_bps_per_side": contract["costs_bps_per_side"],
     }

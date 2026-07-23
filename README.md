@@ -57,9 +57,11 @@ At a high level:
 - Initial pilots risk at most 0.50% of equity in planned loss per position and
   1.25% across open positions, with daily, weekly, drawdown, notional, liquidity,
   protection, and broker limits layered on top.
-- Each version needs 30 robust representative development signals, 20
-  separately robust untouched confirmation signals, five clean prospective
-  shadows, complete trial accounting, and zero violations.
+- Each version freezes `required_total_signals = max(50, power_target)` and
+  `required_confirmation_signals = max(20, ceil(required_total_signals * 0.30))`
+  before confirmation, then needs both historical phases and five consecutive
+  clean prospective shadows, complete trial accounting, and zero active
+  violations.
 - Three selected mechanisms must also be distinct, have confirmation daily-return
   correlation below 0.70, and cover at least 60% of shared confirmation dates.
 - `PILOT_READY` authorizes a controlled pilot; it is not `LIVE_VALIDATED` and is

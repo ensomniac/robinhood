@@ -35,7 +35,13 @@ The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
 `portfolio_execution.py`. `dense_strategy_runtime.py` and
 `dense_strategy_plugin.py` now implement the shared point-in-time historical and
-production semantics for the exact 48/32/32 dense grids. Schema-1 portfolio
+production semantics for the exact 48/32/32 dense grids. The winner rules hash
+includes its frozen universe. Production recomputes the full equity top-250 or
+fixed-ETF rank from complete observable history, accepts an intraday signal only
+on its first completed reclaim bar, derives stop/target/hold paths from the exact
+parameters, and rejects stale-session or incomplete-denominator inputs. The
+48-trial equity runtime shares only parameter-invariant features and must remain
+under the local 60-second acceptance without provider requests. Schema-1 portfolio
 evidence remains immutable adverse history and cannot satisfy v2 maturity. The
 global outcome-exposure baseline conservatively marks all 226 dates in the
 preserved portfolio and legacy strategy ledgers as wildcard-symbol

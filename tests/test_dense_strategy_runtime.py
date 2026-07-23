@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import itertools
+import time as wall_time
 from datetime import date, datetime, time, timedelta, timezone
 
 import pytest
@@ -154,6 +156,44 @@ def test_intraday_reclaim_enters_next_bar_and_resolves_ambiguity_stop_first():
     assert candidate["exit_price"] == pytest.approx(candidate["stop_price"])
 
 
+def test_intraday_selects_the_first_observable_reclaim_without_future_ranking():
+    dataset = _intraday_dataset()
+    current_day = dataset["evaluation_dates"][0]
+    for index, (day, symbols) in enumerate(dataset["minute_bars"].items()):
+        opening_return = ((index % 7) - 3) * 0.0005
+        symbols["QQQ"] = _minute_session(
+            day,
+            -0.04 if day == current_day else opening_return,
+            stop_and_target=day == current_day,
+        )
+    dataset["symbols"] = ["SPY", "QQQ"]
+    spy = dataset["minute_bars"][current_day]["SPY"]
+    spy[15] = _minute_bar(
+        current_day,
+        15,
+        opening=float(spy[14]["close"]),
+        close=float(spy[14]["close"]) + 0.05,
+    )
+
+    candidates = runtime.build_candidates(
+        dataset,
+        runtime.INTRADAY_ETF_FAMILY,
+        {
+            "opening_window_minutes": 15,
+            "downside_z_threshold": -1.5,
+            "vwap_reclaim_completed_bars": 1,
+            "stop_intraday_atr": 1.0,
+            "target_r": 1.0,
+        },
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0]["symbol"] == "QQQ"
+    assert candidates[0]["entry_price"] == pytest.approx(
+        dataset["minute_bars"][current_day]["QQQ"][16]["open"]
+    )
+
+
 def test_trial_compounds_account_and_cost_stress_is_monotonic():
     result = runtime.evaluate_trial(
         _intraday_dataset(),
@@ -215,3 +255,269 @@ def test_prepared_dataset_reuses_normalized_rows_across_trials():
 
     assert "_prepared_minute_bars" in prepared
     assert first[0]["signal_id"] == second[0]["signal_id"]
+
+
+def test_production_pullback_rebuilds_the_historical_rank_from_completed_bars():
+    days = _days(230)
+    closes = [100 + 0.2 * index for index in range(230)]
+    closes[217:221] = [143.4, 142.0, 140.0, 138.0]
+    bars = [_daily_bar(day, close) for day, close in zip(days, closes, strict=True)]
+    parameters = {
+        "trend_sma": 100,
+        "rsi2_maximum": 10,
+        "three_session_decline_fraction": 0.02,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 3,
+    }
+    decision_date = days[220]
+    historical = runtime.build_candidates(
+        {
+            "family_id": runtime.ETF_PULLBACK_FAMILY,
+            "evaluation_dates": days[220:229],
+            "daily_bars": {"SPY": bars},
+        },
+        runtime.ETF_PULLBACK_FAMILY,
+        parameters,
+    )[0]
+    production = runtime.evaluate_production_signal(
+        {
+            "family_id": runtime.ETF_PULLBACK_FAMILY,
+            "decision_date": decision_date,
+            "next_session_date": days[221],
+            "calendar_dates": days[:221],
+            "daily_history_complete": True,
+            "symbols": ["SPY"],
+            "daily_bars": {
+                "SPY": [bar for bar in bars if bar["date"] <= decision_date]
+            },
+        },
+        family_id=runtime.ETF_PULLBACK_FAMILY,
+        parameters=parameters,
+        frozen_universe={"symbols": ["SPY"]},
+    )
+
+    assert production["symbol"] == historical["symbol"] == "SPY"
+    assert production["rank"] == historical["rank"] == 1
+    assert production["atr"] == pytest.approx(
+        historical["entry_price"] - historical["stop_price"]
+    )
+    assert production["holding_trading_days"] == 3
+
+
+def test_production_equity_rank_rebuilds_top_250_and_residual_signal():
+    days = _days(205)
+    spy_closes = [100 + 0.1 * index for index in range(len(days))]
+    daily_bars = {
+        "SPY": [
+            _daily_bar(day, close)
+            for day, close in zip(days, spy_closes, strict=True)
+        ]
+    }
+    references = {}
+    for ordinal in range(500):
+        symbol = f"S{ordinal:03d}"
+        closes = [
+            (50 + 0.05 * index) * (1 + 0.002 * ((index % 7) - 3))
+            for index in range(len(days))
+        ]
+        if ordinal == 0:
+            closes[-1] *= 0.94
+        daily_bars[symbol] = [
+            _daily_bar(day, close)
+            for day, close in zip(days, closes, strict=True)
+        ]
+        if ordinal == 0:
+            for bar in daily_bars[symbol]:
+                bar["volume"] = 4_000_000
+        references[symbol] = {
+            "active": True,
+            "type": "CS",
+            "listing_identity": f"listing-{ordinal:03d}",
+        }
+    signal = runtime.evaluate_production_signal(
+        {
+            "family_id": runtime.EQUITY_RESIDUAL_FAMILY,
+            "decision_date": days[-1],
+            "next_session_date": "2024-07-24",
+            "calendar_dates": days,
+            "daily_history_complete": True,
+            "daily_bars": daily_bars,
+            "reference_snapshot": references,
+            "reference_snapshot_complete": True,
+            "reference_source_total": len(references),
+        },
+        family_id=runtime.EQUITY_RESIDUAL_FAMILY,
+        parameters={
+            "prior_return_sessions": 1,
+            "residual_z_threshold": -1.5,
+            "market_trend_gate": "SPY>SMA100",
+            "stop_atr14": 1.0,
+            "hold_sessions": 2,
+        },
+        frozen_universe={"point_in_time": "top-250"},
+    )
+
+    assert signal["symbol"] == "S000"
+    assert signal["rank"] == 1
+    assert signal["expected_gross_move_fraction"] >= 0.005
+
+
+def _full_minute_session(day: str, opening_return: float) -> list[dict]:
+    bars = _minute_session(day, opening_return)
+    previous = float(bars[-1]["close"])
+    for minute in range(len(bars), 390):
+        bars.append(_minute_bar(day, minute, opening=previous, close=previous))
+    return bars
+
+
+def test_production_intraday_signal_requires_current_first_reclaim_bar():
+    days = _days(61)
+    minute_bars = {
+        day: {
+            "SPY": _full_minute_session(
+                day, ((index % 7) - 3) * 0.0005
+            )
+        }
+        for index, day in enumerate(days[:-1])
+    }
+    current = _minute_session(days[-1], -0.05)[:16]
+    minute_bars[days[-1]] = {"SPY": current}
+    parameters = {
+        "opening_window_minutes": 15,
+        "downside_z_threshold": -1.5,
+        "vwap_reclaim_completed_bars": 1,
+        "stop_intraday_atr": 1.0,
+        "target_r": 1.0,
+    }
+    signal = runtime.evaluate_production_signal(
+        {
+            "family_id": runtime.INTRADAY_ETF_FAMILY,
+            "session_date": days[-1],
+            "calendar_sessions": days,
+            "minute_history_complete": True,
+            "symbols": ["SPY"],
+            "minute_bars": minute_bars,
+        },
+        family_id=runtime.INTRADAY_ETF_FAMILY,
+        parameters=parameters,
+        frozen_universe={"symbols": ["SPY"]},
+    )
+    assert signal["symbol"] == "SPY"
+    assert signal["trigger_bar_timestamp"] == current[-1]["timestamp"]
+
+    later = dict(minute_bars)
+    later[days[-1]] = {
+        "SPY": [
+            *current,
+            _minute_bar(
+                days[-1],
+                16,
+                opening=float(current[-1]["close"]),
+                close=float(current[-1]["close"]),
+            ),
+        ]
+    }
+    with pytest.raises(runtime.DenseStrategyRuntimeError, match="earlier bar"):
+        runtime.evaluate_production_signal(
+            {
+                "family_id": runtime.INTRADAY_ETF_FAMILY,
+                "session_date": days[-1],
+                "calendar_sessions": days,
+                "minute_history_complete": True,
+                "symbols": ["SPY"],
+                "minute_bars": later,
+            },
+            family_id=runtime.INTRADAY_ETF_FAMILY,
+            parameters=parameters,
+            frozen_universe={"symbols": ["SPY"]},
+        )
+
+
+def test_real_48_trial_equity_runtime_reuses_features_under_sixty_seconds():
+    days = _days(325)
+    evaluation_dates = days[-120:]
+    spy_closes = [100 + 0.04 * index for index in range(len(days))]
+    daily_bars = {
+        "SPY": [
+            _daily_bar(day, close)
+            for day, close in zip(days, spy_closes, strict=True)
+        ]
+    }
+    symbols = [f"S{ordinal:03d}" for ordinal in range(250)]
+    for ordinal, symbol in enumerate(symbols):
+        closes = [
+            (40 + ordinal * 0.02 + 0.016 * index)
+            * (1 + 0.002 * (((index + ordinal) % 11) - 5))
+            for index in range(len(days))
+        ]
+        daily_bars[symbol] = [
+            _daily_bar(day, close)
+            for day, close in zip(days, closes, strict=True)
+        ]
+    dataset = runtime.prepare_dataset(
+        {
+            "family_id": runtime.EQUITY_RESIDUAL_FAMILY,
+            "evaluation_dates": evaluation_dates,
+            "daily_bars": daily_bars,
+            "universe_by_date": {
+                day: symbols for day in evaluation_dates
+            },
+            "universe_identity_by_date": {
+                day: {
+                    symbol: f"listing-{ordinal:03d}"
+                    for ordinal, symbol in enumerate(symbols)
+                }
+                for day in evaluation_dates
+            },
+        }
+    )
+    policy = {
+        "starting_equity": 100_000.0,
+        "risk_fraction": 0.005,
+        "maximum_concurrent_positions": 3,
+        "maximum_aggregate_risk_fraction": 0.0125,
+        "maximum_gross_notional_fraction": 1.0,
+    }
+    trials = itertools.product(
+        (1, 3),
+        (-1.5, -2.0, -2.5),
+        ("SPY>SMA100", "SPY>SMA200"),
+        (1.0, 1.5),
+        (2, 5),
+    )
+    started = wall_time.monotonic()
+    results = [
+        runtime.evaluate_trial(
+            dataset,
+            family_id=runtime.EQUITY_RESIDUAL_FAMILY,
+            trial_id=f"trial-{index:02d}",
+            parameters={
+                "prior_return_sessions": window,
+                "residual_z_threshold": threshold,
+                "market_trend_gate": trend,
+                "stop_atr14": stop,
+                "hold_sessions": hold,
+            },
+            account_policy=policy,
+        )
+        for index, (window, threshold, trend, stop, hold) in enumerate(trials)
+    ]
+    elapsed = wall_time.monotonic() - started
+    uncached = runtime.evaluate_trial(
+        {key: value for key, value in dataset.items() if not key.startswith("_")},
+        family_id=runtime.EQUITY_RESIDUAL_FAMILY,
+        trial_id="trial-00",
+        parameters={
+            "prior_return_sessions": 1,
+            "residual_z_threshold": -1.5,
+            "market_trend_gate": "SPY>SMA100",
+            "stop_atr14": 1.0,
+            "hold_sessions": 2,
+        },
+        account_policy=policy,
+    )
+
+    assert len(results) == 48
+    assert set(dataset["_equity_residual_feature_cache"]) == {1, 3}
+    assert results[0]["candidate_accounting"] == uncached["candidate_accounting"]
+    assert elapsed <= 60

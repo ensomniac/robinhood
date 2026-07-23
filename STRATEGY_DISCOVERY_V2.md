@@ -94,13 +94,26 @@ holding bars are recorded without substitution. The shared account simulator
 then applies whole-share sizing, overlapping positions, risk, gross-notional,
 cash, and daily-entry contention at 5, 10, and 20 bps.
 
+The live adapter does not accept a caller's claimed rank. For equity reversal it
+rebuilds the complete active-common-stock denominator, prior-close and 20/60-day
+liquidity gates, unique listing identities, top 250, residual z-score, trend,
+and ATR. For ETF pullback it requires every frozen symbol and complete calendar
+history before rebuilding SMA, RSI2, decline, and ATR. For intraday reversal it
+requires 60 complete 390-minute SIP histories plus the synchronized current
+partial session, and accepts only a first reclaim on the latest completed bar.
+The next-session/open or next-minute quote must match the rebuilt signal. Stop,
+target, maximum hold, GTC/day protection, and stop-first exit semantics are then
+derived from the exact winner rather than supplied as discretionary live facts.
+
 `dense_strategy_plugin.py` keeps row-level data outside Git under
 `LOCAL_HISTORICAL_DATA_ROOT`. A committed public manifest binds the external
 relative path, compressed-file SHA-256, canonical dataset SHA-256, exact family,
 dates, lane, and formal capacity. Development data must also bind the committed
 search hash. Confirmation data must be captured after and bind the exact winner
 rules hash. Warm trial evaluation loads that frozen dataset once and makes zero
-provider requests.
+provider requests. Parameter-invariant residual-return, rolling-z, and ATR
+features are shared across the 48 equity trials; a real 250-symbol, 325-session
+fixture enforces the local 60-second acceptance and checks cached/uncached parity.
 
 `portfolio_execution.py` is the broker-inert production adapter. It first
 rebuilds the candidate through the same frozen strategy plugin and rejects any

@@ -11,6 +11,7 @@ import gzip
 import json
 import subprocess
 from collections.abc import Mapping, Sequence
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -332,7 +333,7 @@ def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
 def evaluate_production(
     winner: Mapping[str, Any], market_facts: Mapping[str, Any]
 ) -> dict[str, Any]:
-    """Bind fresh live discovery facts to the frozen exact-rule evaluation."""
+    """Rebuild live discovery/ranking through the frozen historical semantics."""
 
     if market_facts.get("selected_trial_id") != winner["exact_rules"][
         "selected_trial_id"
@@ -340,10 +341,123 @@ def evaluate_production(
         raise DenseStrategyPluginError("live selected trial drifted")
     if market_facts.get("parameters") != winner["exact_rules"]["parameters"]:
         raise DenseStrategyPluginError("live exact parameters drifted")
+    expected = {
+        "selected_trial_id",
+        "parameters",
+        "decision_data",
+        "quote",
+        "operational",
+    }
+    if set(market_facts) != expected:
+        raise DenseStrategyPluginError("live market-fact schema drifted")
+    exact_rules = winner["exact_rules"]
+    universe = exact_rules.get("universe")
+    if not isinstance(universe, Mapping):
+        raise DenseStrategyPluginError("frozen winner does not bind its universe")
+    try:
+        signal = runtime.evaluate_production_signal(
+            market_facts["decision_data"],
+            family_id=str(winner["family_id"]),
+            parameters=exact_rules["parameters"],
+            frozen_universe=universe,
+        )
+    except runtime.DenseStrategyRuntimeError as exc:
+        raise DenseStrategyPluginError(str(exc)) from exc
+    quote = market_facts["quote"]
+    if not isinstance(quote, Mapping) or set(quote) != {
+        "symbol",
+        "observed_at",
+        "halted",
+        "tradable",
+        "bid",
+        "ask",
+        "executable_ask_depth",
+        "recent_real_minute_volume",
+    }:
+        raise DenseStrategyPluginError("live quote schema drifted")
+    if quote["symbol"] != signal["symbol"]:
+        raise DenseStrategyPluginError("fresh quote does not match ranked signal")
+    try:
+        quote_observed = datetime.fromisoformat(str(quote["observed_at"]))
+    except ValueError as exc:
+        raise DenseStrategyPluginError("live quote timestamp is invalid") from exc
+    if quote_observed.tzinfo is None:
+        raise DenseStrategyPluginError("live quote timestamp needs a timezone")
+    if signal.get("trigger_bar_timestamp") is not None:
+        try:
+            trigger = datetime.fromisoformat(str(signal["trigger_bar_timestamp"]))
+        except ValueError as exc:
+            raise DenseStrategyPluginError(
+                "intraday signal timestamps are invalid"
+            ) from exc
+        if (
+            trigger.tzinfo is None
+            or quote_observed < trigger + timedelta(minutes=1)
+            or quote_observed.date() != trigger.date()
+        ):
+            raise DenseStrategyPluginError(
+                "quote is not from the next observable intraday interval"
+            )
+    else:
+        try:
+            next_session = datetime.fromisoformat(
+                str(signal["next_session_date"])
+            ).date()
+        except ValueError as exc:
+            raise DenseStrategyPluginError("daily session date is invalid") from exc
+        if quote_observed.date() != next_session:
+            raise DenseStrategyPluginError(
+                "daily quote is not from the frozen next session"
+            )
+    operational = market_facts["operational"]
+    operational_fields = {
+        "before_open_account_reconciled",
+        "before_open_orders_reconciled",
+        "before_open_protection_reconciled",
+        "before_open_tradability_reconciled",
+        "before_open_news_reconciled",
+        "protective_order_route_ready",
+        "monitoring_ready",
+        "protection_failure_safe_cutoff",
+    }
+    if not isinstance(operational, Mapping) or set(operational) != operational_fields:
+        raise DenseStrategyPluginError("live operational fact schema drifted")
+    try:
+        entry = float(quote["ask"])
+        stop = entry - float(signal["stop_atr_multiple"]) * float(signal["atr"])
+    except (TypeError, ValueError) as exc:
+        raise DenseStrategyPluginError("live stop inputs are invalid") from exc
+    if entry <= 0 or stop <= 0 or stop >= entry:
+        raise DenseStrategyPluginError("live structural stop is invalid")
+    hold = int(signal["holding_trading_days"])
+    exit_plan = dict(signal["exit_plan"])
+    if "target_r" in signal:
+        exit_plan["target_price"] = entry + float(signal["target_r"]) * (
+            entry - stop
+        )
     return {
-        **dict(market_facts),
         "strategy_id": winner["strategy_id"],
         "strategy_version": winner["strategy_version"],
         "rules_hash": winner["rules_hash"],
         "historical_semantics_sha256": winner["rules_hash"],
+        "ranking_complete": True,
+        "observed_at": quote["observed_at"],
+        "symbol": signal["symbol"],
+        "rank": signal["rank"],
+        "score": signal["score"],
+        "halted": quote["halted"],
+        "tradable": quote["tradable"],
+        "bid": quote["bid"],
+        "ask": quote["ask"],
+        "entry_limit": entry,
+        "stop_price": stop,
+        "expected_gross_move_fraction": signal[
+            "expected_gross_move_fraction"
+        ],
+        "holding_trading_days": hold,
+        **dict(operational),
+        "protection_time_in_force": "gtc" if hold > 1 else "day",
+        "executable_ask_depth": quote["executable_ask_depth"],
+        "recent_real_minute_volume": quote["recent_real_minute_volume"],
+        "exit_plan": exit_plan,
     }
