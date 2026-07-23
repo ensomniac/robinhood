@@ -220,6 +220,29 @@ def _validate_family_contract(value: Mapping[str, Any]) -> dict[str, Any]:
     return contract
 
 
+def _development_evidence_dates(contract: Mapping[str, Any]) -> list[str]:
+    plan = contract.get("rolling_origin_plan")
+    if not isinstance(plan, list) or not plan:
+        raise StrategyDiscoveryError("development rolling-origin plan is missing")
+    dates: list[str] = []
+    for fold in plan:
+        if not isinstance(fold, Mapping) or not isinstance(
+            fold.get("test_dates"), list
+        ):
+            raise StrategyDiscoveryError(
+                "development rolling-origin fold is invalid"
+            )
+        dates.extend(fold["test_dates"])
+    if (
+        not dates
+        or dates != sorted(dates)
+        or len(dates) != len(set(dates))
+        or not set(dates).issubset(contract["development_dates"])
+    ):
+        raise StrategyDiscoveryError("development OOF evidence dates are invalid")
+    return dates
+
+
 def _date_list(value: Any, field: str) -> list[date]:
     if not isinstance(value, list) or not value:
         raise StrategyDiscoveryError(f"{field} must be a non-empty array")
@@ -408,6 +431,7 @@ def evaluate_development(
         raise StrategyDiscoveryError(
             "development dataset is not bound to the frozen search"
         )
+    evidence_dates = _development_evidence_dates(contract)
     evaluation = {
         "experiment_id": contract["experiment_id"],
         "dataset_manifest": str(result.get("dataset_manifest")),
@@ -422,13 +446,13 @@ def evaluate_development(
         rows = trial.get("maturity_rows")
         if not isinstance(rows, list) or [
             row.get("date") if isinstance(row, Mapping) else None for row in rows
-        ] != list(contract["development_dates"]):
+        ] != evidence_dates:
             raise StrategyDiscoveryError(
-                "development maturity rows must match every frozen date"
+                "development maturity rows must match every frozen OOF test date"
             )
         maturity_accounting = _maturity_rows_accounting(
             rows,
-            expected_dates=contract["development_dates"],
+            expected_dates=evidence_dates,
             phase="development",
         )["stress_20bps"]
         metrics = trial["metrics"]
@@ -457,9 +481,9 @@ def evaluate_development(
             row.get("date") if isinstance(row, Mapping) else None
             for row in trial["trial_accounting"]
         ]
-        if accounting_dates != list(contract["development_dates"]):
+        if accounting_dates != evidence_dates:
             raise StrategyDiscoveryError(
-                "development trial accounting must match every frozen date"
+                "development trial accounting must match every frozen OOF test date"
             )
     telemetry = result.get("provider_telemetry", {})
     if not isinstance(telemetry, Mapping):
@@ -499,6 +523,7 @@ def inspect_development(
     if search["artifact_sha256"] != result["search_sha256"]:
         raise StrategyDiscoveryError("development result search binding drifted")
     contract = search["family_contract"]
+    evidence_dates = _development_evidence_dates(contract)
     try:
         selection = select_development_winner(contract, result["evaluation"])
     except LearningExperimentError as exc:
@@ -519,7 +544,7 @@ def inspect_development(
         selected_trial = selected_trials[0]
         account_scenarios = _maturity_rows_accounting(
             selected_trial.get("maturity_rows"),
-            expected_dates=contract["development_dates"],
+            expected_dates=evidence_dates,
             phase="development",
         )
         development_account_inspection = inspect_confirmation_metrics(
@@ -534,7 +559,7 @@ def inspect_development(
                 int(selection["required_total_signals"])
                 - int(selection["required_confirmation_signals"]),
             ),
-            expected_dates=contract["development_dates"],
+            expected_dates=evidence_dates,
             phase="development",
         )
         if not development_account_inspection["passed"]:
@@ -655,6 +680,8 @@ def freeze_winner(
             "required_confirmation_signals"
         ],
         "development_dates": contract["development_dates"],
+        "development_evidence_dates": _development_evidence_dates(contract),
+        "rolling_origin_plan": contract["rolling_origin_plan"],
         "embargo_dates": contract["embargo_dates"],
         "confirmation_dates": contract["confirmation_dates"],
         "development_scope": contract.get("development_scope"),
@@ -1135,7 +1162,7 @@ def _write_historical_maturity_ledger(
     development_records = _phase_maturity_records(
         matches[0].get("maturity_rows"),
         phase="development",
-        expected_dates=winner["development_dates"],
+        expected_dates=winner["development_evidence_dates"],
         winner=winner,
     )
     confirmation_records = _phase_maturity_records(

@@ -284,13 +284,20 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertGreaterEqual(len(folds), 2)
         self.assertEqual(len(folds[0]["embargo_dates"]), 1)
         self.assertGreater(len(folds[1]["train_dates"]), len(folds[0]["train_dates"]))
+        for fold in folds:
+            self.assertEqual(
+                fold["test_dates"],
+                [*fold["entry_dates"], *fold["settlement_only_dates"]],
+            )
+            self.assertEqual(len(fold["settlement_only_dates"]), 4)
 
     def test_rebuilt_fold_stability_uses_the_exact_frozen_rolling_plan(self):
         start = date(2026, 1, 1)
         dates = [(start + timedelta(days=index)).isoformat() for index in range(80)]
         plan = build_rolling_origin_plan(dates)
-        daily = [0.01] * len(dates)
-        positions = {day: index for index, day in enumerate(dates)}
+        account_dates = [day for fold in plan for day in fold["test_dates"]]
+        daily = [0.01] * len(account_dates)
+        positions = {day: index for index, day in enumerate(account_dates)}
         for day in plan[0]["test_dates"]:
             daily[positions[day]] = -0.02
 

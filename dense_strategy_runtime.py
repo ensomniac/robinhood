@@ -14,7 +14,11 @@ from collections.abc import Mapping, Sequence
 from datetime import datetime, time, timedelta
 from typing import Any
 
-from learning_statistics import profit_factor, simulate_portfolio_account
+from learning_statistics import (
+    maximum_drawdown_fraction,
+    profit_factor,
+    simulate_portfolio_account,
+)
 
 
 EQUITY_RESIDUAL_FAMILY = "liquid-equity-market-residual-reversal"
@@ -1355,6 +1359,106 @@ def _scenario(
     )
 
 
+def _rolling_origin_scenario(
+    plan: Sequence[Mapping[str, Any]],
+    candidates: Sequence[Mapping[str, Any]],
+    policy: Mapping[str, Any],
+    cost_bps_per_side: int,
+) -> dict[str, Any]:
+    starting_equity = float(policy.get("starting_equity", 100_000.0))
+    current_equity = starting_equity
+    account_path: list[dict[str, Any]] = []
+    trial_accounting: list[dict[str, Any]] = []
+    closed_trades: list[dict[str, Any]] = []
+    for expected_fold, fold in enumerate(plan, 1):
+        test_dates = fold.get("test_dates")
+        entry_dates = fold.get("entry_dates")
+        settlement_dates = fold.get("settlement_only_dates")
+        if not (
+            fold.get("fold") == expected_fold
+            and isinstance(test_dates, list)
+            and isinstance(entry_dates, list)
+            and isinstance(settlement_dates, list)
+            and test_dates == [*entry_dates, *settlement_dates]
+            and test_dates
+        ):
+            raise DenseStrategyRuntimeError(
+                "rolling-origin fold entry and settlement dates are invalid"
+            )
+        test_set = set(test_dates)
+        entry_set = set(entry_dates)
+        fold_candidates = [
+            item for item in candidates if item.get("signal_date") in entry_set
+        ]
+        if any(
+            item.get("outcome") == "eligible" and item.get("exit_date") not in test_set
+            for item in fold_candidates
+        ):
+            raise DenseStrategyRuntimeError(
+                "rolling-origin entry cannot settle inside its frozen test fold"
+            )
+        fold_policy = {**dict(policy), "starting_equity": current_equity}
+        scenario = _scenario(
+            test_dates,
+            fold_candidates,
+            fold_policy,
+            cost_bps_per_side,
+        )
+        account_path.extend(scenario["account_path"])
+        trial_accounting.extend(scenario["trial_accounting"])
+        closed_trades.extend(scenario["closed_trades"])
+        current_equity = float(scenario["ending_equity"])
+    daily_returns = [
+        float(item["daily_account_return_fraction"]) for item in account_path
+    ]
+    return {
+        "cost_bps_per_side": float(cost_bps_per_side),
+        "starting_equity": starting_equity,
+        "ending_equity": current_equity,
+        "compounded_return_fraction": current_equity / starting_equity - 1,
+        "total_log_growth": sum(math.log1p(value) for value in daily_returns),
+        "maximum_drawdown_fraction": maximum_drawdown_fraction(daily_returns),
+        "account_path": account_path,
+        "trial_accounting": trial_accounting,
+        "closed_trades": closed_trades,
+    }
+
+
+def _rolling_origin_scope(
+    calendar: Sequence[str],
+    plan: Sequence[Mapping[str, Any]],
+) -> tuple[list[str], set[str]]:
+    account_dates: list[str] = []
+    entry_dates: list[str] = []
+    for expected_fold, fold in enumerate(plan, 1):
+        if not isinstance(fold, Mapping) or fold.get("fold") != expected_fold:
+            raise DenseStrategyRuntimeError("rolling-origin fold ordering drifted")
+        test = fold.get("test_dates")
+        entries = fold.get("entry_dates")
+        settlement = fold.get("settlement_only_dates")
+        if not (
+            isinstance(test, list)
+            and isinstance(entries, list)
+            and isinstance(settlement, list)
+            and test == [*entries, *settlement]
+            and entries
+        ):
+            raise DenseStrategyRuntimeError("rolling-origin evidence scope is invalid")
+        account_dates.extend(test)
+        entry_dates.extend(entries)
+    if (
+        account_dates != sorted(account_dates)
+        or len(account_dates) != len(set(account_dates))
+        or not set(account_dates).issubset(calendar)
+        or entry_dates != sorted(entry_dates)
+        or len(entry_dates) != len(set(entry_dates))
+    ):
+        raise DenseStrategyRuntimeError(
+            "rolling-origin evidence dates drifted from the development calendar"
+        )
+    return account_dates, set(entry_dates)
+
+
 def _trade_signal(
     candidate: Mapping[str, Any],
     trades: Mapping[int, Mapping[str, Any]],
@@ -1454,15 +1558,34 @@ def evaluate_trial(
     trial_id: str,
     parameters: Mapping[str, Any],
     account_policy: Mapping[str, Any],
+    rolling_origin_plan: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Evaluate one trial at 5/10/20 bps with a shared chronological account path."""
 
-    calendar = _calendar(dataset)
+    full_calendar = _calendar(dataset)
     candidates = build_candidates(dataset, family_id, parameters)
-    scenarios = {
-        cost: _scenario(calendar, candidates, account_policy, cost)
-        for cost in (5, 10, 20)
-    }
+    if rolling_origin_plan is None:
+        calendar = full_calendar
+        scenarios = {
+            cost: _scenario(calendar, candidates, account_policy, cost)
+            for cost in (5, 10, 20)
+        }
+    else:
+        calendar, entry_dates = _rolling_origin_scope(
+            full_calendar, rolling_origin_plan
+        )
+        candidates = [
+            item for item in candidates if item.get("signal_date") in entry_dates
+        ]
+        scenarios = {
+            cost: _rolling_origin_scenario(
+                rolling_origin_plan,
+                candidates,
+                account_policy,
+                cost,
+            )
+            for cost in (5, 10, 20)
+        }
     stress = scenarios[20]
     daily_returns = [
         float(item["daily_account_return_fraction"])

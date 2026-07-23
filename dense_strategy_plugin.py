@@ -271,6 +271,7 @@ def evaluate_development(
                 trial_id=str(trial["trial_id"]),
                 parameters=trial["parameters"],
                 account_policy=policy,
+                rolling_origin_plan=contract.get("rolling_origin_plan"),
             )
             for trial in trials
         ],

@@ -14,8 +14,8 @@ maturity gate. `portfolio_config_v1.toml` is the byte-identical audit snapshot
 used to reconstruct historical v1 artifacts.
 
 For every v2 strategy, the chronological account path is the primary historical
-truth surface. It includes every frozen session, including no-signal, rejected,
-missed-fill, capital-blocked, and open-position days; sizes entries from the
+truth surface. It includes every frozen evidence session, including no-signal,
+rejected, missed-fill, capital-blocked, and open-position days; sizes entries from the
 configured pilot risk; enforces concurrent-position, aggregate-risk,
 daily-entry, gross-notional, and cash contention; marks open positions daily;
 and compounds equity only through that path. The 5-bps-per-side path is primary
@@ -32,6 +32,15 @@ The legacy independent-trade bootstrap remains reportable diagnostics but is not
 an active schema-2 promotion gate; its one-sided stationary account-return
 replacement is the confidence authority. Schema-1 maturity semantics are
 unchanged.
+
+Development selection uses only the test sessions in the frozen expanding-window
+rolling-origin plan. Each test fold reserves the final four sessions for
+settlement, permits entries only early enough for the maximum five-session hold
+to close inside that fold, and must finish flat before the next fold. Training,
+internal-embargo, and unused tail dates may provide point-in-time feature history
+but cannot enter selection statistics, winner ranking, or power sizing. For the
+120-session W31 development partitions this yields 72 explicit OOF account
+sessions and 60 preregistered entry sessions per trial.
 
 Development, untouched confirmation, and combined history must each have
 positive compounded return and log growth. The primary path additionally needs

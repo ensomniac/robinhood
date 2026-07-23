@@ -28,23 +28,35 @@ def evaluate_development(
     contract: Mapping[str, Any], trials: Sequence[Mapping[str, Any]]
 ) -> dict[str, Any]:
     overfit = contract.get("synthetic_mode") == "overfit"
+    evidence_dates = [
+        day
+        for fold in contract["rolling_origin_plan"]
+        for day in fold["test_dates"]
+    ]
+    observation_count = len(evidence_dates)
     evaluated: list[dict[str, Any]] = []
     for index, trial in enumerate(trials):
         if overfit:
+            midpoint = observation_count // 2
             returns = (
-                [0.010] * 60 + [-0.009] * 60
+                [0.010] * midpoint
+                + [-0.009] * (observation_count - midpoint)
                 if index == 0
-                else [-0.001] * 120
+                else [-0.001] * observation_count
             )
         else:
             if index == len(trials) - 1:
                 returns = [
-                    -0.00001 if item % 10 == 0 else 0.005 for item in range(120)
+                    0.0005 if item % 2 == 0 else 0.0015
+                    for item in range(observation_count)
                 ]
             else:
                 gain = 0.00020 + index * 0.000001
                 loss = -0.00019
-                returns = [loss if item % 2 == 0 else gain for item in range(120)]
+                returns = [
+                    loss if item % 2 == 0 else gain
+                    for item in range(observation_count)
+                ]
         metrics = {
             "stress_20bps_total_log_growth": (
                 0.10 + index * 0.001 if not overfit else (-0.01 if index else 0.50)
@@ -81,7 +93,7 @@ def evaluate_development(
                 "stop_executed": value < 0,
             }
             for day, value in zip(
-                contract["development_dates"], returns, strict=True
+                evidence_dates, returns, strict=True
             )
         ]
         evaluated.append(
@@ -93,7 +105,7 @@ def evaluate_development(
                         "date": day,
                         "outcome": "account_return_day",
                     }
-                    for day in contract["development_dates"]
+                    for day in evidence_dates
                 ],
                 "maturity_rows": rows,
             }

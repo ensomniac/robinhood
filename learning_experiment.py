@@ -181,10 +181,19 @@ def build_rolling_origin_plan(
     *,
     minimum_train_days: int = 40,
     embargo_days: int = 1,
+    maximum_hold_sessions: int = 5,
 ) -> list[dict[str, Any]]:
     if embargo_days < 1:
         raise LearningExperimentError(
             "rolling-origin plan needs at least one embargo day"
+        )
+    if (
+        isinstance(maximum_hold_sessions, bool)
+        or not isinstance(maximum_hold_sessions, int)
+        or maximum_hold_sessions < 1
+    ):
+        raise LearningExperimentError(
+            "rolling-origin maximum hold must be a positive integer"
         )
     try:
         parsed = [date.fromisoformat(item) for item in requested_dates]
@@ -206,6 +215,10 @@ def build_rolling_origin_plan(
         test_end = min(len(parsed), test_start + test_size)
         if test_end - test_start < 5:
             break
+        test_dates = [item.isoformat() for item in parsed[test_start:test_end]]
+        if len(test_dates) < maximum_hold_sessions:
+            break
+        entry_count = len(test_dates) - maximum_hold_sessions + 1
         folds.append(
             {
                 "fold": len(folds) + 1,
@@ -213,9 +226,9 @@ def build_rolling_origin_plan(
                 "embargo_dates": [
                     item.isoformat() for item in parsed[train_end:test_start]
                 ],
-                "test_dates": [
-                    item.isoformat() for item in parsed[test_start:test_end]
-                ],
+                "test_dates": test_dates,
+                "entry_dates": test_dates[:entry_count],
+                "settlement_only_dates": test_dates[entry_count:],
             }
         )
         train_end = test_end
@@ -580,14 +593,17 @@ def _rebuild_development_statistics(
                 "rolling-origin dates and plan must be supplied together"
             )
         dates = list(development_dates)
-        if len(dates) not in lengths:
-            raise LearningExperimentError(
-                "rolling-origin dates must align with every trial account path"
-            )
         expected_plan = build_rolling_origin_plan(dates)
+        account_dates = [
+            day for fold in expected_plan for day in fold["test_dates"]
+        ]
+        if len(account_dates) not in lengths:
+            raise LearningExperimentError(
+                "rolling-origin test dates must align with every trial account path"
+            )
         if [dict(item) for item in rolling_origin_plan] != expected_plan:
             raise LearningExperimentError("rolling-origin plan drifted")
-        positions = {day: index for index, day in enumerate(dates)}
+        positions = {day: index for index, day in enumerate(account_dates)}
         fold_indices = [
             [positions[day] for day in fold["test_dates"]]
             for fold in expected_plan
@@ -651,6 +667,8 @@ def _rebuild_development_statistics(
         risk_fraction = float(item["metrics"].get("risk_fraction", 0.005))
         if risk_fraction <= 0:
             raise LearningExperimentError("risk_fraction must be positive")
+        stressed_profit_factor = profit_factor(dollars)
+        stressed_profit_factor_is_infinite = stressed_profit_factor == math.inf
         rebuilt[trial_id] = {
             "stress_20bps_total_log_growth": sum(
                 math.log1p(value) for value in daily_returns
@@ -658,7 +676,14 @@ def _rebuild_development_statistics(
             "stress_20bps_bootstrap_lower_mean_account_return": bootstrap[
                 "lower_one_sided"
             ],
-            "stress_20bps_profit_factor": profit_factor(dollars),
+            "stress_20bps_profit_factor": (
+                None
+                if stressed_profit_factor_is_infinite
+                else stressed_profit_factor
+            ),
+            "stress_20bps_profit_factor_is_infinite": (
+                stressed_profit_factor_is_infinite
+            ),
             "stress_20bps_maximum_drawdown_r": maximum_drawdown_fraction(daily_returns)
             / risk_fraction,
             "deflated_sharpe_probability": deflated_sharpe_probability(
@@ -737,9 +762,13 @@ def select_development_winner(
                 "stress_20bps_total_log_growth"
             ]
             > 0,
-            "stressed_profit_factor": metrics["stress_20bps_profit_factor"]
-            is not None
-            and metrics["stress_20bps_profit_factor"] >= 1.20,
+            "stressed_profit_factor": metrics[
+                "stress_20bps_profit_factor_is_infinite"
+            ]
+            or (
+                metrics["stress_20bps_profit_factor"] is not None
+                and metrics["stress_20bps_profit_factor"] >= 1.20
+            ),
             "stressed_drawdown": metrics["stress_20bps_maximum_drawdown_r"] <= 6.0,
             "rolling_fold_stability": metrics["rolling_folds_positive"] is True,
             "rule_completeness": metrics["rules_complete"] is True,

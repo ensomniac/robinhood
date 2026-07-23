@@ -8,6 +8,7 @@ from datetime import date, datetime, time, timedelta, timezone
 import pytest
 
 import dense_strategy_runtime as runtime
+from learning_experiment import build_rolling_origin_plan
 
 
 def _days(count: int) -> list[str]:
@@ -232,6 +233,56 @@ def test_trial_compounds_account_and_cost_stress_is_monotonic():
     assert signal["stress_20bps_account_log_growth"] == pytest.approx(
         math.log1p(signal["stress_20bps_account_return_fraction"])
     )
+
+
+def test_rolling_origin_path_excludes_training_and_finishes_each_fold_flat():
+    days = _days(80)
+    plan = build_rolling_origin_plan(days)
+    candidates = []
+    for fold in plan:
+        entry = fold["entry_dates"][-1]
+        exit_day = fold["test_dates"][-1]
+        first = fold["test_dates"].index(entry)
+        marks = {day: 101.0 for day in fold["test_dates"][first:]}
+        candidates.append(
+            {
+                "signal_id": f"{entry}-fold-{fold['fold']}",
+                "signal_date": entry,
+                "outcome": "eligible",
+                "rank": 1,
+                "entry_price": 100.0,
+                "stop_price": 99.0,
+                "exit_date": exit_day,
+                "exit_price": 101.0,
+                "marks": marks,
+            }
+        )
+    scenario = runtime._rolling_origin_scenario(
+        plan,
+        candidates,
+        {
+            "starting_equity": 100_000.0,
+            "risk_fraction": 0.005,
+            "maximum_concurrent_positions": 3,
+            "maximum_aggregate_risk_fraction": 0.0125,
+            "maximum_gross_notional_fraction": 1.0,
+        },
+        20,
+    )
+
+    observed_dates = [row["date"] for row in scenario["account_path"]]
+    assert observed_dates == [
+        day for fold in plan for day in fold["test_dates"]
+    ]
+    assert not set(observed_dates) & set(plan[0]["train_dates"])
+    for fold in plan:
+        final = next(
+            row
+            for row in scenario["account_path"]
+            if row["date"] == fold["test_dates"][-1]
+        )
+        assert final["open_positions"] == 0
+    assert len(scenario["closed_trades"]) == len(plan)
 
 
 def test_prepared_dataset_reuses_normalized_rows_across_trials():

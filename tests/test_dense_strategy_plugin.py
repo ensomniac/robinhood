@@ -14,6 +14,7 @@ import portfolio_execution
 import portfolio_maturity
 from historical_store import canonical_sha256, sha256_file
 from learning_data import freeze_dataset_contract
+from learning_experiment import build_rolling_origin_plan
 
 
 def _days(count: int) -> list[str]:
@@ -166,6 +167,47 @@ def test_development_loads_dataset_once_and_runs_all_declared_trials(
     ]
     assert result["provider_telemetry"]["requests"] == 0
     assert result["provider_telemetry"]["dataset_loads"] == 1
+
+
+def test_development_plugin_emits_only_frozen_rolling_origin_test_sessions(
+    tmp_path, monkeypatch
+):
+    dataset = _dataset()
+    dataset["evaluation_dates"] = [
+        bar["date"] for bar in dataset["daily_bars"]["SPY"][-120:]
+    ]
+    manifest = _manifest(tmp_path, dataset)
+    monkeypatch.setenv(
+        "LOCAL_HISTORICAL_DATA_ROOT", str(tmp_path / "historical-store")
+    )
+    monkeypatch.setenv("LOCAL_HISTORICAL_MIN_FREE_GIB", "1")
+    plan = build_rolling_origin_plan(dataset["evaluation_dates"])
+    result = plugin.evaluate_development(
+        {
+            **_contract(manifest, dataset["evaluation_dates"]),
+            "rolling_origin_plan": plan,
+        },
+        [
+            {
+                "trial_id": "trial-oof",
+                "parameters": {
+                    "trend_sma": 100,
+                    "rsi2_maximum": 10,
+                    "three_session_decline_fraction": 0.02,
+                    "stop_atr14": 1.0,
+                    "maximum_hold_sessions": 5,
+                },
+            }
+        ],
+    )
+
+    trial = result["trials"][0]
+    expected_dates = [day for fold in plan for day in fold["test_dates"]]
+    assert [row["date"] for row in trial["maturity_rows"]] == expected_dates
+    assert len(trial["metrics"]["oof_daily_account_returns"]) == 72
+    assert {item["signal_date"] for item in trial["candidate_accounting"]} <= {
+        day for fold in plan for day in fold["entry_dates"]
+    }
 
 
 def test_confirmation_manifest_runs_only_the_exact_frozen_winner(

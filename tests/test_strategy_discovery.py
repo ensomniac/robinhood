@@ -631,6 +631,59 @@ def test_development_rejects_missing_trial_accounting(monkeypatch):
             )
 
 
+def test_development_rejects_training_dates_in_oof_evidence(monkeypatch):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        contract_path = _write_contract(
+            work, family_contract(_dataset(work), family_id="training-date-leak")
+        )
+        discovery.run_preflight(
+            contract_path, root=artifact_root, enforce_commit=False
+        )
+        search_path, _ = discovery.freeze_search(
+            contract_path, root=artifact_root, enforce_commit=False
+        )
+        original = synthetic_plugin.evaluate_development
+
+        def leaked(contract, trials):
+            result = original(contract, trials)
+            for trial in result["trials"]:
+                missing = len(contract["development_dates"]) - len(
+                    trial["metrics"]["oof_daily_account_returns"]
+                )
+                for field in (
+                    "oof_daily_account_returns",
+                    "oof_filled_account_returns",
+                ):
+                    trial["metrics"][field].extend([0.001] * missing)
+                trial["metrics"]["oof_net_pnl_dollars"].extend(
+                    [100.0] * missing
+                )
+                trial["trial_accounting"].extend(
+                    {
+                        "date": day,
+                        "outcome": "account_return_day",
+                    }
+                    for day in contract["development_dates"][-missing:]
+                )
+                template = trial["maturity_rows"][0]
+                trial["maturity_rows"] = [
+                    {**template, "date": day}
+                    for day in contract["development_dates"]
+                ]
+            return result
+
+        monkeypatch.setattr(synthetic_plugin, "evaluate_development", leaked)
+        with pytest.raises(
+            discovery.StrategyDiscoveryError,
+            match="trial accounting|frozen OOF test date",
+        ):
+            discovery.evaluate_development(
+                search_path, root=artifact_root, enforce_commit=False
+            )
+
+
 def test_development_rejects_filled_count_maturity_drift(monkeypatch):
     with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
         work = Path(directory)
