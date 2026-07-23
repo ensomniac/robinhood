@@ -250,6 +250,8 @@ def evaluate_production_candidate(
         "market": {
             "observed_at": observed.isoformat(),
             "age_seconds": age,
+            "bid": bid,
+            "ask": ask,
             "spread_fraction": spread,
             "expected_gross_move_fraction": expected_move,
         },

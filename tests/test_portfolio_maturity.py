@@ -300,8 +300,18 @@ class PortfolioMaturityTests(unittest.TestCase):
                     "protection_confirmed": True,
                     "monitoring_complete": True,
                     "journal_complete": True,
+                    "position_flat_confirmed": True,
+                    "residual_orders_terminal": True,
+                    "account_reconciled_after_close": True,
+                    "encrypted_identifiers_recorded": True,
+                    "notification_status_recorded": True,
                     "entry_slippage_bps": 5.0,
+                    "exit_slippage_bps": 4.0,
                     "unprotected_seconds": 4.0,
+                    "realized_net_dollars": 200.0,
+                    "net_account_return_fraction": 0.002,
+                    "exit_reason": "strategy_exit",
+                    "broker_actions": 3,
                     "session_capture_complete": True,
                     "rule_violations": [],
                 }
@@ -640,6 +650,25 @@ maximum_second_wave_families = 6
             with self.assertRaisesRegex(
                 maturity.PortfolioMaturityError,
                 "portfolio_guard_status=ENTRY_READY",
+            ):
+                maturity.validate_record(live, root=root)
+
+    def test_live_close_without_flat_terminal_reconciliation_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(
+                root,
+                "strategy-one",
+                "momentum",
+                live=True,
+            )
+            live = next(
+                record for record in records if record.get("sample_phase") == "live"
+            )
+            live["residual_orders_terminal"] = False
+            with self.assertRaisesRegex(
+                maturity.PortfolioMaturityError,
+                "residual_orders_terminal=true",
             ):
                 maturity.validate_record(live, root=root)
 

@@ -78,6 +78,11 @@ development, and confirmation/shadow lanes. `portfolio_shadow.py` and
 entry/fill, close, independent replay, and ledger-admission path.
 `portfolio_guard.py` is the pure fail-closed pre-entry gate for an exact
 `PILOT_READY` version and a fresh privacy-safe post-entry risk reconciliation.
+`portfolio_live.py` and `portfolio_live_inspection.py` then bind the reviewed
+order, unknown-outcome handling, partial-fill remainder, immediate protection,
+encrypted identifiers, monitoring, flat close, terminal residual orders,
+realized return, journal, and independent maturity admission without themselves
+calling a broker.
 
 The first reproducible inventory is in
 [`research_results/2026-07-21-portfolio-data-inventory.json`](research_results/2026-07-21-portfolio-data-inventory.json).

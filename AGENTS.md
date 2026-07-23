@@ -1243,8 +1243,17 @@ Missed limits remain visible but do not count, and any rule or capture violation
 resets the consecutive clean-shadow count for that exact rules hash. Every
 portfolio live signal must retain an
 `ENTRY_READY` portfolio-guard result, passed broker review, confirmation state,
-confirmed protection, monitoring, and journaling; otherwise it is rejected from
-the ledger rather than counted toward maturity.
+confirmed protection, monitoring, and journaling. `portfolio_live.py` is the
+broker-inert state authority for a controlled v2 pilot: prepare, record entry,
+reconcile unknown or open submissions before retry, terminate any partial-entry
+remainder, record protection, and close flat. Exact broker and client identifiers
+must authenticate as field-bound Fernet tokens and remain in the public journal.
+`portfolio_live_inspection.py` must independently rebuild the terminal artifact
+before admission. A live row is rejected unless the position is flat, every
+residual order is terminal, the account and orders are reconciled, realized net
+dollars and account return are recorded, and at least entry plus exit broker
+actions occurred. A protection failure forces a safe flatten but cannot earn the
+first-pilot milestone.
 
 Every visible trading decision must also update a detailed context file under
 `trades/active/` or `trades/archived/`. If a decision is session-level rather

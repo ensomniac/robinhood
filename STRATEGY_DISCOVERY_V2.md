@@ -240,3 +240,33 @@ partial fills, missed limits, protection timing, 5/10/20-bps costs, monitoring,
 and journaling are explicit. Missed limits remain nonqualifying observations.
 Any capture or rule violation resets the clean consecutive-shadow streak for
 that exact version; five new clean closed fills are required afterward.
+
+Once `portfolio_maturity.py report` awards the exact version `PILOT_READY`, the
+controlled live path is explicit and fail closed:
+
+```sh
+python3 portfolio_live.py prepare path/to/committed-winner.json \
+  path/to/fresh-live-setup.json
+python3 portfolio_live.py record-entry path/to/live-preparation.json \
+  path/to/encrypted-entry-observation.json
+# On any unknown transport outcome, query orders and reconcile before retrying:
+python3 portfolio_live.py reconcile-unknown-entry path/to/live-entry.json \
+  path/to/privacy-safe-order-reconciliation.json
+python3 portfolio_live.py record-protection path/to/reconciled-exposure.json \
+  path/to/encrypted-protection-observation.json
+python3 portfolio_live.py close path/to/protection-result.json \
+  path/to/encrypted-flat-close.json
+python3 portfolio_live_inspection.py inspect path/to/live-final.json
+python3 portfolio_live_inspection.py admit path/to/live-inspection.json
+```
+
+Preparation repeats encryption, lifecycle, strategy-ledger, portfolio-ledger,
+clean-worktree, exact-production, broker-review, confirmation, flat-account, and
+`ENTRY_READY` checks. Later transitions authenticate encrypted field-bound IDs,
+never retry an unknown or active logical order, require a partial-entry remainder
+to become terminal, and force flattening when protection fails. Only an
+independently replayed close with a flat reconciled account, terminal residual
+orders, complete monitoring/journal capture, and recorded realized dollars,
+account return, R, slippage, protection timing, and notification status may enter
+`PORTFOLIO_SIGNALS.jsonl`. Protection-failure safety closes remain auditable but
+cannot earn the live-started milestone.

@@ -641,6 +641,10 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
                 "incomplete shadow path needs a capture or rule reset marker"
             )
     if mode == "live":
+        if record.get("closed") is not True or record.get("eligible") is not True:
+            raise PortfolioMaturityError(
+                "live portfolio evidence must be an eligible reconciled close"
+            )
         if _string(record.get("portfolio_guard_status"), "portfolio_guard_status") != "ENTRY_READY":
             raise PortfolioMaturityError(
                 "live portfolio evidence requires portfolio_guard_status=ENTRY_READY"
@@ -650,6 +654,11 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
             "protection_confirmed",
             "monitoring_complete",
             "journal_complete",
+            "position_flat_confirmed",
+            "residual_orders_terminal",
+            "account_reconciled_after_close",
+            "encrypted_identifiers_recorded",
+            "notification_status_recorded",
         ):
             if _boolean(record.get(field), field) is not True:
                 raise PortfolioMaturityError(
@@ -669,6 +678,21 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
             )
         for field in ("entry_slippage_bps", "unprotected_seconds"):
             _finite(record.get(field), field, minimum=0)
+        _finite(record.get("exit_slippage_bps"), "exit_slippage_bps", minimum=0)
+        _finite(record.get("realized_net_dollars"), "realized_net_dollars")
+        account_return = _finite(
+            record.get("net_account_return_fraction"),
+            "net_account_return_fraction",
+        )
+        if account_return <= -1:
+            raise PortfolioMaturityError(
+                "net_account_return_fraction cannot lose 100 percent or more"
+            )
+        _string(record.get("exit_reason"), "exit_reason")
+        if _integer(record.get("broker_actions"), "broker_actions") < 2:
+            raise PortfolioMaturityError(
+                "reconciled live evidence needs at least entry and exit broker actions"
+            )
         if record.get("stop_executed") is True:
             _finite(record.get("stop_slippage_bps"), "stop_slippage_bps", minimum=0)
             _finite(record.get("stop_reserve_bps"), "stop_reserve_bps", minimum=0)
