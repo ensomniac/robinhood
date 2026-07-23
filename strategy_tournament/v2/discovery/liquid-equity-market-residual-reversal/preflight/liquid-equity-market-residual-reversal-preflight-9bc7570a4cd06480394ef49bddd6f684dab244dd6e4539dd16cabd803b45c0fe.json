@@ -1,0 +1,56 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "9bc7570a4cd06480394ef49bddd6f684dab244dd6e4539dd16cabd803b45c0fe",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.02445787499891594,
+  "family_contract_path": "strategy_tournament/v2/continuous/two-to-three-day-cross-sectional-reversal-v3-liquid-common-stock-residual/family-contract/contract-1efa1c89040bc003984aa101e17a80055850b13fb4f7e9c617b933a96b4cb792.json",
+  "family_contract_sha256": "f09024dbfc9a7bc640fa5109b718b22673fcd17852f16c8f6d05b3a1ebb9ba98",
+  "family_id": "liquid-equity-market-residual-reversal",
+  "implementation_sha256": "969278d62c16764444f1354828027cb5b14da374511ad66cbc51d63c60ef6ee0",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "account_dates_bound": true,
+      "confirmation_locked": true,
+      "development_lane": true,
+      "family_bound": true,
+      "point_in_time": true,
+      "signal_dates_bound": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 20000
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "1efa1c89040bc003984aa101e17a80055850b13fb4f7e9c617b933a96b4cb792",
+  "verified_capacity": 20000
+}
