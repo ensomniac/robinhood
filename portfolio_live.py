@@ -15,7 +15,7 @@ import math
 import subprocess
 import sys
 from collections.abc import Mapping, Sequence
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -353,6 +353,22 @@ def prepare_live(
         raise PortfolioLiveError(
             f"portfolio guard is not ENTRY_READY: {guard.get('blockers')}"
         )
+    market_observed_at = _timestamp(
+        evaluation["market"]["observed_at"], "market observed_at"
+    )
+    guard_observed_at = _timestamp(
+        snapshot["observed_at"], "guard observed_at"
+    )
+    entry_facts_expire_at = min(
+        market_observed_at
+        + timedelta(seconds=portfolio_execution.MAXIMUM_MARKET_DATA_AGE_SECONDS),
+        guard_observed_at
+        + timedelta(seconds=portfolio_guard.MAXIMUM_SNAPSHOT_AGE_SECONDS),
+    )
+    if entry_facts_expire_at <= current:
+        raise PortfolioLiveError(
+            "live market or guard facts expire before order submission"
+        )
     checks = (
         run_repository_preentry_checks()
         if enforce_repository_checks
@@ -368,6 +384,7 @@ def prepare_live(
         "rules_hash": winner["rules_hash"],
         "state": "LIVE_ENTRY_READY",
         "prepared_at": current.isoformat(),
+        "entry_facts_expire_at": entry_facts_expire_at.isoformat(),
         "winner_path": strategy_discovery._relative(winner_path),
         "winner_sha256": winner["artifact_sha256"],
         "account": account,
@@ -417,6 +434,16 @@ def record_entry_result(
         raise PortfolioLiveError("entry observation schema_version must be 1")
     current = (now or datetime.now(UTC)).astimezone(UTC)
     observed_at = _fresh(value["observed_at"], "entry observed_at", current)
+    prepared_at = _timestamp(preparation.get("prepared_at"), "prepared_at")
+    entry_facts_expire_at = _timestamp(
+        preparation.get("entry_facts_expire_at"), "entry_facts_expire_at"
+    )
+    if observed_at < prepared_at:
+        raise PortfolioLiveError("entry observation predates live preparation")
+    if observed_at > entry_facts_expire_at:
+        raise PortfolioLiveError(
+            "entry observation follows expired market or guard facts"
+        )
     alias = value["logical_order_alias"]
     if not isinstance(alias, str) or not alias or sensitive_data.RAW_UUID_PATTERN.search(alias):
         raise PortfolioLiveError("logical order alias is missing or private")
@@ -433,6 +460,8 @@ def record_entry_result(
     if filled:
         fill_price = _number(fill_price, "average_fill_price", minimum=0.000001)
         filled_at = _timestamp(filled_at, "filled_at")
+        if filled_at < prepared_at:
+            raise PortfolioLiveError("entry fill predates live preparation")
         if filled_at > observed_at:
             raise PortfolioLiveError("entry fill timestamp is future-dated")
         if fill_price > float(preparation["production_evaluation"]["order"]["limit_price"]):
@@ -582,6 +611,11 @@ def reconcile_unknown_entry(
             raise PortfolioLiveError("reconciled entry quantities drifted")
         price = _number(match["average_fill_price"], "reconciled fill price", minimum=0.000001)
         filled_at = _timestamp(match["filled_at"], "reconciled filled_at")
+        prepared_at = _timestamp(prepared.get("prepared_at"), "prepared_at")
+        if filled_at < prepared_at:
+            raise PortfolioLiveError(
+                "reconciled fill predates live preparation"
+            )
         if filled_at > observed_at:
             raise PortfolioLiveError("reconciled fill timestamp is future-dated")
         if price > float(prepared["production_evaluation"]["order"]["limit_price"]):
@@ -960,6 +994,7 @@ def rebuild_close(
         not isinstance(item, str) or not item.strip() for item in violations
     ):
         raise PortfolioLiveError("rule_violations must be an array of strings")
+    violations = list(violations)
     journal_relative = value["journal_path"]
     if not isinstance(journal_relative, str):
         raise PortfolioLiveError("journal_path is missing")
@@ -1041,8 +1076,23 @@ def rebuild_close(
     if journal_audit.violations:
         raise PortfolioLiveError("live journal sensitive-data audit failed")
     notification = _notification(value["notification_status"], "close notification")
+    maximum_unprotected_seconds = float(
+        portfolio_maturity.load_config().raw["live_validated"][
+            "maximum_unprotected_p95_seconds"
+        ]
+    )
+    protection_timing_within_budget = (
+        float(protection["unprotected_seconds"]) <= maximum_unprotected_seconds
+    )
+    if (
+        protection_confirmed
+        and not protection_timing_within_budget
+        and "live_protection_timing_exceeded" not in violations
+    ):
+        violations.append("live_protection_timing_exceeded")
     clean = (
         protection_confirmed
+        and protection_timing_within_budget
         and value["monitoring_complete"] is True
         and value["journal_complete"] is True
         and value["session_capture_complete"] is True
@@ -1085,6 +1135,8 @@ def rebuild_close(
         "flat_reconciled": True,
         "residual_orders_terminal": True,
         "protection_confirmed": protection_confirmed,
+        "protection_timing_within_budget": protection_timing_within_budget,
+        "maximum_unprotected_seconds": maximum_unprotected_seconds,
         "eligible_reconciled_live_close": clean,
         "filled_quantity": filled,
         "entry_price": entry_price,

@@ -736,6 +736,25 @@ maximum_second_wave_families = 6
             ):
                 maturity.validate_record(live, root=root)
 
+    def test_schema_two_live_close_exceeding_protection_budget_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(
+                root,
+                "strategy-one",
+                "momentum",
+                live=True,
+            )
+            live = next(
+                record for record in records if record.get("sample_phase") == "live"
+            )
+            live["unprotected_seconds"] = 10.01
+            with self.assertRaisesRegex(
+                maturity.PortfolioMaturityError,
+                "protection timing exceeds",
+            ):
+                maturity.validate_record(live, root=root)
+
     def test_retired_stage0_variant_cannot_enter_maturity(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

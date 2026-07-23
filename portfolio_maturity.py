@@ -694,8 +694,22 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
             raise PortfolioMaturityError(
                 "broker-required confirmation was not satisfied"
             )
-        for field in ("entry_slippage_bps", "unprotected_seconds"):
-            _finite(record.get(field), field, minimum=0)
+        _finite(record.get("entry_slippage_bps"), "entry_slippage_bps", minimum=0)
+        unprotected_seconds = _finite(
+            record.get("unprotected_seconds"), "unprotected_seconds", minimum=0
+        )
+        if (
+            record.get("schema_version") == SCHEMA_VERSION
+            and unprotected_seconds
+            > float(
+                load_config().raw["live_validated"][
+                    "maximum_unprotected_p95_seconds"
+                ]
+            )
+        ):
+            raise PortfolioMaturityError(
+                "live protection timing exceeds the configured maximum"
+            )
         _finite(record.get("exit_slippage_bps"), "exit_slippage_bps", minimum=0)
         _finite(record.get("realized_net_dollars"), "realized_net_dollars")
         account_return = _finite(

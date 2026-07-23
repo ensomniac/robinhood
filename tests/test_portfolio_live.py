@@ -368,6 +368,118 @@ def test_live_maturity_report_injection_is_test_path_only():
             )
 
 
+def test_entry_rejects_expired_preparation_and_fill_predating_preparation():
+    with tempfile.TemporaryDirectory(dir=portfolio_live.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        root, _winner_artifact, evaluation, preparation_path, preparation = _prepare(
+            work
+        )
+        tokens = _tokens()
+        quantity = evaluation["order"]["quantity"]
+        assert datetime.fromisoformat(
+            preparation["entry_facts_expire_at"]
+        ) == NOW + timedelta(seconds=4)
+
+        expired_at = NOW + timedelta(seconds=5)
+        expired = {
+            "schema_version": 1,
+            "observed_at": expired_at.isoformat(),
+            "logical_order_alias": "entry-expired-preparation",
+            "state": "filled",
+            "filled_quantity": quantity,
+            "remaining_quantity": 0,
+            "average_fill_price": evaluation["order"]["limit_price"],
+            "filled_at": expired_at.isoformat(),
+            "encrypted_broker_order_id": tokens["entry_order"],
+            "encrypted_client_ref_id": tokens["entry_ref"],
+            "notification_status": "sent",
+        }
+        with pytest.raises(
+            portfolio_live.PortfolioLiveError,
+            match="expired market or guard facts",
+        ):
+            portfolio_live.record_entry_result(
+                preparation_path,
+                expired,
+                root=root,
+                now=expired_at,
+            )
+
+        entry_at = NOW + timedelta(seconds=1)
+        impossible = dict(expired)
+        impossible.update(
+            {
+                "observed_at": entry_at.isoformat(),
+                "logical_order_alias": "entry-impossible-fill-time",
+                "filled_at": (NOW - timedelta(seconds=1)).isoformat(),
+            }
+        )
+        with pytest.raises(
+            portfolio_live.PortfolioLiveError,
+            match="fill predates live preparation",
+        ):
+            portfolio_live.record_entry_result(
+                preparation_path,
+                impossible,
+                root=root,
+                now=entry_at,
+            )
+
+
+def test_reconciled_unknown_entry_cannot_claim_fill_predating_preparation():
+    with tempfile.TemporaryDirectory(dir=portfolio_live.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        root, _winner_artifact, evaluation, preparation_path, _preparation = _prepare(
+            work
+        )
+        tokens = _tokens()
+        quantity = evaluation["order"]["quantity"]
+        entry_at = NOW + timedelta(seconds=1)
+        entry_path, _ = portfolio_live.record_entry_result(
+            preparation_path,
+            {
+                "schema_version": 1,
+                "observed_at": entry_at.isoformat(),
+                "logical_order_alias": "entry-unknown-impossible-fill",
+                "state": "unknown",
+                "filled_quantity": 0,
+                "remaining_quantity": quantity,
+                "average_fill_price": None,
+                "filled_at": None,
+                "encrypted_broker_order_id": None,
+                "encrypted_client_ref_id": tokens["entry_ref"],
+                "notification_status": "skipped",
+            },
+            root=root,
+            now=entry_at,
+        )
+        reconciled_at = entry_at + timedelta(seconds=1)
+        with pytest.raises(
+            portfolio_live.PortfolioLiveError,
+            match="reconciled fill predates live preparation",
+        ):
+            portfolio_live.reconcile_unknown_entry(
+                entry_path,
+                {
+                    "schema_version": 1,
+                    "observed_at": reconciled_at.isoformat(),
+                    "orders": [
+                        {
+                            "logical_order_alias": "entry-unknown-impossible-fill",
+                            "state": "filled",
+                            "filled_quantity": quantity,
+                            "remaining_quantity": 0,
+                            "average_fill_price": evaluation["order"]["limit_price"],
+                            "filled_at": (NOW - timedelta(seconds=1)).isoformat(),
+                            "encrypted_broker_order_id": tokens["entry_order"],
+                        }
+                    ],
+                },
+                root=root,
+                now=reconciled_at,
+            )
+
+
 def test_unknown_entry_is_reconciled_before_retry_or_protection():
     with tempfile.TemporaryDirectory(dir=portfolio_live.PROJECT_ROOT) as directory:
         work = Path(directory)
@@ -711,6 +823,72 @@ def test_protection_failure_forces_flat_but_cannot_earn_live_admission():
             portfolio_live.close_live(
                 protection_path, closure, root=root, now=close_at
             )
+
+
+def test_late_protection_is_a_reconciled_but_nonqualifying_live_close():
+    with tempfile.TemporaryDirectory(dir=portfolio_live.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        root, _winner_artifact, evaluation, preparation_path, _preparation = _prepare(
+            work
+        )
+        tokens = _tokens()
+        quantity = evaluation["order"]["quantity"]
+        entry_at = NOW + timedelta(seconds=1)
+        entry_path, _ = portfolio_live.record_entry_result(
+            preparation_path,
+            {
+                "schema_version": 1,
+                "observed_at": entry_at.isoformat(),
+                "logical_order_alias": "entry-late-protection",
+                "state": "filled",
+                "filled_quantity": quantity,
+                "remaining_quantity": 0,
+                "average_fill_price": evaluation["order"]["limit_price"],
+                "filled_at": entry_at.isoformat(),
+                "encrypted_broker_order_id": tokens["entry_order"],
+                "encrypted_client_ref_id": tokens["entry_ref"],
+                "notification_status": "sent",
+            },
+            root=root,
+            now=entry_at,
+        )
+        protection_at = entry_at + timedelta(seconds=11)
+        protection_path, protection = portfolio_live.record_protection(
+            entry_path,
+            {
+                "schema_version": 1,
+                "observed_at": protection_at.isoformat(),
+                "logical_order_alias": "protection-late",
+                "state": "accepted",
+                "coverage_quantity": quantity,
+                "entry_remainder_state": "none",
+                "time_in_force": "gtc",
+                "encrypted_broker_order_id": tokens["protection_order"],
+                "encrypted_client_ref_id": tokens["protection_ref"],
+                "notification_status": "sent",
+            },
+            root=root,
+            now=protection_at,
+        )
+        assert protection["unprotected_seconds"] == 11.0
+
+        close_at = NOW + timedelta(days=2)
+        final_path, final = portfolio_live.close_live(
+            protection_path,
+            _closure(work, evaluation, tokens, close_at),
+            root=root,
+            now=close_at,
+        )
+        assert final["state"] == "LIVE_CLOSED_SAFETY_FAILURE"
+        assert final["close_facts"]["flat_reconciled"] is True
+        assert final["close_facts"]["protection_timing_within_budget"] is False
+        assert "live_protection_timing_exceeded" in final["maturity_record"][
+            "rule_violations"
+        ]
+        _, inspection = portfolio_live_inspection.inspect_live(
+            final_path, root=root, enforce_commit=False
+        )
+        assert inspection["state"] == "LIVE_CLOSE_INSPECTED_NONQUALIFYING"
 
 
 def test_reconciled_fill_requires_authenticated_broker_identifier():

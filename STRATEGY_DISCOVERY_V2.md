@@ -380,9 +380,14 @@ python3 portfolio_live_inspection.py admit path/to/live-inspection.json
 
 Preparation repeats encryption, lifecycle, strategy-ledger, portfolio-ledger,
 clean-worktree, exact-production, broker-review, confirmation, flat-account, and
-`ENTRY_READY` checks. Later transitions authenticate encrypted field-bound IDs,
-never retry an unknown or active logical order, require a partial-entry remainder
-to become terminal, and force flattening when protection fails. Only an
+`ENTRY_READY` checks. It also freezes the order deadline at the earlier of the
+five-second market-data expiry and 15-second guard-snapshot expiry; an entry
+observation after that instant or a direct/reconciled fill before preparation is
+rejected. Later transitions authenticate encrypted field-bound IDs, never retry
+an unknown or active logical order, require a partial-entry remainder to become
+terminal, and force flattening when protection fails. A protection confirmation
+after the configured ten-second ceiling remains auditable but is nonqualifying
+for the controlled live milestone. Only an
 independently replayed close with a flat reconciled account, terminal residual
 orders, complete monitoring/journal capture, and recorded realized dollars,
 account return, R, slippage, protection timing, and notification status may enter
