@@ -39,8 +39,11 @@ mandatory. Insufficient untouched inventory is terminal
 `INSUFFICIENT_POWER_CAPACITY`, not permission to extend or substitute dates.
 Inspection checks both the confirmation floor and whether observed development
 fills plus every reserved confirmation session can reach the frozen total target.
-The observed fill count must independently equal the closed signals reconstructed
-from the complete per-date maturity rows before it can size that target.
+The complete 5/10/20-bps daily path, closed-trade returns, and dollar P/L are
+independently reconstructed from the per-date maturity rows, and the 20-bps values
+must exactly match the selection arrays. The selected trial must also clear the
+account-growth, concentration, profit-factor, drawdown, and stationary-bootstrap
+gates before it can be frozen or access confirmation.
 
 ## Manifest-driven controller
 
@@ -54,6 +57,7 @@ from the complete per-date maturity rows before it can size that target.
 - `freeze-winner <inspected-result>`
 - `evaluate-confirmation <winner>`
 - `inspect-confirmation <result>`
+- `admit-historical <historical-maturity-ledger>`
 - `queue-shadow <winner>`
 
 Every transition verifies a content hash and, except for the initial read-only
@@ -268,10 +272,21 @@ python3 dense_data_collection_inspection.py \
   --inspected-at 2026-07-27T16:00:00-04:00
 python3 strategy_discovery.py evaluate-confirmation path/to/committed-winner.json
 python3 strategy_discovery.py inspect-confirmation path/to/committed-confirmation-result.json
+# Commit the passing inspection and emitted historical-maturity-ledger first.
+python3 strategy_discovery.py admit-historical path/to/committed-historical-maturity-ledger.json
+# Commit PORTFOLIO_SIGNALS.jsonl before queueing the exact winner.
 python3 strategy_discovery.py queue-shadow path/to/committed-winner.json
 ```
 
 After an exact winner passes committed untouched confirmation,
+`admit-historical` validates the content-addressed ledger and passing confirmation
+binding, then admits its complete record set to `PORTFOLIO_SIGNALS.jsonl` in one
+atomic idempotent transaction. Any existing identity with different evidence
+rejects the whole batch. Shadow queueing requires those exact admitted records and
+their ledger commit, so a strategy cannot collect qualifying shadows while its
+historical evidence exists only in a side artifact.
+
+After admission,
 `strategy_discovery.py queue-shadow` freezes its five-shadow queue and exact
 winner binding. Each prospective signal then uses a committed admission chain:
 

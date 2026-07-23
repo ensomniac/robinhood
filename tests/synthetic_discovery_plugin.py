@@ -93,7 +93,7 @@ def evaluate_development(
                         "date": day,
                         "outcome": "account_return_day",
                     }
-                    for day in range(120)
+                    for day in contract["development_dates"]
                 ],
                 "maturity_rows": rows,
             }

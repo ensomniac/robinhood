@@ -12,6 +12,7 @@ import os
 import re
 import statistics
 import sys
+import tempfile
 import tomllib
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
@@ -781,6 +782,136 @@ def append_record(
             os.fsync(descriptor)
         finally:
             os.close(descriptor)
+
+
+def append_records(
+    records: Sequence[Mapping[str, Any]],
+    path: Path = DEFAULT_LEDGER_PATH,
+    *,
+    root: Path = PROJECT_ROOT,
+    idempotent: bool = False,
+) -> dict[str, int]:
+    """Validate and atomically append a complete evidence batch."""
+    candidates = [dict(record) for record in records]
+    if not candidates:
+        raise PortfolioMaturityError("record batch cannot be empty")
+    for record in candidates:
+        validate_record(record, root=root)
+    candidate_keys: set[tuple[str, str]] = set()
+    candidate_variants: set[tuple[int, int]] = set()
+    for candidate in candidates:
+        identity = (
+            candidate.get("signal_id")
+            or candidate.get("session_id")
+            or candidate.get("inspection_id")
+        )
+        key = (str(candidate["record_type"]), str(identity))
+        if key in candidate_keys:
+            raise PortfolioMaturityError(
+                f"duplicate record identity within batch {key}"
+            )
+        candidate_keys.add(key)
+        if (
+            candidate["record_type"] == "inspection"
+            and candidate.get("schema_version") == LEGACY_SCHEMA_VERSION
+        ):
+            variant = (
+                int(candidate["tournament_wave"]),
+                int(candidate["variant_ordinal"]),
+            )
+            if variant in candidate_variants:
+                raise PortfolioMaturityError(
+                    f"duplicate tournament variant within batch {variant}"
+                )
+            candidate_variants.add(variant)
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    with lock_path.open("a+", encoding="utf-8") as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        existing = read_records(path, root=root)
+        by_key = {}
+        legacy_variants: set[tuple[int, int]] = set()
+        for item in existing:
+            identity = (
+                item.get("signal_id")
+                or item.get("session_id")
+                or item.get("inspection_id")
+            )
+            by_key[(str(item["record_type"]), str(identity))] = item
+            if (
+                item["record_type"] == "inspection"
+                and item.get("schema_version") == LEGACY_SCHEMA_VERSION
+            ):
+                legacy_variants.add(
+                    (int(item["tournament_wave"]), int(item["variant_ordinal"]))
+                )
+        additions: list[dict[str, Any]] = []
+        skipped = 0
+        for candidate in candidates:
+            identity = (
+                candidate.get("signal_id")
+                or candidate.get("session_id")
+                or candidate.get("inspection_id")
+            )
+            key = (str(candidate["record_type"]), str(identity))
+            current = by_key.get(key)
+            if current is not None:
+                if idempotent and current == candidate:
+                    skipped += 1
+                    continue
+                raise PortfolioMaturityError(
+                    f"record identity already exists with different evidence {key}"
+                )
+            if (
+                candidate["record_type"] == "inspection"
+                and candidate.get("schema_version") == LEGACY_SCHEMA_VERSION
+            ):
+                variant = (
+                    int(candidate["tournament_wave"]),
+                    int(candidate["variant_ordinal"]),
+                )
+                if variant in legacy_variants:
+                    raise PortfolioMaturityError(
+                        f"tournament variant identity already exists {variant}"
+                    )
+            additions.append(candidate)
+
+        if additions:
+            existing_bytes = path.read_bytes() if path.exists() else b""
+            if existing_bytes and not existing_bytes.endswith(b"\n"):
+                raise PortfolioMaturityError(
+                    "ledger must end with a newline before batch admission"
+                )
+            payload = existing_bytes + b"".join(
+                (
+                    json.dumps(item, sort_keys=True, separators=(",", ":")) + "\n"
+                ).encode()
+                for item in additions
+            )
+            descriptor, temporary_text = tempfile.mkstemp(
+                prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+            )
+            temporary = Path(temporary_text)
+            try:
+                with os.fdopen(descriptor, "wb") as stream:
+                    stream.write(payload)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.chmod(temporary, 0o644)
+                os.replace(temporary, path)
+                directory_descriptor = os.open(path.parent, os.O_RDONLY)
+                try:
+                    os.fsync(directory_descriptor)
+                finally:
+                    os.close(directory_descriptor)
+            finally:
+                temporary.unlink(missing_ok=True)
+        return {
+            "admitted": len(additions),
+            "already_present": skipped,
+            "total_requested": len(candidates),
+        }
 
 
 def _profit_factor(values: Sequence[float]) -> float | None:

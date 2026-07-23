@@ -722,6 +722,37 @@ maximum_second_wave_families = 6
         self.assertEqual(len(records), 2)
         self.assertTrue(all("tournament_wave" not in item for item in records))
 
+    def test_record_batch_is_atomic_and_idempotent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            ledger = root / "portfolio.jsonl"
+            records = self._strategy_records(
+                root, "strategy-one", "momentum"
+            )[:4]
+            first = maturity.append_records(
+                records[:2], ledger, root=root, idempotent=True
+            )
+            self.assertEqual(first["admitted"], 2)
+            repeated = maturity.append_records(
+                records[:2], ledger, root=root, idempotent=True
+            )
+            self.assertEqual(repeated["already_present"], 2)
+            before = ledger.read_bytes()
+            conflicting = dict(records[1])
+            conflicting["net_r"] = float(conflicting["net_r"]) + 0.01
+            with self.assertRaisesRegex(
+                maturity.PortfolioMaturityError,
+                "already exists with different evidence",
+            ):
+                maturity.append_records(
+                    [records[2], conflicting],
+                    ledger,
+                    root=root,
+                    idempotent=True,
+                )
+            self.assertEqual(ledger.read_bytes(), before)
+            self.assertEqual(len(maturity.read_records(ledger, root=root)), 2)
+
     def test_same_family_cannot_form_portfolio(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -411,23 +411,40 @@ def evaluate_development(
             raise StrategyDiscoveryError(
                 "development maturity rows must match every frozen date"
             )
-        closed_signals = 0
-        for row in rows:
-            signals = row.get("signals")
-            if signals is None:
-                closed_signals += row.get("session_outcome") == "filled"
-            elif isinstance(signals, list) and all(
-                isinstance(signal, Mapping) for signal in signals
-            ):
-                closed_signals += len(signals)
-            else:
+        maturity_accounting = _maturity_rows_accounting(
+            rows,
+            expected_dates=contract["development_dates"],
+            phase="development",
+        )["stress_20bps"]
+        metrics = trial["metrics"]
+        for field in (
+            "oof_daily_account_returns",
+            "oof_filled_account_returns",
+            "oof_net_pnl_dollars",
+        ):
+            if not isinstance(metrics.get(field), list):
                 raise StrategyDiscoveryError(
-                    "development maturity-row signals are invalid"
+                    f"development {field} must be a complete array"
                 )
-        filled_returns = trial["metrics"]["oof_filled_account_returns"]
-        if closed_signals != len(filled_returns):
+        if any(
+            [float(value) for value in metrics[metric_field]]
+            != maturity_accounting[accounting_field]
+            for metric_field, accounting_field in (
+                ("oof_daily_account_returns", "daily_account_returns"),
+                ("oof_filled_account_returns", "filled_account_returns"),
+                ("oof_net_pnl_dollars", "net_pnl_dollars"),
+            )
+        ):
             raise StrategyDiscoveryError(
-                "development filled-trade accounting differs from maturity rows"
+                "development account evidence differs from maturity rows"
+            )
+        accounting_dates = [
+            row.get("date") if isinstance(row, Mapping) else None
+            for row in trial["trial_accounting"]
+        ]
+        if accounting_dates != list(contract["development_dates"]):
+            raise StrategyDiscoveryError(
+                "development trial accounting must match every frozen date"
             )
     telemetry = result.get("provider_telemetry", {})
     if not isinstance(telemetry, Mapping):
@@ -472,12 +489,47 @@ def inspect_development(
     except LearningExperimentError as exc:
         raise StrategyDiscoveryError(str(exc)) from exc
     state = selection["status"]
+    development_account_inspection: dict[str, Any] | None = None
+    if state == "WINNER_SELECTED":
+        selected_trial_id = selection["selected_trial_id"]
+        selected_trials = [
+            trial
+            for trial in result["evaluation"]["trials"]
+            if trial["trial_id"] == selected_trial_id
+        ]
+        if len(selected_trials) != 1:
+            raise StrategyDiscoveryError(
+                "selected development trial is absent or ambiguous"
+            )
+        selected_trial = selected_trials[0]
+        account_scenarios = _maturity_rows_accounting(
+            selected_trial.get("maturity_rows"),
+            expected_dates=contract["development_dates"],
+            phase="development",
+        )
+        development_account_inspection = inspect_confirmation_metrics(
+            {
+                "scenarios": account_scenarios,
+                "maturity_rows": selected_trial["maturity_rows"],
+                "rule_violations": [],
+                "capture_complete": True,
+            },
+            required_signals=max(
+                1,
+                int(selection["required_total_signals"])
+                - int(selection["required_confirmation_signals"]),
+            ),
+            expected_dates=contract["development_dates"],
+            phase="development",
+        )
+        if not development_account_inspection["passed"]:
+            state = "RETIRED_DEVELOPMENT_ACCOUNT_GATES"
     confirmation_inventory = len(contract["confirmation_dates"])
     maximum_total_signal_capacity = (
         int(selection.get("development_filled_signals", 0))
         + confirmation_inventory
     )
-    if state == "WINNER_SELECTED" and (
+    if selection["status"] == "WINNER_SELECTED" and (
         confirmation_inventory < int(selection["required_confirmation_signals"])
         or maximum_total_signal_capacity < int(selection["required_total_signals"])
     ):
@@ -493,6 +545,7 @@ def inspect_development(
         "selection": selection,
         "confirmation_inventory": confirmation_inventory,
         "maximum_total_signal_capacity": maximum_total_signal_capacity,
+        "development_account_inspection": development_account_inspection,
         "evidence_counts_frozen_before_confirmation": state == "WINNER_SELECTED",
         "confirmation_access_permitted": state == "WINNER_SELECTED",
         "inspection": {
@@ -694,14 +747,14 @@ def _profit_factor(values: Sequence[float]) -> float | None:
     return gains / losses
 
 
-def _confirmation_maturity_accounting(
-    rows: Any, *, expected_dates: Sequence[str]
+def _maturity_rows_accounting(
+    rows: Any, *, expected_dates: Sequence[str], phase: str
 ) -> dict[str, dict[str, list[float]]]:
     if not isinstance(rows, list) or [
         row.get("date") if isinstance(row, Mapping) else None for row in rows
     ] != list(expected_dates):
         raise StrategyDiscoveryError(
-            "confirmation maturity rows must match every frozen date"
+            f"{phase} maturity rows must match every frozen date"
         )
     fields = {
         "primary_5bps": (
@@ -731,11 +784,11 @@ def _confirmation_maturity_accounting(
             parsed = float(value)
         except (TypeError, ValueError) as exc:
             raise StrategyDiscoveryError(
-                f"confirmation maturity {label} must be numeric"
+                f"{phase} maturity {label} must be numeric"
             ) from exc
         if not math.isfinite(parsed) or (account_return and parsed <= -1):
             raise StrategyDiscoveryError(
-                f"confirmation maturity {label} is outside its valid range"
+                f"{phase} maturity {label} is outside its valid range"
             )
         return parsed
 
@@ -750,7 +803,7 @@ def _confirmation_maturity_accounting(
             signals = raw_signals
         else:
             raise StrategyDiscoveryError(
-                "confirmation maturity-row signals are invalid"
+                f"{phase} maturity-row signals are invalid"
             )
         for name, (return_field, dollar_field) in fields.items():
             rebuilt[name]["daily_account_returns"].append(
@@ -775,7 +828,11 @@ def _confirmation_maturity_accounting(
 
 
 def inspect_confirmation_metrics(
-    result: Mapping[str, Any], *, required_signals: int, expected_dates: Sequence[str]
+    result: Mapping[str, Any],
+    *,
+    required_signals: int,
+    expected_dates: Sequence[str],
+    phase: str = "confirmation",
 ) -> dict[str, Any]:
     scenarios = result.get("scenarios")
     if not isinstance(scenarios, Mapping) or set(scenarios) != {
@@ -783,9 +840,11 @@ def inspect_confirmation_metrics(
         "stress_10bps",
         "stress_20bps",
     }:
-        raise StrategyDiscoveryError("confirmation needs exact 5/10/20 bps scenarios")
-    maturity_accounting = _confirmation_maturity_accounting(
-        result.get("maturity_rows"), expected_dates=expected_dates
+        raise StrategyDiscoveryError(f"{phase} needs exact 5/10/20 bps scenarios")
+    maturity_accounting = _maturity_rows_accounting(
+        result.get("maturity_rows"),
+        expected_dates=expected_dates,
+        phase=phase,
     )
     rebuilt: dict[str, Any] = {}
     gates: dict[str, bool] = {}
@@ -796,7 +855,7 @@ def inspect_confirmation_metrics(
     ):
         scenario = scenarios[name]
         if not isinstance(scenario, Mapping):
-            raise StrategyDiscoveryError(f"{name} confirmation scenario is invalid")
+            raise StrategyDiscoveryError(f"{name} {phase} scenario is invalid")
         try:
             daily = [
                 float(value) for value in scenario.get("daily_account_returns", [])
@@ -807,7 +866,7 @@ def inspect_confirmation_metrics(
             dollars = [float(value) for value in scenario.get("net_pnl_dollars", [])]
         except (TypeError, ValueError) as exc:
             raise StrategyDiscoveryError(
-                f"{name} confirmation accounting must be numeric"
+                f"{name} {phase} accounting must be numeric"
             ) from exc
         if (
             len(daily) != len(expected_dates)
@@ -815,7 +874,7 @@ def inspect_confirmation_metrics(
             or any(not math.isfinite(value) for value in [*daily, *filled, *dollars])
             or any(value <= -1 for value in [*daily, *filled])
         ):
-            raise StrategyDiscoveryError(f"{name} confirmation accounting is incomplete")
+            raise StrategyDiscoveryError(f"{name} {phase} accounting is incomplete")
         if any(
             values != maturity_accounting[name][field]
             for field, values in (
@@ -825,15 +884,18 @@ def inspect_confirmation_metrics(
             )
         ):
             raise StrategyDiscoveryError(
-                f"{name} confirmation accounting differs from maturity rows"
+                f"{name} {phase} accounting differs from maturity rows"
             )
         midpoint = len(daily) // 2
         without_best = sorted(filled, reverse=True)[5:]
+        profit_factor = _profit_factor(dollars)
+        infinite_profit_factor = profit_factor == math.inf
         metrics = {
             "signals": len(filled),
             "total_log_growth": sum(math.log1p(value) for value in daily),
             "compounded_return_fraction": math.prod(1 + value for value in daily) - 1,
-            "profit_factor": _profit_factor(dollars),
+            "profit_factor": None if infinite_profit_factor else profit_factor,
+            "profit_factor_is_infinite": infinite_profit_factor,
             "maximum_drawdown_fraction": maximum_drawdown_fraction(daily),
             "first_half_log_growth": sum(
                 math.log1p(value) for value in daily[:midpoint]
@@ -861,8 +923,11 @@ def inspect_confirmation_metrics(
             metrics["compounded_return_fraction"] > 0
         )
         gates[f"{prefix}-profit-factor"] = (
-            metrics["profit_factor"] is not None
-            and metrics["profit_factor"] >= minimum_factor
+            metrics["profit_factor_is_infinite"]
+            or (
+                metrics["profit_factor"] is not None
+                and metrics["profit_factor"] >= minimum_factor
+            )
         )
         gates[f"{prefix}-drawdown"] = metrics["maximum_drawdown_fraction"] <= 0.03
         gates[f"{prefix}-chronological-halves"] = (
@@ -1178,10 +1243,112 @@ def inspect_confirmation(
     return inspection_path, inspection_artifact
 
 
+def _maturity_record_identity(record: Mapping[str, Any]) -> tuple[str, str]:
+    identifier = (
+        record.get("signal_id")
+        or record.get("session_id")
+        or record.get("inspection_id")
+    )
+    return str(record.get("record_type")), str(identifier)
+
+
+def _verify_historical_admission(
+    artifact: Mapping[str, Any], *, ledger_path: Path
+) -> tuple[int, dict[str, Any]]:
+    records = artifact.get("records")
+    if not isinstance(records, list) or not records:
+        raise StrategyDiscoveryError("historical maturity records are missing")
+    if not isinstance(records[0], Mapping):
+        raise StrategyDiscoveryError("historical maturity inspection record is invalid")
+    admitted = {
+        _maturity_record_identity(record): record
+        for record in portfolio_maturity.read_records(ledger_path)
+    }
+    for record in records:
+        if not isinstance(record, Mapping):
+            raise StrategyDiscoveryError("historical maturity record is invalid")
+        key = _maturity_record_identity(record)
+        if admitted.get(key) != record:
+            raise StrategyDiscoveryError(
+                "historical maturity ledger has not been admitted unchanged"
+            )
+    assessment = portfolio_maturity.assess_strategy(
+        records, portfolio_maturity.load_config()
+    )
+    return len(records), assessment
+
+
+def admit_historical(
+    artifact_path: Path,
+    *,
+    ledger_path: Path = portfolio_maturity.DEFAULT_LEDGER_PATH,
+    enforce_commit: bool = True,
+) -> dict[str, Any]:
+    """Atomically admit one committed independently inspected historical ledger."""
+    if enforce_commit:
+        require_committed(artifact_path)
+    artifact = load_artifact(
+        artifact_path, expected_kind="historical-maturity-ledger"
+    )
+    if not (
+        artifact.get("state") == "HISTORICAL_EVIDENCE_INSPECTED"
+        and artifact.get("append_permitted") is True
+        and artifact.get("broker_actions_permitted") is False
+    ):
+        raise StrategyDiscoveryError(
+            "historical maturity ledger is not admission-ready"
+        )
+    records = artifact.get("records")
+    if not isinstance(records, list) or not records:
+        raise StrategyDiscoveryError("historical maturity records are missing")
+    if not isinstance(records[0], Mapping):
+        raise StrategyDiscoveryError("historical maturity inspection record is invalid")
+    inspection_path = PROJECT_ROOT / str(
+        artifact.get("confirmation_inspection_path")
+    )
+    if enforce_commit:
+        require_committed(inspection_path)
+    inspection = load_artifact(
+        inspection_path, expected_kind="confirmation-inspection"
+    )
+    if not (
+        inspection.get("state") == "CONFIRMATION_PASSED"
+        and inspection.get("artifact_sha256")
+        == records[0].get(
+            "discovery_confirmation_inspection_sha256"
+        )
+        and inspection.get("strategy_id") == artifact.get("strategy_id")
+        and inspection.get("strategy_version") == artifact.get("strategy_version")
+        and inspection.get("rules_hash") == artifact.get("rules_hash")
+    ):
+        raise StrategyDiscoveryError(
+            "historical maturity confirmation binding is invalid"
+        )
+    try:
+        admission = portfolio_maturity.append_records(
+            records,
+            ledger_path,
+            root=PROJECT_ROOT,
+            idempotent=True,
+        )
+    except portfolio_maturity.PortfolioMaturityError as exc:
+        raise StrategyDiscoveryError(str(exc)) from exc
+    return {
+        "state": "HISTORICAL_EVIDENCE_ADMITTED",
+        "strategy_id": artifact["strategy_id"],
+        "strategy_version": artifact["strategy_version"],
+        "rules_hash": artifact["rules_hash"],
+        "ledger_path": str(ledger_path),
+        **admission,
+        "broker_actions_performed": 0,
+    }
+
+
 def queue_shadow(
     winner_path: Path,
     *,
     root: Path = DEFAULT_ROOT,
+    ledger_path: Path = portfolio_maturity.DEFAULT_LEDGER_PATH,
     enforce_commit: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
     if enforce_commit:
@@ -1198,15 +1365,25 @@ def queue_shadow(
         raise StrategyDiscoveryError("confirmation has not passed unchanged")
     if inspection["winner_sha256"] != winner["artifact_sha256"]:
         raise StrategyDiscoveryError("shadow queue winner binding drifted")
-    ledger_path, ledger = _find_single(
+    maturity_artifact_path, ledger = _find_single(
         root / str(winner["family_id"]) / "maturity-ledger",
         "*.json",
         kind="historical-maturity-ledger",
     )
     if enforce_commit:
-        require_committed(ledger_path)
+        require_committed(maturity_artifact_path)
     if ledger["rules_hash"] != winner["rules_hash"]:
         raise StrategyDiscoveryError("historical maturity ledger binding drifted")
+    if enforce_commit:
+        require_committed(ledger_path)
+    admitted_records, historical_assessment = _verify_historical_admission(
+        ledger, ledger_path=ledger_path
+    )
+    if historical_assessment.get("validation_phase") != "SHADOW_QUALIFICATION":
+        raise StrategyDiscoveryError(
+            "historical maturity gates did not clear for shadow qualification: "
+            + "; ".join(historical_assessment.get("current_phase_blockers", []))
+        )
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact_kind": "prospective-shadow-queue",
@@ -1222,8 +1399,11 @@ def queue_shadow(
         "completed_clean_closed_shadows": 0,
         "confirmation_inspection_path": _relative(inspection_path),
         "confirmation_inspection_sha256": inspection["artifact_sha256"],
-        "historical_maturity_ledger_path": _relative(ledger_path),
+        "historical_maturity_ledger_path": _relative(maturity_artifact_path),
         "historical_maturity_ledger_sha256": ledger["artifact_sha256"],
+        "historical_records_admitted": admitted_records,
+        "historical_admission_verified": True,
+        "historical_validation_phase": historical_assessment["validation_phase"],
         "broker_actions_permitted": False,
     }
     return _write_artifact(
@@ -1424,6 +1604,9 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    parser.add_argument(
+        "--ledger", type=Path, default=portfolio_maturity.DEFAULT_LEDGER_PATH
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("status")
     for command, help_text in (
@@ -1434,6 +1617,7 @@ def _parser() -> argparse.ArgumentParser:
         ("freeze-winner", "freeze one exact selected strategy version"),
         ("evaluate-confirmation", "evaluate only the frozen winner"),
         ("inspect-confirmation", "rebuild untouched confirmation gates"),
+        ("admit-historical", "atomically admit inspected historical evidence"),
         ("queue-shadow", "queue five prospective zero-broker shadows"),
     ):
         child = subparsers.add_parser(command, help=help_text)
@@ -1446,6 +1630,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "status":
             result: Any = build_status(root=args.root)
+        elif args.command == "admit-historical":
+            result = admit_historical(args.artifact, ledger_path=args.ledger)
         else:
             function = {
                 "preflight": run_preflight,
@@ -1457,7 +1643,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "inspect-confirmation": inspect_confirmation,
                 "queue-shadow": queue_shadow,
             }[args.command]
-            path, artifact = function(args.artifact, root=args.root)
+            if args.command == "queue-shadow":
+                path, artifact = function(
+                    args.artifact, root=args.root, ledger_path=args.ledger
+                )
+            else:
+                path, artifact = function(args.artifact, root=args.root)
             result = {
                 "written": _relative(path),
                 "artifact_sha256": artifact["artifact_sha256"],

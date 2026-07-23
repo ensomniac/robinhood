@@ -183,12 +183,47 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
             )
         )
         assert confirmation["state"] == "CONFIRMATION_PASSED"
+        historical_path = next(
+            (
+                artifact_root / winner["family_id"] / "maturity-ledger"
+            ).glob("*.json")
+        )
+        portfolio_ledger = work / "PORTFOLIO_SIGNALS.jsonl"
+        with pytest.raises(
+            discovery.StrategyDiscoveryError,
+            match="has not been admitted unchanged",
+        ):
+            discovery.queue_shadow(
+                winner_path,
+                root=artifact_root,
+                ledger_path=portfolio_ledger,
+                enforce_commit=False,
+            )
+        admission = discovery.admit_historical(
+            historical_path,
+            ledger_path=portfolio_ledger,
+            enforce_commit=False,
+        )
+        assert admission["admitted"] > 0
+        repeated = discovery.admit_historical(
+            historical_path,
+            ledger_path=portfolio_ledger,
+            enforce_commit=False,
+        )
+        assert repeated["admitted"] == 0
+        assert repeated["already_present"] == admission["total_requested"]
         queue_path, queue = discovery.queue_shadow(
-            winner_path, root=artifact_root, enforce_commit=False
+            winner_path,
+            root=artifact_root,
+            ledger_path=portfolio_ledger,
+            enforce_commit=False,
         )
         assert queue_path.is_file()
         assert queue["state"] == "SHADOW_QUEUED"
         assert queue["required_clean_closed_shadows"] == 5
+        assert queue["historical_admission_verified"] is True
+        assert queue["historical_records_admitted"] == admission["total_requested"]
+        assert queue["historical_validation_phase"] == "SHADOW_QUALIFICATION"
         assert queue["broker_actions_permitted"] is False
         assert confirmation_inspection_path.is_file()
         assert preflight_path.is_file()
@@ -570,10 +605,54 @@ def test_development_rejects_filled_count_maturity_drift(monkeypatch):
         )
         with pytest.raises(
             discovery.StrategyDiscoveryError,
-            match="filled-trade accounting differs",
+            match="account evidence differs",
         ):
             discovery.evaluate_development(
                 search_path, root=artifact_root, enforce_commit=False
+            )
+
+
+def test_development_inspection_retires_winner_with_weak_primary_account_path(
+    monkeypatch,
+):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        contract_path = _write_contract(
+            work, family_contract(_dataset(work), family_id="weak-primary-path")
+        )
+        discovery.run_preflight(
+            contract_path, root=artifact_root, enforce_commit=False
+        )
+        search_path, _ = discovery.freeze_search(
+            contract_path, root=artifact_root, enforce_commit=False
+        )
+        original = synthetic_plugin.evaluate_development
+
+        def weak_primary(contract, trials):
+            result = original(contract, trials)
+            for trial in result["trials"]:
+                for row in trial["maturity_rows"]:
+                    row["primary_account_return_fraction"] = -0.001
+                    row["net_r"] = -0.2
+                    row["net_pnl_dollars"] = -100.0
+            return result
+
+        monkeypatch.setattr(
+            synthetic_plugin, "evaluate_development", weak_primary
+        )
+        development_path, _ = discovery.evaluate_development(
+            search_path, root=artifact_root, enforce_commit=False
+        )
+        inspection_path, inspection = discovery.inspect_development(
+            development_path, root=artifact_root, enforce_commit=False
+        )
+        assert inspection["state"] == "RETIRED_DEVELOPMENT_ACCOUNT_GATES"
+        assert inspection["confirmation_access_permitted"] is False
+        assert inspection["development_account_inspection"]["passed"] is False
+        with pytest.raises(discovery.StrategyDiscoveryError, match="no winner"):
+            discovery.freeze_winner(
+                inspection_path, root=artifact_root, enforce_commit=False
             )
 
 
