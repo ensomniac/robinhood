@@ -422,6 +422,99 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
         assert guard["status"] == "ENTRY_READY"
 
 
+def test_development_transitions_reopen_every_committed_predecessor(monkeypatch):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        dataset_path = _dataset(work)
+        contract_path = _write_contract(
+            work,
+            family_contract(dataset_path, family_id="committed-chain"),
+        )
+        discovery.run_preflight(
+            contract_path, root=artifact_root, enforce_commit=False
+        )
+        search_path, _search = discovery.freeze_search(
+            contract_path, root=artifact_root, enforce_commit=False
+        )
+        checked: list[Path] = []
+        monkeypatch.setattr(
+            discovery,
+            "require_committed",
+            lambda path: checked.append(Path(path).resolve()),
+        )
+
+        development_path, _development = discovery.evaluate_development(
+            search_path, root=artifact_root
+        )
+        assert checked == [search_path.resolve(), dataset_path.resolve()]
+
+        checked.clear()
+        inspection_path, inspection = discovery.inspect_development(
+            development_path, root=artifact_root
+        )
+        assert inspection["state"] == "WINNER_SELECTED"
+        assert checked == [
+            development_path.resolve(),
+            search_path.resolve(),
+            dataset_path.resolve(),
+        ]
+
+        checked.clear()
+        discovery.freeze_winner(
+            inspection_path,
+            root=artifact_root,
+            recorded_at="2026-07-23T00:00:00-04:00",
+        )
+        assert checked == [
+            inspection_path.resolve(),
+            development_path.resolve(),
+            search_path.resolve(),
+            dataset_path.resolve(),
+        ]
+
+
+def test_winner_freeze_rejects_forged_development_result_binding():
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root, _winner_path, inspection, _winner = (
+            _freeze_synthetic_winner(work)
+        )
+        assert inspection["state"] == "WINNER_SELECTED"
+        inspection_path = next(
+            (
+                artifact_root
+                / "transition-controls"
+                / "development-inspection"
+            ).glob("*.json")
+        )
+        forged = {
+            key: value
+            for key, value in discovery.load_artifact(
+                inspection_path,
+                expected_kind="development-search-inspection",
+            ).items()
+            if key != "artifact_sha256"
+        }
+        forged["result_sha256"] = "f" * 64
+        forged_path, _forged = discovery._write_artifact(
+            forged,
+            artifact_root / "forged-inspection",
+            "forged-development-inspection",
+        )
+
+        with pytest.raises(
+            discovery.StrategyDiscoveryError,
+            match="development result binding drifted",
+        ):
+            discovery.freeze_winner(
+                forged_path,
+                root=artifact_root,
+                enforce_commit=False,
+                recorded_at="2026-07-23T00:00:01-04:00",
+            )
+
+
 def test_overfit_family_is_rejected_before_winner_or_confirmation():
     with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
         work = Path(directory)

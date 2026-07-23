@@ -410,9 +410,12 @@ def evaluate_development(
     development_manifest = result.get("dataset_manifest")
     if not isinstance(development_manifest, str) or not development_manifest:
         raise StrategyDiscoveryError("development dataset manifest is missing")
+    development_manifest_path = Path(development_manifest)
+    if enforce_commit:
+        require_committed(development_manifest_path)
     try:
         development_dataset = load_frozen_dataset_contract(
-            Path(development_manifest)
+            development_manifest_path
         )
     except (LearningDataError, OSError) as exc:
         raise StrategyDiscoveryError(
@@ -519,10 +522,17 @@ def inspect_development(
         require_committed(result_path)
     result = load_artifact(result_path, expected_kind="development-search-result")
     search_path = PROJECT_ROOT / str(result["search_path"])
+    if enforce_commit:
+        require_committed(search_path)
     search = load_artifact(search_path, expected_kind="frozen-development-search")
     if search["artifact_sha256"] != result["search_sha256"]:
         raise StrategyDiscoveryError("development result search binding drifted")
     contract = search["family_contract"]
+    development_manifest_path = Path(
+        str(result["evaluation"]["dataset_manifest"])
+    )
+    if enforce_commit:
+        require_committed(development_manifest_path)
     evidence_dates = _development_evidence_dates(contract)
     try:
         selection = select_development_winner(contract, result["evaluation"])
@@ -636,14 +646,29 @@ def freeze_winner(
     )
     if inspection["state"] != "WINNER_SELECTED":
         raise StrategyDiscoveryError(f"development has no winner: {inspection['state']}")
+    result_path = PROJECT_ROOT / str(inspection["result_path"])
+    if enforce_commit:
+        require_committed(result_path)
     result = load_artifact(
-        PROJECT_ROOT / str(inspection["result_path"]),
+        result_path,
         expected_kind="development-search-result",
     )
+    if result["artifact_sha256"] != inspection.get("result_sha256"):
+        raise StrategyDiscoveryError("winner development result binding drifted")
+    search_path = PROJECT_ROOT / str(result["search_path"])
+    if enforce_commit:
+        require_committed(search_path)
     search = load_artifact(
-        PROJECT_ROOT / str(result["search_path"]),
+        search_path,
         expected_kind="frozen-development-search",
     )
+    if search["artifact_sha256"] != result.get("search_sha256"):
+        raise StrategyDiscoveryError("winner development search binding drifted")
+    development_manifest_path = Path(
+        str(result["evaluation"]["dataset_manifest"])
+    )
+    if enforce_commit:
+        require_committed(development_manifest_path)
     contract = search["family_contract"]
     selection = inspection["selection"]
     exact_rules = {

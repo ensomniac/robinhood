@@ -87,10 +87,13 @@ portfolio configuration.
 
 Every transition verifies a content hash and, except for the initial read-only
 status, requires its predecessor artifact to be committed and unchanged. The
-controller is broker-inert. Preflight rejects outcome-like fields, development
-requires every declared trial and explicit zero-return accounting, confirmation
-accepts no parameter alternatives or date substitutions, and shadow queueing
-requires a committed passing confirmation inspection.
+controller is broker-inert. Development evaluation, independent inspection, and
+winner freeze each reopen the exact committed search, dataset manifest, result,
+and inspection predecessors applicable at that stage; winner freeze independently
+checks the result and search hashes again. Preflight rejects outcome-like fields,
+development requires every declared trial and explicit zero-return accounting,
+confirmation accepts no parameter alternatives or date substitutions, and shadow
+queueing requires a committed passing confirmation inspection.
 
 For `selection_mode = "development_search"`, a family may contain at most 64
 trials. A trial must first retain positive 20-bps log growth, stressed profit

@@ -40,6 +40,8 @@ includes its frozen universe. Production recomputes the full equity top-250 or
 fixed-ETF rank from complete observable history, accepts an intraday signal only
 on its first completed reclaim bar, derives stop/target/hold paths from the exact
 parameters, and rejects stale-session or incomplete-denominator inputs. The
+generic discovery controller reopens the committed search, dataset, result, and
+inspection chain and rechecks its hashes before an exact winner can be frozen. The
 48-trial equity runtime shares only parameter-invariant features and must remain
 under the local 60-second acceptance without provider requests. Schema-1 portfolio
 evidence remains immutable adverse history and cannot satisfy v2 maturity. The
