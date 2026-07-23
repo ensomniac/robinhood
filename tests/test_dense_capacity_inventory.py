@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from datetime import date, timedelta
 
 import pytest
@@ -46,6 +47,30 @@ def test_capacity_allocation_fails_before_week_reset(tmp_path):
             index_path=tmp_path / "exposure.jsonl",
             output_root=tmp_path / "future-output",
         )
+
+
+def test_capacity_cli_reports_fail_closed_json(monkeypatch, capsys):
+    def fail(**_kwargs):
+        raise capacity.DenseCapacityInventoryError("synthetic capacity blocker")
+
+    monkeypatch.setattr(capacity, "build_inventory", fail)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "dense_capacity_inventory.py",
+            "--as-of",
+            "2026-07-27",
+            "--created-at",
+            "2026-07-27T08:00:00-04:00",
+        ],
+    )
+
+    assert capacity.main() == 1
+    assert json.loads(capsys.readouterr().out) == {
+        "error": "synthetic capacity blocker",
+        "error_type": "DenseCapacityInventoryError",
+    }
 
 
 def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(

@@ -403,21 +403,37 @@ def _parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = _parser().parse_args()
-    paths, status = freeze_batch(
-        args.inventory,
-        as_of=args.as_of,
-        index_path=args.index,
-        output_root=args.output_root,
-        status_path=args.status,
-    )
-    print(
-        json.dumps(
-            {**status, "paths": [str(path) for path in paths]},
-            indent=2,
-            sort_keys=True,
+    try:
+        paths, status = freeze_batch(
+            args.inventory,
+            as_of=args.as_of,
+            index_path=args.index,
+            output_root=args.output_root,
+            status_path=args.status,
         )
-    )
-    return 0
+        print(
+            json.dumps(
+                {**status, "paths": [str(path) for path in paths]},
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+    except (
+        DenseFamilyContractError,
+        LearningDataError,
+        outcome_exposure.OutcomeExposureError,
+        strategy_discovery.StrategyDiscoveryError,
+        OSError,
+        ValueError,
+    ) as exc:
+        print(
+            json.dumps(
+                {"error": str(exc), "error_type": type(exc).__name__},
+                indent=2,
+            )
+        )
+        return 1
 
 
 if __name__ == "__main__":

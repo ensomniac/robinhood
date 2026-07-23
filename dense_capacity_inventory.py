@@ -339,28 +339,43 @@ def _parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = _parser().parse_args()
-    path, inventory = build_inventory(
-        as_of=args.as_of,
-        created_at=args.created_at,
-        calendar_path=args.calendar,
-        index_path=args.index,
-        output_root=args.output_root,
-    )
-    print(
-        json.dumps(
-            {
-                "path": str(path),
-                "inventory_sha256": inventory["inventory_sha256"],
-                "families": len(inventory["families"]),
-                "provider_requests": 0,
-                "outcomes_accessed": False,
-                "broker_actions": 0,
-            },
-            indent=2,
-            sort_keys=True,
+    try:
+        path, inventory = build_inventory(
+            as_of=args.as_of,
+            created_at=args.created_at,
+            calendar_path=args.calendar,
+            index_path=args.index,
+            output_root=args.output_root,
         )
-    )
-    return 0
+        print(
+            json.dumps(
+                {
+                    "path": str(path),
+                    "inventory_sha256": inventory["inventory_sha256"],
+                    "families": len(inventory["families"]),
+                    "provider_requests": 0,
+                    "outcomes_accessed": False,
+                    "broker_actions": 0,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+    except (
+        DenseCapacityInventoryError,
+        dense_family_contracts.DenseFamilyContractError,
+        outcome_exposure.OutcomeExposureError,
+        OSError,
+        ValueError,
+    ) as exc:
+        print(
+            json.dumps(
+                {"error": str(exc), "error_type": type(exc).__name__},
+                indent=2,
+            )
+        )
+        return 1
 
 
 if __name__ == "__main__":

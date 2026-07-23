@@ -188,6 +188,9 @@ still requires committed exact family contracts and inspected predecessors.
 Mutating calendar, capacity, family-freeze, data-plan, and provider-collection
 commands compare a supplied `--as-of` with the actual process clock and reject
 a future date; `--as-of 2026-07-27` cannot simulate the weekly reset early.
+Capacity allocation and family-contract activation return structured fail-closed
+JSON on these or other authority errors, rather than an operator-ambiguous
+traceback.
 The corrected prospective plan supersedes pre-reset plan `0bb78f43...` before
 any family activation or outcome access. Its pullback universe is exactly the
 ten broad/macro ETFs plus the nine authorized legacy sector SPDRs (`XLB`, `XLE`,

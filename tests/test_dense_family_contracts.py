@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from datetime import date, timedelta
 
 import pytest
@@ -145,6 +146,29 @@ def test_batch_freeze_fails_before_weekly_reset(tmp_path):
             status_path=tmp_path / "future-status.json",
             enforce_commit=False,
         )
+
+
+def test_family_contract_cli_reports_fail_closed_json(monkeypatch, capsys):
+    def fail(*_args, **_kwargs):
+        raise contracts.DenseFamilyContractError("synthetic family blocker")
+
+    monkeypatch.setattr(contracts, "freeze_batch", fail)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "dense_family_contracts.py",
+            "missing-inventory.json",
+            "--as-of",
+            "2026-07-27",
+        ],
+    )
+
+    assert contracts.main() == 1
+    assert json.loads(capsys.readouterr().out) == {
+        "error": "synthetic family blocker",
+        "error_type": "DenseFamilyContractError",
+    }
 
 
 def test_batch_freezes_exact_three_valid_contracts_after_reset(tmp_path):
