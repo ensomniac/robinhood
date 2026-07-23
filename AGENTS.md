@@ -61,8 +61,13 @@ equity-gap-continuation family. It may use the already exposed 120-session,
 4,833-candidate development corpus only as contaminated training while
 preserving the frozen five-session embargo and 75-session, 3,192-candidate
 confirmation reserve. The full search, exact winner, and confirmation collection
-contract must freeze before accessing any new outcome. This consumes no new
-mechanism-family slot, so the weekly reset is not a work pause.
+contract froze before accessing any new outcome. Independent development
+inspection rejected all 32 trials: 21 had positive 20-bps growth, nine passed
+stressed profit factor, 16 passed drawdown, and 24 passed neighbor stability,
+but none passed DSR, Holm, PBO, or every rolling fold. The exact successor is
+retired with its confirmation reserve untouched. Continuous work must advance
+another existing-family successor; this consumes no new mechanism-family slot,
+so the weekly reset is not a work pause.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and

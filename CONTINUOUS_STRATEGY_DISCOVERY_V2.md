@@ -158,7 +158,7 @@ and inaccessible.
 The exact v3 successor is terminal and cannot be repaired on its evaluated
 corpus.
 
-## Active equity-gap-continuation search successor
+## Equity-gap-continuation search disposition
 
 Continuous work now returns to the existing equity-gap-continuation mechanism.
 Its v1 production rule failed representative development, but its earlier
@@ -211,6 +211,25 @@ the inspected local corpus once and makes zero provider requests. Confirmation
 data collection remains fail-closed unless the independent development
 inspection returns `WINNER_SELECTED`; it must then bind the exact winner rules
 hash before any confirmation bar is requested.
+
+Development result
+`1d79a6e7d38cebf85087cad7ce1f2370fddc04ca816de75591ed83715ec41f3b`
+evaluated all 32 trials in 29.7 seconds from one shared dataset load with zero
+provider requests. Twenty-one trials had positive 20-bps growth, nine passed
+stressed profit factor, 16 passed drawdown, and 24 passed neighbor stability.
+
+Independent inspection
+`270351f05caeae92cc6ccdec4f5c209c3129e4dbde8e333ab3f5b402d9676d00`
+is `REJECTED`. No trial passed DSR or Holm, family PBO was 0.8286, and every
+trial had at least one losing rolling-origin fold. The highest raw-growth
+trial's DSR probability was only 0.3745. No winner or evidence target was
+frozen, and the 75-session confirmation reserve remains untouched and
+inaccessible.
+
+The exact successor is terminal and cannot be repaired on its evaluated corpus.
+Continuous work moves immediately to the strongest remaining existing-family
+successor with contaminated development and disjoint untouched confirmation;
+the weekly new-family reset is not a work pause.
 
 ## Transition chain
 
