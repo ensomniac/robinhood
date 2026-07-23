@@ -1,0 +1,56 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "11a6615830eb7b43411364db1d091f5ca4c6a1e750052598c883ea9a04079968",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.024457416962832212,
+  "family_contract_path": "strategy_tournament/v2/continuous/cross-sectional-momentum-v4-liquid-common-stock/family-contract/contract-3daa17d83bcd29c2f0196764a95c27eab03477016ecbda7212216cd47ffb6de7.json",
+  "family_contract_sha256": "b1304109d17360cec7c7103b7dba1b3d6dca43e5c557c90ddd8e968b277c7e8f",
+  "family_id": "liquid-equity-cross-sectional-momentum",
+  "implementation_sha256": "adfdcc7d673d5fed59bd3de864b44e92fd6e463c66aa645539cd992a25d95e23",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "account_dates_bound": true,
+      "confirmation_locked": true,
+      "development_lane": true,
+      "family_bound": true,
+      "point_in_time": true,
+      "signal_dates_bound": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 20000
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "3daa17d83bcd29c2f0196764a95c27eab03477016ecbda7212216cd47ffb6de7",
+  "verified_capacity": 20000
+}
