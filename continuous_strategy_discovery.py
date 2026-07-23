@@ -882,6 +882,17 @@ def build_status(
     else:
         state = "DISCOVERY_ACTIVE"
         next_action = "continue the strategy_discovery transition chain"
+    if state == "EXISTING_FAMILY_QUEUE_EXHAUSTED":
+        import dense_batch_readiness
+
+        preactivation_readiness = dense_batch_readiness.build_status()
+    else:
+        preactivation_readiness = {
+            "state": "NOT_CURRENT",
+            "provider_access_permitted": False,
+            "target_outcome_access_permitted": False,
+            "broker_actions_permitted": False,
+        }
     return {
         "schema_version": 1,
         "campaign_id": CAMPAIGN_ID,
@@ -904,22 +915,7 @@ def build_status(
             ),
             "broker_actions_permitted": False,
         },
-        "preactivation_readiness": {
-            "state": (
-                "READY_FOR_OUTCOME_BLIND_ENGINEERING"
-                if state == "EXISTING_FAMILY_QUEUE_EXHAUSTED"
-                else "NOT_CURRENT"
-            ),
-            "permitted_now": [
-                "input completeness and hash reconstruction",
-                "shared runtime and production evaluator parity",
-                "local performance tests",
-                "repository audits",
-            ],
-            "new_family_activation_permitted": False,
-            "target_outcome_access_permitted": False,
-            "broker_actions_permitted": False,
-        },
+        "preactivation_readiness": preactivation_readiness,
         "artifacts": {
             "calendar_contracts": len(calendar_contracts),
             "calendar_contract_inspections": len(calendar_inspections),
