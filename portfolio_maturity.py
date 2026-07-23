@@ -103,6 +103,8 @@ class StrategyMetrics:
     development_signals: int
     confirmation_signals: int
     shadow_executions: int
+    shadow_attempts: int
+    shadow_qualification_resets: int
     live_executions: int
     natural_stop_executions: int
     expectancy_r: float | None
@@ -605,6 +607,7 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
             _finite(record.get(field), field)
     _boolean(record.get("stop_executed"), "stop_executed")
     if mode == "shadow":
+        shadow_path_complete = True
         for field in (
             "discovery_complete",
             "evaluation_complete",
@@ -615,11 +618,28 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
             "journal_complete",
         ):
             if _boolean(record.get(field), field) is not True:
-                raise PortfolioMaturityError(
-                    f"complete shadow execution requires {field}=true"
-                )
+                if record.get("closed") is True and record.get("eligible") is True:
+                    raise PortfolioMaturityError(
+                        f"complete shadow execution requires {field}=true"
+                    )
+                shadow_path_complete = False
         if _integer(record.get("broker_actions"), "broker_actions") != 0:
             raise PortfolioMaturityError("shadow execution must have zero broker actions")
+        if record.get("closed") is True and record.get("eligible") is True:
+            if record.get("session_capture_complete") is not True or record.get(
+                "rule_violations"
+            ):
+                raise PortfolioMaturityError(
+                    "eligible closed shadow execution must be clean"
+                )
+        elif (
+            not shadow_path_complete
+            and record.get("session_capture_complete") is True
+            and not record.get("rule_violations")
+        ):
+            raise PortfolioMaturityError(
+                "incomplete shadow path needs a capture or rule reset marker"
+            )
     if mode == "live":
         if _string(record.get("portfolio_guard_status"), "portfolio_guard_status") != "ENTRY_READY":
             raise PortfolioMaturityError(
@@ -955,11 +975,38 @@ def _metrics(records: Sequence[Mapping[str, Any]], confidence: float) -> Strateg
     confirmation_account_growth = _account_growth_metrics(
         confirmation_records, confidence
     )
-    shadow = [
-        record
-        for record in signals
-        if record["mode"] == "shadow" and record["closed"] and record["eligible"]
-    ]
+    shadow_records = sorted(
+        (record for record in signals if record["mode"] == "shadow"),
+        key=lambda record: (
+            str(record.get("date", "")),
+            str(record.get("recorded_at", "")),
+            str(record.get("signal_id", "")),
+        ),
+    )
+    shadow: list[Mapping[str, Any]] = []
+    shadow_resets = 0
+    for record in shadow_records:
+        unsafe = (
+            record.get("session_capture_complete") is not True
+            or bool(record.get("rule_violations"))
+            or any(
+                record.get(field) is not True
+                for field in (
+                    "discovery_complete",
+                    "evaluation_complete",
+                    "sizing_complete",
+                    "order_construction_complete",
+                    "protection_plan_complete",
+                    "monitoring_complete",
+                    "journal_complete",
+                )
+            )
+        )
+        if unsafe:
+            shadow.clear()
+            shadow_resets += 1
+        elif record["closed"] and record["eligible"]:
+            shadow.append(record)
     live = [
         record
         for record in signals
@@ -968,12 +1015,12 @@ def _metrics(records: Sequence[Mapping[str, Any]], confidence: float) -> Strateg
     violations = sum(
         len(record["rule_violations"])
         for record in records
-        if record["record_type"] != "inspection"
+        if record["record_type"] != "inspection" and record.get("mode") != "shadow"
     )
     incomplete = sum(
         record.get("session_capture_complete") is not True
         for record in records
-        if record["record_type"] != "inspection"
+        if record["record_type"] != "inspection" and record.get("mode") != "shadow"
     )
     entry_slippage = [float(record["entry_slippage_bps"]) for record in live]
     unprotected = [float(record["unprotected_seconds"]) for record in live]
@@ -987,6 +1034,8 @@ def _metrics(records: Sequence[Mapping[str, Any]], confidence: float) -> Strateg
         development_signals=development.signals,
         confirmation_signals=confirmation.signals,
         shadow_executions=len(shadow),
+        shadow_attempts=len(shadow_records),
+        shadow_qualification_resets=shadow_resets,
         live_executions=len(live),
         natural_stop_executions=len(stopped),
         expectancy_r=historical.expectancy_r,

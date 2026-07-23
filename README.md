@@ -71,9 +71,11 @@ the append-only evidence and computes strategy and portfolio maturity.
 `portfolio_validation.py` maintains resumable ignored state and emits one
 bounded handoff without contacting providers or brokers. `portfolio_funnel.py`
 rebuilds the ordered Stage 0 dispositions and exposes the falsification,
-development, and confirmation/shadow lanes. `portfolio_guard.py` is the pure
-fail-closed pre-entry gate for an exact `PILOT_READY` version and a fresh
-privacy-safe post-entry risk reconciliation.
+development, and confirmation/shadow lanes. `portfolio_shadow.py` and
+`portfolio_shadow_inspection.py` provide the broker-inert prospective
+entry/fill, close, independent replay, and ledger-admission path.
+`portfolio_guard.py` is the pure fail-closed pre-entry gate for an exact
+`PILOT_READY` version and a fresh privacy-safe post-entry risk reconciliation.
 
 The first reproducible inventory is in
 [`research_results/2026-07-21-portfolio-data-inventory.json`](research_results/2026-07-21-portfolio-data-inventory.json).

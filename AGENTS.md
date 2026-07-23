@@ -1228,7 +1228,14 @@ drawdown, chronological halves, performance without the five best trades,
 a weak phase.
 Every portfolio shadow signal must explicitly record complete discovery,
 evaluation, sizing, order construction, protection planning, monitoring, and
-journaling with zero broker actions. Every portfolio live signal must retain an
+journaling with zero broker actions. A v2 shadow starts only from a committed
+`prospective-shadow-queue`; `portfolio_shadow.py` captures the exact frozen
+plugin evaluation and a fresh bid/ask-based fill, then closes or expires it from
+fresh prospective observations. `portfolio_shadow_inspection.py` must replay a
+committed final artifact before its exact row may enter `PORTFOLIO_SIGNALS.jsonl`.
+Missed limits remain visible but do not count, and any rule or capture violation
+resets the consecutive clean-shadow count for that exact rules hash. Every
+portfolio live signal must retain an
 `ENTRY_READY` portfolio-guard result, passed broker review, confirmation state,
 confirmed protection, monitoring, and journaling; otherwise it is rejected from
 the ledger rather than counted toward maturity.

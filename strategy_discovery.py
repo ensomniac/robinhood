@@ -1061,6 +1061,8 @@ def queue_shadow(
         "strategy_version": winner["strategy_version"],
         "rules_hash": winner["rules_hash"],
         "state": "SHADOW_QUEUED",
+        "winner_path": _relative(winner_path),
+        "winner_sha256": winner["artifact_sha256"],
         "required_clean_closed_shadows": 5,
         "completed_clean_closed_shadows": 0,
         "confirmation_inspection_path": _relative(inspection_path),

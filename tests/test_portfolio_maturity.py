@@ -600,6 +600,30 @@ maximum_second_wave_families = 6
             ):
                 maturity.validate_record(shadow, root=root)
 
+    def test_shadow_violation_resets_then_five_new_clean_closes_requalify(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            shadows = [
+                record
+                for record in records
+                if record.get("sample_phase") == "shadow"
+            ]
+            shadows[0]["eligible"] = False
+            shadows[0]["rule_violations"] = ["shadow capture violation"]
+            reset = maturity.assess_strategy(records, self.config)
+            self.assertEqual(reset["metrics"]["shadow_executions"], 4)
+            self.assertEqual(reset["metrics"]["shadow_qualification_resets"], 1)
+            self.assertFalse(reset["pilot_ready"])
+
+            replacement = dict(shadows[-1])
+            replacement["date"] = "2025-06-07"
+            replacement["signal_id"] = "2025-06-07-strategy-one-shadow"
+            records.append(replacement)
+            requalified = maturity.assess_strategy(records, self.config)
+            self.assertEqual(requalified["metrics"]["shadow_executions"], 5)
+            self.assertEqual(requalified["maturity"], "PILOT_READY")
+
     def test_live_evidence_without_entry_ready_guard_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

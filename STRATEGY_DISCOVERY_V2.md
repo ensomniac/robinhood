@@ -203,3 +203,27 @@ python3 dense_data_collection_inspection.py \
 Independent inspection rebuilds the runtime dataset from every checkpoint,
 rehashes the ignored gzip payload, revalidates full point-in-time scope, and
 only then freezes the Git-visible development or confirmation dataset manifest.
+
+After an exact winner passes committed untouched confirmation,
+`strategy_discovery.py queue-shadow` freezes its five-shadow queue and exact
+winner binding. Each prospective signal then uses a committed admission chain:
+
+```sh
+python3 portfolio_shadow.py start path/to/committed-shadow-queue.json \
+  path/to/privacy-safe-fresh-setup.json
+# Commit the entry artifact. After the simulated position closes or expires:
+python3 portfolio_shadow.py close path/to/committed-shadow-entry.json \
+  path/to/privacy-safe-closure.json
+# Commit the final, replay it independently, commit that inspection, then admit:
+python3 portfolio_shadow_inspection.py inspect \
+  path/to/committed-shadow-final.json
+python3 portfolio_shadow_inspection.py admit \
+  path/to/committed-shadow-inspection.json
+```
+
+The runner imports no broker connector and hard-codes zero broker actions.
+Entry and exit prices come from fresh ask and bid observations respectively;
+partial fills, missed limits, protection timing, 5/10/20-bps costs, monitoring,
+and journaling are explicit. Missed limits remain nonqualifying observations.
+Any capture or rule violation resets the clean consecutive-shadow streak for
+that exact version; five new clean closed fills are required afterward.
