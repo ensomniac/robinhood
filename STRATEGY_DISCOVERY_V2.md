@@ -298,6 +298,8 @@ python3 portfolio_live.py reconcile-unknown-entry path/to/live-entry.json \
   path/to/privacy-safe-order-reconciliation.json
 python3 portfolio_live.py record-protection path/to/reconciled-exposure.json \
   path/to/encrypted-protection-observation.json
+# If protection submission is unknown, query/reconcile orders before recording
+# its definitive protected or flatten-required state; never retry first.
 python3 portfolio_live.py close path/to/protection-result.json \
   path/to/encrypted-flat-close.json
 python3 portfolio_live_inspection.py inspect path/to/live-final.json

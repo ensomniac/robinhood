@@ -1248,6 +1248,8 @@ broker-inert state authority for a controlled v2 pilot: prepare, record entry,
 reconcile unknown or open submissions before retry, terminate any partial-entry
 remainder, record protection, and close flat. Exact broker and client identifiers
 must authenticate as field-bound Fernet tokens and remain in the public journal.
+An unknown protection submission must retain its encrypted client reference and
+be reconciled against broker orders before any retry or flatten can proceed.
 `portfolio_live_inspection.py` must independently rebuild the terminal artifact
 before admission. A live row is rejected unless the position is flat, every
 residual order is terminal, the account and orders are reconciled, realized net

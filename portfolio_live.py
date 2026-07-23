@@ -683,6 +683,7 @@ def record_protection(
     expected = {
         "schema_version",
         "observed_at",
+        "logical_order_alias",
         "state",
         "coverage_quantity",
         "entry_remainder_state",
@@ -696,6 +697,13 @@ def record_protection(
         raise PortfolioLiveError("protection observation schema_version must be 1")
     current = (now or datetime.now(UTC)).astimezone(UTC)
     observed_at = _fresh(value["observed_at"], "protection observed_at", current)
+    alias = value["logical_order_alias"]
+    if (
+        not isinstance(alias, str)
+        or not alias
+        or sensitive_data.RAW_UUID_PATTERN.search(alias)
+    ):
+        raise PortfolioLiveError("protection logical order alias is missing or private")
     state = value["state"]
     if state not in PROTECTION_STATES:
         raise PortfolioLiveError("protection state is invalid")
@@ -730,6 +738,10 @@ def record_protection(
         ref_token = _token(ref_token, "client_ref_id", cipher)
     if confirmed and (broker_token is None or ref_token is None):
         raise PortfolioLiveError("confirmed protection needs encrypted identifiers")
+    if state == "unknown" and ref_token is None:
+        raise PortfolioLiveError(
+            "unknown protection submission needs its encrypted client ref ID"
+        )
     if exposure.get("artifact_kind") == "controlled-live-entry-reconciliation":
         entry_at = _timestamp(exposure["exposure"]["filled_at"], "entry filled_at")
     else:
@@ -745,13 +757,23 @@ def record_protection(
         "strategy_id": preparation["strategy_id"],
         "strategy_version": preparation["strategy_version"],
         "rules_hash": preparation["rules_hash"],
-        "state": "LIVE_PROTECTED_MONITOR" if confirmed else "PROTECTION_FAILED_FLATTEN_REQUIRED",
+        "state": (
+            "LIVE_PROTECTED_MONITOR"
+            if confirmed
+            else (
+                "PROTECTION_SUBMISSION_UNKNOWN_RECONCILE_REQUIRED"
+                if state == "unknown"
+                else "PROTECTION_FAILED_FLATTEN_REQUIRED"
+            )
+        ),
         "observed_at": observed_at.isoformat(),
         "exposure_path": strategy_discovery._relative(exposure_path),
         "exposure_sha256": exposure["artifact_sha256"],
         "preparation_path": strategy_discovery._relative(preparation_path),
         "preparation_sha256": preparation["artifact_sha256"],
         "protection_confirmed": confirmed,
+        "logical_order_alias": alias,
+        "broker_state": state,
         "coverage_quantity": coverage,
         "entry_remainder_state": remainder_state,
         "time_in_force": value["time_in_force"],
@@ -765,7 +787,11 @@ def record_protection(
         "next_action": (
             "monitor_exact_exit_path"
             if confirmed
-            else "flatten_by_safe_cutoff_and_reconcile"
+            else (
+                "query_orders_before_any_retry_or_flatten"
+                if state == "unknown"
+                else "flatten_by_safe_cutoff_and_reconcile"
+            )
         ),
     }
     return strategy_discovery._write_artifact(
@@ -1113,6 +1139,12 @@ def close_live(
     protection = strategy_discovery.load_artifact(
         protection_path, expected_kind="controlled-live-protection-result"
     )
+    if protection.get("state") == (
+        "PROTECTION_SUBMISSION_UNKNOWN_RECONCILE_REQUIRED"
+    ):
+        raise PortfolioLiveError(
+            "unknown protection submission must be broker-reconciled before close"
+        )
     exposure_path = PROJECT_ROOT / protection["exposure_path"]
     exposure, preparation, _filled, _price, _preparation_path = _entry_exposure(
         exposure_path

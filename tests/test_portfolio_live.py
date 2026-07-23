@@ -212,6 +212,7 @@ def _entry_and_protection(work: Path):
         {
             "schema_version": 1,
             "observed_at": protection_at.isoformat(),
+            "logical_order_alias": "protection-one",
             "state": "accepted",
             "coverage_quantity": quantity,
             "entry_remainder_state": "none",
@@ -398,6 +399,7 @@ def test_unknown_entry_is_reconciled_before_retry_or_protection():
             {
                 "schema_version": 1,
                 "observed_at": protection_at.isoformat(),
+                "logical_order_alias": "protection-unknown-entry",
                 "state": "accepted",
                 "coverage_quantity": quantity,
                 "entry_remainder_state": "none",
@@ -466,6 +468,7 @@ def test_partial_fill_remainder_must_be_terminal_before_protection():
         observation = {
             "schema_version": 1,
             "observed_at": protection_at.isoformat(),
+            "logical_order_alias": "protection-partial-entry",
             "state": "accepted",
             "coverage_quantity": filled,
             "entry_remainder_state": "open",
@@ -513,17 +516,47 @@ def test_protection_failure_forces_flat_but_cannot_earn_live_admission():
             now=entry_at,
         )
         protection_at = entry_at + timedelta(seconds=1)
+        _unknown_path, unknown = portfolio_live.record_protection(
+            entry_path,
+            {
+                "schema_version": 1,
+                "observed_at": protection_at.isoformat(),
+                "logical_order_alias": "protection-failure",
+                "state": "unknown",
+                "coverage_quantity": 0,
+                "entry_remainder_state": "none",
+                "time_in_force": "gtc",
+                "encrypted_broker_order_id": None,
+                "encrypted_client_ref_id": tokens["protection_ref"],
+                "notification_status": "sent",
+            },
+            root=root,
+            now=protection_at,
+        )
+        assert unknown["state"] == (
+            "PROTECTION_SUBMISSION_UNKNOWN_RECONCILE_REQUIRED"
+        )
+        assert unknown["next_action"] == "query_orders_before_any_retry_or_flatten"
+        with pytest.raises(portfolio_live.PortfolioLiveError, match="broker-reconciled"):
+            portfolio_live.close_live(
+                _unknown_path,
+                {},
+                root=root,
+                now=protection_at,
+            )
+        protection_at += timedelta(seconds=1)
         protection_path, failed = portfolio_live.record_protection(
             entry_path,
             {
                 "schema_version": 1,
                 "observed_at": protection_at.isoformat(),
+                "logical_order_alias": "protection-failure",
                 "state": "rejected",
                 "coverage_quantity": 0,
                 "entry_remainder_state": "none",
                 "time_in_force": "gtc",
                 "encrypted_broker_order_id": None,
-                "encrypted_client_ref_id": None,
+                "encrypted_client_ref_id": tokens["protection_ref"],
                 "notification_status": "sent",
             },
             root=root,
