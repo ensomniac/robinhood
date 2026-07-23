@@ -204,6 +204,12 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
         assert family_status["required_total_signals"] == winner[
             "required_total_signals"
         ]
+        assert family_status["development_filled_signals"] == inspection[
+            "selection"
+        ]["development_filled_signals"]
+        assert family_status["maximum_total_signal_capacity"] == inspection[
+            "maximum_total_signal_capacity"
+        ]
         assert family_status["required_confirmation_signals"] == winner[
             "required_confirmation_signals"
         ]
@@ -376,6 +382,42 @@ def test_insufficient_confirmation_inventory_freezes_without_outcome_access():
             work, confirmation_count=10
         )
         assert inspection["state"] == "INSUFFICIENT_POWER_CAPACITY"
+        assert inspection["confirmation_access_permitted"] is False
+        assert winner is None
+
+
+def test_total_signal_power_capacity_is_frozen_before_confirmation(
+    monkeypatch,
+):
+    original = synthetic_plugin.evaluate_development
+
+    def sparse_development(contract, trials):
+        result = original(contract, trials)
+        for trial in result["trials"]:
+            metrics = trial["metrics"]
+            metrics["oof_filled_account_returns"] = metrics[
+                "oof_filled_account_returns"
+            ][:10]
+            metrics["oof_net_pnl_dollars"] = metrics["oof_net_pnl_dollars"][:10]
+            for row in trial["maturity_rows"][10:]:
+                row["session_outcome"] = "position_open"
+                row["eligible_signal"] = False
+        return result
+
+    monkeypatch.setattr(
+        synthetic_plugin, "evaluate_development", sparse_development
+    )
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        _root, _inspection_path, inspection, winner = _freeze_synthetic_winner(
+            work, confirmation_count=20
+        )
+
+        assert inspection["state"] == "INSUFFICIENT_POWER_CAPACITY"
+        assert inspection["selection"]["development_filled_signals"] == 10
+        assert inspection["selection"]["required_total_signals"] == 50
+        assert inspection["confirmation_inventory"] == 20
+        assert inspection["maximum_total_signal_capacity"] == 30
         assert inspection["confirmation_access_permitted"] is False
         assert winner is None
 

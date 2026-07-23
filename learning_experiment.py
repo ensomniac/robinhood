@@ -774,6 +774,7 @@ def select_development_winner(
             "parameters"
         ],
         "power_target": power_target,
+        "development_filled_signals": len(returns),
         "required_total_signals": required_total,
         "required_confirmation_signals": max(
             20, math.ceil(required_total * 0.30)

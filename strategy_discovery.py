@@ -446,8 +446,14 @@ def inspect_development(
     except LearningExperimentError as exc:
         raise StrategyDiscoveryError(str(exc)) from exc
     state = selection["status"]
-    if state == "WINNER_SELECTED" and len(contract["confirmation_dates"]) < int(
-        selection["required_confirmation_signals"]
+    confirmation_inventory = len(contract["confirmation_dates"])
+    maximum_total_signal_capacity = (
+        int(selection.get("development_filled_signals", 0))
+        + confirmation_inventory
+    )
+    if state == "WINNER_SELECTED" and (
+        confirmation_inventory < int(selection["required_confirmation_signals"])
+        or maximum_total_signal_capacity < int(selection["required_total_signals"])
     ):
         state = "INSUFFICIENT_POWER_CAPACITY"
     payload = {
@@ -459,7 +465,8 @@ def inspect_development(
         "result_path": _relative(result_path),
         "result_sha256": result["artifact_sha256"],
         "selection": selection,
-        "confirmation_inventory": len(contract["confirmation_dates"]),
+        "confirmation_inventory": confirmation_inventory,
+        "maximum_total_signal_capacity": maximum_total_signal_capacity,
         "evidence_counts_frozen_before_confirmation": state == "WINNER_SELECTED",
         "confirmation_access_permitted": state == "WINNER_SELECTED",
         "inspection": {
@@ -1211,6 +1218,12 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
                     "required_total_signals": (
                         winner.get("required_total_signals")
                         or selection.get("required_total_signals")
+                    ),
+                    "development_filled_signals": selection.get(
+                        "development_filled_signals"
+                    ),
+                    "maximum_total_signal_capacity": development_inspection.get(
+                        "maximum_total_signal_capacity"
                     ),
                     "required_confirmation_signals": (
                         winner.get("required_confirmation_signals")

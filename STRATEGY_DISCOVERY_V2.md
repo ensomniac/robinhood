@@ -37,6 +37,8 @@ required confirmation signals are
 `max(20, ceil(required_total_signals * 0.30))`. A five-session embargo remains
 mandatory. Insufficient untouched inventory is terminal
 `INSUFFICIENT_POWER_CAPACITY`, not permission to extend or substitute dates.
+Inspection checks both the confirmation floor and whether observed development
+fills plus every reserved confirmation session can reach the frozen total target.
 
 ## Manifest-driven controller
 
