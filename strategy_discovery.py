@@ -1080,30 +1080,162 @@ def queue_shadow(
 
 
 def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
+    maturity = portfolio_maturity.build_report()
+    assessments = {
+        (
+            str(item["strategy_id"]),
+            str(item["strategy_version"]),
+            str(item["rules_hash"]),
+        ): item
+        for item in maturity["strategies"]
+    }
+    stage_order = {
+        "discovery-preflight-inspection": 1,
+        "frozen-development-search": 2,
+        "development-search-result": 3,
+        "development-search-inspection": 4,
+        "frozen-strategy-winner": 5,
+        "confirmation-result": 6,
+        "confirmation-inspection": 7,
+        "historical-maturity-ledger": 8,
+        "prospective-shadow-queue": 9,
+    }
     families: list[dict[str, Any]] = []
     if root.exists():
         for family_root in sorted(path for path in root.iterdir() if path.is_dir()):
             artifacts: list[dict[str, Any]] = []
+            values_by_kind: dict[str, dict[str, Any]] = {}
             for path in sorted(family_root.glob("**/*.json")):
                 try:
                     value = load_artifact(path)
                 except StrategyDiscoveryError:
                     continue
+                kind = str(value.get("artifact_kind"))
+                if kind in stage_order:
+                    values_by_kind[kind] = value
                 artifacts.append(
                     {
-                        "kind": value.get("artifact_kind"),
+                        "kind": kind,
                         "state": value.get("state"),
                         "path": _relative(path),
                     }
                 )
+            ordered = sorted(
+                (
+                    (stage_order[kind], value)
+                    for kind, value in values_by_kind.items()
+                ),
+                key=lambda item: item[0],
+            )
+            current = ordered[-1][1] if ordered else None
+            search = values_by_kind.get("frozen-development-search", {})
+            preflight = values_by_kind.get("discovery-preflight-inspection", {})
+            development_inspection = values_by_kind.get(
+                "development-search-inspection", {}
+            )
+            winner = values_by_kind.get("frozen-strategy-winner", {})
+            confirmation_inspection = values_by_kind.get(
+                "confirmation-inspection", {}
+            )
+            shadow_queue = values_by_kind.get("prospective-shadow-queue", {})
+            selection = development_inspection.get("selection", {})
+            if not isinstance(selection, Mapping):
+                selection = {}
+            contract = search.get("family_contract", {})
+            if not isinstance(contract, Mapping):
+                contract = {}
+            assessment = assessments.get(
+                (
+                    str(winner.get("strategy_id")),
+                    str(winner.get("strategy_version")),
+                    str(winner.get("rules_hash")),
+                )
+            )
+            if assessment is not None:
+                blockers = list(assessment["current_phase_blockers"])
+                current_state = str(assessment["validation_phase"])
+                shadow_metrics = assessment["metrics"]
+                completed_shadows = int(shadow_metrics["shadow_executions"])
+                shadow_attempts = int(shadow_metrics["shadow_attempts"])
+                shadow_resets = int(
+                    shadow_metrics["shadow_qualification_resets"]
+                )
+            else:
+                current_state = (
+                    str(current.get("state")) if current is not None else "UNSTARTED"
+                )
+                completed_shadows = 0
+                shadow_attempts = 0
+                shadow_resets = 0
+                blockers = []
+                if preflight and preflight.get("state") != "CAPACITY_READY":
+                    blockers.append(
+                        f"preflight disposition: {preflight.get('state')}"
+                    )
+                elif development_inspection and development_inspection.get(
+                    "state"
+                ) != "WINNER_SELECTED":
+                    blockers.append(
+                        "development inspection disposition: "
+                        f"{development_inspection.get('state')}"
+                    )
+                elif confirmation_inspection and confirmation_inspection.get(
+                    "state"
+                ) != "CONFIRMATION_PASSED":
+                    blockers.append(
+                        "confirmation inspection disposition: "
+                        f"{confirmation_inspection.get('state')}"
+                    )
+                elif shadow_queue:
+                    blockers.append(
+                        "clean closed shadows "
+                        f"{completed_shadows} is below required "
+                        f"{shadow_queue.get('required_clean_closed_shadows', 5)}"
+                    )
+                elif current is not None:
+                    blockers.append(f"next transition is required after {current_state}")
             families.append(
                 {
                     "family_id": family_root.name,
                     "artifacts": artifacts,
-                    "current_state": artifacts[-1]["state"] if artifacts else "UNSTARTED",
+                    "current_state": current_state,
+                    "blockers": blockers,
+                    "trial_count": (
+                        search.get("trial_count")
+                        or winner.get("trial_count")
+                        or len(contract.get("trial_family", []))
+                    ),
+                    "power_target": (
+                        winner.get("power_target") or selection.get("power_target")
+                    ),
+                    "required_total_signals": (
+                        winner.get("required_total_signals")
+                        or selection.get("required_total_signals")
+                    ),
+                    "required_confirmation_signals": (
+                        winner.get("required_confirmation_signals")
+                        or selection.get("required_confirmation_signals")
+                    ),
+                    "confirmation_reserved_sessions": len(
+                        winner.get(
+                            "confirmation_dates",
+                            contract.get("confirmation_dates", []),
+                        )
+                    ),
+                    "confirmation_state": confirmation_inspection.get("state"),
+                    "shadow_progress": {
+                        "required_clean_closed": shadow_queue.get(
+                            "required_clean_closed_shadows", 5
+                        ),
+                        "completed_clean_closed": completed_shadows,
+                        "attempts": shadow_attempts,
+                        "qualification_resets": shadow_resets,
+                    },
+                    "maturity": (
+                        assessment.get("maturity") if assessment is not None else None
+                    ),
                 }
             )
-    maturity = portfolio_maturity.build_report()
     next_batch = next_week_discovery_batch.activation_status()
     return {
         "schema_version": SCHEMA_VERSION,

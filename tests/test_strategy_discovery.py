@@ -192,6 +192,34 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
         assert queue["broker_actions_permitted"] is False
         assert confirmation_inspection_path.is_file()
         assert preflight_path.is_file()
+        status = discovery.build_status(root=artifact_root)
+        family_status = next(
+            item
+            for item in status["families"]
+            if item["family_id"] == winner["family_id"]
+        )
+        assert family_status["current_state"] == "SHADOW_QUEUED"
+        assert family_status["trial_count"] == 4
+        assert family_status["power_target"] == winner["power_target"]
+        assert family_status["required_total_signals"] == winner[
+            "required_total_signals"
+        ]
+        assert family_status["required_confirmation_signals"] == winner[
+            "required_confirmation_signals"
+        ]
+        assert family_status["confirmation_reserved_sessions"] == len(
+            winner["confirmation_dates"]
+        )
+        assert family_status["confirmation_state"] == "CONFIRMATION_PASSED"
+        assert family_status["shadow_progress"] == {
+            "required_clean_closed": 5,
+            "completed_clean_closed": 0,
+            "attempts": 0,
+            "qualification_resets": 0,
+        }
+        assert family_status["blockers"] == [
+            "clean closed shadows 0 is below required 5"
+        ]
         historical = discovery.load_artifact(
             discovery.PROJECT_ROOT / queue["historical_maturity_ledger_path"],
             expected_kind="historical-maturity-ledger",
