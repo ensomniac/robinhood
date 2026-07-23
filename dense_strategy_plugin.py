@@ -200,9 +200,11 @@ def _telemetry(*, dataset_loads: int) -> dict[str, Any]:
 def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
     """Inspect only frozen metadata; never open the external outcome dataset."""
 
-    manifest = _load_manifest(
-        _manifest_path(contract.get("capacity_manifest", contract.get("dataset_manifest")))
+    manifest_path = _manifest_path(
+        contract.get("capacity_manifest", contract.get("dataset_manifest"))
     )
+    _require_committed(manifest_path)
+    manifest = _load_manifest(manifest_path)
     capacity = manifest["dataset_payload"].get("dense_capacity")
     binding = (
         dict(capacity)

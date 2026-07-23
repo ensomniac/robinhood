@@ -111,18 +111,42 @@ def _contract(manifest: Path, dates: list[str]) -> dict:
     }
 
 
-def test_preflight_reads_only_frozen_metadata(tmp_path):
+def test_preflight_reads_only_committed_frozen_metadata(tmp_path, monkeypatch):
     dataset = _dataset()
     manifest = _manifest(tmp_path, dataset, external_exists=False)
+    checked = []
+    monkeypatch.setattr(
+        plugin,
+        "_require_committed",
+        lambda path: checked.append(path.resolve()),
+    )
 
     result = plugin.preflight(
         _contract(manifest, dataset["evaluation_dates"])
     )
 
+    assert checked == [manifest.resolve()]
     assert result["verified_capacity"] == 120
     assert result["point_in_time_complete"] is True
     assert result["external_outcomes_opened"] is False
     assert result["provider_telemetry"]["dataset_loads"] == 0
+
+
+def test_preflight_rejects_uncommitted_capacity_manifest(tmp_path, monkeypatch):
+    dataset = _dataset()
+    manifest = _manifest(tmp_path, dataset, external_exists=False)
+
+    def reject(_path):
+        raise plugin.DenseStrategyPluginError(
+            "dense dataset manifest must be committed and unchanged"
+        )
+
+    monkeypatch.setattr(plugin, "_require_committed", reject)
+    with pytest.raises(
+        plugin.DenseStrategyPluginError,
+        match="committed and unchanged",
+    ):
+        plugin.preflight(_contract(manifest, dataset["evaluation_dates"]))
 
 
 def test_development_loads_dataset_once_and_runs_all_declared_trials(

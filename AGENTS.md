@@ -68,7 +68,9 @@ content-addressed, and an unauthorized or drifted status rejects the whole
 transition before any contract write. Discovery preflight binds the committed
 contract path and validated implementation hashes; search freeze and every
 development or confirmation plugin evaluation must rehash the committed
-implementation and fail on drift.
+implementation and fail on drift. Dense-family preflight must separately reopen
+the committed, unchanged capacity manifest before accepting its outcome-blind
+count.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

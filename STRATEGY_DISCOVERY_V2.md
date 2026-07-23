@@ -279,7 +279,10 @@ family-contract path and the fully validated contract hash after implementation
 file hashes are injected. Search freeze reopens those bindings, and every
 development or confirmation plugin invocation rehashes the committed
 implementation files. Code drift therefore cannot enter an evaluation under an
-older preflight, search, or winner identity.
+older preflight, search, or winner identity. Dense-family preflight also
+requires its capacity manifest to be committed and unchanged before reading
+that outcome-blind metadata, so an altered capacity count cannot open the fast
+lane.
 
 `dense_data_collection.py` derives the exact request plan only from a committed
 frozen search (or, later, a committed exact winner). Daily families use raw
