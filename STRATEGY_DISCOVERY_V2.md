@@ -433,7 +433,10 @@ market-data expiry and 15-second guard-snapshot expiry; an entry observation
 after that instant or a direct/reconciled fill before preparation is rejected.
 Later transitions authenticate encrypted field-bound IDs, never retry an
 unknown or active logical order, require a partial-entry remainder to become
-terminal, and force flattening when protection fails. A protection confirmation
+terminal, and force flattening when protection fails. Unknown-entry
+reconciliation must follow the submission observation, and protection must
+follow the confirmed exposure or reconciliation observation; freshness alone
+never permits time-reversed broker state. A protection confirmation
 after the configured ten-second ceiling remains auditable but is nonqualifying
 for the controlled live milestone. Only an
 independently replayed close with a flat reconciled account, terminal residual

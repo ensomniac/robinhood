@@ -656,6 +656,11 @@ def reconcile_unknown_entry(
         raise PortfolioLiveError("entry reconciliation schema_version must be 1")
     current = (now or datetime.now(UTC)).astimezone(UTC)
     observed_at = _fresh(value["observed_at"], "reconciliation observed_at", current)
+    entry_observed_at = _timestamp(entry["observed_at"], "entry observed_at")
+    if observed_at < entry_observed_at:
+        raise PortfolioLiveError(
+            "entry reconciliation predates the submission observation"
+        )
     orders = value["orders"]
     if not isinstance(orders, list):
         raise PortfolioLiveError("reconciliation orders must be an array")
@@ -838,6 +843,13 @@ def record_protection(
         raise PortfolioLiveError("protection observation schema_version must be 1")
     current = (now or datetime.now(UTC)).astimezone(UTC)
     observed_at = _fresh(value["observed_at"], "protection observed_at", current)
+    exposure_observed_at = _timestamp(
+        exposure["observed_at"], "exposure observed_at"
+    )
+    if observed_at < exposure_observed_at:
+        raise PortfolioLiveError(
+            "protection observation predates confirmed exposure"
+        )
     alias = value["logical_order_alias"]
     if (
         not isinstance(alias, str)

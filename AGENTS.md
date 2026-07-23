@@ -75,7 +75,10 @@ development inspection, development result, frozen search, and capacity
 manifest and verify their recorded hashes and exact partitions before provider
 access. Shadow lifecycle and inspection commands must preserve zero broker
 actions and return structured nonzero JSON when a committed predecessor gate
-fails.
+fails. In the controlled live lifecycle, unknown-entry reconciliation must
+follow the submission observation and protection must follow the confirmed
+exposure or reconciliation observation; freshness alone never permits
+time-reversed broker state.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

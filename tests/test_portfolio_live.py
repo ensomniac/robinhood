@@ -610,6 +610,21 @@ def test_unknown_entry_is_reconciled_before_retry_or_protection():
             now=entry_at,
         )
         assert entry["state"] == "ENTRY_SUBMISSION_UNKNOWN_RECONCILE_REQUIRED"
+        impossible_reconciliation_at = entry_at - timedelta(milliseconds=500)
+        with pytest.raises(
+            portfolio_live.PortfolioLiveError,
+            match="reconciliation predates the submission",
+        ):
+            portfolio_live.reconcile_unknown_entry(
+                entry_path,
+                {
+                    "schema_version": 1,
+                    "observed_at": impossible_reconciliation_at.isoformat(),
+                    "orders": [],
+                },
+                root=root,
+                now=impossible_reconciliation_at,
+            )
         absent_at = entry_at + timedelta(seconds=1)
         _, absent = portfolio_live.reconcile_unknown_entry(
             entry_path,
@@ -645,6 +660,28 @@ def test_unknown_entry_is_reconciled_before_retry_or_protection():
             now=found_at,
         )
         assert found["state"] == "ENTRY_EXPOSURE_RECONCILED_PROTECT_NOW"
+        impossible_protection_at = found_at - timedelta(milliseconds=500)
+        with pytest.raises(
+            portfolio_live.PortfolioLiveError,
+            match="protection observation predates confirmed exposure",
+        ):
+            portfolio_live.record_protection(
+                reconciliation_path,
+                {
+                    "schema_version": 1,
+                    "observed_at": impossible_protection_at.isoformat(),
+                    "logical_order_alias": "protection-unknown-entry",
+                    "state": "accepted",
+                    "coverage_quantity": quantity,
+                    "entry_remainder_state": "none",
+                    "time_in_force": "gtc",
+                    "encrypted_broker_order_id": tokens["protection_order"],
+                    "encrypted_client_ref_id": tokens["protection_ref"],
+                    "notification_status": "sent",
+                },
+                root=root,
+                now=impossible_protection_at,
+            )
         protection_at = found_at + timedelta(seconds=1)
         _, protection = portfolio_live.record_protection(
             reconciliation_path,
