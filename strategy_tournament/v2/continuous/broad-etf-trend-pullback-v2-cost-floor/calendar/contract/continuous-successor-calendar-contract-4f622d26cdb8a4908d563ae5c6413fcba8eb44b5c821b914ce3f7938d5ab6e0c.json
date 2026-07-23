@@ -1,0 +1,35 @@
+{
+  "artifact_kind": "continuous-successor-calendar-contract",
+  "artifact_sha256": "4f622d26cdb8a4908d563ae5c6413fcba8eb44b5c821b914ce3f7938d5ab6e0c",
+  "broker_actions": 0,
+  "calendar_path": "historical_batches/continuous_v2/session-calendar-2014-01-through-2021-12.json",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "created_at": "2026-07-23T16:12:12Z",
+  "date_substitutions_allowed": false,
+  "endpoint": "https://api.alpaca.markets/v2/calendar",
+  "implementation_hashes": {
+    "continuous_strategy_discovery.py": "c07e057b30951425dd74f08bb917acfa2ef5dc3605e7bbcc25bf0fb7dd4c8d95",
+    "continuous_strategy_discovery_inspection.py": "68a2f765ac2d62ce3d0f0604e9ddc85d461d47265da1beb70bf37695d2981fe0"
+  },
+  "market_prices_accessed": false,
+  "mechanism_family": "broad-etf-trend-pullback",
+  "minimum_sessions": 1950,
+  "new_mechanism_family_slot_consumed": false,
+  "predecessor_inspection_path": "strategy_tournament/second_wave/inspections/broad-etf-trend-pullback-v1-result-384c8372624f14ecc6b92c2a4406830db7061a27474e643f11777800675db8e3.json",
+  "predecessor_inspection_sha256": "618f9e27567908c88f99ca4f041b0f717ebbe59ae0aaecd7e4c6a0e6f2d9e630",
+  "predecessor_result_path": "research_results/2026-07-21-broad-etf-trend-pullback-stage0-2aa31af9eb16c6a268b19df57b5bfc3b9d6950b69fa00cddcbfcb12386a41209.json",
+  "predecessor_result_sha256": "ed7e275e0bb83da586edc4c744300677f90a88927496333d3470b3681e08a4ff",
+  "predecessor_variant_id": "broad-etf-trend-pullback-v1",
+  "provider": "Alpaca Market Calendar API",
+  "provider_requests": 0,
+  "query": {
+    "end": "2021-12-31",
+    "start": "2014-01-01"
+  },
+  "research_generation": "existing_family_successor",
+  "schema_version": 1,
+  "source_path": "historical_batches/continuous_v2/session-calendar-source.json",
+  "state": "CALENDAR_CONTRACT_FROZEN",
+  "successor_id": "broad-etf-trend-pullback-v2-cost-floor",
+  "target_outcomes_accessed": false
+}
