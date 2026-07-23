@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 
@@ -12,6 +12,10 @@ import strategy_discovery
 from historical_providers import HistoricalProviderError
 from historical_store import HistoricalStoreConfig, canonical_sha256
 from learning_data import freeze_dataset_contract
+
+
+def _collection_clock():
+    return datetime(2026, 7, 27, 13, 0, tzinfo=UTC)
 
 
 class FakeBackend:
@@ -325,6 +329,7 @@ def test_collection_is_resumable_idempotent_and_independently_inspected(
             public_root=public,
             backend=interrupted,
             enforce_commit=False,
+            clock=_collection_clock,
         )
     assert len(interrupted.calls) == 3
 
@@ -336,10 +341,13 @@ def test_collection_is_resumable_idempotent_and_independently_inspected(
         public_root=public,
         backend=resumed,
         enforce_commit=False,
+        clock=_collection_clock,
     )
     assert status["completed_tasks"] == status["task_count"] == 9
     assert status["provider_telemetry"]["cache_hits"] == 3
     assert len(resumed.calls) == 6
+    assert status["collection_started_at"] == "2026-07-27T13:00:00Z"
+    assert status["collection_completed_at"] == "2026-07-27T13:00:00Z"
 
     warm = FakeBackend(symbols)
     repeated_path, repeated = collection.collect(
@@ -349,10 +357,23 @@ def test_collection_is_resumable_idempotent_and_independently_inspected(
         public_root=public,
         backend=warm,
         enforce_commit=False,
+        clock=_collection_clock,
     )
     assert repeated_path == status_path
     assert repeated == status
     assert warm.calls == []
+
+    with pytest.raises(
+        inspection.DenseDataInspectionError,
+        match="inspection must follow",
+    ):
+        inspection.inspect(
+            status_path,
+            inspected_at="2026-07-27T08:30:00-04:00",
+            store_config=config,
+            public_root=public,
+            enforce_commit=False,
+        )
 
     inspection_path, inspected, manifest_path, manifest = inspection.inspect(
         status_path,
@@ -387,6 +408,7 @@ def test_collection_retries_retryable_provider_failures_with_visible_pacing(
         backend=backend,
         enforce_commit=False,
         retry_sleeper=waits.append,
+        clock=_collection_clock,
     )
 
     assert waits == [2.5, 2.5]
@@ -410,6 +432,7 @@ def test_collection_does_not_retry_permanent_provider_failure(tmp_path, monkeypa
             backend=backend,
             enforce_commit=False,
             retry_sleeper=waits.append,
+            clock=_collection_clock,
         )
 
     assert waits == []
@@ -437,6 +460,7 @@ def test_confirmation_manifest_attests_capture_after_frozen_winner(
         public_root=public,
         backend=FakeBackend(symbols),
         enforce_commit=False,
+        clock=_collection_clock,
     )
     _inspection_path, _inspected, _manifest_path, manifest = inspection.inspect(
         status_path,
@@ -448,8 +472,38 @@ def test_confirmation_manifest_attests_capture_after_frozen_winner(
     payload = manifest["dataset_payload"]
     assert payload["preregistration_sha256"] == plan["binding_sha256"]
     assert payload["preregistered_at"] == plan["preregistered_at"]
+    assert payload["collection_started_at"] == "2026-07-27T13:00:00Z"
+    assert payload["collection_completed_at"] == "2026-07-27T13:00:00Z"
     assert payload["capture_after_preregistration_attested"] is True
     assert "development_search_sha256" not in payload
+
+
+def test_confirmation_collection_rejects_start_before_winner_freeze(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(
+        collection.outcome_exposure,
+        "assert_untouched",
+        lambda *_args, **_kwargs: None,
+    )
+    plan_path, _plan, symbols = _artifacts(
+        tmp_path, monkeypatch, lane="confirmation"
+    )
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+
+    with pytest.raises(
+        collection.DenseDataCollectionError,
+        match="must start after winner preregistration",
+    ):
+        collection.collect(
+            plan_path,
+            as_of=date(2026, 7, 27),
+            store_config=config,
+            public_root=tmp_path / "public",
+            backend=FakeBackend(symbols),
+            enforce_commit=False,
+            clock=lambda: datetime(2026, 7, 27, 11, 59, tzinfo=UTC),
+        )
 
 
 def test_split_adjustment_uses_only_actions_through_frozen_dataset_end():

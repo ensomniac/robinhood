@@ -215,15 +215,15 @@ without price, return, or broker access:
 python3 dense_session_calendar.py collect \
   strategy_tournament/v2/calendar/contract/dense-session-calendar-contract-<sha256>.json \
   --as-of 2026-07-27 \
-  --collected-at 2026-07-27T08:00:00-04:00
+  --collected-at <actual-current-ISO8601-timestamp>
 # Commit the collection status, then independently inspect its ignored rows.
 python3 dense_session_calendar_inspection.py \
   strategy_tournament/v2/calendar/collection/dense-session-calendar-collection-<sha256>.json \
-  --inspected-at 2026-07-27T08:05:00-04:00
+  --inspected-at <actual-current-ISO8601-timestamp>
 # Commit the inspection before allocating any evidence dates.
 python3 dense_capacity_inventory.py \
   --as-of 2026-07-27 \
-  --created-at 2026-07-27T08:10:00-04:00
+  --created-at <actual-current-ISO8601-timestamp>
 # Commit the inventory and its three capacity manifests before contract freeze.
 ```
 
@@ -258,6 +258,10 @@ Retryable transport, 429, and 5xx failures receive at most five attempts for the
 same exact task with bounded exponential pacing and any larger numeric
 `Retry-After` delay. Every failed attempt and wait is persisted before another
 request; permanent fidelity and permission failures still stop immediately.
+The private resumable telemetry also preserves the first actual collection
+timestamp. The public status records that start and actual completion; a
+confirmation collection must start after winner preregistration, and independent
+inspection must occur after completion.
 
 ```sh
 python3 dense_data_collection.py --as-of 2026-07-27 \
@@ -268,7 +272,7 @@ python3 dense_data_collection.py --as-of 2026-07-27 \
 # Commit the collection status before independent inspection.
 python3 dense_data_collection_inspection.py \
   path/to/committed-collection-status.json \
-  --inspected-at 2026-07-27T12:00:00-04:00
+  --inspected-at <actual-current-ISO8601-timestamp>
 ```
 
 Independent inspection rebuilds the runtime dataset from every checkpoint,
@@ -287,14 +291,17 @@ python3 dense_data_collection.py --as-of 2026-07-27 \
   collect path/to/committed-development-collection-plan.json
 python3 dense_data_collection_inspection.py \
   path/to/committed-development-collection-status.json \
-  --inspected-at 2026-07-27T12:00:00-04:00
+  --inspected-at <actual-current-ISO8601-timestamp>
 python3 strategy_discovery.py evaluate-development path/to/committed-search.json
 python3 strategy_discovery.py inspect-development path/to/committed-development-result.json
 ```
 
 If inspection selects a winner, freeze and commit it before any confirmation
 request. Confirmation planning copies the winner preregistration timestamp and
-rules hash; independent inspection attests that capture occurred afterward:
+rules hash; the winner timestamp is generated at the actual freeze transition,
+not inherited from family-contract creation. Collection records its earliest
+resumable provider attempt, and independent inspection verifies that capture
+started afterward:
 
 ```sh
 python3 strategy_discovery.py freeze-winner path/to/committed-development-inspection.json
@@ -304,7 +311,7 @@ python3 dense_data_collection.py --as-of 2026-07-27 \
   collect path/to/committed-confirmation-collection-plan.json
 python3 dense_data_collection_inspection.py \
   path/to/committed-confirmation-collection-status.json \
-  --inspected-at 2026-07-27T16:00:00-04:00
+  --inspected-at <actual-current-ISO8601-timestamp>
 python3 strategy_discovery.py evaluate-confirmation path/to/committed-winner.json
 python3 strategy_discovery.py inspect-confirmation path/to/committed-confirmation-result.json
 # Commit the passing inspection and emitted historical-maturity-ledger first.

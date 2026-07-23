@@ -144,7 +144,10 @@ def _freeze_synthetic_winner(work: Path, *, confirmation_count: int = 30):
     if inspection["state"] != "WINNER_SELECTED":
         return artifact_root, inspection_path, inspection, None
     winner_path, winner = discovery.freeze_winner(
-        inspection_path, root=artifact_root, enforce_commit=False
+        inspection_path,
+        root=artifact_root,
+        enforce_commit=False,
+        recorded_at="2026-07-23T00:00:00-04:00",
     )
     return artifact_root, winner_path, inspection, winner
 
@@ -175,10 +178,25 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
         )
         assert inspection["state"] == "WINNER_SELECTED"
         assert inspection["selection"]["required_total_signals"] >= 50
+        with pytest.raises(
+            discovery.StrategyDiscoveryError,
+            match="must follow family-contract creation",
+        ):
+            discovery.freeze_winner(
+                inspection_path,
+                root=artifact_root,
+                enforce_commit=False,
+                recorded_at=contract["created_at"],
+            )
         winner_path, winner = discovery.freeze_winner(
-            inspection_path, root=artifact_root, enforce_commit=False
+            inspection_path,
+            root=artifact_root,
+            enforce_commit=False,
+            recorded_at="2026-07-23T00:00:00-04:00",
         )
         assert winner["confirmation_parameter_alternatives"] == 0
+        assert winner["recorded_at"] == "2026-07-23T00:00:00-04:00"
+        assert winner["family_contract_created_at"] == contract["created_at"]
         assert winner["exact_rules"]["universe"] == contract["universe"]
         confirmation_path, _ = discovery.evaluate_confirmation(
             winner_path, root=artifact_root, enforce_commit=False

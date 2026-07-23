@@ -15,7 +15,7 @@ import re
 import subprocess
 import time
 from collections.abc import Mapping, Sequence
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -627,6 +627,7 @@ def freeze_winner(
     *,
     root: Path = DEFAULT_ROOT,
     enforce_commit: bool = True,
+    recorded_at: str | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     if enforce_commit:
         require_committed(inspection_path)
@@ -660,6 +661,26 @@ def freeze_winner(
     }
     rules_hash = _hash(exact_rules)
     version = f"{contract['family_id']}-{rules_hash[:12]}"
+    winner_recorded_at = recorded_at or datetime.now(timezone.utc).isoformat().replace(
+        "+00:00", "Z"
+    )
+    try:
+        winner_timestamp = datetime.fromisoformat(
+            winner_recorded_at.replace("Z", "+00:00")
+        )
+        contract_timestamp = datetime.fromisoformat(
+            str(contract["created_at"]).replace("Z", "+00:00")
+        )
+    except ValueError as exc:
+        raise StrategyDiscoveryError("winner freeze timestamp is invalid") from exc
+    if (
+        winner_timestamp.tzinfo is None
+        or contract_timestamp.tzinfo is None
+        or winner_timestamp <= contract_timestamp
+    ):
+        raise StrategyDiscoveryError(
+            "winner freeze must follow family-contract creation"
+        )
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact_kind": "frozen-strategy-winner",
@@ -669,7 +690,8 @@ def freeze_winner(
         "strategy_version": version,
         "rules_hash": rules_hash,
         "state": "WINNER_FROZEN",
-        "recorded_at": contract["created_at"],
+        "recorded_at": winner_recorded_at,
+        "family_contract_created_at": contract["created_at"],
         "trial_count": len(contract["trial_family"]),
         "development_inspection_path": _relative(inspection_path),
         "development_inspection_sha256": inspection["artifact_sha256"],

@@ -75,15 +75,35 @@ def inspect(
         and status.get("broker_actions") == 0
     ):
         raise DenseDataInspectionError("collection status is incomplete or unsafe")
+    try:
+        collection_started = datetime.fromisoformat(
+            str(status["collection_started_at"]).replace("Z", "+00:00")
+        )
+        collection_completed = datetime.fromisoformat(
+            str(status["collection_completed_at"]).replace("Z", "+00:00")
+        )
+    except (KeyError, ValueError) as exc:
+        raise DenseDataInspectionError(
+            "collection chronology is missing or invalid"
+        ) from exc
+    if (
+        collection_started.tzinfo is None
+        or collection_completed.tzinfo is None
+        or collection_completed < collection_started
+        or timestamp <= collection_completed
+    ):
+        raise DenseDataInspectionError(
+            "inspection must follow a valid collection chronology"
+        )
     plan_path = PROJECT_ROOT / str(status["plan_path"])
     plan = collection._validate_plan(plan_path, enforce_commit=enforce_commit)
     if plan["lane"] == "confirmation":
         preregistered = datetime.fromisoformat(
             str(plan["preregistered_at"]).replace("Z", "+00:00")
         )
-        if timestamp <= preregistered:
+        if collection_started <= preregistered:
             raise DenseDataInspectionError(
-                "confirmation inspection must follow winner preregistration"
+                "confirmation collection did not follow winner preregistration"
             )
     if status.get("plan_sha256") != plan["artifact_sha256"]:
         raise DenseDataInspectionError("collection plan binding drifted")
@@ -127,6 +147,8 @@ def inspect(
             "substitutions_zero": True,
         },
         "provider_telemetry": status["provider_telemetry"],
+        "collection_started_at": status["collection_started_at"],
+        "collection_completed_at": status["collection_completed_at"],
         "broker_actions": 0,
         "inspected_at": inspected_at,
     }
@@ -160,6 +182,8 @@ def inspect(
         "point_in_time_evidence": True,
         "dense_runtime": binding,
         "provider_telemetry": status["provider_telemetry"],
+        "collection_started_at": status["collection_started_at"],
+        "collection_completed_at": status["collection_completed_at"],
     }
     if plan["lane"] == "development":
         payload["development_search_sha256"] = plan["binding_sha256"]

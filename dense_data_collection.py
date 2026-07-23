@@ -10,8 +10,8 @@ import json
 import os
 import shutil
 import time
-from collections.abc import Mapping, Sequence
-from datetime import date, datetime, time as wall_time
+from collections.abc import Callable, Mapping, Sequence
+from datetime import date, datetime, time as wall_time, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -464,6 +464,16 @@ def _checkpoint_path(root: Path, task: Mapping[str, Any]) -> Path:
     return root / "tasks" / f"{task['task_id']}.json.gz"
 
 
+def _timestamp(value: datetime, field: str) -> datetime:
+    if value.tzinfo is None:
+        raise DenseDataCollectionError(f"{field} must include a timezone")
+    return value.astimezone(timezone.utc)
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 def _telemetry_state(path: Path, plan_sha256: str) -> dict[str, Any]:
     empty = {
         "requests": 0,
@@ -473,7 +483,10 @@ def _telemetry_state(path: Path, plan_sha256: str) -> dict[str, Any]:
         "failures": 0,
     }
     if not path.exists():
-        return empty
+        return {
+            "collection_started_at": None,
+            "provider_telemetry": empty,
+        }
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -483,7 +496,26 @@ def _telemetry_state(path: Path, plan_sha256: str) -> dict[str, Any]:
     telemetry = value.get("provider_telemetry")
     if not isinstance(telemetry, Mapping):
         raise DenseDataCollectionError("private provider telemetry is invalid")
-    return {key: telemetry.get(key, 0) for key in empty}
+    started_at = value.get("collection_started_at")
+    if not isinstance(started_at, str):
+        raise DenseDataCollectionError(
+            "private collection start timestamp is invalid"
+        )
+    try:
+        _timestamp(
+            datetime.fromisoformat(started_at.replace("Z", "+00:00")),
+            "collection_started_at",
+        )
+    except ValueError as exc:
+        raise DenseDataCollectionError(
+            "private collection start timestamp is invalid"
+        ) from exc
+    return {
+        "collection_started_at": started_at,
+        "provider_telemetry": {
+            key: telemetry.get(key, 0) for key in empty
+        },
+    }
 
 
 def _combined_telemetry(
@@ -507,6 +539,7 @@ def _write_telemetry_state(
     path: Path,
     *,
     plan_sha256: str,
+    collection_started_at: str,
     telemetry: Mapping[str, Any],
     config: HistoricalStoreConfig,
 ) -> None:
@@ -515,6 +548,7 @@ def _write_telemetry_state(
             {
                 "schema_version": 1,
                 "plan_sha256": plan_sha256,
+                "collection_started_at": collection_started_at,
                 "provider_telemetry": dict(telemetry),
             },
             indent=2,
@@ -797,6 +831,7 @@ def collect(
     backend: DenseCollectionBackend | None = None,
     enforce_commit: bool = True,
     retry_sleeper: Any = time.sleep,
+    clock: Callable[[], datetime] = _utc_now,
 ) -> tuple[Path, dict[str, Any]]:
     current = as_of or date.today()
     if current < batch.ACTIVATION_NOT_BEFORE:
@@ -818,8 +853,35 @@ def collect(
     client = backend or ProviderBackend()
     owns_backend = backend is None
     telemetry_path = private_root / "collection-telemetry.json"
-    baseline_telemetry = _telemetry_state(
+    private_state = _telemetry_state(
         telemetry_path, str(plan["artifact_sha256"])
+    )
+    invocation_started = _timestamp(clock(), "collection clock")
+    collection_started_at = private_state["collection_started_at"] or (
+        invocation_started.isoformat().replace("+00:00", "Z")
+    )
+    started = _timestamp(
+        datetime.fromisoformat(collection_started_at.replace("Z", "+00:00")),
+        "collection_started_at",
+    )
+    if plan["lane"] == "confirmation":
+        preregistered = _timestamp(
+            datetime.fromisoformat(
+                str(plan["preregistered_at"]).replace("Z", "+00:00")
+            ),
+            "preregistered_at",
+        )
+        if started <= preregistered:
+            raise DenseDataCollectionError(
+                "confirmation collection must start after winner preregistration"
+            )
+    baseline_telemetry = private_state["provider_telemetry"]
+    _write_telemetry_state(
+        telemetry_path,
+        plan_sha256=str(plan["artifact_sha256"]),
+        collection_started_at=collection_started_at,
+        telemetry=baseline_telemetry,
+        config=config,
     )
     completed = 0
     try:
@@ -853,6 +915,7 @@ def collect(
                         _write_telemetry_state(
                             telemetry_path,
                             plan_sha256=str(plan["artifact_sha256"]),
+                            collection_started_at=collection_started_at,
                             telemetry=_combined_telemetry(
                                 baseline_telemetry, client.telemetry
                             ),
@@ -877,6 +940,7 @@ def collect(
             _write_telemetry_state(
                 telemetry_path,
                 plan_sha256=str(plan["artifact_sha256"]),
+                collection_started_at=collection_started_at,
                 telemetry=_combined_telemetry(baseline_telemetry, client.telemetry),
                 config=config,
             )
@@ -890,6 +954,11 @@ def collect(
         if owns_backend:
             client.close()
     relative = str(dataset_path.resolve().relative_to(config.root.resolve()))
+    collection_completed = _timestamp(clock(), "collection clock")
+    if collection_completed < started:
+        raise DenseDataCollectionError(
+            "collection completion cannot precede its first provider attempt"
+        )
     payload = {
         "schema_version": 1,
         "artifact_kind": STATUS_KIND,
@@ -908,6 +977,10 @@ def collect(
         "dataset_sha256": canonical_sha256(dataset),
         "provider_telemetry": _combined_telemetry(
             baseline_telemetry, client.telemetry
+        ),
+        "collection_started_at": collection_started_at,
+        "collection_completed_at": collection_completed.isoformat().replace(
+            "+00:00", "Z"
         ),
         "substitutions": 0,
         "broker_actions": 0,
