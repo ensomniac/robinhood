@@ -4,7 +4,7 @@
   "campaign_id": "multi-strategy-portfolio-validation-v2",
   "family_contracts_frozen": 0,
   "outcome_access_permitted": false,
-  "plan_sha256": "0bb78f430e56ac56cc4ca20661569ec1f2c66316e5fe12cd97e71224261bd278",
+  "plan_sha256": "5d7e9f7690214903f8bb41ed64edded3010051858cf6a13a5b9cdbc3f562c3dc",
   "provider_access_permitted": false,
   "schema_version": 1,
   "state": "WAITING_ISO_WEEK_RESET",

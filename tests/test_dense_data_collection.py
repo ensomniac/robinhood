@@ -101,7 +101,7 @@ def _artifacts(tmp_path, monkeypatch, *, lane="development"):
                 {
                     "rules_hash": "a" * 64,
                     "recorded_at": "2026-07-27T08:00:00-04:00",
-                    "confirmation_scope": {"dates": _dates(5), "symbols": ["SPY"]},
+                    "confirmation_scope": {"dates": _dates(6), "symbols": ["SPY"]},
                 }
                 if confirmation
                 else {}
@@ -111,7 +111,7 @@ def _artifacts(tmp_path, monkeypatch, *, lane="development"):
         "search",
     )
     calendar = tmp_path / "calendar.json"
-    dates = _dates(7)
+    dates = _dates(8)
     calendar.write_text(
         json.dumps(
             [
@@ -134,13 +134,11 @@ def _artifacts(tmp_path, monkeypatch, *, lane="development"):
         "GLD",
         "DBC",
         "XLB",
-        "XLC",
         "XLE",
         "XLF",
         "XLI",
         "XLK",
         "XLP",
-        "XLRE",
         "XLU",
         "XLV",
         "XLY",
@@ -166,7 +164,7 @@ def _artifacts(tmp_path, monkeypatch, *, lane="development"):
         ),
         "calendar_path": str(calendar.relative_to(tmp_path)),
         "calendar_sha256": collection._file_hash(calendar),
-        "evaluation_dates": dates[-5:],
+        "evaluation_dates": dates[-6:],
         "required_dates": dates,
         "warmup_sessions": 2,
         "symbols": symbols,
@@ -222,13 +220,11 @@ def test_plan_and_provider_access_fail_before_week_reset(tmp_path):
                 "GLD",
                 "DBC",
                 "XLB",
-                "XLC",
                 "XLE",
                 "XLF",
                 "XLI",
                 "XLK",
                 "XLP",
-                "XLRE",
                 "XLU",
                 "XLV",
                 "XLY",
@@ -341,9 +337,9 @@ def test_collection_is_resumable_idempotent_and_independently_inspected(
         backend=resumed,
         enforce_commit=False,
     )
-    assert status["completed_tasks"] == status["task_count"] == 8
+    assert status["completed_tasks"] == status["task_count"] == 9
     assert status["provider_telemetry"]["cache_hits"] == 3
-    assert len(resumed.calls) == 5
+    assert len(resumed.calls) == 6
 
     warm = FakeBackend(symbols)
     repeated_path, repeated = collection.collect(
@@ -367,12 +363,12 @@ def test_collection_is_resumable_idempotent_and_independently_inspected(
     )
     assert inspection_path.is_file()
     assert inspected["state"] == "DATASET_INSPECTED_READY"
-    assert inspected["formal_capacity"] == 105
+    assert inspected["formal_capacity"] == 114
     assert manifest_path.is_file()
     assert manifest["dataset_payload"]["development_search_sha256"] == status[
         "binding_sha256"
     ]
-    assert manifest["dataset_payload"]["dense_runtime"]["formal_capacity"] == 105
+    assert manifest["dataset_payload"]["dense_runtime"]["formal_capacity"] == 114
 
 
 def test_collection_retries_retryable_provider_failures_with_visible_pacing(

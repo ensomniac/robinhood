@@ -15,6 +15,11 @@ def test_exact_three_family_grids_are_predeclared_without_activation():
     assert plan["provider_requests"] == 0
     assert plan["market_outcomes_accessed"] is False
     assert plan["broker_actions"] == 0
+    pullback = plan["families"][2]
+    assert len(pullback["universe"]["symbols"]) == 19
+    assert "XLC" not in pullback["universe"]["symbols"]
+    assert "XLRE" not in pullback["universe"]["symbols"]
+    assert plan["supersedes_plan_sha256"] == batch.SUPERSEDED_PLAN_SHA256
 
 
 def test_weekly_reset_gate_blocks_then_opens_only_evidence_freeze(tmp_path):

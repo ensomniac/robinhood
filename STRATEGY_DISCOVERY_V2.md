@@ -160,6 +160,11 @@ keeps all family-contract, provider, outcome, and broker permissions closed
 until the 2026-W31 reset on 2026-07-27. After that reset it opens only the
 disjoint development/embargo/confirmation evidence-freeze step; provider access
 still requires committed exact family contracts and inspected predecessors.
+The corrected prospective plan supersedes pre-reset plan `0bb78f43...` before
+any family activation or outcome access. Its pullback universe is exactly the
+ten broad/macro ETFs plus the nine authorized legacy sector SPDRs (`XLB`, `XLE`,
+`XLF`, `XLI`, `XLK`, `XLP`, `XLU`, `XLV`, `XLY`); `XLC` and `XLRE` remain in the
+preserved superseded artifact but are not part of the active W31 family.
 
 `outcome_exposure.py` is the append-only global date/instrument contamination
 authority. Its initial hash-bound baseline marks all 226 dates in the preserved

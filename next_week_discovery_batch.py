@@ -29,6 +29,9 @@ ASR_DISPOSITION_PATH = (
     "accelerated-share-repurchase-continuation-v1-"
     "4395f72eecb5b1d37fa08475e270e7dd59fd4d05fe80339f98b0ec6d6f0b9b01.json"
 )
+SUPERSEDED_PLAN_SHA256 = (
+    "0bb78f430e56ac56cc4ca20661569ec1f2c66316e5fe12cd97e71224261bd278"
+)
 
 
 class NextWeekBatchError(RuntimeError):
@@ -154,13 +157,11 @@ def build_plan() -> dict[str, Any]:
                     "GLD",
                     "DBC",
                     "XLB",
-                    "XLC",
                     "XLE",
                     "XLF",
                     "XLI",
                     "XLK",
                     "XLP",
-                    "XLRE",
                     "XLU",
                     "XLV",
                     "XLY",
@@ -195,6 +196,11 @@ def build_plan() -> dict[str, Any]:
             "outcome_access_permitted": False,
         },
         "asr_disposition_sha256": asr["disposition_sha256"],
+        "supersedes_plan_sha256": SUPERSEDED_PLAN_SHA256,
+        "supersession_reason": (
+            "Restore the authorized nine-sector-SPDR universe by removing XLC "
+            "and XLRE before any family contract, provider request, or outcome access."
+        ),
         "activation_before_reset_permitted": False,
         "family_contracts_frozen": 0,
         "provider_requests": 0,
