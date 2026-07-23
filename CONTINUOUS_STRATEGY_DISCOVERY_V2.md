@@ -112,7 +112,7 @@ for the next ISO week.
 ## Active liquid-ETF cross-sectional successor
 
 The active successor is
-`cross-sectional-momentum-v2-liquid-index-etf`, runtime family
+`cross-sectional-momentum-v3-liquid-index-etf`, runtime family
 `liquid-etf-cross-sectional-momentum`. The prior equity version had positive
 5/10/20-bps results but failed only its Stage 0 drawdown gate; its exact version
 remains retired. The successor preserves the cross-sectional-momentum mechanism
@@ -132,20 +132,24 @@ disjoint and untouched. The implementation can load the shared development
 dataset once with zero provider requests and uses the same exact ranking and
 risk rules in production evaluation.
 
-Before the formal freeze, one unchanged predecessor-like setting was exercised
-solely to validate local I/O and semantics on this already contaminated training
-corpus. It produced 13 rolling-origin fills and -0.002737 total log growth at
-20 bps per side. The exact diagnostic is disclosed in the successor contract,
-the grid was not changed afterward, and the observation is ineligible for
-untouched or maturity evidence.
+The v2 transition failed closed on its first development trial because
+cost-sensitive account sizing allowed 5/10/20-bps paths to fill different
+signals. Failure artifact
+`f7ed6419da1bffc45044af4619ee4c558917e10b1e0c2758f071861f8f708c1b`
+records zero returned trials, zero surfaced metrics, no result or selection,
+and no confirmation access. V3 preserves the entire grid, dates, rules, and
+costs; it changes only contention semantics. The 20-bps path freezes the
+conservative filled-signal set and the 5/10/20-bps scenarios apply their exact
+costs to that identical set. Capital-blocked candidates remain explicit in
+trial accounting.
 
 Freeze and commit the exact successor before generic preflight:
 
 ```sh
-python3 oversold_reversal_discovery.py freeze \
+python3 etf_cross_sectional_momentum_discovery.py freeze \
   --created-at <actual-current-ISO8601-timestamp>
 python3 strategy_discovery.py preflight \
-  strategy_tournament/v2/continuous/short-horizon-oversold-reversal-v3-gap-universe/family-contract/contract-<sha256>.json
+  strategy_tournament/v2/continuous/cross-sectional-momentum-v3-liquid-index-etf/family-contract/contract-<sha256>.json
 ```
 
 After committing preflight, use `strategy_discovery.py freeze-search`,

@@ -68,6 +68,106 @@ def test_pullback_uses_only_completed_decision_bar_and_enters_next_open():
     assert candidate["exit_date"] <= evaluation_dates[3]
 
 
+def test_cost_scenarios_share_the_stressed_contention_selection():
+    calendar = _days(2)
+    candidates = [
+        {
+            "signal_id": "cost-sensitive-entry",
+            "signal_date": calendar[0],
+            "decision_date": calendar[0],
+            "symbol": "SPY",
+            "outcome": "eligible",
+            "rank": 1,
+            "entry_price": 99.9,
+            "stop_price": 50.0,
+            "exit_date": calendar[1],
+            "exit_price": 99.9,
+            "marks": {calendar[0]: 99.9, calendar[1]: 99.9},
+            "stop_executed": False,
+            "planned_stop_distance": 49.9,
+        }
+    ]
+    policy = {
+        "starting_equity": 100.0,
+        "risk_fraction": 0.5,
+        "maximum_concurrent_positions": 1,
+        "maximum_aggregate_risk_fraction": 0.5,
+        "maximum_gross_notional_fraction": 1.0,
+    }
+
+    scenarios = runtime._shared_cost_scenarios(
+        calendar,
+        candidates,
+        policy,
+        rolling_origin_plan=None,
+    )
+
+    assert all(not scenario["closed_trades"] for scenario in scenarios.values())
+    assert scenarios[5]["trial_accounting"][0] == {
+        "date": calendar[0],
+        "signal_id": "cost-sensitive-entry",
+        "outcome": "capital_blocked",
+        "reasons": ["shared_stress_cost_contention"],
+    }
+
+
+def test_rolling_cost_scenarios_intersect_shared_selection_by_fold():
+    calendar = _days(4)
+    candidates = [
+        {
+            "signal_id": f"signal-{index}",
+            "signal_date": calendar[index],
+            "decision_date": calendar[index],
+            "symbol": "SPY",
+            "outcome": "eligible",
+            "rank": 1,
+            "entry_price": 100.0,
+            "stop_price": 99.0,
+            "exit_date": calendar[index + 1],
+            "exit_price": 101.0,
+            "marks": {
+                calendar[index]: 100.0,
+                calendar[index + 1]: 101.0,
+            },
+            "stop_executed": False,
+            "planned_stop_distance": 1.0,
+        }
+        for index in (0, 2)
+    ]
+    policy = {
+        "starting_equity": 100_000.0,
+        "risk_fraction": 0.005,
+        "maximum_concurrent_positions": 1,
+        "maximum_aggregate_risk_fraction": 0.005,
+        "maximum_gross_notional_fraction": 1.0,
+    }
+    plan = [
+        {
+            "fold": 1,
+            "entry_dates": [calendar[0]],
+            "settlement_only_dates": [calendar[1]],
+            "test_dates": calendar[:2],
+        },
+        {
+            "fold": 2,
+            "entry_dates": [calendar[2]],
+            "settlement_only_dates": [calendar[3]],
+            "test_dates": calendar[2:],
+        },
+    ]
+
+    scenarios = runtime._shared_cost_scenarios(
+        plan,
+        candidates,
+        policy,
+        rolling_origin_plan=plan,
+    )
+
+    assert {
+        trade["signal_id"] for trade in scenarios[5]["closed_trades"]
+    } == {"signal-0", "signal-2"}
+
+
 def _minute_bar(
     day: str,
     minute: int,

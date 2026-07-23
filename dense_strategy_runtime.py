@@ -1828,6 +1828,8 @@ def _scenario(
     candidates: Sequence[Mapping[str, Any]],
     policy: Mapping[str, Any],
     cost_bps_per_side: int,
+    *,
+    allowed_signal_ids: set[str] | None = None,
 ) -> dict[str, Any]:
     return simulate_portfolio_account(
         calendar,
@@ -1843,6 +1845,7 @@ def _scenario(
             policy["maximum_gross_notional_fraction"]
         ),
         cost_bps_per_side=cost_bps_per_side,
+        allowed_signal_ids=allowed_signal_ids,
     )
 
 
@@ -1851,6 +1854,8 @@ def _rolling_origin_scenario(
     candidates: Sequence[Mapping[str, Any]],
     policy: Mapping[str, Any],
     cost_bps_per_side: int,
+    *,
+    allowed_signal_ids: set[str] | None = None,
 ) -> dict[str, Any]:
     starting_equity = float(policy.get("starting_equity", 100_000.0))
     current_equity = starting_equity
@@ -1884,12 +1889,19 @@ def _rolling_origin_scenario(
             raise DenseStrategyRuntimeError(
                 "rolling-origin entry cannot settle inside its frozen test fold"
             )
+        fold_allowed_signal_ids = (
+            None
+            if allowed_signal_ids is None
+            else allowed_signal_ids
+            & {str(item["signal_id"]) for item in fold_candidates}
+        )
         fold_policy = {**dict(policy), "starting_equity": current_equity}
         scenario = _scenario(
             test_dates,
             fold_candidates,
             fold_policy,
             cost_bps_per_side,
+            allowed_signal_ids=fold_allowed_signal_ids,
         )
         account_path.extend(scenario["account_path"])
         trial_accounting.extend(scenario["trial_accounting"])
@@ -1909,6 +1921,44 @@ def _rolling_origin_scenario(
         "trial_accounting": trial_accounting,
         "closed_trades": closed_trades,
     }
+
+
+def _shared_cost_scenarios(
+    calendar: Sequence[str],
+    candidates: Sequence[Mapping[str, Any]],
+    policy: Mapping[str, Any],
+    *,
+    rolling_origin_plan: Sequence[Mapping[str, Any]] | None,
+) -> dict[int, dict[str, Any]]:
+    """Use the highest-cost path as the cost-blind contention decision surface."""
+
+    evaluator = _scenario if rolling_origin_plan is None else _rolling_origin_scenario
+    scope = calendar if rolling_origin_plan is None else rolling_origin_plan
+    stress = evaluator(scope, candidates, policy, 20)
+    selected = {
+        str(item["signal_id"]) for item in stress["closed_trades"]
+    }
+    scenarios = {
+        cost: evaluator(
+            scope,
+            candidates,
+            policy,
+            cost,
+            allowed_signal_ids=selected,
+        )
+        for cost in (5, 10)
+    }
+    scenarios[20] = stress
+    expected = selected
+    if any(
+        {str(item["signal_id"]) for item in scenario["closed_trades"]}
+        != expected
+        for scenario in scenarios.values()
+    ):
+        raise DenseStrategyRuntimeError(
+            "shared stressed-cost contention did not preserve signal identity"
+        )
+    return scenarios
 
 
 def _rolling_origin_scope(
@@ -2053,10 +2103,6 @@ def evaluate_trial(
     candidates = build_candidates(dataset, family_id, parameters)
     if rolling_origin_plan is None:
         calendar = full_calendar
-        scenarios = {
-            cost: _scenario(calendar, candidates, account_policy, cost)
-            for cost in (5, 10, 20)
-        }
     else:
         calendar, entry_dates = _rolling_origin_scope(
             full_calendar, rolling_origin_plan
@@ -2064,15 +2110,12 @@ def evaluate_trial(
         candidates = [
             item for item in candidates if item.get("signal_date") in entry_dates
         ]
-        scenarios = {
-            cost: _rolling_origin_scenario(
-                rolling_origin_plan,
-                candidates,
-                account_policy,
-                cost,
-            )
-            for cost in (5, 10, 20)
-        }
+    scenarios = _shared_cost_scenarios(
+        calendar,
+        candidates,
+        account_policy,
+        rolling_origin_plan=rolling_origin_plan,
+    )
     stress = scenarios[20]
     daily_returns = [
         float(item["daily_account_return_fraction"])

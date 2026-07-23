@@ -25,7 +25,7 @@ CAMPAIGN_ID = portfolio_maturity.V2_CAMPAIGN_ID
 FAMILY_ID = runtime.ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY
 MECHANISM_FAMILY = "cross-sectional-momentum"
 STRATEGY_ID = MECHANISM_FAMILY
-SUCCESSOR_ID = "cross-sectional-momentum-v2-liquid-index-etf"
+SUCCESSOR_ID = "cross-sectional-momentum-v3-liquid-index-etf"
 RESEARCH_GENERATION = "existing_family_successor"
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/continuous"
 
@@ -65,6 +65,18 @@ SOURCE_DATASET_MANIFEST = (
     "development-dataset/dataset-liquid-etf-trend-pullback-cost-floor-"
     "development-b9003c468f6d2131-"
     "223d642cb7b475ea57a7d0f47192d45aea311e1170091f4af7e863e8ef304d0f.json"
+)
+FAILED_V2_SEARCH = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/liquid-etf-cross-sectional-momentum/"
+    "search/liquid-etf-cross-sectional-momentum-search-"
+    "372628181e4493b91fe7c9d27eec0ddba9c703a2d8f87bfdaf9ecc066400eaa0.json"
+)
+FAILED_V2_TRANSITION = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/liquid-etf-cross-sectional-momentum/"
+    "development-failures/liquid-etf-cross-sectional-momentum-development-"
+    "failure-f7ed6419da1bffc45044af4619ee4c558917e10b1e0c2758f071861f8f708c1b.json"
 )
 
 
@@ -139,6 +151,8 @@ def _source_graph(*, enforce_commit: bool) -> tuple[dict[str, Any], dict[str, An
         SOURCE_RESULT,
         SOURCE_INSPECTION,
         SOURCE_DATASET_MANIFEST,
+        FAILED_V2_SEARCH,
+        FAILED_V2_TRANSITION,
     )
     if enforce_commit:
         for path in paths:
@@ -155,6 +169,10 @@ def _source_graph(*, enforce_commit: bool) -> tuple[dict[str, Any], dict[str, An
         SOURCE_INSPECTION, expected_kind="development-search-inspection"
     )
     load_frozen_dataset_contract(SOURCE_DATASET_MANIFEST)
+    failed_transition = strategy_discovery.load_artifact(
+        FAILED_V2_TRANSITION,
+        expected_kind="development-evaluation-failure",
+    )
     if not (
         predecessor.get("variant_id") == PREDECESSOR_VARIANT_ID
         and predecessor.get("mechanism_family") == MECHANISM_FAMILY
@@ -172,6 +190,15 @@ def _source_graph(*, enforce_commit: bool) -> tuple[dict[str, Any], dict[str, An
         and inspection.get("inspection", {}).get("valid") is True
         and result["evaluation"].get("dataset_manifest")
         == str(SOURCE_DATASET_MANIFEST)
+        and failed_transition.get("state")
+        == "FAILED_COST_SCENARIO_SIGNAL_DIVERGENCE"
+        and failed_transition.get("search_path") == _repo_path(FAILED_V2_SEARCH)
+        and failed_transition.get("trial_metrics_surfaced") is False
+        and failed_transition.get("confirmation_accessed") is False
+        and failed_transition.get(
+            "strategy_grid_dates_rules_costs_changed_after_failure"
+        )
+        is False
     ):
         raise EtfCrossSectionalMomentumDiscoveryError(
             "bound predecessor or source development graph is invalid"
@@ -225,6 +252,8 @@ def freeze_successor_contract(
         _repo_path(SOURCE_RESULT),
         _repo_path(SOURCE_INSPECTION),
         _repo_path(SOURCE_DATASET_MANIFEST),
+        _repo_path(FAILED_V2_SEARCH),
+        _repo_path(FAILED_V2_TRANSITION),
         "strategy_tournament/v2/OUTCOME_EXPOSURE_INDEX.jsonl",
     ]
     capacity_path, _capacity = freeze_dataset_contract(
@@ -276,7 +305,25 @@ def freeze_successor_contract(
         "research_generation": RESEARCH_GENERATION,
         "successor_id": SUCCESSOR_ID,
         "new_mechanism_family_slot_consumed": False,
-        "prior_family_attempt_count": 1,
+        "prior_family_attempt_count": 2,
+        "supersedes_failed_transition": {
+            "successor_id": "cross-sectional-momentum-v2-liquid-index-etf",
+            "search_path": _repo_path(FAILED_V2_SEARCH),
+            "search_file_sha256": sha256_file(FAILED_V2_SEARCH),
+            "failure_path": _repo_path(FAILED_V2_TRANSITION),
+            "failure_file_sha256": sha256_file(FAILED_V2_TRANSITION),
+            "failure_sha256": strategy_discovery.load_artifact(
+                FAILED_V2_TRANSITION,
+                expected_kind="development-evaluation-failure",
+            )["artifact_sha256"],
+            "trial_metrics_surfaced": False,
+            "confirmation_accessed": False,
+            "strategy_grid_dates_rules_costs_changed": False,
+            "implementation_change": (
+                "anchor the shared filled-signal contention set to the 20-bps "
+                "path, then charge 5/10/20-bps costs to that identical set"
+            ),
+        },
         "predecessor": {
             "variant_id": PREDECESSOR_VARIANT_ID,
             "result_path": _repo_path(PREDECESSOR_RESULT),
@@ -348,6 +395,10 @@ def freeze_successor_contract(
             "maximum_hold_sessions": 5,
             "missing_data": "missed_trade_no_substitute",
             "minimum_gross_to_primary_round_trip_cost": 5.0,
+            "shared_signal_contention": (
+                "the 20-bps path freezes the conservative filled-signal set "
+                "used unchanged by all cost scenarios"
+            ),
         },
         "falsification_criteria": {
             "minimum_20bps_log_growth": 0.0,

@@ -54,11 +54,17 @@ repaired oversold rule. The next immediate lane must be another existing-family
 successor using an explicitly contaminated development partition and disjoint
 untouched confirmation; the weekly new-family reset is not a work pause.
 The selected lane is
-`cross-sectional-momentum-v2-liquid-index-etf`, which retains the previously
-tested cross-sectional-momentum mechanism while replacing concentrated microcap
-equity exposure with the complete `DIA`, `IWM`, `QQQ`, and `SPY` universe. Its
-32-trial grid uses 20/60-session returns, SPY 100/200-session trend gates,
-1%/2% cross-sectional excess floors, 1.5/2.0 ATR14 stops, and three/five-session
+`cross-sectional-momentum-v3-liquid-index-etf`. Its v2 predecessor failed
+closed on the first development trial because independent 5/10/20-bps account
+paths selected different signals under cost-sensitive capital contention. No
+trial metrics or result were returned, selection did not run, and confirmation
+remained untouched. V3 changes only the account simulator: the conservative
+20-bps path freezes one cost-blind filled-signal set, then all three scenarios
+charge their own costs to those same trades. It retains the previously tested
+cross-sectional-momentum mechanism while replacing concentrated microcap equity
+exposure with the complete `DIA`, `IWM`, `QQQ`, and `SPY` universe. Its 32-trial
+grid uses 20/60-session returns, SPY 100/200-session trend gates, 1%/2%
+cross-sectional excess floors, 1.5/2.0 ATR14 stops, and three/five-session
 holds. Its 2016-2020 partition is contaminated training only; its frozen
 2021-2022 reserve remains untouched. This is an existing-family successor,
 consumes no weekly new-family slot, and authorizes no broker action.

@@ -145,6 +145,7 @@ def simulate_portfolio_account(
     maximum_aggregate_risk_fraction: float,
     maximum_gross_notional_fraction: float,
     cost_bps_per_side: float,
+    allowed_signal_ids: set[str] | None = None,
 ) -> dict[str, Any]:
     """Chronologically compound a long-only account under portfolio contention.
 
@@ -235,6 +236,10 @@ def simulate_portfolio_account(
                         f"{signal_id}: marks must be positive"
                     )
         normalized_candidates.append(item)
+    if allowed_signal_ids is not None and not allowed_signal_ids.issubset(seen_ids):
+        raise LearningStatisticsError(
+            "allowed_signal_ids contains an unknown candidate"
+        )
 
     by_date: dict[str, list[dict[str, Any]]] = {day_text: [] for day_text in normalized_dates}
     for item in normalized_candidates:
@@ -297,6 +302,20 @@ def simulate_portfolio_account(
                 rejected += 1
                 trial_accounting.append(
                     {"date": day_text, "signal_id": signal_id, "outcome": "rejected"}
+                )
+                continue
+            if (
+                allowed_signal_ids is not None
+                and signal_id not in allowed_signal_ids
+            ):
+                capital_blocked += 1
+                trial_accounting.append(
+                    {
+                        "date": day_text,
+                        "signal_id": signal_id,
+                        "outcome": "capital_blocked",
+                        "reasons": ["shared_stress_cost_contention"],
+                    }
                 )
                 continue
             marked_notional = sum(
