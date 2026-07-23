@@ -22,6 +22,10 @@ and compounds equity only through that path. The 5-bps-per-side path is primary
 and the 10/20-bps-per-side paths are mandatory stress cases. `R`, win rate, and
 stop behavior remain diagnostics and retain their existing gates, but cannot
 override failed account growth.
+The legacy independent-trade bootstrap remains reportable diagnostics but is not
+an active schema-2 promotion gate; its one-sided stationary account-return
+replacement is the confidence authority. Schema-1 maturity semantics are
+unchanged.
 
 Development, untouched confirmation, and combined history must each have
 positive compounded return and log growth. The primary path additionally needs

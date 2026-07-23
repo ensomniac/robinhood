@@ -1279,6 +1279,7 @@ def _robustness_blockers(
     minimum_signals: int,
     expectancy_threshold: float,
     gate: Mapping[str, Any],
+    require_independent_bootstrap: bool = True,
 ) -> list[str]:
     blockers: list[str] = []
     _at_least(blockers, f"{name} signals", metrics.signals, minimum_signals)
@@ -1294,11 +1295,12 @@ def _robustness_blockers(
         metrics.profit_factor,
         float(gate["minimum_profit_factor"]),
     )
-    _positive(
-        blockers,
-        f"{name} bootstrap lower expectancy R",
-        metrics.bootstrap_lower_expectancy_r,
-    )
+    if require_independent_bootstrap:
+        _positive(
+            blockers,
+            f"{name} bootstrap lower expectancy R",
+            metrics.bootstrap_lower_expectancy_r,
+        )
     _maximum_number(
         blockers,
         f"{name} maximum drawdown R",
@@ -1435,6 +1437,9 @@ def assess_strategy(
     metrics = _metrics(records, confidence)
     gate = config.raw["pilot_ready"]
     inspection = inspections[0] if inspections else None
+    account_growth_authority = bool(
+        inspection and inspection.get("schema_version") == SCHEMA_VERSION
+    )
     retired_after_development = bool(
         inspection and inspection.get("retired_after_development") is True
     )
@@ -1456,6 +1461,7 @@ def assess_strategy(
         minimum_signals=minimum_development,
         expectancy_threshold=float(gate["minimum_expectancy_r"]),
         gate=gate,
+        require_independent_bootstrap=not account_growth_authority,
     )
     if retired_after_development:
         if not development_blockers:
@@ -1477,6 +1483,7 @@ def assess_strategy(
         minimum_signals=minimum_confirmation,
         expectancy_threshold=float(gate["minimum_confirmation_expectancy_r"]),
         gate=gate,
+        require_independent_bootstrap=not account_growth_authority,
     )
     account_drawdown_limit = float(gate["maximum_drawdown_r"]) * float(
         config.raw["pilot_risk"]["maximum_planned_loss_fraction_per_position"]
@@ -1529,7 +1536,12 @@ def assess_strategy(
         float(gate["minimum_confirmation_expectancy_r"]),
     )
     _minimum_number(blockers, "profit factor", metrics.profit_factor, float(gate["minimum_profit_factor"]))
-    _positive(blockers, "bootstrap lower expectancy R", metrics.bootstrap_lower_expectancy_r)
+    if not account_growth_authority:
+        _positive(
+            blockers,
+            "bootstrap lower expectancy R",
+            metrics.bootstrap_lower_expectancy_r,
+        )
     _maximum_number(blockers, "maximum drawdown R", metrics.maximum_drawdown_r, float(gate["maximum_drawdown_r"]))
     if gate["require_positive_chronological_halves"]:
         _positive(blockers, "first chronological half total R", metrics.first_half_total_r)

@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from unittest.mock import patch
 
 import portfolio_maturity as maturity
 import portfolio_funnel as funnel
@@ -698,6 +699,37 @@ maximum_second_wave_families = 6
         self.assertIn(
             "evidence contains incomplete capture records",
             assessment["pilot_ready_blockers"],
+        )
+
+    def test_schema_two_reports_but_does_not_gate_on_independent_r_bootstrap(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = self._strategy_records(root, "strategy-one", "momentum")
+            with patch.object(maturity, "_bootstrap_lower", return_value=-1.0):
+                assessment = maturity.assess_strategy(records, self.config)
+
+        self.assertEqual(assessment["maturity"], "PILOT_READY")
+        self.assertEqual(assessment["metrics"]["bootstrap_lower_expectancy_r"], -1.0)
+        self.assertFalse(
+            any(
+                "bootstrap lower expectancy R" in blocker
+                for blocker in assessment["pilot_ready_blockers"]
+            )
+        )
+        with patch.object(maturity, "_bootstrap_lower", return_value=-1.0):
+            legacy_metrics = maturity._metrics(records, 0.90).development
+        legacy_blockers = maturity._robustness_blockers(
+            "legacy development",
+            legacy_metrics,
+            minimum_signals=30,
+            expectancy_threshold=0.0,
+            gate=self.config.raw["pilot_ready"],
+        )
+        self.assertTrue(
+            any(
+                "bootstrap lower expectancy R" in blocker
+                for blocker in legacy_blockers
+            )
         )
 
     def test_inspection_hash_drift_is_rejected(self):
