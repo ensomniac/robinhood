@@ -72,7 +72,7 @@ stability gates. Its exact version is terminal and its 25 confirmation
 opportunities remain untouched.
 
 Continue immediately with
-`two-to-three-day-cross-sectional-reversal-v4-liquid-common-stock-residual-spy`.
+`two-to-three-day-cross-sectional-reversal-v5-liquid-common-stock-residual-spy`.
 This is a successor inside the already evaluated short-horizon
 cross-sectional-reversal mechanism, so it does not consume a new-family slot
 or require an ISO-week wait. It uses the same top-250 liquid common-stock
@@ -84,10 +84,13 @@ daily price file. The separately predeclared intraday-ETF family remains
 subject to its weekly activation gate.
 
 V3 failed closed before the first candidate or trial metric because its frozen
-common-stock source omitted the required SPY reference series. V4 may add only
-a content-addressed SPY daily reference covering the frozen warmup and
-development dates. It preserves the exact 48-trial grid, evidence partitions,
-costs, selection rule, and untouched reserve.
+common-stock source omitted the required SPY reference series. V4 added that
+reference but exposed aggregate development diagnostics before its
+implementation hash was frozen, so diagnostic `dfd84e2e...9544f` makes V4
+permanently ineligible for promotion. V5 may freeze only that content-addressed
+SPY reference and semantics-preserving runtime caches. It preserves the exact
+48-trial grid, evidence partitions, costs, selection rule, and untouched
+reserve.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`

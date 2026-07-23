@@ -22,7 +22,7 @@ import liquid_equity_momentum_discovery as source
 import outcome_exposure
 import portfolio_maturity
 import strategy_discovery
-from historical_store import sha256_file
+from historical_store import HistoricalDayStore, sha256_file
 from learning_data import freeze_dataset_contract
 from learning_experiment import DEVELOPMENT_SEARCH_RULE
 
@@ -33,8 +33,8 @@ FAMILY_ID = runtime.EQUITY_RESIDUAL_FAMILY
 MECHANISM_FAMILY = "two-to-three-day-cross-sectional-reversal"
 STRATEGY_ID = MECHANISM_FAMILY
 SUCCESSOR_ID = (
-    "two-to-three-day-cross-sectional-reversal-v3-"
-    "liquid-common-stock-residual"
+    "two-to-three-day-cross-sectional-reversal-v5-"
+    "liquid-common-stock-residual-spy"
 )
 RESEARCH_GENERATION = "existing_family_successor"
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/continuous"
@@ -73,6 +73,21 @@ V2_INSPECTION = (
     "liquid-etf-cross-sectional-reversal-development-inspection-"
     "0abea388cc121ca801cd2c353fb2fa2da069f9397ba499b930a471d9cab29734.json"
 )
+V3_FAILURE = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/"
+    "liquid-equity-market-residual-reversal/development-failures/"
+    "liquid-equity-market-residual-reversal-development-failure-"
+    "f5596e4e0aaca3208541fb3ab1ee4995e5b6bc9c7bfbd735637635622125a081.json"
+)
+V4_DIAGNOSTIC = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/"
+    "liquid-equity-market-residual-reversal/development-diagnostics/"
+    "liquid-equity-market-residual-reversal-development-diagnostic-"
+    "dfd84e2e18f05c2891ed75713f5d7ee0dd42fc198136daa3ee60213cb639544f.json"
+)
+SPY_REFERENCE_START = "2024-01-02"
 
 
 class LiquidEquityResidualDiscoveryError(RuntimeError):
@@ -145,6 +160,8 @@ def _predecessor_paths() -> tuple[Path, ...]:
         V2_CONTRACT,
         V2_RESULT,
         V2_INSPECTION,
+        V3_FAILURE,
+        V4_DIAGNOSTIC,
     )
 
 
@@ -162,6 +179,14 @@ def _predecessors(*, enforce_commit: bool) -> None:
     v2_inspection = strategy_discovery.load_artifact(
         V2_INSPECTION,
         expected_kind="development-search-inspection",
+    )
+    v3_failure = strategy_discovery.load_artifact(
+        V3_FAILURE,
+        expected_kind="development-evaluation-failure",
+    )
+    v4_diagnostic = strategy_discovery.load_artifact(
+        V4_DIAGNOSTIC,
+        expected_kind="development-engineering-diagnostic",
     )
     if not (
         v1.get("variant_id")
@@ -182,6 +207,29 @@ def _predecessors(*, enforce_commit: bool) -> None:
         == v2_result.get("artifact_sha256")
         and v2_inspection.get("state") == "REJECTED"
         and v2_inspection.get("selection", {}).get("status") == "REJECTED"
+        and v3_failure.get("state")
+        == "FAILED_MISSING_SPY_REFERENCE_BOUNDARY"
+        and v3_failure.get("candidate_outcomes_computed") is False
+        and v3_failure.get("trial_metrics_surfaced") is False
+        and v3_failure.get("confirmation_accessed") is False
+        and v3_failure.get(
+            "strategy_grid_dates_rules_costs_changed_after_failure"
+        )
+        is False
+        and v4_diagnostic.get("state")
+        == "CONTAMINATED_NOT_PROMOTION_EVIDENCE"
+        and v4_diagnostic.get("implementation_hash_frozen_before_access")
+        is False
+        and v4_diagnostic.get("formal_development_result_created") is False
+        and v4_diagnostic.get("independent_selection_executed") is False
+        and v4_diagnostic.get("promotion_eligible") is False
+        and v4_diagnostic.get("confirmation_accessed") is False
+        and v4_diagnostic.get(
+            "rules_grid_dates_costs_selection_changed_after_diagnostic"
+        )
+        is False
+        and v4_diagnostic.get("permitted_successor", {}).get("successor_id")
+        == SUCCESSOR_ID
     ):
         raise LiquidEquityResidualDiscoveryError(
             "cross-sectional-reversal predecessor graph is invalid"
@@ -215,6 +263,80 @@ def _source_binding(
         "provider_requests": 0,
         "source_status_path": _repo_path(source.SOURCE_STATUS),
         "source_status_file_sha256": sha256_file(source.SOURCE_STATUS),
+    }
+
+
+def _spy_dataset(
+    store: HistoricalDayStore,
+    day: str,
+) -> dict[str, Any] | None:
+    value = store.select_dataset(
+        "SPY",
+        day,
+        kind="bars",
+        channel="trades",
+        timeframe="1d",
+        providers=("ibkr",),
+        require_complete=True,
+        feed="smart",
+        adjustment="provider_adjusted_unknown_basis",
+    )
+    if value is None or value.get("quality", {}).get("row_count") != 1:
+        return None
+    return value
+
+
+def _spy_reference_binding(*, end_date: str) -> dict[str, Any]:
+    """Content-address SPY metadata without deriving a price or return."""
+
+    store = HistoricalDayStore.from_env()
+    dates = [
+        day
+        for day in store.dates("SPY")
+        if SPY_REFERENCE_START <= day <= end_date
+    ]
+    if (
+        not dates
+        or dates != sorted(set(dates))
+        or dates[0] != SPY_REFERENCE_START
+        or dates[-1] != end_date
+        or len(dates) < 300
+    ):
+        raise LiquidEquityResidualDiscoveryError(
+            "SPY reference calendar is incomplete"
+        )
+    rows: list[dict[str, Any]] = []
+    for day in dates:
+        path = store.path_for("SPY", day)
+        dataset = _spy_dataset(store, day)
+        if not path.is_file() or dataset is None:
+            raise LiquidEquityResidualDiscoveryError(
+                f"SPY reference is incomplete on {day}"
+            )
+        rows.append(
+            {
+                "date": day,
+                "store_relative_path": str(path.relative_to(store.root)),
+                "document_file_sha256": sha256_file(path),
+                "dataset_id": dataset["id"],
+                "dataset_content_sha256": dataset["content_sha256"],
+            }
+        )
+    return {
+        "symbol": "SPY",
+        "provider": "ibkr",
+        "channel": "trades",
+        "timeframe": "1d",
+        "feed": "smart",
+        "adjustment": "provider_adjusted_unknown_basis",
+        "session": "regular",
+        "scope": "full_session",
+        "reference_start": dates[0],
+        "reference_end": dates[-1],
+        "reference_sessions": len(dates),
+        "rows": rows,
+        "prices_or_returns_derived": False,
+        "provider_requests": 0,
     }
 
 
@@ -282,6 +404,9 @@ def freeze_successor_contract(
                     signal_dates=development_signals,
                     formal_capacity=len(development_signals) * 250,
                 ),
+                "spy_reference_source": _spy_reference_binding(
+                    end_date=development[-1],
+                ),
             },
         },
         root / SUCCESSOR_ID / "capacity",
@@ -303,14 +428,15 @@ def freeze_successor_contract(
         "mechanism_family": MECHANISM_FAMILY,
         "strategy_id": STRATEGY_ID,
         "parent_experiment_id": (
-            "two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf"
+            "two-to-three-day-cross-sectional-reversal-v4-"
+            "liquid-common-stock-residual-spy"
         ),
         "created_at": created_at,
         "status": "INVENTED",
         "research_generation": RESEARCH_GENERATION,
         "successor_id": SUCCESSOR_ID,
         "new_mechanism_family_slot_consumed": False,
-        "prior_family_attempt_count": 2,
+        "prior_family_attempt_count": 4,
         "predecessors": [
             {
                 "path": _repo_path(path),
@@ -318,6 +444,44 @@ def freeze_successor_contract(
             }
             for path in _predecessor_paths()
         ],
+        "supersedes_failed_transition": {
+            "successor_id": (
+                "two-to-three-day-cross-sectional-reversal-v3-"
+                "liquid-common-stock-residual"
+            ),
+            "failure_path": _repo_path(V3_FAILURE),
+            "failure_file_sha256": sha256_file(V3_FAILURE),
+            "failure_sha256": strategy_discovery.load_artifact(
+                V3_FAILURE,
+                expected_kind="development-evaluation-failure",
+            )["artifact_sha256"],
+            "trial_metrics_surfaced": False,
+            "confirmation_accessed": False,
+            "strategy_grid_dates_rules_costs_changed": False,
+            "implementation_change": (
+                "bind the complete IBKR SPY daily reference series needed by "
+                "the already frozen market-residual and trend calculations"
+            ),
+        },
+        "supersedes_diagnostic_transition": {
+            "successor_id": (
+                "two-to-three-day-cross-sectional-reversal-v4-"
+                "liquid-common-stock-residual-spy"
+            ),
+            "diagnostic_path": _repo_path(V4_DIAGNOSTIC),
+            "diagnostic_file_sha256": sha256_file(V4_DIAGNOSTIC),
+            "diagnostic_sha256": strategy_discovery.load_artifact(
+                V4_DIAGNOSTIC,
+                expected_kind="development-engineering-diagnostic",
+            )["artifact_sha256"],
+            "promotion_eligible": False,
+            "confirmation_accessed": False,
+            "strategy_grid_dates_rules_costs_changed": False,
+            "implementation_change": (
+                "freeze the already verified SPY boundary and exact runtime "
+                "with semantics-preserving index, feature, and candidate caches"
+            ),
+        },
         "mechanism": (
             "Buy the largest short-horizon downside idiosyncratic overshoot "
             "inside the complete point-in-time liquid common-stock universe."
@@ -397,10 +561,11 @@ def freeze_successor_contract(
             "sessions, corporate actions, and fresh execution facts."
         ],
         "material_difference_rationale": (
-            "This retains the tested short-horizon cross-sectional-reversal "
-            "mechanism while prospectively replacing four-index-ETF ranking "
-            "with market-residual standardization across the top 250 liquid "
-            "point-in-time common stocks."
+            "V5 preserves the exact V3 short-horizon cross-sectional-reversal "
+            "mechanism, grid, partitions, costs, and selection rule, binds the "
+            "content-addressed SPY reference series whose absence stopped V3, "
+            "and freezes the semantics-preserving runtime caches tested only "
+            "as non-promotable V4 engineering diagnostics."
         ),
         "development_dates": development,
         "development_signal_dates": development_signals,
@@ -505,6 +670,9 @@ def freeze_confirmation_dataset(
                 "liquid_equity_daily_source": _source_binding(
                     signal_dates=winner["confirmation_signal_dates"],
                     formal_capacity=winner["confirmation_signal_capacity"],
+                ),
+                "spy_reference_source": _spy_reference_binding(
+                    end_date=winner["confirmation_dates"][-1],
                 ),
             },
         },

@@ -714,6 +714,7 @@ def test_real_48_trial_equity_runtime_reuses_features_under_sixty_seconds():
         ]
     }
     symbols = [f"S{ordinal:03d}" for ordinal in range(250)]
+    universe_symbols = [*symbols, "MISSING"]
     for ordinal, symbol in enumerate(symbols):
         closes = [
             (40 + ordinal * 0.02 + 0.016 * index)
@@ -730,14 +731,14 @@ def test_real_48_trial_equity_runtime_reuses_features_under_sixty_seconds():
             "evaluation_dates": evaluation_dates,
             "daily_bars": daily_bars,
             "universe_by_date": {
-                day: symbols for day in evaluation_dates
+                day: universe_symbols for day in evaluation_dates[::2]
             },
             "universe_identity_by_date": {
                 day: {
                     symbol: f"listing-{ordinal:03d}"
-                    for ordinal, symbol in enumerate(symbols)
+                    for ordinal, symbol in enumerate(universe_symbols)
                 }
-                for day in evaluation_dates
+                for day in evaluation_dates[::2]
             },
         }
     )
@@ -786,8 +787,26 @@ def test_real_48_trial_equity_runtime_reuses_features_under_sixty_seconds():
         },
         account_policy=policy,
     )
+    uncached_strict = runtime.evaluate_trial(
+        {key: value for key, value in dataset.items() if not key.startswith("_")},
+        family_id=runtime.EQUITY_RESIDUAL_FAMILY,
+        trial_id="trial-08",
+        parameters={
+            "prior_return_sessions": 1,
+            "residual_z_threshold": -2.0,
+            "market_trend_gate": "SPY>SMA100",
+            "stop_atr14": 1.0,
+            "hold_sessions": 2,
+        },
+        account_policy=policy,
+    )
 
     assert len(results) == 48
     assert set(dataset["_equity_residual_feature_cache"]) == {1, 3}
+    assert len(dataset["_equity_residual_candidate_cache"]) == 16
     assert results[0]["candidate_accounting"] == uncached["candidate_accounting"]
+    assert (
+        results[8]["candidate_accounting"]
+        == uncached_strict["candidate_accounting"]
+    )
     assert elapsed <= 60

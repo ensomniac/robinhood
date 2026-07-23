@@ -111,7 +111,7 @@ The exact v5 successor is terminal; its 25 confirmation opportunities remain
 untouched.
 
 Continuous work now advances
-`two-to-three-day-cross-sectional-reversal-v4-liquid-common-stock-residual-spy`.
+`two-to-three-day-cross-sectional-reversal-v5-liquid-common-stock-residual-spy`.
 This is an existing-family successor, not a new mechanism-family activation.
 It reuses the same committed point-in-time liquid-common-stock source and the
 80 now contaminated development decision dates, while retaining the five
@@ -125,9 +125,13 @@ calendar wait. V3 froze and committed that exact grid, then failed closed on
 its first evaluation boundary because the common-stock source omitted SPY.
 Failure `f5596e4e...5a081` records that the source file opened but no candidate,
 return, trial metric, selection, or result was produced and confirmation
-remained closed. V4 changes only the missing reference boundary by binding a
-complete, content-addressed SPY daily series; its grid, partitions, costs,
-selection algorithm, and confirmation reserve cannot change.
+remained closed. V4 then bound the complete SPY series but was run before its
+implementation hash was frozen. Diagnostic `dfd84e2e...9544f` therefore marks
+its aggregate results `CONTAMINATED_NOT_PROMOTION_EVIDENCE`; no trial winner or
+formal development result may inherit them. V5 changes no rule, grid, date,
+cost, selection algorithm, or confirmation reserve. It freezes the same SPY
+binding plus semantics-preserving index, feature, and candidate caches that
+made the complete 48-trial run pass the 60-second local acceptance twice.
 
 The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1

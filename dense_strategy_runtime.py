@@ -392,6 +392,7 @@ def _equity_residual_candidates(
     dataset: Mapping[str, Any], parameters: Mapping[str, Any]
 ) -> list[dict[str, Any]]:
     calendar = _calendar(dataset)
+    calendar_positions = {day: index for index, day in enumerate(calendar)}
     daily = _daily_series(dataset)
     universe = dataset.get("universe_by_date")
     if not isinstance(universe, Mapping):
@@ -405,25 +406,31 @@ def _equity_residual_candidates(
         )
     if "SPY" not in daily:
         raise DenseStrategyRuntimeError("equity residual data needs SPY market bars")
-    window = int(parameters["prior_return_sessions"])
-    threshold = float(parameters["residual_z_threshold"])
-    trend_period = 100 if parameters["market_trend_gate"] == "SPY>SMA100" else 200
-    stop_atr = float(parameters["stop_atr14"])
-    hold = int(parameters["hold_sessions"])
-    indices = {
-        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
-        for symbol, bars in daily.items()
-    }
-    cache: dict[int, dict[str, list[tuple[float, str, float, float]]]] | None = None
-    if isinstance(dataset, dict) and "_prepared_daily_bars" in dataset:
-        raw_cache = dataset.setdefault("_equity_residual_feature_cache", {})
-        if isinstance(raw_cache, dict):
-            cache = raw_cache
-    features = cache.get(window) if cache is not None else None
-    if features is None:
-        evaluation_set = set(calendar[:-1])
+    decision_dates = sorted(map(str, universe))
+    if (
+        not decision_dates
+        or not set(decision_dates).issubset(calendar_positions)
+        or any(calendar_positions[day] >= len(calendar) - 1 for day in decision_dates)
+    ):
+        raise DenseStrategyRuntimeError(
+            "equity residual decision dates escaped the account calendar"
+        )
+    prepared = isinstance(dataset, dict) and "_prepared_daily_bars" in dataset
+    universe_cache: tuple[
+        dict[str, set[str]], tuple[str, ...]
+    ] | None = None
+    if prepared:
+        raw_universe_cache = dataset.get("_equity_residual_universe_cache")
+        if (
+            isinstance(raw_universe_cache, tuple)
+            and len(raw_universe_cache) == 2
+            and isinstance(raw_universe_cache[0], dict)
+            and isinstance(raw_universe_cache[1], tuple)
+        ):
+            universe_cache = raw_universe_cache
+    if universe_cache is None:
         universe_sets: dict[str, set[str]] = {}
-        for decision_date in calendar[:-1]:
+        for decision_date in decision_dates:
             day_universe = universe.get(decision_date)
             if not isinstance(day_universe, list):
                 raise DenseStrategyRuntimeError(
@@ -440,6 +447,42 @@ def _equity_residual_candidates(
                     f"point-in-time identities are incomplete on {decision_date}"
                 )
             universe_sets[decision_date] = set(map(str, day_universe))
+        universe_symbols = tuple(
+            sorted(set().union(*universe_sets.values()))
+        )
+        universe_cache = (universe_sets, universe_symbols)
+        if prepared:
+            dataset["_equity_residual_universe_cache"] = universe_cache
+    universe_sets, universe_symbols = universe_cache
+    window = int(parameters["prior_return_sessions"])
+    threshold = float(parameters["residual_z_threshold"])
+    trend_period = 100 if parameters["market_trend_gate"] == "SPY>SMA100" else 200
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["hold_sessions"])
+    indices: dict[str, dict[str, int]] | None = None
+    if prepared:
+        raw_indices = dataset.get("_equity_residual_index_cache")
+        if isinstance(raw_indices, dict):
+            indices = raw_indices
+    if indices is None:
+        relevant_symbols = {"SPY", *universe_symbols}
+        indices = {
+            symbol: {
+                str(bar["date"]): index for index, bar in enumerate(bars)
+            }
+            for symbol, bars in daily.items()
+            if symbol in relevant_symbols
+        }
+        if prepared:
+            dataset["_equity_residual_index_cache"] = indices
+    cache: dict[int, dict[str, list[tuple[float, str, float, float]]]] | None = None
+    if prepared:
+        raw_cache = dataset.setdefault("_equity_residual_feature_cache", {})
+        if isinstance(raw_cache, dict):
+            cache = raw_cache
+    features = cache.get(window) if cache is not None else None
+    if features is None:
+        evaluation_set = set(decision_dates)
         spy_bars = daily["SPY"]
         spy_returns: dict[str, float] = {}
         for index, bar in enumerate(spy_bars):
@@ -449,16 +492,13 @@ def _equity_residual_candidates(
                     / float(spy_bars[index - window]["close"])
                     - 1
                 )
-        features = {day: [] for day in calendar[:-1]}
-        symbols = sorted(set().union(*universe_sets.values()))
-        for symbol in symbols:
+        features = {day: [] for day in decision_dates}
+        for symbol in universe_symbols:
             if symbol == "SPY":
                 continue
             bars = daily.get(symbol)
             if bars is None:
-                raise DenseStrategyRuntimeError(
-                    f"point-in-time universe symbol {symbol} lacks daily history"
-                )
+                continue
             ranges = _true_ranges(bars)
             residual_history: list[float] = []
             for symbol_index, bar in enumerate(bars):
@@ -472,14 +512,18 @@ def _equity_residual_candidates(
                     - 1
                 )
                 residual = symbol_return - spy_return
-                z_score = _z_score(residual, residual_history)
+                eligible_decision = (
+                    day in evaluation_set
+                    and symbol in universe_sets[day]
+                    and symbol_index >= 14
+                )
+                z_score = (
+                    _z_score(residual, residual_history)
+                    if eligible_decision
+                    else None
+                )
                 residual_history.append(residual)
-                if (
-                    day not in evaluation_set
-                    or symbol not in universe_sets[day]
-                    or z_score is None
-                    or symbol_index < 14
-                ):
+                if z_score is None:
                     continue
                 atr14 = statistics.fmean(
                     ranges[symbol_index - 13 : symbol_index + 1]
@@ -487,8 +531,36 @@ def _equity_residual_candidates(
                 features[day].append((z_score, symbol, atr14, residual))
         if cache is not None:
             cache[window] = features
+    candidate_cache: dict[
+        tuple[int, int, float, int], dict[str, Any]
+    ] | None = None
+    candidate_cache_key = (window, trend_period, stop_atr, hold)
+    if prepared:
+        raw_candidate_cache = dataset.setdefault(
+            "_equity_residual_candidate_cache", {}
+        )
+        if isinstance(raw_candidate_cache, dict):
+            candidate_cache = raw_candidate_cache
+    cached_candidates = (
+        candidate_cache.get(candidate_cache_key)
+        if candidate_cache is not None
+        else None
+    )
+    if (
+        isinstance(cached_candidates, Mapping)
+        and isinstance(cached_candidates.get("threshold"), (int, float))
+        and threshold <= float(cached_candidates["threshold"])
+        and isinstance(cached_candidates.get("tagged_candidates"), list)
+    ):
+        return [
+            candidate
+            for z_score, candidate in cached_candidates["tagged_candidates"]
+            if z_score <= threshold
+        ]
     candidates: list[dict[str, Any]] = []
-    for calendar_index, decision_date in enumerate(calendar[:-1]):
+    tagged_candidates: list[tuple[float, dict[str, Any]]] = []
+    for decision_date in decision_dates:
+        calendar_index = calendar_positions[decision_date]
         spy_index = indices["SPY"].get(decision_date)
         if spy_index is None or spy_index < max(window, trend_period - 1):
             continue
@@ -512,17 +584,19 @@ def _equity_residual_candidates(
         for rank, (z_score, symbol, atr14) in enumerate(sorted(scored), 1):
             entry_index = indices[symbol].get(entry_date)
             if entry_index is None:
-                candidates.append(
-                    {
-                        "signal_id": f"{entry_date}-{EQUITY_RESIDUAL_FAMILY}-{symbol}",
-                        "signal_date": entry_date,
-                        "decision_date": decision_date,
-                        "symbol": symbol,
-                        "outcome": "missed_fill",
-                        "rank": rank,
-                        "rejection_reason": "missing_next_open",
-                    }
-                )
+                candidate = {
+                    "signal_id": (
+                        f"{entry_date}-{EQUITY_RESIDUAL_FAMILY}-{symbol}"
+                    ),
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": rank,
+                    "rejection_reason": "missing_next_open",
+                }
+                candidates.append(candidate)
+                tagged_candidates.append((z_score, candidate))
                 continue
             if entry_index + hold > len(daily[symbol]):
                 continue
@@ -534,33 +608,40 @@ def _equity_residual_candidates(
                 calendar[calendar_index + 1 : calendar_index + 1 + hold]
             )
             if exit_dates != expected_dates:
-                candidates.append(
-                    {
-                        "signal_id": f"{entry_date}-{EQUITY_RESIDUAL_FAMILY}-{symbol}",
-                        "signal_date": entry_date,
-                        "decision_date": decision_date,
-                        "symbol": symbol,
-                        "outcome": "missed_fill",
-                        "rank": rank,
-                        "rejection_reason": "incomplete_holding_bars",
-                    }
-                )
+                candidate = {
+                    "signal_id": (
+                        f"{entry_date}-{EQUITY_RESIDUAL_FAMILY}-{symbol}"
+                    ),
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": rank,
+                    "rejection_reason": "incomplete_holding_bars",
+                }
+                candidates.append(candidate)
+                tagged_candidates.append((z_score, candidate))
                 continue
-            candidates.append(
-                _daily_candidate(
-                    family_id=EQUITY_RESIDUAL_FAMILY,
-                    symbol=symbol,
-                    decision_date=decision_date,
-                    entry_date=entry_date,
-                    bars=daily[symbol],
-                    entry_index=entry_index,
-                    stop_atr=stop_atr,
-                    atr14=atr14,
-                    hold_sessions=hold,
-                    rank=rank,
-                    score=z_score,
-                )
+            candidate = _daily_candidate(
+                family_id=EQUITY_RESIDUAL_FAMILY,
+                symbol=symbol,
+                decision_date=decision_date,
+                entry_date=entry_date,
+                bars=daily[symbol],
+                entry_index=entry_index,
+                stop_atr=stop_atr,
+                atr14=atr14,
+                hold_sessions=hold,
+                rank=rank,
+                score=z_score,
             )
+            candidates.append(candidate)
+            tagged_candidates.append((z_score, candidate))
+    if candidate_cache is not None:
+        candidate_cache[candidate_cache_key] = {
+            "threshold": threshold,
+            "tagged_candidates": tagged_candidates,
+        }
     return candidates
 
 

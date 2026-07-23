@@ -16,8 +16,10 @@ import equity_gap_continuation_validation as universe_source
 import portfolio_maturity
 from historical_store import (
     DEFAULT_ENV_PATH,
+    HistoricalDayStore,
     HistoricalStoreConfig,
     HistoricalStoreError,
+    expand_bar,
     sha256_file,
 )
 from learning_data import LearningDataError, load_frozen_dataset_contract
@@ -129,6 +131,123 @@ def _binding(
             "liquid-equity formal capacity is invalid"
         )
     return binding
+
+
+def _spy_reference_binding(
+    manifest: Mapping[str, Any],
+    *,
+    required_end: str,
+) -> dict[str, Any]:
+    raw = manifest["dataset_payload"].get("spy_reference_source")
+    if not isinstance(raw, Mapping):
+        raise LiquidEquityMomentumPluginError(
+            "dataset lacks the SPY reference binding"
+        )
+    binding = dict(raw)
+    rows = binding.get("rows")
+    if not isinstance(rows, list) or not rows:
+        raise LiquidEquityMomentumPluginError(
+            "SPY reference rows are missing"
+        )
+    dates = [str(row.get("date", "")) for row in rows if isinstance(row, Mapping)]
+    if (
+        len(dates) != len(rows)
+        or dates != sorted(set(dates))
+        or binding.get("symbol") != "SPY"
+        or binding.get("provider") != "ibkr"
+        or binding.get("channel") != "trades"
+        or binding.get("timeframe") != "1d"
+        or binding.get("feed") != "smart"
+        or binding.get("adjustment")
+        != "provider_adjusted_unknown_basis"
+        or binding.get("reference_start") != dates[0]
+        or binding.get("reference_end") != dates[-1]
+        or binding.get("reference_sessions") != len(dates)
+        or dates[-1] != required_end
+        or binding.get("prices_or_returns_derived") is not False
+        or binding.get("provider_requests") != 0
+    ):
+        raise LiquidEquityMomentumPluginError(
+            "SPY reference identity drifted"
+        )
+    for row in rows:
+        if not (
+            isinstance(row, Mapping)
+            and isinstance(row.get("store_relative_path"), str)
+            and row["store_relative_path"]
+            and isinstance(row.get("dataset_id"), str)
+            and row["dataset_id"]
+            and isinstance(row.get("document_file_sha256"), str)
+            and len(row["document_file_sha256"]) == 64
+            and isinstance(row.get("dataset_content_sha256"), str)
+            and len(row["dataset_content_sha256"]) == 64
+        ):
+            raise LiquidEquityMomentumPluginError(
+                "SPY reference row is incomplete"
+            )
+    return binding
+
+
+def _load_spy_reference(
+    manifest: Mapping[str, Any],
+    *,
+    required_end: str,
+) -> list[dict[str, Any]]:
+    binding = _spy_reference_binding(
+        manifest,
+        required_end=required_end,
+    )
+    store = HistoricalDayStore.from_env()
+    normalized: list[dict[str, Any]] = []
+    for frozen in binding["rows"]:
+        day = str(frozen["date"])
+        path = (store.root / str(frozen["store_relative_path"])).resolve()
+        if (
+            store.root.resolve() not in path.parents
+            or not path.is_file()
+            or sha256_file(path) != frozen["document_file_sha256"]
+        ):
+            raise LiquidEquityMomentumPluginError(
+                f"SPY reference document drifted on {day}"
+            )
+        dataset = store.select_dataset(
+            "SPY",
+            day,
+            kind="bars",
+            channel="trades",
+            timeframe="1d",
+            providers=("ibkr",),
+            require_complete=True,
+            feed="smart",
+            adjustment="provider_adjusted_unknown_basis",
+        )
+        if not (
+            dataset is not None
+            and dataset.get("id") == frozen["dataset_id"]
+            and dataset.get("content_sha256")
+            == frozen["dataset_content_sha256"]
+            and dataset.get("quality", {}).get("row_count") == 1
+            and len(dataset.get("rows", [])) == 1
+        ):
+            raise LiquidEquityMomentumPluginError(
+                f"SPY reference dataset drifted on {day}"
+            )
+        bar = expand_bar(dataset["rows"][0])
+        if bar["date_et"] != day:
+            raise LiquidEquityMomentumPluginError(
+                f"SPY reference date drifted on {day}"
+            )
+        normalized.append(
+            {
+                "date": day,
+                "open": bar["open"],
+                "high": bar["high"],
+                "low": bar["low"],
+                "close": bar["close"],
+                "volume": bar["volume"],
+            }
+        )
+    return normalized
 
 
 def _point_in_time_universe(
@@ -315,6 +434,12 @@ def _load_dataset(
         raise LiquidEquityMomentumPluginError(
             "external liquid-equity dataset scope drifted"
         )
+    daily_bars = _nonempty_daily_bars(source_data["rows_by_symbol"])
+    if target_family_id == runtime.EQUITY_RESIDUAL_FAMILY:
+        daily_bars["SPY"] = _load_spy_reference(
+            manifest,
+            required_end=str(expected_dates[-1]),
+        )
     universe, identities = _point_in_time_universe(expected_signal_dates)
     dataset = {
         "family_id": target_family_id,
@@ -323,7 +448,7 @@ def _load_dataset(
         "universe_by_date": universe,
         "universe_identity_by_date": identities,
         "split_execution_dates_by_symbol": _split_execution_dates(),
-        "daily_bars": _nonempty_daily_bars(source_data["rows_by_symbol"]),
+        "daily_bars": daily_bars,
     }
     return runtime.prepare_dataset(dataset)
 
@@ -371,6 +496,15 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
         manifest,
         expected_family_id=family_id,
     )
+    spy_reference_bound = True
+    if family_id == runtime.EQUITY_RESIDUAL_FAMILY:
+        try:
+            _spy_reference_binding(
+                manifest,
+                required_end=str(contract["development_dates"][-1]),
+            )
+        except LiquidEquityMomentumPluginError:
+            spy_reference_bound = False
     checks = {
         "development_lane": manifest["dataset_payload"].get("lane")
         == "development",
@@ -385,6 +519,7 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
         is True,
         "confirmation_locked": contract.get("confirmation_access_permitted")
         is not True,
+        "spy_reference_bound": spy_reference_bound,
     }
     return {
         "verified_capacity": int(binding["formal_capacity"]),

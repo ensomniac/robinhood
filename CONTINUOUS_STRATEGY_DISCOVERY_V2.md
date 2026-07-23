@@ -398,7 +398,7 @@ positive. No Holm-adjusted test rejected. No winner or evidence target was
 frozen, and the 25 confirmation opportunities remain untouched.
 
 Continuous work now proceeds with
-`two-to-three-day-cross-sectional-reversal-v4-liquid-common-stock-residual-spy`.
+`two-to-three-day-cross-sectional-reversal-v5-liquid-common-stock-residual-spy`.
 The mechanism is the already evaluated short-horizon cross-sectional reversal,
 not a new family. Its material successor change is the prospectively frozen
 top-250 liquid common-stock denominator and market-residual standardization.
@@ -414,9 +414,12 @@ V3 committed that exact search and opened the cached common-stock file once,
 then failed before the first candidate because SPY was absent. Failure
 `f5596e4e0aaca3208541fb3ab1ee4995e5b6bc9c7bfbd735637635622125a081`
 records zero returned trials, zero surfaced metrics, no selection, no result,
-no confirmation access, and no broker or provider action. V4 is limited to
-binding a complete SPY daily reference series. No grid, date, cost, selection,
-or confirmation-reserve change is permitted.
+no confirmation access, and no broker or provider action. V4 bound the complete
+SPY reference and reached all 48 trials, but did so before its implementation
+hash was frozen. Diagnostic `dfd84e2e...9544f` therefore makes its aggregate
+results contaminated engineering evidence only. V5 freezes the same SPY
+binding and semantics-preserving runtime caches before formal evaluation. No
+grid, date, cost, selection, or confirmation-reserve change is permitted.
 
 ## Parallel lanes
 

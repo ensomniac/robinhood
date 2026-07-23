@@ -26,7 +26,7 @@ def test_residual_successor_partitions_do_not_wait_for_calendar_reset():
     assert set(confirmation_signals).issubset(confirmation)
 
 
-def test_residual_contract_freezes_all_48_trials_without_price_access():
+def test_residual_contract_freezes_all_48_trials_without_outcome_derivation():
     with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
         path, contract, capacity = discovery.freeze_successor_contract(
             created_at="2026-07-23T22:00:00Z",
@@ -44,6 +44,20 @@ def test_residual_contract_freezes_all_48_trials_without_price_access():
         assert contract["confirmation_signal_capacity"] == 25
         assert contract["new_mechanism_family_slot_consumed"] is False
         assert contract["plugin"]["module"] == "liquid_equity_momentum_plugin"
+        assert contract["successor_id"] == (
+            "two-to-three-day-cross-sectional-reversal-v5-"
+            "liquid-common-stock-residual-spy"
+        )
+        assert contract["supersedes_diagnostic_transition"][
+            "promotion_eligible"
+        ] is False
+        manifest = discovery._read(capacity)
+        spy = manifest["dataset_payload"]["spy_reference_source"]
+        assert spy["reference_start"] == "2024-01-02"
+        assert spy["reference_end"] == contract["development_dates"][-1]
+        assert spy["reference_sessions"] == len(spy["rows"])
+        assert spy["reference_sessions"] >= 300
+        assert spy["prices_or_returns_derived"] is False
 
 
 def test_shared_daily_adapter_binds_exact_supported_family():
