@@ -28,6 +28,14 @@ def _daily_bar(day: str, close: float, *, low: float | None = None) -> dict:
     }
 
 
+def test_standardization_uses_only_latest_sixty_completed_observations():
+    recent = [float(index) for index in range(60)]
+
+    assert runtime._z_score(70.0, [-10_000.0, *recent]) == pytest.approx(
+        runtime._z_score(70.0, recent)
+    )
+
+
 def test_pullback_uses_only_completed_decision_bar_and_enters_next_open():
     days = _days(230)
     closes = [100 + 0.2 * index for index in range(230)]
@@ -361,6 +369,29 @@ def test_production_pullback_rebuilds_the_historical_rank_from_completed_bars():
         historical["entry_price"] - historical["stop_price"]
     )
     assert production["holding_trading_days"] == 3
+
+    with pytest.raises(
+        runtime.DenseStrategyRuntimeError,
+        match="not chronologically adjacent",
+    ):
+        runtime.evaluate_production_signal(
+            {
+                "family_id": runtime.ETF_PULLBACK_FAMILY,
+                "decision_date": decision_date,
+                "next_session_date": days[225],
+                "calendar_dates": days[:221],
+                "daily_history_complete": True,
+                "symbols": ["SPY"],
+                "daily_bars": {
+                    "SPY": [
+                        bar for bar in bars if bar["date"] <= decision_date
+                    ]
+                },
+            },
+            family_id=runtime.ETF_PULLBACK_FAMILY,
+            parameters=parameters,
+            frozen_universe={"symbols": ["SPY"]},
+        )
 
 
 def test_production_equity_rank_rebuilds_top_250_and_residual_signal():

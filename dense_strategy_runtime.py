@@ -11,7 +11,7 @@ from __future__ import annotations
 import math
 import statistics
 from collections.abc import Mapping, Sequence
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 from typing import Any
 
 from learning_statistics import (
@@ -973,6 +973,17 @@ def _production_daily_signal(
     ):
         raise DenseStrategyRuntimeError(
             "production daily calendar/history completeness is invalid"
+        )
+    try:
+        decision_day = date.fromisoformat(decision_date)
+        next_session_day = date.fromisoformat(next_session_date)
+    except ValueError as exc:
+        raise DenseStrategyRuntimeError(
+            "production daily calendar dates are invalid"
+        ) from exc
+    if not 1 <= (next_session_day - decision_day).days <= 4:
+        raise DenseStrategyRuntimeError(
+            "production next session is not chronologically adjacent"
         )
     daily = _daily_series(decision_data)
     if any(

@@ -124,9 +124,12 @@ evidence surface into the maturity ledger.
 
 `dense_strategy_runtime.py` implements all three predeclared families over one
 already-frozen in-memory dataset. Daily candidates use completed close data and
-enter only at the next session open. Intraday candidates use complete regular-
+enter only during the next session's 09:30-09:31 ET opening interval. Equity
+residual z-scores use exactly the latest 60 completed observations. Intraday
+candidates use complete regular-
 session SIP minute bars, exact condition-aware cumulative-VWAP numerator and
-denominator inputs, completed reclaim bars, and the next minute-bar open. Gaps
+denominator inputs, completed reclaim bars, and only the exact next observable
+minute interval. Gaps
 through a stop fill at the opening observation, and a bar touching both stop and
 target resolves stop-first. Missing next fills, invalid stops, or incomplete
 holding bars are recorded without substitution. The shared account simulator
@@ -140,7 +143,8 @@ and ATR. For ETF pullback it requires every frozen symbol and complete calendar
 history before rebuilding SMA, RSI2, decline, and ATR. For intraday reversal it
 requires 60 complete 390-minute SIP histories plus the synchronized current
 partial session, and accepts only a first reclaim on the latest completed bar.
-The next-session/open or next-minute quote must match the rebuilt signal. Stop,
+The next-session opening-minute or exact next-minute quote must match the
+rebuilt signal. Stop,
 target, maximum hold, GTC/day protection, and stop-first exit semantics are then
 derived from the exact winner rather than supplied as discretionary live facts.
 

@@ -3,8 +3,9 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -260,9 +261,9 @@ def test_exact_pullback_winner_rebuilds_live_rank_stop_exit_and_sizing():
     )[0]
     observed = datetime.combine(
         date.fromisoformat(historical["signal_date"]),
-        datetime.min.time(),
-        tzinfo=UTC,
-    ) + timedelta(hours=14)
+        time(hour=9, minute=30, second=30),
+        tzinfo=ZoneInfo("America/New_York"),
+    )
     implementation_paths = [
         Path("dense_strategy_plugin.py"),
         Path("dense_strategy_runtime.py"),
@@ -346,6 +347,22 @@ def test_exact_pullback_winner_rebuilds_live_rank_stop_exit_and_sizing():
     assert result["exit"]["maximum_hold_sessions"] == 3
     assert result["broker_actions_performed"] == 0
 
+    market_facts["quote"]["observed_at"] = (
+        observed + timedelta(minutes=1)
+    ).isoformat()
+    with pytest.raises(
+        portfolio_execution.PortfolioExecutionError,
+        match="next-session opening interval",
+    ):
+        portfolio_execution.evaluate_frozen_winner(
+            winner,
+            market_facts,
+            {"equity": 100_000, "buying_power": 100_000},
+            portfolio_maturity.load_config(),
+            now=observed + timedelta(minutes=1),
+        )
+    market_facts["quote"]["observed_at"] = observed.isoformat()
+
     market_facts["decision_data"]["symbols"] = ["QQQ"]
     with pytest.raises(
         portfolio_execution.PortfolioExecutionError,
@@ -358,3 +375,88 @@ def test_exact_pullback_winner_rebuilds_live_rank_stop_exit_and_sizing():
             portfolio_maturity.load_config(),
             now=observed,
         )
+
+
+def test_intraday_production_quote_is_limited_to_exact_next_minute(monkeypatch):
+    trigger = datetime(
+        2026,
+        7,
+        22,
+        9,
+        45,
+        tzinfo=ZoneInfo("America/New_York"),
+    )
+    signal = {
+        "symbol": "SPY",
+        "rank": 1,
+        "score": -2.0,
+        "expected_gross_move_fraction": 0.01,
+        "atr": 1.0,
+        "stop_atr_multiple": 1.0,
+        "holding_trading_days": 1,
+        "trigger_bar_timestamp": trigger.isoformat(),
+        "target_r": 1.0,
+        "exit_plan": {
+            "type": "stop_target_or_session_close",
+            "same_interval_ambiguity": "stop_first",
+        },
+    }
+    monkeypatch.setattr(
+        runtime,
+        "evaluate_production_signal",
+        lambda *_args, **_kwargs: signal,
+    )
+    parameters = {
+        "opening_window_minutes": 15,
+        "downside_z_threshold": -1.5,
+        "vwap_reclaim_completed_bars": 1,
+        "stop_intraday_atr": 1.0,
+        "target_r": 1.0,
+    }
+    winner = {
+        "family_id": runtime.INTRADAY_ETF_FAMILY,
+        "strategy_id": runtime.INTRADAY_ETF_FAMILY,
+        "strategy_version": "intraday-production-v1",
+        "rules_hash": "b" * 64,
+        "exact_rules": {
+            "selected_trial_id": "intraday-trial",
+            "parameters": parameters,
+            "universe": {"symbols": ["SPY"]},
+        },
+    }
+    market_facts = {
+        "selected_trial_id": "intraday-trial",
+        "parameters": parameters,
+        "decision_data": {},
+        "quote": {
+            "symbol": "SPY",
+            "observed_at": (trigger + timedelta(minutes=1, seconds=20)).isoformat(),
+            "halted": False,
+            "tradable": True,
+            "bid": 99.99,
+            "ask": 100.0,
+            "executable_ask_depth": 20_000,
+            "recent_real_minute_volume": 30_000,
+        },
+        "operational": {
+            "before_open_account_reconciled": True,
+            "before_open_orders_reconciled": True,
+            "before_open_protection_reconciled": True,
+            "before_open_tradability_reconciled": True,
+            "before_open_news_reconciled": True,
+            "protective_order_route_ready": True,
+            "monitoring_ready": True,
+            "protection_failure_safe_cutoff": "15:45 ET",
+        },
+    }
+
+    assert plugin.evaluate_production(winner, market_facts)["symbol"] == "SPY"
+
+    market_facts["quote"]["observed_at"] = (
+        trigger + timedelta(minutes=2)
+    ).isoformat()
+    with pytest.raises(
+        plugin.DenseStrategyPluginError,
+        match="next observable intraday interval",
+    ):
+        plugin.evaluate_production(winner, market_facts)

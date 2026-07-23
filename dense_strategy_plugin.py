@@ -11,9 +11,10 @@ import gzip
 import json
 import subprocess
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import dense_strategy_runtime as runtime
 import portfolio_maturity
@@ -28,6 +29,7 @@ from learning_data import LearningDataError, load_frozen_dataset_contract
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+MARKET_TIME_ZONE = ZoneInfo("America/New_York")
 CONFIRMATION_MANIFEST_ROOT = (
     PROJECT_ROOT / "strategy_tournament/v2/discovery"
 )
@@ -391,10 +393,13 @@ def evaluate_production(
             raise DenseStrategyPluginError(
                 "intraday signal timestamps are invalid"
             ) from exc
+        next_interval = trigger + timedelta(minutes=1)
         if (
             trigger.tzinfo is None
-            or quote_observed < trigger + timedelta(minutes=1)
-            or quote_observed.date() != trigger.date()
+            or quote_observed < next_interval
+            or quote_observed >= next_interval + timedelta(minutes=1)
+            or quote_observed.astimezone(MARKET_TIME_ZONE).date()
+            != trigger.astimezone(MARKET_TIME_ZONE).date()
         ):
             raise DenseStrategyPluginError(
                 "quote is not from the next observable intraday interval"
@@ -406,9 +411,19 @@ def evaluate_production(
             ).date()
         except ValueError as exc:
             raise DenseStrategyPluginError("daily session date is invalid") from exc
-        if quote_observed.date() != next_session:
+        local_quote = quote_observed.astimezone(MARKET_TIME_ZONE)
+        market_open = datetime.combine(
+            next_session,
+            time(hour=9, minute=30),
+            tzinfo=MARKET_TIME_ZONE,
+        )
+        if (
+            local_quote.date() != next_session
+            or local_quote < market_open
+            or local_quote >= market_open + timedelta(minutes=1)
+        ):
             raise DenseStrategyPluginError(
-                "daily quote is not from the frozen next session"
+                "daily quote is not from the frozen next-session opening interval"
             )
     operational = market_facts["operational"]
     operational_fields = {

@@ -215,7 +215,7 @@ def _semantics(family_id: str) -> dict[str, str]:
     if family_id == "liquid-equity-market-residual-reversal":
         return {
             "mechanism": "Short-horizon idiosyncratic overshoot mean reversion in the most liquid common equities.",
-            "entry_rule": "Rank residual downside z-scores after the completed close and enter the highest-ranked eligible symbol at the next session open.",
+            "entry_rule": "Rank residual downside z-scores standardized on the latest 60 completed sessions after the completed close and enter the highest-ranked eligible symbol during the next session's 09:30-09:31 ET opening interval.",
             "stop_rule": "Freeze a long stop one or one-and-a-half completed ATR14 below the next-open entry; invalid or missing stops are missed trades.",
             "exit_rule": "Resolve the frozen stop first and otherwise exit at the completed close after two or five sessions.",
             "ranking_rule": "Most negative residual z-score first, then canonical symbol.",
@@ -223,14 +223,14 @@ def _semantics(family_id: str) -> dict[str, str]:
     if family_id == "intraday-index-etf-opening-reversal":
         return {
             "mechanism": "Opening downside dislocation in liquid index and sector ETFs followed by exact cumulative-VWAP reclaim.",
-            "entry_rule": "After the frozen opening window and completed reclaim bars, enter at the next observable minute-bar open.",
+            "entry_rule": "After the frozen opening window and completed reclaim bars, enter only during the exact next observable minute interval.",
             "stop_rule": "Freeze a long stop one or one-and-a-half completed intraday ATR below entry.",
             "exit_rule": "Exit stop-first on same-bar ambiguity, at the frozen R target, or at the regular-session final close.",
             "ranking_rule": "Most negative opening-return z-score first, then canonical symbol.",
         }
     return {
         "mechanism": "Cost-clearing short pullback inside a persistent liquid-ETF uptrend.",
-        "entry_rule": "After completed SMA, RSI2, and three-session-decline qualification, enter the highest-ranked ETF at the next session open.",
+        "entry_rule": "After completed SMA, RSI2, and three-session-decline qualification, enter the highest-ranked ETF during the next session's 09:30-09:31 ET opening interval.",
         "stop_rule": "Freeze a long stop one or one-and-a-half completed ATR14 below the next-open entry.",
         "exit_rule": "Resolve the frozen stop first and otherwise exit at the completed close after three or five sessions.",
         "ranking_rule": "Lowest RSI2, deepest three-session decline, then canonical symbol.",
