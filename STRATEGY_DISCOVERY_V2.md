@@ -87,6 +87,12 @@ or several overlapping positions; each closed signal retains its original entry
 date and exact 5/10/20-bps trade result while the session retains that day's one
 portfolio account return.
 
+Confirmation inspection independently requires one maturity row for every frozen
+confirmation date and reconciles all 5/10/20-bps daily returns, filled-trade
+returns, and dollar P/L arrays to those rows. A calendar, closed-signal denominator,
+or cost-scenario mismatch invalidates the result instead of allowing a different
+evidence surface into the maturity ledger.
+
 `dense_strategy_runtime.py` implements all three predeclared families over one
 already-frozen in-memory dataset. Daily candidates use completed close data and
 enter only at the next session open. Intraday candidates use complete regular-

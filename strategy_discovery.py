@@ -694,8 +694,88 @@ def _profit_factor(values: Sequence[float]) -> float | None:
     return gains / losses
 
 
+def _confirmation_maturity_accounting(
+    rows: Any, *, expected_dates: Sequence[str]
+) -> dict[str, dict[str, list[float]]]:
+    if not isinstance(rows, list) or [
+        row.get("date") if isinstance(row, Mapping) else None for row in rows
+    ] != list(expected_dates):
+        raise StrategyDiscoveryError(
+            "confirmation maturity rows must match every frozen date"
+        )
+    fields = {
+        "primary_5bps": (
+            "primary_account_return_fraction",
+            "net_pnl_dollars",
+        ),
+        "stress_10bps": (
+            "stress_10bps_account_return_fraction",
+            "stress_10bps_net_pnl_dollars",
+        ),
+        "stress_20bps": (
+            "stress_20bps_account_return_fraction",
+            "stress_20bps_net_pnl_dollars",
+        ),
+    }
+    rebuilt = {
+        name: {
+            "daily_account_returns": [],
+            "filled_account_returns": [],
+            "net_pnl_dollars": [],
+        }
+        for name in fields
+    }
+
+    def number(value: Any, label: str, *, account_return: bool = False) -> float:
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError) as exc:
+            raise StrategyDiscoveryError(
+                f"confirmation maturity {label} must be numeric"
+            ) from exc
+        if not math.isfinite(parsed) or (account_return and parsed <= -1):
+            raise StrategyDiscoveryError(
+                f"confirmation maturity {label} is outside its valid range"
+            )
+        return parsed
+
+    for row in rows:
+        outcome = row.get("session_outcome")
+        raw_signals = row.get("signals")
+        if raw_signals is None:
+            signals = [row] if outcome == "filled" else []
+        elif isinstance(raw_signals, list) and all(
+            isinstance(signal, Mapping) for signal in raw_signals
+        ):
+            signals = raw_signals
+        else:
+            raise StrategyDiscoveryError(
+                "confirmation maturity-row signals are invalid"
+            )
+        for name, (return_field, dollar_field) in fields.items():
+            rebuilt[name]["daily_account_returns"].append(
+                number(
+                    row.get(return_field),
+                    f"row {return_field}",
+                    account_return=True,
+                )
+            )
+            for signal in signals:
+                rebuilt[name]["filled_account_returns"].append(
+                    number(
+                        signal.get(return_field),
+                        f"signal {return_field}",
+                        account_return=True,
+                    )
+                )
+                rebuilt[name]["net_pnl_dollars"].append(
+                    number(signal.get(dollar_field), f"signal {dollar_field}")
+                )
+    return rebuilt
+
+
 def inspect_confirmation_metrics(
-    result: Mapping[str, Any], *, required_signals: int
+    result: Mapping[str, Any], *, required_signals: int, expected_dates: Sequence[str]
 ) -> dict[str, Any]:
     scenarios = result.get("scenarios")
     if not isinstance(scenarios, Mapping) or set(scenarios) != {
@@ -704,6 +784,9 @@ def inspect_confirmation_metrics(
         "stress_20bps",
     }:
         raise StrategyDiscoveryError("confirmation needs exact 5/10/20 bps scenarios")
+    maturity_accounting = _confirmation_maturity_accounting(
+        result.get("maturity_rows"), expected_dates=expected_dates
+    )
     rebuilt: dict[str, Any] = {}
     gates: dict[str, bool] = {}
     for name, minimum_factor in (
@@ -712,11 +795,38 @@ def inspect_confirmation_metrics(
         ("stress_20bps", 1.20),
     ):
         scenario = scenarios[name]
-        daily = [float(value) for value in scenario.get("daily_account_returns", [])]
-        filled = [float(value) for value in scenario.get("filled_account_returns", [])]
-        dollars = [float(value) for value in scenario.get("net_pnl_dollars", [])]
-        if not daily or len(filled) != len(dollars):
+        if not isinstance(scenario, Mapping):
+            raise StrategyDiscoveryError(f"{name} confirmation scenario is invalid")
+        try:
+            daily = [
+                float(value) for value in scenario.get("daily_account_returns", [])
+            ]
+            filled = [
+                float(value) for value in scenario.get("filled_account_returns", [])
+            ]
+            dollars = [float(value) for value in scenario.get("net_pnl_dollars", [])]
+        except (TypeError, ValueError) as exc:
+            raise StrategyDiscoveryError(
+                f"{name} confirmation accounting must be numeric"
+            ) from exc
+        if (
+            len(daily) != len(expected_dates)
+            or len(filled) != len(dollars)
+            or any(not math.isfinite(value) for value in [*daily, *filled, *dollars])
+            or any(value <= -1 for value in [*daily, *filled])
+        ):
             raise StrategyDiscoveryError(f"{name} confirmation accounting is incomplete")
+        if any(
+            values != maturity_accounting[name][field]
+            for field, values in (
+                ("daily_account_returns", daily),
+                ("filled_account_returns", filled),
+                ("net_pnl_dollars", dollars),
+            )
+        ):
+            raise StrategyDiscoveryError(
+                f"{name} confirmation accounting differs from maturity rows"
+            )
         midpoint = len(daily) // 2
         without_best = sorted(filled, reverse=True)[5:]
         metrics = {
@@ -772,7 +882,17 @@ def inspect_confirmation_metrics(
     )
     gates["rule-completeness"] = result.get("rule_violations") == []
     gates["capture-completeness"] = result.get("capture_complete") is True
-    return {"metrics": rebuilt, "gates": gates, "passed": all(gates.values())}
+    return {
+        "metrics": rebuilt,
+        "gates": gates,
+        "accounting": {
+            "calendar_sessions": len(expected_dates),
+            "closed_signals": primary["signals"],
+            "maturity_rows_reconciled": True,
+            "cost_scenarios_reconciled": True,
+        },
+        "passed": all(gates.values()),
+    }
 
 
 def _phase_maturity_records(
@@ -1008,6 +1128,7 @@ def inspect_confirmation(
     inspection = inspect_confirmation_metrics(
         artifact["result"],
         required_signals=int(winner["required_confirmation_signals"]),
+        expected_dates=winner["confirmation_dates"],
     )
     state = "CONFIRMATION_PASSED" if inspection["passed"] else "RETIRED_CONFIRMATION"
     payload = {

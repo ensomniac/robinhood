@@ -463,6 +463,57 @@ def test_confirmation_rejects_date_substitution_rules_drift_and_early_peeking(
                 )
 
 
+@pytest.mark.parametrize(
+    ("drift", "message"),
+    (
+        ("daily-calendar", "primary_5bps confirmation accounting is incomplete"),
+        (
+            "stress-filled",
+            "stress_20bps confirmation accounting differs from maturity rows",
+        ),
+        (
+            "maturity-signals",
+            "primary_5bps confirmation accounting differs from maturity rows",
+        ),
+    ),
+)
+def test_confirmation_inspection_reconciles_calendar_and_filled_accounting(
+    monkeypatch, drift, message
+):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root, winner_path, _, winner = _freeze_synthetic_winner(work)
+        assert winner is not None
+        original = synthetic_plugin.evaluate_confirmation
+
+        def drifted(value):
+            result = original(value)
+            if drift == "daily-calendar":
+                result["scenarios"]["primary_5bps"][
+                    "daily_account_returns"
+                ].pop()
+            elif drift == "stress-filled":
+                scenario = result["scenarios"]["stress_20bps"]
+                scenario["filled_account_returns"] = list(
+                    scenario["filled_account_returns"]
+                )[:-1]
+                scenario["net_pnl_dollars"] = list(
+                    scenario["net_pnl_dollars"]
+                )[:-1]
+            else:
+                result["maturity_rows"][-1]["session_outcome"] = "position_open"
+            return result
+
+        monkeypatch.setattr(synthetic_plugin, "evaluate_confirmation", drifted)
+        confirmation_path, _ = discovery.evaluate_confirmation(
+            winner_path, root=artifact_root, enforce_commit=False
+        )
+        with pytest.raises(discovery.StrategyDiscoveryError, match=message):
+            discovery.inspect_confirmation(
+                confirmation_path, root=artifact_root, enforce_commit=False
+            )
+
+
 def test_development_rejects_missing_trial_accounting(monkeypatch):
     with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
         work = Path(directory)
