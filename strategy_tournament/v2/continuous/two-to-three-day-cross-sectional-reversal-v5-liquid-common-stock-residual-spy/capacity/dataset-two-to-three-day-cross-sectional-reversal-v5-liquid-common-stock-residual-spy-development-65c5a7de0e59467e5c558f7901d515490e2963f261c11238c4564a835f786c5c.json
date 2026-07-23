@@ -1,0 +1,3136 @@
+{
+  "dataset_id": "dataset-two-to-three-day-cross-sectional-reversal-v5-liquid-common-stock-residual-spy-development",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "confirmation_access_permitted": false,
+    "development_training_contaminated": true,
+    "evidence_paths": [
+      "historical_batches/development_tranche_v2/selection-2026-07-19-100-days.json",
+      "historical_batches/development_tranche_v3/selection-2026-07-20-100-days.json",
+      "historical_batches/preentry_structure/session-calendar-2024-12-through-2026-06.json",
+      "strategy_tournament/cross_sectional_momentum/collection-status.json",
+      "strategy_tournament/activations/cross-sectional-momentum-v1-a8970ad2bfb0045f54404da985178686ec7cd0068c3a6a23f59165c7e415520a.json",
+      "research_results/2026-07-21-two-to-three-day-cross-sectional-reversal-stage0-3b54a1c87305fe1e808f3852779900728d741d9062a42fe56d8677108bcca057.json",
+      "strategy_tournament/second_wave/inspections/two-to-three-day-cross-sectional-reversal-v1-result-21ad67029e44d87612e862031a8bbace20bdae2d64cade6dc266c3677b0132c7.json",
+      "strategy_tournament/v2/continuous/two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf/family-contract/contract-ec87155722f2a1c8e180dd23f9bae581139a20af097589ca68ffa4f59f0f56e8.json",
+      "strategy_tournament/v2/discovery/liquid-etf-cross-sectional-reversal/development/liquid-etf-cross-sectional-reversal-development-69c755055673961de87040e5a87df95d42118e46c8d57a6aee8e96fe8599c3eb.json",
+      "strategy_tournament/v2/discovery/liquid-etf-cross-sectional-reversal/development-inspection/liquid-etf-cross-sectional-reversal-development-inspection-0abea388cc121ca801cd2c353fb2fa2da069f9397ba499b930a471d9cab29734.json",
+      "strategy_tournament/v2/discovery/liquid-equity-market-residual-reversal/development-failures/liquid-equity-market-residual-reversal-development-failure-f5596e4e0aaca3208541fb3ab1ee4995e5b6bc9c7bfbd735637635622125a081.json",
+      "strategy_tournament/v2/discovery/liquid-equity-market-residual-reversal/development-diagnostics/liquid-equity-market-residual-reversal-development-diagnostic-dfd84e2e18f05c2891ed75713f5d7ee0dd42fc198136daa3ee60213cb639544f.json",
+      "strategy_tournament/v2/OUTCOME_EXPOSURE_INDEX.jsonl"
+    ],
+    "inspected": true,
+    "lane": "development",
+    "liquid_equity_daily_source": {
+      "external_file_sha256": "ce532df2278db7e1368f9b88d795e23656806a92149c757d7c338735aa2a156f",
+      "external_relative_path": "_derived/cross_sectional_momentum_stage0/dataset-cross-sectional-momentum-stage0-2026-07-21-v1/daily-bars.json.gz",
+      "family_id": "liquid-equity-market-residual-reversal",
+      "formal_capacity": 20000,
+      "format": "json.gz",
+      "provider_requests": 0,
+      "signal_dates": [
+        "2025-03-17",
+        "2025-03-18",
+        "2025-03-19",
+        "2025-03-24",
+        "2025-03-25",
+        "2025-03-27",
+        "2025-03-28",
+        "2025-03-31",
+        "2025-04-01",
+        "2025-04-02",
+        "2025-04-03",
+        "2025-04-04",
+        "2025-04-07",
+        "2025-04-08",
+        "2025-04-09",
+        "2025-04-10",
+        "2025-04-11",
+        "2025-04-14",
+        "2025-04-15",
+        "2025-04-16",
+        "2025-04-17",
+        "2025-04-21",
+        "2025-04-23",
+        "2025-04-24",
+        "2025-04-25",
+        "2025-04-28",
+        "2025-04-29",
+        "2025-04-30",
+        "2025-05-01",
+        "2025-05-02",
+        "2025-05-06",
+        "2025-05-08",
+        "2025-05-09",
+        "2025-05-12",
+        "2025-05-14",
+        "2025-05-15",
+        "2025-05-16",
+        "2025-05-19",
+        "2025-05-20",
+        "2025-05-21",
+        "2025-05-23",
+        "2025-05-27",
+        "2025-05-28",
+        "2025-05-29",
+        "2025-05-30",
+        "2025-06-02",
+        "2025-06-03",
+        "2025-06-04",
+        "2025-06-05",
+        "2025-06-09",
+        "2025-06-10",
+        "2025-06-11",
+        "2025-06-13",
+        "2025-06-16",
+        "2025-06-17",
+        "2025-06-20",
+        "2025-06-23",
+        "2025-06-25",
+        "2025-06-26",
+        "2025-06-27",
+        "2025-06-30",
+        "2025-07-01",
+        "2025-07-03",
+        "2025-07-07",
+        "2025-07-08",
+        "2025-07-09",
+        "2025-07-10",
+        "2025-07-14",
+        "2025-07-15",
+        "2025-07-16",
+        "2025-07-22",
+        "2025-07-23",
+        "2025-07-24",
+        "2025-07-25",
+        "2025-07-28",
+        "2025-07-30",
+        "2025-07-31",
+        "2025-08-01",
+        "2025-08-05",
+        "2025-08-07"
+      ],
+      "source_status_file_sha256": "04b0ec241d408783fddee34cdb123d1dedbed452e692342a401f89891dcccfea",
+      "source_status_path": "strategy_tournament/cross_sectional_momentum/collection-status.json"
+    },
+    "point_in_time_evidence": true,
+    "spy_reference_source": {
+      "adjustment": "provider_adjusted_unknown_basis",
+      "channel": "trades",
+      "feed": "smart",
+      "prices_or_returns_derived": false,
+      "provider": "ibkr",
+      "provider_requests": 0,
+      "reference_end": "2025-08-14",
+      "reference_sessions": 406,
+      "reference_start": "2024-01-02",
+      "rows": [
+        {
+          "dataset_content_sha256": "cdf3c955928c4f05f22f05f1e80a9de27ceacb361240844d08eb17847ed41257",
+          "dataset_id": "bars:ibkr:trades:1d:cdf3c955928c4f05",
+          "date": "2024-01-02",
+          "document_file_sha256": "a9d21e9d76880804818c3f81913509c95b12a73f8ba6ea634262577760c9caba",
+          "store_relative_path": "spy/2024/2024-01-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2376b16a964d25232d2c225509d13ae0ea75ed78ebb22d6d9724bf3f041e7089",
+          "dataset_id": "bars:ibkr:trades:1d:2376b16a964d2523",
+          "date": "2024-01-03",
+          "document_file_sha256": "4b1acc8739cb53992b57f5c5d0b344a92b9251595058bdd09cb5906c15ea6ab7",
+          "store_relative_path": "spy/2024/2024-01-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "580845ab4e50de7255b64b0e4a7713604704f7ed95e1e8af61f7872a25a8d768",
+          "dataset_id": "bars:ibkr:trades:1d:580845ab4e50de72",
+          "date": "2024-01-04",
+          "document_file_sha256": "7e8f5d28eef1ae9ae5912cb05ca8a292f52cd10be4ddfbf51621ce99d9d812b5",
+          "store_relative_path": "spy/2024/2024-01-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "6d7c225ecd97d9aa0800a426eb3539b2d31f7f9153cea2bbbe234a1b80888de7",
+          "dataset_id": "bars:ibkr:trades:1d:6d7c225ecd97d9aa",
+          "date": "2024-01-05",
+          "document_file_sha256": "53fba29d114bf2cac55357ddcf09473943f0e5f12f7ae0c4af9646f732f2c1d9",
+          "store_relative_path": "spy/2024/2024-01-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d53f7da8299030d22ca5bf5f09fbdddd26efd7e35d3f5eafde4ccf436d914fc2",
+          "dataset_id": "bars:ibkr:trades:1d:d53f7da8299030d2",
+          "date": "2024-01-08",
+          "document_file_sha256": "9e195ce4b69e75376745a2bc3787ce2f200bd9c42ce527a1a11a622c4d0942b5",
+          "store_relative_path": "spy/2024/2024-01-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "00850b72183e2103dd0e7d7b653611246eb8c001b4de6204770b44c5432d2582",
+          "dataset_id": "bars:ibkr:trades:1d:00850b72183e2103",
+          "date": "2024-01-09",
+          "document_file_sha256": "59abc3f9fe00fbb69bf791eede6b3b62619a8184a1f65a7bb05e0a489bf7fc38",
+          "store_relative_path": "spy/2024/2024-01-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "3327efabbf0b514d943c7df50064cb2a06dd1e225d9b7e15b9855c0ac80ed03c",
+          "dataset_id": "bars:ibkr:trades:1d:3327efabbf0b514d",
+          "date": "2024-01-10",
+          "document_file_sha256": "8a0f73188dc3fa2a65eaef3881c475d3d413d729c0eee79fc86f7ef007f2c871",
+          "store_relative_path": "spy/2024/2024-01-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9cec1ff856a274648c988600369d9a5a5235fa6932c2a6394625786cd4de2cf7",
+          "dataset_id": "bars:ibkr:trades:1d:9cec1ff856a27464",
+          "date": "2024-01-11",
+          "document_file_sha256": "25a7b43ebfafdcbf954501ed94596183fbf7b3cb9e54e98b044c0bdf7fb1a3d5",
+          "store_relative_path": "spy/2024/2024-01-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f84094dd00c9a0b201caa8354cccb5071bf1f959f3379dce15ef446f2644b588",
+          "dataset_id": "bars:ibkr:trades:1d:f84094dd00c9a0b2",
+          "date": "2024-01-12",
+          "document_file_sha256": "6d7ddb0c4e795dc166dc4092526b1fc6b10c6fa0b79c5de9417727721250635a",
+          "store_relative_path": "spy/2024/2024-01-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "068166d97640b0a84d66b2d78e948bd356b99a203a774dfcd90f9472d1b9623d",
+          "dataset_id": "bars:ibkr:trades:1d:068166d97640b0a8",
+          "date": "2024-01-16",
+          "document_file_sha256": "3a9891ce96c7c6a29fadd54f298387a02f72c2b97e62fffa21a585402c7dc6d0",
+          "store_relative_path": "spy/2024/2024-01-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2a804d2caaf0068cc167e677bcfabe711364b9796abb419bcc063f30d8dbe516",
+          "dataset_id": "bars:ibkr:trades:1d:2a804d2caaf0068c",
+          "date": "2024-01-17",
+          "document_file_sha256": "eaaf1a4c385d2137d6c520c65da50b28bb522fc09d81e30b205aa29daa467c1f",
+          "store_relative_path": "spy/2024/2024-01-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c411d6181a4dcc0ddbbfb630a6e18737d33890c53358a1f0c675ecd44ff622a0",
+          "dataset_id": "bars:ibkr:trades:1d:c411d6181a4dcc0d",
+          "date": "2024-01-18",
+          "document_file_sha256": "092c9fa140169305accf9528688fab14b0c2ea2252391f6377e941be3cb60085",
+          "store_relative_path": "spy/2024/2024-01-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0fa270a49e3181222b371a81b0d72d75529e967ce8904a664a9efcc5875da1b8",
+          "dataset_id": "bars:ibkr:trades:1d:0fa270a49e318122",
+          "date": "2024-01-19",
+          "document_file_sha256": "56212ff190c52361b6b2447241a062642b38a6166522662db885880f00956acb",
+          "store_relative_path": "spy/2024/2024-01-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ce4f55d88347adbd84c669fab52cccee6c28e7398b9bf11a932ecbaf9d0545b2",
+          "dataset_id": "bars:ibkr:trades:1d:ce4f55d88347adbd",
+          "date": "2024-01-22",
+          "document_file_sha256": "70f59dee6d025c5d2155700ed98831c89720ca11d3ea6225de14702cbb193d3e",
+          "store_relative_path": "spy/2024/2024-01-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "321915c61b53c3095ea400e05e66c8dc03ecb8d8a389fba0dc34dc409137db2e",
+          "dataset_id": "bars:ibkr:trades:1d:321915c61b53c309",
+          "date": "2024-01-23",
+          "document_file_sha256": "b397d372fb4a6767b5b673bdad7d7c0087d4487f8358277083bfa9b2b8e56d90",
+          "store_relative_path": "spy/2024/2024-01-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a5644cecffadc9b503b1f83c50946e38446d091a37e2d1905aa00e467983b703",
+          "dataset_id": "bars:ibkr:trades:1d:a5644cecffadc9b5",
+          "date": "2024-01-24",
+          "document_file_sha256": "f95c9e7de7f333abadb474878781dfb41835fedfeb49ee37af53ac07712b09d9",
+          "store_relative_path": "spy/2024/2024-01-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d9a1b3f3ca3938e5d4723de4b2281c6ca6411c4366eeefaf70ffded3b62425d1",
+          "dataset_id": "bars:ibkr:trades:1d:d9a1b3f3ca3938e5",
+          "date": "2024-01-25",
+          "document_file_sha256": "17699996601c4766e84e177b52f2fc07ec753de35313b54ebe81729da0a0fb3a",
+          "store_relative_path": "spy/2024/2024-01-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2c66ecf8d479bb6a5b7c659f50492e24385d0426f17d15e42e6e56b31a843f77",
+          "dataset_id": "bars:ibkr:trades:1d:2c66ecf8d479bb6a",
+          "date": "2024-01-26",
+          "document_file_sha256": "05e03cef58b87328f4aa6e384406f8648d2637b63577c6afdef787564c16028a",
+          "store_relative_path": "spy/2024/2024-01-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c8d898c74076f7326c05f4a83bd2a837825c0ea2af787151b9f05de4c20f0f11",
+          "dataset_id": "bars:ibkr:trades:1d:c8d898c74076f732",
+          "date": "2024-01-29",
+          "document_file_sha256": "d220c2726d1dc18698f578dd0f3446a87e81b3519c05e993da2e4a3ecf6e311e",
+          "store_relative_path": "spy/2024/2024-01-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "91cb1b963542f95e347d86802db8d5d2591a0c072ca4cc15acd7934dbdb5f656",
+          "dataset_id": "bars:ibkr:trades:1d:91cb1b963542f95e",
+          "date": "2024-01-30",
+          "document_file_sha256": "582124582e26eceab3fa17e57bc92b692e9530e76b97e282711962bbe985ef34",
+          "store_relative_path": "spy/2024/2024-01-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1bb2a86c5fdd983b95130ae6dae2c3e1c4582ecb3f35dfe6277ade1aceb740fb",
+          "dataset_id": "bars:ibkr:trades:1d:1bb2a86c5fdd983b",
+          "date": "2024-01-31",
+          "document_file_sha256": "48e97e7150806cc30bbbeea8b4c4300c7428c090b27c21bfd36626058f80bc82",
+          "store_relative_path": "spy/2024/2024-01-31.json.gz"
+        },
+        {
+          "dataset_content_sha256": "4979527d0ddaa7934ca379e0a30e267da4b1ee7bc34d0d7422fda4e61199f5e8",
+          "dataset_id": "bars:ibkr:trades:1d:4979527d0ddaa793",
+          "date": "2024-02-01",
+          "document_file_sha256": "cadba6992413fe6688b44eb64a383eea2a69aa8994659439d119a4ea6ad4b28c",
+          "store_relative_path": "spy/2024/2024-02-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "902d1fabea2960c0a6b21c57c2ba5ec639a935f1d8d9b8cc00f56e7028b7eaa8",
+          "dataset_id": "bars:ibkr:trades:1d:902d1fabea2960c0",
+          "date": "2024-02-02",
+          "document_file_sha256": "eba04057f33c5b8e012716623aed10eba75bf9808c5a517fac7e31c82d9c5dbd",
+          "store_relative_path": "spy/2024/2024-02-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "49101efffbf15795dbc83802fa447f6ee21370fe01bf323ea4c2fc4be5ed352c",
+          "dataset_id": "bars:ibkr:trades:1d:49101efffbf15795",
+          "date": "2024-02-05",
+          "document_file_sha256": "3372b27ba77b448eef1377765c4c42b960e149c70bd57dd636cd1617684c38aa",
+          "store_relative_path": "spy/2024/2024-02-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f05a87cadac270364158fb2fc5da788d68a4292ab779b8c371c0bb75d5a45562",
+          "dataset_id": "bars:ibkr:trades:1d:f05a87cadac27036",
+          "date": "2024-02-06",
+          "document_file_sha256": "69f0d025adc3ce013bdb0b97d74696350b442a5982f845ab4e7e0894c55c6e31",
+          "store_relative_path": "spy/2024/2024-02-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ed0cb9c3625940c55e399c20350228bc521f8a75c3167771d667c9c35bd75d78",
+          "dataset_id": "bars:ibkr:trades:1d:ed0cb9c3625940c5",
+          "date": "2024-02-07",
+          "document_file_sha256": "44f78bdcd5b79312f77d5af5424b7649daf668ec8e3ace33a67ee7b848c88b12",
+          "store_relative_path": "spy/2024/2024-02-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d9d464d076caf3f3a27dd0f1f522c9109e7019d2e7665f1a662c09c70665911a",
+          "dataset_id": "bars:ibkr:trades:1d:d9d464d076caf3f3",
+          "date": "2024-02-08",
+          "document_file_sha256": "8376cbe925cf2abc9cab92dccbceda40b4b7d20371de0a1745fc3a3cd60f732a",
+          "store_relative_path": "spy/2024/2024-02-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c9a2ace9a57a60bc8f655e10b3779b7274889cb82a74d2ce784e850273fff420",
+          "dataset_id": "bars:ibkr:trades:1d:c9a2ace9a57a60bc",
+          "date": "2024-02-09",
+          "document_file_sha256": "8748b4fd46389f4723b4fddb19a311019c6e54a1630bd464a29ca90efb01057c",
+          "store_relative_path": "spy/2024/2024-02-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "05953f3e49ab45a3e7a77112d73c04b16c8be878ff589617fe39ac009000ed39",
+          "dataset_id": "bars:ibkr:trades:1d:05953f3e49ab45a3",
+          "date": "2024-02-12",
+          "document_file_sha256": "98e91ceb803c3ac070b10271aabae76ab54338d0faf49df58bdb83061ea16559",
+          "store_relative_path": "spy/2024/2024-02-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "db19b9ebe453be23e85de619fb43ab22d053cac1830f6463f742ea02ed66a22c",
+          "dataset_id": "bars:ibkr:trades:1d:db19b9ebe453be23",
+          "date": "2024-02-13",
+          "document_file_sha256": "382f4f3fe692634fb951ec846dc33707c728c7870ddd5719bbc769a9b8d7e792",
+          "store_relative_path": "spy/2024/2024-02-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "04b2361f6cde8954cc56b16eb8067cf8b4d212a3237df998412c33a789a58fa8",
+          "dataset_id": "bars:ibkr:trades:1d:04b2361f6cde8954",
+          "date": "2024-02-14",
+          "document_file_sha256": "7b1688dc0ae9e045ad57d55477175f819372e382d864ff7efbf2666dc87cd009",
+          "store_relative_path": "spy/2024/2024-02-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "7920b4018e27eda3e1d6391cef59416785340b24be9b96c0f71c1a9939ce6993",
+          "dataset_id": "bars:ibkr:trades:1d:7920b4018e27eda3",
+          "date": "2024-02-15",
+          "document_file_sha256": "40181079301172a7391eb1b124f8463ea56883f3b475b3b9d8c437eb5a20b6cd",
+          "store_relative_path": "spy/2024/2024-02-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2817b992934f98d79953e165834f82519e6c54d321e463ad486d7f4c36e14917",
+          "dataset_id": "bars:ibkr:trades:1d:2817b992934f98d7",
+          "date": "2024-02-16",
+          "document_file_sha256": "1447b9d68e4e633807e64e8815467b352febb9338ffae16e632322485bbd0ef4",
+          "store_relative_path": "spy/2024/2024-02-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1514f9a8d5114c4ed41443f1441e7e0ee96e177d726681b0b4d8ab61f0afa716",
+          "dataset_id": "bars:ibkr:trades:1d:1514f9a8d5114c4e",
+          "date": "2024-02-20",
+          "document_file_sha256": "3d8aae8c79da180c15b1319de8b11c805abefe9f4d881f633a095f598490cc5d",
+          "store_relative_path": "spy/2024/2024-02-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "64cbadadb0e90604c628ad3507896d792e7f07c809c6663423735f637e5bb78b",
+          "dataset_id": "bars:ibkr:trades:1d:64cbadadb0e90604",
+          "date": "2024-02-21",
+          "document_file_sha256": "449e41e23289891a535231c8cf2c59fa95b260e49434d04239cfca7b15a5201c",
+          "store_relative_path": "spy/2024/2024-02-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "02e331fccd4c6eac9b62ed8b8fb2b9ce5cf985f75294a016478fa2a8a45346ef",
+          "dataset_id": "bars:ibkr:trades:1d:02e331fccd4c6eac",
+          "date": "2024-02-22",
+          "document_file_sha256": "2ee85de73de38c65ae4c36481478b574329b1b53f04d0a7512c2956e684eed1d",
+          "store_relative_path": "spy/2024/2024-02-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "32730b8d21d46ff895f6652affa3249ebb4aaba6e1d50293e4000adaab1a25d4",
+          "dataset_id": "bars:ibkr:trades:1d:32730b8d21d46ff8",
+          "date": "2024-02-23",
+          "document_file_sha256": "89672a0eb0ecf6b1aadbb4cc4c5bb11d7d1f5b06afd0cdf1fa19e1c3674303ce",
+          "store_relative_path": "spy/2024/2024-02-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1d5689a16e8c2afee0ab0e235b5aba1b9435d24a0973954f3f4957a15e25ff4c",
+          "dataset_id": "bars:ibkr:trades:1d:1d5689a16e8c2afe",
+          "date": "2024-02-26",
+          "document_file_sha256": "8d39658ac10f7373f57d228e57891559b26a4ed5dcaf7715a87a5a8ad60c8a16",
+          "store_relative_path": "spy/2024/2024-02-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "5865464dbe5f6234c64438cd35cf72d7bdd764681f27026723b4ba0cde4b0c34",
+          "dataset_id": "bars:ibkr:trades:1d:5865464dbe5f6234",
+          "date": "2024-02-27",
+          "document_file_sha256": "b73866fe56805e321dcda61cce95a4ecee3f536122bd1be793692e25c3ecbbcc",
+          "store_relative_path": "spy/2024/2024-02-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0073cdcb9ccad73386afcf776d1e18e96d7fe8ea4396fdcd6f10d7b997f34630",
+          "dataset_id": "bars:ibkr:trades:1d:0073cdcb9ccad733",
+          "date": "2024-02-28",
+          "document_file_sha256": "15cb801c649fbcde4d91313b088569cd36b33bff48897485a8f282b6d113645b",
+          "store_relative_path": "spy/2024/2024-02-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "13c0bb36da111d8b6d51c6187ea4cd0c0976961fb1a8e62da11d9f67784f3154",
+          "dataset_id": "bars:ibkr:trades:1d:13c0bb36da111d8b",
+          "date": "2024-02-29",
+          "document_file_sha256": "ef18acfd8acd6a28e8a3b490f1ebd8370a66c7d1b6830fef3df5314f5f1b9094",
+          "store_relative_path": "spy/2024/2024-02-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ab5df64a1d9367cf16f9fd078addcd8279370fa34071bbeaa56ba94478cadde6",
+          "dataset_id": "bars:ibkr:trades:1d:ab5df64a1d9367cf",
+          "date": "2024-03-01",
+          "document_file_sha256": "07b9cc017c5854a07ac9785de18cf5dbc170316c1a5aa06fedbd3260df8736f7",
+          "store_relative_path": "spy/2024/2024-03-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "96be0ac429dd62371a5342f15af2355fb20426687999c8a7b551c9b38e3b3c9c",
+          "dataset_id": "bars:ibkr:trades:1d:96be0ac429dd6237",
+          "date": "2024-03-04",
+          "document_file_sha256": "c1aa35b026d9aa306d8acfb6b24ca0aac5be3cbb05001dde970c6173bdd30aeb",
+          "store_relative_path": "spy/2024/2024-03-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f7bc64e47b898fff9b7f95b68555f280d82363700030c2b246f29f2a03f9a6d4",
+          "dataset_id": "bars:ibkr:trades:1d:f7bc64e47b898fff",
+          "date": "2024-03-05",
+          "document_file_sha256": "a035071cfea6afb6eb1d20bdf2034608fd3d06cc3437d6963a497b291ed9f5c2",
+          "store_relative_path": "spy/2024/2024-03-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "60b610472c6675447b2b261f721927737b3e3196b993b8443b83de9e1fef56f8",
+          "dataset_id": "bars:ibkr:trades:1d:60b610472c667544",
+          "date": "2024-03-06",
+          "document_file_sha256": "c9970cef580edcf2e521a15786d9369222c2be1c3f651ea9ac7736ef7c0d391c",
+          "store_relative_path": "spy/2024/2024-03-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "85b917301ed531749a2a0f9035304be624d950f60a77c7ac630b3e8e2f45140e",
+          "dataset_id": "bars:ibkr:trades:1d:85b917301ed53174",
+          "date": "2024-03-07",
+          "document_file_sha256": "9f7c1830a2dc1814bfd719e1cbba42a224a56f557465432ac8168741b40348ee",
+          "store_relative_path": "spy/2024/2024-03-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f90c0650c83b1c8a03cdd4dd8670bfb2d907b747300d09076963f51b8248f10c",
+          "dataset_id": "bars:ibkr:trades:1d:f90c0650c83b1c8a",
+          "date": "2024-03-08",
+          "document_file_sha256": "0b8a9b814b8438e116c924b2a845c3920fd1b0fd324369aedf83738d48c89a49",
+          "store_relative_path": "spy/2024/2024-03-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "15130011ab3ddf7c2326e0bf6eb91bd6b4ce279af77383e05c9f87a497fbb4c0",
+          "dataset_id": "bars:ibkr:trades:1d:15130011ab3ddf7c",
+          "date": "2024-03-11",
+          "document_file_sha256": "53e419bf152db1916dee3083849b0c9c093dd69913d35db3e7313622872e0dbf",
+          "store_relative_path": "spy/2024/2024-03-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "6ff3ff9af4bc540a4c400080ba9e67125fdd5c4252b5fc64768ed0ac6fe36de6",
+          "dataset_id": "bars:ibkr:trades:1d:6ff3ff9af4bc540a",
+          "date": "2024-03-12",
+          "document_file_sha256": "9758005ce2b08e6147884c86445600f3da6d0b8db570cfb0e518b4ea73252421",
+          "store_relative_path": "spy/2024/2024-03-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "41bb01f4b573dffcd511562911e9b8fe4ad150a930fda933e72189d53d9f943f",
+          "dataset_id": "bars:ibkr:trades:1d:41bb01f4b573dffc",
+          "date": "2024-03-13",
+          "document_file_sha256": "42034e09637d27af713ca2051496a1442234604706566089bb719cf427a11cf6",
+          "store_relative_path": "spy/2024/2024-03-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "611eccfe2bf976a15a6b2aed4dac5db642ae633034cb89889eebebbf60878bcc",
+          "dataset_id": "bars:ibkr:trades:1d:611eccfe2bf976a1",
+          "date": "2024-03-14",
+          "document_file_sha256": "c0df1a1e2db9a03414dac123580e640256f1a2ae45b1fba82981cc09fb076781",
+          "store_relative_path": "spy/2024/2024-03-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "fcac3edf96019579c9a76f26a7b7cfe90fb584cbca815bd775247ce8a8eeaae1",
+          "dataset_id": "bars:ibkr:trades:1d:fcac3edf96019579",
+          "date": "2024-03-15",
+          "document_file_sha256": "f5094553903fe233b70deed0c89a285233773b91fcdd4fa1a26506a3f087e023",
+          "store_relative_path": "spy/2024/2024-03-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "4780615ca1e9fa8929bc679333ac27c94a78b4a5c648151a2c640cd7c4f16eda",
+          "dataset_id": "bars:ibkr:trades:1d:4780615ca1e9fa89",
+          "date": "2024-03-18",
+          "document_file_sha256": "65d67382eb6fb38caf4d7bba8e60e268e90c0b2ca63277c7c255796d9b682714",
+          "store_relative_path": "spy/2024/2024-03-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f1427ae1f4c1eed359daa0a95b4a0f3ad72511569811697a7c1f3dcf4c7c6312",
+          "dataset_id": "bars:ibkr:trades:1d:f1427ae1f4c1eed3",
+          "date": "2024-03-19",
+          "document_file_sha256": "f861ecdd31d3781715910a09b8c77830f8b4812560a6ba2af216dfb799a19ee0",
+          "store_relative_path": "spy/2024/2024-03-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "6beb347a7596fc076d48469f5c47c68efae1ef73bb19f4542caf4c24b3c3c122",
+          "dataset_id": "bars:ibkr:trades:1d:6beb347a7596fc07",
+          "date": "2024-03-20",
+          "document_file_sha256": "551a391c8c868d3fa4e0d2cb6315dcaff39af5aeb7517430e3440f135c3d27eb",
+          "store_relative_path": "spy/2024/2024-03-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "5ce62fd8b734449a9398c5613ab69ff5731ce8ecd6cf9d011f31fc78f4e64ade",
+          "dataset_id": "bars:ibkr:trades:1d:5ce62fd8b734449a",
+          "date": "2024-03-21",
+          "document_file_sha256": "76a7ade113d742316a7615383fd1e5c2ce8dcf10a59403fce11075b55c40546b",
+          "store_relative_path": "spy/2024/2024-03-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "83efd82d07622ec90d4d51d210696149b453e4417d23fec54915239d3b1ab8ce",
+          "dataset_id": "bars:ibkr:trades:1d:83efd82d07622ec9",
+          "date": "2024-03-22",
+          "document_file_sha256": "ab7da19397aaf9114e8cbb847c6761fda4873ccbfea3436376d89d649bcb7a96",
+          "store_relative_path": "spy/2024/2024-03-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "4772d123f2d0040e2d7f3281c9e235edc304047e89169452bb7d63593478803b",
+          "dataset_id": "bars:ibkr:trades:1d:4772d123f2d0040e",
+          "date": "2024-03-25",
+          "document_file_sha256": "7ede835236dc2b495d40ea6c32071a12eb2ab7cba8ab56dd4a73a99e6ee39f25",
+          "store_relative_path": "spy/2024/2024-03-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1f00534350dee92adade57adb0d05445d579385631e404c9089806f3016307d8",
+          "dataset_id": "bars:ibkr:trades:1d:1f00534350dee92a",
+          "date": "2024-03-26",
+          "document_file_sha256": "7035daa7dd70a51e0f662329e1eca77de499b7af2d8833600d79d6e38daad0a4",
+          "store_relative_path": "spy/2024/2024-03-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "66761876e250ccc74b022adf0c2cef1062abe0f328e2280ebff96de09254309f",
+          "dataset_id": "bars:ibkr:trades:1d:66761876e250ccc7",
+          "date": "2024-03-27",
+          "document_file_sha256": "6c0ca10126e248c63027b7e44f7e9e5c535ab10459091ff11d0663cb254bb561",
+          "store_relative_path": "spy/2024/2024-03-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2329e8dacb559eb38e4828ce4c1b0ba0c4fec5f541e23b8e7ee606af8df28406",
+          "dataset_id": "bars:ibkr:trades:1d:2329e8dacb559eb3",
+          "date": "2024-03-28",
+          "document_file_sha256": "2785310075b9a0b93f1033475844962c9a82b4dbedaf2d985e287b63a54a2553",
+          "store_relative_path": "spy/2024/2024-03-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "cae6515a63a6a7f426cf67674c19956cc8adcba091e63f86a8e28a9f8f752555",
+          "dataset_id": "bars:ibkr:trades:1d:cae6515a63a6a7f4",
+          "date": "2024-04-01",
+          "document_file_sha256": "7e0bd19d90a1950f7b8a4bbf781473a9b60d661efb3bdcc8fc83b3cc2bbcc926",
+          "store_relative_path": "spy/2024/2024-04-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "db6b325d50e6c1250fe7a61720d8267059e3cb65819a40b3fe79c2f3de6924e3",
+          "dataset_id": "bars:ibkr:trades:1d:db6b325d50e6c125",
+          "date": "2024-04-02",
+          "document_file_sha256": "e0cd84423990ec2f0cfca61051d2e8553d9bf6e5f030574c71f18eebf4893a48",
+          "store_relative_path": "spy/2024/2024-04-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9a480c33699a9259738094648e8dde76bd91bfebb6ba46b14d1b937d59b95263",
+          "dataset_id": "bars:ibkr:trades:1d:9a480c33699a9259",
+          "date": "2024-04-03",
+          "document_file_sha256": "ba558b731b73bddf5d5d5cf422080607018844e43581dec3bced9b84cc235514",
+          "store_relative_path": "spy/2024/2024-04-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b34f56e94970856db55bf60b9c838d3b61ed0c3aa6089ed23ed494ff5e211275",
+          "dataset_id": "bars:ibkr:trades:1d:b34f56e94970856d",
+          "date": "2024-04-04",
+          "document_file_sha256": "a0423ece091fbc9539574aa06f8904540ed4c13ee61e3bd114f5cdceb9b7142d",
+          "store_relative_path": "spy/2024/2024-04-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "508505caace2550adfa7e59077ff4c2725c91e8f29936c6dd4746add15994e52",
+          "dataset_id": "bars:ibkr:trades:1d:508505caace2550a",
+          "date": "2024-04-05",
+          "document_file_sha256": "91b6bada0b5c1a5eae7fff170ac652ee58e331c1fb6235b95c4a4261ebfb5392",
+          "store_relative_path": "spy/2024/2024-04-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "7cf924d65f7da5e9dec0ad8726644f2dcea7afd34f137df53f0b6e6379eb845f",
+          "dataset_id": "bars:ibkr:trades:1d:7cf924d65f7da5e9",
+          "date": "2024-04-08",
+          "document_file_sha256": "c64d3482f192ca3aa4a14c175c52e4daa55e760b0001a24cb5e1b7546b6994e9",
+          "store_relative_path": "spy/2024/2024-04-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "cf69606e99d71c2bc5caea3c96fed10d6d7f37fa74781f55342e64d7eb18d76f",
+          "dataset_id": "bars:ibkr:trades:1d:cf69606e99d71c2b",
+          "date": "2024-04-09",
+          "document_file_sha256": "f33cc76fc93d065cd4ed64810392ff91454772a0fc0bb111c6ce2bd2d29bfd78",
+          "store_relative_path": "spy/2024/2024-04-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "090a5f8afa651cca5e72a35693a1f46911e5bcbc18f3184abf52f0d2bf06d663",
+          "dataset_id": "bars:ibkr:trades:1d:090a5f8afa651cca",
+          "date": "2024-04-10",
+          "document_file_sha256": "ee24387adb58cf41ad3eafe1a4c633b23ec2003569149dbb465bf9d932c191ef",
+          "store_relative_path": "spy/2024/2024-04-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "af72886f8269476bdd38c8581d09da9d53e80b2e4cf8a9246f9f1f55e32b9101",
+          "dataset_id": "bars:ibkr:trades:1d:af72886f8269476b",
+          "date": "2024-04-11",
+          "document_file_sha256": "23452b8bfde76f127c0186931094c7b620b1cbe6fc8f6e1f588d35c806e9b969",
+          "store_relative_path": "spy/2024/2024-04-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "665b9ad497ac8914bec462f18cbf2ed3e0867a49af9f7ac563c7c432a0e749a3",
+          "dataset_id": "bars:ibkr:trades:1d:665b9ad497ac8914",
+          "date": "2024-04-12",
+          "document_file_sha256": "6746df981e4d6446f8d8b4ca359c1894d2703a5d95c5ad84535c4ff0b9a3b226",
+          "store_relative_path": "spy/2024/2024-04-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ad7f997f464c3723de426fc229127f8061e61e16ae8d38128ab1f3c27991c83f",
+          "dataset_id": "bars:ibkr:trades:1d:ad7f997f464c3723",
+          "date": "2024-04-15",
+          "document_file_sha256": "e512ea5dec2160ac9245c950e8ff32f4a145506a35733bd732d4b2f1ffed4eb7",
+          "store_relative_path": "spy/2024/2024-04-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d72af60f99109eafeed197e09e4729aeb891ae4b1717c92f08549524f8a15318",
+          "dataset_id": "bars:ibkr:trades:1d:d72af60f99109eaf",
+          "date": "2024-04-16",
+          "document_file_sha256": "d08961ebdd251bfe3bf9bebc22b3e64a3fe1575849d14d8b522f75ab193ca1c1",
+          "store_relative_path": "spy/2024/2024-04-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "4a00827145ab86215d3da4efa12b47922db405697357f35f504bce6d87704763",
+          "dataset_id": "bars:ibkr:trades:1d:4a00827145ab8621",
+          "date": "2024-04-17",
+          "document_file_sha256": "857abf0c47e53ee3bcd6f1279054850ca044ebbdd9be393c678cf5455ba4e13c",
+          "store_relative_path": "spy/2024/2024-04-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c937002d04660f1d8ba4b0db23bb961f0e22bc5be9604df818e0688a099e92f6",
+          "dataset_id": "bars:ibkr:trades:1d:c937002d04660f1d",
+          "date": "2024-04-18",
+          "document_file_sha256": "f2456b213b069a245b0fab4d4895c3b60745308b6f7191804cd903092400257e",
+          "store_relative_path": "spy/2024/2024-04-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "6af669f5f46c75f7c63595043502c603572ce33d7492e25c895dc80ad9f12d4e",
+          "dataset_id": "bars:ibkr:trades:1d:6af669f5f46c75f7",
+          "date": "2024-04-19",
+          "document_file_sha256": "3e2d469f6a501c30193f2f70a6c0c4781d38879784413a5d60da67b1bf6209d3",
+          "store_relative_path": "spy/2024/2024-04-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ba7445d14c10a4ccd58d5db67ba62eb58f73dcc9ae7b89cb6fabd02168e49a00",
+          "dataset_id": "bars:ibkr:trades:1d:ba7445d14c10a4cc",
+          "date": "2024-04-22",
+          "document_file_sha256": "969660e34d930e67617ed03e447fc2cbbb6b6fedd13db3189810e89408400aac",
+          "store_relative_path": "spy/2024/2024-04-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d4a5ed7d9ce627b065c7df8478ff69e7cda4bea0ce8840eccb1cc82319d62e3b",
+          "dataset_id": "bars:ibkr:trades:1d:d4a5ed7d9ce627b0",
+          "date": "2024-04-23",
+          "document_file_sha256": "2e66f46279e7f223656f4d4acc903f0b3f79d4e003a2c84c41b2f8ef698de601",
+          "store_relative_path": "spy/2024/2024-04-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "3a1db74bbeee8516a3001bbbeacd41664134e383aa16f51b35eb6497981f3e95",
+          "dataset_id": "bars:ibkr:trades:1d:3a1db74bbeee8516",
+          "date": "2024-04-24",
+          "document_file_sha256": "6c295ff21c5ffdd79a69881ddf8c71ddc9b01dab9517353445c140769bf5d501",
+          "store_relative_path": "spy/2024/2024-04-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ec407ed44ae274199f1b47504711b7a227593a59bf8c623e37dcfc46df9a6543",
+          "dataset_id": "bars:ibkr:trades:1d:ec407ed44ae27419",
+          "date": "2024-04-25",
+          "document_file_sha256": "5e4ae1928ceb57710d0f21a2064f6319a41e59c008437f24dd8d2eb9102b2c40",
+          "store_relative_path": "spy/2024/2024-04-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "26503eec163865012e4830e1cbfdb63c30b56f309fd7071361050208d8bc89c4",
+          "dataset_id": "bars:ibkr:trades:1d:26503eec16386501",
+          "date": "2024-04-26",
+          "document_file_sha256": "5c7b17cac69c7732da19f829cdd5980df0c1f925fa7511130d40351d2e7a5a03",
+          "store_relative_path": "spy/2024/2024-04-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "7535bbe76abef67bbfa63cb5b69acba98e9d0553c0124f1c85ee0f9673dfba5c",
+          "dataset_id": "bars:ibkr:trades:1d:7535bbe76abef67b",
+          "date": "2024-04-29",
+          "document_file_sha256": "74f225687ca783409bb7ecf1cfbb1a34a01ebb91a8f03cb672414b26b56bf404",
+          "store_relative_path": "spy/2024/2024-04-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "924e82fda78439551777a375ca484147ebe9ebb779757df4e029cb569918575c",
+          "dataset_id": "bars:ibkr:trades:1d:924e82fda7843955",
+          "date": "2024-04-30",
+          "document_file_sha256": "ea6f3f65711bb7267e2243183d52b5272352d1542b98247ccc82b0008394afd2",
+          "store_relative_path": "spy/2024/2024-04-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f0127cc46799162be78d816d9acba428167642f1a4c5d7275d10cda5768da8ff",
+          "dataset_id": "bars:ibkr:trades:1d:f0127cc46799162b",
+          "date": "2024-05-01",
+          "document_file_sha256": "bad111ac4cc3c4fdfcc6e5b5214faa828123c6c691bbbbc05823d9930971642e",
+          "store_relative_path": "spy/2024/2024-05-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ab2fd60669ebcc744eb0e8fac1d03ef1a72553bc7ec657b442b5f45f0919bcac",
+          "dataset_id": "bars:ibkr:trades:1d:ab2fd60669ebcc74",
+          "date": "2024-05-02",
+          "document_file_sha256": "252ca99cee16753f773be4d899d1dda929940aef13d5acab84068d2397770810",
+          "store_relative_path": "spy/2024/2024-05-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a14afe830309f8e67d1afb7ca7f99e24e3892e42eb81b870422369c6add87a6a",
+          "dataset_id": "bars:ibkr:trades:1d:a14afe830309f8e6",
+          "date": "2024-05-03",
+          "document_file_sha256": "03b21c97f7d63b8749e4b815e24a39bc5f1966d7dd26a432384563cfbb39622a",
+          "store_relative_path": "spy/2024/2024-05-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "5bccf2aa8902e8ace416e0c81e328e8bbe6a7ef2cf7e168174414a23474ed00d",
+          "dataset_id": "bars:ibkr:trades:1d:5bccf2aa8902e8ac",
+          "date": "2024-05-06",
+          "document_file_sha256": "e9bc4adb972dc0d2d5e1475f7498366c11b417c49ff1d5c9e67021407c62a9e2",
+          "store_relative_path": "spy/2024/2024-05-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1589efc42d291da354d98e787c0a22a04dabe2950b6c375b1996dc08377b8f28",
+          "dataset_id": "bars:ibkr:trades:1d:1589efc42d291da3",
+          "date": "2024-05-07",
+          "document_file_sha256": "0c1cc6b1a134c08a82f1261c09e698d0302163c6c0c292da0e68bdb34a90d068",
+          "store_relative_path": "spy/2024/2024-05-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "fb436b3a36829233dfcbbe40f39c9aeb0a055b3909c95d9b50e5d0671d059c01",
+          "dataset_id": "bars:ibkr:trades:1d:fb436b3a36829233",
+          "date": "2024-05-08",
+          "document_file_sha256": "7cb86aa63b5231c0347ac1fc0efc3912887b590f0373519ad47af78964c4ef23",
+          "store_relative_path": "spy/2024/2024-05-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "144c61863d7233850a8ed554559d71e12ef4a271ca661d88d5264e9ef1a3d0ac",
+          "dataset_id": "bars:ibkr:trades:1d:144c61863d723385",
+          "date": "2024-05-09",
+          "document_file_sha256": "ad152a1bc1be42d0845147cb297d2d8f769267812ad501b403d76af7aa271b2b",
+          "store_relative_path": "spy/2024/2024-05-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9d3de667affd6dc1da2cc77ebe8116ea75ca0efe387f6b1d791db8e5ffe3ddbf",
+          "dataset_id": "bars:ibkr:trades:1d:9d3de667affd6dc1",
+          "date": "2024-05-10",
+          "document_file_sha256": "de010db1cb3bf09fece25a805dfe5a5877f7ec8228b38ceb2cacb92fa864b244",
+          "store_relative_path": "spy/2024/2024-05-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "79361afd11db2e8531523d0b5701322e365d5709c5abcf64e3c78d3ac092e4dd",
+          "dataset_id": "bars:ibkr:trades:1d:79361afd11db2e85",
+          "date": "2024-05-13",
+          "document_file_sha256": "0e2d86afae6ba92f0b81ef776622a1ed4852c95754127d95c672cd51e87a3df3",
+          "store_relative_path": "spy/2024/2024-05-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c46db7ee3178e9a4211fda0ab5a29d1183f898dc03380ee9d26a88fec103eefc",
+          "dataset_id": "bars:ibkr:trades:1d:c46db7ee3178e9a4",
+          "date": "2024-05-14",
+          "document_file_sha256": "01c5f5c580478a4ad0d70f0cb44b0528c82fcff4d325cf71b9218b68fe973b89",
+          "store_relative_path": "spy/2024/2024-05-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c088583868eccfb879dd859ec80c83814bf1874ef929f85d5e3bbb59b4103bf9",
+          "dataset_id": "bars:ibkr:trades:1d:c088583868eccfb8",
+          "date": "2024-05-15",
+          "document_file_sha256": "046ff55774eb4f0823d043d8abc19e95109711de11e0b4b9799564acd8e72751",
+          "store_relative_path": "spy/2024/2024-05-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "4d53d0269116a361787de01d142a0d5c4ed35626a224f5610ec525b286372375",
+          "dataset_id": "bars:ibkr:trades:1d:4d53d0269116a361",
+          "date": "2024-05-16",
+          "document_file_sha256": "5fe74ea1e341313417211549bf455345050008613561b1058f242a1cfc2649a7",
+          "store_relative_path": "spy/2024/2024-05-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "5fb73325cd914715dcb10e3d4f9363acf2053a8f4e9668998224077402f5590e",
+          "dataset_id": "bars:ibkr:trades:1d:5fb73325cd914715",
+          "date": "2024-05-17",
+          "document_file_sha256": "c737b7fbc3831420b22c3a0cb12d5f9587fe551724b519b385ce1a4e8142e8e9",
+          "store_relative_path": "spy/2024/2024-05-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ebfa44b1cbedd02c6b6f20aac8df22e73423fd6679225159e251455bfb29def4",
+          "dataset_id": "bars:ibkr:trades:1d:ebfa44b1cbedd02c",
+          "date": "2024-05-20",
+          "document_file_sha256": "4bdae2cf423b1729daa31f815d835adb5b4395383e4ea30bc973997cab6ef804",
+          "store_relative_path": "spy/2024/2024-05-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "cb8fcc12767536f229ddb4afca6fbd3611eac6afa1e786095118ca9e206885ac",
+          "dataset_id": "bars:ibkr:trades:1d:cb8fcc12767536f2",
+          "date": "2024-05-21",
+          "document_file_sha256": "59b3d6184f3f4e3b05bf1fcf2dfd9e98f702e5adf32eaf50a93d6ad13c0ccb9b",
+          "store_relative_path": "spy/2024/2024-05-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b402d060d4b016a3e803c5167f600225ec333c5193f5a03ed5f14f7d63cee099",
+          "dataset_id": "bars:ibkr:trades:1d:b402d060d4b016a3",
+          "date": "2024-05-22",
+          "document_file_sha256": "7e980cca9f56f5c7494e1d62e3fee95eca47ec1ed3c8a963d3d8c151c572058a",
+          "store_relative_path": "spy/2024/2024-05-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ad5249cc4563be9271e93d33db80ad457f01edd3454b9620cc864f866624565f",
+          "dataset_id": "bars:ibkr:trades:1d:ad5249cc4563be92",
+          "date": "2024-05-23",
+          "document_file_sha256": "3d3e49440953c91dfec80d07b8544e2867fb91a86402ba2e3e7cd629aa984b73",
+          "store_relative_path": "spy/2024/2024-05-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "65fa0ce6b4734f0a2f6114bd0600c326340f65fbb152f204edca454f9c9badc5",
+          "dataset_id": "bars:ibkr:trades:1d:65fa0ce6b4734f0a",
+          "date": "2024-05-24",
+          "document_file_sha256": "4c8d43be633ecc64b12a21e6370e5fed11df2549039c1db84dd908864c560ee0",
+          "store_relative_path": "spy/2024/2024-05-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "104ed00d2c22be797ecb3ee39e5ca07ad4e6dcde37b7e66848dea43a55a1417b",
+          "dataset_id": "bars:ibkr:trades:1d:104ed00d2c22be79",
+          "date": "2024-05-28",
+          "document_file_sha256": "c1e8b317d686466f35291ec002904ac458c68b2acc3640bb5304692fb7157d10",
+          "store_relative_path": "spy/2024/2024-05-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2eea46b60e4c6a22c05e4c96ae76afcc567fb64061785cdbb00cad5adb11b42e",
+          "dataset_id": "bars:ibkr:trades:1d:2eea46b60e4c6a22",
+          "date": "2024-05-29",
+          "document_file_sha256": "f9f3580ea61218490f165d95b10ae5329fdc3c235f09f57fe1ad07af5a3117c9",
+          "store_relative_path": "spy/2024/2024-05-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a3628c96d219bfb7a35b8a1176b524a9060b96309238fdf5461b5930d806ceef",
+          "dataset_id": "bars:ibkr:trades:1d:a3628c96d219bfb7",
+          "date": "2024-05-30",
+          "document_file_sha256": "618d3867387975bb1929111d996b9feda216fb6829041ca5c727f25386c0c9a7",
+          "store_relative_path": "spy/2024/2024-05-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "dfec5a1fd671e6a590527411ab6d1557eb0ada5368576da1014c2a2a4776f398",
+          "dataset_id": "bars:ibkr:trades:1d:dfec5a1fd671e6a5",
+          "date": "2024-05-31",
+          "document_file_sha256": "991ad7524edbcdcaaef9546d695c5d5a75d15b3e2e97e0ac1031a2fe7b9d799f",
+          "store_relative_path": "spy/2024/2024-05-31.json.gz"
+        },
+        {
+          "dataset_content_sha256": "35875125e555a8bc1f3faa6dcc4a1dab2715bae4449c793027d7e75540b9b92c",
+          "dataset_id": "bars:ibkr:trades:1d:35875125e555a8bc",
+          "date": "2024-06-03",
+          "document_file_sha256": "d560c7abfe4cd806caec039c4d73bb9ad238dcb7d6942d3a65a37756699e28c4",
+          "store_relative_path": "spy/2024/2024-06-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "18c1721df74027fbe867c96eb2887af52f1c26c4818c29dd020b44ad1d8d1cc5",
+          "dataset_id": "bars:ibkr:trades:1d:18c1721df74027fb",
+          "date": "2024-06-04",
+          "document_file_sha256": "ba7169fadea420193d190e540aef866b6b5c1ebf4d509abf10ea5850d83e6289",
+          "store_relative_path": "spy/2024/2024-06-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "8d62b97a8cbab62ca4b3f350cb0ac6b25c64a3be5564ada3b2c8c526f2c22a85",
+          "dataset_id": "bars:ibkr:trades:1d:8d62b97a8cbab62c",
+          "date": "2024-06-05",
+          "document_file_sha256": "16072d93bfd8233cb8daee9f1f3b923d3f224cf3dad95770d671e1a9018a5a5c",
+          "store_relative_path": "spy/2024/2024-06-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9d856d4874ccbd5cac5486d6ef4acb5fba3c927e4cf34b447319c986deb7726c",
+          "dataset_id": "bars:ibkr:trades:1d:9d856d4874ccbd5c",
+          "date": "2024-06-06",
+          "document_file_sha256": "bcd72c622546a15a879ece4f242d258ae6e0f44875b25970ba53a0ae78ab5d15",
+          "store_relative_path": "spy/2024/2024-06-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "db55de91284776ed3bd8921575ee9dea7de39b6230fc09d6e8d1e6ac091a9565",
+          "dataset_id": "bars:ibkr:trades:1d:db55de91284776ed",
+          "date": "2024-06-07",
+          "document_file_sha256": "5a92eff261e7e2d5f0e071ea2458e3f7445eef83925c5b0c83f79a72c457ab36",
+          "store_relative_path": "spy/2024/2024-06-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ce574236f49baf72bb8afb54668c3467b40bc5c98f8b55d1ee920cdec67df171",
+          "dataset_id": "bars:ibkr:trades:1d:ce574236f49baf72",
+          "date": "2024-06-10",
+          "document_file_sha256": "bcc81a6e387fd4f290894df031b3a6c1a2bbac465a4f9a540eb2d1d23e6ac77f",
+          "store_relative_path": "spy/2024/2024-06-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "949e1f7c162c78bd8278a35a63ca41a5985957f62db642446b95feaa57e48973",
+          "dataset_id": "bars:ibkr:trades:1d:949e1f7c162c78bd",
+          "date": "2024-06-11",
+          "document_file_sha256": "0e905b7eb3f945ec3ffc4d0886d9ff9bc61c6f56e05e670a934c6c11330fb948",
+          "store_relative_path": "spy/2024/2024-06-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c519d4837428600051665fc75e011709126217dbcc2367fc78230010932c3c7f",
+          "dataset_id": "bars:ibkr:trades:1d:c519d48374286000",
+          "date": "2024-06-12",
+          "document_file_sha256": "d7f02c14f63d2ca03bc69b7a5261a0b6c066cd070fab88908880457296dcf150",
+          "store_relative_path": "spy/2024/2024-06-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e7d7cc2f13b417e7a9f97f81df8ba2f32028d5de49fa1bb11d9a8f2f0037fb54",
+          "dataset_id": "bars:ibkr:trades:1d:e7d7cc2f13b417e7",
+          "date": "2024-06-13",
+          "document_file_sha256": "287235968ad960296c39c1a275e6e40e6025a4aeeacd35004473c4b97686efe1",
+          "store_relative_path": "spy/2024/2024-06-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ba79663ff6ba9db54ab40420052071eacb0f9e80ae6cc50b02d186b455fdf4e9",
+          "dataset_id": "bars:ibkr:trades:1d:ba79663ff6ba9db5",
+          "date": "2024-06-14",
+          "document_file_sha256": "944a125ba7d7129beebe906dbdcde6de288593dbd484863744610d046fefc424",
+          "store_relative_path": "spy/2024/2024-06-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1d0069dc085c1a9230cd0ec07e588f330fd35c833cc646325a1105a0756c75ad",
+          "dataset_id": "bars:ibkr:trades:1d:1d0069dc085c1a92",
+          "date": "2024-06-17",
+          "document_file_sha256": "33214d82bdf521ad269c68d1d1ddde904ab59d329f2679ae27d1ac85353322b5",
+          "store_relative_path": "spy/2024/2024-06-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "298b10a79b7c1cc9a5afe8ecc8cf7c4725042f542e056830bd6240d45dbcd298",
+          "dataset_id": "bars:ibkr:trades:1d:298b10a79b7c1cc9",
+          "date": "2024-06-18",
+          "document_file_sha256": "8094927fb9c73509c31a4a08d4ca9e8f8219d1bab1af14e22f2495feb533e26b",
+          "store_relative_path": "spy/2024/2024-06-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "84aea66343a906d6862f617c7d58a410042e4b0b1cfdc72e87c936768eda056c",
+          "dataset_id": "bars:ibkr:trades:1d:84aea66343a906d6",
+          "date": "2024-06-20",
+          "document_file_sha256": "ec063be00c8db6f401391e85390f385ea8e1a7adffa700d3732aed406e49eb71",
+          "store_relative_path": "spy/2024/2024-06-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e92b269205c32fb2a51e3e1dd3b1a544500205cb8a74a4ba34ed60bbfce196f0",
+          "dataset_id": "bars:ibkr:trades:1d:e92b269205c32fb2",
+          "date": "2024-06-21",
+          "document_file_sha256": "750756c36429f0e498ae1bcdf22463b1fd97b722657fe457f15c2fe2913ebf22",
+          "store_relative_path": "spy/2024/2024-06-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "092de054a1cf1be82b61a128a210b5414f3090917c72831a37e8d52fe82f99fa",
+          "dataset_id": "bars:ibkr:trades:1d:092de054a1cf1be8",
+          "date": "2024-06-24",
+          "document_file_sha256": "af9c500ed42d20fff95eb54bf5cadd1c1eda0f3530be7a99ade8ff32a3d8beef",
+          "store_relative_path": "spy/2024/2024-06-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "75c73abab33991160df5d74c7cbbacc501681975afc78bafdcc5a69989afac9a",
+          "dataset_id": "bars:ibkr:trades:1d:75c73abab3399116",
+          "date": "2024-06-25",
+          "document_file_sha256": "a5e0888d511b8e762497dccdc7edacb625acfc5aa7102b808d47ef640e78c1ee",
+          "store_relative_path": "spy/2024/2024-06-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "234a1770d4612ae58941406316f96823aef0b8b34ef1529738fb5f7506eeeeb4",
+          "dataset_id": "bars:ibkr:trades:1d:234a1770d4612ae5",
+          "date": "2024-06-26",
+          "document_file_sha256": "2e8b80e6f67e49028d0a469aa7cef0b5a7dc54c42cb272bd172a18b470322043",
+          "store_relative_path": "spy/2024/2024-06-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9f502f3f21b506804babb720e855fe21f5688a3c141325bf3e544c9efe1d7238",
+          "dataset_id": "bars:ibkr:trades:1d:9f502f3f21b50680",
+          "date": "2024-06-27",
+          "document_file_sha256": "101cd503d9a053f0acbf5ffe9ec2c66995e4fcd8638ccd74f6acc5f6533235f8",
+          "store_relative_path": "spy/2024/2024-06-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a11158cabe69fac8cc2884b51318289fdf4309da09962adabb9f820bae8bb7a4",
+          "dataset_id": "bars:ibkr:trades:1d:a11158cabe69fac8",
+          "date": "2024-06-28",
+          "document_file_sha256": "a535654c4360c4e52e9bf11e6e98c052927cdd06b331b6c56f0b8236876c1f56",
+          "store_relative_path": "spy/2024/2024-06-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "848fe453ef4142bf069feccc8e446bdb20c908d0d4d038e64c850de3390f146b",
+          "dataset_id": "bars:ibkr:trades:1d:848fe453ef4142bf",
+          "date": "2024-07-01",
+          "document_file_sha256": "1bbf2f170592b5837861e3f028b2dec8de534f92756575fa909a9b517618253d",
+          "store_relative_path": "spy/2024/2024-07-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0fed085d39aea711af670e08c0fae1e01548a5da4cbf7dddbe5b1870ddcee48d",
+          "dataset_id": "bars:ibkr:trades:1d:0fed085d39aea711",
+          "date": "2024-07-02",
+          "document_file_sha256": "773376a2188ef54a6ec6b8458fb0c44db8f79abce7cc228157f3f62567e4810e",
+          "store_relative_path": "spy/2024/2024-07-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d2af4035e46a4d37ae51338c49778179f7b955c886105046d8032d575853bb56",
+          "dataset_id": "bars:ibkr:trades:1d:d2af4035e46a4d37",
+          "date": "2024-07-03",
+          "document_file_sha256": "848333f39964ae8259f9c145a3a80211848c28e4c519b4d7af286bed287e18c1",
+          "store_relative_path": "spy/2024/2024-07-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "8380eddcc568f0b8a9ec2b754ecab5e1b8d4712ee655d734adb80d84ee21e0ef",
+          "dataset_id": "bars:ibkr:trades:1d:8380eddcc568f0b8",
+          "date": "2024-07-05",
+          "document_file_sha256": "ba6ca6ccb7ca5a01c12fdacd3fbcf01dd017fb01f32ec8c2341f5d3435deb8cf",
+          "store_relative_path": "spy/2024/2024-07-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "82780cf55882dc705a28763ffbef9ad1781ae71ca5e067e5eee4fe2c6e7d8945",
+          "dataset_id": "bars:ibkr:trades:1d:82780cf55882dc70",
+          "date": "2024-07-08",
+          "document_file_sha256": "f44ea69f9aceba294420d362db4979d807b8583b4de3cb2f6698507b113fbcd2",
+          "store_relative_path": "spy/2024/2024-07-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "997dd5d893d9ca4e9ab0389fd150b88ea06cda0a79ead966f9f059f39551f663",
+          "dataset_id": "bars:ibkr:trades:1d:997dd5d893d9ca4e",
+          "date": "2024-07-09",
+          "document_file_sha256": "80f888bc0be75b4bb8ed620fae9873babb68690d9cd1c5bad636f141f9865a26",
+          "store_relative_path": "spy/2024/2024-07-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e3ea6459224ac77ea4deafa41d42928263548ed388997b548314bc7c48fff761",
+          "dataset_id": "bars:ibkr:trades:1d:e3ea6459224ac77e",
+          "date": "2024-07-10",
+          "document_file_sha256": "4cfbb49827b9c3a08b2bb0e36c2c672cc02da8a6d7b1431898b3cec9274776c6",
+          "store_relative_path": "spy/2024/2024-07-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "029b4605e30a61adb67c924b96939ef9d635a3bd2546b3483a30f8f1c5abc3c1",
+          "dataset_id": "bars:ibkr:trades:1d:029b4605e30a61ad",
+          "date": "2024-07-11",
+          "document_file_sha256": "4ab3009cd1df9c5a4ff64b98a1f3e46a5657029e7d30ab814110c13ad7cdf5ad",
+          "store_relative_path": "spy/2024/2024-07-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "8bc4db323935bcb73b90ae861bc324e7b2140b7b35447bfa27fa27ed8bc0666b",
+          "dataset_id": "bars:ibkr:trades:1d:8bc4db323935bcb7",
+          "date": "2024-07-12",
+          "document_file_sha256": "658849424cfd90c8477b50518a42e1dd21483ad766e83206d38cb3553ddf9e6f",
+          "store_relative_path": "spy/2024/2024-07-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b21e7fa044194451a7c17b40a360aad875849a26a5c86e7d52fe4fc757fe4ed4",
+          "dataset_id": "bars:ibkr:trades:1d:b21e7fa044194451",
+          "date": "2024-07-15",
+          "document_file_sha256": "bf5147bfdb3d3bfb8e3afdf16476c7b41258543e2e86e02959510c68d0b9a722",
+          "store_relative_path": "spy/2024/2024-07-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "8a141aa07440fc77821045d11d17390d079a37d6b7b929fad18b4c2f7fbb1455",
+          "dataset_id": "bars:ibkr:trades:1d:8a141aa07440fc77",
+          "date": "2024-07-16",
+          "document_file_sha256": "f5fed20337aca4856cc2e94525de3e076c912dab90f4af0f3d2b47c7216874c9",
+          "store_relative_path": "spy/2024/2024-07-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d46536b148caa2a3357270cb21e2a56cbaadb1c07c34fcc79d1aa13e8af95fb2",
+          "dataset_id": "bars:ibkr:trades:1d:d46536b148caa2a3",
+          "date": "2024-07-17",
+          "document_file_sha256": "8bea37137342612a3d607d908f3184df02e4ac196d2c6636c9b9101469312ace",
+          "store_relative_path": "spy/2024/2024-07-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "61d7b4e7984dbbf3cc6ae923d4f4f8994b03c62ca621cf4fffc7f80c9d023708",
+          "dataset_id": "bars:ibkr:trades:1d:61d7b4e7984dbbf3",
+          "date": "2024-07-18",
+          "document_file_sha256": "87c6e84d8ecd0cb552810b298c3f5a66199e073d657da2354f8fd9c1c30a1c6a",
+          "store_relative_path": "spy/2024/2024-07-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "7fd139bd980fd62cf0fa186b392bf9a36381598f3ce34b6f71b4d2cf94b6645a",
+          "dataset_id": "bars:ibkr:trades:1d:7fd139bd980fd62c",
+          "date": "2024-07-19",
+          "document_file_sha256": "46b313511e5036eb1962c0aba0552dbad2baea77de34241add7e9c9194e97f70",
+          "store_relative_path": "spy/2024/2024-07-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "cb517682a168e1e488ecf95046b7cb6ae43529d9f8a2d58191c68e89761538d6",
+          "dataset_id": "bars:ibkr:trades:1d:cb517682a168e1e4",
+          "date": "2024-07-22",
+          "document_file_sha256": "e8f04b0f08fe03d73d0af660db4da63a22722a4365f1eac8c9c9c42ba23c9e9a",
+          "store_relative_path": "spy/2024/2024-07-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "3776a607caca11317089cf18a13a354ad3f434041c8eefeb60c4b5b384c91bf3",
+          "dataset_id": "bars:ibkr:trades:1d:3776a607caca1131",
+          "date": "2024-07-23",
+          "document_file_sha256": "3569d235345c37da1f1e0aef5d0ac93b5f597a59bc92777ebef51365c9c25885",
+          "store_relative_path": "spy/2024/2024-07-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "8f317caad514aeac81a257f976fdffe4fa92ef80e345cf24d105db8ea8b67d21",
+          "dataset_id": "bars:ibkr:trades:1d:8f317caad514aeac",
+          "date": "2024-07-24",
+          "document_file_sha256": "2694169c4752e5fad3ad2e90f7272c26b50281e80ab5b94f1245af1318d1533f",
+          "store_relative_path": "spy/2024/2024-07-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a52f8d8ec6bf17b810c2e96fce907aca7e33c76a6025579722e7787550043aab",
+          "dataset_id": "bars:ibkr:trades:1d:a52f8d8ec6bf17b8",
+          "date": "2024-07-25",
+          "document_file_sha256": "b3d87754e58dc9e63c73b6092ac60b418536e5546a875acd324100a84f3b1b13",
+          "store_relative_path": "spy/2024/2024-07-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0837115e39c1e3fc385bea4deffaadc631738ad69e70162875056afdfee2e654",
+          "dataset_id": "bars:ibkr:trades:1d:0837115e39c1e3fc",
+          "date": "2024-07-26",
+          "document_file_sha256": "a24d73f981a9f33fe8e46b5a0ac3b06c8f0f0ba03395e8a6c765a3582dac94e2",
+          "store_relative_path": "spy/2024/2024-07-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "901f5843775ef7263e8d2273c67e7bbe212a3f216a74fca7320a685c6110e73a",
+          "dataset_id": "bars:ibkr:trades:1d:901f5843775ef726",
+          "date": "2024-07-29",
+          "document_file_sha256": "dec9bbac7d0a44de34c17120f5737a478df9613ab9dd464a5010acb759a59e2f",
+          "store_relative_path": "spy/2024/2024-07-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a82c683d423f45bb7ca59b842fbd535620a0c03d4e14b704590014b7bfc6b476",
+          "dataset_id": "bars:ibkr:trades:1d:a82c683d423f45bb",
+          "date": "2024-07-30",
+          "document_file_sha256": "36d96b15ec28d4c617f2b64dd531064a0f164183bddd0400f0e4831d046e1444",
+          "store_relative_path": "spy/2024/2024-07-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "014eb4f32dd102b41f0ecb224cc6fef2b8ce191b76a734fe3c66b13b5c555e99",
+          "dataset_id": "bars:ibkr:trades:1d:014eb4f32dd102b4",
+          "date": "2024-07-31",
+          "document_file_sha256": "679ba6d32bfa58735a9825a6ee4a177c0f35316b79301a9a607a9a4a59a7e8bd",
+          "store_relative_path": "spy/2024/2024-07-31.json.gz"
+        },
+        {
+          "dataset_content_sha256": "3f7d3224fc241bba7f7ae53e1c7cdbe68aa6d0754c78e0ebca1a7db3bbf16f9e",
+          "dataset_id": "bars:ibkr:trades:1d:3f7d3224fc241bba",
+          "date": "2024-08-01",
+          "document_file_sha256": "5bf8075c536f05194e68ddf8d0e2b8a7744a438e30ac7cb5edc01573e0d7c265",
+          "store_relative_path": "spy/2024/2024-08-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c057916e6a521256f702ebf411dc676a39a748767900963f716f34d480612077",
+          "dataset_id": "bars:ibkr:trades:1d:c057916e6a521256",
+          "date": "2024-08-02",
+          "document_file_sha256": "66b5c91c6617cf0be96da9cd9c806031fde44649e6473f2aa9b504da98c7ede5",
+          "store_relative_path": "spy/2024/2024-08-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c10bbd045d64c2e3bff600171cdafc81a9b8c5b131736c48e1961f9d81330745",
+          "dataset_id": "bars:ibkr:trades:1d:c10bbd045d64c2e3",
+          "date": "2024-08-05",
+          "document_file_sha256": "d2120a78eebafde9d33852d7dd89d93a3e63f8085cfebbaff1b0a169f5c6c6ad",
+          "store_relative_path": "spy/2024/2024-08-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "53229fc9001476aaeaadbcaebf7fb023bdee4a591a4795f0a72c878c260a2bbc",
+          "dataset_id": "bars:ibkr:trades:1d:53229fc9001476aa",
+          "date": "2024-08-06",
+          "document_file_sha256": "1695e5913f16cb70a51d689c500cd88bb0d3b2a35b6ccfd723c7010c177e58d3",
+          "store_relative_path": "spy/2024/2024-08-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b86147dc34a42433da72233d3f8f6d15fe99faf4e85e10a25094d397e1708e4d",
+          "dataset_id": "bars:ibkr:trades:1d:b86147dc34a42433",
+          "date": "2024-08-07",
+          "document_file_sha256": "767b30fe4290f542d66f1a04b5ebd20f62551474e15fbc550aadc085771ac386",
+          "store_relative_path": "spy/2024/2024-08-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1b634dc714d3ee597608b4b28bc11159833677b73942c580b25e75717196dd53",
+          "dataset_id": "bars:ibkr:trades:1d:1b634dc714d3ee59",
+          "date": "2024-08-08",
+          "document_file_sha256": "78262cf39b3e12e52f6bed0fe80883781f5627854acbef469d61eb09e27f15a7",
+          "store_relative_path": "spy/2024/2024-08-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "cd9dfffa23054cd29d61e4ac7a70543177489e3778d9b99a9844f36bfe82b547",
+          "dataset_id": "bars:ibkr:trades:1d:cd9dfffa23054cd2",
+          "date": "2024-08-09",
+          "document_file_sha256": "7ad6bb3026dce38582e7b71eb2a9bcfea54cfb41414ea32ce4732d6c92f75b89",
+          "store_relative_path": "spy/2024/2024-08-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "6d530d89ed2dba922595ee47bb989ca4f832d7743196fb9b22a0ff2513780acb",
+          "dataset_id": "bars:ibkr:trades:1d:6d530d89ed2dba92",
+          "date": "2024-08-12",
+          "document_file_sha256": "d8886cd8729e930c440488119dbdcacc921a4dbf6d3ae0dbbd8542c1ed5b6f56",
+          "store_relative_path": "spy/2024/2024-08-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "90a7bb4c134b3daf44be2d44874262fbf173aa5b18581b6497e7f91f743e67c7",
+          "dataset_id": "bars:ibkr:trades:1d:90a7bb4c134b3daf",
+          "date": "2024-08-13",
+          "document_file_sha256": "b7b59c2ff426170dc8a0b1303b49e8c15e16c4b119583c959ad7c243e27398ac",
+          "store_relative_path": "spy/2024/2024-08-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "de3118248df4e38998823e0dde132493d4c1db3c40368d8cc5b15b6fe6f4a353",
+          "dataset_id": "bars:ibkr:trades:1d:de3118248df4e389",
+          "date": "2024-08-14",
+          "document_file_sha256": "3499868b21d94f87f7999d234fa2969d6820be1a37d74721a4cb387683e61644",
+          "store_relative_path": "spy/2024/2024-08-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "bf413401693fd9493676b1fa444126b6bbac0d4c8eb1a9c9aee2a26c0ee893db",
+          "dataset_id": "bars:ibkr:trades:1d:bf413401693fd949",
+          "date": "2024-08-15",
+          "document_file_sha256": "4d8b988c8d7193baadfd537a8c56175490039484ddb1fc5d5d28cda29b2c48ef",
+          "store_relative_path": "spy/2024/2024-08-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1295b0e6863afc65e95a558be7b3a56866cb56b125fac00c273a0cb53c138d82",
+          "dataset_id": "bars:ibkr:trades:1d:1295b0e6863afc65",
+          "date": "2024-08-16",
+          "document_file_sha256": "579395d0e4614daa6298bf4ca5f891b48e26f821d32ff188dd3db953260fc80d",
+          "store_relative_path": "spy/2024/2024-08-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "77cfc20dc41edb50553d08c74ac73b625000596957e17a06b54eaeccfd0ed339",
+          "dataset_id": "bars:ibkr:trades:1d:77cfc20dc41edb50",
+          "date": "2024-08-19",
+          "document_file_sha256": "ac60ea59ce9533ab5144e30870d43fb7aff31eaa0f00a32456f912792610e3a0",
+          "store_relative_path": "spy/2024/2024-08-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "02f00cb5a1db878ee93a71641411652a96de81629e609a7853fb277a9bb46ca2",
+          "dataset_id": "bars:ibkr:trades:1d:02f00cb5a1db878e",
+          "date": "2024-08-20",
+          "document_file_sha256": "fc4574e5dd3f22e5d8b344717fcf60c8d640c4c7a55773a6724ff3a5421322f0",
+          "store_relative_path": "spy/2024/2024-08-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d91ecf397552f87375cb0083086276f365d149ddae98e3b88554d1b2eb06d129",
+          "dataset_id": "bars:ibkr:trades:1d:d91ecf397552f873",
+          "date": "2024-08-21",
+          "document_file_sha256": "27e3c7df4a9b1e71ba68e718531f456c2874933b02029649f11942f32e6d1c6b",
+          "store_relative_path": "spy/2024/2024-08-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "bc7b873c9c649ace493bdb9c1ec5c6499fe3688bae7a66a5942c5885f085b490",
+          "dataset_id": "bars:ibkr:trades:1d:bc7b873c9c649ace",
+          "date": "2024-08-22",
+          "document_file_sha256": "509340a158901b806912cce0e3bdef0b5b05c1a1a9ae3649b93890caa19993ec",
+          "store_relative_path": "spy/2024/2024-08-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "38e3d86fa5b92cfe95736c5945950bc4b80cc11b4f0778d64c3acd5d300bf536",
+          "dataset_id": "bars:ibkr:trades:1d:38e3d86fa5b92cfe",
+          "date": "2024-08-23",
+          "document_file_sha256": "83ecb5d8c779deccafa3cd654cbacdf38368e05c236f42b5a23f375aec5fca69",
+          "store_relative_path": "spy/2024/2024-08-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d70874a9680f18108269284e2d96c250f3bbcd97754e85fc1afb87d6161190ea",
+          "dataset_id": "bars:ibkr:trades:1d:d70874a9680f1810",
+          "date": "2024-08-26",
+          "document_file_sha256": "9ee12f06d41871a43870fe7942a2cc6dcd2fe901bb740268e195f7ebf5245f6d",
+          "store_relative_path": "spy/2024/2024-08-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1d5c1bbc5bc1045853b1a59e50eb92c459c018dc03101af686aa4d7c35458929",
+          "dataset_id": "bars:ibkr:trades:1d:1d5c1bbc5bc10458",
+          "date": "2024-08-27",
+          "document_file_sha256": "f73e08f6ac9ad7ce843c50580758b2418e4dc6920d3895d3a2f532185ca0d2c2",
+          "store_relative_path": "spy/2024/2024-08-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b31a7cfd22cc1fd8f91efa290ecb277997b290956bb9f0773bd8fa06343cbf60",
+          "dataset_id": "bars:ibkr:trades:1d:b31a7cfd22cc1fd8",
+          "date": "2024-08-28",
+          "document_file_sha256": "30b8d72b35447c52a5e2a2dd449457b34ca7b3cb17d8b9116a3948b9cc85b249",
+          "store_relative_path": "spy/2024/2024-08-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f70b7c78e59cac6a4eed95015909e18c24120f0e9842c99a27757639ed0660ee",
+          "dataset_id": "bars:ibkr:trades:1d:f70b7c78e59cac6a",
+          "date": "2024-08-29",
+          "document_file_sha256": "9ef8632bc434cff34f7bd6fd41bc5c57b9a987e3c80e0997a6eaa3dc7864ffa2",
+          "store_relative_path": "spy/2024/2024-08-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ec53bd5a3fd2bfb710676be1ca9dc38b4c065bcd2d4863fdcf74fee30145588e",
+          "dataset_id": "bars:ibkr:trades:1d:ec53bd5a3fd2bfb7",
+          "date": "2024-08-30",
+          "document_file_sha256": "811b1fc94517fdfeae92ab48c13a369cfdba07c9b92a4c1ee6bff6ef13c293ae",
+          "store_relative_path": "spy/2024/2024-08-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "35ccd7dec338b32c1dcfaf32049b48eef419392b5180f307567fcc351718db3e",
+          "dataset_id": "bars:ibkr:trades:1d:35ccd7dec338b32c",
+          "date": "2024-09-03",
+          "document_file_sha256": "b20d2d5c9a5a85e32d1665d90a3063a57da3584520a799f127e70f40189bf474",
+          "store_relative_path": "spy/2024/2024-09-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ea0aebef5c5678019de11e9819686f3affa73138de25cf6d4c640111376214e0",
+          "dataset_id": "bars:ibkr:trades:1d:ea0aebef5c567801",
+          "date": "2024-09-04",
+          "document_file_sha256": "62b84d6437f24bd01ebde956a31d6dedfbbcedff43b32a415ad87a99826f48df",
+          "store_relative_path": "spy/2024/2024-09-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "99dc502b06fa9cc4a2e78ecf03f7d7ad06f42e1df7601498d1b67ff839111e51",
+          "dataset_id": "bars:ibkr:trades:1d:99dc502b06fa9cc4",
+          "date": "2024-09-05",
+          "document_file_sha256": "996c5b620db09f321ce766ea8b94261cac017d2d3843374d5c867bf4f38717fe",
+          "store_relative_path": "spy/2024/2024-09-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "30abdae15ec5dc4550e53ac3d51512ddf3304720eb73b2a744948eb61a1d9247",
+          "dataset_id": "bars:ibkr:trades:1d:30abdae15ec5dc45",
+          "date": "2024-09-06",
+          "document_file_sha256": "9e2fda9265d0f559ae6e074afbb5d88b3d0776394496c91915a537b1eb36fa39",
+          "store_relative_path": "spy/2024/2024-09-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "947a13092ff1d9b0789d57d8bae24f10c4e0fc4ce342dd9c895b47998ec2b73a",
+          "dataset_id": "bars:ibkr:trades:1d:947a13092ff1d9b0",
+          "date": "2024-09-09",
+          "document_file_sha256": "950197dcbbe2c5cfaceafad4d95c624d0508408d7af0524436e2d3484bba74bd",
+          "store_relative_path": "spy/2024/2024-09-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a09896e96736abbdd48775428baeb8016860270bb5e5c4f8bd55eab0b2ad68f5",
+          "dataset_id": "bars:ibkr:trades:1d:a09896e96736abbd",
+          "date": "2024-09-10",
+          "document_file_sha256": "86b7c4903f5a41515dc22eac700d0373dc2ba01c388306f25a88f4da8c8489bb",
+          "store_relative_path": "spy/2024/2024-09-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "477fc08eedc29e96b99feaa5bf0b939024fc881317c075bce1ee0f058b8a6ac9",
+          "dataset_id": "bars:ibkr:trades:1d:477fc08eedc29e96",
+          "date": "2024-09-11",
+          "document_file_sha256": "4c320ce0ba77cfba2d67b7c12a11867235abbbad3c7f502da9687cae74ad60a2",
+          "store_relative_path": "spy/2024/2024-09-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "13bc13f939f7b633674d035a56a858827921eb0c56fa87d1d209bfd346bbe99a",
+          "dataset_id": "bars:ibkr:trades:1d:13bc13f939f7b633",
+          "date": "2024-09-12",
+          "document_file_sha256": "21928dea72911d76b3b46c6ad3954aae99a5474e767d1bd9be05bbb45138d0be",
+          "store_relative_path": "spy/2024/2024-09-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "eac2eca53676c43aa3cc9586738a9cc298292fd5effd4f2666ea13a5d3d6a930",
+          "dataset_id": "bars:ibkr:trades:1d:eac2eca53676c43a",
+          "date": "2024-09-13",
+          "document_file_sha256": "399bf43c1ade04391d29cb5b1c43636ad7fc534b90ddbcf467bd9943319f6d74",
+          "store_relative_path": "spy/2024/2024-09-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "93d407691e8653e0851bdc71fb2745775028d5e79eeab07d45429746b3a19f5e",
+          "dataset_id": "bars:ibkr:trades:1d:93d407691e8653e0",
+          "date": "2024-09-16",
+          "document_file_sha256": "ebf376d3eca1de78d1718529445209e34b77ae3ba9070b5dc50e82cf53ebc534",
+          "store_relative_path": "spy/2024/2024-09-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "4e8183213dfa7779cbf551e5d66cfd1e2e3ff7e5a77906081c8c4145b17f7a75",
+          "dataset_id": "bars:ibkr:trades:1d:4e8183213dfa7779",
+          "date": "2024-09-17",
+          "document_file_sha256": "c3ec2e4e4bee2af4e7d37437edae0277845b8d321a02727e740e65abe59fa14b",
+          "store_relative_path": "spy/2024/2024-09-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e28dec99307a437ba3efbe6017e66a5d975b6972304003797e57dd289e50e490",
+          "dataset_id": "bars:ibkr:trades:1d:e28dec99307a437b",
+          "date": "2024-09-18",
+          "document_file_sha256": "0262048367aa253a781e28671b33a14374df9d96ae79a036cd96355fd2701f95",
+          "store_relative_path": "spy/2024/2024-09-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "3bba432bb5bc0331c341f5bcb3dbeda1345d0c676ef787a54ee478e3ef925513",
+          "dataset_id": "bars:ibkr:trades:1d:3bba432bb5bc0331",
+          "date": "2024-09-19",
+          "document_file_sha256": "29c8b6da835f54828d9f5f2a906b17ad79046ba92b95dc2d0d1c7a236b32ed75",
+          "store_relative_path": "spy/2024/2024-09-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e947354310774c0e8aa8e13020090cc1ea6dcce4671de8401a574b6fa0acc467",
+          "dataset_id": "bars:ibkr:trades:1d:e947354310774c0e",
+          "date": "2024-09-20",
+          "document_file_sha256": "7ad29b036fb583391cd8a74ec65485f7d47659a556ae69311c7c052306a4aaa8",
+          "store_relative_path": "spy/2024/2024-09-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9902426ac127c8e9e2cddd74ba8c0164f869a597d39401ef181624b3e2b718c5",
+          "dataset_id": "bars:ibkr:trades:1d:9902426ac127c8e9",
+          "date": "2024-09-23",
+          "document_file_sha256": "b6d549161e03b59c216b4acf922741b013f83d960c504cf9ec3fdd0a966aa208",
+          "store_relative_path": "spy/2024/2024-09-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "3b8573c2c8de37c43e82632947810c1147820948599cf3c4eee0d2d8e9313d25",
+          "dataset_id": "bars:ibkr:trades:1d:3b8573c2c8de37c4",
+          "date": "2024-09-24",
+          "document_file_sha256": "d519fa5b4b214176b15609c336092653250f013a6bf48cbdf71e7daf5668735a",
+          "store_relative_path": "spy/2024/2024-09-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b0ddcbc4c3e02108844e0e0cf9b56f2503fbe271bec5c28bf53e260aae8a970a",
+          "dataset_id": "bars:ibkr:trades:1d:b0ddcbc4c3e02108",
+          "date": "2024-09-25",
+          "document_file_sha256": "aa9f54cb17183b131f7873d558e7acf77015dc38c5bf3aae5518a72cd7b384b2",
+          "store_relative_path": "spy/2024/2024-09-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "dd3d453f08dc5d8ca208f4aa39eed926606ec9cda4adf76b053432d463cec775",
+          "dataset_id": "bars:ibkr:trades:1d:dd3d453f08dc5d8c",
+          "date": "2024-09-26",
+          "document_file_sha256": "c894d5325f48e9341117569ce6db048ce2b6570c93657acfc354d3ae27db8ba3",
+          "store_relative_path": "spy/2024/2024-09-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d6fc2112ebc05ca250a9e7886df366b6deeea64e3c2b0d2b0e7aec86c92c6305",
+          "dataset_id": "bars:ibkr:trades:1d:d6fc2112ebc05ca2",
+          "date": "2024-09-27",
+          "document_file_sha256": "6878842ba25881e2017b2a3ca2d22728834911e97d932c7b842a4a1f32c278ae",
+          "store_relative_path": "spy/2024/2024-09-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d9d51d92e7f57daa9122bf43a49133c57066b34bac30617b208307bee174a662",
+          "dataset_id": "bars:ibkr:trades:1d:d9d51d92e7f57daa",
+          "date": "2024-09-30",
+          "document_file_sha256": "2ad70d854000515c7b5176e1eb8825299a87d755c2e0001d46140a8141ff3fb2",
+          "store_relative_path": "spy/2024/2024-09-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0a4647fc1e28eca3b8606645c4cfc2dfcfb73ef4b2f57116ed7c6d106dd09ea5",
+          "dataset_id": "bars:ibkr:trades:1d:0a4647fc1e28eca3",
+          "date": "2024-10-01",
+          "document_file_sha256": "b2947c6897060a39c8e1beaeb98cec54de2f3122f785f66ede6137d118636b69",
+          "store_relative_path": "spy/2024/2024-10-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c84a7bbb34de1e56df73133a9550aefc2854d373e3f450407ea4cc1e36f8c266",
+          "dataset_id": "bars:ibkr:trades:1d:c84a7bbb34de1e56",
+          "date": "2024-10-02",
+          "document_file_sha256": "020aa5f8ae70a03286100b5018581fd5e37762d9b252d72da8e781de990833c7",
+          "store_relative_path": "spy/2024/2024-10-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "df5eb001bfc736f7771e9e71d787dede5c6c19ce0d51c099705dd58a39cb5c72",
+          "dataset_id": "bars:ibkr:trades:1d:df5eb001bfc736f7",
+          "date": "2024-10-03",
+          "document_file_sha256": "ea9d1ebe0da7e97fbfb667ef7a10afd122f86081285c690285e305eea09f04b8",
+          "store_relative_path": "spy/2024/2024-10-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b5ea861aa80b8bd65b624d00692f7dfe4aaefeb7e2792c933894d783ff91f252",
+          "dataset_id": "bars:ibkr:trades:1d:b5ea861aa80b8bd6",
+          "date": "2024-10-04",
+          "document_file_sha256": "9791d9cb0b2eb64b8745c4fa89c8c79399a4ba0882c79f432006529ec7e83898",
+          "store_relative_path": "spy/2024/2024-10-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "06366c0b75b0f38bccba5aab4a5eed5a5fee606e992da7d83f42c652e588468c",
+          "dataset_id": "bars:ibkr:trades:1d:06366c0b75b0f38b",
+          "date": "2024-10-07",
+          "document_file_sha256": "fc52a98bc94aeeaf4c2e0397057cc9ff4e273a8e1927913675c38e972c3d740f",
+          "store_relative_path": "spy/2024/2024-10-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0aa48c5568b908b69dc88dc25a903eefbaa9855782402a68dc6f9bfb38cd03ac",
+          "dataset_id": "bars:ibkr:trades:1d:0aa48c5568b908b6",
+          "date": "2024-10-08",
+          "document_file_sha256": "506f63770bd50ed2064781fd1cc1f95321daa7ea10510f8d769073e55c72fccc",
+          "store_relative_path": "spy/2024/2024-10-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "7470ef064d3cd3b618b44ebb36552bbc362dbdfab5e5f2f4c1e6663bfd715fdf",
+          "dataset_id": "bars:ibkr:trades:1d:7470ef064d3cd3b6",
+          "date": "2024-10-09",
+          "document_file_sha256": "05de7cbbfaa886e5a73e539ab29ecf8ddaf5b0e98c9338c0f8495241bacc315d",
+          "store_relative_path": "spy/2024/2024-10-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "7ed924101dff2cca6ef6dd844d1169ce90d11d1206d303e5aeba84ac93e3a0ce",
+          "dataset_id": "bars:ibkr:trades:1d:7ed924101dff2cca",
+          "date": "2024-10-10",
+          "document_file_sha256": "bd5bef6c600c3a5d3ff8adf7ce3cbab761f75dd04fa1597bc73fdddfca42598b",
+          "store_relative_path": "spy/2024/2024-10-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "3eb415ba1bb852d84fa2d3639dd38a94998b6668f817f8dc544a1fffb8018e52",
+          "dataset_id": "bars:ibkr:trades:1d:3eb415ba1bb852d8",
+          "date": "2024-10-11",
+          "document_file_sha256": "13a9b6902bbdb0fec7ab76f10f1912a7cb9eeaef95d783c104d30412371020eb",
+          "store_relative_path": "spy/2024/2024-10-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c55c4815969297baa1d7235f9c7be18ec218e8f9d531950cd02b2925e14f40c9",
+          "dataset_id": "bars:ibkr:trades:1d:c55c4815969297ba",
+          "date": "2024-10-14",
+          "document_file_sha256": "8819282517c46905fd4d84498eba230ac62bf680b2c2085a74ea00e37ac9e6ca",
+          "store_relative_path": "spy/2024/2024-10-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "90eabf84ce499763fed0b0967c74d3e66c8604b5418055bacdb10becf53b67c8",
+          "dataset_id": "bars:ibkr:trades:1d:90eabf84ce499763",
+          "date": "2024-10-15",
+          "document_file_sha256": "140f087ba32cae97dd2961b0d49798eacf9c6f9c8b62f9bf203e5a699cd5b03a",
+          "store_relative_path": "spy/2024/2024-10-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "8ed3a8c498c3ed277ff240ba9dcbf444b8891ac6203e077c8563a24c6e90c73f",
+          "dataset_id": "bars:ibkr:trades:1d:8ed3a8c498c3ed27",
+          "date": "2024-10-16",
+          "document_file_sha256": "62bbaaab4a06336143b7847ef23d25f01276494bc983723f8f5bc9349657771e",
+          "store_relative_path": "spy/2024/2024-10-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2653a7f07c3a84585c25119d088ec81aa5ff7c5c1261cf50d18827a7cc280531",
+          "dataset_id": "bars:ibkr:trades:1d:2653a7f07c3a8458",
+          "date": "2024-10-17",
+          "document_file_sha256": "dc963a2e34468a9c857db7b21da43b18079fa23f9f8f41a513ba6a2a30133791",
+          "store_relative_path": "spy/2024/2024-10-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "acd6e04318b81adfff428677dd9307e1b2356a134c6eb5cc38b6c00974cefb70",
+          "dataset_id": "bars:ibkr:trades:1d:acd6e04318b81adf",
+          "date": "2024-10-18",
+          "document_file_sha256": "a941227204c3c0dfec2d4db9aa171009d62b753619dcaface6e50270296da2cd",
+          "store_relative_path": "spy/2024/2024-10-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f1aa10948ab71610aecd9154eb9b2d7be383cd2b008fc2470d6f9f05857798a3",
+          "dataset_id": "bars:ibkr:trades:1d:f1aa10948ab71610",
+          "date": "2024-10-21",
+          "document_file_sha256": "3726b5e537f1a3d032d430ffed0bfd01950bb45092e1fd8287ff23b4644e62c5",
+          "store_relative_path": "spy/2024/2024-10-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "3e690081458d6299205f6d1290c483b6b033feb7b08a35a66d58140b2f5eb0e5",
+          "dataset_id": "bars:ibkr:trades:1d:3e690081458d6299",
+          "date": "2024-10-22",
+          "document_file_sha256": "140f838ba6dd681b93433bfb0deaef315fcbc91e2f970318fe2d49136362657f",
+          "store_relative_path": "spy/2024/2024-10-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "8597cf2f63fe2686519e01f2df5c8cacbfdb0dd67e10bfbfc3e74596e9cf185a",
+          "dataset_id": "bars:ibkr:trades:1d:8597cf2f63fe2686",
+          "date": "2024-10-23",
+          "document_file_sha256": "cd320fad324a26857b5a84d9bb5dff808270385753683f0dbc4480f17f671798",
+          "store_relative_path": "spy/2024/2024-10-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a52eeb076b2ccaadd5f5fd0664a284cca00efe7a59d6572c6ec93723be503c85",
+          "dataset_id": "bars:ibkr:trades:1d:a52eeb076b2ccaad",
+          "date": "2024-10-24",
+          "document_file_sha256": "94d4354650782ab5d78346432c40ef66cefec9e4dc9cc6142a0ca8131fd92ed4",
+          "store_relative_path": "spy/2024/2024-10-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "46cc24e82a59c438aaeb93a6f73a077db6cf0bbd2116fe6812dcba815d3a5b05",
+          "dataset_id": "bars:ibkr:trades:1d:46cc24e82a59c438",
+          "date": "2024-10-25",
+          "document_file_sha256": "5eb58c7fd8a2a9d269112581c41919e309587128720fcb5a701ddbf53c87287a",
+          "store_relative_path": "spy/2024/2024-10-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d61db6b788056aa8201119bbbb8c48102f59c44851904094e1af40006c6fd141",
+          "dataset_id": "bars:ibkr:trades:1d:d61db6b788056aa8",
+          "date": "2024-10-28",
+          "document_file_sha256": "609eab3fb24218b559ab4466a0976367a5975a784850143742e7c0b67678caba",
+          "store_relative_path": "spy/2024/2024-10-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "814ee68061d235831685bd691a4f722a9aaf54c9fbdfef85fc0e1ed27baa0006",
+          "dataset_id": "bars:ibkr:trades:1d:814ee68061d23583",
+          "date": "2024-10-29",
+          "document_file_sha256": "0a632f7efb5d1fb0e715c8f411c4f217bad4ca96c305541cc93f506e676b89ab",
+          "store_relative_path": "spy/2024/2024-10-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "555839b1b0cebfd31db75edc308b6d3850f851c8930f531442e11a103db994cd",
+          "dataset_id": "bars:ibkr:trades:1d:555839b1b0cebfd3",
+          "date": "2024-10-30",
+          "document_file_sha256": "961409fd8ab9471e952412141ed60e820144c2c89f9f28d264fabe10df47adc1",
+          "store_relative_path": "spy/2024/2024-10-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0e9d0bc1aacc9457410a28997cf18a7cabde3c64a2f7d1e09c508209f5f26c1a",
+          "dataset_id": "bars:ibkr:trades:1d:0e9d0bc1aacc9457",
+          "date": "2024-10-31",
+          "document_file_sha256": "89011749ebad893063ca0dd1a960f62cea7beb407f76b97496fdc6ec8c162232",
+          "store_relative_path": "spy/2024/2024-10-31.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9643a707aa23149a7206841f4a3517c0f9be427ed870a1b2b0f52f7074e77eb5",
+          "dataset_id": "bars:ibkr:trades:1d:9643a707aa23149a",
+          "date": "2024-11-01",
+          "document_file_sha256": "ff64300de9c4fbc4de9892752cd81204002e5a1fa3542b87bf45dee23195963d",
+          "store_relative_path": "spy/2024/2024-11-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "fde350449f24df3f7c63007fc3e882fc76667ad9f658657597d276460d300d5f",
+          "dataset_id": "bars:ibkr:trades:1d:fde350449f24df3f",
+          "date": "2024-11-04",
+          "document_file_sha256": "7a475cfc542d3bb7d3e703f2cbb479d5aa91787c4c507d2272f5e262d6a6e37d",
+          "store_relative_path": "spy/2024/2024-11-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "31c49661de303b25faf8fd37983ecd10cc28fd4e86891229c38281c62711414b",
+          "dataset_id": "bars:ibkr:trades:1d:31c49661de303b25",
+          "date": "2024-11-05",
+          "document_file_sha256": "05e15d3170739b9c413d2d29a0d87f8aa46e76345cfb6d9b7666b0ee037ee2b4",
+          "store_relative_path": "spy/2024/2024-11-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "21195461dd1bb9f0350c6a8171c8d4eb3afea1822c746b46d1378fbe6854c5e2",
+          "dataset_id": "bars:ibkr:trades:1d:21195461dd1bb9f0",
+          "date": "2024-11-06",
+          "document_file_sha256": "86394e893739df1bc1b009a93652932993ebfdae757c6dde47fdde70a4ec0103",
+          "store_relative_path": "spy/2024/2024-11-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e041a35df76438ec945e2dc973280a4ab2374417885522da364c80dcb0326d1e",
+          "dataset_id": "bars:ibkr:trades:1d:e041a35df76438ec",
+          "date": "2024-11-07",
+          "document_file_sha256": "b3d15ee7202c046b6b3bf4197924323cef43714f157a769eda22ceb71909e4f4",
+          "store_relative_path": "spy/2024/2024-11-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2e7101ad8919b882f6cb6446949148bbfce7199f21735b9cfd4b849699c5fe38",
+          "dataset_id": "bars:ibkr:trades:1d:2e7101ad8919b882",
+          "date": "2024-11-08",
+          "document_file_sha256": "ab24cf8c3ff7d17eb5b5066343f8aca14f82874840c3a7270d4d69566fce69c7",
+          "store_relative_path": "spy/2024/2024-11-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c5e3fb06c1df9f749a046070872f3496ce2f35e229095746f9d3e6adfda6df8f",
+          "dataset_id": "bars:ibkr:trades:1d:c5e3fb06c1df9f74",
+          "date": "2024-11-11",
+          "document_file_sha256": "17973429eae9b2b27988d30ac545033e4d2521c89918bedc612d871ed46591b6",
+          "store_relative_path": "spy/2024/2024-11-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "863877855652a6fff44a37801a875befeed693373ad52caa24ae3cbb03b95c3d",
+          "dataset_id": "bars:ibkr:trades:1d:863877855652a6ff",
+          "date": "2024-11-12",
+          "document_file_sha256": "b0d18801ecbd2822fe5adb987c7381ba96c543ed2dcd2d12d5caaaa1cec95b7f",
+          "store_relative_path": "spy/2024/2024-11-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "451ab8d1ebf92376906577a05df9b1339cd79d9547f9b6b87fb64985d649a3f3",
+          "dataset_id": "bars:ibkr:trades:1d:451ab8d1ebf92376",
+          "date": "2024-11-13",
+          "document_file_sha256": "31d403d3638895f4387032f278a18385dc5b4e6abcce25838ed5541b93c98971",
+          "store_relative_path": "spy/2024/2024-11-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c0d81ba7c53e4d1bba3a153abff1947823c0a6b42df6a626d8d59a815874c461",
+          "dataset_id": "bars:ibkr:trades:1d:c0d81ba7c53e4d1b",
+          "date": "2024-11-14",
+          "document_file_sha256": "e635852c8a61d11b4822658d00b48142542750c30270b47694586e7a3d114aa9",
+          "store_relative_path": "spy/2024/2024-11-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "433c260d7c1cfb735d3ac4d20dae63733dc2b118ecba1d67b4f1397905e8fb08",
+          "dataset_id": "bars:ibkr:trades:1d:433c260d7c1cfb73",
+          "date": "2024-11-15",
+          "document_file_sha256": "b7874210d7e095c984663a5dc1aadcf1632be480d6928047710e906199065093",
+          "store_relative_path": "spy/2024/2024-11-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e1bb6addfee05d193a4291d7caef5c25fd64f8891ad8de68417f01f05c1136d7",
+          "dataset_id": "bars:ibkr:trades:1d:e1bb6addfee05d19",
+          "date": "2024-11-18",
+          "document_file_sha256": "b2baa7cbc1cb5ef786643931f9b1d7fa3e1e1f9458535d0427a18b11b827248e",
+          "store_relative_path": "spy/2024/2024-11-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "dd5b06402d1382f675accb088a6930acf09a19b5e18e4842ee5ad1bfd8a0d6b8",
+          "dataset_id": "bars:ibkr:trades:1d:dd5b06402d1382f6",
+          "date": "2024-11-19",
+          "document_file_sha256": "be665c6cf0f0560d314288fa4ae5607898751310210d43f6379d22cdb8e6db31",
+          "store_relative_path": "spy/2024/2024-11-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d3621d19de35d06d81f57de190cd3b687fc26d19e5865a1f150812439bc45ecd",
+          "dataset_id": "bars:ibkr:trades:1d:d3621d19de35d06d",
+          "date": "2024-11-20",
+          "document_file_sha256": "0d5ea33185784b5c72da660029eff54c63a3a98821be736859e15474b6cbc95e",
+          "store_relative_path": "spy/2024/2024-11-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d2bc79c97846b8a02bff43ca4060e9e08373421c1e15a092f0ca8bfbad144e27",
+          "dataset_id": "bars:ibkr:trades:1d:d2bc79c97846b8a0",
+          "date": "2024-11-21",
+          "document_file_sha256": "39a0a3a885c11704dc7cd1429fd261077024e83131d7308944e7c306adff7706",
+          "store_relative_path": "spy/2024/2024-11-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d4ae97d0f32753ea27c2258c062659bd1e7baa4005d5326cf17872dea496eed5",
+          "dataset_id": "bars:ibkr:trades:1d:d4ae97d0f32753ea",
+          "date": "2024-11-22",
+          "document_file_sha256": "470fe06884d70ae241ee8fe8e0085208d55105d7c0ea1aa88d13decb5e42d8bf",
+          "store_relative_path": "spy/2024/2024-11-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2595d2535c75d0ee1906100bcb9cb7513adced73ab4fa5297399e09910bc70c3",
+          "dataset_id": "bars:ibkr:trades:1d:2595d2535c75d0ee",
+          "date": "2024-11-25",
+          "document_file_sha256": "1071db1e99cb824487de3864fd9d75c6a49064816c031628f954c817e501be3e",
+          "store_relative_path": "spy/2024/2024-11-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b364b017ffb0a9426005cd2650f1ff7b08b2a353bd4f7da77d34b8e991629336",
+          "dataset_id": "bars:ibkr:trades:1d:b364b017ffb0a942",
+          "date": "2024-11-26",
+          "document_file_sha256": "654e9cb1029160d695cac0a0cf2a1675c71f057d83217e99473bcd29e8fed5a3",
+          "store_relative_path": "spy/2024/2024-11-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "993980046f77e20317e2fbdacf66927119fb3ea118c2fcca3a05b9e9a61eb216",
+          "dataset_id": "bars:ibkr:trades:1d:993980046f77e203",
+          "date": "2024-11-27",
+          "document_file_sha256": "030d1a3d7775c6c07fb46265ba63231916050d3112b4e80d2d22e2be2bb0ffba",
+          "store_relative_path": "spy/2024/2024-11-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a37666c4640056e09cb9ab9efc4ea6dc0e4ebcfb72e425ef3440ea41355c4f48",
+          "dataset_id": "bars:ibkr:trades:1d:a37666c4640056e0",
+          "date": "2024-11-29",
+          "document_file_sha256": "c6ee1aa3719547d5f84c648e79e2963e3c74bf4969c29eda476be75a1b6f27fa",
+          "store_relative_path": "spy/2024/2024-11-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "abec2ea849dd79bf047dfe08d8119c78594aceca663eb690e7b51686f19e711d",
+          "dataset_id": "bars:ibkr:trades:1d:abec2ea849dd79bf",
+          "date": "2024-12-02",
+          "document_file_sha256": "a56edeb00844ca8626c7cbfac1be0fdca41e64469a8da9ed8226f944f59f331b",
+          "store_relative_path": "spy/2024/2024-12-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "5d486a8def4d565643b8961a8163790e402f4c5c5be420f6da8ef8e028469f08",
+          "dataset_id": "bars:ibkr:trades:1d:5d486a8def4d5656",
+          "date": "2024-12-03",
+          "document_file_sha256": "0d52253fe5a6a030e9098ba1a740092140bc7b4fac3491a7f04e0abb437e0390",
+          "store_relative_path": "spy/2024/2024-12-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "69b50229ebf802ea752e89d06055cc7ce0b1da34dac0d551d5f1ae4a94274c6f",
+          "dataset_id": "bars:ibkr:trades:1d:69b50229ebf802ea",
+          "date": "2024-12-04",
+          "document_file_sha256": "a576aa79ea9a6563c38705d99a2829b438c24dfbe9d13083ab842f0de4ed1eee",
+          "store_relative_path": "spy/2024/2024-12-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "cb8fcd2df5c506d09280a9339d1237ebb8630ed8979502fb32b70bae29f29f80",
+          "dataset_id": "bars:ibkr:trades:1d:cb8fcd2df5c506d0",
+          "date": "2024-12-05",
+          "document_file_sha256": "5d538702a338630b93db41649ffef3b08b3b836f993cd34ee75231d4df5c2d45",
+          "store_relative_path": "spy/2024/2024-12-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ec103283f78fa0f4853a04217b842b0ed89a5397770b6bd18dc7d5df05f34bdf",
+          "dataset_id": "bars:ibkr:trades:1d:ec103283f78fa0f4",
+          "date": "2024-12-06",
+          "document_file_sha256": "a8ff87fbe883d75bf8b97f05335e62c2dedf719a0dfe18f3fec33900006152ee",
+          "store_relative_path": "spy/2024/2024-12-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "767f2897ee0e7423d14515077c44107bf5894e16a4cbbdc6a42a26abfc9fb70b",
+          "dataset_id": "bars:ibkr:trades:1d:767f2897ee0e7423",
+          "date": "2024-12-09",
+          "document_file_sha256": "4b8cbaad5c2d4084080f5dc777b20f0294b04f7994cd57f86d00b2804b457bcb",
+          "store_relative_path": "spy/2024/2024-12-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "8162ed4ac98920558e84cd89ce319b9c3c06c1475ef748d59712c194a4180160",
+          "dataset_id": "bars:ibkr:trades:1d:8162ed4ac9892055",
+          "date": "2024-12-10",
+          "document_file_sha256": "2f78f6f37c18b9c3bbc9d01d7b6ee057c670b2b7266f8f062e28f7656e5cb9e7",
+          "store_relative_path": "spy/2024/2024-12-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c24642a2c4a90547f8090d0d0935d714073923a894f63b3ff487b10939e3e6f9",
+          "dataset_id": "bars:ibkr:trades:1d:c24642a2c4a90547",
+          "date": "2024-12-11",
+          "document_file_sha256": "3096206d78fd38d131d9412c486033aa7e95102f8b3e7c88943eae8c35c80c4b",
+          "store_relative_path": "spy/2024/2024-12-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d43c70cbb295cd2916d2fcf10cb16195dd88914edc47c51e4890b32378b2a760",
+          "dataset_id": "bars:ibkr:trades:1d:d43c70cbb295cd29",
+          "date": "2024-12-12",
+          "document_file_sha256": "4aa72406d6612903993f913146edd41603adc28511849302a019e70f6d84d17c",
+          "store_relative_path": "spy/2024/2024-12-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c95159adb4732cbff65a41b4056fb3f221890b7f7f657989b7091dc1310a74ca",
+          "dataset_id": "bars:ibkr:trades:1d:c95159adb4732cbf",
+          "date": "2024-12-13",
+          "document_file_sha256": "ad6de14f3d8ff14ae2093899e6ec27884d88e9520042f6974e42b4725b34c5ed",
+          "store_relative_path": "spy/2024/2024-12-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2aafb80f92275c3799dde37f3b4e568d50c33b369e692d90b935fac15b0ebfbc",
+          "dataset_id": "bars:ibkr:trades:1d:2aafb80f92275c37",
+          "date": "2024-12-16",
+          "document_file_sha256": "7001ae87d3faff3c6a3e48e46a09dc5aa2207fea37cd2a4d3c84b4a57ee98a72",
+          "store_relative_path": "spy/2024/2024-12-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "4af48ecde184b74aca285c457da6a7ca0f6dcad27cfac330a462440996b2236c",
+          "dataset_id": "bars:ibkr:trades:1d:4af48ecde184b74a",
+          "date": "2024-12-17",
+          "document_file_sha256": "16d0c749b4a838d686588683ba261e545d100c1b80a86f41cb16247bec75f6ae",
+          "store_relative_path": "spy/2024/2024-12-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1f265d37dce1435985398bb835eae5b9fa1531a684b2b474b1d05e7ba7c240de",
+          "dataset_id": "bars:ibkr:trades:1d:1f265d37dce14359",
+          "date": "2024-12-18",
+          "document_file_sha256": "d4e4b6e6fec8056266e0a0e6190905c81fcf15c98e55ed9f79081152a28db79d",
+          "store_relative_path": "spy/2024/2024-12-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "77e1cb854d6fa422c96ed5e30926ce37cbebcf66d4be2f59a618e349a606f58e",
+          "dataset_id": "bars:ibkr:trades:1d:77e1cb854d6fa422",
+          "date": "2024-12-19",
+          "document_file_sha256": "3299c25c3bc9cc2a4d7c92bc4ca61b92e07451ea46b34658079afea1f6d01d9c",
+          "store_relative_path": "spy/2024/2024-12-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "54f29c2449025a59e766da9c93e50db829c10f2b7c0cb2a5b133571c98143af6",
+          "dataset_id": "bars:ibkr:trades:1d:54f29c2449025a59",
+          "date": "2024-12-20",
+          "document_file_sha256": "5e09976db6b9ca7ac8d89a61ccce2786a42328052fc6e2f3cb89a271086f419e",
+          "store_relative_path": "spy/2024/2024-12-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c9b2ac89b46de7b6099020c3c2bdd44d5036cf63d7a5fe82082c50525a2e835a",
+          "dataset_id": "bars:ibkr:trades:1d:c9b2ac89b46de7b6",
+          "date": "2024-12-23",
+          "document_file_sha256": "b5f2d0dd7b9ae1761eb237c21b991e26b5b7770bcc2e254ce463d147e53fdc34",
+          "store_relative_path": "spy/2024/2024-12-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b77b68a6c6cabed4256c7050664f76a4b160f08ece48944e17e33f11cbaf76ae",
+          "dataset_id": "bars:ibkr:trades:1d:b77b68a6c6cabed4",
+          "date": "2024-12-24",
+          "document_file_sha256": "a406c5607db3580350b8a5721ba3035de9da9dec1fe32e471a2708009be672cd",
+          "store_relative_path": "spy/2024/2024-12-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e5a1ef02cffe85daf701b62118f26c2b9c5b2852b92fe53ea023b827db2bf6fd",
+          "dataset_id": "bars:ibkr:trades:1d:e5a1ef02cffe85da",
+          "date": "2024-12-26",
+          "document_file_sha256": "693fdeb53004e0d5e6b6c6bddb8b5b4e0e6e7dacd1c5d6b2e25b27b184d77791",
+          "store_relative_path": "spy/2024/2024-12-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "354e32eb7c5d04770d7c744b5fbcf59c7b05c8c58557548d8dbd071494ea3d0c",
+          "dataset_id": "bars:ibkr:trades:1d:354e32eb7c5d0477",
+          "date": "2024-12-27",
+          "document_file_sha256": "16f4c4b9ddc3eaf5a3218dd9de57b32bf5f40b0895885da6cc9d5fa80aacf77c",
+          "store_relative_path": "spy/2024/2024-12-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "bf57a7cf99978c2ff8272e80ec570225ec120db534bf4738b2515c57a241ff87",
+          "dataset_id": "bars:ibkr:trades:1d:bf57a7cf99978c2f",
+          "date": "2024-12-30",
+          "document_file_sha256": "aadb89d113fa80b3dd41092aba6e9ffad001ae8156becd95f4d948a77a1d8691",
+          "store_relative_path": "spy/2024/2024-12-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "cf79d85515579db5efb30d406bb7bec20ddb7cd41ddbbf76ecc8db929566c975",
+          "dataset_id": "bars:ibkr:trades:1d:cf79d85515579db5",
+          "date": "2024-12-31",
+          "document_file_sha256": "2b578a8b224da110e0a5303e27f23e78e89fb4b6d3539420c1424790300332e8",
+          "store_relative_path": "spy/2024/2024-12-31.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2c9149cfa940f130b5254f09eab7d328ea1814a613888ee7bfa035c2df79d1c7",
+          "dataset_id": "bars:ibkr:trades:1d:2c9149cfa940f130",
+          "date": "2025-01-02",
+          "document_file_sha256": "8530d6bd54447ecacbc8a290f85bb32025f5b0d8438f29f42aa0f90caacf6ed5",
+          "store_relative_path": "spy/2025/2025-01-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "116c100bf0a4daa9c3a44d22712117e3e5a168612bdc83a73a298f5c3f88a167",
+          "dataset_id": "bars:ibkr:trades:1d:116c100bf0a4daa9",
+          "date": "2025-01-03",
+          "document_file_sha256": "af1137fd16144ded55f9df2a8609463c6866c1a14654413fccfbd7069aa394e7",
+          "store_relative_path": "spy/2025/2025-01-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "be7f4a7d1f8c22befdb6587abb6fcdfb7e1cbf40f1160141ac62bd786faada8d",
+          "dataset_id": "bars:ibkr:trades:1d:be7f4a7d1f8c22be",
+          "date": "2025-01-06",
+          "document_file_sha256": "925bc39e2a753d00a759524f7f98f8ca3f993662b691b9c3aed26112acc4879c",
+          "store_relative_path": "spy/2025/2025-01-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "01490da6945615a1f9b449d9ae38082b0239be72545483ca77b2ce5680c4da61",
+          "dataset_id": "bars:ibkr:trades:1d:01490da6945615a1",
+          "date": "2025-01-07",
+          "document_file_sha256": "fc09ee638768ef3c661cdcb7299273fde6cbd61c71dd66c10a8ce417c7e0a4c9",
+          "store_relative_path": "spy/2025/2025-01-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "8b9eba13ae8b3a172a092fe34d36d50e0c4c0a3da3423e338e40544d5916ab89",
+          "dataset_id": "bars:ibkr:trades:1d:8b9eba13ae8b3a17",
+          "date": "2025-01-08",
+          "document_file_sha256": "ff06a09e1ad2cbf50defb15974ab8dd6c7c9b9ba3c6743dcf3097b6cad292562",
+          "store_relative_path": "spy/2025/2025-01-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e6123ba6c61b842aca03433bb0a4895efe95273a65330096ce4291af0b28db33",
+          "dataset_id": "bars:ibkr:trades:1d:e6123ba6c61b842a",
+          "date": "2025-01-10",
+          "document_file_sha256": "04a70d2830ce0f66a6476a8a9be3b955ffd864103d31f312e90336eaa57adfe8",
+          "store_relative_path": "spy/2025/2025-01-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "184501eb412082ac35010a3212399199decd99028b3e66e1ea4786443dba8774",
+          "dataset_id": "bars:ibkr:trades:1d:184501eb412082ac",
+          "date": "2025-01-13",
+          "document_file_sha256": "edd95be797766e7b4b099fc7496440f92a3fe6f777782f770d101d1b7d8d93fb",
+          "store_relative_path": "spy/2025/2025-01-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "97735979e2118e4282779b350a406947f4bb7ae6ac4a65147c6fb400240320c1",
+          "dataset_id": "bars:ibkr:trades:1d:97735979e2118e42",
+          "date": "2025-01-14",
+          "document_file_sha256": "2c897edece91b450dbcb9fd0139d4e7b9b9655fc9ec7e1f6e31528ed05958463",
+          "store_relative_path": "spy/2025/2025-01-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "82a58e75b39f00262e7a0f5cf373d7d362254468bdd1722cdf8ffac296980248",
+          "dataset_id": "bars:ibkr:trades:1d:82a58e75b39f0026",
+          "date": "2025-01-15",
+          "document_file_sha256": "2e52df1c88093e84daf921e0e98e508370ddc2b4213aae63e003414078e0d478",
+          "store_relative_path": "spy/2025/2025-01-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "3977e0db0622fffeb707ded6db6ee8631ad1088a9a1bb1ded4d420f42bab0fcc",
+          "dataset_id": "bars:ibkr:trades:1d:3977e0db0622fffe",
+          "date": "2025-01-16",
+          "document_file_sha256": "5dc1d328d63b5b4a9cf038fa49434344dace299a98d0670d0991d899d9123333",
+          "store_relative_path": "spy/2025/2025-01-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f1e5569808c34675a7ae1725bf4ec5dcca1953335e5b9c36cb45ef5aac45db47",
+          "dataset_id": "bars:ibkr:trades:1d:f1e5569808c34675",
+          "date": "2025-01-17",
+          "document_file_sha256": "b5deaa1bef03ce01afdd7c49284e9939368cf1cf7dc13b018ffca9b5b7ddb76d",
+          "store_relative_path": "spy/2025/2025-01-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e53064a8c8a1cb0b505565471be9a331966bc1ee27d354a0e830ad7072c638f7",
+          "dataset_id": "bars:ibkr:trades:1d:e53064a8c8a1cb0b",
+          "date": "2025-01-21",
+          "document_file_sha256": "45285c0ea987bcef480c5c43ae500ad381bafec6ed049f547f89b747bd3641a7",
+          "store_relative_path": "spy/2025/2025-01-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "95ed7002ef4eec48c14f6edc36bec9b571e98dfa0f418378e4aa172828684b3f",
+          "dataset_id": "bars:ibkr:trades:1d:95ed7002ef4eec48",
+          "date": "2025-01-22",
+          "document_file_sha256": "e91d7f1f26e99b7002bfe0bf1b90a258b87f829d8e34a420bafaa45bbd06cc98",
+          "store_relative_path": "spy/2025/2025-01-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "6cac6907ee32eb905ba40639f6cd8ff22b2522e14506705b81d382755b083cb0",
+          "dataset_id": "bars:ibkr:trades:1d:6cac6907ee32eb90",
+          "date": "2025-01-23",
+          "document_file_sha256": "58a4db94518b907cd33b867774d034066bd43ff404d192fec4be666bbb017bfc",
+          "store_relative_path": "spy/2025/2025-01-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0166c3bc575474c0b29355b77e4622ac9addadad3ffb460f88abac690b935912",
+          "dataset_id": "bars:ibkr:trades:1d:0166c3bc575474c0",
+          "date": "2025-01-24",
+          "document_file_sha256": "26aa55ba69289b8b9e0a42abeda85819aa3e31e3351536d617fd74084f553603",
+          "store_relative_path": "spy/2025/2025-01-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "70eed29bcf171f357b1913d6b982c468d26964bdaeac6c55086090b60e0c090d",
+          "dataset_id": "bars:ibkr:trades:1d:70eed29bcf171f35",
+          "date": "2025-01-27",
+          "document_file_sha256": "0b83148f238e56f727938bbba1d448407487e5ec0313823def592a42a011e064",
+          "store_relative_path": "spy/2025/2025-01-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "806db5f7280c91f3ec7cd379035c15d84cdfeaae4413c27e13a301e635448b53",
+          "dataset_id": "bars:ibkr:trades:1d:806db5f7280c91f3",
+          "date": "2025-01-28",
+          "document_file_sha256": "89f43eed796a178c7d93f19e6cb3269d7c177fadeb8555731746fbe674d8dafb",
+          "store_relative_path": "spy/2025/2025-01-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b868c8fa73b148d25e55367a1c4757b4aad90d98f152d67f6d5013e57237f83f",
+          "dataset_id": "bars:ibkr:trades:1d:b868c8fa73b148d2",
+          "date": "2025-01-29",
+          "document_file_sha256": "dfb095d91cccae33a0bc39c83ed80b62475032180871a0f9adf24811c07f4692",
+          "store_relative_path": "spy/2025/2025-01-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "7d2e2b49e95c85090fcc5cc87ffe656abe270a5d6b604877498ad1f18a7e84da",
+          "dataset_id": "bars:ibkr:trades:1d:7d2e2b49e95c8509",
+          "date": "2025-01-30",
+          "document_file_sha256": "57d00f34c6f2f44451a78183c369f95171c5d54e3eaca5cf8df092e75bf895a6",
+          "store_relative_path": "spy/2025/2025-01-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "375b15e04aae5d9c11d0f11cebe1c14efa98447fd27e3c26eedae23f30f0895d",
+          "dataset_id": "bars:ibkr:trades:1d:375b15e04aae5d9c",
+          "date": "2025-01-31",
+          "document_file_sha256": "92aca6dd2d585570c7781b475441f34e177bc665ca8952d7acdaad6ba0aa38f9",
+          "store_relative_path": "spy/2025/2025-01-31.json.gz"
+        },
+        {
+          "dataset_content_sha256": "399002fac982bd29c358c13ddae7ca0dd93519a8e68f0164e82063adecc8ff95",
+          "dataset_id": "bars:ibkr:trades:1d:399002fac982bd29",
+          "date": "2025-02-03",
+          "document_file_sha256": "567727ee12d757e0c64a46a7e594b162a5eb17e9dbd75277865c0cffeb803f59",
+          "store_relative_path": "spy/2025/2025-02-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "716f8a0fda105f96b356e4309c3c64fa71942c4dd75e67700a85629bef37aefe",
+          "dataset_id": "bars:ibkr:trades:1d:716f8a0fda105f96",
+          "date": "2025-02-04",
+          "document_file_sha256": "96ad69b6bb6d981389e51ff96900b6cde9a584416ca917c15cc06b7ca01a3481",
+          "store_relative_path": "spy/2025/2025-02-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "45612e64e63f931b1449547af74101ab354bc57d970d04ba1ff141c07066a1b6",
+          "dataset_id": "bars:ibkr:trades:1d:45612e64e63f931b",
+          "date": "2025-02-05",
+          "document_file_sha256": "7e86feeef954c673c3bffac0bc5791c67e14432c158310fe97301eb63c273c9d",
+          "store_relative_path": "spy/2025/2025-02-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ddb7362e274a624a1ca4eab98f410054071aeb3686dbb45922c46e2d40e5b0e9",
+          "dataset_id": "bars:ibkr:trades:1d:ddb7362e274a624a",
+          "date": "2025-02-06",
+          "document_file_sha256": "df8d223523a301931129f69abd39e8531d202c4f03d6e3192fbc04d294466c62",
+          "store_relative_path": "spy/2025/2025-02-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "11ef3e925d158b92df474bfb6ce64c1a48b9f0621dd4ffd51a417a654f902469",
+          "dataset_id": "bars:ibkr:trades:1d:11ef3e925d158b92",
+          "date": "2025-02-07",
+          "document_file_sha256": "954befc7b573030958de50cdd85e2ff47f5c8cdc999cd3c46cc317f325e3e1fd",
+          "store_relative_path": "spy/2025/2025-02-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "3a83699d02b5c6f15a39fbc65e10a5bf35aab39a24ccfbf672585b81f2dc39c0",
+          "dataset_id": "bars:ibkr:trades:1d:3a83699d02b5c6f1",
+          "date": "2025-02-10",
+          "document_file_sha256": "efcac438fb6ab9c6c635864f96c4de9995e69a86ec3b866e52dc746b356583b9",
+          "store_relative_path": "spy/2025/2025-02-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ad1f01bd7d379ddb01ea627347e04b8b78f87a1fbcdcda7efd4266f9453abb3b",
+          "dataset_id": "bars:ibkr:trades:1d:ad1f01bd7d379ddb",
+          "date": "2025-02-11",
+          "document_file_sha256": "8a1120e3f1a98466dcc53a499ff96054acfaaaab9d849fddd9ddbdf1589f01f8",
+          "store_relative_path": "spy/2025/2025-02-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f0366275eb515bb9acc9d55d36982e061efa4df9f1351db27511bed87aff223a",
+          "dataset_id": "bars:ibkr:trades:1d:f0366275eb515bb9",
+          "date": "2025-02-12",
+          "document_file_sha256": "2057db679d639af5f2adaa6d34ae5b55a9648b29c5fee1c79f4b21966405354f",
+          "store_relative_path": "spy/2025/2025-02-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b06e025a3af7e3ebef2334f33d56d79c82ad3b9595bfe85ae99baf415a724711",
+          "dataset_id": "bars:ibkr:trades:1d:b06e025a3af7e3eb",
+          "date": "2025-02-13",
+          "document_file_sha256": "cbf56598b9003c1e6b3d4357c104f951649d191b48f598808257cbeb7084ea41",
+          "store_relative_path": "spy/2025/2025-02-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1059b57705b015e2e2387cfc2f2573bb6227ac5d85c2ff25a80a8f94b1bab03d",
+          "dataset_id": "bars:ibkr:trades:1d:1059b57705b015e2",
+          "date": "2025-02-14",
+          "document_file_sha256": "4988bd35f2dc3a0cdff81033a6c2b8a09e63ddcd65665bf936f35649009246c6",
+          "store_relative_path": "spy/2025/2025-02-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "161dcaa7373cade15d26c0022156043103aa102aa3eeff41cc69729b878c56ff",
+          "dataset_id": "bars:ibkr:trades:1d:161dcaa7373cade1",
+          "date": "2025-02-18",
+          "document_file_sha256": "94f08cf60b2c441bd14365661aad35e978acd6ec546d2dcdc972c69d155be9df",
+          "store_relative_path": "spy/2025/2025-02-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ddd1a0a950e6aefbe3c68c15ca288cb8b3acf44d571cf0661357345a93b97f68",
+          "dataset_id": "bars:ibkr:trades:1d:ddd1a0a950e6aefb",
+          "date": "2025-02-19",
+          "document_file_sha256": "c6225c3e443f19d4f8df2bb488352ab4da3c3e3206e6985869390aa45d9e1456",
+          "store_relative_path": "spy/2025/2025-02-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a5340ea3f41f2d5e36d98e20c888094917d2aa3033bc77711c62470dd90c434c",
+          "dataset_id": "bars:ibkr:trades:1d:a5340ea3f41f2d5e",
+          "date": "2025-02-20",
+          "document_file_sha256": "2cbe83a2511b59c4e0245d5a57b6afc953305ce82cb33cc7fde1eca303f2d733",
+          "store_relative_path": "spy/2025/2025-02-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "75f7fb715722f7bfaacda1c5c78bf1c5ae835c4b7029902a38dcf6349b7b1740",
+          "dataset_id": "bars:ibkr:trades:1d:75f7fb715722f7bf",
+          "date": "2025-02-21",
+          "document_file_sha256": "914f4a2297c2e529b7dbc3bfe852d7b174919079c4f61c47d732e4a44b7110ff",
+          "store_relative_path": "spy/2025/2025-02-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "93f618e6b68c31bdc6d8a1c6234407b2d5d11f62aab40a2203ccdbc47541be96",
+          "dataset_id": "bars:ibkr:trades:1d:93f618e6b68c31bd",
+          "date": "2025-02-24",
+          "document_file_sha256": "dc69473718c330fb5d7611a6fe9988d6b52caa151bfb6ec0bad086e0bf2d0daf",
+          "store_relative_path": "spy/2025/2025-02-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e7a3e4d835a66650fe33f0a03367a7923ec02e88ff52175a76baaeba3ec2cd26",
+          "dataset_id": "bars:ibkr:trades:1d:e7a3e4d835a66650",
+          "date": "2025-02-25",
+          "document_file_sha256": "0520435e0c1645056b9d6863701b54f97e9c58fb8f69b81d57edf4851c8fce2d",
+          "store_relative_path": "spy/2025/2025-02-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "7e812fa9a4a388a599e51aed4a8354b69370687def7e835543abaebc5f60b264",
+          "dataset_id": "bars:ibkr:trades:1d:7e812fa9a4a388a5",
+          "date": "2025-02-26",
+          "document_file_sha256": "76f864546932de6cb7cf20df494f38623f892ba6ba145a3552e812441d30c1c7",
+          "store_relative_path": "spy/2025/2025-02-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "81f6ba3a8d5e6be9fd2a7f117805cc29051f0f4448ea5af5388707eb1d9f73b0",
+          "dataset_id": "bars:ibkr:trades:1d:81f6ba3a8d5e6be9",
+          "date": "2025-02-27",
+          "document_file_sha256": "0584aa8c613c2cfe06882abe690e7d10e30745093e4247c231cb3a2c0335d08d",
+          "store_relative_path": "spy/2025/2025-02-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "5805c984381a8b5b398fd2c231e86938e423028a23118e7ebb29eb8839af74f5",
+          "dataset_id": "bars:ibkr:trades:1d:5805c984381a8b5b",
+          "date": "2025-02-28",
+          "document_file_sha256": "6c0a3bdf22d3f957cf0d7e136975a9c47cfd724e0a8b491a19747a5eac651586",
+          "store_relative_path": "spy/2025/2025-02-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "baa1e756311ec4867ed323602898db49521637e4358fab9760b4aef35b3a3261",
+          "dataset_id": "bars:ibkr:trades:1d:baa1e756311ec486",
+          "date": "2025-03-03",
+          "document_file_sha256": "c462879b27b78d0c3093494baf015efa5e2d28e20f5ab43b3ebed72d7bbdbf88",
+          "store_relative_path": "spy/2025/2025-03-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "70ef754755364f155f02294cb3dfef20105bd8d9e7f6d9cca066c66e8daa3b28",
+          "dataset_id": "bars:ibkr:trades:1d:70ef754755364f15",
+          "date": "2025-03-04",
+          "document_file_sha256": "52afb663bfb9f13ee8ea40e29b792065796d2f403843e4dcb6156cb8e6e255fd",
+          "store_relative_path": "spy/2025/2025-03-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "28ea8269e9f3fd61ae6272eb11f6308e5fda2fda8d2296488c0ae0cc53d4c224",
+          "dataset_id": "bars:ibkr:trades:1d:28ea8269e9f3fd61",
+          "date": "2025-03-05",
+          "document_file_sha256": "015f830b8bf98ec42ce75bcb417b6d12a5379af01489829ae6b74515d5a86f20",
+          "store_relative_path": "spy/2025/2025-03-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "137875b9b24ee23a33dc3b450217b802c21404785b7e854f856c6258f88108cd",
+          "dataset_id": "bars:ibkr:trades:1d:137875b9b24ee23a",
+          "date": "2025-03-06",
+          "document_file_sha256": "464b33b2e92066322a51b77bf2fdea50cd2cc18b23c7a5e90a14d8e9d145f38e",
+          "store_relative_path": "spy/2025/2025-03-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9969996e12f73b755b20fc6bf2adb27b8ce8ba7b01beaed17d48963936418ea3",
+          "dataset_id": "bars:ibkr:trades:1d:9969996e12f73b75",
+          "date": "2025-03-07",
+          "document_file_sha256": "0cc55ee508dacf9ac7dffe374d90b75a88170ff5d42aac8c55e6726a943812ff",
+          "store_relative_path": "spy/2025/2025-03-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e58c2019174abbe37cdabf1a0718a96ba192de944db228e191507c6d1e9da850",
+          "dataset_id": "bars:ibkr:trades:1d:e58c2019174abbe3",
+          "date": "2025-03-10",
+          "document_file_sha256": "bbd09af72a6482c14535a87a8a57002eabf5521c6e51d43d2f7de119ed26fe94",
+          "store_relative_path": "spy/2025/2025-03-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "abff3bf3ac9520e50292a72fb37931b5e47af8099c7549c678451081e9cb1b73",
+          "dataset_id": "bars:ibkr:trades:1d:abff3bf3ac9520e5",
+          "date": "2025-03-11",
+          "document_file_sha256": "293a3319e9ec7dea9695ad051e58a6136a2f080123276379be10eebb0b9a7c43",
+          "store_relative_path": "spy/2025/2025-03-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "593c45fae7504e2e1f232c709bfaa4b979fad5b4cfb671ee54129da10266a9b8",
+          "dataset_id": "bars:ibkr:trades:1d:593c45fae7504e2e",
+          "date": "2025-03-12",
+          "document_file_sha256": "3695ca5472b383492833994ff855df4d055b333c4ccd38269a627570f4e20c01",
+          "store_relative_path": "spy/2025/2025-03-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c82fb80bb9c4c4e1d486bdec8cce322fb6457ee161f4826608e893f12f15b1f6",
+          "dataset_id": "bars:ibkr:trades:1d:c82fb80bb9c4c4e1",
+          "date": "2025-03-13",
+          "document_file_sha256": "aac9fa2450ab6d7c0c84e00cec2dc3d064764761919b15a7470d7e50f81ce13d",
+          "store_relative_path": "spy/2025/2025-03-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "5cd0dc54d9af09961ab0b3b83d4d09c3bcc5540a10a8293693aed24ff305eb40",
+          "dataset_id": "bars:ibkr:trades:1d:5cd0dc54d9af0996",
+          "date": "2025-03-14",
+          "document_file_sha256": "a5d36761c8943106907ae8d7c239720e0ad93ca9bd7e2e6169c5c224c7f83200",
+          "store_relative_path": "spy/2025/2025-03-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ef148c9beec3b59ab7f20ceb2bc9f2ad17dbb16646173538ec4723134536dd75",
+          "dataset_id": "bars:ibkr:trades:1d:ef148c9beec3b59a",
+          "date": "2025-03-17",
+          "document_file_sha256": "b2388e0f59382b8284c3ac2ec8f993e9b1a95c835fa6f2cd988e4457f3170103",
+          "store_relative_path": "spy/2025/2025-03-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1f9481c41f1012cb1f8c8bb7cc39ae36c076b840584887b082385fd0834fac06",
+          "dataset_id": "bars:ibkr:trades:1d:1f9481c41f1012cb",
+          "date": "2025-03-18",
+          "document_file_sha256": "efd8ebee8b0d1cb8aca151c054e9f2d4d4151a925814316bccd83752866f418e",
+          "store_relative_path": "spy/2025/2025-03-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "536097be8fef34d016f2ffd9ec16ec728b2b8098ccdd78a7f21130eb6611082e",
+          "dataset_id": "bars:ibkr:trades:1d:536097be8fef34d0",
+          "date": "2025-03-19",
+          "document_file_sha256": "fbf6e4bbce63113035bc45c20cfe37927b3347d49404e9a74c39cd15eec04429",
+          "store_relative_path": "spy/2025/2025-03-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "cf0193bff167acf8c8172ba454cb57a7f0afb12a7711f25ada88d5cb3211ec0f",
+          "dataset_id": "bars:ibkr:trades:1d:cf0193bff167acf8",
+          "date": "2025-03-20",
+          "document_file_sha256": "87538402d8c8c05d9ae5514aa4e216f1e8315063db4a3cb5518893acc1840587",
+          "store_relative_path": "spy/2025/2025-03-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "397e561e11f74356ec7b5136b0ff5fe9cab6d8325774b51039cece237cbfbdcd",
+          "dataset_id": "bars:ibkr:trades:1d:397e561e11f74356",
+          "date": "2025-03-21",
+          "document_file_sha256": "fb2ca155b16629b169d58eade28896d8fc83406a00bf73453045f190b857f974",
+          "store_relative_path": "spy/2025/2025-03-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c19a1325133ec7d790c7fd21a527872aa08806f87e45c52d1101f33dab886128",
+          "dataset_id": "bars:ibkr:trades:1d:c19a1325133ec7d7",
+          "date": "2025-03-24",
+          "document_file_sha256": "667a8ae390a7ce6f988794d28b61d67edb62952e7a173a662a5c5423cd23b6b4",
+          "store_relative_path": "spy/2025/2025-03-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "853601c2bc890e4cc698ee7b9d454f8a2161641a31accebe08c2e1a89816ae2d",
+          "dataset_id": "bars:ibkr:trades:1d:853601c2bc890e4c",
+          "date": "2025-03-25",
+          "document_file_sha256": "c100a02465c20dec5b9d61873b5fc5238987cf0fab06e9c2ebb16920fcd3c518",
+          "store_relative_path": "spy/2025/2025-03-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "4509153721c1990efd710cdc14f4cb511ad67e52365c51379d5e44dc49fbd2fc",
+          "dataset_id": "bars:ibkr:trades:1d:4509153721c1990e",
+          "date": "2025-03-26",
+          "document_file_sha256": "0f898c53f06f92835cb19d2ac63f94e25af3e499de82bd05a7da275e479e963a",
+          "store_relative_path": "spy/2025/2025-03-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ecef0b89249f736d09660b57a6e3620c7d63e5754a9fd81bbbfed4ee290d8195",
+          "dataset_id": "bars:ibkr:trades:1d:ecef0b89249f736d",
+          "date": "2025-03-27",
+          "document_file_sha256": "f94d53b01587b06f2c186d2ed9955e0d46394bfc1b6af4c1527c715948f2c68c",
+          "store_relative_path": "spy/2025/2025-03-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d1c5d47266a3ad5ad584f86ecbfdf3c69e09a0bef71a2b899ba276f1c837d644",
+          "dataset_id": "bars:ibkr:trades:1d:d1c5d47266a3ad5a",
+          "date": "2025-03-28",
+          "document_file_sha256": "b1bdef43a559ed05c6725a6cf4ee2697ba9b16c6c44c575651256915e6de9d7a",
+          "store_relative_path": "spy/2025/2025-03-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "879b3ba0fd88817ed819da4f7053361ac8b692395001ca48d8545bfb19e3de48",
+          "dataset_id": "bars:ibkr:trades:1d:879b3ba0fd88817e",
+          "date": "2025-03-31",
+          "document_file_sha256": "6120b0e551580188327a33d42a79b1b00e49e1c7ded90b40d269ee014f5114e1",
+          "store_relative_path": "spy/2025/2025-03-31.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2d4428813ae99acb61a87ada14b4ba324905d820ed55d3e5fa05a15929aba2bd",
+          "dataset_id": "bars:ibkr:trades:1d:2d4428813ae99acb",
+          "date": "2025-04-01",
+          "document_file_sha256": "158ce11b59e1b5a122d0224411ca1a9b2d02b628f40d44b6c5e958e93eb8d62b",
+          "store_relative_path": "spy/2025/2025-04-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ddf91e2a63ce55fc9612a2481998119a38fdc20dbf8ef025261003bd5d583765",
+          "dataset_id": "bars:ibkr:trades:1d:ddf91e2a63ce55fc",
+          "date": "2025-04-02",
+          "document_file_sha256": "4762d94ffeee65f1ede6df2a4787c8f650839eda7a32c29cd5e02e4e7ab5b56d",
+          "store_relative_path": "spy/2025/2025-04-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0959404974d78ef6f54838d24a50d5e516cb9b7568ed50b697d331c0c10fbb52",
+          "dataset_id": "bars:ibkr:trades:1d:0959404974d78ef6",
+          "date": "2025-04-03",
+          "document_file_sha256": "b5fbb7b9eb8ba57214b3018db6c273238ee74d44dbae9cbf7cde5c52b722a3d3",
+          "store_relative_path": "spy/2025/2025-04-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "5c13e616d794ea9750c35ff8772d14137c7ec1867cd595e44f4d5e4ec7f369d3",
+          "dataset_id": "bars:ibkr:trades:1d:5c13e616d794ea97",
+          "date": "2025-04-04",
+          "document_file_sha256": "8a766324e204127be68fb813731fb2e7b057cc86c54e567f754d8b0a6ff9f256",
+          "store_relative_path": "spy/2025/2025-04-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f1407bc65d3bd22a047daa584a7e7473bda65c66478f13d4e894ce85b1c2df2a",
+          "dataset_id": "bars:ibkr:trades:1d:f1407bc65d3bd22a",
+          "date": "2025-04-07",
+          "document_file_sha256": "67a8e5926dc25b9de45b194499ab858460bd874ec5d25e895a7ee911a0109799",
+          "store_relative_path": "spy/2025/2025-04-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "45d5b3aa695873ec90fe96eab871fa264250808cf618af6c19362dcd330547a5",
+          "dataset_id": "bars:ibkr:trades:1d:45d5b3aa695873ec",
+          "date": "2025-04-08",
+          "document_file_sha256": "c5a832d0dcebc3d775022d9a9f355df32ddc5b10f29a4ea60fdd5afebc08f029",
+          "store_relative_path": "spy/2025/2025-04-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "7e173345c85cf4c56411490d17c0be3ce229028382f8f24c66440a6239526d59",
+          "dataset_id": "bars:ibkr:trades:1d:7e173345c85cf4c5",
+          "date": "2025-04-09",
+          "document_file_sha256": "9210ba81313fa2f90334dd1ef85d4b46333bdb6afe36bea232887574dc3302e0",
+          "store_relative_path": "spy/2025/2025-04-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e59febfe5ddb3c38213177d272bfd2cf74effbcb8bfb8b057543571a98edc6ac",
+          "dataset_id": "bars:ibkr:trades:1d:e59febfe5ddb3c38",
+          "date": "2025-04-10",
+          "document_file_sha256": "683682bff2b514e545a2bb9f43816346034b8df0235b3a2ffcdb45e82ac1823b",
+          "store_relative_path": "spy/2025/2025-04-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c3b9576016453f8104c9b6ffd45f3887db83f20cbd3e497d46a3d621ca04716c",
+          "dataset_id": "bars:ibkr:trades:1d:c3b9576016453f81",
+          "date": "2025-04-11",
+          "document_file_sha256": "e4d3215772a76f7c62bd5ae019ff2de6bf3809b4faad6df8c526c3f3a1cff4b7",
+          "store_relative_path": "spy/2025/2025-04-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "29fe2a73faf564e6a9347419a4da70210b97d8b7e8ad8eab343f2f45fa13020c",
+          "dataset_id": "bars:ibkr:trades:1d:29fe2a73faf564e6",
+          "date": "2025-04-14",
+          "document_file_sha256": "af13ada48beb03546b133a3a1e8e1f3647b286e39cdabecc3e69dc8c2e437000",
+          "store_relative_path": "spy/2025/2025-04-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "159004454f2ee820bc26acbbf9bc42fbcaf0009c65506f10e0c602b986a23837",
+          "dataset_id": "bars:ibkr:trades:1d:159004454f2ee820",
+          "date": "2025-04-15",
+          "document_file_sha256": "d619b2e6fd897c4e258eec10ab28fe6834c723993056e42b258004cbbda91e03",
+          "store_relative_path": "spy/2025/2025-04-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "95703bd01a9998b46e3382ef1fabf154599134a92211a0ce797263eeb5c749df",
+          "dataset_id": "bars:ibkr:trades:1d:95703bd01a9998b4",
+          "date": "2025-04-16",
+          "document_file_sha256": "23a9397fce787930ebe653ae45dd1b55d48c1280e9175b44dcd3a82e66a8347a",
+          "store_relative_path": "spy/2025/2025-04-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c3559df4567f1635fb18d444e930f46157d7c038bfa4d4a6caee2bad9e21b63d",
+          "dataset_id": "bars:ibkr:trades:1d:c3559df4567f1635",
+          "date": "2025-04-17",
+          "document_file_sha256": "356503d19d9a908bdb8414c5c2f093da878cae2e3a7023e7d3710280b94b8e3c",
+          "store_relative_path": "spy/2025/2025-04-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "bfc2dede396d7136ed47867cc0a3bb19f898ebe33f13e57ff3350e134a7e43f4",
+          "dataset_id": "bars:ibkr:trades:1d:bfc2dede396d7136",
+          "date": "2025-04-21",
+          "document_file_sha256": "b7a4448fa3892307ba8a1cb9d413c70d2d8b2288ff3d58153d1ee6d289dc1749",
+          "store_relative_path": "spy/2025/2025-04-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a098098ee4d484fa912fdbe09409c9f5c30d02e4f19eab51a41da693afbefb98",
+          "dataset_id": "bars:ibkr:trades:1d:a098098ee4d484fa",
+          "date": "2025-04-22",
+          "document_file_sha256": "f974113289e8215b3de935d74ba8a43a0477b8322c6dcfb83b2997150a7fc65b",
+          "store_relative_path": "spy/2025/2025-04-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "98335f9d3d953dff75852a2e896f36ef3e6661288f3a74b6269cc1b63a9b1f32",
+          "dataset_id": "bars:ibkr:trades:1d:98335f9d3d953dff",
+          "date": "2025-04-23",
+          "document_file_sha256": "e1c0fd509d02a682c4641250ffeed73ebe9c4ba81d593ad036d24d6df58a21dd",
+          "store_relative_path": "spy/2025/2025-04-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "cbc7f095af7dfd665055c895762199af15d3cb8e609780d4b839f2254fd64adb",
+          "dataset_id": "bars:ibkr:trades:1d:cbc7f095af7dfd66",
+          "date": "2025-04-24",
+          "document_file_sha256": "1bbb83f433e3e94707a5bdbe01ee0c4faed567f6b609dc5edf779916d22d76ba",
+          "store_relative_path": "spy/2025/2025-04-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "8265191ae576eba7dd6f10439ae19a07b53b530d6d2ca49584751a4373344af1",
+          "dataset_id": "bars:ibkr:trades:1d:8265191ae576eba7",
+          "date": "2025-04-25",
+          "document_file_sha256": "9371628f0b53a8b51d242d398af46581759cbfbd2f51b7dcf3159577e33e48e0",
+          "store_relative_path": "spy/2025/2025-04-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f1fcd363f64b3cfa1d1f426014671010227326fc4a7d63417c9adfa795c00ad6",
+          "dataset_id": "bars:ibkr:trades:1d:f1fcd363f64b3cfa",
+          "date": "2025-04-28",
+          "document_file_sha256": "9fb94549995ca7cf0bb6e2bfdbbc39e82c5d947e6e286e33a81dd073f1689f87",
+          "store_relative_path": "spy/2025/2025-04-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "252a05ddd0e468a6939cd9df66ad1acc3abe133091863f85e638a3b3340bb8b9",
+          "dataset_id": "bars:ibkr:trades:1d:252a05ddd0e468a6",
+          "date": "2025-04-29",
+          "document_file_sha256": "266732c0199e8eabd1716caf42deee66b1f3739f0dfda85311c0eed306bd891f",
+          "store_relative_path": "spy/2025/2025-04-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e994c774a052416685939204fb8fc12c4a435f4be91f017237f097ab747401ba",
+          "dataset_id": "bars:ibkr:trades:1d:e994c774a0524166",
+          "date": "2025-04-30",
+          "document_file_sha256": "d6b29ac1c69e79c3f378c2b5555284efcd240de2b2bd146f85dc82fd0175f339",
+          "store_relative_path": "spy/2025/2025-04-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "48f5c0827cbee16270c6ad91eb4b8085d8016f9bc74bb70bab5c852b43d9c797",
+          "dataset_id": "bars:ibkr:trades:1d:48f5c0827cbee162",
+          "date": "2025-05-01",
+          "document_file_sha256": "76171e6237f877a85eaad91ac5c3ff2c2cbddf626db201b96d89f1367182973c",
+          "store_relative_path": "spy/2025/2025-05-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "30866880b97e16e2587883b5f352797ad77a0eb55cbba4c329fd952e40f291b8",
+          "dataset_id": "bars:ibkr:trades:1d:30866880b97e16e2",
+          "date": "2025-05-02",
+          "document_file_sha256": "fdc37eb883467b9fdcd119f4b3390b740143475e454d6a1352ce2cf63a52f230",
+          "store_relative_path": "spy/2025/2025-05-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1069c22da3ee8442640a9357bce51546f1e6ef9322b3b72991952aec90e19b70",
+          "dataset_id": "bars:ibkr:trades:1d:1069c22da3ee8442",
+          "date": "2025-05-05",
+          "document_file_sha256": "723b16901922397f7847404248c9eab71597a2cdb8042203d193d453c2bb4b93",
+          "store_relative_path": "spy/2025/2025-05-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b4cd102d8dee41cd2025085bfdef5c9ead1e422dcdc298c232b3824a14543ab8",
+          "dataset_id": "bars:ibkr:trades:1d:b4cd102d8dee41cd",
+          "date": "2025-05-06",
+          "document_file_sha256": "cce266b53f4ce7ceb9b7e07442e9edd2ec967e1b4326f5f5fa9479e7d32934a4",
+          "store_relative_path": "spy/2025/2025-05-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "02df5cd151f9e81022fc3dc0d1fb01482063161a3ae028cc73ab433467a8744b",
+          "dataset_id": "bars:ibkr:trades:1d:02df5cd151f9e810",
+          "date": "2025-05-07",
+          "document_file_sha256": "dab91d2bd920adc356bff9edcf5a257bce71946d725874a1c8e656248dfbf7dd",
+          "store_relative_path": "spy/2025/2025-05-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ee5b23e9e95e8363ed533ef2bd0184d4ec45b0c76b1a51b29ca34707bf216a3b",
+          "dataset_id": "bars:ibkr:trades:1d:ee5b23e9e95e8363",
+          "date": "2025-05-08",
+          "document_file_sha256": "4641a86899e6fb14b7a863c65ca8c02cebd96ac9c471f54c5d8291b03977c5a4",
+          "store_relative_path": "spy/2025/2025-05-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b8a3cfdb8161a940d4150f47136ce8ccdc9f7f77c4debd0dd900b8f2b526985f",
+          "dataset_id": "bars:ibkr:trades:1d:b8a3cfdb8161a940",
+          "date": "2025-05-09",
+          "document_file_sha256": "82f8ede07200f713cfb925ac86bb5a8630b8dda8c821640d80615b1f5e55316e",
+          "store_relative_path": "spy/2025/2025-05-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e8c9d355e8f6b188ea8d2f7c41647dedcaa9e481106b30938be106fb0faf47e1",
+          "dataset_id": "bars:ibkr:trades:1d:e8c9d355e8f6b188",
+          "date": "2025-05-12",
+          "document_file_sha256": "fbd9c5fc196093b68ea0ad4898904098ee65c4e3c62b038abb250771bb4a1ef4",
+          "store_relative_path": "spy/2025/2025-05-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "dde41f69514d77d855356efecd49cfb8de7532341cbae056a86551a6eb3a4bbc",
+          "dataset_id": "bars:ibkr:trades:1d:dde41f69514d77d8",
+          "date": "2025-05-13",
+          "document_file_sha256": "64d65f0f6fd7f4ea0d4275df8a0ddc4b83162ae8c778068c4d003af293ece21f",
+          "store_relative_path": "spy/2025/2025-05-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "4502e1d0a97a784542fd85b30cd6c26c7a76bb97fb73163a55e05a30f7833018",
+          "dataset_id": "bars:ibkr:trades:1d:4502e1d0a97a7845",
+          "date": "2025-05-14",
+          "document_file_sha256": "99267bee3f51492b97b3eb6d47b7edf59baafecc09e09e49f972c46a7393c3eb",
+          "store_relative_path": "spy/2025/2025-05-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "290370f5ebb9fa353843bd7b9468b3a618a480c1a9fd518bf3d81e18215cfe9b",
+          "dataset_id": "bars:ibkr:trades:1d:290370f5ebb9fa35",
+          "date": "2025-05-15",
+          "document_file_sha256": "a4b4780876ba04d66dfe6fe209fe5c73bd508cfa678c3ed1b097657caabcdbf8",
+          "store_relative_path": "spy/2025/2025-05-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "620b955c291d62f9e18659187ccbab2137edcc69cde85abfb71655e51e2961f5",
+          "dataset_id": "bars:ibkr:trades:1d:620b955c291d62f9",
+          "date": "2025-05-16",
+          "document_file_sha256": "646f764a32aa4423b859689bf825f8448e586926404f51f0afccaed9d0ab8989",
+          "store_relative_path": "spy/2025/2025-05-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c4ed6cd9b844565698be81dd57b0cb723bc02f085a61a2300b6058e284f89ee5",
+          "dataset_id": "bars:ibkr:trades:1d:c4ed6cd9b8445656",
+          "date": "2025-05-19",
+          "document_file_sha256": "4c7517bbd72b40ac2edaa92adaef597a420362a4b5e03839e6476c803f42c4b3",
+          "store_relative_path": "spy/2025/2025-05-19.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0fb9db056aeca7d797d2fbecb8e15a8f78aa1eb6333ae9a23194ba8bdfb63b38",
+          "dataset_id": "bars:ibkr:trades:1d:0fb9db056aeca7d7",
+          "date": "2025-05-20",
+          "document_file_sha256": "da1561c7311e56e7a67c220fcdab431019c3c23087486d245eae20ef47689197",
+          "store_relative_path": "spy/2025/2025-05-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "6f0a4f941aee60159676eccc0b41873368032073945543ff0ac0f8eebe767621",
+          "dataset_id": "bars:ibkr:trades:1d:6f0a4f941aee6015",
+          "date": "2025-05-21",
+          "document_file_sha256": "423a782d118a3b105d420ea6d2437225bd29b0161ecb254c4353cc1ef0a43984",
+          "store_relative_path": "spy/2025/2025-05-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "486613e2752c9b89a0b9e0f67d6b81398509876d46117503b597313c4dd7015d",
+          "dataset_id": "bars:ibkr:trades:1d:486613e2752c9b89",
+          "date": "2025-05-22",
+          "document_file_sha256": "3beb4cad0552ca6c956136cd4f5656a48c44493f055eb435be334f2a1b30da35",
+          "store_relative_path": "spy/2025/2025-05-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "42d3e8dc320ddfafc5079f85d458933299d82f980c5413fee4a68d3d33d8e09f",
+          "dataset_id": "bars:ibkr:trades:1d:42d3e8dc320ddfaf",
+          "date": "2025-05-23",
+          "document_file_sha256": "97bfbfe041785b7c7b89d90f583f6e77c39fed464ab326b00c2077cf02352e98",
+          "store_relative_path": "spy/2025/2025-05-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1e0a1bcc17a000242c6e9356f0ad5cf46295f8b0eafed35fd5bb8616cd4c0069",
+          "dataset_id": "bars:ibkr:trades:1d:1e0a1bcc17a00024",
+          "date": "2025-05-27",
+          "document_file_sha256": "33e8159f6dac5a4e9a8fc77ecfd17e570164bcd7d8cb6b5cf7a2420a846b3733",
+          "store_relative_path": "spy/2025/2025-05-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "10148b07280ea38d9b2fb052c20ea7499d166050ee46bc1572ad9a7c1f40b016",
+          "dataset_id": "bars:ibkr:trades:1d:10148b07280ea38d",
+          "date": "2025-05-28",
+          "document_file_sha256": "e9d4346829a82e64b34251e4ba908d44c8a977b863b766828fdb144396a7a7db",
+          "store_relative_path": "spy/2025/2025-05-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "837b0b803ac20f00085bb1857c27b30d3a176d52dfe83a48dfacfc475c4c773d",
+          "dataset_id": "bars:ibkr:trades:1d:837b0b803ac20f00",
+          "date": "2025-05-29",
+          "document_file_sha256": "c1564ce40cac1f4ba098330c7582033bad8de66a4a8ea0cabbcdea030ba21ad9",
+          "store_relative_path": "spy/2025/2025-05-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "830486ae73f4b5b77094ea3f0e9cb2ca51b42304d7052b096bc0bfe3fbb46c69",
+          "dataset_id": "bars:ibkr:trades:1d:830486ae73f4b5b7",
+          "date": "2025-05-30",
+          "document_file_sha256": "22a0ff2cf6bf1c720b55e034f2c91219c61e0c915f8db218c866ab5fd244e9a2",
+          "store_relative_path": "spy/2025/2025-05-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "bc73916a70a67f98eceaa23ab32106c383133c38ce96cbd91385547dbc94ccf8",
+          "dataset_id": "bars:ibkr:trades:1d:bc73916a70a67f98",
+          "date": "2025-06-02",
+          "document_file_sha256": "4b8508685287b4df9b4297f50a7f15a4e1fd6b132aac19949162fe40cd9217cb",
+          "store_relative_path": "spy/2025/2025-06-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "048d79ed37dab9cc8bf0afba540af4ab4caed7e3d2878c7532183b47c8f25c9f",
+          "dataset_id": "bars:ibkr:trades:1d:048d79ed37dab9cc",
+          "date": "2025-06-03",
+          "document_file_sha256": "5337294e4746727c341399c7f8b5ea1d0f59b338a56414c83e50c10a1e513822",
+          "store_relative_path": "spy/2025/2025-06-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "b3f0bd0525ec13a4c8b37d128fdd41e3598365e7e5138527c64e90c8f3c1610e",
+          "dataset_id": "bars:ibkr:trades:1d:b3f0bd0525ec13a4",
+          "date": "2025-06-04",
+          "document_file_sha256": "1b37440d6dabfe2c98a9ca764e8cd0e06e7edcbf439af357f49c0b1d266916c6",
+          "store_relative_path": "spy/2025/2025-06-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "4fc646a0be932e4c97ef094f0da6ea82199985665ab78571667d03198189b659",
+          "dataset_id": "bars:ibkr:trades:1d:4fc646a0be932e4c",
+          "date": "2025-06-05",
+          "document_file_sha256": "73f6820998515cce7cca00f4a6fb5891ef2a065640a8f850cfbb384f95b92152",
+          "store_relative_path": "spy/2025/2025-06-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "d6b1a42f7e3adcd53532ed4bb35a0f482b31dd93bae17b0d4690e908c6f5682b",
+          "dataset_id": "bars:ibkr:trades:1d:d6b1a42f7e3adcd5",
+          "date": "2025-06-06",
+          "document_file_sha256": "bfbdebb343074c9da03e4e0b46c31429659addf5bfa5ac3eeb456a449592b889",
+          "store_relative_path": "spy/2025/2025-06-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "dfa77d3be7e238fd0e820f004b51a40c8eda5eb80cd135bc73d2a2883fdccc73",
+          "dataset_id": "bars:ibkr:trades:1d:dfa77d3be7e238fd",
+          "date": "2025-06-09",
+          "document_file_sha256": "097993436462b957c40d1306bef880bf8cfd138d97dc6f5e955c2749a76b4e06",
+          "store_relative_path": "spy/2025/2025-06-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "6c0ca0072320c22f9ee07417f8888d3358e78b7beb1ec54e735e4344a5f97413",
+          "dataset_id": "bars:ibkr:trades:1d:6c0ca0072320c22f",
+          "date": "2025-06-10",
+          "document_file_sha256": "8095219701865b5242456ce69df77d98230d9027c5ed68a336ed2fd006293533",
+          "store_relative_path": "spy/2025/2025-06-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0020bffa41f92635786d1adad1a5175a9b2649f22c41bb836db834c66c8dfae1",
+          "dataset_id": "bars:ibkr:trades:1d:0020bffa41f92635",
+          "date": "2025-06-11",
+          "document_file_sha256": "e00185c3685f8ec7ace6768c74c7d96788cf19363f0924a38484686d3e5a5ea8",
+          "store_relative_path": "spy/2025/2025-06-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "6f3d4bdecf03a97bdfffcce0f1fa715273bd8985eaf37c42c77605f73608258c",
+          "dataset_id": "bars:ibkr:trades:1d:6f3d4bdecf03a97b",
+          "date": "2025-06-12",
+          "document_file_sha256": "67bc6050e11d94bb7dbbff8cd71d3f4ab4c88950c93fdbd2076529c1be665598",
+          "store_relative_path": "spy/2025/2025-06-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f7775ef2aab599b136019859885774793d1d6e8448371779f910480ab3f07a2d",
+          "dataset_id": "bars:ibkr:trades:1d:f7775ef2aab599b1",
+          "date": "2025-06-13",
+          "document_file_sha256": "e1ef0b202927b4d9c373d5f13162d9bf7b12e836e82cf5b2873d90cc8d49bbb9",
+          "store_relative_path": "spy/2025/2025-06-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e034d38e3032f97228760d2ff6f83869aae8a096873b7c87b64200b4bcb4e557",
+          "dataset_id": "bars:ibkr:trades:1d:e034d38e3032f972",
+          "date": "2025-06-16",
+          "document_file_sha256": "5c0db9c8aa116de50e4a77f4180c7b46281179260b5aefc27a1c67833a877664",
+          "store_relative_path": "spy/2025/2025-06-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9bc3bb54eea68bbc1271b64a40ac10acca03798117386f4d5ea844255d453f4b",
+          "dataset_id": "bars:ibkr:trades:1d:9bc3bb54eea68bbc",
+          "date": "2025-06-17",
+          "document_file_sha256": "68741a98bca3e70c035694360ba2e9658eb06e6039daffe11f1cd9ef2c68c1c0",
+          "store_relative_path": "spy/2025/2025-06-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "597477ec102dd46a6984a06bdf1dce0f6634f094ee55f71e8e9dd14aff964617",
+          "dataset_id": "bars:ibkr:trades:1d:597477ec102dd46a",
+          "date": "2025-06-18",
+          "document_file_sha256": "c6b567fc703428e7de258af9cb72f8d3a96d1fe32c7cbdf8e36dcf9330334775",
+          "store_relative_path": "spy/2025/2025-06-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "76c801cb29e7d64949fb73bb4043a054ca8f5777db3f29ff4c27f749fffe4681",
+          "dataset_id": "bars:ibkr:trades:1d:76c801cb29e7d649",
+          "date": "2025-06-20",
+          "document_file_sha256": "dd128dd29f197dfb82f346313f4e2f7523fc87c24c6eb56ef05aed430eb651fd",
+          "store_relative_path": "spy/2025/2025-06-20.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9ed3f5308c6119d77a4c45a3875c20e940c4377ea2f394fc4b634e2db8c41d15",
+          "dataset_id": "bars:ibkr:trades:1d:9ed3f5308c6119d7",
+          "date": "2025-06-23",
+          "document_file_sha256": "c22252f76d1f4f7c43a98a0c1963ab44bf9657337911e8f6a556b1d22bcb4acd",
+          "store_relative_path": "spy/2025/2025-06-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "91366c114619a5a06da4af95df49f807fba4ae8c0f95e097a4272e021d24302a",
+          "dataset_id": "bars:ibkr:trades:1d:91366c114619a5a0",
+          "date": "2025-06-24",
+          "document_file_sha256": "f2e2f0e5ee7fb8d9ba32cbb0948b965d397cebb59ab2faa9e64e66fd8e2efb65",
+          "store_relative_path": "spy/2025/2025-06-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "5b918a700ee9b55409ea0c4a56a2acae90279f969e56b7beea58d054e2af88c5",
+          "dataset_id": "bars:ibkr:trades:1d:5b918a700ee9b554",
+          "date": "2025-06-25",
+          "document_file_sha256": "9b41950a5cfbcf815ad8c514a5aba5ae7ab4ccb2de983231e910d0ef5b24abd1",
+          "store_relative_path": "spy/2025/2025-06-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "938ea76b5f69d4916be19b47fe6a7de18f41ec05ec5738e433f430f2b77ea740",
+          "dataset_id": "bars:ibkr:trades:1d:938ea76b5f69d491",
+          "date": "2025-06-26",
+          "document_file_sha256": "132d64172823dbccf19abedb0a128497c097c23bc19f9927f7b4dafb850eec7e",
+          "store_relative_path": "spy/2025/2025-06-26.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e54b87dc8779d390740090e6a7c76d4e83665fe259be5b99a41bcde085fe592e",
+          "dataset_id": "bars:ibkr:trades:1d:e54b87dc8779d390",
+          "date": "2025-06-27",
+          "document_file_sha256": "b4afef032fced59f0f5dd21ded1444703e9d913a471241e6aab6c0485fabe56c",
+          "store_relative_path": "spy/2025/2025-06-27.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e289958c68418931f854dad560047876d0f10765f7685936b64e72bbd8c9ad32",
+          "dataset_id": "bars:ibkr:trades:1d:e289958c68418931",
+          "date": "2025-06-30",
+          "document_file_sha256": "134ff5b1ba17facf79d9827df5972ec0a0ba1ccb2daba32df0390ff3b66deaf8",
+          "store_relative_path": "spy/2025/2025-06-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f129605f7a7bd860b23189ddb5bf0d546bb893934b01f77e6bcc368826b9459c",
+          "dataset_id": "bars:ibkr:trades:1d:f129605f7a7bd860",
+          "date": "2025-07-01",
+          "document_file_sha256": "c1730818b16fcdd3c0695ef599e5b20191d138a846d9d3a821e43bbad32433b1",
+          "store_relative_path": "spy/2025/2025-07-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "6b354d52652c42b70dde8f25181ce29902a0b14e9f2953085002289c7df63410",
+          "dataset_id": "bars:ibkr:trades:1d:6b354d52652c42b7",
+          "date": "2025-07-02",
+          "document_file_sha256": "79e1e09c79b26102bf355d8f435ccccbb4c11df53256d3eb3693ed98044c6865",
+          "store_relative_path": "spy/2025/2025-07-02.json.gz"
+        },
+        {
+          "dataset_content_sha256": "f2138f149c60062ab1685da6cf986e0c76704ec57e00ef5d640a93fffb28026e",
+          "dataset_id": "bars:ibkr:trades:1d:f2138f149c60062a",
+          "date": "2025-07-03",
+          "document_file_sha256": "f57632328d58641b0c99d7ef07128e491025e59cb50b407c4ad4d159e201dd61",
+          "store_relative_path": "spy/2025/2025-07-03.json.gz"
+        },
+        {
+          "dataset_content_sha256": "c8a3b22990bc9f981e7bc10acae8cda11b1bd97e7745be2c5f809fbbdfd653a5",
+          "dataset_id": "bars:ibkr:trades:1d:c8a3b22990bc9f98",
+          "date": "2025-07-07",
+          "document_file_sha256": "67ee8980e650b38fc54cf691a2bae2c76efb5288eee0d127f0ce190acd9ce711",
+          "store_relative_path": "spy/2025/2025-07-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "515b8ea72ddbf9827b4faec5ca82b410c5851de516a62085c4efa07c46b8a260",
+          "dataset_id": "bars:ibkr:trades:1d:515b8ea72ddbf982",
+          "date": "2025-07-08",
+          "document_file_sha256": "ff26917e2364aa526ab39867401217844b680cbd152f36498f50c379e6ab20dd",
+          "store_relative_path": "spy/2025/2025-07-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "0619471c7fa2d5f9320f3e0393bcdc32fc93645e816e68388420c562a25ffc4a",
+          "dataset_id": "bars:ibkr:trades:1d:0619471c7fa2d5f9",
+          "date": "2025-07-09",
+          "document_file_sha256": "4c50d428333af632b362b66a229c47fa192b86518ce4df6ff71fcd516e23beab",
+          "store_relative_path": "spy/2025/2025-07-09.json.gz"
+        },
+        {
+          "dataset_content_sha256": "acfcd0e8800948175027b337f05d449ceec8be15d11920ac366185bffe4ee3cf",
+          "dataset_id": "bars:ibkr:trades:1d:acfcd0e880094817",
+          "date": "2025-07-10",
+          "document_file_sha256": "2cad5df93833195ccf49d7ccf50892bfeec2a0273c83346941fa66610a2a158c",
+          "store_relative_path": "spy/2025/2025-07-10.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e42720802d72ac23b75aab9ed788b85f0fa3ed1826f2989ca2d77a9ccb3e3702",
+          "dataset_id": "bars:ibkr:trades:1d:e42720802d72ac23",
+          "date": "2025-07-11",
+          "document_file_sha256": "9df8a9f2b65785f1f4099258d9e5a4177bc227d82523d4a0ebaf449306d7d23a",
+          "store_relative_path": "spy/2025/2025-07-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "51d80d729ca5bbf8551c6ef6e519595669dc963b7de84bd2955c243375563918",
+          "dataset_id": "bars:ibkr:trades:1d:51d80d729ca5bbf8",
+          "date": "2025-07-14",
+          "document_file_sha256": "d32f51d22e076108cb755acb66490246f8dd52d20bdc8d52e3054f53926454a9",
+          "store_relative_path": "spy/2025/2025-07-14.json.gz"
+        },
+        {
+          "dataset_content_sha256": "acbd2dde180ae220bceae498f97a5c5c343eab42390f321899da4961f03041f4",
+          "dataset_id": "bars:ibkr:trades:1d:acbd2dde180ae220",
+          "date": "2025-07-15",
+          "document_file_sha256": "76565d1086cc6a0d1feb1748b8ef516ddec7dcd12398931539d76c8e82c5081e",
+          "store_relative_path": "spy/2025/2025-07-15.json.gz"
+        },
+        {
+          "dataset_content_sha256": "22a728d2e2b2f559fb65816e105189ea6f201e48a8a91cca28470df65dd66ef7",
+          "dataset_id": "bars:ibkr:trades:1d:22a728d2e2b2f559",
+          "date": "2025-07-16",
+          "document_file_sha256": "7ba37f93f09cb1c1f73846c329172464537272865418ceed67cd55925f0dfe4f",
+          "store_relative_path": "spy/2025/2025-07-16.json.gz"
+        },
+        {
+          "dataset_content_sha256": "ccec8caeedb92230ec46f69a821b6e8c10f633792e927d17b267f6b8ae354a55",
+          "dataset_id": "bars:ibkr:trades:1d:ccec8caeedb92230",
+          "date": "2025-07-17",
+          "document_file_sha256": "767a0b8be709798f71369dbacedf007278c2424f12c6a6bb457794e7bdcf8b1e",
+          "store_relative_path": "spy/2025/2025-07-17.json.gz"
+        },
+        {
+          "dataset_content_sha256": "bfd131a5be32745c833174610bf6efc5ea460fcc887215e3367d1d9a4143ecb3",
+          "dataset_id": "bars:ibkr:trades:1d:bfd131a5be32745c",
+          "date": "2025-07-18",
+          "document_file_sha256": "c618f8e53248c17fef16ff748a3cd21982f2ba385a28e3b6eade0c556eda6ce4",
+          "store_relative_path": "spy/2025/2025-07-18.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1529af111c727dbb26d151272f63566fe703f45afef21e4665c73b593b2526c0",
+          "dataset_id": "bars:ibkr:trades:1d:1529af111c727dbb",
+          "date": "2025-07-21",
+          "document_file_sha256": "ea8cd68fa57954855e1759df2180e95288232c6d037144bea1b5327d95142e47",
+          "store_relative_path": "spy/2025/2025-07-21.json.gz"
+        },
+        {
+          "dataset_content_sha256": "1183838160d70de152cd382da6a5e0d4ac4afebd1cc3b3bdb7ea80afff6ab36f",
+          "dataset_id": "bars:ibkr:trades:1d:1183838160d70de1",
+          "date": "2025-07-22",
+          "document_file_sha256": "5d6d6ccaeb7b1ee10eb5ad440cca17eaaf3aba072583f10f1530ecebd1c79bcd",
+          "store_relative_path": "spy/2025/2025-07-22.json.gz"
+        },
+        {
+          "dataset_content_sha256": "05cfd6cb8fb12f2fa5e06a548a0146baf7c2b7bc7e6a3d59f2a042436d114ff1",
+          "dataset_id": "bars:ibkr:trades:1d:05cfd6cb8fb12f2f",
+          "date": "2025-07-23",
+          "document_file_sha256": "7660303acefce36335f2cb5a33cf5c6cd6a39bb574daa245d9ce76bb1fe692cc",
+          "store_relative_path": "spy/2025/2025-07-23.json.gz"
+        },
+        {
+          "dataset_content_sha256": "7ddd3fbb0863bf347973d94dcfd22741e1193b318b4167fcfa4848ac23971a2c",
+          "dataset_id": "bars:ibkr:trades:1d:7ddd3fbb0863bf34",
+          "date": "2025-07-24",
+          "document_file_sha256": "b1e4d26a18e412745b262b4be775b0c9e4b349472ea54c523e38839a821efbe8",
+          "store_relative_path": "spy/2025/2025-07-24.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2fc0b6dfa1d53a936ed554f60da6245ccded9a87da5faee50f9c2c827c584c02",
+          "dataset_id": "bars:ibkr:trades:1d:2fc0b6dfa1d53a93",
+          "date": "2025-07-25",
+          "document_file_sha256": "79006ccaba9845a31528da38ddffe852ccc73ea0fa8a3c839fccb81c37ccf6e4",
+          "store_relative_path": "spy/2025/2025-07-25.json.gz"
+        },
+        {
+          "dataset_content_sha256": "32f4f077995b1ca4123dd04e72d8394a1f40768623bce05259a0f0056db15b1d",
+          "dataset_id": "bars:ibkr:trades:1d:32f4f077995b1ca4",
+          "date": "2025-07-28",
+          "document_file_sha256": "e8ba61c554b1e0783bc651e288cf98fcaa1dc5e6c5e0f74df1e49afbf5ecc164",
+          "store_relative_path": "spy/2025/2025-07-28.json.gz"
+        },
+        {
+          "dataset_content_sha256": "9e2ec89fbae5ea2ca765fed79778f2bdc8c834a6ea9b7b98fb1208f11414ce4a",
+          "dataset_id": "bars:ibkr:trades:1d:9e2ec89fbae5ea2c",
+          "date": "2025-07-29",
+          "document_file_sha256": "6fa7b56a1a94be7dce4ae05dd4ca9a126805327e4b076db05d315862441ceb87",
+          "store_relative_path": "spy/2025/2025-07-29.json.gz"
+        },
+        {
+          "dataset_content_sha256": "e3a0d5b3ed75b4ae282aa581e5129e199fdba7280b45464cb3dc2fab5bd616de",
+          "dataset_id": "bars:ibkr:trades:1d:e3a0d5b3ed75b4ae",
+          "date": "2025-07-30",
+          "document_file_sha256": "3420475dac075a349bd78538b6fb3b536020878ca250a887eee4e390db32f30c",
+          "store_relative_path": "spy/2025/2025-07-30.json.gz"
+        },
+        {
+          "dataset_content_sha256": "72266d13cd67ef1e7f49537d0ead1dcda9023355690ca56e8cb841fd51f61ebe",
+          "dataset_id": "bars:ibkr:trades:1d:72266d13cd67ef1e",
+          "date": "2025-07-31",
+          "document_file_sha256": "3033cdf6e4c97d85c6cf0ec9ca1e97340e25be7fad50f0fb13d1b5b712d2162e",
+          "store_relative_path": "spy/2025/2025-07-31.json.gz"
+        },
+        {
+          "dataset_content_sha256": "bb9bd4407457069d43755ad5d3e8f332a8debb78358f027d10684c2bc68d503d",
+          "dataset_id": "bars:ibkr:trades:1d:bb9bd4407457069d",
+          "date": "2025-08-01",
+          "document_file_sha256": "ec699ce44c92e0d54a75415c5397c5668612789a00256537528041e98252f052",
+          "store_relative_path": "spy/2025/2025-08-01.json.gz"
+        },
+        {
+          "dataset_content_sha256": "aa2251687450ec606cc189c080d79a747ffdbb777699d533f5b2de6084a968f4",
+          "dataset_id": "bars:ibkr:trades:1d:aa2251687450ec60",
+          "date": "2025-08-04",
+          "document_file_sha256": "6eec62211ac9e40b532588c30e327735a3783f40eb5f0ca9978af5fd97937f0a",
+          "store_relative_path": "spy/2025/2025-08-04.json.gz"
+        },
+        {
+          "dataset_content_sha256": "df71cabbc0f21bffe41cd471aa8d9b78b09fdf4e32d5bba6b5322d120bd25b6a",
+          "dataset_id": "bars:ibkr:trades:1d:df71cabbc0f21bff",
+          "date": "2025-08-05",
+          "document_file_sha256": "c5a1a6612ea4c755e919dba8d5b764798ec606083dfb624cf89e223945f2c38e",
+          "store_relative_path": "spy/2025/2025-08-05.json.gz"
+        },
+        {
+          "dataset_content_sha256": "06b8bf47e702764e24a947633af18e0c4e71dd89f11afac64a8c134435772bb0",
+          "dataset_id": "bars:ibkr:trades:1d:06b8bf47e702764e",
+          "date": "2025-08-06",
+          "document_file_sha256": "649ee4a3cd83dbcb6fc591b077183bcc858162003445d60f0f12637675a22469",
+          "store_relative_path": "spy/2025/2025-08-06.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a6680b4e898ff32e4cac083946bdd7e8a452af279d8d2f0ab40a94217cdd5df2",
+          "dataset_id": "bars:ibkr:trades:1d:a6680b4e898ff32e",
+          "date": "2025-08-07",
+          "document_file_sha256": "8b0f4b01e0bd4d2d2fed9ad0fd72ad07a8e3e9060e19fddb398dfa91135acde9",
+          "store_relative_path": "spy/2025/2025-08-07.json.gz"
+        },
+        {
+          "dataset_content_sha256": "deda9d2cec4a1deebb0d75cf263f455dbfa8e8757bdd1f5e343511abfe408eb6",
+          "dataset_id": "bars:ibkr:trades:1d:deda9d2cec4a1dee",
+          "date": "2025-08-08",
+          "document_file_sha256": "e6d27d9d136eb28307fd67f8649e06eeeb4f94dbedebe62ce284c06d757f795a",
+          "store_relative_path": "spy/2025/2025-08-08.json.gz"
+        },
+        {
+          "dataset_content_sha256": "47fa956661c84e402da69ca7025337965d0e3c56278d3d1ac60adb3da1946e00",
+          "dataset_id": "bars:ibkr:trades:1d:47fa956661c84e40",
+          "date": "2025-08-11",
+          "document_file_sha256": "f26fe22c606b8494f7cc0039586f01d74af9e99c25842f4f51fd029d72c1e93e",
+          "store_relative_path": "spy/2025/2025-08-11.json.gz"
+        },
+        {
+          "dataset_content_sha256": "a92c16b79712a5e3f79ea2a5b4957eda65e4bc55aafb6b568af882570cd0beeb",
+          "dataset_id": "bars:ibkr:trades:1d:a92c16b79712a5e3",
+          "date": "2025-08-12",
+          "document_file_sha256": "76d528398f86dc3d1eaa2df1a432b46fe98886e70f2ba70a2018b69aae2cd0f1",
+          "store_relative_path": "spy/2025/2025-08-12.json.gz"
+        },
+        {
+          "dataset_content_sha256": "2f71133a7002c2d90b68c209d71ffef809d1df34063ec9dbad05820a50948319",
+          "dataset_id": "bars:ibkr:trades:1d:2f71133a7002c2d9",
+          "date": "2025-08-13",
+          "document_file_sha256": "d5b48f737ab0aa4c9b33be25936d3f77405078d700ee46ea45163e31c36d86c2",
+          "store_relative_path": "spy/2025/2025-08-13.json.gz"
+        },
+        {
+          "dataset_content_sha256": "11ba6e88d2c1a0260978a2e7e1f91949ee335a22c13e3e80b918b094e4993cb1",
+          "dataset_id": "bars:ibkr:trades:1d:11ba6e88d2c1a026",
+          "date": "2025-08-14",
+          "document_file_sha256": "11d62e30f9a6e6c6a2fc7dcad5214ad3da0e9b1f635d5fba5fe302731315a30c",
+          "store_relative_path": "spy/2025/2025-08-14.json.gz"
+        }
+      ],
+      "scope": "full_session",
+      "session": "regular",
+      "symbol": "SPY",
+      "timeframe": "1d"
+    }
+  },
+  "manifest_sha256": "65c5a7de0e59467e5c558f7901d515490e2963f261c11238c4564a835f786c5c",
+  "registered_at": "2026-07-23T22:38:00Z",
+  "requested_dates": [
+    "2025-01-02",
+    "2025-01-03",
+    "2025-01-06",
+    "2025-01-07",
+    "2025-01-08",
+    "2025-01-10",
+    "2025-01-13",
+    "2025-01-14",
+    "2025-01-15",
+    "2025-01-16",
+    "2025-01-17",
+    "2025-01-21",
+    "2025-01-22",
+    "2025-01-23",
+    "2025-01-24",
+    "2025-01-27",
+    "2025-01-28",
+    "2025-01-29",
+    "2025-01-30",
+    "2025-01-31",
+    "2025-02-03",
+    "2025-02-04",
+    "2025-02-05",
+    "2025-02-06",
+    "2025-02-07",
+    "2025-02-10",
+    "2025-02-11",
+    "2025-02-12",
+    "2025-02-13",
+    "2025-02-14",
+    "2025-02-18",
+    "2025-02-19",
+    "2025-02-20",
+    "2025-02-21",
+    "2025-02-24",
+    "2025-02-25",
+    "2025-02-26",
+    "2025-02-27",
+    "2025-02-28",
+    "2025-03-03",
+    "2025-03-04",
+    "2025-03-05",
+    "2025-03-06",
+    "2025-03-07",
+    "2025-03-10",
+    "2025-03-11",
+    "2025-03-12",
+    "2025-03-13",
+    "2025-03-14",
+    "2025-03-17",
+    "2025-03-18",
+    "2025-03-19",
+    "2025-03-20",
+    "2025-03-21",
+    "2025-03-24",
+    "2025-03-25",
+    "2025-03-26",
+    "2025-03-27",
+    "2025-03-28",
+    "2025-03-31",
+    "2025-04-01",
+    "2025-04-02",
+    "2025-04-03",
+    "2025-04-04",
+    "2025-04-07",
+    "2025-04-08",
+    "2025-04-09",
+    "2025-04-10",
+    "2025-04-11",
+    "2025-04-14",
+    "2025-04-15",
+    "2025-04-16",
+    "2025-04-17",
+    "2025-04-21",
+    "2025-04-22",
+    "2025-04-23",
+    "2025-04-24",
+    "2025-04-25",
+    "2025-04-28",
+    "2025-04-29",
+    "2025-04-30",
+    "2025-05-01",
+    "2025-05-02",
+    "2025-05-05",
+    "2025-05-06",
+    "2025-05-07",
+    "2025-05-08",
+    "2025-05-09",
+    "2025-05-12",
+    "2025-05-13",
+    "2025-05-14",
+    "2025-05-15",
+    "2025-05-16",
+    "2025-05-19",
+    "2025-05-20",
+    "2025-05-21",
+    "2025-05-22",
+    "2025-05-23",
+    "2025-05-27",
+    "2025-05-28",
+    "2025-05-29",
+    "2025-05-30",
+    "2025-06-02",
+    "2025-06-03",
+    "2025-06-04",
+    "2025-06-05",
+    "2025-06-06",
+    "2025-06-09",
+    "2025-06-10",
+    "2025-06-11",
+    "2025-06-12",
+    "2025-06-13",
+    "2025-06-16",
+    "2025-06-17",
+    "2025-06-18",
+    "2025-06-20",
+    "2025-06-23",
+    "2025-06-24",
+    "2025-06-25",
+    "2025-06-26",
+    "2025-06-27",
+    "2025-06-30",
+    "2025-07-01",
+    "2025-07-02",
+    "2025-07-03",
+    "2025-07-07",
+    "2025-07-08",
+    "2025-07-09",
+    "2025-07-10",
+    "2025-07-11",
+    "2025-07-14",
+    "2025-07-15",
+    "2025-07-16",
+    "2025-07-17",
+    "2025-07-18",
+    "2025-07-21",
+    "2025-07-22",
+    "2025-07-23",
+    "2025-07-24",
+    "2025-07-25",
+    "2025-07-28",
+    "2025-07-29",
+    "2025-07-30",
+    "2025-07-31",
+    "2025-08-01",
+    "2025-08-04",
+    "2025-08-05",
+    "2025-08-06",
+    "2025-08-07",
+    "2025-08-08",
+    "2025-08-11",
+    "2025-08-12",
+    "2025-08-13",
+    "2025-08-14"
+  ],
+  "schema_version": 1
+}
