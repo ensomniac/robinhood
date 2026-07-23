@@ -109,6 +109,29 @@ explicitly contaminated development partition and disjoint untouched
 confirmation. This does not consume a new-family weekly slot and does not wait
 for the next ISO week.
 
+## Active liquid-ETF cross-sectional successor
+
+The active successor is
+`cross-sectional-momentum-v2-liquid-index-etf`, runtime family
+`liquid-etf-cross-sectional-momentum`. The prior equity version had positive
+5/10/20-bps results but failed only its Stage 0 drawdown gate; its exact version
+remains retired. The successor preserves the cross-sectional-momentum mechanism
+while replacing microcap concentration with the complete `DIA`, `IWM`, `QQQ`,
+and `SPY` universe.
+
+Its complete 32-trial grid is trailing return `{20,60}` sessions × SPY trend
+SMA `{100,200}` × minimum return above the cross-sectional median `{1%,2%}` ×
+stop `{1.5,2.0}×ATR14` × hold `{3,5}` sessions. Ranking uses only completed
+closes, entry is the next session open, daily ambiguity is stop-first, and at
+most one new family entry is allowed per session.
+
+The already-inspected 2016-2020 daily partition is explicitly contaminated
+development training and its source family outcome remains adverse history.
+The five-session embargo and 500-session 2021-2022 confirmation reserve remain
+disjoint and untouched. The implementation can load the shared development
+dataset once with zero provider requests and uses the same exact ranking and
+risk rules in production evaluation.
+
 Before the formal freeze, one unchanged predecessor-like setting was exercised
 solely to validate local I/O and semantics on this already contaminated training
 corpus. It produced 13 rolling-origin fills and -0.002737 total log growth at

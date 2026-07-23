@@ -53,6 +53,15 @@ confirmation reserve remains globally untouched and cannot be repurposed for a
 repaired oversold rule. The next immediate lane must be another existing-family
 successor using an explicitly contaminated development partition and disjoint
 untouched confirmation; the weekly new-family reset is not a work pause.
+The selected lane is
+`cross-sectional-momentum-v2-liquid-index-etf`, which retains the previously
+tested cross-sectional-momentum mechanism while replacing concentrated microcap
+equity exposure with the complete `DIA`, `IWM`, `QQQ`, and `SPY` universe. Its
+32-trial grid uses 20/60-session returns, SPY 100/200-session trend gates,
+1%/2% cross-sectional excess floors, 1.5/2.0 ATR14 stops, and three/five-session
+holds. Its 2016-2020 partition is contaminated training only; its frozen
+2021-2022 reserve remains untouched. This is an existing-family successor,
+consumes no weekly new-family slot, and authorizes no broker action.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
