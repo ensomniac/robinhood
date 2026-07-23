@@ -982,6 +982,42 @@ def rebuild_close(
         entry_ref_token = original.get("encrypted_client_ref_id")
     entry_broker_token = _token(entry_broker_token, "broker_order_id", cipher)
     entry_ref_token = _token(entry_ref_token, "client_ref_id", cipher)
+    protection_confirmed = protection.get("protection_confirmed") is True
+    residual_by_identifier = {
+        cipher.decrypt(
+            order["encrypted_broker_order_id"], "broker_order_id"
+        ).value: order["state"]
+        for order in normalized_residuals
+    }
+    nonfilling_terminal_states = {"cancelled", "rejected", "failed", "expired"}
+    remaining_entry_quantity = int(
+        exposure.get("remaining_quantity")
+        if exposure.get("remaining_quantity") is not None
+        else _object(exposure.get("exposure"), "entry exposure").get(
+            "remaining_quantity", 0
+        )
+    )
+    if remaining_entry_quantity:
+        entry_identifier = cipher.decrypt(
+            entry_broker_token, "broker_order_id"
+        ).value
+        if residual_by_identifier.get(entry_identifier) not in nonfilling_terminal_states:
+            raise PortfolioLiveError(
+                "partial-entry remainder is absent from terminal residual orders"
+            )
+    protection_broker_token = protection.get("encrypted_broker_order_id")
+    if protection_confirmed and not used_existing_protection:
+        protection_identifier = cipher.decrypt(
+            _token(protection_broker_token, "broker_order_id", cipher),
+            "broker_order_id",
+        ).value
+        if (
+            residual_by_identifier.get(protection_identifier)
+            not in nonfilling_terminal_states
+        ):
+            raise PortfolioLiveError(
+                "protective order is absent from terminal residual orders"
+            )
     required_tokens = [
         entry_broker_token,
         entry_ref_token,
@@ -1001,7 +1037,6 @@ def rebuild_close(
     if journal_audit.violations:
         raise PortfolioLiveError("live journal sensitive-data audit failed")
     notification = _notification(value["notification_status"], "close notification")
-    protection_confirmed = protection.get("protection_confirmed") is True
     clean = (
         protection_confirmed
         and value["monitoring_complete"] is True

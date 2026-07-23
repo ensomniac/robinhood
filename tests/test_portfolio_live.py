@@ -434,6 +434,58 @@ def test_nonterminal_residual_order_or_bad_identifier_fails_closed():
             portfolio_live.close_live(
                 protection_path, closure, root=root, now=close_at
             )
+        closure = _closure(work, evaluation, tokens, close_at)
+        closure["residual_orders"] = []
+        with pytest.raises(
+            portfolio_live.PortfolioLiveError,
+            match="protective order is absent",
+        ):
+            portfolio_live.close_live(
+                protection_path, closure, root=root, now=close_at
+            )
+
+
+def test_existing_protective_stop_can_be_the_authenticated_terminal_exit():
+    with tempfile.TemporaryDirectory(dir=portfolio_live.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        (
+            root,
+            _winner_artifact,
+            evaluation,
+            _preparation,
+            _entry,
+            protection_path,
+            _protection,
+            tokens,
+        ) = _entry_and_protection(work)
+        close_at = NOW + timedelta(days=2)
+        closure = _closure(work, evaluation, tokens, close_at)
+        entry_price = evaluation["order"]["limit_price"]
+        exit_price = evaluation["protection"]["stop_price"]
+        quantity = evaluation["order"]["quantity"]
+        realized = quantity * (exit_price - entry_price) - 1.0
+        closure.update(
+            {
+                "exit_reason": "stop",
+                "average_exit_price": exit_price,
+                "expected_exit_price": exit_price,
+                "realized_net_dollars": realized,
+                "ending_equity": 100_000.0 + realized,
+                "stop_executed": True,
+                "exit_used_existing_protection": True,
+                "encrypted_broker_order_id": tokens["protection_order"],
+                "encrypted_client_ref_id": tokens["protection_ref"],
+                "residual_orders": [],
+            }
+        )
+
+        _final_path, final = portfolio_live.close_live(
+            protection_path, closure, root=root, now=close_at
+        )
+
+        assert final["state"] == "LIVE_CLOSED_RECONCILED_INSPECTION_REQUIRED"
+        assert final["maturity_record"]["stop_executed"] is True
+        assert final["maturity_record"]["broker_actions"] == 2
 
 
 def test_partial_fill_remainder_must_be_terminal_before_protection():
@@ -482,10 +534,37 @@ def test_partial_fill_remainder_must_be_terminal_before_protection():
                 entry_path, observation, root=root, now=protection_at
             )
         observation["entry_remainder_state"] = "cancelled"
-        _, protected = portfolio_live.record_protection(
+        protection_path, protected = portfolio_live.record_protection(
             entry_path, observation, root=root, now=protection_at
         )
         assert protected["state"] == "LIVE_PROTECTED_MONITOR"
+        close_at = NOW + timedelta(days=2)
+        closure = _closure(work, evaluation, tokens, close_at)
+        gross = filled * (
+            float(closure["average_exit_price"])
+            - float(evaluation["order"]["limit_price"])
+        )
+        closure["exit_quantity"] = filled
+        closure["realized_net_dollars"] = gross - 1.0
+        closure["ending_equity"] = 100_000.0 + gross - 1.0
+        with pytest.raises(
+            portfolio_live.PortfolioLiveError,
+            match="partial-entry remainder is absent",
+        ):
+            portfolio_live.close_live(
+                protection_path, closure, root=root, now=close_at
+            )
+        closure["residual_orders"].append(
+            {
+                "logical_order_alias": "entry-partial",
+                "state": "cancelled",
+                "encrypted_broker_order_id": tokens["entry_order"],
+            }
+        )
+        _final_path, final = portfolio_live.close_live(
+            protection_path, closure, root=root, now=close_at
+        )
+        assert final["close_facts"]["residual_orders_terminal"] is True
 
 
 def test_protection_failure_forces_flat_but_cannot_earn_live_admission():

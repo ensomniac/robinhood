@@ -1254,8 +1254,10 @@ be reconciled against broker orders before any retry or flatten can proceed.
 before admission. A live row is rejected unless the position is flat, every
 residual order is terminal, the account and orders are reconciled, realized net
 dollars and account return are recorded, and at least entry plus exit broker
-actions occurred. A protection failure forces a safe flatten but cannot earn the
-first-pilot milestone.
+actions occurred. A partial-entry remainder and any separately active protective
+order must appear by authenticated broker identity in that terminal residual set;
+an existing protective stop may instead be the authenticated exit itself. A
+protection failure forces a safe flatten but cannot earn the first-pilot milestone.
 
 Every visible trading decision must also update a detailed context file under
 `trades/active/` or `trades/archived/`. If a decision is session-level rather

@@ -315,4 +315,6 @@ independently replayed close with a flat reconciled account, terminal residual
 orders, complete monitoring/journal capture, and recorded realized dollars,
 account return, R, slippage, protection timing, and notification status may enter
 `PORTFOLIO_SIGNALS.jsonl`. Protection-failure safety closes remain auditable but
-cannot earn the live-started milestone.
+cannot earn the live-started milestone. Terminal reconciliation must include the
+authenticated partial-entry remainder and any separate protective order; when a
+protective stop executes, that same authenticated order must be the recorded exit.
