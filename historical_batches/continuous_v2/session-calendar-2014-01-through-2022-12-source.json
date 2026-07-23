@@ -1,0 +1,23 @@
+{
+  "broker_actions": 0,
+  "calendar_sha256": "93acba7df20cb39af7aa7d6afbe7bec531dbea6a1e2c67de95fc6052098f1b50",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "collected_at": "2026-07-23T16:50:25Z",
+  "contract_inspection_sha256": "52f1aac4aaab21dd1983bbecbeb31f9897671b89db40afaa9c7d5a103c45ff1b",
+  "contract_sha256": "eb633d45489bbf2cc7557777d1b40105ded7e1a95b16fb4faf7ebda86ef13928",
+  "endpoint": "https://api.alpaca.markets/v2/calendar",
+  "first_session": "2014-01-02",
+  "last_session": "2022-12-30",
+  "market_prices_accessed": false,
+  "provider": "Alpaca Market Calendar API",
+  "provider_requests": 1,
+  "query": {
+    "end": "2022-12-31",
+    "start": "2014-01-01"
+  },
+  "request_seconds": 0.07971715927124023,
+  "research_generation": "existing_family_successor",
+  "schema_version": 1,
+  "sessions": 2266,
+  "target_outcomes_accessed": false
+}
