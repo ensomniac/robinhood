@@ -383,12 +383,15 @@ python3 portfolio_live_inspection.py admit path/to/live-inspection.json
 ```
 
 Preparation repeats encryption, lifecycle, strategy-ledger, portfolio-ledger,
-clean-worktree, exact-production, broker-review, confirmation, flat-account, and
-`ENTRY_READY` checks. It also freezes the order deadline at the earlier of the
-five-second market-data expiry and 15-second guard-snapshot expiry; an entry
-observation after that instant or a direct/reconciled fill before preparation is
-rejected. Later transitions authenticate encrypted field-bound IDs, never retry
-an unknown or active logical order, require a partial-entry remainder to become
+clean-worktree, exact-pushed-commit, exact-production, broker-review,
+confirmation, flat-account, and `ENTRY_READY` checks before it evaluates the
+fresh facts. The broker review must be timestamped after the evaluated quote,
+the guard snapshot must follow that review, and all three must remain fresh.
+Preparation also freezes the order deadline at the earlier of the five-second
+market-data expiry and 15-second guard-snapshot expiry; an entry observation
+after that instant or a direct/reconciled fill before preparation is rejected.
+Later transitions authenticate encrypted field-bound IDs, never retry an
+unknown or active logical order, require a partial-entry remainder to become
 terminal, and force flattening when protection fails. A protection confirmation
 after the configured ten-second ceiling remains auditable but is nonqualifying
 for the controlled live milestone. Only an
@@ -400,9 +403,13 @@ cannot earn the live-started milestone. Terminal reconciliation must include the
 authenticated partial-entry remainder and any separate protective order; when a
 protective stop executes, that same authenticated order must be the recorded exit.
 
-The final lifecycle and every bound preparation, exposure, and protection artifact
-must be committed before independent live inspection. Admission then requires the
-inspection and existing portfolio ledger to be committed and rechecks that the
-exact strategy ID, version, and rules hash remain `PILOT_READY` immediately before
-the reconciled close is appended. Caller-supplied maturity reports are rejected
-outside the explicit no-commit, no-repository-check test path.
+The final lifecycle and every bound winner, preparation, exposure, and
+protection artifact must be committed before independent live inspection.
+Inspection reopens the frozen winner, replays the production evaluation from
+the retained privacy-safe market facts, and rebuilds broker-review and
+portfolio-guard decisions. It also requires the preparation commit to remain
+an ancestor of both current `HEAD` and its upstream. Admission then requires
+the inspection and existing portfolio ledger to be committed and rechecks that
+the exact strategy ID, version, and rules hash remain `PILOT_READY` immediately
+before the reconciled close is appended. Caller-supplied maturity reports are
+rejected outside the explicit no-commit, no-repository-check test path.

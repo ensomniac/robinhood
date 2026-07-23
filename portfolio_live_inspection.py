@@ -9,6 +9,8 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+import portfolio_execution
+import portfolio_guard
 import portfolio_live
 import portfolio_maturity
 import strategy_discovery
@@ -70,6 +72,12 @@ def inspect_live(
         "controlled-live-preparation",
         enforce_commit=enforce_commit,
     )
+    winner_path, winner = _load_bound(
+        preparation.get("winner_path"),
+        preparation.get("winner_sha256"),
+        "frozen-strategy-winner",
+        enforce_commit=enforce_commit,
+    )
     for field in (
         "campaign_id",
         "family_id",
@@ -82,11 +90,86 @@ def inspect_live(
             str(protection.get(field)),
             str(exposure.get(field)),
             str(preparation.get(field)),
+            str(winner.get(field)),
         }
         if len(identities) != 1:
             raise PortfolioLiveInspectionError(
                 f"controlled live {field} binding drifted"
             )
+    try:
+        prepared_at = portfolio_live._timestamp(
+            preparation.get("prepared_at"), "prepared_at"
+        )
+        replayed_evaluation = portfolio_execution.evaluate_frozen_winner(
+            winner,
+            preparation.get("market_facts"),
+            preparation.get("account"),
+            portfolio_maturity.load_config(),
+            now=prepared_at,
+        )
+        if replayed_evaluation != preparation.get("production_evaluation"):
+            raise PortfolioLiveInspectionError(
+                "live production evaluation does not replay"
+            )
+        market_observed_at = portfolio_live._timestamp(
+            replayed_evaluation["market"]["observed_at"],
+            "market observed_at",
+        )
+        review = portfolio_live._validate_review(
+            preparation.get("broker_review"),
+            replayed_evaluation,
+            market_observed_at=market_observed_at,
+            now=prepared_at,
+        )
+        reviewed_at = portfolio_live._timestamp(
+            review["reviewed_at"], "broker_review.reviewed_at"
+        )
+        snapshot = portfolio_live._validate_guard_snapshot(
+            preparation.get("guard_snapshot"),
+            winner,
+            replayed_evaluation,
+            review,
+            reviewed_at=reviewed_at,
+        )
+        maturity_assessment = preparation.get("maturity_assessment")
+        if not isinstance(maturity_assessment, Mapping):
+            raise PortfolioLiveInspectionError(
+                "live preparation maturity assessment is missing"
+            )
+        replayed_guard = portfolio_guard.evaluate_entry(
+            snapshot,
+            {"strategies": [dict(maturity_assessment)]},
+            portfolio_maturity.load_config(),
+            now=prepared_at,
+        )
+        if replayed_guard != preparation.get("portfolio_guard"):
+            raise PortfolioLiveInspectionError("live portfolio guard does not replay")
+        if enforce_commit:
+            portfolio_live.verify_recorded_git_provenance(
+                preparation.get("repository_checks", {})
+            )
+            current = [
+                assessment
+                for assessment in portfolio_maturity.build_report().get(
+                    "strategies", []
+                )
+                if assessment.get("strategy_id") == winner["strategy_id"]
+                and assessment.get("strategy_version") == winner["strategy_version"]
+                and assessment.get("rules_hash") == winner["rules_hash"]
+            ]
+            if len(current) != 1 or current[0].get("pilot_ready") is not True:
+                raise PortfolioLiveInspectionError(
+                    "exact strategy no longer has unambiguous PILOT_READY evidence"
+                )
+    except (
+        portfolio_execution.PortfolioExecutionError,
+        portfolio_guard.PortfolioGuardError,
+        portfolio_live.PortfolioLiveError,
+        TypeError,
+    ) as exc:
+        raise PortfolioLiveInspectionError(
+            f"live preparation does not independently replay: {exc}"
+        ) from exc
     rebuilt_facts, rebuilt_record = portfolio_live.rebuild_close(
         protection, exposure, preparation, final["closure"]
     )
@@ -128,8 +211,12 @@ def inspect_live(
         "exposure_sha256": exposure["artifact_sha256"],
         "preparation_path": strategy_discovery._relative(preparation_path),
         "preparation_sha256": preparation["artifact_sha256"],
+        "winner_path": strategy_discovery._relative(winner_path),
+        "winner_sha256": winner["artifact_sha256"],
         "inspection": {
             "exact_identity_rebuilt": True,
+            "winner_and_production_evaluation_rebuilt": True,
+            "broker_review_and_portfolio_guard_rebuilt": True,
             "encrypted_identifier_authentication_rebuilt": True,
             "entry_and_protection_timing_rebuilt": True,
             "realized_return_and_r_rebuilt": True,

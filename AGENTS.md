@@ -1248,14 +1248,20 @@ broker-inert state authority for a controlled v2 pilot: prepare, record entry,
 reconcile unknown or open submissions before retry, terminate any partial-entry
 remainder, record protection, and close flat. Exact broker and client identifiers
 must authenticate as field-bound Fernet tokens and remain in the public journal.
+Preparation requires a clean exact `HEAD` equal to its configured upstream,
+records that commit, and evaluates market facts only after repository checks.
+The timestamped broker review must follow the evaluated quote and the fresh
+portfolio-guard snapshot must follow the review.
 An unknown protection submission must retain its encrypted client reference and
 be reconciled against broker orders before any retry or flatten can proceed.
-`portfolio_live_inspection.py` must independently rebuild the terminal artifact
-before admission. A live row is rejected unless the position is flat, every
-residual order is terminal, the account and orders are reconciled, realized net
-dollars and account return are recorded, and at least entry plus exit broker
-actions occurred. A partial-entry remainder and any separately active protective
-order must appear by authenticated broker identity in that terminal residual set;
+`portfolio_live_inspection.py` must reopen the exact winner and independently
+rebuild the production evaluation, broker review, portfolio guard, and terminal
+artifact before admission. A live row is rejected unless the position is flat,
+every residual order is terminal, the account and orders are reconciled,
+realized net dollars and account return are recorded, and at least entry plus
+exit broker actions occurred. A partial-entry remainder and any separately
+active protective order must appear by authenticated broker identity in that
+terminal residual set;
 an existing protective stop may instead be the authenticated exit itself. A
 protection failure forces a safe flatten but cannot earn the first-pilot milestone.
 

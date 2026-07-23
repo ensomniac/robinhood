@@ -143,6 +143,81 @@ def _file_hash(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _git_output(*arguments: str) -> str:
+    result = subprocess.run(
+        ["git", *arguments],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip() or "unknown Git error"
+        raise PortfolioLiveError(
+            f"cannot establish pushed repository provenance: {detail}"
+        )
+    return result.stdout.strip()
+
+
+def _pushed_git_provenance() -> dict[str, str]:
+    head = _git_output("rev-parse", "HEAD")
+    branch = _git_output("symbolic-ref", "--short", "HEAD")
+    upstream = _git_output(
+        "rev-parse",
+        "--abbrev-ref",
+        "--symbolic-full-name",
+        "@{upstream}",
+    )
+    upstream_head = _git_output("rev-parse", "@{upstream}")
+    if (
+        len(head) not in {40, 64}
+        or any(character not in "0123456789abcdef" for character in head)
+    ):
+        raise PortfolioLiveError("repository HEAD is not a canonical commit hash")
+    if head != upstream_head:
+        raise PortfolioLiveError(
+            "repository HEAD is not the exact pushed upstream commit"
+        )
+    return {
+        "git_commit_sha": head,
+        "git_branch": branch,
+        "git_upstream": upstream,
+        "git_upstream_commit_sha": upstream_head,
+    }
+
+
+def verify_recorded_git_provenance(checks: Mapping[str, Any]) -> None:
+    required_true = {
+        "git_clean_at_start",
+        "git_exact_commit_pushed",
+        "portfolio_ledger_audit",
+        "sensitive_data_audit",
+        "strategy_ledger_audit",
+        "trade_lifecycle_audit",
+    }
+    if any(checks.get(field) is not True for field in required_true):
+        raise PortfolioLiveError("live preparation repository checks are incomplete")
+    commit = checks.get("git_commit_sha")
+    upstream_commit = checks.get("git_upstream_commit_sha")
+    if (
+        not isinstance(commit, str)
+        or commit != upstream_commit
+        or len(commit) not in {40, 64}
+        or any(character not in "0123456789abcdef" for character in commit)
+    ):
+        raise PortfolioLiveError("live preparation pushed commit binding is invalid")
+    for descendant in ("HEAD", "@{upstream}"):
+        result = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", commit, descendant],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            raise PortfolioLiveError(
+                f"live preparation commit is not retained by {descendant}"
+            )
+
+
 def run_repository_preentry_checks() -> dict[str, Any]:
     """Run local no-broker checks before any controlled order can be prepared."""
     cipher = sensitive_data.get_cipher()
@@ -155,13 +230,7 @@ def run_repository_preentry_checks() -> dict[str, Any]:
     lifecycle = trade_lifecycle.audit_lifecycle()
     orb_ledger = strategy_ledger.audit_ledger()
     portfolio_ledger = portfolio_maturity.audit_ledger()
-    status = subprocess.run(
-        ["git", "status", "--porcelain"],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip()
+    status = _git_output("status", "--porcelain")
     blockers = []
     if sensitive_audit.violations:
         blockers.append("sensitive-data audit failed")
@@ -175,6 +244,7 @@ def run_repository_preentry_checks() -> dict[str, Any]:
         blockers.append("Git worktree is not clean before live preparation")
     if blockers:
         raise PortfolioLiveError("; ".join(blockers))
+    provenance = _pushed_git_provenance()
     return {
         "encryption_round_trip": True,
         "sensitive_data_audit": True,
@@ -182,6 +252,8 @@ def run_repository_preentry_checks() -> dict[str, Any]:
         "strategy_ledger_audit": True,
         "portfolio_ledger_audit": True,
         "git_clean_at_start": True,
+        "git_exact_commit_pushed": True,
+        **provenance,
     }
 
 
@@ -199,10 +271,15 @@ def _load_winner(
 
 
 def _validate_review(
-    review: Mapping[str, Any], evaluation: Mapping[str, Any]
+    review: Mapping[str, Any],
+    evaluation: Mapping[str, Any],
+    *,
+    market_observed_at: datetime,
+    now: datetime,
 ) -> dict[str, Any]:
     value = dict(review)
     expected = {
+        "reviewed_at",
         "passed",
         "confirmation_required",
         "confirmation_satisfied",
@@ -217,6 +294,9 @@ def _validate_review(
         "blocking_alerts",
     }
     _exact_fields(value, expected, "broker_review")
+    reviewed_at = _fresh(value["reviewed_at"], "broker_review.reviewed_at", now)
+    if reviewed_at < market_observed_at:
+        raise PortfolioLiveError("broker review predates the evaluated market facts")
     for field in (
         "passed",
         "confirmation_required",
@@ -253,8 +333,12 @@ def _validate_guard_snapshot(
     winner: Mapping[str, Any],
     evaluation: Mapping[str, Any],
     review: Mapping[str, Any],
+    *,
+    reviewed_at: datetime,
 ) -> dict[str, Any]:
     value = portfolio_guard.validate_snapshot(snapshot)
+    if _timestamp(value["observed_at"], "guard observed_at") < reviewed_at:
+        raise PortfolioLiveError("guard snapshot predates broker review")
     if value["broker_state"] != "FLAT_RECONCILED":
         raise PortfolioLiveError("controlled pilot requires FLAT_RECONCILED")
     if any(
@@ -314,35 +398,60 @@ def prepare_live(
     _exact_fields(value, expected, "live setup")
     if value.get("schema_version") != SCHEMA_VERSION or value.get("mode") != "live":
         raise PortfolioLiveError("controlled pilot setup must explicitly select live mode")
+    if report is not None and (enforce_commit or enforce_repository_checks):
+        raise PortfolioLiveError(
+            "maturity report injection is allowed only in the explicit test path"
+        )
     winner = _load_winner(winner_path, enforce_commit=enforce_commit)
+    checks = (
+        run_repository_preentry_checks()
+        if enforce_repository_checks
+        else {"test_injection_repository_checks_bypassed": True}
+    )
     current = (now or datetime.now(UTC)).astimezone(UTC)
     account = _object(value["account"], "account")
     if set(account) != {"equity", "buying_power"}:
         raise PortfolioLiveError("live account permits only equity and buying_power")
+    market_facts = _object(value["market_facts"], "market_facts")
     try:
         evaluation = portfolio_execution.evaluate_frozen_winner(
             winner,
-            _object(value["market_facts"], "market_facts"),
+            market_facts,
             account,
             portfolio_maturity.load_config(),
             now=current,
         )
     except portfolio_execution.PortfolioExecutionError as exc:
         raise PortfolioLiveError(str(exc)) from exc
-    review = _validate_review(
-        _object(value["broker_review"], "broker_review"), evaluation
+    market_observed_at = _timestamp(
+        evaluation["market"]["observed_at"], "market observed_at"
     )
+    review = _validate_review(
+        _object(value["broker_review"], "broker_review"),
+        evaluation,
+        market_observed_at=market_observed_at,
+        now=current,
+    )
+    reviewed_at = _timestamp(review["reviewed_at"], "broker_review.reviewed_at")
     snapshot = _validate_guard_snapshot(
         _object(value["guard_snapshot"], "guard_snapshot"),
         winner,
         evaluation,
         review,
+        reviewed_at=reviewed_at,
     )
-    if report is not None and (enforce_commit or enforce_repository_checks):
-        raise PortfolioLiveError(
-            "maturity report injection is allowed only in the explicit test path"
-        )
     maturity_report = dict(report) if report is not None else portfolio_maturity.build_report()
+    maturity_assessments = [
+        assessment
+        for assessment in maturity_report.get("strategies", [])
+        if assessment.get("strategy_id") == winner["strategy_id"]
+        and assessment.get("strategy_version") == winner["strategy_version"]
+        and assessment.get("rules_hash") == winner["rules_hash"]
+    ]
+    if len(maturity_assessments) != 1:
+        raise PortfolioLiveError(
+            "exact strategy assessment is absent or ambiguous in maturity report"
+        )
     guard = portfolio_guard.evaluate_entry(
         snapshot,
         maturity_report,
@@ -353,9 +462,6 @@ def prepare_live(
         raise PortfolioLiveError(
             f"portfolio guard is not ENTRY_READY: {guard.get('blockers')}"
         )
-    market_observed_at = _timestamp(
-        evaluation["market"]["observed_at"], "market observed_at"
-    )
     guard_observed_at = _timestamp(
         snapshot["observed_at"], "guard observed_at"
     )
@@ -369,11 +475,6 @@ def prepare_live(
         raise PortfolioLiveError(
             "live market or guard facts expire before order submission"
         )
-    checks = (
-        run_repository_preentry_checks()
-        if enforce_repository_checks
-        else {"test_injection_repository_checks_bypassed": True}
-    )
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact_kind": "controlled-live-preparation",
@@ -388,7 +489,9 @@ def prepare_live(
         "winner_path": strategy_discovery._relative(winner_path),
         "winner_sha256": winner["artifact_sha256"],
         "account": account,
+        "market_facts": market_facts,
         "production_evaluation": evaluation,
+        "maturity_assessment": maturity_assessments[0],
         "broker_review": review,
         "guard_snapshot": snapshot,
         "portfolio_guard": guard,

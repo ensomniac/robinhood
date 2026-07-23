@@ -87,6 +87,7 @@ def _setup(winner):
         now=NOW,
     )
     review = {
+        "reviewed_at": NOW.isoformat(),
         "passed": True,
         "confirmation_required": False,
         "confirmation_satisfied": False,
@@ -325,6 +326,18 @@ def test_controlled_live_close_replays_flat_and_admits_only_after_inspection(
             final_path, root=root, enforce_commit=False
         )
         assert inspection["state"] == "LIVE_CLOSE_INSPECTED_ADMISSION_READY"
+        assert (
+            inspection["inspection"][
+                "winner_and_production_evaluation_rebuilt"
+            ]
+            is True
+        )
+        assert (
+            inspection["inspection"][
+                "broker_review_and_portfolio_guard_rebuilt"
+            ]
+            is True
+        )
         ledger = work / "portfolio-signals.jsonl"
         with pytest.raises(
             strategy_discovery.StrategyDiscoveryError, match="committed"
@@ -366,6 +379,95 @@ def test_live_maturity_report_injection_is_test_path_only():
                 report=_report(winner),
                 now=NOW,
             )
+
+
+def test_live_review_and_guard_must_follow_fresh_market_facts():
+    with tempfile.TemporaryDirectory(dir=portfolio_live.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        winner_path, winner = _winner(work)
+        setup, _evaluation = _setup(winner)
+        setup["broker_review"]["reviewed_at"] = (
+            NOW - timedelta(seconds=2)
+        ).isoformat()
+        with pytest.raises(
+            portfolio_live.PortfolioLiveError,
+            match="review predates the evaluated market facts",
+        ):
+            portfolio_live.prepare_live(
+                winner_path,
+                setup,
+                root=work / "artifacts",
+                enforce_commit=False,
+                enforce_repository_checks=False,
+                report=_report(winner),
+                now=NOW,
+            )
+
+        setup["broker_review"]["reviewed_at"] = NOW.isoformat()
+        setup["guard_snapshot"]["observed_at"] = (
+            NOW - timedelta(seconds=1)
+        ).isoformat()
+        with pytest.raises(
+            portfolio_live.PortfolioLiveError,
+            match="guard snapshot predates broker review",
+        ):
+            portfolio_live.prepare_live(
+                winner_path,
+                setup,
+                root=work / "artifacts",
+                enforce_commit=False,
+                enforce_repository_checks=False,
+                report=_report(winner),
+                now=NOW,
+            )
+
+        setup["guard_snapshot"]["observed_at"] = NOW.isoformat()
+        setup["broker_review"]["reviewed_at"] = (
+            NOW - timedelta(seconds=16)
+        ).isoformat()
+        with pytest.raises(
+            portfolio_live.PortfolioLiveError,
+            match="reviewed_at is stale",
+        ):
+            portfolio_live.prepare_live(
+                winner_path,
+                setup,
+                root=work / "artifacts",
+                enforce_commit=False,
+                enforce_repository_checks=False,
+                report=_report(winner),
+                now=NOW,
+            )
+
+
+def test_live_repository_provenance_requires_exact_upstream_commit(monkeypatch):
+    values = {
+        ("rev-parse", "HEAD"): "a" * 40,
+        ("symbolic-ref", "--short", "HEAD"): "1.0.0",
+        (
+            "rev-parse",
+            "--abbrev-ref",
+            "--symbolic-full-name",
+            "@{upstream}",
+        ): "origin/1.0.0",
+        ("rev-parse", "@{upstream}"): "a" * 40,
+    }
+    monkeypatch.setattr(
+        portfolio_live,
+        "_git_output",
+        lambda *arguments: values[arguments],
+    )
+
+    result = portfolio_live._pushed_git_provenance()
+    assert result["git_commit_sha"] == "a" * 40
+    assert result["git_upstream"] == "origin/1.0.0"
+
+    values[("rev-parse", "@{upstream}")] = "b" * 40
+    with pytest.raises(
+        portfolio_live.PortfolioLiveError,
+        match="exact pushed upstream commit",
+    ):
+        portfolio_live._pushed_git_provenance()
 
 
 def test_entry_rejects_expired_preparation_and_fill_predating_preparation():
