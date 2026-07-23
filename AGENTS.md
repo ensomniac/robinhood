@@ -48,8 +48,10 @@ preserved portfolio and legacy strategy ledgers as wildcard-symbol
 contamination. No new family or v2 outcome
 evidence has been admitted by this engineering change. After the 2026-07-27
 ISO-week reset, `dense_session_calendar.py` may collect only its already frozen
-and inspected 2020-2026 public calendar contract. Independent calendar
-inspection must prove a 940-session untouched run before
+and inspected 2020-2026 public calendar contract `14521284...96d67`, cleared by
+inspection `3dbfeb5a...2bf2f`. Contract `31f2226b...4ea10` and inspection
+`f78c0896...3f7` are preserved but superseded before provider access.
+Independent calendar inspection must prove a 940-session untouched run before
 `dense_capacity_inventory.py` allocates three disjoint family segments. Each
 segment contains its exact 60- or 200-session indicator warmup followed by a
 120-development/5-embargo/35-confirmation block.

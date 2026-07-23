@@ -215,6 +215,9 @@ preserve its contract and inspection, freeze and inspect the new implementation
 hash, and pass that exact new contract to collection. Collection selects the
 one inspection bound to the supplied contract instead of treating a preserved
 older inspection as ambiguous authority.
+The active hardened calendar contract is `14521284...96d67`, with independent
+inspection `3dbfeb5a...2bf2f`; preserved contract `31f2226b...4ea10` and
+inspection `f78c0896...3f7` are superseded before any request.
 
 After the reset, collect and independently inspect that calendar before running
 the allocator. The allocator requires one contiguous 940-session untouched run:

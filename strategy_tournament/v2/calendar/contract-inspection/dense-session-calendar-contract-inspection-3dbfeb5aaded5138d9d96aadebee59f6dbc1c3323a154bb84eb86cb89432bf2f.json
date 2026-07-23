@@ -1,0 +1,22 @@
+{
+  "artifact_kind": "dense-session-calendar-contract-inspection",
+  "artifact_sha256": "3dbfeb5aaded5138d9d96aadebee59f6dbc1c3323a154bb84eb86cb89432bf2f",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "implementation_hashes_exact": true,
+    "outcome_boundary_closed": true,
+    "outputs_absent": true,
+    "provider_query_exact": true,
+    "substitutions_forbidden": true
+  },
+  "contract_path": "strategy_tournament/v2/calendar/contract/dense-session-calendar-contract-14521284271a23e47ffe5a06315b8d2ec7feb921902459a61b6405214c796d67.json",
+  "contract_sha256": "14521284271a23e47ffe5a06315b8d2ec7feb921902459a61b6405214c796d67",
+  "inspected_at": "2026-07-23T04:15:50Z",
+  "market_prices_accessed": false,
+  "provider_access_not_before": "2026-07-27",
+  "provider_requests": 0,
+  "schema_version": 1,
+  "state": "CALENDAR_CONTRACT_INSPECTED_READY",
+  "target_outcomes_accessed": false
+}
