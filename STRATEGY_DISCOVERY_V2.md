@@ -343,3 +343,10 @@ account return, R, slippage, protection timing, and notification status may ente
 cannot earn the live-started milestone. Terminal reconciliation must include the
 authenticated partial-entry remainder and any separate protective order; when a
 protective stop executes, that same authenticated order must be the recorded exit.
+
+The final lifecycle and every bound preparation, exposure, and protection artifact
+must be committed before independent live inspection. Admission then requires the
+inspection and existing portfolio ledger to be committed and rechecks that the
+exact strategy ID, version, and rules hash remain `PILOT_READY` immediately before
+the reconciled close is appended. Caller-supplied maturity reports are rejected
+outside the explicit no-commit, no-repository-check test path.

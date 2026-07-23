@@ -10,6 +10,8 @@ import pytest
 
 import portfolio_guard
 import portfolio_maturity
+import portfolio_shadow
+import portfolio_shadow_inspection
 import strategy_discovery as discovery
 import tests.synthetic_discovery_plugin as synthetic_plugin
 from learning_data import freeze_dataset_contract
@@ -261,45 +263,94 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
         assert family_status["blockers"] == [
             "clean closed shadows 0 is below required 5"
         ]
-        historical = discovery.load_artifact(
-            discovery.PROJECT_ROOT / queue["historical_maturity_ledger_path"],
-            expected_kind="historical-maturity-ledger",
-        )
-        records = list(historical["records"])
         for index in range(5):
-            day = date(2025, 8, 1) + timedelta(days=index)
-            records.append(
+            shadow_now = datetime(
+                2025, 8, 1 + index * 3, 14, 0, 4, tzinfo=UTC
+            )
+            setup = {
+                "schema_version": 1,
+                "session_date": shadow_now.date().isoformat(),
+                "market_facts": {
+                    "ranking_complete": True,
+                    "observed_at": (shadow_now - timedelta(seconds=2)).isoformat(),
+                    "symbol": "TEST",
+                    "halted": False,
+                    "tradable": True,
+                    "bid": 99.98,
+                    "ask": 100.00,
+                    "entry_limit": 100.01,
+                    "stop_price": 99.00,
+                    "expected_gross_move_fraction": 0.010,
+                    "holding_trading_days": 2,
+                    "before_open_account_reconciled": True,
+                    "before_open_orders_reconciled": True,
+                    "before_open_protection_reconciled": True,
+                    "before_open_tradability_reconciled": True,
+                    "before_open_news_reconciled": True,
+                    "protective_order_route_ready": True,
+                    "monitoring_ready": True,
+                    "protection_time_in_force": "gtc",
+                    "protection_failure_safe_cutoff": "15:45 ET",
+                    "exit_plan": {
+                        "type": "stop_or_maximum_hold_close",
+                        "maximum_hold_sessions": 2,
+                        "same_interval_ambiguity": "stop_first",
+                    },
+                    "executable_ask_depth": 20_000,
+                    "recent_real_minute_volume": 30_000,
+                },
+                "account": {"equity": 100_000, "buying_power": 100_000},
+                "fill_observation": {
+                    "observed_at": (shadow_now - timedelta(seconds=1)).isoformat(),
+                    "bid": 99.98,
+                    "ask": 100.00,
+                    "available_ask_quantity": 500,
+                },
+            }
+            entry_path, entry = portfolio_shadow.start_shadow(
+                queue_path,
+                setup,
+                root=artifact_root,
+                enforce_commit=False,
+                now=shadow_now,
+            )
+            close_now = shadow_now + timedelta(days=2)
+            fill_at = datetime.fromisoformat(entry["fill"]["observed_at"])
+            final_path, final = portfolio_shadow.close_shadow(
+                entry_path,
                 {
-                    "schema_version": 2,
-                    "research_campaign_id": discovery.CAMPAIGN_ID,
-                    "record_type": "signal",
-                    "recorded_at": "2026-07-22T23:00:00+00:00",
-                    "strategy_id": winner["strategy_id"],
-                    "strategy_version": winner["strategy_version"],
-                    "mechanism_family": winner["family_id"],
-                    "rules_hash": winner["rules_hash"],
-                    "date": day.isoformat(),
-                    "sample_phase": "shadow",
-                    "mode": "shadow",
-                    "signal_id": f"{day.isoformat()}-{winner['strategy_id']}-shadow",
-                    "closed": True,
-                    "eligible": True,
-                    "net_r": 0.25,
-                    "stress_10bps_r": 0.20,
-                    "stress_20bps_r": 0.15,
-                    "stop_executed": False,
-                    "discovery_complete": True,
-                    "evaluation_complete": True,
-                    "sizing_complete": True,
-                    "order_construction_complete": True,
-                    "protection_plan_complete": True,
+                    "schema_version": 1,
+                    "protection_observation": {
+                        "planned_at": (fill_at - timedelta(seconds=1)).isoformat(),
+                        "ready_at": (fill_at + timedelta(seconds=2)).isoformat(),
+                        "time_in_force": "gtc",
+                        "failure_safe_cutoff": "15:45 ET",
+                    },
+                    "exit_observation": {
+                        "observed_at": (close_now - timedelta(seconds=1)).isoformat(),
+                        "bid": 102.00,
+                        "ask": 102.02,
+                        "reason": "target",
+                    },
                     "monitoring_complete": True,
                     "journal_complete": True,
-                    "broker_actions": 0,
                     "session_capture_complete": True,
                     "rule_violations": [],
-                }
+                },
+                root=artifact_root,
+                enforce_commit=False,
+                now=close_now,
             )
+            assert final["state"] == "SHADOW_CLOSED_CLEAN"
+            shadow_inspection_path, _ = portfolio_shadow_inspection.inspect_shadow(
+                final_path, root=artifact_root, enforce_commit=False
+            )
+            portfolio_shadow_inspection.admit_shadow(
+                shadow_inspection_path,
+                ledger_path=portfolio_ledger,
+                enforce_commit=False,
+            )
+        records = portfolio_maturity.read_records(portfolio_ledger)
         report = portfolio_maturity.build_report(
             records, portfolio_maturity.load_config()
         )

@@ -338,6 +338,10 @@ def prepare_live(
         evaluation,
         review,
     )
+    if report is not None and (enforce_commit or enforce_repository_checks):
+        raise PortfolioLiveError(
+            "maturity report injection is allowed only in the explicit test path"
+        )
     maturity_report = dict(report) if report is not None else portfolio_maturity.build_report()
     guard = portfolio_guard.evaluate_entry(
         snapshot,

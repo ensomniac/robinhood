@@ -291,7 +291,9 @@ def _closure(work: Path, evaluation, tokens, close_at: datetime):
     }
 
 
-def test_controlled_live_close_replays_flat_and_admits_only_after_inspection():
+def test_controlled_live_close_replays_flat_and_admits_only_after_inspection(
+    monkeypatch,
+):
     with tempfile.TemporaryDirectory(dir=portfolio_live.PROJECT_ROOT) as directory:
         work = Path(directory)
         (
@@ -315,19 +317,55 @@ def test_controlled_live_close_replays_flat_and_admits_only_after_inspection():
         assert final["close_facts"]["flat_reconciled"] is True
         assert final["maturity_record"]["eligible"] is True
 
+        with pytest.raises(
+            strategy_discovery.StrategyDiscoveryError, match="committed"
+        ):
+            portfolio_live_inspection.inspect_live(final_path, root=root)
         inspection_path, inspection = portfolio_live_inspection.inspect_live(
-            final_path, root=root
+            final_path, root=root, enforce_commit=False
         )
         assert inspection["state"] == "LIVE_CLOSE_INSPECTED_ADMISSION_READY"
         ledger = work / "portfolio-signals.jsonl"
+        with pytest.raises(
+            strategy_discovery.StrategyDiscoveryError, match="committed"
+        ):
+            portfolio_live_inspection.admit_live(
+                inspection_path, ledger_path=ledger
+            )
+        monkeypatch.setattr(
+            strategy_discovery, "require_committed", lambda _path: None
+        )
+        with pytest.raises(
+            portfolio_live_inspection.PortfolioLiveInspectionError,
+            match="not PILOT_READY",
+        ):
+            portfolio_live_inspection.admit_live(
+                inspection_path, ledger_path=ledger
+            )
         admitted = portfolio_live_inspection.admit_live(
-            inspection_path, ledger_path=ledger
+            inspection_path, ledger_path=ledger, enforce_commit=False
         )
         assert admitted["state"] == "LIVE_CLOSE_ADMITTED"
         record = portfolio_maturity.read_records(ledger)[0]
         assert record["position_flat_confirmed"] is True
         assert record["residual_orders_terminal"] is True
         assert record["broker_actions"] == 3
+
+
+def test_live_maturity_report_injection_is_test_path_only():
+    with tempfile.TemporaryDirectory(dir=portfolio_live.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        winner_path, winner = _winner(work)
+        setup, _evaluation = _setup(winner)
+        with pytest.raises(portfolio_live.PortfolioLiveError, match="test path"):
+            portfolio_live.prepare_live(
+                winner_path,
+                setup,
+                root=work / "artifacts",
+                enforce_commit=False,
+                report=_report(winner),
+                now=NOW,
+            )
 
 
 def test_unknown_entry_is_reconciled_before_retry_or_protection():
@@ -654,7 +692,7 @@ def test_protection_failure_forces_flat_but_cannot_earn_live_admission():
         )
         assert final["state"] == "LIVE_CLOSED_SAFETY_FAILURE"
         inspection_path, inspection = portfolio_live_inspection.inspect_live(
-            final_path, root=root
+            final_path, root=root, enforce_commit=False
         )
         assert inspection["state"] == "LIVE_CLOSE_INSPECTED_NONQUALIFYING"
         with pytest.raises(
@@ -662,7 +700,9 @@ def test_protection_failure_forces_flat_but_cannot_earn_live_admission():
             match="not eligible",
         ):
             portfolio_live_inspection.admit_live(
-                inspection_path, ledger_path=work / "signals.jsonl"
+                inspection_path,
+                ledger_path=work / "signals.jsonl",
+                enforce_commit=False,
             )
 
         closure = _closure(work, evaluation, tokens, close_at)

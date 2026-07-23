@@ -26,10 +26,14 @@ def _load_bound(
     relative: Any,
     expected_sha256: Any,
     kind: str,
+    *,
+    enforce_commit: bool,
 ) -> tuple[Path, dict[str, Any]]:
     if not isinstance(relative, str):
         raise PortfolioLiveInspectionError(f"{kind} path is missing")
     path = portfolio_live.PROJECT_ROOT / relative
+    if enforce_commit:
+        strategy_discovery.require_committed(path)
     artifact = strategy_discovery.load_artifact(path, expected_kind=kind)
     if artifact.get("artifact_sha256") != expected_sha256:
         raise PortfolioLiveInspectionError(f"{kind} binding drifted")
@@ -40,7 +44,10 @@ def inspect_live(
     final_path: Path,
     *,
     root: Path = DEFAULT_ROOT,
+    enforce_commit: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
+    if enforce_commit:
+        strategy_discovery.require_committed(final_path)
     final = strategy_discovery.load_artifact(
         final_path, expected_kind="controlled-live-final"
     )
@@ -48,17 +55,20 @@ def inspect_live(
         final.get("protection_path"),
         final.get("protection_sha256"),
         "controlled-live-protection-result",
+        enforce_commit=enforce_commit,
     )
     kind = exposure_kind(final)
     exposure_path, exposure = _load_bound(
         final.get("exposure_path"),
         final.get("exposure_sha256"),
         kind,
+        enforce_commit=enforce_commit,
     )
     preparation_path, preparation = _load_bound(
         protection.get("preparation_path"),
         protection.get("preparation_sha256"),
         "controlled-live-preparation",
+        enforce_commit=enforce_commit,
     )
     for field in (
         "campaign_id",
@@ -158,7 +168,11 @@ def admit_live(
     inspection_path: Path,
     *,
     ledger_path: Path = portfolio_maturity.DEFAULT_LEDGER_PATH,
+    enforce_commit: bool = True,
 ) -> dict[str, Any]:
+    if enforce_commit:
+        strategy_discovery.require_committed(inspection_path)
+        strategy_discovery.require_committed(ledger_path)
     inspection = strategy_discovery.load_artifact(
         inspection_path, expected_kind="controlled-live-inspection"
     )
@@ -173,6 +187,22 @@ def admit_live(
     record = inspection.get("maturity_record")
     if not isinstance(record, Mapping):
         raise PortfolioLiveInspectionError("live maturity record is missing")
+    if enforce_commit:
+        before = portfolio_maturity.build_report(
+            portfolio_maturity.read_records(ledger_path),
+            portfolio_maturity.load_config(),
+        )
+        exact_before = [
+            item
+            for item in before["strategies"]
+            if item["strategy_id"] == record["strategy_id"]
+            and item["strategy_version"] == record["strategy_version"]
+            and item["rules_hash"] == record["rules_hash"]
+        ]
+        if len(exact_before) != 1 or exact_before[0].get("pilot_ready") is not True:
+            raise PortfolioLiveInspectionError(
+                "exact strategy is not PILOT_READY in the committed portfolio ledger"
+            )
     portfolio_maturity.append_record(record, ledger_path)
     records = portfolio_maturity.read_records(ledger_path)
     report = portfolio_maturity.build_report(records, portfolio_maturity.load_config())
