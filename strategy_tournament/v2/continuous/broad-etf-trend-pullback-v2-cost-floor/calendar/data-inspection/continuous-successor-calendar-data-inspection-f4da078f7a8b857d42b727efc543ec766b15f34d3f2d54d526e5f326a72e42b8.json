@@ -1,0 +1,32 @@
+{
+  "artifact_kind": "continuous-successor-calendar-data-inspection",
+  "artifact_sha256": "f4da078f7a8b857d42b727efc543ec766b15f34d3f2d54d526e5f326a72e42b8",
+  "broker_actions": 0,
+  "calendar_path": "historical_batches/continuous_v2/session-calendar-2014-01-through-2022-12.json",
+  "calendar_sha256": "93acba7df20cb39af7aa7d6afbe7bec531dbea6a1e2c67de95fc6052098f1b50",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "broker_actions_zero": true,
+    "chronology_exact": true,
+    "predecessor_corpus_not_selected": true,
+    "price_and_return_fields_absent": true,
+    "provider_scope_exact": true,
+    "session_count_sufficient": true
+  },
+  "contract_sha256": "eb633d45489bbf2cc7557777d1b40105ded7e1a95b16fb4faf7ebda86ef13928",
+  "first_session": "2014-01-02",
+  "full_sessions": 2248,
+  "inspected_at": "2026-07-23T16:50:52Z",
+  "last_session": "2022-12-30",
+  "market_prices_accessed": false,
+  "outcome_exposure_index_sha256": "d77127e5ec26a41f5414a5bcaaa262082a2980ac4db246be06f2f3b0f5e5cf92",
+  "provider_requests": 1,
+  "research_generation": "existing_family_successor",
+  "schema_version": 1,
+  "sessions": 2266,
+  "state": "CALENDAR_INSPECTED_READY",
+  "status_path": "strategy_tournament/v2/continuous/broad-etf-trend-pullback-v2-cost-floor/calendar/collection/continuous-successor-calendar-collection-bf0c47d3da4d8a8d14a1c86587d7dbc9379d37a66e0cbb60c50860fbc8dbc094.json",
+  "status_sha256": "bf0c47d3da4d8a8d14a1c86587d7dbc9379d37a66e0cbb60c50860fbc8dbc094",
+  "successor_id": "broad-etf-trend-pullback-v2-cost-floor",
+  "target_outcomes_accessed": false
+}
