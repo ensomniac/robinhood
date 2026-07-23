@@ -241,6 +241,16 @@ keeps all 500 sessions in 2021-2022 inaccessible for confirmation unless a
 selection-adjusted winner is first frozen. The implementation makes zero
 provider or broker requests.
 
+Independent inspection
+`0abea388cc121ca801cd2c353fb2fa2da069f9397ba499b930a471d9cab29734`
+is `REJECTED`. All 32 trials had negative 20-bps log growth, stressed profit
+factor below 1.20, drawdown above 6R, DSR below 0.90, no Holm rejection, at
+least one losing rolling fold, and no positive neighbor. The least-adverse
+trial still had -0.057875 log growth, 0.6846 profit factor, 16.23R drawdown,
+and only one positive fold out of five. No winner or evidence target was
+frozen; all 500 confirmation sessions remain untouched. This exact version is
+terminal, and continuous discovery advances another existing family.
+
 ## Transition chain
 
 Run the lane from the repository root:

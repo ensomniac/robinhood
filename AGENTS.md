@@ -69,7 +69,7 @@ retired with its confirmation reserve untouched. Continuous work must advance
 another existing-family successor; this consumes no new mechanism-family slot,
 so the weekly reset is not a work pause.
 
-The active successor is
+The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1
 predecessor was retired only because 24 frozen decision dates could not meet
 the 30-signal Stage 0 floor; it accessed no market outcomes. V2 retains that
@@ -79,8 +79,12 @@ three-session lag, SPY SMA100/SMA200 regime, 0.5%/1.0% cost-clearing
 cross-sectional lag, 1.0/1.5 ATR14 stop, and two/three-session hold. It may use
 the already exposed 1,000-session 2016-2020 partition only as contaminated
 development while the five-session embargo and 500-session 2021-2022
-confirmation reserve remain untouched. The exact evaluator and production
-semantics must be committed before the contract is frozen.
+confirmation reserve remain untouched. Independent inspection rejected all 32
+trials: none had positive 20-bps growth, stressed profit factor at least 1.20,
+drawdown at or below 6R, DSR at least 0.90, Holm rejection, positive growth in
+every rolling fold, or a positive neighbor. Its exact version is retired and
+cannot be tuned on the evaluated corpus. Continuous discovery must advance the
+next existing-family successor without opening this confirmation reserve.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
