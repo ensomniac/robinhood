@@ -153,7 +153,10 @@ def test_status_keeps_new_family_wait_separate_from_continuous_lane(tmp_path: Pa
         status = continuous.build_status(root=tmp_path)
     finally:
         continuous.CALENDAR_ROOT = original_calendar_root
-    assert status["state"] == "READY_TO_FREEZE_CALENDAR"
+    assert status["state"] == "READY_TO_FREEZE_SUCCESSOR"
+    assert status["successor"]["family_id"] == (
+        "liquid-equity-market-residual-reversal"
+    )
     assert status["successor"]["calendar_wait_required"] is False
     assert status["successor"]["new_mechanism_family_slot_consumed"] is False
     assert status["new_family_batch"]["state"] == "WAITING_ISO_WEEK_RESET"

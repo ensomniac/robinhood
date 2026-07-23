@@ -790,6 +790,8 @@ def validate_existing_successor_contract(
 
 
 def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
+    import liquid_equity_residual_reversal_discovery as current
+
     calendar_contracts = sorted((CALENDAR_ROOT / "contract").glob("*.json"))
     calendar_inspections = sorted(
         (CALENDAR_ROOT / "contract-inspection").glob("*.json")
@@ -799,24 +801,15 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
         (CALENDAR_ROOT / "data-inspection").glob("*.json")
     )
     family_contracts = sorted(
-        (root / SUCCESSOR_ID / "family-contract").glob("*.json")
+        (root / current.SUCCESSOR_ID / "family-contract").glob("*.json")
     )
-    discovery_root = strategy_discovery.DEFAULT_ROOT / FAMILY_ID
-    if not calendar_contracts:
-        state = "READY_TO_FREEZE_CALENDAR"
-        next_action = "freeze and inspect the zero-price 2014-2021 calendar query"
-    elif not calendar_inspections:
-        state = "CALENDAR_CONTRACT_FROZEN"
-        next_action = "independently inspect and commit the calendar contract"
-    elif not calendar_collections:
-        state = "CALENDAR_COLLECTION_READY"
-        next_action = "collect the exact public calendar with one provider request"
-    elif not calendar_data_inspections:
-        state = "CALENDAR_COLLECTED_UNINSPECTED"
-        next_action = "independently inspect and commit the calendar rows"
-    elif not family_contracts:
+    discovery_root = strategy_discovery.DEFAULT_ROOT / current.FAMILY_ID
+    if not family_contracts:
         state = "READY_TO_FREEZE_SUCCESSOR"
-        next_action = "freeze the 32-trial successor and exact evidence partitions"
+        next_action = (
+            "freeze the 48-trial liquid-equity residual-reversal successor "
+            "and exact evidence partitions"
+        )
     elif not discovery_root.exists():
         state = "SUCCESSOR_CONTRACT_FROZEN"
         next_action = "run discovery preflight and freeze the development search"
@@ -829,10 +822,10 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
         "state": state,
         "next_action": next_action,
         "successor": {
-            "successor_id": SUCCESSOR_ID,
-            "family_id": FAMILY_ID,
-            "mechanism_family": MECHANISM_FAMILY,
-            "research_generation": RESEARCH_GENERATION,
+            "successor_id": current.SUCCESSOR_ID,
+            "family_id": current.FAMILY_ID,
+            "mechanism_family": current.MECHANISM_FAMILY,
+            "research_generation": current.RESEARCH_GENERATION,
             "new_mechanism_family_slot_consumed": False,
             "predecessor_corpus_reused": False,
             "calendar_wait_required": False,

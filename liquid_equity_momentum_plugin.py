@@ -29,12 +29,10 @@ SOURCE_RELATIVE_PATH = (
     "_derived/cross_sectional_momentum_stage0/"
     "dataset-cross-sectional-momentum-stage0-2026-07-21-v1/daily-bars.json.gz"
 )
-CONFIRMATION_MANIFEST_ROOT = (
-    PROJECT_ROOT
-    / "strategy_tournament/v2/discovery"
-    / FAMILY_ID
-    / "confirmation-dataset"
-)
+SUPPORTED_FAMILY_IDS = {
+    runtime.LIQUID_EQUITY_MOMENTUM_FAMILY,
+    runtime.EQUITY_RESIDUAL_FAMILY,
+}
 
 
 class LiquidEquityMomentumPluginError(RuntimeError):
@@ -79,8 +77,15 @@ def _load_manifest(path: Path) -> dict[str, Any]:
         ) from exc
 
 
-def _binding(manifest: Mapping[str, Any]) -> dict[str, Any]:
-    raw = manifest["dataset_payload"].get("liquid_equity_momentum_source")
+def _binding(
+    manifest: Mapping[str, Any],
+    *,
+    expected_family_id: str = FAMILY_ID,
+) -> dict[str, Any]:
+    raw = manifest["dataset_payload"].get(
+        "liquid_equity_daily_source",
+        manifest["dataset_payload"].get("liquid_equity_momentum_source"),
+    )
     if not isinstance(raw, Mapping):
         raise LiquidEquityMomentumPluginError(
             "dataset lacks the liquid-equity source binding"
@@ -100,7 +105,8 @@ def _binding(manifest: Mapping[str, Any]) -> dict[str, Any]:
             "liquid-equity source binding is incomplete"
         )
     if (
-        binding["family_id"] != FAMILY_ID
+        expected_family_id not in SUPPORTED_FAMILY_IDS
+        or binding["family_id"] != expected_family_id
         or binding["external_relative_path"] != SOURCE_RELATIVE_PATH
         or binding["format"] != "json.gz"
         or len(binding["external_file_sha256"]) != 64
@@ -245,6 +251,7 @@ def _load_dataset(
     expected_dates: Sequence[str],
     expected_signal_dates: Sequence[str],
     preregistration_sha256: str | None = None,
+    target_family_id: str = FAMILY_ID,
 ) -> dict[str, Any]:
     _require_committed(manifest_path)
     manifest = _load_manifest(manifest_path)
@@ -264,7 +271,10 @@ def _load_dataset(
         raise LiquidEquityMomentumPluginError(
             "confirmation data is not winner-bound"
         )
-    binding = _binding(manifest)
+    binding = _binding(
+        manifest,
+        expected_family_id=target_family_id,
+    )
     if binding["signal_dates"] != list(expected_signal_dates):
         raise LiquidEquityMomentumPluginError(
             "dataset signal dates drifted from the frozen partition"
@@ -307,7 +317,7 @@ def _load_dataset(
         )
     universe, identities = _point_in_time_universe(expected_signal_dates)
     dataset = {
-        "family_id": FAMILY_ID,
+        "family_id": target_family_id,
         "evaluation_dates": list(expected_dates),
         "session_dates": _session_dates(),
         "universe_by_date": universe,
@@ -356,11 +366,15 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
     )
     _require_committed(manifest_path)
     manifest = _load_manifest(manifest_path)
-    binding = _binding(manifest)
+    family_id = str(contract.get("family_id", ""))
+    binding = _binding(
+        manifest,
+        expected_family_id=family_id,
+    )
     checks = {
         "development_lane": manifest["dataset_payload"].get("lane")
         == "development",
-        "family_bound": binding["family_id"] == contract.get("family_id"),
+        "family_bound": binding["family_id"] == family_id,
         "account_dates_bound": manifest.get("requested_dates")
         == list(contract.get("development_dates", [])),
         "signal_dates_bound": binding["signal_dates"]
@@ -384,11 +398,17 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
 def evaluate_development(
     contract: Mapping[str, Any], trials: Sequence[Mapping[str, Any]]
 ) -> dict[str, Any]:
+    family_id = str(contract.get("family_id", ""))
+    if family_id not in SUPPORTED_FAMILY_IDS:
+        raise LiquidEquityMomentumPluginError(
+            "unsupported liquid-equity family"
+        )
     dataset = _load_dataset(
         _manifest_path(contract.get("dataset_manifest")),
         lane="development",
         expected_dates=contract["development_dates"],
         expected_signal_dates=contract["development_signal_dates"],
+        target_family_id=family_id,
     )
     policy = _account_policy()
     return {
@@ -396,7 +416,7 @@ def evaluate_development(
         "trials": [
             runtime.evaluate_trial(
                 dataset,
-                family_id=FAMILY_ID,
+                family_id=family_id,
                 trial_id=str(trial["trial_id"]),
                 parameters=trial["parameters"],
                 account_policy=policy,
@@ -409,7 +429,18 @@ def evaluate_development(
 
 
 def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
-    paths = sorted(CONFIRMATION_MANIFEST_ROOT.glob("dataset-*.json"))
+    family_id = str(winner.get("family_id", ""))
+    if family_id not in SUPPORTED_FAMILY_IDS:
+        raise LiquidEquityMomentumPluginError(
+            "unsupported liquid-equity family"
+        )
+    manifest_root = (
+        PROJECT_ROOT
+        / "strategy_tournament/v2/discovery"
+        / family_id
+        / "confirmation-dataset"
+    )
+    paths = sorted(manifest_root.glob("dataset-*.json"))
     if len(paths) != 1:
         raise LiquidEquityMomentumPluginError(
             "expected exactly one frozen confirmation dataset manifest"
@@ -420,10 +451,11 @@ def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
         expected_dates=winner["confirmation_dates"],
         expected_signal_dates=winner["confirmation_signal_dates"],
         preregistration_sha256=str(winner["rules_hash"]),
+        target_family_id=family_id,
     )
     exact = runtime.evaluate_trial(
         dataset,
-        family_id=FAMILY_ID,
+        family_id=family_id,
         trial_id=str(winner["exact_rules"]["selected_trial_id"]),
         parameters=winner["exact_rules"]["parameters"],
         account_policy=_account_policy(),
