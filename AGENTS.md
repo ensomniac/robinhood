@@ -41,9 +41,12 @@ global outcome-exposure baseline conservatively marks all 226 dates in the
 preserved portfolio and legacy strategy ledgers as wildcard-symbol
 contamination. No new family or v2 outcome
 evidence has been admitted by this engineering change. After the 2026-07-27
-ISO-week reset, `dense_capacity_inventory.py` deterministically allocates three
-contiguous 120-development/5-embargo/35-confirmation blocks from the committed
-full-session calendar after excluding every globally exposed date.
+ISO-week reset, `dense_session_calendar.py` may collect only its already frozen
+and inspected 2020-2026 public calendar contract. Independent calendar
+inspection must prove a 940-session untouched run before
+`dense_capacity_inventory.py` allocates three disjoint family segments. Each
+segment contains its exact 60- or 200-session indicator warmup followed by a
+120-development/5-embargo/35-confirmation block.
 `dense_family_contracts.py` is the only family-contract activation path; it must
 freeze all three disjoint scopes against that exposure index before provider
 access.

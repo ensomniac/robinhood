@@ -279,6 +279,70 @@ class MassiveHistoricalClient:
                 ) from exc
         return sorted(normalized, key=lambda row: int(row["epoch"]))
 
+    def fetch_grouped_daily(
+        self, session_date: str, *, adjusted: bool = True
+    ) -> list[dict[str, Any]]:
+        """Return the exhausted U.S. stock daily cross-section."""
+
+        try:
+            requested = datetime.fromisoformat(session_date).date()
+        except ValueError as exc:
+            raise HistoricalProviderError(
+                "grouped daily date must be ISO formatted",
+                category="local_configuration",
+            ) from exc
+        raw = self._request_pages(
+            f"/v2/aggs/grouped/locale/us/market/stocks/{requested.isoformat()}",
+            params={
+                "adjusted": str(bool(adjusted)).lower(),
+                "include_otc": "false",
+            },
+        )
+        rows: list[dict[str, Any]] = []
+        symbols: set[str] = set()
+        for row in raw:
+            try:
+                symbol = str(row["T"]).strip().upper()
+                observed = datetime.fromtimestamp(float(row["t"]) / 1000, UTC)
+                values = {
+                    "symbol": symbol,
+                    "date": observed.astimezone(EASTERN).date().isoformat(),
+                    "open": float(row["o"]),
+                    "high": float(row["h"]),
+                    "low": float(row["l"]),
+                    "close": float(row["c"]),
+                    "volume": int(float(row["v"])),
+                    "count": int(row.get("n") or 0),
+                    "wap": float(row.get("vw") or 0),
+                }
+            except (KeyError, TypeError, ValueError) as exc:
+                raise HistoricalProviderError(
+                    "Massive grouped aggregate row is malformed",
+                    category="permanent_fidelity",
+                ) from exc
+            if (
+                not symbol
+                or values["date"] != requested.isoformat()
+                or symbol in symbols
+                or values["open"] <= 0
+                or values["high"] <= 0
+                or values["low"] <= 0
+                or values["close"] <= 0
+                or values["volume"] < 0
+            ):
+                raise HistoricalProviderError(
+                    "Massive grouped aggregate scope or values are invalid",
+                    category="permanent_fidelity",
+                )
+            symbols.add(symbol)
+            rows.append(values)
+        if not rows:
+            raise HistoricalProviderError(
+                "Massive grouped aggregate response is empty",
+                category="permanent_fidelity",
+            )
+        return sorted(rows, key=lambda item: str(item["symbol"]))
+
     @staticmethod
     def _aggregate_rows(
         rows: Sequence[Mapping[str, Any]], bar_size: str

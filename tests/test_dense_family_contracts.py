@@ -49,13 +49,35 @@ def _inventory(tmp_path, index_path, *, overlap: bool = False):
     families = []
     for ordinal, family in enumerate(plan["families"]):
         start = date(2018 + ordinal * 2, 1, 1)
-        development = _dates(start, 60)
-        embargo = _dates(start + timedelta(days=60), 5)
-        confirmation = _dates(
-            date(2025, 1, 1) if overlap and ordinal == 0 else start + timedelta(days=65),
-            25,
+        warmup_count = (
+            60
+            if family["family_id"] == "intraday-index-etf-opening-reversal"
+            else 200
         )
-        requested = sorted({*development, *embargo, *confirmation})
+        development_warmup = _dates(
+            start - timedelta(days=warmup_count), warmup_count
+        )
+        development = _dates(start, 60)
+        confirmation_start = (
+            date(2025, 1, 1)
+            if overlap and ordinal == 0
+            else start + timedelta(days=65)
+        )
+        embargo = _dates(confirmation_start - timedelta(days=5), 5)
+        confirmation = _dates(confirmation_start, 25)
+        confirmation_warmup = _dates(
+            date.fromisoformat(confirmation[0]) - timedelta(days=warmup_count),
+            warmup_count,
+        )
+        requested = sorted(
+            {
+                *development_warmup,
+                *development,
+                *embargo,
+                *confirmation_warmup,
+                *confirmation,
+            }
+        )
         family_symbols = symbols[family["family_id"]]
         families.append(
             {
@@ -63,11 +85,13 @@ def _inventory(tmp_path, index_path, *, overlap: bool = False):
                 "capacity_manifest": str(
                     _capacity_manifest(tmp_path, family["family_id"], requested)
                 ),
+                "development_warmup_dates": development_warmup,
+                "confirmation_warmup_dates": confirmation_warmup,
                 "development_dates": development,
                 "embargo_dates": embargo,
                 "confirmation_dates": confirmation,
                 "development_scope": {
-                    "dates": development,
+                    "dates": [*development_warmup, *development],
                     "symbols": family_symbols,
                 },
                 "confirmation_scope": {

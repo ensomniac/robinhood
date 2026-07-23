@@ -10,7 +10,7 @@ import next_week_discovery_batch as batch
 import outcome_exposure
 
 
-def _calendar(tmp_path, count: int = 600):
+def _calendar(tmp_path, count: int = 1_100):
     start = date(2020, 1, 1)
     rows = [
         {
@@ -57,7 +57,11 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
     assert inventory["provider_requests"] == 0
     assert inventory["outcomes_accessed"] is False
     all_dates = []
+    all_collection_dates = []
     for family in inventory["families"]:
+        expected_warmup = capacity.FAMILY_WARMUP_SESSIONS[family["family_id"]]
+        assert len(family["development_warmup_dates"]) == expected_warmup
+        assert len(family["confirmation_warmup_dates"]) == expected_warmup
         assert len(family["development_dates"]) == capacity.DEVELOPMENT_SESSIONS
         assert len(family["embargo_dates"]) == capacity.EMBARGO_SESSIONS
         assert len(family["confirmation_dates"]) == capacity.CONFIRMATION_SESSIONS
@@ -66,7 +70,14 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
             + family["embargo_dates"]
             + family["confirmation_dates"]
         )
+        all_collection_dates.extend(
+            family["development_warmup_dates"]
+            + family["development_dates"]
+            + family["embargo_dates"]
+            + family["confirmation_dates"]
+        )
     assert len(all_dates) == len(set(all_dates)) == capacity.SESSIONS_PER_FAMILY * 3
+    assert len(all_collection_dates) == len(set(all_collection_dates)) == 940
     contracts, status = family_contracts.freeze_batch(
         path,
         as_of=date(2026, 7, 27),
@@ -79,7 +90,7 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
 
 
 def test_known_outcome_date_splits_runs_and_can_make_capacity_insufficient(tmp_path):
-    calendar = _calendar(tmp_path, count=500)
+    calendar = _calendar(tmp_path, count=1_000)
     index = tmp_path / "exposure.jsonl"
     rows = json.loads(calendar.read_text(encoding="utf-8"))
     outcome_exposure.append_record(
@@ -90,7 +101,7 @@ def test_known_outcome_date_splits_runs_and_can_make_capacity_insufficient(tmp_p
             recorded_at="2026-07-22T19:00:00-04:00",
             source_path="test",
             source_sha256="a" * 64,
-            scope={"dates": [rows[250]["date"]], "symbols": ["*"]},
+            scope={"dates": [rows[500]["date"]], "symbols": ["*"]},
         ),
         index,
     )

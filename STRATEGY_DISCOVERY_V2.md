@@ -133,11 +133,26 @@ An absent, mutated, or stale baseline fails the default audit.
 
 At or after the reset, `dense_capacity_inventory.py` builds the zero-outcome
 inventory from the committed full-session calendar and current exposure index.
-It requires one contiguous 480-session untouched run, takes the most recent
-eligible run, and deterministically divides it into three disjoint blocks. Each
-block contains 120 development sessions, five embargo sessions, and 35 reserved
-confirmation sessions. It freezes a capacity manifest for every family without
-provider, price, outcome, or broker access:
+The prior 2023-start calendar cannot supply disjoint 60/200-session warmups, so
+the extended public-session calendar has its own zero-price collection contract.
+That contract and its outcome-blind inspection may be frozen before the reset;
+the single Alpaca calendar request remains closed until 2026-07-27:
+
+```sh
+python3 dense_session_calendar.py freeze \
+  --created-at 2026-07-22T23:59:59-04:00
+python3 dense_session_calendar.py inspect-contract \
+  strategy_tournament/v2/calendar/contract/dense-session-calendar-contract-<sha256>.json \
+  --inspected-at 2026-07-22T23:59:59-04:00
+```
+
+After the reset, collect and independently inspect that calendar before running
+the allocator. The allocator requires one contiguous 940-session untouched run:
+200 equity warmup plus 160 evidence sessions, 60 intraday warmup plus 160
+evidence sessions, and 200 ETF-pullback warmup plus 160 evidence sessions. Each
+evidence block contains 120 development sessions, five embargo sessions, and 35
+reserved confirmation sessions. It freezes a capacity manifest for every family
+without price, return, or broker access:
 
 ```sh
 python3 dense_capacity_inventory.py \
@@ -164,3 +179,27 @@ and updates the next-batch status while provider, outcome, and broker permission
 remain false. Each contract then follows the normal `preflight` and
 `freeze-search` transitions before its separately hash-bound development data
 may be collected or evaluated.
+
+`dense_data_collection.py` derives the exact request plan only from a committed
+frozen search (or, later, a committed exact winner). Daily families use raw
+Massive grouped SIP bars plus split actions frozen through the dataset end;
+equity membership adds dated active-common-stock reference snapshots. The
+intraday family uses complete Alpaca SIP minute bars. Task checkpoints and
+cumulative telemetry live outside Git under the configured historical store;
+completed plans are idempotent and make zero repeated provider requests.
+
+```sh
+python3 dense_data_collection.py --as-of 2026-07-27 \
+  freeze-development path/to/committed-search.json
+# Commit the generated collection plan before the next command.
+python3 dense_data_collection.py --as-of 2026-07-27 \
+  collect path/to/committed-collection-plan.json
+# Commit the collection status before independent inspection.
+python3 dense_data_collection_inspection.py \
+  path/to/committed-collection-status.json \
+  --inspected-at 2026-07-27T12:00:00-04:00
+```
+
+Independent inspection rebuilds the runtime dataset from every checkpoint,
+rehashes the ignored gzip payload, revalidates full point-in-time scope, and
+only then freezes the Git-visible development or confirmation dataset manifest.

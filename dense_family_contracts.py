@@ -133,9 +133,13 @@ def _validate_inventory(
                 f"{family_id} lacks 100 outcome-blind capacity observations"
             )
         development_dates = family.get("development_dates")
+        development_warmup_dates = family.get("development_warmup_dates")
+        confirmation_warmup_dates = family.get("confirmation_warmup_dates")
         embargo_dates = family.get("embargo_dates")
         confirmation_dates = family.get("confirmation_dates")
         for values, name in (
+            (development_warmup_dates, "development_warmup_dates"),
+            (confirmation_warmup_dates, "confirmation_warmup_dates"),
             (development_dates, "development_dates"),
             (embargo_dates, "embargo_dates"),
             (confirmation_dates, "confirmation_dates"),
@@ -143,6 +147,17 @@ def _validate_inventory(
             strategy_discovery._date_list(values, name)
         if len(embargo_dates) < 5:
             raise DenseFamilyContractError(f"{family_id} needs a five-session embargo")
+        expected_warmup = 60 if family_id == "intraday-index-etf-opening-reversal" else 200
+        if len(development_warmup_dates) != expected_warmup or len(
+            confirmation_warmup_dates
+        ) != expected_warmup:
+            raise DenseFamilyContractError(f"{family_id} warmup capacity is incomplete")
+        if not (
+            development_warmup_dates[-1] < development_dates[0]
+            and confirmation_warmup_dates[-1] < confirmation_dates[0]
+            and confirmation_warmup_dates[-1] == embargo_dates[-1]
+        ):
+            raise DenseFamilyContractError(f"{family_id} warmup chronology drifted")
         if not (
             set(manifest["requested_dates"]) >= set(development_dates)
             and set(manifest["requested_dates"]) >= set(confirmation_dates)
@@ -156,7 +171,10 @@ def _validate_inventory(
         confirmation_scope = outcome_exposure.validate_scope(
             family.get("confirmation_scope")
         )
-        if development_scope["dates"] != development_dates:
+        if development_scope["dates"] != [
+            *development_warmup_dates,
+            *development_dates,
+        ]:
             raise DenseFamilyContractError("development exposure scope dates drifted")
         if confirmation_scope["dates"] != confirmation_dates:
             raise DenseFamilyContractError("confirmation exposure scope dates drifted")
@@ -264,6 +282,8 @@ def _contract(
             "from the retired disclosure and legacy ORB mechanisms."
         ),
         "development_dates": list(family["development_dates"]),
+        "development_warmup_dates": list(family["development_warmup_dates"]),
+        "confirmation_warmup_dates": list(family["confirmation_warmup_dates"]),
         "embargo_dates": list(family["embargo_dates"]),
         "confirmation_dates": list(family["confirmation_dates"]),
         "development_scope": dict(family["development_scope"]),

@@ -110,6 +110,32 @@ class AlpacaConfigTests(unittest.TestCase):
 
 
 class MassiveNormalizationTests(unittest.TestCase):
+    def test_grouped_daily_normalizes_the_complete_adjusted_cross_section(self):
+        observed = datetime(2024, 1, 3, 16, 0, tzinfo=EASTERN)
+        session = FakeSession(
+            [
+                FakeResponse(
+                    {
+                        "status": "OK",
+                        "results": [
+                            {**aggregate(observed), "T": "MSFT"},
+                            {**aggregate(observed, price=20.0), "T": "AAPL"},
+                        ],
+                    }
+                )
+            ]
+        )
+        client = MassiveHistoricalClient(
+            MassiveConfig(api_key="secret"), session=session
+        )
+
+        rows = client.fetch_grouped_daily("2024-01-03", adjusted=False)
+
+        self.assertEqual([row["symbol"] for row in rows], ["AAPL", "MSFT"])
+        self.assertEqual(rows[0]["date"], "2024-01-03")
+        self.assertEqual(session.calls[0][1]["adjusted"], "false")
+        self.assertEqual(session.calls[0][1]["include_otc"], "false")
+
     def test_normalizes_adjusted_minute_aggregates_and_resamples(self):
         start = datetime(2026, 3, 3, 9, 30, tzinfo=EASTERN)
         raw = [aggregate(start + timedelta(minutes=index)) for index in range(5)]

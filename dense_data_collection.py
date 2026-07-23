@@ -1,0 +1,931 @@
+"""Freeze and run resumable, search-bound dense-family market-data collection."""
+
+from __future__ import annotations
+
+import argparse
+import gzip
+import hashlib
+import io
+import json
+import os
+import shutil
+import time
+from collections.abc import Mapping, Sequence
+from datetime import date, datetime, time as wall_time
+from pathlib import Path
+from typing import Any, Protocol
+
+import requests
+
+import dense_capacity_inventory
+import dense_strategy_runtime as runtime
+import next_week_discovery_batch as batch
+import outcome_exposure
+import scanner_replay
+import strategy_discovery
+from historical_providers import (
+    AlpacaConfig,
+    AlpacaHistoricalClient,
+    HistoricalProviderError,
+    MassiveConfig,
+    MassiveHistoricalClient,
+)
+from historical_store import (
+    DEFAULT_ENV_PATH,
+    EASTERN,
+    HistoricalStoreConfig,
+    HistoricalStoreError,
+    canonical_json_bytes,
+    canonical_sha256,
+    sha256_file,
+)
+from learning_data import load_frozen_dataset_contract
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+DEFAULT_PUBLIC_ROOT = PROJECT_ROOT / "strategy_tournament/v2/discovery"
+DEFAULT_CALENDAR = dense_capacity_inventory.DEFAULT_CALENDAR
+PLAN_KIND = "dense-data-collection-plan"
+STATUS_KIND = "dense-data-collection-status"
+DAILY_WARMUP_SESSIONS = 200
+INTRADAY_WARMUP_SESSIONS = runtime.STANDARDIZATION_LOOKBACK
+
+
+class DenseDataCollectionError(RuntimeError):
+    """A collection authority, request plan, checkpoint, or dataset is unsafe."""
+
+
+class DenseCollectionBackend(Protocol):
+    telemetry: dict[str, Any]
+
+    def fetch(self, task: Mapping[str, Any]) -> list[dict[str, Any]]: ...
+
+    def close(self) -> None: ...
+
+
+def _file_hash(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _repo_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(PROJECT_ROOT.resolve()))
+    except ValueError as exc:
+        raise DenseDataCollectionError(f"path is outside repository: {path}") from exc
+
+
+def _read_gzip(path: Path) -> Any:
+    try:
+        with gzip.open(path, "rt", encoding="utf-8") as source:
+            return json.load(source)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DenseDataCollectionError(f"cannot read checkpoint {path}: {exc}") from exc
+
+
+def _gzip_bytes(value: Any) -> bytes:
+    buffer = io.BytesIO()
+    with gzip.GzipFile(fileobj=buffer, mode="wb", compresslevel=6, mtime=0) as stream:
+        stream.write(canonical_json_bytes(value) + b"\n")
+    return buffer.getvalue()
+
+
+def _write_external(path: Path, value: Any, config: HistoricalStoreConfig) -> None:
+    encoded = _gzip_bytes(value)
+    config.root.mkdir(parents=True, exist_ok=True)
+    free = shutil.disk_usage(config.root).free
+    if free - len(encoded) < config.min_free_bytes:
+        raise DenseDataCollectionError(
+            "historical store disk reserve would be breached: "
+            f"free={free} write={len(encoded)} reserve={config.min_free_bytes}"
+        )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        if path.read_bytes() != encoded:
+            raise DenseDataCollectionError(f"immutable external artifact drifted: {path}")
+        return
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        temporary.write_bytes(encoded)
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _calendar(path: Path) -> list[str]:
+    return dense_capacity_inventory._calendar(path)
+
+
+def _authority(
+    path: Path, *, lane: str, enforce_commit: bool
+) -> tuple[dict[str, Any], dict[str, Any], str]:
+    if enforce_commit:
+        strategy_discovery.require_committed(path)
+    if lane == "development":
+        artifact = strategy_discovery.load_artifact(
+            path, expected_kind="frozen-development-search"
+        )
+        if artifact.get("state") != "SEARCH_FROZEN":
+            raise DenseDataCollectionError("development search is not frozen")
+        return artifact, dict(artifact["family_contract"]), str(
+            artifact["artifact_sha256"]
+        )
+    if lane != "confirmation":
+        raise DenseDataCollectionError("lane must be development or confirmation")
+    winner = strategy_discovery.load_artifact(
+        path, expected_kind="frozen-strategy-winner"
+    )
+    if winner.get("state") != "WINNER_FROZEN":
+        raise DenseDataCollectionError("confirmation winner is not frozen")
+    inspection = strategy_discovery.load_artifact(
+        PROJECT_ROOT / str(winner["development_inspection_path"]),
+        expected_kind="development-search-inspection",
+    )
+    result = strategy_discovery.load_artifact(
+        PROJECT_ROOT / str(inspection["result_path"]),
+        expected_kind="development-search-result",
+    )
+    search = strategy_discovery.load_artifact(
+        PROJECT_ROOT / str(result["search_path"]),
+        expected_kind="frozen-development-search",
+    )
+    contract = dict(search["family_contract"])
+    if contract["family_id"] != winner["family_id"]:
+        raise DenseDataCollectionError("winner family drifted from its frozen search")
+    return winner, contract, str(winner["rules_hash"])
+
+
+def _capacity_calendar_hash(contract: Mapping[str, Any]) -> str:
+    raw = contract.get("capacity_manifest")
+    if not isinstance(raw, str) or not raw:
+        raise DenseDataCollectionError("family contract lacks a capacity manifest")
+    path = Path(raw)
+    if not path.is_absolute():
+        path = PROJECT_ROOT / path
+    manifest = load_frozen_dataset_contract(path)
+    capacity = manifest["dataset_payload"].get("dense_capacity")
+    if not isinstance(capacity, Mapping) or not isinstance(
+        capacity.get("calendar_sha256"), str
+    ):
+        raise DenseDataCollectionError("capacity manifest lacks its calendar hash")
+    return str(capacity["calendar_sha256"])
+
+
+def _required_dates(
+    evaluation_dates: Sequence[str], calendar: Sequence[str], warmup: int
+) -> list[str]:
+    positions = {day: index for index, day in enumerate(calendar)}
+    if any(day not in positions for day in evaluation_dates):
+        raise DenseDataCollectionError("evaluation date is absent from the calendar")
+    indices = [positions[day] for day in evaluation_dates]
+    if indices != list(range(indices[0], indices[-1] + 1)):
+        raise DenseDataCollectionError("evaluation dates must be a contiguous calendar slice")
+    if indices[0] < warmup:
+        raise DenseDataCollectionError("calendar lacks the frozen warmup sessions")
+    return list(calendar[indices[0] - warmup : indices[-1] + 1])
+
+
+def _task(kind: str, day: str, symbol: str | None = None) -> dict[str, Any]:
+    value: dict[str, Any] = {"kind": kind, "date": day}
+    if symbol is not None:
+        value["symbol"] = symbol
+    value["task_id"] = canonical_sha256(value)
+    return value
+
+
+def freeze_plan(
+    authority_path: Path,
+    *,
+    lane: str = "development",
+    as_of: date | None = None,
+    calendar_path: Path = DEFAULT_CALENDAR,
+    public_root: Path = DEFAULT_PUBLIC_ROOT,
+    enforce_commit: bool = True,
+) -> tuple[Path, dict[str, Any]]:
+    current = as_of or date.today()
+    if current < batch.ACTIVATION_NOT_BEFORE:
+        raise DenseDataCollectionError(
+            f"data planning is closed until {batch.ACTIVATION_NOT_BEFORE}"
+        )
+    authority, contract, binding = _authority(
+        authority_path, lane=lane, enforce_commit=enforce_commit
+    )
+    if lane == "confirmation":
+        try:
+            outcome_exposure.assert_untouched(
+                contract["confirmation_scope"], outcome_exposure.read_index()
+            )
+        except outcome_exposure.OutcomeExposureError as exc:
+            raise DenseDataCollectionError(str(exc)) from exc
+    calendar_hash = _file_hash(calendar_path)
+    if calendar_hash != _capacity_calendar_hash(contract):
+        raise DenseDataCollectionError("collection calendar drifted from capacity freeze")
+    evaluation_dates = list(contract[f"{lane}_dates"])
+    family_id = str(contract["family_id"])
+    intraday = family_id == runtime.INTRADAY_ETF_FAMILY
+    warmup = INTRADAY_WARMUP_SESSIONS if intraday else DAILY_WARMUP_SESSIONS
+    warmup_dates = list(contract[f"{lane}_warmup_dates"])
+    if len(warmup_dates) != warmup:
+        raise DenseDataCollectionError("frozen family warmup count drifted")
+    required_dates = _required_dates(evaluation_dates, _calendar(calendar_path), warmup)
+    if required_dates != [*warmup_dates, *evaluation_dates]:
+        raise DenseDataCollectionError("frozen family warmup dates drifted")
+    if intraday:
+        symbols = sorted(map(str, contract["universe"]["symbols"]))
+        tasks = [
+            _task("sip_minute_bars", day, symbol)
+            for day in required_dates
+            for symbol in symbols
+        ]
+        providers = ["Alpaca SIP raw-adjustment minute bars"]
+    else:
+        symbols = sorted(map(str, contract["universe"].get("symbols", [])))
+        split_task = _task("split_actions", required_dates[-1])
+        split_task["start"] = required_dates[0]
+        split_task["task_id"] = canonical_sha256(
+            {key: value for key, value in split_task.items() if key != "task_id"}
+        )
+        tasks = [split_task, *[_task("grouped_daily_bars", day) for day in required_dates]]
+        providers = [
+            "Massive SIP unadjusted grouped daily aggregates",
+            "Massive point-in-time split actions through the final frozen session",
+        ]
+        if family_id == runtime.EQUITY_RESIDUAL_FAMILY:
+            tasks.extend(_task("common_stock_reference", day) for day in evaluation_dates)
+            providers.append("Massive point-in-time active U.S. common-stock reference")
+    payload = {
+        "schema_version": 1,
+        "artifact_kind": PLAN_KIND,
+        "campaign_id": batch.CAMPAIGN_ID,
+        "state": "COLLECTION_PLAN_FROZEN",
+        "family_id": family_id,
+        "lane": lane,
+        "authority_path": _repo_path(authority_path),
+        "authority_sha256": authority["artifact_sha256"],
+        "binding_sha256": binding,
+        "calendar_path": _repo_path(calendar_path),
+        "calendar_sha256": calendar_hash,
+        "evaluation_dates": evaluation_dates,
+        "required_dates": required_dates,
+        "warmup_sessions": warmup,
+        "symbols": symbols,
+        "tasks": tasks,
+        "task_count": len(tasks),
+        "providers": providers,
+        "universe_semantics": (
+            {
+                "security_type": "point-in-time active U.S. common stock",
+                "prior_close_minimum": 10.0,
+                "prior_20_session_median_dollar_volume_minimum": 50_000_000,
+                "ranking": "top 250 by prior 60-session median close-times-volume",
+                "historical_identity": "listing-scoped composite FIGI, share-class FIGI fallback, then deterministic sourced fallback",
+            }
+            if family_id == runtime.EQUITY_RESIDUAL_FAMILY
+            else None
+        ),
+        "provider_requests_before_plan_freeze": 0,
+        "substitutions_allowed": False,
+        "market_outcomes_accessed": False,
+        "broker_actions": 0,
+        "as_of": current.isoformat(),
+    }
+    return strategy_discovery._write_artifact(
+        payload,
+        public_root / family_id / f"{lane}-collection-plan",
+        f"{family_id}-{lane}-collection-plan",
+    )
+
+
+def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
+    if enforce_commit:
+        strategy_discovery.require_committed(path)
+    plan = strategy_discovery.load_artifact(path, expected_kind=PLAN_KIND)
+    if not (
+        plan.get("state") == "COLLECTION_PLAN_FROZEN"
+        and plan.get("campaign_id") == batch.CAMPAIGN_ID
+        and plan.get("provider_requests_before_plan_freeze") == 0
+        and plan.get("substitutions_allowed") is False
+        and plan.get("market_outcomes_accessed") is False
+        and plan.get("broker_actions") == 0
+        and plan.get("task_count") == len(plan.get("tasks", []))
+        and plan.get("task_count", 0) > 0
+    ):
+        raise DenseDataCollectionError("collection plan authority drifted")
+    task_ids = [item.get("task_id") for item in plan["tasks"]]
+    if len(task_ids) != len(set(task_ids)) or any(
+        not isinstance(item, Mapping)
+        or item.get("task_id")
+        != canonical_sha256({key: value for key, value in item.items() if key != "task_id"})
+        for item in plan["tasks"]
+    ):
+        raise DenseDataCollectionError("collection task IDs are incomplete or invalid")
+    authority_path = PROJECT_ROOT / str(plan.get("authority_path", ""))
+    if enforce_commit:
+        strategy_discovery.require_committed(authority_path)
+    expected_kind = (
+        "frozen-development-search"
+        if plan.get("lane") == "development"
+        else "frozen-strategy-winner"
+    )
+    authority = strategy_discovery.load_artifact(
+        authority_path, expected_kind=expected_kind
+    )
+    if authority.get("artifact_sha256") != plan.get("authority_sha256"):
+        raise DenseDataCollectionError("collection authority drifted after plan freeze")
+    if plan.get("lane") == "confirmation":
+        try:
+            outcome_exposure.assert_untouched(
+                authority["confirmation_scope"], outcome_exposure.read_index()
+            )
+        except outcome_exposure.OutcomeExposureError as exc:
+            raise DenseDataCollectionError(str(exc)) from exc
+    calendar_path = PROJECT_ROOT / str(plan.get("calendar_path", ""))
+    if not calendar_path.is_file() or _file_hash(calendar_path) != plan.get(
+        "calendar_sha256"
+    ):
+        raise DenseDataCollectionError("collection calendar drifted after plan freeze")
+    return plan
+
+
+class _CountingSession:
+    def __init__(self, telemetry: dict[str, Any]):
+        self.telemetry = telemetry
+        self.session = requests.Session()
+
+    def get(self, *args: Any, **kwargs: Any) -> requests.Response:
+        started = time.monotonic()
+        self.telemetry["requests"] += 1
+        try:
+            return self.session.get(*args, **kwargs)
+        finally:
+            self.telemetry["request_seconds"] += time.monotonic() - started
+
+    def close(self) -> None:
+        self.session.close()
+
+
+class ProviderBackend:
+    """Read-only Massive/Alpaca implementation for one frozen task plan."""
+
+    def __init__(self, env_path: Path = DEFAULT_ENV_PATH):
+        self.telemetry = {
+            "requests": 0,
+            "request_seconds": 0.0,
+            "pacing_wait_seconds": 0.0,
+            "cache_hits": 0,
+            "failures": 0,
+        }
+        massive = MassiveConfig.optional_from_env(env_path)
+        alpaca = AlpacaConfig.optional_from_env(env_path)
+        if massive is None or alpaca is None:
+            raise DenseDataCollectionError(
+                "configured Massive and Alpaca read-only data lanes are required"
+            )
+        self._massive_session = _CountingSession(self.telemetry)
+        self._alpaca_session = _CountingSession(self.telemetry)
+        self._reference_session = _CountingSession(self.telemetry)
+
+        def paced_sleep(seconds: float) -> None:
+            self.telemetry["pacing_wait_seconds"] += seconds
+            time.sleep(seconds)
+
+        self.massive = MassiveHistoricalClient(
+            massive, session=self._massive_session  # type: ignore[arg-type]
+        )
+        self.alpaca = AlpacaHistoricalClient(
+            alpaca,
+            session=self._alpaca_session,  # type: ignore[arg-type]
+            sleeper=paced_sleep,
+        )
+        reference_config = scanner_replay.MassiveReferenceConfig.from_env(env_path)
+        self.reference = scanner_replay.MassiveReferenceCollector(
+            reference_config,
+            session=self._reference_session,  # type: ignore[arg-type]
+            sleeper=paced_sleep,
+        )
+
+    def fetch(self, task: Mapping[str, Any]) -> list[dict[str, Any]]:
+        kind = task["kind"]
+        day = str(task["date"])
+        if kind == "grouped_daily_bars":
+            return self.massive.fetch_grouped_daily(day, adjusted=False)
+        if kind == "split_actions":
+            return self.reference.fetch_splits(str(task["start"]), day)
+        if kind == "common_stock_reference":
+            return self.reference.fetch(day)
+        if kind == "sip_minute_bars":
+            session_day = date.fromisoformat(day)
+            start = datetime.combine(session_day, wall_time(9, 30), tzinfo=EASTERN)
+            end = datetime.combine(session_day, wall_time(16, 0), tzinfo=EASTERN)
+            return self.alpaca.fetch_bars(
+                str(task["symbol"]), start, end, bar_size="1 min", use_rth=True
+            )
+        raise DenseDataCollectionError(f"unsupported collection task: {kind}")
+
+    def close(self) -> None:
+        self.reference.close()
+        self.massive.close()
+        self.alpaca.close()
+        self._reference_session.close()
+        self._massive_session.close()
+        self._alpaca_session.close()
+
+
+def _checkpoint_path(root: Path, task: Mapping[str, Any]) -> Path:
+    return root / "tasks" / f"{task['task_id']}.json.gz"
+
+
+def _telemetry_state(path: Path, plan_sha256: str) -> dict[str, Any]:
+    empty = {
+        "requests": 0,
+        "request_seconds": 0.0,
+        "pacing_wait_seconds": 0.0,
+        "cache_hits": 0,
+        "failures": 0,
+    }
+    if not path.exists():
+        return empty
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DenseDataCollectionError("private collection telemetry is invalid") from exc
+    if not isinstance(value, Mapping) or value.get("plan_sha256") != plan_sha256:
+        raise DenseDataCollectionError("private telemetry plan binding drifted")
+    telemetry = value.get("provider_telemetry")
+    if not isinstance(telemetry, Mapping):
+        raise DenseDataCollectionError("private provider telemetry is invalid")
+    return {key: telemetry.get(key, 0) for key in empty}
+
+
+def _combined_telemetry(
+    baseline: Mapping[str, Any], current: Mapping[str, Any]
+) -> dict[str, Any]:
+    return {
+        key: float(baseline.get(key, 0)) + float(current.get(key, 0))
+        if key in {"request_seconds", "pacing_wait_seconds"}
+        else int(baseline.get(key, 0)) + int(current.get(key, 0))
+        for key in (
+            "requests",
+            "request_seconds",
+            "pacing_wait_seconds",
+            "cache_hits",
+            "failures",
+        )
+    }
+
+
+def _write_telemetry_state(
+    path: Path,
+    *,
+    plan_sha256: str,
+    telemetry: Mapping[str, Any],
+    config: HistoricalStoreConfig,
+) -> None:
+    rendered = (
+        json.dumps(
+            {
+                "schema_version": 1,
+                "plan_sha256": plan_sha256,
+                "provider_telemetry": dict(telemetry),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    ).encode()
+    free = shutil.disk_usage(config.root).free
+    if free - len(rendered) < config.min_free_bytes:
+        raise DenseDataCollectionError("telemetry write would breach disk reserve")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        temporary.write_bytes(rendered)
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _load_checkpoint(path: Path, task: Mapping[str, Any]) -> list[dict[str, Any]]:
+    value = _read_gzip(path)
+    if not isinstance(value, Mapping) or value.get("task") != dict(task):
+        raise DenseDataCollectionError("checkpoint task binding drifted")
+    rows = value.get("rows")
+    if not isinstance(rows, list) or any(not isinstance(item, Mapping) for item in rows):
+        raise DenseDataCollectionError("checkpoint rows are invalid")
+    if value.get("rows_sha256") != canonical_sha256(rows):
+        raise DenseDataCollectionError("checkpoint row hash drifted")
+    return [dict(item) for item in rows]
+
+
+def _daily_rows(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, dict[str, dict[str, Any]]]:
+    result: dict[str, dict[str, dict[str, Any]]] = {}
+    for task in plan["tasks"]:
+        if task["kind"] != "grouped_daily_bars":
+            continue
+        rows = _load_checkpoint(_checkpoint_path(checkpoint_root, task), task)
+        day = str(task["date"])
+        mapped = {str(item.get("symbol")): dict(item) for item in rows}
+        if not mapped or len(mapped) != len(rows) or any(
+            item.get("date") != day for item in mapped.values()
+        ):
+            raise DenseDataCollectionError(f"grouped daily checkpoint is invalid: {day}")
+        result[day] = mapped
+    return result
+
+
+def _identity(row: Mapping[str, Any]) -> str:
+    exchange = str(row.get("primary_exchange") or "UNKNOWN").upper()
+    for field, prefix in (
+        ("composite_figi", "FIGI-COMPOSITE"),
+        ("share_class_figi", "FIGI-SHARE"),
+    ):
+        value = str(row.get(field) or "").strip()
+        if value:
+            return f"{prefix}:{value}:LISTING:{exchange}"
+    basis = "|".join(
+        str(row.get(field) or "").strip()
+        for field in ("ticker", "primary_exchange", "cik", "name")
+    )
+    return f"MASSIVE-FALLBACK:{hashlib.sha256(basis.encode()).hexdigest()[:24]}"
+
+
+def _equity_universe(
+    checkpoint_root: Path,
+    plan: Mapping[str, Any],
+    daily: Mapping[str, Mapping[str, Mapping[str, Any]]],
+) -> tuple[dict[str, list[str]], dict[str, dict[str, str]], set[str]]:
+    dates = list(plan["required_dates"])
+    positions = {day: index for index, day in enumerate(dates)}
+    reference = {
+        str(task["date"]): _load_checkpoint(_checkpoint_path(checkpoint_root, task), task)
+        for task in plan["tasks"]
+        if task["kind"] == "common_stock_reference"
+    }
+    universes: dict[str, list[str]] = {}
+    identities: dict[str, dict[str, str]] = {}
+    selected_union: set[str] = {"SPY"}
+    for day in plan["evaluation_dates"]:
+        index = positions[day]
+        prior_60 = dates[index - 60 : index]
+        rows = reference.get(day)
+        if not rows:
+            raise DenseDataCollectionError(f"reference snapshot is missing: {day}")
+        candidates: list[tuple[float, str, str]] = []
+        for item in rows:
+            symbol = str(item.get("ticker") or "").strip().upper()
+            if not symbol or str(item.get("type") or "").upper() != "CS":
+                continue
+            history = [daily[prior][symbol] for prior in prior_60 if symbol in daily[prior]]
+            if len(history) != 60:
+                continue
+            dollar = [float(row["close"]) * float(row["volume"]) for row in history]
+            prior_close = float(history[-1]["close"])
+            median_20 = sorted(dollar[-20:])[9:11]
+            median_20_value = sum(median_20) / 2
+            median_60 = sorted(dollar)[29:31]
+            median_60_value = sum(median_60) / 2
+            if prior_close < 10 or median_20_value < 50_000_000:
+                continue
+            candidates.append((median_60_value, symbol, _identity(item)))
+        selected = sorted(candidates, key=lambda item: (-item[0], item[1]))[:250]
+        if len(selected) != 250:
+            raise DenseDataCollectionError(
+                f"{day} has only {len(selected)} fully qualified common stocks"
+            )
+        universes[day] = [symbol for _liquidity, symbol, _identity_id in selected]
+        identities[day] = {
+            symbol: identity for _liquidity, symbol, identity in selected
+        }
+        selected_union.update(universes[day])
+    return universes, identities, selected_union
+
+
+def _bar(row: Mapping[str, Any], day: str) -> dict[str, Any]:
+    return {
+        "date": day,
+        "open": row["open"],
+        "high": row["high"],
+        "low": row["low"],
+        "close": row["close"],
+        "volume": row["volume"],
+    }
+
+
+def _split_factors(
+    checkpoint_root: Path, plan: Mapping[str, Any]
+) -> dict[str, list[tuple[str, float]]]:
+    tasks = [task for task in plan["tasks"] if task["kind"] == "split_actions"]
+    if len(tasks) != 1:
+        raise DenseDataCollectionError("daily collection needs one frozen split task")
+    rows = _load_checkpoint(_checkpoint_path(checkpoint_root, tasks[0]), tasks[0])
+    factors: dict[str, list[tuple[str, float]]] = {}
+    for row in rows:
+        try:
+            symbol = str(row["ticker"]).strip().upper()
+            execution = date.fromisoformat(str(row["execution_date"])).isoformat()
+            factor = float(row["split_from"]) / float(row["split_to"])
+        except (KeyError, TypeError, ValueError, ZeroDivisionError) as exc:
+            raise DenseDataCollectionError("split action is malformed") from exc
+        if not symbol or factor <= 0:
+            raise DenseDataCollectionError("split action factor is invalid")
+        factors.setdefault(symbol, []).append((execution, factor))
+    for events in factors.values():
+        events.sort()
+    return factors
+
+
+def _adjusted_bar(
+    row: Mapping[str, Any], day: str, events: Sequence[tuple[str, float]]
+) -> dict[str, Any]:
+    factor = 1.0
+    for execution, split_factor in events:
+        if execution > day:
+            factor *= split_factor
+    bar = _bar(row, day)
+    for field in ("open", "high", "low", "close"):
+        bar[field] = float(bar[field]) * factor
+    bar["volume"] = float(bar["volume"]) / factor
+    return bar
+
+
+def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, Any]:
+    family_id = str(plan["family_id"])
+    if family_id == runtime.INTRADAY_ETF_FAMILY:
+        minute: dict[str, dict[str, list[dict[str, Any]]]] = {}
+        expected_symbols = set(map(str, plan["symbols"]))
+        for task in plan["tasks"]:
+            rows = _load_checkpoint(_checkpoint_path(checkpoint_root, task), task)
+            day = str(task["date"])
+            symbol = str(task["symbol"])
+            converted = [
+                {
+                    "timestamp": row["time_et"],
+                    "open": row["open"],
+                    "high": row["high"],
+                    "low": row["low"],
+                    "close": row["close"],
+                    "volume": row["volume"],
+                    "vwap_numerator": float(row["wap"]) * float(row["volume"]),
+                    "vwap_denominator": row["volume"],
+                }
+                for row in rows
+            ]
+            minute.setdefault(day, {})[symbol] = converted
+        if any(set(symbols) != expected_symbols for symbols in minute.values()):
+            raise DenseDataCollectionError("intraday task coverage is incomplete")
+        return {
+            "schema_version": 1,
+            "family_id": family_id,
+            "evaluation_dates": list(plan["evaluation_dates"]),
+            "symbols": list(plan["symbols"]),
+            "regular_session_minutes_by_date": {
+                day: 390 for day in plan["required_dates"]
+            },
+            "minute_bars": minute,
+            "source_semantics": {
+                "feed": "Alpaca SIP",
+                "adjustment": "raw",
+                "vwap": "provider SIP minute VWAP multiplied by provider qualifying volume",
+            },
+        }
+    daily = _daily_rows(checkpoint_root, plan)
+    if family_id == runtime.ETF_PULLBACK_FAMILY:
+        symbols = set(map(str, plan["symbols"]))
+        missing = [
+            (day, symbol)
+            for day in plan["required_dates"]
+            for symbol in symbols
+            if symbol not in daily.get(day, {})
+        ]
+        if missing:
+            raise DenseDataCollectionError(
+                f"fixed ETF daily collection is incomplete; first={missing[0]}"
+            )
+        universe = symbols
+        identities: dict[str, dict[str, str]] | None = None
+        universe_by_date: dict[str, list[str]] | None = None
+    else:
+        universe_by_date, identities, universe = _equity_universe(
+            checkpoint_root, plan, daily
+        )
+    split_factors = _split_factors(checkpoint_root, plan)
+    bars: dict[str, list[dict[str, Any]]] = {}
+    for symbol in sorted(universe):
+        rows = [
+            _adjusted_bar(daily[day][symbol], day, split_factors.get(symbol, []))
+            for day in plan["required_dates"]
+            if symbol in daily[day]
+        ]
+        if rows:
+            bars[symbol] = rows
+    dataset: dict[str, Any] = {
+        "schema_version": 1,
+        "family_id": family_id,
+        "evaluation_dates": list(plan["evaluation_dates"]),
+        "daily_bars": bars,
+        "source_semantics": {
+            "feed": "Massive SIP grouped daily",
+            "adjustment": "raw grouped bars adjusted only by frozen split actions through the dataset end",
+        },
+    }
+    if family_id == runtime.ETF_PULLBACK_FAMILY:
+        dataset["symbols"] = list(plan["symbols"])
+    else:
+        dataset["universe_by_date"] = universe_by_date
+        dataset["universe_identity_by_date"] = identities
+        dataset["liquidity_selection"] = {
+            "prior_close_minimum": 10.0,
+            "prior_20_session_median_dollar_volume_minimum": 50_000_000,
+            "ranking": "top 250 by prior 60-session median close-times-volume",
+        }
+    return dataset
+
+
+def _existing_status(
+    public_root: Path, plan: Mapping[str, Any]
+) -> tuple[Path, dict[str, Any]] | None:
+    directory = public_root / str(plan["family_id"]) / f"{plan['lane']}-collection"
+    matches: list[tuple[Path, dict[str, Any]]] = []
+    for path in directory.glob("*.json"):
+        try:
+            status = strategy_discovery.load_artifact(path, expected_kind=STATUS_KIND)
+        except strategy_discovery.StrategyDiscoveryError:
+            continue
+        if status.get("plan_sha256") == plan["artifact_sha256"]:
+            matches.append((path, status))
+    if len(matches) > 1:
+        raise DenseDataCollectionError("multiple completed statuses bind one plan")
+    return matches[0] if matches else None
+
+
+def collect(
+    plan_path: Path,
+    *,
+    as_of: date | None = None,
+    store_config: HistoricalStoreConfig | None = None,
+    public_root: Path = DEFAULT_PUBLIC_ROOT,
+    backend: DenseCollectionBackend | None = None,
+    enforce_commit: bool = True,
+) -> tuple[Path, dict[str, Any]]:
+    current = as_of or date.today()
+    if current < batch.ACTIVATION_NOT_BEFORE:
+        raise DenseDataCollectionError(
+            f"provider collection is closed until {batch.ACTIVATION_NOT_BEFORE}"
+        )
+    plan = _validate_plan(plan_path, enforce_commit=enforce_commit)
+    existing = _existing_status(public_root, plan)
+    if existing is not None:
+        return existing
+    config = store_config or HistoricalStoreConfig.from_env(DEFAULT_ENV_PATH)
+    private_root = (
+        config.root
+        / "dense-v2"
+        / str(plan["family_id"])
+        / str(plan["lane"])
+        / str(plan["artifact_sha256"])
+    )
+    client = backend or ProviderBackend()
+    owns_backend = backend is None
+    telemetry_path = private_root / "collection-telemetry.json"
+    baseline_telemetry = _telemetry_state(
+        telemetry_path, str(plan["artifact_sha256"])
+    )
+    completed = 0
+    try:
+        for task in plan["tasks"]:
+            path = _checkpoint_path(private_root, task)
+            if path.exists():
+                _load_checkpoint(path, task)
+                client.telemetry["cache_hits"] += 1
+            else:
+                try:
+                    rows = client.fetch(task)
+                except Exception:
+                    client.telemetry["failures"] += 1
+                    _write_telemetry_state(
+                        telemetry_path,
+                        plan_sha256=str(plan["artifact_sha256"]),
+                        telemetry=_combined_telemetry(
+                            baseline_telemetry, client.telemetry
+                        ),
+                        config=config,
+                    )
+                    raise
+                if not isinstance(rows, list):
+                    raise DenseDataCollectionError("provider task did not return rows")
+                _write_external(
+                    path,
+                    {
+                        "schema_version": 1,
+                        "task": dict(task),
+                        "rows": rows,
+                        "rows_sha256": canonical_sha256(rows),
+                    },
+                    config,
+                )
+            completed += 1
+            _write_telemetry_state(
+                telemetry_path,
+                plan_sha256=str(plan["artifact_sha256"]),
+                telemetry=_combined_telemetry(baseline_telemetry, client.telemetry),
+                config=config,
+            )
+        dataset = build_dataset(private_root, plan)
+        runtime.prepare_dataset(dataset)
+        dataset_path = private_root / "dataset.json.gz"
+        _write_external(dataset_path, dataset, config)
+    except (HistoricalProviderError, HistoricalStoreError, OSError, ValueError) as exc:
+        raise DenseDataCollectionError(str(exc)) from exc
+    finally:
+        if owns_backend:
+            client.close()
+    relative = str(dataset_path.resolve().relative_to(config.root.resolve()))
+    payload = {
+        "schema_version": 1,
+        "artifact_kind": STATUS_KIND,
+        "campaign_id": batch.CAMPAIGN_ID,
+        "state": "COLLECTED_UNINSPECTED",
+        "family_id": plan["family_id"],
+        "lane": plan["lane"],
+        "plan_path": _repo_path(plan_path),
+        "plan_sha256": plan["artifact_sha256"],
+        "binding_sha256": plan["binding_sha256"],
+        "evaluation_dates": plan["evaluation_dates"],
+        "task_count": plan["task_count"],
+        "completed_tasks": completed,
+        "external_relative_path": relative,
+        "external_file_sha256": sha256_file(dataset_path),
+        "dataset_sha256": canonical_sha256(dataset),
+        "provider_telemetry": _combined_telemetry(
+            baseline_telemetry, client.telemetry
+        ),
+        "substitutions": 0,
+        "broker_actions": 0,
+        "as_of": current.isoformat(),
+    }
+    return strategy_discovery._write_artifact(
+        payload,
+        public_root / str(plan["family_id"]) / f"{plan['lane']}-collection",
+        f"{plan['family_id']}-{plan['lane']}-collection",
+    )
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--as-of", type=date.fromisoformat)
+    parser.add_argument("--public-root", type=Path, default=DEFAULT_PUBLIC_ROOT)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    for command in ("freeze-development", "freeze-confirmation", "collect"):
+        child = subparsers.add_parser(command)
+        child.add_argument("artifact", type=Path)
+    return parser
+
+
+def main() -> int:
+    args = _parser().parse_args()
+    try:
+        if args.command.startswith("freeze-"):
+            lane = args.command.removeprefix("freeze-")
+            path, artifact = freeze_plan(
+                args.artifact,
+                lane=lane,
+                as_of=args.as_of,
+                public_root=args.public_root,
+            )
+        else:
+            path, artifact = collect(
+                args.artifact,
+                as_of=args.as_of,
+                public_root=args.public_root,
+            )
+        print(
+            json.dumps(
+                {
+                    "written": _repo_path(path),
+                    "artifact_sha256": artifact["artifact_sha256"],
+                    "state": artifact["state"],
+                    "provider_telemetry": artifact.get("provider_telemetry", {}),
+                    "broker_actions": 0,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+    except (
+        DenseDataCollectionError,
+        HistoricalProviderError,
+        HistoricalStoreError,
+        strategy_discovery.StrategyDiscoveryError,
+        OSError,
+        ValueError,
+    ) as exc:
+        print(json.dumps({"error": str(exc), "error_type": type(exc).__name__}, indent=2))
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

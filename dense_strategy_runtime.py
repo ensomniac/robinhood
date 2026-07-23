@@ -268,6 +268,11 @@ def _equity_residual_candidates(
         raise DenseStrategyRuntimeError(
             "equity residual data needs point-in-time universe_by_date"
         )
+    identities = dataset.get("universe_identity_by_date")
+    if not isinstance(identities, Mapping):
+        raise DenseStrategyRuntimeError(
+            "equity residual data needs point-in-time identity by date"
+        )
     if "SPY" not in daily:
         raise DenseStrategyRuntimeError("equity residual data needs SPY market bars")
     window = int(parameters["prior_return_sessions"])
@@ -298,6 +303,15 @@ def _equity_residual_candidates(
         if not isinstance(day_universe, list):
             raise DenseStrategyRuntimeError(
                 f"universe_by_date is missing frozen date {decision_date}"
+            )
+        day_identities = identities.get(decision_date)
+        if (
+            not isinstance(day_identities, Mapping)
+            or set(map(str, day_universe)) != set(map(str, day_identities))
+            or len(set(map(str, day_identities.values()))) != len(day_identities)
+        ):
+            raise DenseStrategyRuntimeError(
+                f"point-in-time identities are incomplete on {decision_date}"
             )
         scored: list[tuple[float, str, float]] = []
         for raw_symbol in day_universe:
