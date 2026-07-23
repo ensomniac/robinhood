@@ -271,13 +271,26 @@ neighbor stability. The best trial had only 29 fills, +0.001562 log growth,
 1.0360 profit factor, 5.56R drawdown, and DSR 0.472. No winner or evidence
 target was frozen, and all 500 confirmation sessions remain untouched.
 
-Continuous discovery now moves to an existing volatility-compression-breakout
-successor on the disjoint 120-session gap-universe minute corpus. The v1 exact
-rule was adverse on 95 dates, none of which overlap this development partition.
-The successor retains next-minute entry, compression-low structural stop,
-stop-first ambiguity, and 15:50 force-flat while prospectively searching only
-compression length, compression ratio, breakout volume, cutoff, and target.
-Its 75-session confirmation reserve remains globally untouched.
+The existing volatility-compression-breakout successor on the disjoint
+120-session gap-universe minute corpus is now terminal. Independent inspection
+`c429476cf46b2425dcd04a2019e7321c9bd92489c68f1411c475321ef9d8e253`
+rejected all 32 trials: every stressed account path was negative, no stressed
+profit factor reached 0.52, every drawdown exceeded 21R, DSR was zero, and PBO
+was 1.0. No winner or evidence target was frozen, and all 75 confirmation
+sessions remain untouched.
+
+Continuous discovery proceeds immediately to an existing turn-of-month ETF
+seasonality successor. Its v1 exact version entered SPY once per month from
+2023 through 2025 and remains retired. The successor uses only the disjoint,
+already exposed 2016-2020 liquid-ETF partition as contaminated development,
+with the five-session embargo and all 500 sessions in the 2021-2022 reserve
+remaining untouched. It must prospectively freeze 32 combinations of
+one/three sessions before month end, one/three sessions after month start,
+SPY SMA100/SMA200 regime, 1.0/1.5 ATR14 stop, and two/four-session hold.
+Signals enter SPY at the next open, resolve daily ambiguity stop-first, and
+remain subject to the authoritative cost, account-growth, selection-aware,
+concentration, and power gates. This existing mechanism consumes no new-family
+weekly slot and requires no calendar wait.
 
 ## Transition chain
 

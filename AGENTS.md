@@ -101,14 +101,23 @@ profit factor, DSR, Holm, every rolling fold, or neighbor stability. The best
 had only 29 fills, 1.036 profit factor, and DSR 0.472. The exact version is
 retired and cannot be tuned on its evaluated corpus.
 
-The active successor is an existing-family
-volatility-compression-breakout development search on the disjoint inspected
-gap-universe minute corpus. Its v1 exact rule was adverse on 95 separate dates;
-none overlap the 120 successor development sessions. The new version may search
-only a prospectively frozen 32-cell grid across compression length, compression
-ratio, breakout volume, signal cutoff, and target while retaining next-minute
-entry, compression-low stop, stop-first ambiguity, and 15:50 force-flat. The
-75-session, 3,192-candidate confirmation reserve remains untouched.
+The latest existing-family volatility-compression-breakout successor is
+retired after independent inspection rejected all 32 frozen trials. Every
+trial had negative 20-bps growth, stressed profit factor below 0.52, drawdown
+above 21R, zero DSR probability, and PBO 1.0. Its exact rules cannot be repaired
+on the evaluated 120-session gap corpus, and its 75-session confirmation reserve
+remains untouched.
+
+The active next lane is an existing turn-of-month ETF seasonality successor on
+the already inspected, disjoint 2016-2020 liquid-ETF development partition.
+The retired v1 rule used one SPY entry per month from 2023-2025. The successor
+must prospectively freeze a 32-cell grid across one/three sessions before and
+after month end, SPY SMA100/SMA200 regime, 1.0/1.5 ATR14 stop, and two/four
+session hold. It retains SPY-only next-open entry, stop-first ambiguity,
+five-session-or-shorter holding, complete no-signal/contention accounting, and
+the untouched five-session embargo plus 500-session 2021-2022 reserve. This
+existing mechanism consumes no new-family weekly slot and requires no calendar
+wait.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
