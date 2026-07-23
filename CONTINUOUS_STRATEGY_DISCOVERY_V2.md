@@ -286,17 +286,28 @@ was negative, no stressed PF reached 0.81, every drawdown exceeded 14R, DSR was
 zero, and PBO was 1.0. No winner or power target was frozen, and all 500
 confirmation sessions remain untouched.
 
-Continuous discovery proceeds to the existing sector-ETF-rotation mechanism.
-Its v1 exact version on 2023-2025 data had slightly positive primary expectancy
-but failed stressed costs, profit factor, and drawdown. The successor must use
-only disjoint 2022 sessions from the already inspected local sector-SPDR daily
-source. Before target-return access it must freeze the complete sector
-universe, warmup, development, five-session embargo, untouched confirmation,
-and 32 combinations of 5/20-session relative strength, zero/1% excess versus
-SPY, SPY SMA20/SMA60 regime, 1.0/1.5 ATR14 stop, and one/three-session hold.
-Ranking is strongest completed relative return then lexical symbol; entry is
-the next open and ambiguity is stop-first. This existing mechanism consumes no
-new-family weekly slot and requires no calendar wait.
+The sector-ETF-rotation successor is terminal after independent inspection
+`93da8a6cdbdcaca98ac7b3839c71e41500011ec9c391fbf061cb026f907b22d4`.
+All 32 stressed account paths were negative, no trial had positive growth in
+every fold or a positive one-step neighbor, no Holm test rejected, and PBO was
+0.7143. The least-negative path still had -0.00374 log growth, 0.958 profit
+factor, 8.78R drawdown, and a negative stationary-bootstrap lower bound. The
+120-session development scope is exposed; all 66 confirmation sessions remain
+untouched and cannot repair this exact version.
+
+Continuous discovery proceeds immediately to the existing close-to-open ETF
+momentum mechanism. Its v1 exact rule on 2023-2025 data was close to flat at
+primary cost but failed stress and drawdown. The successor must use only
+disjoint 2022 sessions from the already inspected local `SPY`, `QQQ`, `IWM`,
+and `DIA` daily plus 15-minute source. Before target-return access it must
+freeze the complete universe, warmup, development, five-session embargo,
+untouched confirmation, and 32 combinations of 15:15/15:30 completed decision
+bar, 0.5%/1.0% session-return floor, prior SMA20/SMA60 trend, 0.5/1.0 ATR14
+stop, and next-open/next-09:45 close exit. Entry is the next observable
+15-minute open, ambiguity is stop-first, the five-times-cost floor and one
+daily entry remain mandatory, and no position may remain beyond the next
+session. This existing mechanism consumes no new-family weekly slot and
+requires no calendar wait.
 
 ## Transition chain
 

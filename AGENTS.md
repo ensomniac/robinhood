@@ -114,14 +114,26 @@ capacity. Every 20-bps path was negative, stressed PF stayed below 0.81,
 drawdown exceeded 14R, DSR was zero, and PBO was 1.0. Its 500-session
 confirmation reserve remains untouched.
 
-The active next lane is an existing sector-ETF-rotation successor using only
-the local, already inspected sector-SPDR daily source. Its 2023-2025 v1 exact
-rule had slightly positive primary expectancy but failed costs and drawdown.
-The successor must use a disjoint 2022 split, prospectively freeze the complete
-sector universe, development dates, embargo, untouched confirmation dates,
-5/20-session relative-strength lookback, zero/1% excess floor, SPY SMA20/SMA60
-regime, 1.0/1.5 ATR14 stop, and one/three-session hold before accessing target
-returns. It consumes no new-family weekly slot and requires no calendar wait.
+The sector-ETF-rotation successor is retired after independent inspection
+rejected all 32 frozen trials. Every 20-bps path was negative, no trial had
+positive growth in every rolling fold, no neighbor remained positive, no Holm
+test rejected, and PBO was 0.7143. The least-negative trial still had -0.00374
+log growth, 0.958 profit factor, 8.78R drawdown, and a negative stationary-
+bootstrap lower bound. Its exact 2022 development scope is exposed; its
+66-session confirmation reserve remains untouched.
+
+The active next lane is a selection-aware successor inside the existing
+close-to-open ETF momentum mechanism. Its v1 exact rule was near flat at
+primary cost but failed stress and drawdown on 2023-2025 outcomes. The
+successor must use only disjoint 2022 sessions from its already inspected
+local four-ETF daily and 15-minute source. Before target-return access it must
+freeze all 32 combinations of 15:15/15:30 completed decision bar, 0.5%/1.0%
+session-return floor, prior SMA20/SMA60 trend, 0.5/1.0 ATR14 stop, and
+next-open/next-09:45 close exit. The five-times-cost floor, next-observable
+entry, stop-first ambiguity, one daily entry, maximum one-session hold, exact
+development/embargo/confirmation partitions, and production parity remain
+mandatory. This is an existing mechanism, consumes no new-family slot, and
+requires no calendar wait.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and

@@ -64,12 +64,11 @@ The inspected `broad-etf-trend-pullback-v2-cost-floor` development family is
 rejected: all 32 trials had negative 20-bps growth and none passed the complete
 selection-aware gates. Do not repair it or access its confirmation reserve.
 
-Continue immediately with an outcome-blind capacity successor to
-`short-horizon-oversold-reversal-v1`. Its ten predecessor signals are
-hypothesis-generating contamination only. Freeze and independently inspect the
-new universe, dates, provider plan, and minimum formal capacity before any new
-price or return access. The predeclared residual-equity and intraday-ETF
-new-family lanes continue separately when their weekly gate opens.
+Continue immediately with the existing close-to-open ETF momentum successor
+defined in `CONTINUOUS_STRATEGY_DISCOVERY_V2.md`. Freeze and independently
+inspect its disjoint 2022 universe, dates, complete grid, and minimum formal
+capacity before any target-return access. The predeclared residual-equity and
+intraday-ETF new-family lanes continue separately when their weekly gate opens.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`
