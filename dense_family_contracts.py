@@ -316,6 +316,10 @@ def _contract(
             "dense_strategy_plugin.py",
             "dense_strategy_runtime.py",
             "learning_statistics.py",
+            "learning_experiment.py",
+            "strategy_discovery.py",
+            "portfolio_maturity.py",
+            "portfolio_config.toml",
         ],
         "plugin": {
             "module": "dense_strategy_plugin",

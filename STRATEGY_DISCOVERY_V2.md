@@ -48,6 +48,12 @@ independently reconstructed from the per-date maturity rows, and the 20-bps valu
 must exactly match the selection arrays. The selected trial must also clear the
 account-growth, concentration, profit-factor, drawdown, and stationary-bootstrap
 gates before it can be frozen or access confirmation.
+Search freeze derives and hash-binds the exact expanding-train rolling-origin
+folds, including each one-session development embargo and test-date list.
+Independent selection rebuilds fold log growth only from those frozen test dates
+and rejects any fold-plan drift. The implementation binding includes the dense
+plugin/runtime, statistics, selection controller, maturity authority, and numeric
+portfolio configuration.
 
 ## Manifest-driven controller
 

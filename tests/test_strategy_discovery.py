@@ -16,6 +16,7 @@ import strategy_discovery as discovery
 import tests.synthetic_discovery_plugin as synthetic_plugin
 from learning_data import freeze_dataset_contract
 from learning_experiment import DEVELOPMENT_SEARCH_RULE, enumerate_trials
+from learning_experiment import build_rolling_origin_plan
 
 
 def _dates(start: date, count: int) -> list[str]:
@@ -162,6 +163,9 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
             contract_path, root=artifact_root, enforce_commit=False
         )
         assert search["trial_count"] == 4
+        assert search["family_contract"]["rolling_origin_plan"] == (
+            build_rolling_origin_plan(contract["development_dates"])
+        )
         development_path, development = discovery.evaluate_development(
             search_path, root=artifact_root, enforce_commit=False
         )

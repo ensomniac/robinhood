@@ -285,6 +285,48 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertEqual(len(folds[0]["embargo_dates"]), 1)
         self.assertGreater(len(folds[1]["train_dates"]), len(folds[0]["train_dates"]))
 
+    def test_rebuilt_fold_stability_uses_the_exact_frozen_rolling_plan(self):
+        start = date(2026, 1, 1)
+        dates = [(start + timedelta(days=index)).isoformat() for index in range(80)]
+        plan = build_rolling_origin_plan(dates)
+        daily = [0.01] * len(dates)
+        positions = {day: index for index, day in enumerate(dates)}
+        for day in plan[0]["test_dates"]:
+            daily[positions[day]] = -0.02
+
+        def trial(trial_id, scale):
+            returns = [value * scale for value in daily]
+            return {
+                "trial_id": trial_id,
+                "metrics": {
+                    "oof_daily_account_returns": returns,
+                    "oof_filled_account_returns": returns,
+                    "oof_net_pnl_dollars": [value * 100_000 for value in returns],
+                    "risk_fraction": 0.005,
+                    "rules_complete": True,
+                    "trial_accounting_complete": True,
+                },
+            }
+
+        rebuilt = _rebuild_development_statistics(
+            [trial("left", 1.0), trial("right", 0.9)],
+            development_dates=dates,
+            rolling_origin_plan=plan,
+        )
+        self.assertFalse(rebuilt["left"]["rolling_folds_positive"])
+        self.assertEqual(
+            len(rebuilt["left"]["rolling_origin_fold_log_growth"]), len(plan)
+        )
+
+        drifted = [dict(fold) for fold in plan]
+        drifted[0] = {**drifted[0], "test_dates": drifted[0]["test_dates"][:-1]}
+        with self.assertRaisesRegex(LearningExperimentError, "plan drifted"):
+            _rebuild_development_statistics(
+                [trial("left", 1.0), trial("right", 0.9)],
+                development_dates=dates,
+                rolling_origin_plan=drifted,
+            )
+
     def test_complete_family_is_required_and_routes_development_to_confirmation(self):
         contract = hypothesis_contract()
         with tempfile.TemporaryDirectory() as directory:

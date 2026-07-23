@@ -552,6 +552,9 @@ def validate_complete_evaluation(
 
 def _rebuild_development_statistics(
     trials: Sequence[Mapping[str, Any]],
+    *,
+    development_dates: Sequence[str] | None = None,
+    rolling_origin_plan: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, dict[str, Any]]:
     daily_returns_by_id = {
         str(item["trial_id"]): [
@@ -570,6 +573,25 @@ def _rebuild_development_statistics(
         raise LearningExperimentError(
             "development trials must share the complete OOF calendar"
         )
+    fold_indices: list[list[int]] | None = None
+    if development_dates is not None or rolling_origin_plan is not None:
+        if development_dates is None or rolling_origin_plan is None:
+            raise LearningExperimentError(
+                "rolling-origin dates and plan must be supplied together"
+            )
+        dates = list(development_dates)
+        if len(dates) not in lengths:
+            raise LearningExperimentError(
+                "rolling-origin dates must align with every trial account path"
+            )
+        expected_plan = build_rolling_origin_plan(dates)
+        if [dict(item) for item in rolling_origin_plan] != expected_plan:
+            raise LearningExperimentError("rolling-origin plan drifted")
+        positions = {day: index for index, day in enumerate(dates)}
+        fold_indices = [
+            [positions[day] for day in fold["test_dates"]]
+            for fold in expected_plan
+        ]
     sharpes = {
         trial_id: annualized_sharpe(values) or 0.0
         for trial_id, values in daily_returns_by_id.items()
@@ -598,11 +620,17 @@ def _rebuild_development_statistics(
             raise LearningExperimentError(
                 "oof_net_pnl_dollars must align with filled account returns"
             )
-        fold_size = max(1, len(daily_returns) // 5)
-        folds = [
-            daily_returns[start : min(len(daily_returns), start + fold_size)]
-            for start in range(0, len(daily_returns), fold_size)
-        ]
+        if fold_indices is None:
+            fold_size = max(1, len(daily_returns) // 5)
+            folds = [
+                daily_returns[start : min(len(daily_returns), start + fold_size)]
+                for start in range(0, len(daily_returns), fold_size)
+            ]
+        else:
+            folds = [
+                [daily_returns[index] for index in indices]
+                for indices in fold_indices
+            ]
         bootstrap = (
             stationary_bootstrap_summary(
                 filled_returns,
@@ -641,6 +669,9 @@ def _rebuild_development_statistics(
             "rolling_folds_positive": all(
                 sum(math.log1p(value) for value in fold) > 0 for fold in folds
             ),
+            "rolling_origin_fold_log_growth": [
+                sum(math.log1p(value) for value in fold) for fold in folds
+            ],
             "rules_complete": item["metrics"]["rules_complete"],
             "trial_accounting_complete": item["metrics"][
                 "trial_accounting_complete"
@@ -670,7 +701,19 @@ def select_development_winner(
             "winner selection requires selection_mode=development_search"
         )
     trials_by_id = {str(item["trial_id"]): item for item in normalized["trials"]}
-    rebuilt_by_id = _rebuild_development_statistics(normalized["trials"])
+    rolling_origin_plan = frozen.get("rolling_origin_plan")
+    development_dates = frozen.get("development_dates")
+    if not isinstance(rolling_origin_plan, list) or not isinstance(
+        development_dates, list
+    ):
+        raise LearningExperimentError(
+            "development search lacks its frozen rolling-origin plan"
+        )
+    rebuilt_by_id = _rebuild_development_statistics(
+        normalized["trials"],
+        development_dates=development_dates,
+        rolling_origin_plan=rolling_origin_plan,
+    )
     trial_contracts = {
         str(item["trial_id"]): item for item in frozen["trial_family"]
     }

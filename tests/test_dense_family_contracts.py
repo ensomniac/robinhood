@@ -152,6 +152,17 @@ def test_batch_freezes_exact_three_valid_contracts_after_reset(tmp_path):
     assert status["family_contracts_frozen"] == 3
     assert status["provider_access_permitted"] is False
     assert status["outcome_access_permitted"] is False
+    for path in paths:
+        contract = json.loads(path.read_text(encoding="utf-8"))
+        assert {
+            "dense_strategy_plugin.py",
+            "dense_strategy_runtime.py",
+            "learning_statistics.py",
+            "learning_experiment.py",
+            "strategy_discovery.py",
+            "portfolio_maturity.py",
+            "portfolio_config.toml",
+        } <= set(contract["implementation_files"])
 
 
 def test_batch_freeze_requires_committed_inventory_after_reset(

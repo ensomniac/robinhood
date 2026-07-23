@@ -25,6 +25,7 @@ import outcome_exposure
 from learning_experiment import (
     DEVELOPMENT_SEARCH_RULE,
     LearningExperimentError,
+    build_rolling_origin_plan,
     select_development_winner,
     validate_complete_evaluation,
     validate_hypothesis_contract,
@@ -182,6 +183,20 @@ def _validate_family_contract(value: Mapping[str, Any]) -> dict[str, Any]:
         raise StrategyDiscoveryError("development, embargo, and confirmation overlap")
     if not (max(development) < min(embargo) < min(confirmation)):
         raise StrategyDiscoveryError("evidence partitions are not chronological")
+    if not (
+        isinstance(contract["partitions"], Mapping)
+        and contract["partitions"].get("rolling_origin") is True
+        and contract["partitions"].get("confirmation_untouched") is True
+    ):
+        raise StrategyDiscoveryError(
+            "development needs rolling-origin and untouched-confirmation partitions"
+        )
+    try:
+        contract["rolling_origin_plan"] = build_rolling_origin_plan(
+            contract["development_dates"]
+        )
+    except LearningExperimentError as exc:
+        raise StrategyDiscoveryError(str(exc)) from exc
     plugin = contract["plugin"]
     if not isinstance(plugin, Mapping) or not MODULE_PATTERN.fullmatch(
         str(plugin.get("module", ""))
