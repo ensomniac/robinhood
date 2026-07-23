@@ -20,8 +20,8 @@ The initial theme order is preserved. Its current dispositions are:
 1. Multi-asset ETF time-series momentum v1 — retired at Stage 0.
 2. Schedule 13D activist continuation v1 — retired in representative
    development.
-3. Accelerated-share-repurchase continuation — next outcome-blind capacity
-   preflight.
+3. Accelerated-share-repurchase continuation v1 — retired for insufficient
+   source completeness before any target-outcome access.
 
 ## Evidence-derived thesis
 
@@ -55,12 +55,17 @@ after later prices are visible.
 
 ## Current handoff
 
-Run the priority-three accelerated-share-repurchase outcome-blind capacity
-preflight under the narrowed causal definition above. Freeze and independently
-inspect any provider collection contract before access. Do not preregister an
-exact strategy, choose outcome dates, or read a target return unless capacity
-passes and a separate frozen, independently inspected Stage 0 contract permits
-that action.
+The three initial successor themes are retired or source-incomplete. Continue
+discovery immediately through the existing-family successor lane defined in
+`CONTINUOUS_STRATEGY_DISCOVERY_V2.md`; the weekly new-family ceiling does not
+require all historical research to wait for an ISO-week boundary.
+
+Freeze and independently inspect the zero-price 2014-2021 session-calendar
+contract for `broad-etf-trend-pullback-v2-cost-floor`. Its 32-trial rules and
+pre-2022 evidence partitions may freeze only after that inspection. The retired
+v1 result is hypothesis-generating contamination and cannot contribute any
+promotion record. The predeclared residual-equity and intraday-ETF new-family
+lanes continue separately when their weekly gate opens.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`

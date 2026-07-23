@@ -224,6 +224,31 @@ preserve its contract and inspection, freeze and inspect the new implementation
 hash, and pass that exact new contract to collection. Collection selects the
 one inspection bound to the supplied contract instead of treating a preserved
 older inspection as ambiguous authority.
+
+## Continuous existing-family successors
+
+The three-new-family weekly ceiling is not a date gate on all historical
+discovery. `continuous_strategy_discovery.py` runs prospectively frozen exact
+versions inside an already-evaluated mechanism family without consuming a new
+mechanism-family slot. It requires the retired predecessor and its independent
+inspection, carries that attempt in the successor contract, prohibits promotion
+reuse of its corpus, and uses chronologically disjoint development and
+confirmation evidence.
+
+The immediate lane is
+`broad-etf-trend-pullback-v2-cost-floor`. Its 32-trial cost-floor grid uses
+1,000 rolling-origin development sessions, a five-session embargo, and 500
+untouched confirmation sessions ending before 2022. The retired v1's 2023-2025
+outcomes remain contaminated hypothesis evidence only. Its zero-price calendar
+contract and rows are independently inspected before the successor family
+contract can freeze.
+
+`dense_data_collection.py` recognizes that exact successor only after rebuilding
+the predecessor and global exposure bindings. Before the weekly reset it
+continues rejecting every other family. The successor's fixed-ETF daily plan
+uses four symbol-range requests plus split metadata rather than one grouped-data
+request per date. See `CONTINUOUS_STRATEGY_DISCOVERY_V2.md` for the exact
+transition chain.
 The active hardened calendar contract is `14521284...96d67`, with independent
 inspection `3dbfeb5a...2bf2f`; preserved contract `31f2226b...4ea10` and
 inspection `f78c0896...3f7` are superseded before any request.

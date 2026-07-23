@@ -1,6 +1,6 @@
 # Robinhood Codex Trading Context
 
-Research refreshed: 2026-07-22
+Research refreshed: 2026-07-23
 
 Strategy version: `2026-07-15-orb-v3`
 
@@ -79,6 +79,19 @@ fails. In the controlled live lifecycle, unknown-entry reconciliation must
 follow the submission observation and protection must follow the confirmed
 exposure or reconciliation observation; freshness alone never permits
 time-reversed broker state.
+
+The ISO-week ceiling applies to newly introduced mechanism families, not to all
+historical strategy discovery. `CONTINUOUS_STRATEGY_DISCOVERY_V2.md` and
+`continuous_strategy_discovery.py` govern one immediate existing-family
+successor lane. `broad-etf-trend-pullback-v2-cost-floor` must bind the retired v1
+attempt, reuse none of its 2023-2025 outcome corpus, freeze 1,000 pre-2022
+development sessions plus a five-session embargo and 500 untouched confirmation
+sessions, and pass the unchanged 32-trial selection-aware gates. It does not
+consume a new-mechanism-family slot. The W31 residual-equity and intraday-ETF
+new-family lanes remain parallel and may not block this successor. The next
+bounded action is to freeze and independently inspect the successor's zero-price
+2014-2021 session-calendar contract; no target outcome or broker action is
+permitted by that step.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

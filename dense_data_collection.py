@@ -11,12 +11,13 @@ import os
 import shutil
 import time
 from collections.abc import Callable, Mapping, Sequence
-from datetime import date, datetime, time as wall_time, timezone
+from datetime import date, datetime, time as wall_time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
 import requests
 
+import continuous_strategy_discovery
 import dense_capacity_inventory
 import dense_strategy_runtime as runtime
 import next_week_discovery_batch as batch
@@ -238,6 +239,25 @@ def _task(kind: str, day: str, symbol: str | None = None) -> dict[str, Any]:
     return value
 
 
+def _existing_successor_authorized(
+    contract: Mapping[str, Any], *, enforce_commit: bool
+) -> bool:
+    if contract.get("research_generation") != (
+        continuous_strategy_discovery.RESEARCH_GENERATION
+    ):
+        return False
+    try:
+        continuous_strategy_discovery.validate_existing_successor_contract(
+            contract, enforce_commit=enforce_commit
+        )
+    except (
+        continuous_strategy_discovery.ContinuousDiscoveryError,
+        outcome_exposure.OutcomeExposureError,
+    ) as exc:
+        raise DenseDataCollectionError(str(exc)) from exc
+    return True
+
+
 def freeze_plan(
     authority_path: Path,
     *,
@@ -252,13 +272,20 @@ def freeze_plan(
     if as_of is not None and as_of > observed_today:
         raise DenseDataCollectionError("data-planning as_of cannot be future-dated")
     current = as_of or observed_today
-    if current < batch.ACTIVATION_NOT_BEFORE:
+    if current < batch.ACTIVATION_NOT_BEFORE and not authority_path.is_file():
         raise DenseDataCollectionError(
-            f"data planning is closed until {batch.ACTIVATION_NOT_BEFORE}"
+            f"new-family data planning is closed until {batch.ACTIVATION_NOT_BEFORE}"
         )
     authority, contract, binding = _authority(
         authority_path, lane=lane, enforce_commit=enforce_commit
     )
+    existing_successor = _existing_successor_authorized(
+        contract, enforce_commit=enforce_commit
+    )
+    if current < batch.ACTIVATION_NOT_BEFORE and not existing_successor:
+        raise DenseDataCollectionError(
+            f"new-family data planning is closed until {batch.ACTIVATION_NOT_BEFORE}"
+        )
     if lane == "confirmation":
         try:
             outcome_exposure.assert_untouched(
@@ -290,6 +317,31 @@ def freeze_plan(
             for symbol in symbols
         ]
         providers = ["Alpaca SIP raw-adjustment minute bars"]
+    elif existing_successor:
+        symbols = sorted(map(str, contract["universe"].get("symbols", [])))
+        if not symbols:
+            raise DenseDataCollectionError(
+                "existing ETF successor needs a frozen symbol universe"
+            )
+        split_task = _task("split_actions", required_dates[-1])
+        split_task["start"] = required_dates[0]
+        split_task["task_id"] = canonical_sha256(
+            {key: value for key, value in split_task.items() if key != "task_id"}
+        )
+        tasks = [split_task]
+        for symbol in symbols:
+            task = {
+                "kind": "daily_symbol_bars",
+                "date": required_dates[-1],
+                "start": required_dates[0],
+                "symbol": symbol,
+            }
+            task["task_id"] = canonical_sha256(task)
+            tasks.append(task)
+        providers = [
+            "Alpaca SIP raw-adjustment daily bars by frozen symbol range",
+            "Massive point-in-time split actions through the final frozen session",
+        ]
     else:
         symbols = sorted(map(str, contract["universe"].get("symbols", [])))
         split_task = _task("split_actions", required_dates[-1])
@@ -324,6 +376,7 @@ def freeze_plan(
         "tasks": tasks,
         "task_count": len(tasks),
         "providers": providers,
+        "research_generation": contract.get("research_generation", "new_family"),
         "universe_semantics": (
             {
                 "security_type": "point-in-time active U.S. common stock",
@@ -495,6 +548,30 @@ class ProviderBackend:
             return self.alpaca.fetch_bars(
                 str(task["symbol"]), start, end, bar_size="1 min", use_rth=True
             )
+        if kind == "daily_symbol_bars":
+            start_day = date.fromisoformat(str(task["start"]))
+            end_day = date.fromisoformat(day) + timedelta(days=1)
+            rows = self.alpaca.fetch_bars(
+                str(task["symbol"]),
+                datetime.combine(start_day, wall_time(0), tzinfo=EASTERN),
+                datetime.combine(end_day, wall_time(0), tzinfo=EASTERN),
+                bar_size="1 day",
+                use_rth=True,
+            )
+            return [
+                {
+                    "symbol": str(task["symbol"]),
+                    "date": str(row["date_et"]),
+                    "open": row["open"],
+                    "high": row["high"],
+                    "low": row["low"],
+                    "close": row["close"],
+                    "volume": row["volume"],
+                    "count": row.get("count", 0),
+                    "wap": row.get("wap", 0),
+                }
+                for row in rows
+            ]
         raise DenseDataCollectionError(f"unsupported collection task: {kind}")
 
     def close(self) -> None:
@@ -630,16 +707,34 @@ def _load_checkpoint(path: Path, task: Mapping[str, Any]) -> list[dict[str, Any]
 def _daily_rows(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, dict[str, dict[str, Any]]]:
     result: dict[str, dict[str, dict[str, Any]]] = {}
     for task in plan["tasks"]:
-        if task["kind"] != "grouped_daily_bars":
+        if task["kind"] not in {"grouped_daily_bars", "daily_symbol_bars"}:
             continue
         rows = _load_checkpoint(_checkpoint_path(checkpoint_root, task), task)
-        day = str(task["date"])
-        mapped = {str(item.get("symbol")): dict(item) for item in rows}
-        if not mapped or len(mapped) != len(rows) or any(
-            item.get("date") != day for item in mapped.values()
-        ):
-            raise DenseDataCollectionError(f"grouped daily checkpoint is invalid: {day}")
-        result[day] = mapped
+        if task["kind"] == "grouped_daily_bars":
+            day = str(task["date"])
+            mapped = {str(item.get("symbol")): dict(item) for item in rows}
+            if not mapped or len(mapped) != len(rows) or any(
+                item.get("date") != day for item in mapped.values()
+            ):
+                raise DenseDataCollectionError(
+                    f"grouped daily checkpoint is invalid: {day}"
+                )
+            result[day] = mapped
+            continue
+        symbol = str(task["symbol"])
+        observed_dates: set[str] = set()
+        for item in rows:
+            day = str(item.get("date"))
+            if (
+                not day
+                or day in observed_dates
+                or item.get("symbol") != symbol
+            ):
+                raise DenseDataCollectionError(
+                    f"daily symbol checkpoint is invalid: {symbol}"
+                )
+            observed_dates.add(day)
+            result.setdefault(day, {})[symbol] = dict(item)
     return result
 
 
@@ -828,14 +923,26 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         ]
         if rows:
             bars[symbol] = rows
+    successor_daily = (
+        plan.get("research_generation")
+        == continuous_strategy_discovery.RESEARCH_GENERATION
+    )
     dataset: dict[str, Any] = {
         "schema_version": 1,
         "family_id": family_id,
         "evaluation_dates": list(plan["evaluation_dates"]),
         "daily_bars": bars,
         "source_semantics": {
-            "feed": "Massive SIP grouped daily",
-            "adjustment": "raw grouped bars adjusted only by frozen split actions through the dataset end",
+            "feed": (
+                "Alpaca SIP daily symbol range"
+                if successor_daily
+                else "Massive SIP grouped daily"
+            ),
+            "adjustment": (
+                "raw Alpaca bars adjusted only by frozen split actions through the dataset end"
+                if successor_daily
+                else "raw grouped bars adjusted only by frozen split actions through the dataset end"
+            ),
         },
     }
     if family_id == runtime.ETF_PULLBACK_FAMILY:
@@ -884,11 +991,16 @@ def collect(
     if as_of is not None and as_of > observed_today:
         raise DenseDataCollectionError("provider as_of cannot be future-dated")
     current = as_of or observed_today
-    if current < batch.ACTIVATION_NOT_BEFORE:
-        raise DenseDataCollectionError(
-            f"provider collection is closed until {batch.ACTIVATION_NOT_BEFORE}"
-        )
     plan = _validate_plan(plan_path, enforce_commit=enforce_commit)
+    if (
+        current < batch.ACTIVATION_NOT_BEFORE
+        and plan.get("research_generation")
+        != continuous_strategy_discovery.RESEARCH_GENERATION
+    ):
+        raise DenseDataCollectionError(
+            f"new-family provider collection is closed until "
+            f"{batch.ACTIVATION_NOT_BEFORE}"
+        )
     existing = _existing_status(public_root, plan)
     if existing is not None:
         return existing
@@ -1046,6 +1158,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--as-of", type=date.fromisoformat)
     parser.add_argument("--public-root", type=Path, default=DEFAULT_PUBLIC_ROOT)
+    parser.add_argument("--calendar", type=Path, default=DEFAULT_CALENDAR)
     subparsers = parser.add_subparsers(dest="command", required=True)
     for command in ("freeze-development", "freeze-confirmation", "collect"):
         child = subparsers.add_parser(command)
@@ -1062,6 +1175,7 @@ def main() -> int:
                 args.artifact,
                 lane=lane,
                 as_of=args.as_of,
+                calendar_path=args.calendar,
                 public_root=args.public_root,
             )
         else:

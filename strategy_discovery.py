@@ -156,6 +156,14 @@ def _validate_family_contract(value: Mapping[str, Any]) -> dict[str, Any]:
         raise StrategyDiscoveryError("family contract is not bound to active v2")
     if contract.get("selection_mode") != "development_search":
         raise StrategyDiscoveryError("active discovery requires development_search")
+    mechanism_family = contract.get("mechanism_family", contract.get("family_id"))
+    if (
+        not isinstance(mechanism_family, str)
+        or not mechanism_family
+        or not MODULE_PATTERN.fullmatch(mechanism_family.replace("-", "_"))
+    ):
+        raise StrategyDiscoveryError("mechanism_family is invalid")
+    contract["mechanism_family"] = mechanism_family
     if contract.get("winner_selection") != DEVELOPMENT_SEARCH_RULE:
         raise StrategyDiscoveryError("winner-selection rule is not frozen")
     for field in (
@@ -725,6 +733,7 @@ def freeze_winner(
     selection = inspection["selection"]
     exact_rules = {
         "family_id": contract["family_id"],
+        "mechanism_family": contract["mechanism_family"],
         "selected_trial_id": selection["selected_trial_id"],
         "parameters": selection["selected_parameters"],
         "entry_rule": contract["entry_rule"],
@@ -763,6 +772,7 @@ def freeze_winner(
         "artifact_kind": "frozen-strategy-winner",
         "campaign_id": CAMPAIGN_ID,
         "family_id": contract["family_id"],
+        "mechanism_family": contract["mechanism_family"],
         "strategy_id": contract["strategy_id"],
         "strategy_version": version,
         "rules_hash": rules_hash,
@@ -1136,7 +1146,9 @@ def _phase_maturity_records(
             "recorded_at": winner["recorded_at"],
             "strategy_id": winner["strategy_id"],
             "strategy_version": winner["strategy_version"],
-            "mechanism_family": winner["family_id"],
+            "mechanism_family": winner.get(
+                "mechanism_family", winner["family_id"]
+            ),
             "rules_hash": winner["rules_hash"],
             "date": day,
             "sample_phase": phase,
@@ -1286,7 +1298,7 @@ def _write_historical_maturity_ledger(
         "recorded_at": winner["recorded_at"],
         "strategy_id": winner["strategy_id"],
         "strategy_version": winner["strategy_version"],
-        "mechanism_family": winner["family_id"],
+        "mechanism_family": winner.get("mechanism_family", winner["family_id"]),
         "rules_hash": winner["rules_hash"],
         "trial_count": winner["trial_count"],
         "selection_mode": "development_search",
@@ -1635,6 +1647,8 @@ def queue_shadow(
 
 
 def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
+    import continuous_strategy_discovery
+
     maturity = portfolio_maturity.build_report()
     assessments = {
         (
@@ -1798,6 +1812,7 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
                 }
             )
     next_batch = next_week_discovery_batch.activation_status()
+    continuous_lane = continuous_strategy_discovery.build_status()
     return {
         "schema_version": SCHEMA_VERSION,
         "campaign_id": CAMPAIGN_ID,
@@ -1817,6 +1832,7 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
             "milestone": maturity["portfolio_milestone"],
             "blockers": maturity["portfolio_milestone_blockers"],
         },
+        "continuous_existing_family_lane": continuous_lane,
         "next_family_batch": next_batch,
         "broker_actions_permitted": False,
     }
