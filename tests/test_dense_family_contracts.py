@@ -8,6 +8,7 @@ import pytest
 import dense_family_contracts as contracts
 import next_week_discovery_batch as batch
 import outcome_exposure
+import strategy_discovery
 from learning_data import freeze_dataset_contract
 
 
@@ -129,6 +130,7 @@ def test_batch_freeze_fails_before_weekly_reset(tmp_path):
             index_path=index,
             output_root=tmp_path / "contracts",
             status_path=tmp_path / "status.json",
+            enforce_commit=False,
         )
 
 
@@ -141,6 +143,7 @@ def test_batch_freezes_exact_three_valid_contracts_after_reset(tmp_path):
         index_path=index,
         output_root=tmp_path / "contracts",
         status_path=tmp_path / "status.json",
+        enforce_commit=False,
     )
 
     assert len(paths) == 3
@@ -149,6 +152,29 @@ def test_batch_freezes_exact_three_valid_contracts_after_reset(tmp_path):
     assert status["family_contracts_frozen"] == 3
     assert status["provider_access_permitted"] is False
     assert status["outcome_access_permitted"] is False
+
+
+def test_batch_freeze_requires_committed_inventory_after_reset(
+    tmp_path, monkeypatch
+):
+    index = tmp_path / "exposure.jsonl"
+    inventory = _inventory(tmp_path, index)
+    checked = []
+
+    def reject_uncommitted(path):
+        checked.append(path)
+        raise strategy_discovery.StrategyDiscoveryError("artifact is not committed")
+
+    monkeypatch.setattr(strategy_discovery, "require_committed", reject_uncommitted)
+    with pytest.raises(strategy_discovery.StrategyDiscoveryError, match="committed"):
+        contracts.freeze_batch(
+            inventory,
+            as_of=date(2026, 7, 27),
+            index_path=index,
+            output_root=tmp_path / "contracts",
+            status_path=tmp_path / "status.json",
+        )
+    assert checked == [inventory]
 
 
 def test_prior_outcome_pair_blocks_confirmation_scope(tmp_path):
@@ -173,4 +199,5 @@ def test_prior_outcome_pair_blocks_confirmation_scope(tmp_path):
             index_path=index,
             output_root=tmp_path / "contracts",
             status_path=tmp_path / "status.json",
+            enforce_commit=False,
         )

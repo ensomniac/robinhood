@@ -62,20 +62,28 @@ def _write(value: Mapping[str, Any], path: Path) -> None:
         temporary.replace(path)
 
 
-def _manifest(path_text: Any) -> tuple[Path, dict[str, Any]]:
+def _manifest(
+    path_text: Any, *, enforce_commit: bool
+) -> tuple[Path, dict[str, Any]]:
     if not isinstance(path_text, str) or not path_text:
         raise DenseFamilyContractError("capacity_manifest is missing")
     path = Path(path_text)
     if not path.is_absolute():
         path = PROJECT_ROOT / path
     try:
+        if enforce_commit:
+            strategy_discovery.require_committed(path)
         return path, load_frozen_dataset_contract(path)
     except (LearningDataError, OSError) as exc:
         raise DenseFamilyContractError(f"capacity manifest is invalid: {exc}") from exc
 
 
 def _validate_inventory(
-    value: Mapping[str, Any], *, as_of: date, index_path: Path
+    value: Mapping[str, Any],
+    *,
+    as_of: date,
+    index_path: Path,
+    enforce_commit: bool,
 ) -> dict[str, Any]:
     inventory = dict(value)
     supplied = inventory.pop("inventory_sha256", None)
@@ -117,7 +125,9 @@ def _validate_inventory(
         if not isinstance(family, Mapping):
             raise DenseFamilyContractError("family inventory entries must be objects")
         family_id = str(family["family_id"])
-        path, manifest = _manifest(family.get("capacity_manifest"))
+        path, manifest = _manifest(
+            family.get("capacity_manifest"), enforce_commit=enforce_commit
+        )
         payload = manifest["dataset_payload"]
         capacity = payload.get("dense_capacity")
         if not (
@@ -326,10 +336,16 @@ def freeze_batch(
     index_path: Path = outcome_exposure.DEFAULT_INDEX,
     output_root: Path = DEFAULT_OUTPUT_ROOT,
     status_path: Path = DEFAULT_STATUS_PATH,
+    enforce_commit: bool = True,
 ) -> tuple[list[Path], dict[str, Any]]:
     current = as_of or date.today()
+    if current >= batch.ACTIVATION_NOT_BEFORE and enforce_commit:
+        strategy_discovery.require_committed(inventory_path)
     inventory = _validate_inventory(
-        _read(inventory_path), as_of=current, index_path=index_path
+        _read(inventory_path),
+        as_of=current,
+        index_path=index_path,
+        enforce_commit=enforce_commit,
     )
     plan = batch.build_plan()
     by_id = {item["family_id"]: item for item in plan["families"]}

@@ -194,6 +194,7 @@ python3 dense_session_calendar_inspection.py \
 python3 dense_capacity_inventory.py \
   --as-of 2026-07-27 \
   --created-at 2026-07-27T08:10:00-04:00
+# Commit the inventory and its three capacity manifests before contract freeze.
 ```
 
 The allocator fails before the reset, on a calendar or exposure-index error, or

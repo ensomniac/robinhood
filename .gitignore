@@ -230,6 +230,11 @@ __marimo__/
 # outside the repository at LOCAL_HISTORICAL_DATA_ROOT.
 historical_data/
 
+# Dense calendar response rows are reproducible provider/runtime inputs. Public
+# contracts, hashes, collection statuses, and inspections remain tracked.
+historical_batches/dense_v2/session-calendar-*.json
+historical_batches/dense_v2/session-calendar-source.json
+
 # Per-date research shards are reproducible from the ignored immutable bundles.
 # Compact aggregate results may be published separately under research_results/.
 research_runs/

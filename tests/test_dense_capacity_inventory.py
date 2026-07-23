@@ -84,6 +84,7 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
         index_path=index,
         output_root=tmp_path / "contracts",
         status_path=tmp_path / "status.json",
+        enforce_commit=False,
     )
     assert len(contracts) == 3
     assert status["state"] == "THREE_FAMILY_CONTRACTS_FROZEN"
