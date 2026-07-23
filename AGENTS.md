@@ -86,6 +86,17 @@ every rolling fold, or a positive neighbor. Its exact version is retired and
 cannot be tuned on the evaluated corpus. Continuous discovery must advance the
 next existing-family successor without opening this confirmation reserve.
 
+The active successor is
+`five-day-52-week-high-continuation-v2-liquid-index-etf`. Its v1 predecessor
+was also retired on the 24-date capacity proof before any market outcome was
+accessed. V2 retains the existing high-continuation mechanism on the complete
+`DIA`, `IWM`, `QQQ`, and `SPY` denominator. Its 32-trial grid covers a 2%/4%
+five-session advance, close at least 98%/100% of the prior 252-session high,
+SPY SMA100/SMA200 regime, 1.0/1.5 ATR14 stop, and three/five-session hold. It
+may use the exposed 1,000-session 2016-2020 partition only as contaminated
+training while the five-session embargo and 500-session 2021-2022 reserve
+remain untouched. Commit the evaluator before freezing its contract.
+
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
 `portfolio_execution.py`. `dense_strategy_runtime.py` and

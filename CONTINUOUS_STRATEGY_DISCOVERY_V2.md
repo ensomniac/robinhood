@@ -251,6 +251,18 @@ and only one positive fold out of five. No winner or evidence target was
 frozen; all 500 confirmation sessions remain untouched. This exact version is
 terminal, and continuous discovery advances another existing family.
 
+The active successor is
+`five-day-52-week-high-continuation-v2-liquid-index-etf`. Its v1 exact version
+was capacity-falsified on the same 24-date ceiling without outcome access. V2
+retains that mechanism on all four liquid index ETFs and prospectively declares
+32 combinations of 2%/4% five-session return, 98%/100% proximity to the prior
+252-session high, SPY SMA100/SMA200 regime, 1.0/1.5 ATR14 stop, and
+three/five-session hold. Historical and production evaluators use the same
+completed-bar ranking, next-open entry, stop-first ambiguity, and maximum
+five-session exit. Development reuses only the contaminated 2016-2020
+partition; the five-session embargo and all 500 confirmation sessions remain
+locked.
+
 ## Transition chain
 
 Run the lane from the repository root:
