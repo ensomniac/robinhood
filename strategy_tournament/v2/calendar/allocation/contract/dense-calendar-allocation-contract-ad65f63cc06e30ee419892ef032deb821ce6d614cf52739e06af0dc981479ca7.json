@@ -1,0 +1,48 @@
+{
+  "allocation_semantics": {
+    "date_substitution_after_inspection_allowed": false,
+    "target_blocks_from_one_latest_contiguous_untouched_run": true,
+    "target_blocks_mutually_disjoint": true,
+    "target_dates_globally_untouched": true,
+    "target_sessions_per_family": 160,
+    "warmup_cross_family_overlap_allowed": true,
+    "warmup_immediately_precedes_each_target_block": true,
+    "warmup_point_in_time_features_only": true,
+    "warmup_prior_exposure_allowed": true,
+    "warmup_target_outcomes_eligible": false
+  },
+  "artifact_kind": "dense-calendar-allocation-contract",
+  "artifact_sha256": "ad65f63cc06e30ee419892ef032deb821ce6d614cf52739e06af0dc981479ca7",
+  "broker_actions": 0,
+  "calendar_path": "historical_batches/dense_v2/session-calendar-2020-01-through-2026-07.json",
+  "calendar_sha256": "01b25b1b8192fe8fb9f416d6e8a229a23f80dec1013673049c8e7726252c64d4",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "collection_path": "strategy_tournament/v2/calendar/collection/dense-session-calendar-collection-95b4cba195ad5d472d397a64e38f4ea9f025efa3bf58d232f966c3b5d5213a05.json",
+  "collection_sha256": "95b4cba195ad5d472d397a64e38f4ea9f025efa3bf58d232f966c3b5d5213a05",
+  "family_order": [
+    "liquid-equity-market-residual-reversal",
+    "intraday-index-etf-opening-reversal",
+    "liquid-etf-trend-pullback-cost-floor"
+  ],
+  "frozen_at": "2026-07-23T19:22:00-04:00",
+  "implementation_hashes": {
+    "dense_calendar_allocation.py": "bc27649b0aba14d1bb55f631e60aede42310b10a4a5bc3bacfa9ccc726567f6e",
+    "dense_capacity_inventory.py": "63964c394865d17634c02cb9808a5b366165c7bdd707edc2ea04520ac69a308c"
+  },
+  "market_prices_accessed": false,
+  "outcome_exposure_index_sha256": "cc4a6c5d802f3fa5fb84aad18a690234f6194aeadb917a567119aa5ab5da28ba",
+  "plan_sha256": "d366f156c9d8c5a899c864a1572a370b99b544335be6f835b57c63836bf195a5",
+  "predecessor_failure": {
+    "largest_untouched_run": 567,
+    "repair_scope": "Allocation topology only; no family rule, parameter, cost, target date, or selection gate changed.",
+    "required_sessions": 940,
+    "state": "INSUFFICIENT_SINGLE_RUN_FOR_DISJOINT_WARMUPS",
+    "strategy_metrics_accessed": false,
+    "target_outcomes_accessed": false
+  },
+  "provider_requests_added": 0,
+  "rolling_authorization_sha256": "bedfb0ea139cfe806b1b780828e59f1d98e3a125c50ae2b8d86b662d5d5e5585",
+  "schema_version": 1,
+  "state": "CALENDAR_ALLOCATION_CONTRACT_FROZEN",
+  "target_outcomes_accessed": false
+}
