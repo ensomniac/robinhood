@@ -395,7 +395,10 @@ partial fills, missed limits, protection timing, 5/10/20-bps costs, monitoring,
 and journaling are explicit. Independent inspection reopens and hash-validates
 the committed queue, passing confirmation inspection, historical maturity
 ledger, winner, entry, and final artifacts before ledger admission. Missed
-limits remain nonqualifying observations.
+limits remain nonqualifying observations. Shadow lifecycle and inspection
+commands return structured nonzero JSON for stale or uncommitted predecessor
+failures, so an automated qualification run cannot mistake a traceback for
+partial success.
 Any capture or rule violation resets the clean consecutive-shadow streak for
 that exact version; five new clean closed fills are required afterward.
 

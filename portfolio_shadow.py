@@ -653,7 +653,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
         return 0
-    except (OSError, PortfolioShadowError, ValueError) as exc:
+    except (
+        OSError,
+        PortfolioShadowError,
+        strategy_discovery.StrategyDiscoveryError,
+        ValueError,
+    ) as exc:
         print(
             json.dumps(
                 {"error": str(exc), "error_type": type(exc).__name__},

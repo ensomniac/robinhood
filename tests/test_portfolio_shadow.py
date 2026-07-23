@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import tempfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -14,6 +15,41 @@ import strategy_discovery
 
 
 NOW = datetime(2026, 7, 22, 14, 0, 4, tzinfo=UTC)
+
+
+def test_shadow_clis_report_predecessor_failures_as_structured_json(
+    monkeypatch,
+    capsys,
+):
+    def reject(*_args, **_kwargs):
+        raise strategy_discovery.StrategyDiscoveryError(
+            "predecessor artifact must be committed"
+        )
+
+    monkeypatch.setattr(portfolio_shadow, "start_shadow", reject)
+    monkeypatch.setattr(portfolio_shadow, "_read_object", lambda _path: {})
+    assert (
+        portfolio_shadow.main(
+            ["start", "queue.json", "setup.json"]
+        )
+        == 1
+    )
+    shadow_error = json.loads(capsys.readouterr().err)
+    assert shadow_error == {
+        "error": "predecessor artifact must be committed",
+        "error_type": "StrategyDiscoveryError",
+    }
+
+    monkeypatch.setattr(portfolio_shadow_inspection, "inspect_shadow", reject)
+    assert (
+        portfolio_shadow_inspection.main(["inspect", "final.json"])
+        == 1
+    )
+    inspection_error = json.loads(capsys.readouterr().err)
+    assert inspection_error == {
+        "error": "predecessor artifact must be committed",
+        "error_type": "StrategyDiscoveryError",
+    }
 
 
 def _winner_and_queue(work: Path):

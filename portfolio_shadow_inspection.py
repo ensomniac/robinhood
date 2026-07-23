@@ -229,7 +229,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = admit_shadow(args.inspection, ledger_path=args.ledger)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
-    except (OSError, PortfolioShadowInspectionError, ValueError) as exc:
+    except (
+        OSError,
+        PortfolioShadowInspectionError,
+        strategy_discovery.StrategyDiscoveryError,
+        ValueError,
+    ) as exc:
         print(
             json.dumps(
                 {"error": str(exc), "error_type": type(exc).__name__},

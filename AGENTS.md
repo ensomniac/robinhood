@@ -73,7 +73,9 @@ the committed, unchanged capacity manifest before accepting its outcome-blind
 count. Confirmation data planning must reopen the committed winner,
 development inspection, development result, frozen search, and capacity
 manifest and verify their recorded hashes and exact partitions before provider
-access.
+access. Shadow lifecycle and inspection commands must preserve zero broker
+actions and return structured nonzero JSON when a committed predecessor gate
+fails.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
