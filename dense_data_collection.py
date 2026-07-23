@@ -11,6 +11,7 @@ import os
 import shutil
 import time
 from collections.abc import Callable, Mapping, Sequence
+from dataclasses import replace
 from datetime import date, datetime, time as wall_time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Protocol
@@ -48,6 +49,7 @@ DEFAULT_PUBLIC_ROOT = PROJECT_ROOT / "strategy_tournament/v2/discovery"
 DEFAULT_CALENDAR = dense_capacity_inventory.DEFAULT_CALENDAR
 PLAN_KIND = "dense-data-collection-plan"
 STATUS_KIND = "dense-data-collection-status"
+RECOVERY_ADJUSTMENT = "raw_with_split_adjusted_neutrality_check"
 DAILY_WARMUP_SESSIONS = 200
 INTRADAY_WARMUP_SESSIONS = runtime.STANDARDIZATION_LOOKBACK
 MAX_TASK_ATTEMPTS = 5
@@ -478,6 +480,44 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         and plan.get("task_count", 0) > 0
     ):
         raise DenseDataCollectionError("collection plan authority drifted")
+    recovery_failure_path = plan.get("recovery_failure_path")
+    recovery_adjustment = plan.get("adjustment_semantics")
+    if (recovery_failure_path is None) != (
+        recovery_adjustment is None
+    ):
+        raise DenseDataCollectionError(
+            "collection recovery fields must appear together"
+        )
+    if recovery_failure_path is not None:
+        if not isinstance(recovery_failure_path, str) or not recovery_failure_path:
+            raise DenseDataCollectionError("collection recovery failure path is invalid")
+        failure_path = PROJECT_ROOT / recovery_failure_path
+        if enforce_commit:
+            strategy_discovery.require_committed(failure_path)
+        failure = strategy_discovery.load_artifact(
+            failure_path,
+            expected_kind="dense-data-collection-failure",
+        )
+        if not (
+            failure.get("state") == "COLLECTION_FAILED_NO_STRATEGY_METRICS"
+            and failure.get("artifact_sha256") == plan.get("recovery_failure_sha256")
+            and failure.get("plan_sha256") == plan.get("supersedes_plan_sha256")
+            and failure.get("family_id") == plan.get("family_id")
+            and failure.get("lane") == plan.get("lane")
+            and failure.get("strategy_metrics_accessed") is False
+            and failure.get("confirmation_outcomes_accessed") is False
+        ):
+            raise DenseDataCollectionError("collection recovery binding drifted")
+        if not (
+            recovery_adjustment == RECOVERY_ADJUSTMENT
+            and plan.get("family_id") == runtime.ETF_PULLBACK_FAMILY
+            and plan.get("lane") == "development"
+            and failure.get("data_outcomes_accessed") is False
+            and failure.get("completed_tasks") == 0
+        ):
+            raise DenseDataCollectionError(
+                "collection recovery is outside its frozen outcome-blind scope"
+            )
     task_ids = [item.get("task_id") for item in plan["tasks"]]
     if len(task_ids) != len(set(task_ids)) or any(
         not isinstance(item, Mapping)
@@ -486,6 +526,32 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         for item in plan["tasks"]
     ):
         raise DenseDataCollectionError("collection task IDs are incomplete or invalid")
+    if recovery_adjustment == RECOVERY_ADJUSTMENT:
+        symbols = sorted(map(str, plan.get("symbols", [])))
+        expected = [
+            (kind, symbol)
+            for kind in (
+                "daily_symbol_bars",
+                "split_adjusted_daily_symbol_bars",
+            )
+            for symbol in symbols
+        ]
+        observed = [
+            (str(task.get("kind")), str(task.get("symbol")))
+            for task in plan["tasks"]
+        ]
+        if (
+            not symbols
+            or observed != expected
+            or any(
+                task.get("start") != plan["required_dates"][0]
+                or task.get("date") != plan["required_dates"][-1]
+                for task in plan["tasks"]
+            )
+        ):
+            raise DenseDataCollectionError(
+                "split-neutral recovery task topology drifted"
+            )
     authority_path = PROJECT_ROOT / str(plan.get("authority_path", ""))
     if enforce_commit:
         strategy_discovery.require_committed(authority_path)
@@ -568,6 +634,11 @@ class ProviderBackend:
             session=self._alpaca_session,  # type: ignore[arg-type]
             sleeper=paced_sleep,
         )
+        self.alpaca_split = AlpacaHistoricalClient(
+            replace(alpaca, adjustment="split"),
+            session=self._alpaca_session,  # type: ignore[arg-type]
+            sleeper=paced_sleep,
+        )
         reference_config = scanner_replay.MassiveReferenceConfig.from_env(env_path)
         self.reference = scanner_replay.MassiveReferenceCollector(
             reference_config,
@@ -615,6 +686,30 @@ class ProviderBackend:
                 }
                 for row in rows
             ]
+        if kind == "split_adjusted_daily_symbol_bars":
+            start_day = date.fromisoformat(str(task["start"]))
+            end_day = date.fromisoformat(day) + timedelta(days=1)
+            rows = self.alpaca_split.fetch_bars(
+                str(task["symbol"]),
+                datetime.combine(start_day, wall_time(0), tzinfo=EASTERN),
+                datetime.combine(end_day, wall_time(0), tzinfo=EASTERN),
+                bar_size="1 day",
+                use_rth=True,
+            )
+            return [
+                {
+                    "symbol": str(task["symbol"]),
+                    "date": str(row["date_et"]),
+                    "open": row["open"],
+                    "high": row["high"],
+                    "low": row["low"],
+                    "close": row["close"],
+                    "volume": row["volume"],
+                    "count": row.get("count", 0),
+                    "wap": row.get("wap", 0),
+                }
+                for row in rows
+            ]
         if kind == "massive_daily_symbol_bars":
             return self.massive.fetch_daily_bars(
                 str(task["symbol"]),
@@ -628,6 +723,7 @@ class ProviderBackend:
         self.reference.close()
         self.massive.close()
         self.alpaca.close()
+        self.alpaca_split.close()
         self._reference_session.close()
         self._massive_session.close()
         self._alpaca_session.close()
@@ -874,6 +970,12 @@ def _split_factors(
     checkpoint_root: Path, plan: Mapping[str, Any]
 ) -> dict[str, list[tuple[str, float]]]:
     tasks = [task for task in plan["tasks"] if task["kind"] == "split_actions"]
+    if plan.get("adjustment_semantics") == RECOVERY_ADJUSTMENT:
+        if tasks:
+            raise DenseDataCollectionError(
+                "split-neutral recovery cannot include split-action tasks"
+            )
+        return {}
     if len(tasks) != 1:
         raise DenseDataCollectionError("daily collection needs one frozen split task")
     rows = _load_checkpoint(_checkpoint_path(checkpoint_root, tasks[0]), tasks[0])
@@ -905,6 +1007,71 @@ def _adjusted_bar(
         bar[field] = float(bar[field]) * factor
     bar["volume"] = float(bar["volume"]) / factor
     return bar
+
+
+def _split_neutrality_attestation(
+    checkpoint_root: Path,
+    plan: Mapping[str, Any],
+    raw_daily: Mapping[str, Mapping[str, Mapping[str, Any]]],
+) -> dict[str, Any]:
+    if plan.get("adjustment_semantics") != RECOVERY_ADJUSTMENT:
+        return {}
+    tasks = [
+        task
+        for task in plan["tasks"]
+        if task["kind"] == "split_adjusted_daily_symbol_bars"
+    ]
+    expected_symbols = set(map(str, plan["symbols"]))
+    if {str(task.get("symbol")) for task in tasks} != expected_symbols:
+        raise DenseDataCollectionError(
+            "split-neutral recovery lacks one diagnostic task per frozen symbol"
+        )
+    if len(tasks) != len(expected_symbols):
+        raise DenseDataCollectionError(
+            "split-neutral recovery has duplicate diagnostic tasks"
+        )
+    ratios: dict[str, float] = {}
+    for task in tasks:
+        symbol = str(task["symbol"])
+        rows = _load_checkpoint(_checkpoint_path(checkpoint_root, task), task)
+        adjusted = {str(row.get("date")): row for row in rows}
+        raw = {
+            day: symbols[symbol]
+            for day, symbols in raw_daily.items()
+            if symbol in symbols
+        }
+        if (
+            not raw
+            or set(adjusted) != set(raw)
+            or len(adjusted) != len(rows)
+        ):
+            raise DenseDataCollectionError(
+                f"split-neutral diagnostic coverage differs for {symbol}"
+            )
+        observed_ratios: list[float] = []
+        for day in sorted(raw):
+            for field in ("open", "high", "low", "close"):
+                raw_value = float(raw[day][field])
+                adjusted_value = float(adjusted[day][field])
+                if raw_value <= 0 or adjusted_value <= 0:
+                    raise DenseDataCollectionError(
+                        f"split-neutral diagnostic is non-positive for {symbol}"
+                    )
+                observed_ratios.append(adjusted_value / raw_value)
+        reference = observed_ratios[0]
+        tolerance = max(abs(reference) * 1e-8, 1e-10)
+        if any(abs(value - reference) > tolerance for value in observed_ratios):
+            raise DenseDataCollectionError(
+                f"split adjustment changes inside the frozen range for {symbol}"
+            )
+        ratios[symbol] = reference
+    return {
+        "method": "Alpaca split-adjusted versus raw OHLC ratio constancy",
+        "within_range_split_discontinuities": 0,
+        "symbols_checked": len(expected_symbols),
+        "constant_price_ratio_by_symbol": ratios,
+        "outcome_bars_used_by_strategy": "raw",
+    }
 
 
 def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, Any]:
@@ -968,10 +1135,21 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
             checkpoint_root, plan, daily
         )
     split_factors = _split_factors(checkpoint_root, plan)
+    split_neutrality = _split_neutrality_attestation(
+        checkpoint_root, plan, daily
+    )
     bars: dict[str, list[dict[str, Any]]] = {}
     for symbol in sorted(universe):
         rows = [
-            _adjusted_bar(daily[day][symbol], day, split_factors.get(symbol, []))
+            (
+                _bar(daily[day][symbol], day)
+                if plan.get("adjustment_semantics") == RECOVERY_ADJUSTMENT
+                else _adjusted_bar(
+                    daily[day][symbol],
+                    day,
+                    split_factors.get(symbol, []),
+                )
+            )
             for day in plan["required_dates"]
             if symbol in daily[day]
         ]
@@ -996,6 +1174,12 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         if successor_daily and successor_provider == "massive"
         else "raw grouped bars adjusted only by frozen split actions through the dataset end"
     )
+    if plan.get("adjustment_semantics") == RECOVERY_ADJUSTMENT:
+        successor_feed = "Alpaca SIP daily symbol range"
+        successor_adjustment = (
+            "raw outcome bars with a frozen split-adjusted ratio-constancy "
+            "diagnostic; any within-range split discontinuity fails closed"
+        )
     dataset: dict[str, Any] = {
         "schema_version": 1,
         "family_id": family_id,
@@ -1004,6 +1188,11 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         "source_semantics": {
             "feed": successor_feed,
             "adjustment": successor_adjustment,
+            **(
+                {"split_neutrality_attestation": split_neutrality}
+                if split_neutrality
+                else {}
+            ),
         },
     }
     if family_id == runtime.ETF_PULLBACK_FAMILY:

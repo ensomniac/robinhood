@@ -359,6 +359,36 @@ timestamp. The public status records that start and actual completion; a
 confirmation collection must start after winner preregistration, and independent
 inspection must occur after completion.
 
+A provider or structural-data failure is not permission to wait for a calendar
+reset, substitute evidence, or silently change a frozen search. Run
+`dense_collection_recovery.py record-failure` against the committed collection
+plan. It derives completed-task and outcome-access facts from the ignored,
+hash-bound checkpoints and telemetry, records that no strategy metric or
+confirmation outcome was accessed, and fails unless the observed failure shape
+is one of the explicitly supported cases. A failure after development price
+access must also be committed to the global outcome-exposure index before any
+scope can be considered untouched.
+
+The outcome-blind ETF pullback split-endpoint failure has one bounded recovery:
+keep the exact symbols, dates, search, and raw Alpaca SIP outcome bars, and add
+one split-adjusted diagnostic range per frozen symbol. The collector requires
+the adjusted/raw OHLC ratio to remain constant across the complete frozen
+range. Any ratio discontinuity—evidence of an in-range split—fails closed. The
+diagnostic bars never become strategy outcomes. This recovery must bind a
+committed failure artifact and be frozen and committed before provider access:
+
+```sh
+python3 dense_collection_recovery.py record-failure \
+  path/to/committed-failed-plan.json \
+  --recorded-at <actual-current-ISO8601-timestamp>
+# Commit the failure before freezing recovery.
+python3 dense_collection_recovery.py freeze-pullback-recovery \
+  path/to/committed-failure.json --as-of 2026-07-23
+# Commit the recovery plan before collection.
+python3 dense_data_collection.py --as-of 2026-07-23 \
+  collect path/to/committed-recovery-plan.json
+```
+
 ```sh
 python3 dense_data_collection.py --as-of 2026-07-23 \
   freeze-development path/to/committed-search.json

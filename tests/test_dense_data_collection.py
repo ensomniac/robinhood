@@ -5,9 +5,11 @@ from datetime import UTC, date, datetime, timedelta
 
 import pytest
 
+import dense_collection_recovery as recovery
 import dense_data_collection as collection
 import dense_data_collection_inspection as inspection
 import dense_strategy_runtime as runtime
+import outcome_exposure
 import strategy_discovery
 from historical_providers import HistoricalProviderError
 from historical_store import HistoricalStoreConfig, canonical_sha256
@@ -90,6 +92,7 @@ def _dates(count):
 def _artifacts(tmp_path, monkeypatch, *, lane="development"):
     monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(inspection, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(recovery, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(strategy_discovery, "PROJECT_ROOT", tmp_path)
     confirmation = lane == "confirmation"
     authority_path, authority = strategy_discovery._write_artifact(
@@ -660,6 +663,273 @@ def test_collection_does_not_retry_permanent_provider_failure(tmp_path, monkeypa
     assert waits == []
     assert len(backend.calls) == 1
     assert backend.telemetry["failures"] == 1
+
+
+def test_failed_split_task_is_recorded_without_outcome_exposure(
+    tmp_path,
+    monkeypatch,
+):
+    plan_path, _plan, symbols = _artifacts(tmp_path, monkeypatch)
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    backend = RetryBackend(symbols, 1, retryable=False)
+    with pytest.raises(collection.DenseDataCollectionError, match="provider failure"):
+        collection.collect(
+            plan_path,
+            as_of=date(2026, 7, 27),
+            store_config=config,
+            public_root=tmp_path / "public",
+            backend=backend,
+            enforce_commit=False,
+            clock=_collection_clock,
+        )
+
+    failure_path, failure = recovery.record_failure(
+        plan_path,
+        recorded_at="2026-07-27T13:01:00+00:00",
+        store_config=config,
+        public_root=tmp_path / "public",
+        enforce_commit=False,
+    )
+
+    assert failure_path.is_file()
+    assert failure["failure_code"] == recovery.SPLIT_TASK_FAILURE
+    assert failure["completed_tasks"] == 0
+    assert failure["market_price_rows_accessed"] == 0
+    assert failure["data_outcomes_accessed"] is False
+    assert failure["strategy_metrics_accessed"] is False
+    assert failure["confirmation_outcomes_accessed"] is False
+
+
+class DailyRangeBackend:
+    def __init__(self, dates, *, discontinuity=False):
+        self.dates = dates
+        self.discontinuity = discontinuity
+        self.telemetry = {
+            "requests": 0,
+            "request_seconds": 0.0,
+            "pacing_wait_seconds": 0.0,
+            "cache_hits": 0,
+            "failures": 0,
+        }
+
+    def fetch(self, task):
+        self.telemetry["requests"] += 1
+        adjusted = task["kind"] == "split_adjusted_daily_symbol_bars"
+        result = []
+        for index, day in enumerate(self.dates):
+            factor = (
+                0.5
+                if adjusted
+                and self.discontinuity
+                and index < len(self.dates) // 2
+                else 1.0
+            )
+            result.append(
+                {
+                    "symbol": task["symbol"],
+                    "date": day,
+                    "open": 100.0 * factor,
+                    "high": 101.0 * factor,
+                    "low": 99.0 * factor,
+                    "close": 100.5 * factor,
+                    "volume": 2_000_000,
+                    "count": 100,
+                    "wap": 100.25 * factor,
+                }
+            )
+        return result
+
+    def close(self):
+        return None
+
+
+def _pullback_recovery_plan(tmp_path, monkeypatch):
+    plan_path, plan, symbols = _artifacts(tmp_path, monkeypatch)
+    failure_path, failure = strategy_discovery._write_artifact(
+        {
+            "schema_version": 1,
+            "artifact_kind": recovery.FAILURE_KIND,
+            "campaign_id": plan["campaign_id"],
+            "state": recovery.FAILURE_STATE,
+            "family_id": plan["family_id"],
+            "lane": plan["lane"],
+            "plan_path": str(plan_path.relative_to(tmp_path)),
+            "plan_sha256": plan["artifact_sha256"],
+            "authority_sha256": plan["authority_sha256"],
+            "binding_sha256": plan["binding_sha256"],
+            "failure_code": recovery.SPLIT_TASK_FAILURE,
+            "completed_tasks": 0,
+            "task_count": plan["task_count"],
+            "market_price_rows_accessed": 0,
+            "evaluation_tasks_completed": 0,
+            "data_outcomes_accessed": False,
+            "exposure_scope": None,
+            "strategy_metrics_accessed": False,
+            "confirmation_outcomes_accessed": False,
+            "substitutions": 0,
+            "broker_actions": 0,
+            "recorded_at": "2026-07-27T13:01:00+00:00",
+        },
+        tmp_path / "failures",
+        "failure",
+    )
+    recovery_path, recovery_plan = recovery.freeze_pullback_recovery(
+        failure_path,
+        as_of=date(2026, 7, 27),
+        actual_today=date(2026, 7, 27),
+        public_root=tmp_path / "public",
+        enforce_commit=False,
+    )
+    assert recovery_plan["recovery_failure_sha256"] == failure["artifact_sha256"]
+    assert recovery_plan["supersedes_plan_sha256"] == plan["artifact_sha256"]
+    assert recovery_plan["task_count"] == len(symbols) * 2
+    return recovery_path, recovery_plan
+
+
+def test_pullback_recovery_uses_raw_bars_only_after_split_neutrality_check(
+    tmp_path,
+    monkeypatch,
+):
+    recovery_path, plan = _pullback_recovery_plan(tmp_path, monkeypatch)
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+
+    _status_path, status = collection.collect(
+        recovery_path,
+        as_of=date(2026, 7, 27),
+        store_config=config,
+        public_root=tmp_path / "public",
+        backend=DailyRangeBackend(plan["required_dates"]),
+        enforce_commit=False,
+        clock=_collection_clock,
+    )
+
+    assert status["completed_tasks"] == status["task_count"] == 38
+    external = (
+        config.root / status["external_relative_path"]
+    )
+    dataset = inspection._load_external(external)
+    attestation = dataset["source_semantics"]["split_neutrality_attestation"]
+    assert attestation["within_range_split_discontinuities"] == 0
+    assert attestation["symbols_checked"] == 19
+    assert dataset["daily_bars"]["SPY"][0]["close"] == 100.5
+
+
+def test_pullback_recovery_fails_closed_on_split_discontinuity(
+    tmp_path,
+    monkeypatch,
+):
+    recovery_path, plan = _pullback_recovery_plan(tmp_path, monkeypatch)
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+
+    with pytest.raises(
+        collection.DenseDataCollectionError,
+        match="split adjustment changes inside the frozen range",
+    ):
+        collection.collect(
+            recovery_path,
+            as_of=date(2026, 7, 27),
+            store_config=config,
+            public_root=tmp_path / "public",
+            backend=DailyRangeBackend(
+                plan["required_dates"],
+                discontinuity=True,
+            ),
+            enforce_commit=False,
+            clock=_collection_clock,
+        )
+
+
+def test_incomplete_intraday_collection_is_indexed_as_development_exposure(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(recovery, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(strategy_discovery, "PROJECT_ROOT", tmp_path)
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    tasks = []
+    for day in ("2024-01-02", "2024-01-03"):
+        task = {
+            "kind": "sip_minute_bars",
+            "date": day,
+            "symbol": "SPY",
+        }
+        task["task_id"] = canonical_sha256(task)
+        tasks.append(task)
+    plan = {
+        "artifact_sha256": "a" * 64,
+        "family_id": runtime.INTRADAY_ETF_FAMILY,
+        "lane": "development",
+        "evaluation_dates": ["2024-01-03"],
+        "symbols": ["SPY"],
+        "task_count": 2,
+        "tasks": tasks,
+    }
+    root = (
+        config.root
+        / "dense-v2"
+        / plan["family_id"]
+        / plan["lane"]
+        / plan["artifact_sha256"]
+    )
+    for task in tasks:
+        rows = [
+            {
+                "time_et": (
+                    f"{task['date']}T09:{30 + index:02d}:00-05:00"
+                ),
+            }
+            for index in range(2)
+        ]
+        collection._write_external(
+            collection._checkpoint_path(root, task),
+            {
+                "schema_version": 1,
+                "task": task,
+                "rows": rows,
+                "rows_sha256": canonical_sha256(rows),
+            },
+            config,
+        )
+    facts = recovery._failure_facts(
+        plan,
+        root,
+        {"failures": 0},
+    )
+    assert facts["failure_code"] == recovery.INCOMPLETE_INTRADAY
+    assert facts["data_outcomes_accessed"] is True
+    assert facts["exposure_scope"] == {
+        "dates": ["2024-01-03"],
+        "symbols": ["SPY"],
+    }
+    failure_path, _failure = strategy_discovery._write_artifact(
+        {
+            "schema_version": 1,
+            "artifact_kind": recovery.FAILURE_KIND,
+            "campaign_id": "multi-strategy-portfolio-validation-v2",
+            "state": recovery.FAILURE_STATE,
+            "family_id": plan["family_id"],
+            "lane": plan["lane"],
+            "data_outcomes_accessed": True,
+            "exposure_scope": facts["exposure_scope"],
+            "strategy_metrics_accessed": False,
+            "confirmation_outcomes_accessed": False,
+            "substitutions": 0,
+            "broker_actions": 0,
+            "recorded_at": "2026-07-27T13:01:00+00:00",
+        },
+        tmp_path / "failures",
+        "failure",
+    )
+    index = tmp_path / "OUTCOME_EXPOSURE_INDEX.jsonl"
+    record, appended = recovery.index_failure_exposure(
+        failure_path,
+        index_path=index,
+        enforce_commit=False,
+    )
+    assert appended is True
+    assert record["lane"] == "development"
+    assert outcome_exposure.read_index(index) == [record]
 
 
 def test_confirmation_manifest_attests_capture_after_frozen_winner(
