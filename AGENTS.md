@@ -65,7 +65,10 @@ freeze all three disjoint scopes against that exposure index before provider
 access. Its mutable next-batch status may advance only from the committed exact
 zero-access W31 waiting state; immutable family contracts remain
 content-addressed, and an unauthorized or drifted status rejects the whole
-transition before any contract write.
+transition before any contract write. Discovery preflight binds the committed
+contract path and validated implementation hashes; search freeze and every
+development or confirmation plugin evaluation must rehash the committed
+implementation and fail on drift.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

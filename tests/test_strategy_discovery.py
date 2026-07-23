@@ -162,6 +162,8 @@ def test_genuine_edge_reaches_frozen_shadow_queue_without_broker_actions():
             contract_path, root=artifact_root, enforce_commit=False
         )
         assert preflight["state"] == "CAPACITY_READY"
+        assert preflight["validated_contract_sha256"]
+        assert preflight["implementation_sha256"]
         search_path, search = discovery.freeze_search(
             contract_path, root=artifact_root, enforce_commit=False
         )
@@ -447,7 +449,14 @@ def test_development_transitions_reopen_every_committed_predecessor(monkeypatch)
         development_path, _development = discovery.evaluate_development(
             search_path, root=artifact_root
         )
-        assert checked == [search_path.resolve(), dataset_path.resolve()]
+        assert checked == [
+            search_path.resolve(),
+            (
+                discovery.PROJECT_ROOT
+                / "tests/synthetic_discovery_plugin.py"
+            ).resolve(),
+            dataset_path.resolve(),
+        ]
 
         checked.clear()
         inspection_path, inspection = discovery.inspect_development(
@@ -618,6 +627,108 @@ def test_uncommitted_transition_fails_closed():
         )
         with pytest.raises(discovery.StrategyDiscoveryError, match="committed"):
             discovery.freeze_search(contract_path, root=work / "artifacts")
+
+
+def test_search_freeze_rejects_implementation_drift_after_preflight(monkeypatch):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        contract_path = _write_contract(
+            work,
+            family_contract(_dataset(work), family_id="preflight-code-drift"),
+        )
+        discovery.run_preflight(
+            contract_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        implementation = (
+            discovery.PROJECT_ROOT / "tests/synthetic_discovery_plugin.py"
+        ).resolve()
+        original = discovery._file_hash
+
+        def drifted(path):
+            if path.resolve() == implementation:
+                return "0" * 64
+            return original(path)
+
+        monkeypatch.setattr(discovery, "_file_hash", drifted)
+        with pytest.raises(
+            discovery.StrategyDiscoveryError,
+            match="implementation drifted after preflight",
+        ):
+            discovery.freeze_search(
+                contract_path,
+                root=artifact_root,
+                enforce_commit=False,
+            )
+
+
+def test_evaluations_reject_code_drift_from_frozen_implementation(monkeypatch):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        contract_path = _write_contract(
+            work,
+            family_contract(_dataset(work), family_id="evaluation-code-drift"),
+        )
+        discovery.run_preflight(
+            contract_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        search_path, _ = discovery.freeze_search(
+            contract_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        implementation = (
+            discovery.PROJECT_ROOT / "tests/synthetic_discovery_plugin.py"
+        ).resolve()
+        original = discovery._file_hash
+
+        def drifted(path):
+            if path.resolve() == implementation:
+                return "0" * 64
+            return original(path)
+
+        monkeypatch.setattr(discovery, "_file_hash", drifted)
+        with pytest.raises(
+            discovery.StrategyDiscoveryError,
+            match="frozen implementation drifted",
+        ):
+            discovery.evaluate_development(
+                search_path,
+                root=artifact_root,
+                enforce_commit=False,
+            )
+
+        winner = {
+            "artifact_sha256": "a" * 64,
+            "state": "WINNER_FROZEN",
+            "implementation_hashes": {
+                "tests/synthetic_discovery_plugin.py": original(implementation),
+            },
+        }
+        winner_path = work / "winner.json"
+        winner_path.write_text(
+            json.dumps(winner, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(
+            discovery,
+            "load_artifact",
+            lambda *_args, **_kwargs: winner,
+        )
+        with pytest.raises(
+            discovery.StrategyDiscoveryError,
+            match="frozen implementation drifted",
+        ):
+            discovery.evaluate_confirmation(
+                winner_path,
+                root=artifact_root,
+                enforce_commit=False,
+            )
 
 
 def test_insufficient_confirmation_inventory_freezes_without_outcome_access():

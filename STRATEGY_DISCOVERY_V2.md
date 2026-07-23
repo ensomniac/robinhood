@@ -274,7 +274,12 @@ zero-access W31 waiting status (or an identical completed transition on
 idempotent replay), and rejects any other predecessor before writing a family
 contract. Each contract then follows the normal `preflight` and
 `freeze-search` transitions before its separately hash-bound development data
-may be collected or evaluated.
+may be collected or evaluated. Preflight records both the exact committed
+family-contract path and the fully validated contract hash after implementation
+file hashes are injected. Search freeze reopens those bindings, and every
+development or confirmation plugin invocation rehashes the committed
+implementation files. Code drift therefore cannot enter an evaluation under an
+older preflight, search, or winner identity.
 
 `dense_data_collection.py` derives the exact request plan only from a committed
 frozen search (or, later, a committed exact winner). Daily families use raw

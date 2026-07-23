@@ -212,12 +212,47 @@ def _validate_family_contract(value: Mapping[str, Any]) -> dict[str, Any]:
             raise StrategyDiscoveryError(f"plugin.{field} is invalid")
     implementation_hashes: dict[str, str] = {}
     for raw_path in contract["implementation_files"]:
-        path = PROJECT_ROOT / str(raw_path)
+        path = (PROJECT_ROOT / str(raw_path)).resolve()
+        try:
+            path.relative_to(PROJECT_ROOT.resolve())
+        except ValueError as exc:
+            raise StrategyDiscoveryError(
+                f"implementation file is outside the repository: {raw_path}"
+            ) from exc
         if not path.is_file():
             raise StrategyDiscoveryError(f"implementation file is missing: {raw_path}")
         implementation_hashes[str(raw_path)] = _file_hash(path)
     contract["implementation_hashes"] = implementation_hashes
     return contract
+
+
+def _assert_implementation_current(
+    value: Mapping[str, Any],
+    *,
+    enforce_commit: bool,
+) -> None:
+    hashes = value.get("implementation_hashes")
+    if not isinstance(hashes, Mapping) or not hashes:
+        raise StrategyDiscoveryError("frozen implementation hashes are missing")
+    for raw_path, expected in hashes.items():
+        path = (PROJECT_ROOT / str(raw_path)).resolve()
+        try:
+            path.relative_to(PROJECT_ROOT.resolve())
+        except ValueError as exc:
+            raise StrategyDiscoveryError(
+                f"frozen implementation path is unsafe: {raw_path}"
+            ) from exc
+        if (
+            not isinstance(expected, str)
+            or not SHA256_PATTERN.fullmatch(expected)
+            or not path.is_file()
+            or _file_hash(path) != expected
+        ):
+            raise StrategyDiscoveryError(
+                f"frozen implementation drifted: {raw_path}"
+            )
+        if enforce_commit:
+            require_committed(path)
 
 
 def _development_evidence_dates(contract: Mapping[str, Any]) -> list[str]:
@@ -292,6 +327,7 @@ def run_preflight(
         require_committed(family_contract_path)
     raw = _read_object(family_contract_path)
     contract = _validate_family_contract(raw)
+    _assert_implementation_current(contract, enforce_commit=enforce_commit)
     function = _load_plugin(contract, "preflight")
     started = time.monotonic()
     result = function(contract)
@@ -319,6 +355,8 @@ def run_preflight(
         "family_id": contract["family_id"],
         "family_contract_path": _relative(family_contract_path),
         "family_contract_sha256": _file_hash(family_contract_path),
+        "validated_contract_sha256": _hash(contract),
+        "implementation_sha256": _hash(contract["implementation_hashes"]),
         "state": state,
         "verified_capacity": eligible,
         "capacity_policy": dict(policy),
@@ -348,7 +386,10 @@ def freeze_search(
     root: Path = DEFAULT_ROOT,
     enforce_commit: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
+    if enforce_commit:
+        require_committed(family_contract_path)
     contract = _validate_family_contract(_read_object(family_contract_path))
+    _assert_implementation_current(contract, enforce_commit=enforce_commit)
     preflight_path, preflight = _find_single(
         root / str(contract["family_id"]) / "preflight",
         "*.json",
@@ -362,6 +403,16 @@ def freeze_search(
         )
     if preflight["family_contract_sha256"] != _file_hash(family_contract_path):
         raise StrategyDiscoveryError("family contract drifted after preflight")
+    if preflight.get("family_contract_path") != _relative(family_contract_path):
+        raise StrategyDiscoveryError("family contract path drifted after preflight")
+    if preflight.get("validated_contract_sha256") != _hash(contract):
+        raise StrategyDiscoveryError(
+            "validated family contract or implementation drifted after preflight"
+        )
+    if preflight.get("implementation_sha256") != _hash(
+        contract["implementation_hashes"]
+    ):
+        raise StrategyDiscoveryError("preflight implementation binding drifted")
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact_kind": "frozen-development-search",
@@ -394,6 +445,7 @@ def evaluate_development(
     if search["state"] != "SEARCH_FROZEN":
         raise StrategyDiscoveryError("development search is not frozen")
     contract = search["family_contract"]
+    _assert_implementation_current(contract, enforce_commit=enforce_commit)
     function = _load_plugin(contract, "evaluate_development")
     started = time.monotonic()
     plugin_contract = {
@@ -758,6 +810,7 @@ def evaluate_confirmation(
     winner = load_artifact(winner_path, expected_kind="frozen-strategy-winner")
     if winner["state"] != "WINNER_FROZEN":
         raise StrategyDiscoveryError("winner is not frozen")
+    _assert_implementation_current(winner, enforce_commit=enforce_commit)
     confirmation_scope = winner.get("confirmation_scope")
     if confirmation_scope is not None:
         try:
