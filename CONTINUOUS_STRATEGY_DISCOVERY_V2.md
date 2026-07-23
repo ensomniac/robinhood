@@ -421,6 +421,23 @@ results contaminated engineering evidence only. V5 freezes the same SPY
 binding and semantics-preserving runtime caches before formal evaluation. No
 grid, date, cost, selection, or confirmation-reserve change is permitted.
 
+Formal V5 result `092e782b...0b2d6` evaluated all 48 trials from one cached
+load with zero provider requests. Independent inspection
+`c5fba1719ef3c26e2bd9fda0fe06fd4cbd1da58c3d604260adc53ebf95f9e138`
+is `REJECTED`: twelve trials passed positive stressed growth and profit factor,
+but zero passed stressed drawdown, DSR, Holm, or all-fold stability. The best
+DSR was 0.0850 and the smallest drawdown among positive-growth trials was
+6.337R. No winner or power target was frozen; all 25 confirmation decisions
+remain untouched.
+
+This closes the credible existing-family successor queue. Repeatedly changing
+residual parameters after these outcomes would be selection leakage. The
+continuous lane now performs outcome-blind preactivation readiness for the
+already authorized W31 dense batch. That work includes exact calendar and
+capacity reconstruction, input completeness, shared-runtime performance,
+production-evaluator parity, tests, and audits. Only a new-family contract
+activation or outcome access waits for the weekly budget reset.
+
 ## Parallel lanes
 
 The residual-equity implementation is now used only for the existing

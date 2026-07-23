@@ -92,6 +92,19 @@ SPY reference and semantics-preserving runtime caches. It preserves the exact
 48-trial grid, evidence partitions, costs, selection rule, and untouched
 reserve.
 
+Independent inspection `c5fba171...9e138` rejects V5. Although twelve trials
+had positive stressed growth and profit factor, none passed the 6R drawdown,
+Deflated Sharpe, Holm, or all-fold stability gates. The strongest growth path
+had 12.726R drawdown and DSR probability 0.0850. No winner or power target was
+frozen, and all 25 confirmation opportunities remain untouched.
+
+The existing-family search surface is now exhausted without a defensible
+survivor. Further outcome-guided variants would be repeated selection, not
+independent discovery. Work therefore continues immediately on outcome-blind
+readiness for the already predeclared three-family dense batch; only its
+new-family activation and target-outcome access remain subject to the weekly
+gate.
+
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`
 and its independent retirement in

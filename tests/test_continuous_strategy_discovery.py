@@ -162,6 +162,27 @@ def test_status_keeps_new_family_wait_separate_from_continuous_lane(tmp_path: Pa
     assert status["new_family_batch"]["state"] == "WAITING_ISO_WEEK_RESET"
 
 
+def test_status_turns_rejected_successor_into_non_waiting_readiness_work():
+    status = continuous.build_status()
+
+    assert status["state"] == "EXISTING_FAMILY_QUEUE_EXHAUSTED"
+    assert status["successor"]["development_disposition"] == "REJECTED"
+    assert status["successor"]["calendar_wait_required"] is False
+    assert status["successor"]["outcome_access_wait_required"] is True
+    assert status["preactivation_readiness"] == {
+        "state": "READY_FOR_OUTCOME_BLIND_ENGINEERING",
+        "permitted_now": [
+            "input completeness and hash reconstruction",
+            "shared runtime and production evaluator parity",
+            "local performance tests",
+            "repository audits",
+        ],
+        "new_family_activation_permitted": False,
+        "target_outcome_access_permitted": False,
+        "broker_actions_permitted": False,
+    }
+
+
 def test_calendar_inspection_resolution_preserves_superseded_calendar(
     tmp_path: Path,
     monkeypatch,

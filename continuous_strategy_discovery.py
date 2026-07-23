@@ -789,7 +789,60 @@ def validate_existing_successor_contract(
         _predecessor(enforce_commit=True)
 
 
-def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
+def _current_successor_inspection(
+    *,
+    discovery_root: Path,
+    family_id: str,
+    successor_id: str,
+) -> dict[str, Any] | None:
+    matches: list[dict[str, Any]] = []
+    family_root = discovery_root / family_id
+    for inspection_path in sorted(
+        (family_root / "development-inspection").glob("*.json")
+    ):
+        try:
+            inspection = strategy_discovery.load_artifact(
+                inspection_path,
+                expected_kind="development-search-inspection",
+            )
+            result_path = Path(str(inspection["result_path"]))
+            if not result_path.is_absolute():
+                result_path = PROJECT_ROOT / result_path
+            result = strategy_discovery.load_artifact(
+                result_path,
+                expected_kind="development-search-result",
+            )
+            search_path = Path(str(result["search_path"]))
+            if not search_path.is_absolute():
+                search_path = PROJECT_ROOT / search_path
+            search = strategy_discovery.load_artifact(
+                search_path,
+                expected_kind="frozen-development-search",
+            )
+        except (
+            KeyError,
+            OSError,
+            strategy_discovery.StrategyDiscoveryError,
+        ):
+            continue
+        contract = search.get("family_contract")
+        if (
+            isinstance(contract, Mapping)
+            and contract.get("successor_id") == successor_id
+        ):
+            matches.append(inspection)
+    if len(matches) > 1:
+        raise ContinuousDiscoveryError(
+            "current successor has multiple development inspections"
+        )
+    return matches[0] if matches else None
+
+
+def build_status(
+    *,
+    root: Path = DEFAULT_ROOT,
+    discovery_root: Path = strategy_discovery.DEFAULT_ROOT,
+) -> dict[str, Any]:
     import liquid_equity_residual_reversal_discovery as current
 
     calendar_contracts = sorted((CALENDAR_ROOT / "contract").glob("*.json"))
@@ -803,14 +856,27 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
     family_contracts = sorted(
         (root / current.SUCCESSOR_ID / "family-contract").glob("*.json")
     )
-    discovery_root = strategy_discovery.DEFAULT_ROOT / current.FAMILY_ID
+    current_inspection = _current_successor_inspection(
+        discovery_root=discovery_root,
+        family_id=current.FAMILY_ID,
+        successor_id=current.SUCCESSOR_ID,
+    )
+    family_discovery_root = discovery_root / current.FAMILY_ID
     if not family_contracts:
         state = "READY_TO_FREEZE_SUCCESSOR"
         next_action = (
             "freeze the 48-trial liquid-equity residual-reversal successor "
             "and exact evidence partitions"
         )
-    elif not discovery_root.exists():
+    elif current_inspection is not None and current_inspection.get(
+        "state"
+    ) == "REJECTED":
+        state = "EXISTING_FAMILY_QUEUE_EXHAUSTED"
+        next_action = (
+            "complete outcome-blind dense-batch input, runtime, production, "
+            "and audit readiness without activating a new family"
+        )
+    elif not family_discovery_root.exists():
         state = "SUCCESSOR_CONTRACT_FROZEN"
         next_action = "run discovery preflight and freeze the development search"
     else:
@@ -829,6 +895,29 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
             "new_mechanism_family_slot_consumed": False,
             "predecessor_corpus_reused": False,
             "calendar_wait_required": False,
+            "outcome_access_wait_required": state
+            == "EXISTING_FAMILY_QUEUE_EXHAUSTED",
+            "development_disposition": (
+                current_inspection.get("state")
+                if current_inspection is not None
+                else None
+            ),
+            "broker_actions_permitted": False,
+        },
+        "preactivation_readiness": {
+            "state": (
+                "READY_FOR_OUTCOME_BLIND_ENGINEERING"
+                if state == "EXISTING_FAMILY_QUEUE_EXHAUSTED"
+                else "NOT_CURRENT"
+            ),
+            "permitted_now": [
+                "input completeness and hash reconstruction",
+                "shared runtime and production evaluator parity",
+                "local performance tests",
+                "repository audits",
+            ],
+            "new_family_activation_permitted": False,
+            "target_outcome_access_permitted": False,
             "broker_actions_permitted": False,
         },
         "artifacts": {

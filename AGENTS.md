@@ -133,6 +133,22 @@ cost, selection algorithm, or confirmation reserve. It freezes the same SPY
 binding plus semantics-preserving index, feature, and candidate caches that
 made the complete 48-trial run pass the 60-second local acceptance twice.
 
+V5 is now terminal after independent inspection
+`c5fba171...9e138`. Twelve trials retained positive 20-bps growth and stressed
+profit factor, but no trial passed the 6R drawdown cap, Deflated Sharpe, Holm,
+or positive growth in every rolling fold. The highest DSR probability was
+0.0850, the minimum drawdown among positive-growth trials was 6.337R, and the
+highest-growth path drew down 12.726R. The exact version cannot be repaired or
+enter confirmation; all 25 confirmation opportunities remain untouched.
+
+Do not manufacture another residual-reversal version from those outcomes.
+The immediate non-waiting work is outcome-blind readiness for the already
+predeclared W31 dense batch: keep the session-calendar, capacity, exact
+contract, shared-data, production-evaluator, and performance paths ready so
+the reset requires only the authorized evidence freeze and collection. The
+weekly gate blocks new-family activation and outcome access, not engineering,
+testing, auditing, or historical-source readiness.
+
 The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1
 predecessor was retired only because 24 frozen decision dates could not meet
