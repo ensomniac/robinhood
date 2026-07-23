@@ -58,15 +58,29 @@ def _dates(count):
     return [(start + timedelta(days=index)).isoformat() for index in range(count)]
 
 
-def _artifacts(tmp_path, monkeypatch):
+def _artifacts(tmp_path, monkeypatch, *, lane="development"):
     monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(inspection, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(strategy_discovery, "PROJECT_ROOT", tmp_path)
+    confirmation = lane == "confirmation"
     authority_path, authority = strategy_discovery._write_artifact(
         {
             "schema_version": 1,
-            "artifact_kind": "frozen-development-search",
-            "state": "SEARCH_FROZEN",
+            "artifact_kind": (
+                "frozen-strategy-winner"
+                if confirmation
+                else "frozen-development-search"
+            ),
+            "state": "WINNER_FROZEN" if confirmation else "SEARCH_FROZEN",
+            **(
+                {
+                    "rules_hash": "a" * 64,
+                    "recorded_at": "2026-07-27T08:00:00-04:00",
+                    "confirmation_scope": {"dates": _dates(5), "symbols": ["SPY"]},
+                }
+                if confirmation
+                else {}
+            ),
         },
         tmp_path / "authority",
         "search",
@@ -119,10 +133,12 @@ def _artifacts(tmp_path, monkeypatch):
         "campaign_id": "multi-strategy-portfolio-validation-v2",
         "state": "COLLECTION_PLAN_FROZEN",
         "family_id": runtime.ETF_PULLBACK_FAMILY,
-        "lane": "development",
+        "lane": lane,
         "authority_path": str(authority_path.relative_to(tmp_path)),
         "authority_sha256": authority["artifact_sha256"],
-        "binding_sha256": authority["artifact_sha256"],
+        "binding_sha256": (
+            authority["rules_hash"] if confirmation else authority["artifact_sha256"]
+        ),
         "calendar_path": str(calendar.relative_to(tmp_path)),
         "calendar_sha256": collection._file_hash(calendar),
         "evaluation_dates": dates[-5:],
@@ -137,6 +153,11 @@ def _artifacts(tmp_path, monkeypatch):
         "market_outcomes_accessed": False,
         "broker_actions": 0,
         "as_of": "2026-07-27",
+        **(
+            {"preregistered_at": authority["recorded_at"]}
+            if confirmation
+            else {}
+        ),
     }
     plan_path, plan = strategy_discovery._write_artifact(
         payload, tmp_path / "plans", "plan"
@@ -327,6 +348,41 @@ def test_collection_is_resumable_idempotent_and_independently_inspected(
         "binding_sha256"
     ]
     assert manifest["dataset_payload"]["dense_runtime"]["formal_capacity"] == 105
+
+
+def test_confirmation_manifest_attests_capture_after_frozen_winner(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(
+        collection.outcome_exposure,
+        "assert_untouched",
+        lambda *_args, **_kwargs: None,
+    )
+    plan_path, plan, symbols = _artifacts(
+        tmp_path, monkeypatch, lane="confirmation"
+    )
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    public = tmp_path / "public"
+    status_path, _status = collection.collect(
+        plan_path,
+        as_of=date(2026, 7, 27),
+        store_config=config,
+        public_root=public,
+        backend=FakeBackend(symbols),
+        enforce_commit=False,
+    )
+    _inspection_path, _inspected, _manifest_path, manifest = inspection.inspect(
+        status_path,
+        inspected_at="2026-07-27T12:00:00-04:00",
+        store_config=config,
+        public_root=public,
+        enforce_commit=False,
+    )
+    payload = manifest["dataset_payload"]
+    assert payload["preregistration_sha256"] == plan["binding_sha256"]
+    assert payload["preregistered_at"] == plan["preregistered_at"]
+    assert payload["capture_after_preregistration_attested"] is True
+    assert "development_search_sha256" not in payload
 
 
 def test_split_adjustment_uses_only_actions_through_frozen_dataset_end():

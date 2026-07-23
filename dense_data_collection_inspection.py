@@ -77,6 +77,14 @@ def inspect(
         raise DenseDataInspectionError("collection status is incomplete or unsafe")
     plan_path = PROJECT_ROOT / str(status["plan_path"])
     plan = collection._validate_plan(plan_path, enforce_commit=enforce_commit)
+    if plan["lane"] == "confirmation":
+        preregistered = datetime.fromisoformat(
+            str(plan["preregistered_at"]).replace("Z", "+00:00")
+        )
+        if timestamp <= preregistered:
+            raise DenseDataInspectionError(
+                "confirmation inspection must follow winner preregistration"
+            )
     if status.get("plan_sha256") != plan["artifact_sha256"]:
         raise DenseDataInspectionError("collection plan binding drifted")
     config = store_config or HistoricalStoreConfig.from_env(DEFAULT_ENV_PATH)
@@ -157,6 +165,8 @@ def inspect(
         payload["development_search_sha256"] = plan["binding_sha256"]
     else:
         payload["preregistration_sha256"] = plan["binding_sha256"]
+        payload["preregistered_at"] = plan["preregistered_at"]
+        payload["capture_after_preregistration_attested"] = True
     manifest_path, manifest = freeze_dataset_contract(
         {
             "schema_version": 1,

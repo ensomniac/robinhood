@@ -292,6 +292,25 @@ def freeze_plan(
         "broker_actions": 0,
         "as_of": current.isoformat(),
     }
+    if lane == "confirmation":
+        preregistered_at = authority.get("recorded_at")
+        try:
+            preregistered = datetime.fromisoformat(
+                str(preregistered_at).replace("Z", "+00:00")
+            )
+        except ValueError as exc:
+            raise DenseDataCollectionError(
+                "frozen winner preregistration timestamp is invalid"
+            ) from exc
+        if preregistered.tzinfo is None:
+            raise DenseDataCollectionError(
+                "frozen winner preregistration timestamp needs a timezone"
+            )
+        if preregistered.date() > current:
+            raise DenseDataCollectionError(
+                "frozen winner preregistration timestamp is future-dated"
+            )
+        payload["preregistered_at"] = str(preregistered_at)
     return strategy_discovery._write_artifact(
         payload,
         public_root / family_id / f"{lane}-collection-plan",
@@ -336,6 +355,10 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
     if authority.get("artifact_sha256") != plan.get("authority_sha256"):
         raise DenseDataCollectionError("collection authority drifted after plan freeze")
     if plan.get("lane") == "confirmation":
+        if plan.get("preregistered_at") != authority.get("recorded_at"):
+            raise DenseDataCollectionError(
+                "confirmation preregistration timestamp drifted"
+            )
         try:
             outcome_exposure.assert_untouched(
                 authority["confirmation_scope"], outcome_exposure.read_index()
