@@ -168,7 +168,6 @@ def _calendar() -> list[str]:
 def _source_dates(*, enforce_commit: bool) -> list[str]:
     paths = (
         *SOURCE_SELECTIONS,
-        *SOURCE_DETAILS,
         CALENDAR_PATH,
         SOURCE_STATUS,
         PREDECESSOR_ACTIVATION,
@@ -197,8 +196,17 @@ def _source_dates(*, enforce_commit: bool) -> list[str]:
             "point-in-time source dates overlap or are incomplete"
         )
     status = _read(SOURCE_STATUS)
+    activation = _read(PREDECESSOR_ACTIVATION)
     predecessor = _read(PREDECESSOR_RESULT)
     inspection = _read(PREDECESSOR_INSPECTION)
+    expected_detail_hashes = {
+        str(binding.get("detail_path")): str(binding.get("detail_sha256"))
+        for binding in activation.get("source_bindings", [])
+        if isinstance(binding, Mapping)
+    }
+    observed_detail_hashes = {
+        _repo_path(path): sha256_file(path) for path in SOURCE_DETAILS
+    }
     if not (
         status.get("status") == "READY"
         and status.get("returns_computed") == 0
@@ -211,6 +219,7 @@ def _source_dates(*, enforce_commit: bool) -> list[str]:
         == ["primary drawdown exceeds the Stage 0 maximum"]
         and inspection.get("result_sha256") == predecessor.get("result_sha256")
         and inspection.get("valid") is True
+        and observed_detail_hashes == expected_detail_hashes
     ):
         raise LiquidEquityMomentumDiscoveryError(
             "predecessor or cached source evidence drifted"
@@ -284,7 +293,6 @@ def _partitions(
 def _source_evidence_paths() -> list[str]:
     return [
         *[_repo_path(path) for path in SOURCE_SELECTIONS],
-        *[_repo_path(path) for path in SOURCE_DETAILS],
         _repo_path(CALENDAR_PATH),
         _repo_path(SOURCE_STATUS),
         _repo_path(PREDECESSOR_ACTIVATION),

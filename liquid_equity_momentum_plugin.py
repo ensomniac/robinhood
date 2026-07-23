@@ -128,7 +128,32 @@ def _binding(manifest: Mapping[str, Any]) -> dict[str, Any]:
 def _point_in_time_universe(
     decision_dates: Sequence[str],
 ) -> tuple[dict[str, list[str]], dict[str, dict[str, str]]]:
-    source_dates, details, _bindings = universe_source._source_graph()
+    source_dates, details, bindings = universe_source._source_graph()
+    activation_path = (
+        PROJECT_ROOT
+        / "strategy_tournament/activations/"
+        "cross-sectional-momentum-v1-"
+        "a8970ad2bfb0045f54404da985178686ec7cd0068c3a6a23f59165c7e415520a.json"
+    )
+    try:
+        activation = json.loads(activation_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise LiquidEquityMomentumPluginError(
+            "committed predecessor activation is unavailable"
+        ) from exc
+    expected_details = {
+        (str(item.get("detail_path")), str(item.get("detail_sha256")))
+        for item in activation.get("source_bindings", [])
+        if isinstance(item, Mapping)
+    }
+    observed_details = {
+        (str(item.get("detail_path")), str(item.get("detail_sha256")))
+        for item in bindings
+    }
+    if expected_details != observed_details:
+        raise LiquidEquityMomentumPluginError(
+            "ignored point-in-time detail files drifted from committed hashes"
+        )
     if not set(decision_dates).issubset(source_dates):
         raise LiquidEquityMomentumPluginError(
             "signal dates escaped the inspected point-in-time source"
