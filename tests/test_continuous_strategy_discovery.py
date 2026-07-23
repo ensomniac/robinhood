@@ -116,7 +116,12 @@ def test_existing_family_successor_freezes_without_waiting_or_reusing_v1():
 
 
 def test_status_keeps_new_family_wait_separate_from_continuous_lane(tmp_path: Path):
-    status = continuous.build_status(root=tmp_path)
+    original_calendar_root = continuous.CALENDAR_ROOT
+    continuous.CALENDAR_ROOT = tmp_path / "calendar"
+    try:
+        status = continuous.build_status(root=tmp_path)
+    finally:
+        continuous.CALENDAR_ROOT = original_calendar_root
     assert status["state"] == "READY_TO_FREEZE_CALENDAR"
     assert status["successor"]["calendar_wait_required"] is False
     assert status["successor"]["new_mechanism_family_slot_consumed"] is False
