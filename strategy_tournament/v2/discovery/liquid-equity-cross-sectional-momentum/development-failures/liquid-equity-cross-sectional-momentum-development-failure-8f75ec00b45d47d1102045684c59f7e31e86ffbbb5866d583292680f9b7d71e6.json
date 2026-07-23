@@ -1,6 +1,6 @@
 {
   "artifact_kind": "development-evaluation-failure",
-  "artifact_sha256": "8783f9127adb24cef0ebe94472d25850799accd57c366dce157a0562d087e8a4",
+  "artifact_sha256": "8f75ec00b45d47d1102045684c59f7e31e86ffbbb5866d583292680f9b7d71e6",
   "broker_actions": 0,
   "campaign_id": "multi-strategy-portfolio-validation-v2",
   "confirmation_accessed": false,
