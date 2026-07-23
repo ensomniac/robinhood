@@ -62,7 +62,10 @@ segment contains its exact 60- or 200-session indicator warmup followed by a
 120-development/5-embargo/35-confirmation block.
 `dense_family_contracts.py` is the only family-contract activation path; it must
 freeze all three disjoint scopes against that exposure index before provider
-access.
+access. Its mutable next-batch status may advance only from the committed exact
+zero-access W31 waiting state; immutable family contracts remain
+content-addressed, and an unauthorized or drifted status rejects the whole
+transition before any contract write.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

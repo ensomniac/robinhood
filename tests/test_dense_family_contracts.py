@@ -174,13 +174,15 @@ def test_family_contract_cli_reports_fail_closed_json(monkeypatch, capsys):
 def test_batch_freezes_exact_three_valid_contracts_after_reset(tmp_path):
     index = tmp_path / "exposure.jsonl"
     inventory = _inventory(tmp_path, index)
+    status_path = tmp_path / "status.json"
+    batch.prepare(root=tmp_path / "plans", status_path=status_path)
     paths, status = contracts.freeze_batch(
         inventory,
         as_of=date(2026, 7, 27),
         actual_today=date(2026, 7, 27),
         index_path=index,
         output_root=tmp_path / "contracts",
-        status_path=tmp_path / "status.json",
+        status_path=status_path,
         enforce_commit=False,
     )
 
@@ -201,6 +203,56 @@ def test_batch_freezes_exact_three_valid_contracts_after_reset(tmp_path):
             "portfolio_maturity.py",
             "portfolio_config.toml",
         } <= set(contract["implementation_files"])
+    assert json.loads(status_path.read_text(encoding="utf-8")) == status
+
+    repeated_paths, repeated_status = contracts.freeze_batch(
+        inventory,
+        as_of=date(2026, 7, 27),
+        actual_today=date(2026, 7, 27),
+        index_path=index,
+        output_root=tmp_path / "contracts",
+        status_path=status_path,
+        enforce_commit=False,
+    )
+    assert repeated_paths == paths
+    assert repeated_status == status
+
+
+def test_batch_freeze_rejects_unauthorized_status_transition_without_writes(
+    tmp_path,
+):
+    index = tmp_path / "exposure.jsonl"
+    inventory = _inventory(tmp_path, index)
+    status_path = tmp_path / "status.json"
+    status_path.write_text(
+        json.dumps(
+            {
+                **contracts._waiting_status(),
+                "provider_access_permitted": True,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    output_root = tmp_path / "contracts"
+
+    with pytest.raises(
+        contracts.DenseFamilyContractError,
+        match="exact authorized zero-access predecessor",
+    ):
+        contracts.freeze_batch(
+            inventory,
+            as_of=date(2026, 7, 27),
+            actual_today=date(2026, 7, 27),
+            index_path=index,
+            output_root=output_root,
+            status_path=status_path,
+            enforce_commit=False,
+        )
+
+    assert not output_root.exists()
 
 
 def test_batch_freeze_requires_committed_inventory_after_reset(

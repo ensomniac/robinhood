@@ -268,7 +268,11 @@ The command fails before the reset, below 100 formal observations, on any
 cross-family pair overlap, on any prior confirmation exposure, or if the index
 or inventory drifts. Success writes exactly three immutable family contracts
 and updates the next-batch status while provider, outcome, and broker permissions
-remain false. Each contract then follows the normal `preflight` and
+remain false. The status update is an explicit mutable state transition, not a
+content-addressed artifact write: it accepts only the committed, exact
+zero-access W31 waiting status (or an identical completed transition on
+idempotent replay), and rejects any other predecessor before writing a family
+contract. Each contract then follows the normal `preflight` and
 `freeze-search` transitions before its separately hash-bound development data
 may be collected or evaluated.
 

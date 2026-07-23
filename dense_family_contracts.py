@@ -62,6 +62,61 @@ def _write(value: Mapping[str, Any], path: Path) -> None:
         temporary.replace(path)
 
 
+def _waiting_status() -> dict[str, Any]:
+    plan = batch.build_plan()
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "campaign_id": batch.CAMPAIGN_ID,
+        "plan_sha256": plan["plan_sha256"],
+        "target_iso_week": batch.TARGET_ISO_WEEK,
+        "activation_not_before": batch.ACTIVATION_NOT_BEFORE.isoformat(),
+        "state": "WAITING_ISO_WEEK_RESET",
+        "family_contracts_frozen": 0,
+        "provider_access_permitted": False,
+        "outcome_access_permitted": False,
+        "broker_actions_permitted": False,
+        "valid": True,
+    }
+
+
+def _validate_status_transition(
+    path: Path,
+    target: Mapping[str, Any],
+    *,
+    enforce_commit: bool,
+) -> None:
+    if not path.exists():
+        if enforce_commit:
+            raise DenseFamilyContractError(
+                "committed W31 waiting status is required before family freeze"
+            )
+        return
+    observed = _read(path)
+    if observed == target:
+        return
+    if observed != _waiting_status():
+        raise DenseFamilyContractError(
+            "W31 status is not the exact authorized zero-access predecessor"
+        )
+    if enforce_commit:
+        try:
+            strategy_discovery.require_committed(path)
+        except strategy_discovery.StrategyDiscoveryError as exc:
+            raise DenseFamilyContractError(
+                f"W31 waiting status is not committed: {exc}"
+            ) from exc
+
+
+def _write_status(value: Mapping[str, Any], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rendered = json.dumps(value, indent=2, sort_keys=True) + "\n"
+    if path.exists() and path.read_text(encoding="utf-8") == rendered:
+        return
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(rendered, encoding="utf-8")
+    temporary.replace(path)
+
+
 def _manifest(
     path_text: Any, *, enforce_commit: bool
 ) -> tuple[Path, dict[str, Any]]:
@@ -358,6 +413,7 @@ def freeze_batch(
     plan = batch.build_plan()
     by_id = {item["family_id"]: item for item in plan["families"]}
     paths: list[Path] = []
+    artifacts: list[dict[str, Any]] = []
     hashes: dict[str, str] = {}
     for family in sorted(inventory["families"], key=lambda item: item["family_id"]):
         contract = _contract(
@@ -366,8 +422,8 @@ def freeze_batch(
         strategy_discovery._validate_family_contract(contract)
         digest = _hash(contract)
         path = output_root / str(family["family_id"]) / f"contract-{digest}.json"
-        _write(contract, path)
         paths.append(path)
+        artifacts.append(contract)
         hashes[str(family["family_id"])] = digest
     status = {
         "schema_version": SCHEMA_VERSION,
@@ -387,7 +443,14 @@ def freeze_batch(
         "broker_actions_permitted": False,
         "valid": True,
     }
-    _write(status, status_path)
+    _validate_status_transition(
+        status_path,
+        status,
+        enforce_commit=enforce_commit,
+    )
+    for contract, path in zip(artifacts, paths, strict=True):
+        _write(contract, path)
+    _write_status(status, status_path)
     return paths, status
 
 
