@@ -37,8 +37,9 @@ The active v2 implementation uses `portfolio_config.toml` schema 2,
 `dense_strategy_plugin.py` now implement the shared point-in-time historical and
 production semantics for the exact 48/32/32 dense grids. Schema-1 portfolio
 evidence remains immutable adverse history and cannot satisfy v2 maturity. The
-global outcome-exposure baseline conservatively marks all 120 preserved v1
-outcome dates as wildcard-symbol contamination. No new family or v2 outcome
+global outcome-exposure baseline conservatively marks all 226 dates in the
+preserved portfolio and legacy strategy ledgers as wildcard-symbol
+contamination. No new family or v2 outcome
 evidence has been admitted by this engineering change. After the 2026-07-27
 ISO-week reset, `dense_family_contracts.py` is the only next batch activation
 path; it must freeze all three disjoint scopes against that exposure index before

@@ -125,8 +125,9 @@ disjoint development/embargo/confirmation evidence-freeze step; provider access
 still requires committed exact family contracts and inspected predecessors.
 
 `outcome_exposure.py` is the append-only global date/instrument contamination
-authority. Its initial hash-bound baseline marks every preserved v1 ledger date
-with wildcard-symbol exposure, so none can silently become v2 confirmation.
+authority. Its initial hash-bound baseline marks all 226 dates in the preserved
+portfolio and legacy strategy ledgers with wildcard-symbol exposure, so none can
+silently become v2 confirmation.
 Every inspected development or confirmation result adds its exact frozen scope.
 An absent, mutated, or stale baseline fails the default audit.
 

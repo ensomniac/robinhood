@@ -15,6 +15,10 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_INDEX = PROJECT_ROOT / "strategy_tournament/v2/OUTCOME_EXPOSURE_INDEX.jsonl"
 BASELINE_EXPOSURE_ID = "baseline-portfolio-signals-v1"
+BASELINE_EXPOSURE_IDS = {
+    BASELINE_EXPOSURE_ID,
+    "baseline-strategy-signals-v1",
+}
 SCHEMA_VERSION = 1
 LANES = {"development", "confirmation", "shadow", "live", "legacy"}
 
@@ -270,28 +274,28 @@ def assert_disjoint(scopes: Sequence[Mapping[str, Any]]) -> None:
 def audit(path: Path = DEFAULT_INDEX) -> dict[str, Any]:
     records = read_index(path)
     baseline_required = path.resolve() == DEFAULT_INDEX.resolve()
-    baseline = next(
-        (
-            item
-            for item in records
-            if item["exposure_id"] == BASELINE_EXPOSURE_ID
-        ),
-        None,
-    )
+    baselines = {
+        item["exposure_id"]: item
+        for item in records
+        if item["exposure_id"] in BASELINE_EXPOSURE_IDS
+    }
     if baseline_required:
-        if baseline is None:
+        if set(baselines) != BASELINE_EXPOSURE_IDS:
             raise OutcomeExposureError("global exposure index lacks its legacy baseline")
-        source = PROJECT_ROOT / str(baseline["source_path"])
-        line_count = baseline.get("source_line_count")
-        if not source.is_file() or not isinstance(line_count, int):
-            raise OutcomeExposureError("legacy exposure baseline source is unavailable")
-        lines = source.read_bytes().splitlines(keepends=True)
-        observed = hashlib.sha256(b"".join(lines[:line_count])).hexdigest()
-        if len(lines) < line_count or observed != baseline["source_sha256"]:
-            raise OutcomeExposureError("legacy exposure baseline source drifted")
+        for baseline in baselines.values():
+            source = PROJECT_ROOT / str(baseline["source_path"])
+            line_count = baseline.get("source_line_count")
+            if not source.is_file() or not isinstance(line_count, int):
+                raise OutcomeExposureError(
+                    "legacy exposure baseline source is unavailable"
+                )
+            lines = source.read_bytes().splitlines(keepends=True)
+            observed = hashlib.sha256(b"".join(lines[:line_count])).hexdigest()
+            if len(lines) < line_count or observed != baseline["source_sha256"]:
+                raise OutcomeExposureError("legacy exposure baseline source drifted")
     return {
         "valid": True,
-        "baseline_complete": baseline is not None,
+        "baseline_complete": set(baselines) == BASELINE_EXPOSURE_IDS,
         "records": len(records),
         "exposed_pairs": sum(len(scope_pairs(item["scope"])) for item in records),
         "index_sha256": hashlib.sha256(path.read_bytes()).hexdigest()
