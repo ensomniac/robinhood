@@ -27,6 +27,7 @@ ETF_PULLBACK_FAMILY = "liquid-etf-trend-pullback-cost-floor"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
 ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
 ETF_HIGH_CONTINUATION_FAMILY = "liquid-etf-52-week-high-continuation"
+ETF_TURN_OF_MONTH_FAMILY = "liquid-etf-turn-of-month-seasonality"
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
 EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
 VOLATILITY_COMPRESSION_FAMILY = (
@@ -39,6 +40,7 @@ SUPPORTED_FAMILIES = {
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
     ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
     ETF_HIGH_CONTINUATION_FAMILY,
+    ETF_TURN_OF_MONTH_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
     VOLATILITY_COMPRESSION_FAMILY,
@@ -927,6 +929,130 @@ def _etf_high_continuation_candidates(
     return candidates
 
 
+def _turn_of_month_membership(
+    decision_date: str,
+    exchange_calendar: Sequence[str],
+    *,
+    before_sessions: int,
+    after_sessions: int,
+) -> bool:
+    month_sessions = [
+        day for day in exchange_calendar if day[:7] == decision_date[:7]
+    ]
+    if decision_date not in month_sessions:
+        raise DenseStrategyRuntimeError(
+            "turn-of-month decision is absent from the exchange calendar"
+        )
+    position = month_sessions.index(decision_date)
+    sessions_remaining = len(month_sessions) - position - 1
+    return (
+        1 <= sessions_remaining <= before_sessions
+        or position < after_sessions
+    )
+
+
+def _turn_of_month_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    before_sessions = int(parameters["sessions_before_month_end"])
+    after_sessions = int(parameters["sessions_after_month_start"])
+    trend_period = int(parameters["market_trend_sma"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    if (
+        set(daily) != {"SPY"}
+        or before_sessions not in {1, 3}
+        or after_sessions not in {1, 3}
+        or trend_period not in {100, 200}
+        or stop_atr not in {1.0, 1.5}
+        or hold not in {2, 4}
+    ):
+        raise DenseStrategyRuntimeError(
+            "turn-of-month inputs or parameters escaped the grid"
+        )
+    bars = daily["SPY"]
+    exchange_calendar = [str(bar["date"]) for bar in bars]
+    indices = {str(bar["date"]): index for index, bar in enumerate(bars)}
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        if not _turn_of_month_membership(
+            decision_date,
+            exchange_calendar,
+            before_sessions=before_sessions,
+            after_sessions=after_sessions,
+        ):
+            continue
+        decision_index = indices.get(decision_date)
+        if decision_index is None or decision_index < trend_period - 1:
+            continue
+        trend = _sma(bars, decision_index, trend_period)
+        atr14 = _atr(bars, decision_index)
+        decision_close = float(bars[decision_index]["close"])
+        if (
+            trend is None
+            or atr14 is None
+            or decision_close <= trend
+            or not _cost_floor(atr14 / decision_close)
+        ):
+            continue
+        entry_date = calendar[calendar_index + 1]
+        entry_index = indices.get(entry_date)
+        signal_id = f"{entry_date}-{ETF_TURN_OF_MONTH_FAMILY}-SPY"
+        if entry_index is None:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": "SPY",
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_open",
+                }
+            )
+            continue
+        if entry_index + hold > len(bars):
+            continue
+        expected_dates = set(
+            calendar[calendar_index + 1 : calendar_index + 1 + hold]
+        )
+        exit_dates = {
+            str(item["date"])
+            for item in bars[entry_index : entry_index + hold]
+        }
+        if len(expected_dates) != hold or exit_dates != expected_dates:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": "SPY",
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "incomplete_holding_bars",
+                }
+            )
+            continue
+        candidate = _daily_candidate(
+            family_id=ETF_TURN_OF_MONTH_FAMILY,
+            symbol="SPY",
+            decision_date=decision_date,
+            entry_date=entry_date,
+            bars=bars,
+            entry_index=entry_index,
+            stop_atr=stop_atr,
+            atr14=atr14,
+            hold_sessions=hold,
+            rank=1,
+            score=1.0,
+        )
+        candidate["expected_gross_move_fraction"] = atr14 / decision_close
+        candidates.append(candidate)
+    return candidates
+
+
 def _minute_sessions(
     dataset: Mapping[str, Any],
 ) -> dict[str, dict[str, list[dict[str, Any]]]]:
@@ -1129,6 +1255,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
             ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
             ETF_HIGH_CONTINUATION_FAMILY,
+            ETF_TURN_OF_MONTH_FAMILY,
         }:
             symbols = dataset.get("symbols")
             if not isinstance(symbols, list) or set(map(str, symbols)) != set(daily):
@@ -2039,6 +2166,8 @@ def build_candidates(
         return _etf_cross_sectional_reversal_candidates(dataset, parameters)
     if family_id == ETF_HIGH_CONTINUATION_FAMILY:
         return _etf_high_continuation_candidates(dataset, parameters)
+    if family_id == ETF_TURN_OF_MONTH_FAMILY:
+        return _turn_of_month_candidates(dataset, parameters)
     if family_id == OVERSOLD_REVERSAL_FAMILY:
         return _oversold_candidates(dataset, parameters)
     if family_id == EQUITY_GAP_CONTINUATION_FAMILY:
@@ -2133,6 +2262,8 @@ def _production_daily_signal(
         )
     else:
         expected.add("symbols")
+    if family_id == ETF_TURN_OF_MONTH_FAMILY:
+        expected.add("exchange_calendar_dates")
     if set(decision_data) != expected or decision_data.get("family_id") != family_id:
         raise DenseStrategyRuntimeError("production daily decision-data schema drifted")
     decision_date = decision_data.get("decision_date")
@@ -2182,6 +2313,7 @@ def _production_daily_signal(
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,
+        ETF_TURN_OF_MONTH_FAMILY,
     }:
         frozen_symbols = frozen_universe.get("symbols")
         observed_symbols = decision_data.get("symbols")
@@ -2274,6 +2406,75 @@ def _production_daily_signal(
                 "atr": atr14,
                 "stop_atr_multiple": float(parameters["stop_atr14"]),
                 "holding_trading_days": int(parameters["maximum_hold_sessions"]),
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "exit_plan": {
+                    "type": "stop_or_maximum_hold_close",
+                    "maximum_hold_sessions": int(
+                        parameters["maximum_hold_sessions"]
+                    ),
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
+        if family_id == ETF_TURN_OF_MONTH_FAMILY:
+            exchange_calendar = decision_data.get(
+                "exchange_calendar_dates"
+            )
+            if (
+                not isinstance(exchange_calendar, list)
+                or exchange_calendar
+                != sorted(set(map(str, exchange_calendar)))
+                or decision_date not in exchange_calendar
+                or next_session_date not in exchange_calendar
+                or exchange_calendar.index(next_session_date)
+                != exchange_calendar.index(decision_date) + 1
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production turn-of-month exchange calendar is incomplete"
+                )
+            before_sessions = int(
+                parameters["sessions_before_month_end"]
+            )
+            after_sessions = int(
+                parameters["sessions_after_month_start"]
+            )
+            if not _turn_of_month_membership(
+                decision_date,
+                exchange_calendar,
+                before_sessions=before_sessions,
+                after_sessions=after_sessions,
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production date is outside the exact month boundary"
+                )
+            spy_index = indices["SPY"].get(decision_date)
+            trend_period = int(parameters["market_trend_sma"])
+            if spy_index is None or spy_index < trend_period - 1:
+                raise DenseStrategyRuntimeError(
+                    "production turn-of-month history is incomplete"
+                )
+            trend = _sma(daily["SPY"], spy_index, trend_period)
+            atr14 = _atr(daily["SPY"], spy_index)
+            close = float(daily["SPY"][spy_index]["close"])
+            if (
+                trend is None
+                or atr14 is None
+                or close <= trend
+                or not _cost_floor(atr14 / close)
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production turn-of-month trend or cost gate is closed"
+                )
+            return {
+                "symbol": "SPY",
+                "rank": 1,
+                "score": 1.0,
+                "expected_gross_move_fraction": atr14 / close,
+                "atr": atr14,
+                "stop_atr_multiple": float(parameters["stop_atr14"]),
+                "holding_trading_days": int(
+                    parameters["maximum_hold_sessions"]
+                ),
                 "decision_date": decision_date,
                 "next_session_date": next_session_date,
                 "exit_plan": {
@@ -2689,6 +2890,7 @@ def evaluate_production_signal(
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,
+        ETF_TURN_OF_MONTH_FAMILY,
     }:
         return _production_daily_signal(
             decision_data, family_id, parameters, frozen_universe
