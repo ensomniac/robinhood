@@ -60,9 +60,9 @@ This exact family version is retired without confirmation access. Its
 development scope is now recorded in the global outcome-exposure index and
 cannot be relabeled as untouched evidence.
 
-## Active immediate lane
+## Latest immediate lane disposition
 
-The active successor is
+The latest successor was
 `short-horizon-oversold-reversal-v3-gap-universe`, implemented under runtime
 family ID `gap-universe-oversold-reversal`. It remains inside the already tested
 `short-horizon-oversold-reversal` mechanism and consumes no new-family slot.
@@ -96,6 +96,18 @@ previously frozen for representative equity-gap research:
   VWAP, next-minute entry, the completed session low as stop, stop-first
   ambiguity, a 15:50 ET force-flat, the five-times-cost floor, one daily entry,
   chronological account compounding, and 5/10/20-bps costs.
+
+Independent development inspection
+`d8d9467606a1672a9fd516ab00affc514f7e496ce2bd101b3a9bcd8b2f9e0c0f`
+retired v3. All 32 trials were complete, but zero passed Deflated Sharpe or
+Holm, only two retained positive growth in every rolling fold, and no trial
+survived the complete selection-aware gate set. The confirmation reserve
+remained unopened and may not be used to repair the rejected version.
+
+Continuous work now moves to the best existing-family successor with an
+explicitly contaminated development partition and disjoint untouched
+confirmation. This does not consume a new-family weekly slot and does not wait
+for the next ISO week.
 
 Before the formal freeze, one unchanged predecessor-like setting was exercised
 solely to validate local I/O and semantics on this already contaminated training
