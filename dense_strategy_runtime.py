@@ -26,12 +26,14 @@ INTRADAY_ETF_FAMILY = "intraday-index-etf-opening-reversal"
 ETF_PULLBACK_FAMILY = "liquid-etf-trend-pullback-cost-floor"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
+EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
 SUPPORTED_FAMILIES = {
     EQUITY_RESIDUAL_FAMILY,
     INTRADAY_ETF_FAMILY,
     ETF_PULLBACK_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
+    EQUITY_GAP_CONTINUATION_FAMILY,
 }
 PRIMARY_ROUND_TRIP_COST_FRACTION = 0.001
 MINIMUM_GROSS_TO_COST_MULTIPLE = 5.0
@@ -39,6 +41,8 @@ STANDARDIZATION_LOOKBACK = 60
 OVERSOLD_SIGNAL_START_INDEX = 30
 OVERSOLD_SIGNAL_END_INDEX = 300
 OVERSOLD_FORCE_FLAT_INDEX = 380
+GAP_VOLUME_LOOKBACK_BARS = 15
+GAP_FORCE_FLAT_INDEX = 380
 
 
 class DenseStrategyRuntimeError(ValueError):
@@ -775,7 +779,11 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         raise DenseStrategyRuntimeError("dataset family binding is unsupported")
     _calendar(dataset)
     prepared = dict(dataset)
-    if family_id in {INTRADAY_ETF_FAMILY, OVERSOLD_REVERSAL_FAMILY}:
+    if family_id in {
+        INTRADAY_ETF_FAMILY,
+        OVERSOLD_REVERSAL_FAMILY,
+        EQUITY_GAP_CONTINUATION_FAMILY,
+    }:
         sessions = _minute_sessions(dataset)
         if family_id == INTRADAY_ETF_FAMILY:
             symbols = dataset.get("symbols")
@@ -809,16 +817,49 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                     or raw_symbols != sorted(set(map(str, raw_symbols)))
                 ):
                     raise DenseStrategyRuntimeError(
-                        f"oversold candidate universe is invalid for {day}"
+                        f"frozen candidate universe is invalid for {day}"
                     )
                 if not set(sessions.get(day, {})).issubset(set(raw_symbols)):
                     raise DenseStrategyRuntimeError(
-                        f"oversold minute inputs escaped the frozen universe for {day}"
+                        f"minute inputs escaped the frozen universe for {day}"
                     )
+            if family_id == EQUITY_GAP_CONTINUATION_FAMILY:
+                metadata = dataset.get("candidate_metadata_by_date")
+                if not isinstance(metadata, Mapping) or set(metadata) != set(
+                    calendar
+                ):
+                    raise DenseStrategyRuntimeError(
+                        "gap-continuation metadata does not match the calendar"
+                    )
+                for day in calendar:
+                    rows = metadata[day]
+                    if not isinstance(rows, Mapping) or set(rows) != set(
+                        map(str, candidates[day])
+                    ):
+                        raise DenseStrategyRuntimeError(
+                            f"gap-continuation metadata is incomplete for {day}"
+                        )
+                    for symbol, row in rows.items():
+                        if (
+                            not isinstance(row, Mapping)
+                            or row.get("symbol") != symbol
+                            or _number(
+                                row.get("gap_fraction"),
+                                f"candidate_metadata_by_date.{day}.{symbol}.gap_fraction",
+                            )
+                            < 0
+                        ):
+                            raise DenseStrategyRuntimeError(
+                                f"gap-continuation metadata is invalid for {day} {symbol}"
+                            )
         prepared["_prepared_minute_bars"] = sessions
         if family_id == OVERSOLD_REVERSAL_FAMILY:
             prepared["_oversold_feature_cache"] = _oversold_feature_cache(
                 sessions
+            )
+        elif family_id == EQUITY_GAP_CONTINUATION_FAMILY:
+            prepared["_gap_continuation_feature_cache"] = (
+                _gap_continuation_feature_cache(sessions)
             )
     else:
         daily = _daily_series(dataset)
@@ -1248,6 +1289,248 @@ def _oversold_candidates(
     return candidates
 
 
+def _gap_continuation_feature_cache(
+    sessions: Mapping[str, Mapping[str, Sequence[Mapping[str, Any]]]],
+) -> dict[str, dict[str, dict[str, list[dict[str, Any]]]]]:
+    """Precompute completed breakout observations once for all 32 gap trials."""
+
+    result: dict[str, dict[str, dict[str, list[dict[str, Any]]]]] = {}
+    for day, symbols in sessions.items():
+        result[day] = {}
+        for symbol, bars in symbols.items():
+            if len(bars) != 390:
+                raise DenseStrategyRuntimeError(
+                    f"gap-continuation input must contain 390 exact bars: {day} {symbol}"
+                )
+            cumulative_numerator = 0.0
+            cumulative_denominator = 0.0
+            vwap_by_index: list[float | None] = []
+            for bar in bars:
+                cumulative_numerator += float(bar["vwap_numerator"])
+                cumulative_denominator += float(bar["vwap_denominator"])
+                vwap_by_index.append(
+                    cumulative_numerator / cumulative_denominator
+                    if cumulative_denominator > 0
+                    else None
+                )
+            range_features: dict[str, list[dict[str, Any]]] = {}
+            for opening_range in (5, 15):
+                range_high = max(
+                    float(bar["high"]) for bar in bars[:opening_range]
+                )
+                range_low = min(
+                    float(bar["low"]) for bar in bars[:opening_range]
+                )
+                features: list[dict[str, Any]] = []
+                for index in range(
+                    max(opening_range, GAP_VOLUME_LOOKBACK_BARS),
+                    121,
+                ):
+                    vwap = vwap_by_index[index]
+                    if (
+                        vwap is None
+                        or float(bars[index]["close"]) <= range_high
+                        or float(bars[index]["close"]) <= vwap
+                    ):
+                        continue
+                    mean_volume = statistics.fmean(
+                        float(bar["volume"])
+                        for bar in bars[
+                            index - GAP_VOLUME_LOOKBACK_BARS : index
+                        ]
+                    )
+                    volume_multiple = (
+                        float(bars[index]["volume"]) / mean_volume
+                        if mean_volume > 0
+                        else 0.0
+                    )
+                    features.append(
+                        {
+                            "trigger_index": index,
+                            "entry_index": index + 1,
+                            "range_high": range_high,
+                            "range_low": range_low,
+                            "volume_multiple": volume_multiple,
+                        }
+                    )
+                range_features[str(opening_range)] = features
+            result[day][symbol] = range_features
+    return result
+
+
+def _gap_continuation_exit(
+    bars: Sequence[Mapping[str, Any]],
+    *,
+    entry_index: int,
+    stop_price: float,
+    target_price: float,
+) -> tuple[float, bool]:
+    for index in range(entry_index, len(bars)):
+        bar = bars[index]
+        opening = float(bar["open"])
+        if opening <= stop_price:
+            return opening, True
+        if index >= GAP_FORCE_FLAT_INDEX:
+            return opening, False
+        stop_hit = float(bar["low"]) <= stop_price
+        target_hit = float(bar["high"]) >= target_price
+        if stop_hit:
+            return stop_price, True
+        if target_hit:
+            return target_price, False
+    raise DenseStrategyRuntimeError(
+        "gap-continuation trade did not flatten by 15:50"
+    )
+
+
+def _gap_continuation_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    sessions = _minute_sessions(dataset)
+    cache = dataset.get("_gap_continuation_feature_cache")
+    if not isinstance(cache, Mapping):
+        cache = _gap_continuation_feature_cache(sessions)
+    raw_universe = dataset.get("candidate_symbols_by_date")
+    raw_metadata = dataset.get("candidate_metadata_by_date")
+    if not isinstance(raw_universe, Mapping) or not isinstance(
+        raw_metadata, Mapping
+    ):
+        raise DenseStrategyRuntimeError(
+            "gap-continuation dataset lacks its frozen candidate universe"
+        )
+    minimum_gap = float(parameters["minimum_gap_fraction"])
+    opening_range = int(parameters["opening_range_minutes"])
+    volume_threshold = float(parameters["breakout_volume_multiple"])
+    signal_cutoff = int(parameters["signal_cutoff_minutes"])
+    target_r = float(parameters["target_r"])
+    if (
+        minimum_gap not in {0.02, 0.04}
+        or opening_range not in {5, 15}
+        or volume_threshold not in {1.5, 2.5}
+        or signal_cutoff not in {60, 120}
+        or target_r not in {1.5, 2.0}
+    ):
+        raise DenseStrategyRuntimeError(
+            "gap-continuation trial parameters escaped the grid"
+        )
+    candidates: list[dict[str, Any]] = []
+    for day in calendar:
+        qualified: list[
+            tuple[int, float, float, str, dict[str, Any]]
+        ] = []
+        for symbol in map(str, raw_universe[day]):
+            metadata = raw_metadata[day][symbol]
+            gap_fraction = float(metadata["gap_fraction"])
+            if gap_fraction + 1e-12 < minimum_gap:
+                continue
+            for feature in (
+                cache.get(day, {})
+                .get(symbol, {})
+                .get(str(opening_range), [])
+            ):
+                if int(feature["trigger_index"]) > signal_cutoff:
+                    break
+                volume_multiple = float(feature["volume_multiple"])
+                if volume_multiple + 1e-12 < volume_threshold:
+                    continue
+                qualified.append(
+                    (
+                        int(feature["entry_index"]),
+                        -volume_multiple,
+                        -gap_fraction,
+                        symbol,
+                        dict(feature),
+                    )
+                )
+                break
+        if not qualified:
+            continue
+        (
+            entry_index,
+            negative_volume,
+            negative_gap,
+            symbol,
+            selected,
+        ) = sorted(qualified)[0]
+        volume_multiple = -negative_volume
+        gap_fraction = -negative_gap
+        signal_id = f"{day}-{EQUITY_GAP_CONTINUATION_FAMILY}-{symbol}"
+        bars = sessions.get(day, {}).get(symbol)
+        if bars is None or entry_index >= len(bars):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_bar",
+                }
+            )
+            continue
+        entry_price = float(bars[entry_index]["open"])
+        stop_price = float(selected["range_low"])
+        if stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        target_price = entry_price + target_r * (entry_price - stop_price)
+        expected_gross = (target_price - entry_price) / entry_price
+        if not _cost_floor(expected_gross):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "expected_move_below_cost_floor",
+                }
+            )
+            continue
+        exit_price, stop_executed = _gap_continuation_exit(
+            bars,
+            entry_index=entry_index,
+            stop_price=stop_price,
+            target_price=target_price,
+        )
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": day,
+                "decision_date": day,
+                "symbol": symbol,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": volume_multiple + gap_fraction,
+                "gap_fraction": gap_fraction,
+                "volume_multiple": volume_multiple,
+                "trigger_index": int(selected["trigger_index"]),
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "target_price": target_price,
+                "exit_date": day,
+                "exit_price": exit_price,
+                "marks": {day: exit_price},
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+            }
+        )
+    return candidates
+
+
 def build_candidates(
     dataset: Mapping[str, Any],
     family_id: str,
@@ -1267,6 +1550,8 @@ def build_candidates(
         return _etf_cross_sectional_momentum_candidates(dataset, parameters)
     if family_id == OVERSOLD_REVERSAL_FAMILY:
         return _oversold_candidates(dataset, parameters)
+    if family_id == EQUITY_GAP_CONTINUATION_FAMILY:
+        return _gap_continuation_candidates(dataset, parameters)
     raise DenseStrategyRuntimeError(f"unsupported dense family: {family_id}")
 
 
