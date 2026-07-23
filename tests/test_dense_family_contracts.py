@@ -132,6 +132,19 @@ def test_batch_freeze_fails_before_weekly_reset(tmp_path):
             status_path=tmp_path / "status.json",
             enforce_commit=False,
         )
+    with pytest.raises(
+        contracts.DenseFamilyContractError,
+        match="cannot be future-dated",
+    ):
+        contracts.freeze_batch(
+            inventory,
+            as_of=date(2026, 7, 27),
+            actual_today=date(2026, 7, 22),
+            index_path=index,
+            output_root=tmp_path / "future-contracts",
+            status_path=tmp_path / "future-status.json",
+            enforce_commit=False,
+        )
 
 
 def test_batch_freezes_exact_three_valid_contracts_after_reset(tmp_path):
@@ -140,6 +153,7 @@ def test_batch_freezes_exact_three_valid_contracts_after_reset(tmp_path):
     paths, status = contracts.freeze_batch(
         inventory,
         as_of=date(2026, 7, 27),
+        actual_today=date(2026, 7, 27),
         index_path=index,
         output_root=tmp_path / "contracts",
         status_path=tmp_path / "status.json",
@@ -181,6 +195,7 @@ def test_batch_freeze_requires_committed_inventory_after_reset(
         contracts.freeze_batch(
             inventory,
             as_of=date(2026, 7, 27),
+            actual_today=date(2026, 7, 27),
             index_path=index,
             output_root=tmp_path / "contracts",
             status_path=tmp_path / "status.json",
@@ -207,6 +222,7 @@ def test_prior_outcome_pair_blocks_confirmation_scope(tmp_path):
         contracts.freeze_batch(
             inventory,
             as_of=date(2026, 7, 27),
+            actual_today=date(2026, 7, 27),
             index_path=index,
             output_root=tmp_path / "contracts",
             status_path=tmp_path / "status.json",

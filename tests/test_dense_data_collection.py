@@ -199,6 +199,26 @@ def test_plan_and_provider_access_fail_before_week_reset(tmp_path):
             as_of=date(2026, 7, 22),
             enforce_commit=False,
         )
+    with pytest.raises(
+        collection.DenseDataCollectionError,
+        match="cannot be future-dated",
+    ):
+        collection.freeze_plan(
+            tmp_path / "missing.json",
+            as_of=date(2026, 7, 27),
+            actual_today=date(2026, 7, 22),
+            enforce_commit=False,
+        )
+    with pytest.raises(
+        collection.DenseDataCollectionError,
+        match="cannot be future-dated",
+    ):
+        collection.collect(
+            tmp_path / "missing.json",
+            as_of=date(2026, 7, 27),
+            enforce_commit=False,
+            clock=lambda: datetime(2026, 7, 22, 12, 0, tzinfo=UTC),
+        )
 
 
 @pytest.mark.parametrize(
@@ -303,6 +323,7 @@ def test_frozen_search_derives_exact_warmup_and_request_plan(
     _path, plan = collection.freeze_plan(
         search_path,
         as_of=date(2026, 7, 27),
+        actual_today=date(2026, 7, 27),
         calendar_path=calendar,
         public_root=tmp_path / "public",
         enforce_commit=False,

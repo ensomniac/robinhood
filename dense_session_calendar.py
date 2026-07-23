@@ -200,18 +200,24 @@ def _single_contract_inspection(
     root: Path, contract: Mapping[str, Any], *, enforce_commit: bool
 ) -> tuple[Path, dict[str, Any]]:
     paths = sorted((root / "contract-inspection").glob("*.json"))
-    if len(paths) != 1:
-        raise DenseSessionCalendarError("expected one calendar contract inspection")
-    path = paths[0]
+    matches: list[tuple[Path, dict[str, Any]]] = []
+    for path in paths:
+        try:
+            inspection = strategy_discovery.load_artifact(
+                path, expected_kind=CONTRACT_INSPECTION_KIND
+            )
+        except strategy_discovery.StrategyDiscoveryError:
+            continue
+        if inspection.get("contract_sha256") == contract["artifact_sha256"]:
+            matches.append((path, inspection))
+    if len(matches) != 1:
+        raise DenseSessionCalendarError(
+            "expected one inspection for the exact calendar contract"
+        )
+    path, inspection = matches[0]
     if enforce_commit:
         strategy_discovery.require_committed(path)
-    inspection = strategy_discovery.load_artifact(
-        path, expected_kind=CONTRACT_INSPECTION_KIND
-    )
-    if (
-        inspection.get("state") != "CALENDAR_CONTRACT_INSPECTED_READY"
-        or inspection.get("contract_sha256") != contract["artifact_sha256"]
-    ):
+    if inspection.get("state") != "CALENDAR_CONTRACT_INSPECTED_READY":
         raise DenseSessionCalendarError("calendar contract inspection binding drifted")
     return path, inspection
 
@@ -220,13 +226,17 @@ def collect(
     contract_path: Path,
     *,
     as_of: date | None = None,
+    actual_today: date | None = None,
     collected_at: str,
     env_path: Path = DEFAULT_ENV_PATH,
     root: Path = DEFAULT_ROOT,
     getter: Callable[..., Any] = requests.get,
     enforce_commit: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
-    current = as_of or date.today()
+    observed_today = actual_today or date.today()
+    if as_of is not None and as_of > observed_today:
+        raise DenseSessionCalendarError("calendar as_of cannot be future-dated")
+    current = as_of or observed_today
     if current < batch.ACTIVATION_NOT_BEFORE:
         raise DenseSessionCalendarError(
             f"calendar provider access is closed until {batch.ACTIVATION_NOT_BEFORE}"

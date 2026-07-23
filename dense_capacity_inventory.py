@@ -238,10 +238,14 @@ def build_inventory(
     *,
     as_of: date,
     created_at: str,
+    actual_today: date | None = None,
     calendar_path: Path = DEFAULT_CALENDAR,
     index_path: Path = outcome_exposure.DEFAULT_INDEX,
     output_root: Path = DEFAULT_OUTPUT_ROOT,
 ) -> tuple[Path, dict[str, Any]]:
+    observed_today = actual_today or date.today()
+    if as_of > observed_today:
+        raise DenseCapacityInventoryError("capacity as_of cannot be future-dated")
     if as_of < batch.ACTIVATION_NOT_BEFORE:
         raise DenseCapacityInventoryError(
             f"capacity allocation is closed until {batch.ACTIVATION_NOT_BEFORE}"

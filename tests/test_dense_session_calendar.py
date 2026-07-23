@@ -6,6 +6,7 @@ import pytest
 
 import dense_session_calendar as calendar
 import dense_session_calendar_inspection as inspection
+import strategy_discovery
 
 
 def _rows(count=1_600):
@@ -53,6 +54,17 @@ def test_calendar_provider_access_fails_before_week_reset(tmp_path):
             collected_at="2026-07-22T12:00:00-04:00",
             enforce_commit=False,
         )
+    with pytest.raises(
+        calendar.DenseSessionCalendarError,
+        match="cannot be future-dated",
+    ):
+        calendar.collect(
+            tmp_path / "missing.json",
+            as_of=date(2026, 7, 27),
+            actual_today=date(2026, 7, 22),
+            collected_at="2026-07-27T12:00:00-04:00",
+            enforce_commit=False,
+        )
 
 
 def test_extended_calendar_contract_collection_and_independent_capacity_inspection(
@@ -77,11 +89,23 @@ def test_extended_calendar_contract_collection_and_independent_capacity_inspecti
         enforce_commit=False,
     )
     assert contract_inspection["state"] == "CALENDAR_CONTRACT_INSPECTED_READY"
+    strategy_discovery._write_artifact(
+        {
+            "schema_version": 1,
+            "artifact_kind": calendar.CONTRACT_INSPECTION_KIND,
+            "campaign_id": calendar.batch.CAMPAIGN_ID,
+            "state": "CALENDAR_CONTRACT_INSPECTED_READY",
+            "contract_sha256": "f" * 64,
+        },
+        root / "contract-inspection",
+        "superseded-calendar-contract-inspection",
+    )
     env = tmp_path / ".env"
     env.write_text("ALPACA_KEY=test\nALPACA_SECRET=test\n", encoding="utf-8")
     collection_path, collected = calendar.collect(
         contract_path,
         as_of=date(2026, 7, 27),
+        actual_today=date(2026, 7, 27),
         collected_at="2026-07-27T08:00:00-04:00",
         env_path=env,
         root=root,

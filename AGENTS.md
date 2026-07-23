@@ -146,6 +146,9 @@ content-addressed evidence under `strategy_tournament/v2/`. Neither workflow
 contacts providers or Robinhood without a separately frozen authorization, and
 neither may award readiness. `portfolio_maturity.py` remains the sole
 `PILOT_READY` authority. Waiting and safety statuses are nonterminal.
+Any supplied research `as_of` date is bounded by the actual process date for
+state-changing calendar, capacity, family-freeze, data-plan, and provider
+collection commands; a future date cannot simulate an ISO-week reset.
 
 The prior controller and plan, `strategy_validation.py` and
 `PRODUCTION_STRATEGY_VALIDATION.md`, are `SUPERSEDED_PAUSED` only as the sole

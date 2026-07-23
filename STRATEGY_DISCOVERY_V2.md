@@ -179,6 +179,9 @@ keeps all family-contract, provider, outcome, and broker permissions closed
 until the 2026-W31 reset on 2026-07-27. After that reset it opens only the
 disjoint development/embargo/confirmation evidence-freeze step; provider access
 still requires committed exact family contracts and inspected predecessors.
+Mutating calendar, capacity, family-freeze, data-plan, and provider-collection
+commands compare a supplied `--as-of` with the actual process clock and reject
+a future date; `--as-of 2026-07-27` cannot simulate the weekly reset early.
 The corrected prospective plan supersedes pre-reset plan `0bb78f43...` before
 any family activation or outcome access. Its pullback universe is exactly the
 ten broad/macro ETFs plus the nine authorized legacy sector SPDRs (`XLB`, `XLE`,
@@ -206,6 +209,12 @@ python3 dense_session_calendar.py inspect-contract \
   strategy_tournament/v2/calendar/contract/dense-session-calendar-contract-<sha256>.json \
   --inspected-at 2026-07-22T23:59:59-04:00
 ```
+
+When implementation changes supersede an uncollected calendar contract,
+preserve its contract and inspection, freeze and inspect the new implementation
+hash, and pass that exact new contract to collection. Collection selects the
+one inspection bound to the supplied contract instead of treating a preserved
+older inspection as ambiguous authority.
 
 After the reset, collect and independently inspect that calendar before running
 the allocator. The allocator requires one contiguous 940-session untouched run:

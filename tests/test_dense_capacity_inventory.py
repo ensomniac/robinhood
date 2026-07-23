@@ -34,6 +34,18 @@ def test_capacity_allocation_fails_before_week_reset(tmp_path):
             index_path=tmp_path / "exposure.jsonl",
             output_root=tmp_path / "output",
         )
+    with pytest.raises(
+        capacity.DenseCapacityInventoryError,
+        match="cannot be future-dated",
+    ):
+        capacity.build_inventory(
+            as_of=date(2026, 7, 27),
+            actual_today=date(2026, 7, 22),
+            created_at="2026-07-27T08:00:00-04:00",
+            calendar_path=_calendar(tmp_path),
+            index_path=tmp_path / "exposure.jsonl",
+            output_root=tmp_path / "future-output",
+        )
 
 
 def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
@@ -46,6 +58,7 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
     index = tmp_path / "exposure.jsonl"
     path, inventory = capacity.build_inventory(
         as_of=date(2026, 7, 27),
+        actual_today=date(2026, 7, 27),
         created_at="2026-07-27T08:00:00-04:00",
         calendar_path=calendar,
         index_path=index,
@@ -81,6 +94,7 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
     contracts, status = family_contracts.freeze_batch(
         path,
         as_of=date(2026, 7, 27),
+        actual_today=date(2026, 7, 27),
         index_path=index,
         output_root=tmp_path / "contracts",
         status_path=tmp_path / "status.json",
@@ -110,6 +124,7 @@ def test_known_outcome_date_splits_runs_and_can_make_capacity_insufficient(tmp_p
     with pytest.raises(capacity.DenseCapacityInventoryError, match="contiguous"):
         capacity.build_inventory(
             as_of=batch.ACTIVATION_NOT_BEFORE,
+            actual_today=batch.ACTIVATION_NOT_BEFORE,
             created_at="2026-07-27T08:00:00-04:00",
             calendar_path=calendar,
             index_path=index,

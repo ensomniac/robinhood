@@ -204,11 +204,15 @@ def freeze_plan(
     *,
     lane: str = "development",
     as_of: date | None = None,
+    actual_today: date | None = None,
     calendar_path: Path = DEFAULT_CALENDAR,
     public_root: Path = DEFAULT_PUBLIC_ROOT,
     enforce_commit: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
-    current = as_of or date.today()
+    observed_today = actual_today or date.today()
+    if as_of is not None and as_of > observed_today:
+        raise DenseDataCollectionError("data-planning as_of cannot be future-dated")
+    current = as_of or observed_today
     if current < batch.ACTIVATION_NOT_BEFORE:
         raise DenseDataCollectionError(
             f"data planning is closed until {batch.ACTIVATION_NOT_BEFORE}"
@@ -833,7 +837,11 @@ def collect(
     retry_sleeper: Any = time.sleep,
     clock: Callable[[], datetime] = _utc_now,
 ) -> tuple[Path, dict[str, Any]]:
-    current = as_of or date.today()
+    invocation_started = _timestamp(clock(), "collection clock")
+    observed_today = invocation_started.date()
+    if as_of is not None and as_of > observed_today:
+        raise DenseDataCollectionError("provider as_of cannot be future-dated")
+    current = as_of or observed_today
     if current < batch.ACTIVATION_NOT_BEFORE:
         raise DenseDataCollectionError(
             f"provider collection is closed until {batch.ACTIVATION_NOT_BEFORE}"
@@ -856,7 +864,6 @@ def collect(
     private_state = _telemetry_state(
         telemetry_path, str(plan["artifact_sha256"])
     )
-    invocation_started = _timestamp(clock(), "collection clock")
     collection_started_at = private_state["collection_started_at"] or (
         invocation_started.isoformat().replace("+00:00", "Z")
     )

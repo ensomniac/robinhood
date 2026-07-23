@@ -337,12 +337,16 @@ def freeze_batch(
     inventory_path: Path,
     *,
     as_of: date | None = None,
+    actual_today: date | None = None,
     index_path: Path = outcome_exposure.DEFAULT_INDEX,
     output_root: Path = DEFAULT_OUTPUT_ROOT,
     status_path: Path = DEFAULT_STATUS_PATH,
     enforce_commit: bool = True,
 ) -> tuple[list[Path], dict[str, Any]]:
-    current = as_of or date.today()
+    observed_today = actual_today or date.today()
+    if as_of is not None and as_of > observed_today:
+        raise DenseFamilyContractError("family-contract as_of cannot be future-dated")
+    current = as_of or observed_today
     if current >= batch.ACTIVATION_NOT_BEFORE and enforce_commit:
         strategy_discovery.require_committed(inventory_path)
     inventory = _validate_inventory(
