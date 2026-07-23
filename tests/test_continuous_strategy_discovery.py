@@ -146,7 +146,7 @@ def test_existing_family_successor_freezes_without_waiting_or_reusing_v1(
         assert preflight["preflight_details"]["external_dataset_opened"] is False
 
 
-def test_status_keeps_new_family_wait_separate_from_continuous_lane(tmp_path: Path):
+def test_status_keeps_rolling_batch_separate_from_continuous_lane(tmp_path: Path):
     original_calendar_root = continuous.CALENDAR_ROOT
     continuous.CALENDAR_ROOT = tmp_path / "calendar"
     try:
@@ -159,7 +159,10 @@ def test_status_keeps_new_family_wait_separate_from_continuous_lane(tmp_path: Pa
     )
     assert status["successor"]["calendar_wait_required"] is False
     assert status["successor"]["new_mechanism_family_slot_consumed"] is False
-    assert status["new_family_batch"]["state"] == "WAITING_ISO_WEEK_RESET"
+    assert status["new_family_batch"]["state"] == (
+        "READY_FOR_DISJOINT_EVIDENCE_FREEZE"
+    )
+    assert status["new_family_batch"]["activation_permitted"] is True
 
 
 def test_status_turns_rejected_successor_into_non_waiting_readiness_work():
@@ -168,13 +171,14 @@ def test_status_turns_rejected_successor_into_non_waiting_readiness_work():
     assert status["state"] == "EXISTING_FAMILY_QUEUE_EXHAUSTED"
     assert status["successor"]["development_disposition"] == "REJECTED"
     assert status["successor"]["calendar_wait_required"] is False
-    assert status["successor"]["outcome_access_wait_required"] is True
+    assert status["successor"]["outcome_access_wait_required"] is False
+    assert status["successor"]["outcome_access_prerequisites_remaining"] is True
     readiness = status["preactivation_readiness"]
-    assert readiness["state"] == "PREACTIVATION_READY"
+    assert readiness["state"] == "ACTIVATION_READY"
     assert readiness["blockers"] == []
     assert readiness["preactivation_work_complete"] is True
     assert readiness["credentials_ready"] is True
-    assert readiness["provider_access_permitted"] is False
+    assert readiness["provider_access_permitted"] is True
     assert readiness["target_outcome_access_permitted"] is False
     assert readiness["broker_actions_permitted"] is False
 

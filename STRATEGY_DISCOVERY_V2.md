@@ -8,8 +8,11 @@ or retired-v2 evidence.
 
 `portfolio_config.toml` schema 2 binds v2 as the active research campaign,
 preserves v1 as immutable adverse history, sets the first-pilot target to one,
-retains the portfolio target of three, and keeps the three-new-family weekly
-ceiling. Schema-1 ledger records remain auditable but cannot satisfy a v2
+and retains the portfolio target of three. The original weekly activation
+ceiling remains historical authorization evidence; the independently inspected
+2026-07-23 rolling amendment permits at most three concurrently outcome-active
+families and releases a slot immediately after terminal disposition. Schema-1
+ledger records remain auditable but cannot satisfy a v2
 maturity gate. `portfolio_config_v1.toml` is the byte-identical audit snapshot
 used to reconstruct historical v1 artifacts.
 
@@ -190,22 +193,22 @@ duplicate, or unknown broker state fails closed.
 The next dense batch is predeclared in the content-addressed
 `strategy_tournament/v2/next_batch/plans/` manifest. It preserves the exact
 48-trial liquid-equity residual-reversal, 32-trial intraday index-ETF reversal,
-and 32-trial liquid-ETF pullback grids. `next_week_discovery_batch.py status`
-keeps all family-contract, provider, outcome, and broker permissions closed
-until the 2026-W31 reset on 2026-07-27. After that reset it opens only the
-disjoint development/embargo/confirmation evidence-freeze step; provider access
+and 32-trial liquid-ETF pullback grids. All three original active families are
+terminal, so rolling authorization `bedfb0ea...5e5585` releases three slots
+immediately. `next_week_discovery_batch.py status` now opens only the disjoint
+development/embargo/confirmation evidence-freeze step; target-outcome access
 still requires committed exact family contracts and inspected predecessors.
 Mutating calendar, capacity, family-freeze, data-plan, and provider-collection
 commands compare a supplied `--as-of` with the actual process clock and reject
-a future date; `--as-of 2026-07-27` cannot simulate the weekly reset early.
-Capacity allocation and family-contract activation return structured fail-closed
+a future date. Capacity allocation and family-contract activation rebuild the
+rolling authorization and terminal predecessor bindings and return structured fail-closed
 JSON on these or other authority errors, rather than an operator-ambiguous
 traceback.
-The corrected prospective plan supersedes pre-reset plan `0bb78f43...` before
-any family activation or outcome access. Its pullback universe is exactly the
+The rolling plan supersedes pre-reset plans `0bb78f43...` and `5d7e9f76...`
+before any family activation or outcome access. Its pullback universe is exactly the
 ten broad/macro ETFs plus the nine authorized legacy sector SPDRs (`XLB`, `XLE`,
 `XLF`, `XLI`, `XLK`, `XLP`, `XLU`, `XLV`, `XLY`); `XLC` and `XLRE` remain in the
-preserved superseded artifact but are not part of the active W31 family.
+preserved superseded artifact but are not part of the active rolling batch.
 
 `outcome_exposure.py` is the append-only global date/instrument contamination
 authority. Its initial hash-bound baseline marks all 226 dates in the preserved
@@ -214,19 +217,19 @@ silently become v2 confirmation.
 Every inspected development or confirmation result adds its exact frozen scope.
 An absent, mutated, or stale baseline fails the default audit.
 
-At or after the reset, `dense_capacity_inventory.py` builds the zero-outcome
+Under the inspected rolling authorization, `dense_capacity_inventory.py` builds the zero-outcome
 inventory from the committed full-session calendar and current exposure index.
 The prior 2023-start calendar cannot supply disjoint 60/200-session warmups, so
 the extended public-session calendar has its own zero-price collection contract.
-That contract and its outcome-blind inspection may be frozen before the reset;
-the single Alpaca calendar request remains closed until 2026-07-27:
+That contract and its outcome-blind inspection bind the rolling authorization
+before the single outcome-blind Alpaca calendar request:
 
 ```sh
 python3 dense_session_calendar.py freeze \
-  --created-at 2026-07-22T23:59:59-04:00
+  --created-at 2026-07-23T23:00:00-04:00
 python3 dense_session_calendar.py inspect-contract \
   strategy_tournament/v2/calendar/contract/dense-session-calendar-contract-<sha256>.json \
-  --inspected-at 2026-07-22T23:59:59-04:00
+  --inspected-at 2026-07-23T23:01:00-04:00
 ```
 
 When implementation changes supersede an uncollected calendar contract,
@@ -237,8 +240,8 @@ older inspection as ambiguous authority.
 
 ## Continuous existing-family successors
 
-The three-new-family weekly ceiling is not a date gate on all historical
-discovery. `continuous_strategy_discovery.py` runs prospectively frozen exact
+The rolling three-active-family limit is an evidence-concurrency control, not a
+date gate. `continuous_strategy_discovery.py` runs prospectively frozen exact
 versions inside an already-evaluated mechanism family without consuming a new
 mechanism-family slot. It requires the retired predecessor and its independent
 inspection, carries that attempt in the successor contract, prohibits promotion
@@ -284,7 +287,7 @@ without price, return, or broker access:
 ```sh
 python3 dense_session_calendar.py collect \
   strategy_tournament/v2/calendar/contract/dense-session-calendar-contract-<sha256>.json \
-  --as-of 2026-07-27 \
+  --as-of 2026-07-23 \
   --collected-at <actual-current-ISO8601-timestamp>
 # Commit the collection status, then independently inspect its ignored rows.
 python3 dense_session_calendar_inspection.py \
@@ -292,7 +295,7 @@ python3 dense_session_calendar_inspection.py \
   --inspected-at <actual-current-ISO8601-timestamp>
 # Commit the inspection before allocating any evidence dates.
 python3 dense_capacity_inventory.py \
-  --as-of 2026-07-27 \
+  --as-of 2026-07-23 \
   --created-at <actual-current-ISO8601-timestamp>
 # Commit the inventory and its three capacity manifests before contract freeze.
 ```
@@ -305,17 +308,17 @@ exposure-index SHA-256, and a self-hash. Pass that content-addressed inventory t
 
 ```sh
 python3 dense_family_contracts.py \
-  strategy_tournament/v2/next_batch/capacity/w31-capacity-inventory-<sha256>.json \
-  --as-of 2026-07-27
+  strategy_tournament/v2/next_batch/capacity/rolling-batch-1-capacity-inventory-<sha256>.json \
+  --as-of 2026-07-23
 ```
 
-The command fails before the reset, below 100 formal observations, on any
+The command fails without the inspected rolling authorization, below 100 formal observations, on any
 cross-family pair overlap, on any prior confirmation exposure, or if the index
 or inventory drifts. Success writes exactly three immutable family contracts
 and updates the next-batch status while provider, outcome, and broker permissions
 remain false. The status update is an explicit mutable state transition, not a
 content-addressed artifact write: it accepts only the committed, exact
-zero-access W31 waiting status (or an identical completed transition on
+zero-access rolling-batch status (or an identical completed transition on
 idempotent replay), and rejects any other predecessor before writing a family
 contract. Each contract then follows the normal `preflight` and
 `freeze-search` transitions before its separately hash-bound development data
@@ -346,10 +349,10 @@ confirmation collection must start after winner preregistration, and independent
 inspection must occur after completion.
 
 ```sh
-python3 dense_data_collection.py --as-of 2026-07-27 \
+python3 dense_data_collection.py --as-of 2026-07-23 \
   freeze-development path/to/committed-search.json
 # Commit the generated collection plan before the next command.
-python3 dense_data_collection.py --as-of 2026-07-27 \
+python3 dense_data_collection.py --as-of 2026-07-23 \
   collect path/to/committed-collection-plan.json
 # Commit the collection status before independent inspection.
 python3 dense_data_collection_inspection.py \
@@ -367,9 +370,9 @@ each family is then:
 python3 strategy_discovery.py preflight path/to/committed-family-contract.json
 # Commit after every successful transition below.
 python3 strategy_discovery.py freeze-search path/to/committed-family-contract.json
-python3 dense_data_collection.py --as-of 2026-07-27 \
+python3 dense_data_collection.py --as-of 2026-07-23 \
   freeze-development path/to/committed-search.json
-python3 dense_data_collection.py --as-of 2026-07-27 \
+python3 dense_data_collection.py --as-of 2026-07-23 \
   collect path/to/committed-development-collection-plan.json
 python3 dense_data_collection_inspection.py \
   path/to/committed-development-collection-status.json \
@@ -392,9 +395,9 @@ confirmation requests.
 
 ```sh
 python3 strategy_discovery.py freeze-winner path/to/committed-development-inspection.json
-python3 dense_data_collection.py --as-of 2026-07-27 \
+python3 dense_data_collection.py --as-of 2026-07-23 \
   freeze-confirmation path/to/committed-winner.json
-python3 dense_data_collection.py --as-of 2026-07-27 \
+python3 dense_data_collection.py --as-of 2026-07-23 \
   collect path/to/committed-confirmation-collection-plan.json
 python3 dense_data_collection_inspection.py \
   path/to/committed-confirmation-collection-status.json \

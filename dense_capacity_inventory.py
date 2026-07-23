@@ -173,7 +173,7 @@ def _capacity_manifest(
     path, _manifest = freeze_dataset_contract(
         {
             "schema_version": 1,
-            "dataset_id": f"dataset-{family_id}-w31-capacity",
+            "dataset_id": f"dataset-{family_id}-rolling-batch-1-capacity",
             "registered_at": created_at,
             "requested_dates": list(dates),
             "dataset_payload": {
@@ -246,10 +246,13 @@ def build_inventory(
     observed_today = actual_today or date.today()
     if as_of > observed_today:
         raise DenseCapacityInventoryError("capacity as_of cannot be future-dated")
-    if as_of < batch.ACTIVATION_NOT_BEFORE:
-        raise DenseCapacityInventoryError(
-            f"capacity allocation is closed until {batch.ACTIVATION_NOT_BEFORE}"
+    try:
+        rolling = batch.require_rolling_activation(
+            as_of=as_of,
+            actual_today=observed_today,
         )
+    except batch.NextWeekBatchError as exc:
+        raise DenseCapacityInventoryError(str(exc)) from exc
     try:
         observed_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
     except ValueError as exc:
@@ -311,7 +314,9 @@ def build_inventory(
     inventory = {
         "schema_version": 1,
         "campaign_id": batch.CAMPAIGN_ID,
-        "target_iso_week": batch.TARGET_ISO_WEEK,
+        "research_batch_id": batch.TARGET_BATCH_ID,
+        "activation_policy": rolling["activation_policy"],
+        "rolling_authorization_sha256": rolling["authorization_sha256"],
         "created_at": created_at,
         "calendar_path": _repo_path(calendar_path),
         "calendar_sha256": _file_hash(calendar_path),
@@ -322,7 +327,9 @@ def build_inventory(
         "broker_actions": 0,
     }
     inventory["inventory_sha256"] = dense_family_contracts._hash(inventory)
-    path = output_root / f"w31-capacity-inventory-{inventory['inventory_sha256']}.json"
+    path = output_root / (
+        f"rolling-batch-1-capacity-inventory-{inventory['inventory_sha256']}.json"
+    )
     dense_family_contracts._write(inventory, path)
     return path, inventory
 

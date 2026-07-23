@@ -4,11 +4,11 @@ Adopted: 2026-07-23
 
 ## Decision
 
-The campaign's maximum of three **new mechanism families** per ISO week is not
-a general research shutdown. After that budget is spent, discovery continues
-through prospectively frozen exact versions inside already-authorized mechanism
-families, provided each version uses disjoint evidence and every previous
-attempt remains in the audit and selection history.
+The campaign permits at most three **outcome-active mechanism families** at
+once. After an independently inspected terminal disposition, its slot is
+released immediately; discovery never waits for an ISO-week boundary. Every
+previous attempt remains in the audit, global exposure index, and cumulative
+selection history.
 
 No failed exact version may be repaired on its evaluated corpus. A successor
 may use the failure only as contaminated hypothesis-generating evidence. Its
@@ -432,15 +432,15 @@ remain untouched.
 
 This closes the credible existing-family successor queue. Repeatedly changing
 residual parameters after these outcomes would be selection leakage. The
-continuous lane now performs outcome-blind preactivation readiness for the
-already authorized W31 dense batch. That work includes exact calendar and
-capacity reconstruction, input completeness, shared-runtime performance,
-production-evaluator parity, tests, and audits. Only a new-family contract
-activation or outcome access waits for the weekly budget reset.
+continuous lane now activates the already predeclared dense batch under rolling
+authorization `bedfb0ea...5e5585`. The three terminal predecessor families
+released all three slots. The immediate transition is the single outcome-blind
+calendar collection and independent inspection, followed by disjoint capacity
+allocation and exact family-contract freeze. No literal date wait remains.
 
 Run `python3 dense_batch_readiness.py status` for the exact machine handoff.
 It verifies the current committed plan, calendar contract and inspection,
-implementation hashes, credential availability, empty pre-collection output
+implementation hashes, rolling authority, credential availability, empty pre-collection output
 paths, and global outcome-index hash. It also emits the exact ordered commands
 for calendar collection, independent inspection, capacity allocation, contract
 freeze, and development-data freeze. Its readiness state never grants target
@@ -450,9 +450,8 @@ outcome or broker access.
 
 The residual-equity implementation is now used only for the existing
 cross-sectional-reversal successor described above. The separately predeclared
-intraday-ETF opening-reversal family remains subject to the new-family weekly
-budget. Its calendar gate is independent and cannot block continuous historical
-work.
+intraday-ETF opening-reversal family occupies one of the three released rolling
+slots only after its exact contract freezes.
 
 The short-horizon oversold-reversal successor above is active now. Its retired
 v1 ten-signal result is hypothesis evidence only, and the already exposed gap

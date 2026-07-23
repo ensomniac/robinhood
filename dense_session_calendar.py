@@ -80,6 +80,15 @@ def freeze_contract(
         raise DenseSessionCalendarError("created_at is invalid") from exc
     if timestamp.tzinfo is None:
         raise DenseSessionCalendarError("created_at must include a timezone")
+    if timestamp.date() > date.today():
+        raise DenseSessionCalendarError("created_at cannot be future-dated")
+    try:
+        rolling = batch.require_rolling_activation(
+            as_of=timestamp.date(),
+            actual_today=timestamp.date(),
+        )
+    except batch.NextWeekBatchError as exc:
+        raise DenseSessionCalendarError(str(exc)) from exc
     if enforce_commit:
         strategy_discovery.require_committed(Path(__file__))
         strategy_discovery.require_committed(INSPECTOR_PATH)
@@ -89,6 +98,9 @@ def freeze_contract(
         "schema_version": 1,
         "artifact_kind": CONTRACT_KIND,
         "campaign_id": batch.CAMPAIGN_ID,
+        "research_batch_id": batch.TARGET_BATCH_ID,
+        "activation_policy": rolling["activation_policy"],
+        "rolling_authorization_sha256": rolling["authorization_sha256"],
         "state": "CALENDAR_CONTRACT_FROZEN",
         "created_at": created_at,
         "provider": "Alpaca Market Calendar API",
@@ -121,8 +133,21 @@ def inspect_contract(
     contract = strategy_discovery.load_artifact(
         contract_path, expected_kind=CONTRACT_KIND
     )
+    try:
+        rolling = batch.require_rolling_activation(
+            as_of=date.fromisoformat(str(contract["created_at"])[:10]),
+            actual_today=date.fromisoformat(str(contract["created_at"])[:10]),
+        )
+    except (KeyError, ValueError, batch.NextWeekBatchError) as exc:
+        raise DenseSessionCalendarError(
+            "rolling calendar authorization is invalid"
+        ) from exc
     if not (
         contract.get("state") == "CALENDAR_CONTRACT_FROZEN"
+        and contract.get("research_batch_id") == batch.TARGET_BATCH_ID
+        and contract.get("activation_policy") == rolling["activation_policy"]
+        and contract.get("rolling_authorization_sha256")
+        == rolling["authorization_sha256"]
         and contract.get("implementation_hashes") == _implementation_hashes()
         and contract.get("provider_requests") == 0
         and contract.get("market_prices_accessed") is False
@@ -138,6 +163,9 @@ def inspect_contract(
         "schema_version": 1,
         "artifact_kind": CONTRACT_INSPECTION_KIND,
         "campaign_id": batch.CAMPAIGN_ID,
+        "research_batch_id": batch.TARGET_BATCH_ID,
+        "activation_policy": rolling["activation_policy"],
+        "rolling_authorization_sha256": rolling["authorization_sha256"],
         "state": "CALENDAR_CONTRACT_INSPECTED_READY",
         "contract_path": _repo_path(contract_path),
         "contract_sha256": contract["artifact_sha256"],
@@ -237,15 +265,27 @@ def collect(
     if as_of is not None and as_of > observed_today:
         raise DenseSessionCalendarError("calendar as_of cannot be future-dated")
     current = as_of or observed_today
-    if current < batch.ACTIVATION_NOT_BEFORE:
-        raise DenseSessionCalendarError(
-            f"calendar provider access is closed until {batch.ACTIVATION_NOT_BEFORE}"
+    try:
+        rolling = batch.require_rolling_activation(
+            as_of=current,
+            actual_today=observed_today,
         )
+    except batch.NextWeekBatchError as exc:
+        raise DenseSessionCalendarError(str(exc)) from exc
     if enforce_commit:
         strategy_discovery.require_committed(contract_path)
     contract = strategy_discovery.load_artifact(
         contract_path, expected_kind=CONTRACT_KIND
     )
+    if not (
+        contract.get("research_batch_id") == batch.TARGET_BATCH_ID
+        and contract.get("activation_policy") == rolling["activation_policy"]
+        and contract.get("rolling_authorization_sha256")
+        == rolling["authorization_sha256"]
+    ):
+        raise DenseSessionCalendarError(
+            "calendar contract is not bound to rolling authorization"
+        )
     inspection_path, inspection = _single_contract_inspection(
         root, contract, enforce_commit=enforce_commit
     )

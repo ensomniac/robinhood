@@ -80,8 +80,8 @@ source, 80 explicitly contaminated development decision dates, complete
 account calendar, five post-settlement embargo sessions, and 25 untouched
 confirmation opportunities. Freeze all 48 authorized residual-reversal
 combinations and the production evaluator hashes before reopening the cached
-daily price file. The separately predeclared intraday-ETF family remains
-subject to its weekly activation gate.
+daily price file. The separately predeclared intraday-ETF family now proceeds
+through one released rolling slot after its exact contract freezes.
 
 V3 failed closed before the first candidate or trial metric because its frozen
 common-stock source omitted the required SPY reference series. V4 added that
@@ -100,10 +100,10 @@ frozen, and all 25 confirmation opportunities remain untouched.
 
 The existing-family search surface is now exhausted without a defensible
 survivor. Further outcome-guided variants would be repeated selection, not
-independent discovery. Work therefore continues immediately on outcome-blind
-readiness for the already predeclared three-family dense batch; only its
-new-family activation and target-outcome access remain subject to the weekly
-gate.
+independent discovery. The independently inspected rolling authorization
+releases the three terminal predecessor slots immediately. Work therefore
+continues with the predeclared three-family dense batch without a calendar wait;
+target outcomes remain closed until exact disjoint family contracts freeze.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`

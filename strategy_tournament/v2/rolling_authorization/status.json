@@ -1,0 +1,24 @@
+{
+  "activation_policy": "ROLLING_TERMINAL_REPLACEMENT",
+  "active_family_count": 0,
+  "authorization_path": "strategy_tournament/v2/rolling_authorization/rolling-discovery-authorization-bedfb0ea139cfe806b1b780828e59f1d98e3a125c50ae2b8d86b662d5d5e5585.json",
+  "authorization_sha256": "bedfb0ea139cfe806b1b780828e59f1d98e3a125c50ae2b8d86b662d5d5e5585",
+  "available_slot_count": 3,
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "inspection": {
+    "all_other_gates_preserved": true,
+    "cumulative_selection_accounting_rebuilt": true,
+    "explicit_user_authorization_rebuilt": true,
+    "rolling_slot_limit_rebuilt": true,
+    "terminal_predecessors_rebuilt": true,
+    "valid": true
+  },
+  "provider_access_permitted": true,
+  "schema_version": 1,
+  "selection_accounting_complete": true,
+  "state": "ROLLING_DISCOVERY_AUTHORIZED",
+  "target_outcome_access_permitted": false,
+  "terminal_predecessors_inspected": 3,
+  "valid": true
+}

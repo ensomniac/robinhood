@@ -1,13 +1,15 @@
 {
-  "activation_not_before": "2026-07-27",
+  "activation_not_before": "2026-07-23",
+  "activation_policy": "ROLLING_TERMINAL_REPLACEMENT",
   "broker_actions_permitted": false,
   "campaign_id": "multi-strategy-portfolio-validation-v2",
   "family_contracts_frozen": 0,
   "outcome_access_permitted": false,
-  "plan_sha256": "5d7e9f7690214903f8bb41ed64edded3010051858cf6a13a5b9cdbc3f562c3dc",
+  "plan_sha256": "d366f156c9d8c5a899c864a1572a370b99b544335be6f835b57c63836bf195a5",
   "provider_access_permitted": false,
+  "research_batch_id": "rolling-batch-1",
+  "rolling_authorization_sha256": "bedfb0ea139cfe806b1b780828e59f1d98e3a125c50ae2b8d86b662d5d5e5585",
   "schema_version": 1,
-  "state": "WAITING_ISO_WEEK_RESET",
-  "target_iso_week": "2026-W31",
+  "state": "READY_FOR_DISJOINT_EVIDENCE_FREEZE",
   "valid": true
 }

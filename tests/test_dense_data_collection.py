@@ -192,8 +192,11 @@ def _artifacts(tmp_path, monkeypatch, *, lane="development"):
     return plan_path, plan, symbols
 
 
-def test_plan_and_provider_access_fail_before_week_reset(tmp_path):
-    with pytest.raises(collection.DenseDataCollectionError, match="closed until"):
+def test_plan_and_provider_access_fail_before_rolling_authorization(tmp_path):
+    with pytest.raises(
+        collection.DenseDataCollectionError,
+        match="not authorized before",
+    ):
         collection.freeze_plan(
             tmp_path / "missing.json",
             as_of=date(2026, 7, 22),

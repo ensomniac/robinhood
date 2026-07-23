@@ -98,6 +98,11 @@ def _calendar_boundary(
             continue
         if (
             contract.get("state") == "CALENDAR_CONTRACT_FROZEN"
+            and contract.get("research_batch_id") == batch.TARGET_BATCH_ID
+            and contract.get("activation_policy")
+            == plan_activation_policy()
+            and contract.get("rolling_authorization_sha256")
+            == plan_authorization_sha256()
             and contract.get("implementation_hashes") == current_hashes
             and contract.get("query")
             == {
@@ -148,6 +153,14 @@ def _calendar_boundary(
         for path in (contract_path, inspection_path):
             strategy_discovery.require_committed(path)
     return contract_path, contract, inspection_path, inspection
+
+
+def plan_activation_policy() -> str:
+    return str(batch.build_plan()["activation_policy"])
+
+
+def plan_authorization_sha256() -> str:
+    return str(batch.build_plan()["rolling_authorization_sha256"])
 
 
 def build_status(
@@ -201,7 +214,10 @@ def build_status(
         if not calendar_path.exists() and not source_path.exists()
         else "COLLECTION_OUTPUT_PRESENT"
     )
-    activation_permitted = current >= batch.ACTIVATION_NOT_BEFORE
+    activation = batch.activation_status(today=current)
+    activation_permitted = activation.get("activation_permitted") is True
+    if not activation_permitted:
+        blockers.extend(str(item) for item in activation.get("blockers", []))
     if blockers:
         state = "PREACTIVATION_BLOCKED"
     elif activation_permitted:
@@ -255,10 +271,10 @@ def build_status(
             "performance and production-evaluator verification",
             "repository and sensitive-data audits",
         ],
-        "gated_until_activation": [
-            "calendar provider collection",
-            "new-family capacity allocation and contract freeze",
-            "development market-outcome collection",
+        "remaining_transition_order": [
+            "collect and inspect the outcome-blind session calendar",
+            "freeze disjoint family evidence and exact family contracts",
+            "collect development inputs only from committed exact contracts",
         ],
         "next_commands": [
             collection_command,

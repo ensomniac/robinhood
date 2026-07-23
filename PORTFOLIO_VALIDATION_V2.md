@@ -14,8 +14,18 @@ privacy, broker-safety, capacity, lifecycle, and pushed-Git audit must pass.
 
 ## Superseding authority
 
-Ryan explicitly authorizes up to three new mechanism families per ISO week.
-All v1 evidence remains immutable and adverse. No failed variant may be repaired
+The original 2026-07-22 authorization limited activation to three new mechanism
+families per ISO week. Ryan explicitly superseded that idle calendar throttle
+on 2026-07-23: at most three mechanism families may be outcome-active
+concurrently, and a terminal independently inspected disposition releases its
+slot immediately. All prior trials and dispositions remain in cumulative
+selection accounting. Calendar time never creates statistical independence.
+
+The rolling amendment is frozen in
+`strategy_tournament/v2/rolling_authorization/` and becomes authority only
+after `rolling_discovery_authorization_inspection.py` writes
+`ROLLING_DISCOVERY_AUTHORIZED`. All v1 evidence remains immutable and adverse.
+No failed variant may be repaired
 on its evaluation corpus, relabeled, omitted from the trial record, or admitted
 to maturity. No evidence, promotion, privacy, broker-safety, protection, loss,
 drawdown, or portfolio-risk gate may be weakened.

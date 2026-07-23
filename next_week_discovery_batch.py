@@ -1,4 +1,4 @@
-"""Prepare the exact three-family v2 batch without spending next week's budget."""
+"""Prepare the exact three-family v2 batch under rolling research slots."""
 
 from __future__ import annotations
 
@@ -14,13 +14,14 @@ from typing import Any
 
 import asr_capacity as capacity
 import portfolio_maturity
+import rolling_discovery_authorization
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 SCHEMA_VERSION = 1
 CAMPAIGN_ID = portfolio_maturity.V2_CAMPAIGN_ID
-TARGET_ISO_WEEK = "2026-W31"
-ACTIVATION_NOT_BEFORE = date(2026, 7, 27)
+TARGET_BATCH_ID = "rolling-batch-1"
+ACTIVATION_NOT_BEFORE = date(2026, 7, 23)
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/next_batch/plans"
 DEFAULT_STATUS = PROJECT_ROOT / "strategy_tournament/v2/next_batch/status.json"
 ASR_DISPOSITION_PATH = (
@@ -30,7 +31,7 @@ ASR_DISPOSITION_PATH = (
     "4395f72eecb5b1d37fa08475e270e7dd59fd4d05fe80339f98b0ec6d6f0b9b01.json"
 )
 SUPERSEDED_PLAN_SHA256 = (
-    "0bb78f430e56ac56cc4ca20661569ec1f2c66316e5fe12cd97e71224261bd278"
+    "5d7e9f7690214903f8bb41ed64edded3010051858cf6a13a5b9cdbc3f562c3dc"
 )
 
 
@@ -58,27 +59,52 @@ def _grid_count(grid: Mapping[str, Sequence[Any]]) -> int:
     return len(list(itertools.product(*grid.values())))
 
 
-def _authority() -> tuple[portfolio_maturity.PortfolioConfig, dict[str, Any]]:
+def _authority() -> tuple[
+    portfolio_maturity.PortfolioConfig, dict[str, Any], dict[str, Any]
+]:
     config = portfolio_maturity.load_config()
     asr = capacity._read_object(ASR_DISPOSITION_PATH)
+    rolling = rolling_discovery_authorization.load_ready_status()
     if not (
         config.schema_version == 2
         and config.active_research_campaign_id == CAMPAIGN_ID
-        and config.raw["campaign"]["maximum_new_mechanism_families_per_iso_week"]
-        == 3
+        and config.raw["campaign"]["first_pilot_ready_target"] == 1
+        and config.raw["campaign"]["portfolio_target"] == 3
         and asr.get("disposition_sha256")
         == capacity._self_hash(asr, "disposition_sha256")
         and asr.get("disposition") == "RETIRED_INSUFFICIENT_SOURCE_COMPLETENESS"
         and asr.get("first_pilot_fast_lane_eligible") is False
         and asr.get("market_outcomes_accessed") is False
         and asr.get("broker_actions") == 0
+        and rolling.get("activation_policy")
+        == rolling_discovery_authorization.POLICY
+        and rolling.get("available_slot_count") == 3
+        and rolling.get("target_outcome_access_permitted") is False
+        and rolling.get("broker_actions_permitted") is False
     ):
-        raise NextWeekBatchError("v2 campaign or ASR handoff is invalid")
-    return config, asr
+        raise NextWeekBatchError(
+            "v2 campaign, terminal handoff, or rolling authorization is invalid"
+        )
+    return config, asr, rolling
+
+
+def require_rolling_activation(
+    *,
+    as_of: date,
+    actual_today: date | None = None,
+) -> dict[str, Any]:
+    observed_today = actual_today or date.today()
+    if as_of > observed_today:
+        raise NextWeekBatchError("rolling activation as_of cannot be future-dated")
+    if as_of < ACTIVATION_NOT_BEFORE:
+        raise NextWeekBatchError(
+            f"rolling discovery was not authorized before {ACTIVATION_NOT_BEFORE}"
+        )
+    return rolling_discovery_authorization.load_ready_status()
 
 
 def build_plan() -> dict[str, Any]:
-    config, asr = _authority()
+    _config, asr, rolling = _authority()
     common = {
         "selection_mode": "development_search",
         "long_only": True,
@@ -177,12 +203,12 @@ def build_plan() -> dict[str, Any]:
         "schema_version": SCHEMA_VERSION,
         "artifact_kind": "prospective-three-family-discovery-batch-plan",
         "campaign_id": CAMPAIGN_ID,
-        "target_iso_week": TARGET_ISO_WEEK,
+        "research_batch_id": TARGET_BATCH_ID,
+        "activation_policy": rolling["activation_policy"],
+        "rolling_authorization_sha256": rolling["authorization_sha256"],
         "activation_not_before": ACTIVATION_NOT_BEFORE.isoformat(),
-        "state": "WAITING_ISO_WEEK_RESET",
-        "family_budget": config.raw["campaign"][
-            "maximum_new_mechanism_families_per_iso_week"
-        ],
+        "state": "READY_FOR_DISJOINT_EVIDENCE_FREEZE",
+        "family_budget": rolling["available_slot_count"],
         "families": families,
         "common_contract": common,
         "evidence_freeze_handoff": {
@@ -198,17 +224,19 @@ def build_plan() -> dict[str, Any]:
         "asr_disposition_sha256": asr["disposition_sha256"],
         "supersedes_plan_sha256": SUPERSEDED_PLAN_SHA256,
         "supersession_reason": (
-            "Restore the authorized nine-sector-SPDR universe by removing XLC "
-            "and XLRE before any family contract, provider request, or outcome access."
+            "The explicit rolling-slot authorization replaces idle ISO-week "
+            "waiting after all three predecessor families reached terminal "
+            "dispositions. Every evidence and selection gate remains unchanged."
         ),
-        "activation_before_reset_permitted": False,
+        "activation_before_calendar_reset_permitted": True,
         "family_contracts_frozen": 0,
         "provider_requests": 0,
         "market_outcomes_accessed": False,
         "broker_actions": 0,
         "claim_limit": (
-            "This artifact predeclares the next batch only. It consumes no family "
-            "slot and freezes no evidence dates before the ISO-week reset."
+            "This artifact occupies the three released rolling research slots "
+            "only after exact evidence contracts freeze. It does not permit "
+            "target outcomes or broker actions."
         ),
     }
     plan["plan_sha256"] = _self_hash(plan, "plan_sha256")
@@ -219,7 +247,7 @@ def prepare(
     *, root: Path = DEFAULT_ROOT, status_path: Path = DEFAULT_STATUS
 ) -> tuple[Path, dict[str, Any]]:
     plan = build_plan()
-    path = root / f"v2-three-family-2026-w31-{plan['plan_sha256']}.json"
+    path = root / f"v2-three-family-rolling-batch-1-{plan['plan_sha256']}.json"
     if path.exists() and capacity._read_object(path) != plan:
         raise NextWeekBatchError("content-addressed next-week plan differs")
     capacity._write_object(plan, path)
@@ -228,9 +256,13 @@ def prepare(
             "schema_version": SCHEMA_VERSION,
             "campaign_id": CAMPAIGN_ID,
             "plan_sha256": plan["plan_sha256"],
-            "target_iso_week": TARGET_ISO_WEEK,
+            "research_batch_id": TARGET_BATCH_ID,
+            "activation_policy": plan["activation_policy"],
+            "rolling_authorization_sha256": plan[
+                "rolling_authorization_sha256"
+            ],
             "activation_not_before": ACTIVATION_NOT_BEFORE.isoformat(),
-            "state": "WAITING_ISO_WEEK_RESET",
+            "state": "READY_FOR_DISJOINT_EVIDENCE_FREEZE",
             "family_contracts_frozen": 0,
             "provider_access_permitted": False,
             "outcome_access_permitted": False,
@@ -247,20 +279,28 @@ def activation_status(
 ) -> dict[str, Any]:
     current = today or date.today()
     status = capacity._read_object(status_path)
-    if current < ACTIVATION_NOT_BEFORE:
+    try:
+        rolling = require_rolling_activation(
+            as_of=current,
+            actual_today=current,
+        )
+    except (
+        NextWeekBatchError,
+        rolling_discovery_authorization.RollingDiscoveryAuthorizationError,
+    ) as exc:
         return {
             **status,
             "as_of": current.isoformat(),
             "activation_permitted": False,
-            "blockers": [
-                f"ISO-week reset has not occurred; wait until {ACTIVATION_NOT_BEFORE.isoformat()}"
-            ],
+            "blockers": [str(exc)],
         }
     return {
         **status,
         "as_of": current.isoformat(),
         "state": "READY_FOR_DISJOINT_EVIDENCE_FREEZE",
         "activation_permitted": True,
+        "activation_policy": rolling["activation_policy"],
+        "available_slot_count": rolling["available_slot_count"],
         "blockers": [
             "freeze exact disjoint development, embargo, and confirmation evidence before provider access"
         ],

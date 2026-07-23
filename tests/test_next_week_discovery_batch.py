@@ -5,10 +5,11 @@ from datetime import date
 import next_week_discovery_batch as batch
 
 
-def test_exact_three_family_grids_are_predeclared_without_activation():
+def test_exact_three_family_grids_use_released_rolling_slots():
     plan = batch.build_plan()
-    assert plan["state"] == "WAITING_ISO_WEEK_RESET"
-    assert plan["target_iso_week"] == "2026-W31"
+    assert plan["state"] == "READY_FOR_DISJOINT_EVIDENCE_FREEZE"
+    assert plan["research_batch_id"] == "rolling-batch-1"
+    assert plan["activation_policy"] == "ROLLING_TERMINAL_REPLACEMENT"
     assert [item["trial_count"] for item in plan["families"]] == [48, 32, 32]
     assert len(plan["families"]) == 3
     assert plan["family_contracts_frozen"] == 0
@@ -22,18 +23,20 @@ def test_exact_three_family_grids_are_predeclared_without_activation():
     assert plan["supersedes_plan_sha256"] == batch.SUPERSEDED_PLAN_SHA256
 
 
-def test_weekly_reset_gate_blocks_then_opens_only_evidence_freeze(tmp_path):
+def test_rolling_authorization_opens_evidence_freeze_without_calendar_wait(tmp_path):
     batch.prepare(root=tmp_path / "plans", status_path=tmp_path / "status.json")
     before = batch.activation_status(
-        today=date(2026, 7, 26), status_path=tmp_path / "status.json"
+        today=date(2026, 7, 22), status_path=tmp_path / "status.json"
     )
     after = batch.activation_status(
-        today=date(2026, 7, 27), status_path=tmp_path / "status.json"
+        today=date(2026, 7, 23), status_path=tmp_path / "status.json"
     )
     assert before["activation_permitted"] is False
-    assert before["state"] == "WAITING_ISO_WEEK_RESET"
+    assert "not authorized before" in before["blockers"][0]
     assert after["activation_permitted"] is True
     assert after["state"] == "READY_FOR_DISJOINT_EVIDENCE_FREEZE"
+    assert after["activation_policy"] == "ROLLING_TERMINAL_REPLACEMENT"
+    assert after["available_slot_count"] == 3
     assert after["provider_access_permitted"] is False
     assert after["outcome_access_permitted"] is False
     assert after["family_contracts_frozen"] == 0

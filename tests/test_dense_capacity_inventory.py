@@ -26,8 +26,11 @@ def _calendar(tmp_path, count: int = 1_100):
     return path
 
 
-def test_capacity_allocation_fails_before_week_reset(tmp_path):
-    with pytest.raises(capacity.DenseCapacityInventoryError, match="closed until"):
+def test_capacity_allocation_fails_before_rolling_authorization(tmp_path):
+    with pytest.raises(
+        capacity.DenseCapacityInventoryError,
+        match="not authorized before",
+    ):
         capacity.build_inventory(
             as_of=date(2026, 7, 22),
             created_at="2026-07-22T08:00:00-04:00",
@@ -82,9 +85,9 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
     calendar = _calendar(tmp_path)
     index = tmp_path / "exposure.jsonl"
     path, inventory = capacity.build_inventory(
-        as_of=date(2026, 7, 27),
-        actual_today=date(2026, 7, 27),
-        created_at="2026-07-27T08:00:00-04:00",
+        as_of=date(2026, 7, 23),
+        actual_today=date(2026, 7, 23),
+        created_at="2026-07-23T08:00:00-04:00",
         calendar_path=calendar,
         index_path=index,
         output_root=tmp_path / "output",
@@ -118,8 +121,8 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
     assert len(all_collection_dates) == len(set(all_collection_dates)) == 940
     contracts, status = family_contracts.freeze_batch(
         path,
-        as_of=date(2026, 7, 27),
-        actual_today=date(2026, 7, 27),
+        as_of=date(2026, 7, 23),
+        actual_today=date(2026, 7, 23),
         index_path=index,
         output_root=tmp_path / "contracts",
         status_path=tmp_path / "status.json",
@@ -150,7 +153,7 @@ def test_known_outcome_date_splits_runs_and_can_make_capacity_insufficient(tmp_p
         capacity.build_inventory(
             as_of=batch.ACTIVATION_NOT_BEFORE,
             actual_today=batch.ACTIVATION_NOT_BEFORE,
-            created_at="2026-07-27T08:00:00-04:00",
+            created_at="2026-07-23T08:00:00-04:00",
             calendar_path=calendar,
             index_path=index,
             output_root=tmp_path / "output",

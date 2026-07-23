@@ -31,9 +31,13 @@ insufficient source completeness before pagination or document access. It may
 not be repaired on the observed provider corpus; target outcomes and broker
 actions remain forbidden.
 
-The weekly three-family ceiling applies only to newly introduced mechanism
-families; it is never a reason to wait before continuing historical work on an
-existing family. The first continuous broad-ETF pullback successor is retired
+Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
+policy permits at most three concurrently outcome-active mechanism families;
+an independently inspected terminal disposition releases its slot immediately.
+Rolling authorization `bedfb0ea...5e5585` is independently
+`ROLLING_DISCOVERY_AUTHORIZED` and preserves every prior trial, contamination,
+selection, confirmation, risk, protection, privacy, shadow, and broker gate.
+The first continuous broad-ETF pullback successor is retired
 after all 32 trials failed its inspected selection-aware development gates. The
 immediate oversold lane,
 `short-horizon-oversold-reversal-v3-gap-universe`, is retired after independent
@@ -142,19 +146,19 @@ highest-growth path drew down 12.726R. The exact version cannot be repaired or
 enter confirmation; all 25 confirmation opportunities remain untouched.
 
 Do not manufacture another residual-reversal version from those outcomes.
-The immediate non-waiting work is outcome-blind readiness for the already
-predeclared W31 dense batch: keep the session-calendar, capacity, exact
-contract, shared-data, production-evaluator, and performance paths ready so
-the reset requires only the authorized evidence freeze and collection. The
-weekly gate blocks new-family activation and outcome access, not engineering,
-testing, auditing, or historical-source readiness.
+The immediate work is the already predeclared dense batch under three released
+rolling slots. Collect and independently inspect the one outcome-blind session
+calendar, allocate disjoint development/embargo/confirmation evidence, freeze
+all three exact contracts, and then collect development inputs. There is no
+calendar wait.
 
 `python3 dense_batch_readiness.py status` is the fail-closed handoff authority
-for that preactivation work. Before the reset it must resolve one current
+for that work. It must resolve one current
 committed calendar contract and inspection, committed clean implementations,
 available calendar credentials, absent pre-collection outputs, and the current
-outcome-exposure hash. `PREACTIVATION_READY` means the repository and inputs
-are ready; it does not authorize provider, outcome, or broker access.
+outcome-exposure hash. `ACTIVATION_READY` permits only the ordered outcome-blind
+calendar/provider transition; it does not permit target outcomes or broker
+access.
 
 The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1
@@ -243,12 +247,11 @@ under the local 60-second acceptance without provider requests. Schema-1 portfol
 evidence remains immutable adverse history and cannot satisfy v2 maturity. The
 global outcome-exposure baseline conservatively marks all 226 dates in the
 preserved portfolio and legacy strategy ledgers as wildcard-symbol
-contamination. No new family or v2 outcome
-evidence has been admitted by this engineering change. After the 2026-07-27
-ISO-week reset, `dense_session_calendar.py` may collect only its already frozen
-and inspected 2020-2026 public calendar contract `14521284...96d67`, cleared by
-inspection `3dbfeb5a...2bf2f`. Contract `31f2226b...4ea10` and inspection
-`f78c0896...3f7` are preserved but superseded before provider access.
+contamination. No new family or v2 outcome evidence has been admitted by the
+rolling authorization. `dense_session_calendar.py` may collect only the
+rolling-authorized 2020-2026 public calendar contract `362addc7...1a1b0d`,
+cleared by inspection `e852194b...caadf`. Earlier contracts and inspections
+remain preserved but are superseded before provider access.
 Independent calendar inspection must prove a 940-session untouched run before
 `dense_capacity_inventory.py` allocates three disjoint family segments. Each
 segment contains its exact 60- or 200-session indicator warmup followed by a
@@ -256,7 +259,7 @@ segment contains its exact 60- or 200-session indicator warmup followed by a
 `dense_family_contracts.py` is the only family-contract activation path; it must
 freeze all three disjoint scopes against that exposure index before provider
 access. Its mutable next-batch status may advance only from the committed exact
-zero-access W31 waiting state; immutable family contracts remain
+rolling-batch zero-access state; immutable family contracts remain
 content-addressed, and an unauthorized or drifted status rejects the whole
 transition before any contract write. Discovery preflight binds the committed
 contract path and validated implementation hashes; search freeze and every

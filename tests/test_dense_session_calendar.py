@@ -46,8 +46,11 @@ def _isolated_module(tmp_path, monkeypatch):
     monkeypatch.setattr(inspection, "PROJECT_ROOT", tmp_path)
 
 
-def test_calendar_provider_access_fails_before_week_reset(tmp_path):
-    with pytest.raises(calendar.DenseSessionCalendarError, match="closed until"):
+def test_calendar_provider_access_fails_before_rolling_authorization(tmp_path):
+    with pytest.raises(
+        calendar.DenseSessionCalendarError,
+        match="not authorized before",
+    ):
         calendar.collect(
             tmp_path / "missing.json",
             as_of=date(2026, 7, 22),
@@ -75,7 +78,7 @@ def test_extended_calendar_contract_collection_and_independent_capacity_inspecti
     calendar_path = tmp_path / "historical/calendar.json"
     source_path = tmp_path / "historical/source.json"
     contract_path, contract = calendar.freeze_contract(
-        created_at="2026-07-22T12:00:00-04:00",
+        created_at="2026-07-23T12:00:00-04:00",
         root=root,
         calendar_path=calendar_path,
         source_path=source_path,
@@ -84,7 +87,7 @@ def test_extended_calendar_contract_collection_and_independent_capacity_inspecti
     assert contract["provider_requests"] == 0
     _inspection_path, contract_inspection = calendar.inspect_contract(
         contract_path,
-        inspected_at="2026-07-22T12:01:00-04:00",
+        inspected_at="2026-07-23T12:01:00-04:00",
         root=root,
         enforce_commit=False,
     )
@@ -104,9 +107,9 @@ def test_extended_calendar_contract_collection_and_independent_capacity_inspecti
     env.write_text("ALPACA_KEY=test\nALPACA_SECRET=test\n", encoding="utf-8")
     collection_path, collected = calendar.collect(
         contract_path,
-        as_of=date(2026, 7, 27),
-        actual_today=date(2026, 7, 27),
-        collected_at="2026-07-27T08:00:00-04:00",
+        as_of=date(2026, 7, 23),
+        actual_today=date(2026, 7, 23),
+        collected_at="2026-07-23T12:02:00-04:00",
         env_path=env,
         root=root,
         getter=lambda *args, **kwargs: FakeResponse(_rows()),
@@ -117,7 +120,7 @@ def test_extended_calendar_contract_collection_and_independent_capacity_inspecti
     index = tmp_path / "exposure.jsonl"
     _path, inspected = inspection.inspect(
         collection_path,
-        inspected_at="2026-07-27T08:01:00-04:00",
+        inspected_at="2026-07-23T12:03:00-04:00",
         root=root,
         index_path=index,
         enforce_commit=False,

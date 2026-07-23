@@ -62,15 +62,19 @@ def _write(value: Mapping[str, Any], path: Path) -> None:
         temporary.replace(path)
 
 
-def _waiting_status() -> dict[str, Any]:
+def _zero_access_status() -> dict[str, Any]:
     plan = batch.build_plan()
     return {
         "schema_version": SCHEMA_VERSION,
         "campaign_id": batch.CAMPAIGN_ID,
         "plan_sha256": plan["plan_sha256"],
-        "target_iso_week": batch.TARGET_ISO_WEEK,
+        "research_batch_id": batch.TARGET_BATCH_ID,
+        "activation_policy": plan["activation_policy"],
+        "rolling_authorization_sha256": plan[
+            "rolling_authorization_sha256"
+        ],
         "activation_not_before": batch.ACTIVATION_NOT_BEFORE.isoformat(),
-        "state": "WAITING_ISO_WEEK_RESET",
+        "state": "READY_FOR_DISJOINT_EVIDENCE_FREEZE",
         "family_contracts_frozen": 0,
         "provider_access_permitted": False,
         "outcome_access_permitted": False,
@@ -88,15 +92,16 @@ def _validate_status_transition(
     if not path.exists():
         if enforce_commit:
             raise DenseFamilyContractError(
-                "committed W31 waiting status is required before family freeze"
+                "committed rolling-batch zero-access status is required before "
+                "family freeze"
             )
         return
     observed = _read(path)
     if observed == target:
         return
-    if observed != _waiting_status():
+    if observed != _zero_access_status():
         raise DenseFamilyContractError(
-            "W31 status is not the exact authorized zero-access predecessor"
+            "rolling-batch status is not the exact authorized zero-access predecessor"
         )
     if enforce_commit:
         try:
@@ -137,6 +142,7 @@ def _validate_inventory(
     value: Mapping[str, Any],
     *,
     as_of: date,
+    actual_today: date | None = None,
     index_path: Path,
     enforce_commit: bool,
 ) -> dict[str, Any]:
@@ -144,14 +150,20 @@ def _validate_inventory(
     supplied = inventory.pop("inventory_sha256", None)
     if supplied != _hash(inventory):
         raise DenseFamilyContractError("inventory hash is invalid")
-    if as_of < batch.ACTIVATION_NOT_BEFORE:
-        raise DenseFamilyContractError(
-            f"ISO-week budget does not reset until {batch.ACTIVATION_NOT_BEFORE}"
+    try:
+        rolling = batch.require_rolling_activation(
+            as_of=as_of,
+            actual_today=actual_today,
         )
+    except batch.NextWeekBatchError as exc:
+        raise DenseFamilyContractError(str(exc)) from exc
     if not (
         inventory.get("schema_version") == SCHEMA_VERSION
         and inventory.get("campaign_id") == batch.CAMPAIGN_ID
-        and inventory.get("target_iso_week") == batch.TARGET_ISO_WEEK
+        and inventory.get("research_batch_id") == batch.TARGET_BATCH_ID
+        and inventory.get("activation_policy") == rolling["activation_policy"]
+        and inventory.get("rolling_authorization_sha256")
+        == rolling["authorization_sha256"]
         and inventory.get("outcomes_accessed") is False
         and inventory.get("provider_requests") == 0
         and inventory.get("broker_actions") == 0
@@ -402,11 +414,19 @@ def freeze_batch(
     if as_of is not None and as_of > observed_today:
         raise DenseFamilyContractError("family-contract as_of cannot be future-dated")
     current = as_of or observed_today
-    if current >= batch.ACTIVATION_NOT_BEFORE and enforce_commit:
+    try:
+        rolling = batch.require_rolling_activation(
+            as_of=current,
+            actual_today=observed_today,
+        )
+    except batch.NextWeekBatchError as exc:
+        raise DenseFamilyContractError(str(exc)) from exc
+    if enforce_commit:
         strategy_discovery.require_committed(inventory_path)
     inventory = _validate_inventory(
         _read(inventory_path),
         as_of=current,
+        actual_today=observed_today,
         index_path=index_path,
         enforce_commit=enforce_commit,
     )
@@ -428,7 +448,9 @@ def freeze_batch(
     status = {
         "schema_version": SCHEMA_VERSION,
         "campaign_id": batch.CAMPAIGN_ID,
-        "target_iso_week": batch.TARGET_ISO_WEEK,
+        "research_batch_id": batch.TARGET_BATCH_ID,
+        "activation_policy": rolling["activation_policy"],
+        "rolling_authorization_sha256": rolling["authorization_sha256"],
         "activation_not_before": batch.ACTIVATION_NOT_BEFORE.isoformat(),
         "as_of": current.isoformat(),
         "state": "THREE_FAMILY_CONTRACTS_FROZEN",

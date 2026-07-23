@@ -272,9 +272,10 @@ def freeze_plan(
     if as_of is not None and as_of > observed_today:
         raise DenseDataCollectionError("data-planning as_of cannot be future-dated")
     current = as_of or observed_today
-    if current < batch.ACTIVATION_NOT_BEFORE and not authority_path.is_file():
+    if current < batch.ACTIVATION_NOT_BEFORE:
         raise DenseDataCollectionError(
-            f"new-family data planning is closed until {batch.ACTIVATION_NOT_BEFORE}"
+            f"rolling discovery was not authorized before "
+            f"{batch.ACTIVATION_NOT_BEFORE}"
         )
     authority, contract, binding = _authority(
         authority_path, lane=lane, enforce_commit=enforce_commit
@@ -282,10 +283,14 @@ def freeze_plan(
     existing_successor = _existing_successor_authorized(
         contract, enforce_commit=enforce_commit
     )
-    if current < batch.ACTIVATION_NOT_BEFORE and not existing_successor:
-        raise DenseDataCollectionError(
-            f"new-family data planning is closed until {batch.ACTIVATION_NOT_BEFORE}"
-        )
+    if not existing_successor:
+        try:
+            batch.require_rolling_activation(
+                as_of=current,
+                actual_today=observed_today,
+            )
+        except batch.NextWeekBatchError as exc:
+            raise DenseDataCollectionError(str(exc)) from exc
     if lane == "confirmation":
         try:
             outcome_exposure.assert_untouched(
@@ -1047,16 +1052,22 @@ def collect(
     if as_of is not None and as_of > observed_today:
         raise DenseDataCollectionError("provider as_of cannot be future-dated")
     current = as_of or observed_today
-    plan = _validate_plan(plan_path, enforce_commit=enforce_commit)
-    if (
-        current < batch.ACTIVATION_NOT_BEFORE
-        and plan.get("research_generation")
-        != continuous_strategy_discovery.RESEARCH_GENERATION
-    ):
+    if current < batch.ACTIVATION_NOT_BEFORE:
         raise DenseDataCollectionError(
-            f"new-family provider collection is closed until "
+            f"rolling discovery was not authorized before "
             f"{batch.ACTIVATION_NOT_BEFORE}"
         )
+    plan = _validate_plan(plan_path, enforce_commit=enforce_commit)
+    if plan.get("research_generation") != (
+        continuous_strategy_discovery.RESEARCH_GENERATION
+    ):
+        try:
+            batch.require_rolling_activation(
+                as_of=current,
+                actual_today=observed_today,
+            )
+        except batch.NextWeekBatchError as exc:
+            raise DenseDataCollectionError(str(exc)) from exc
     existing = _existing_status(public_root, plan)
     if existing is not None:
         return existing

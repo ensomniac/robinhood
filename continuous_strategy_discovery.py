@@ -1,4 +1,4 @@
-"""Run an existing-family successor lane without waiting for a weekly reset.
+"""Run continuous historical discovery under rolling research slots.
 
 The weekly campaign ceiling governs *new mechanism families*.  This controller
 opens one prospectively frozen successor version of the already-evaluated
@@ -873,8 +873,8 @@ def build_status(
     ) == "REJECTED":
         state = "EXISTING_FAMILY_QUEUE_EXHAUSTED"
         next_action = (
-            "complete outcome-blind dense-batch input, runtime, production, "
-            "and audit readiness without activating a new family"
+            "collect and independently inspect the rolling batch session "
+            "calendar, then freeze all three disjoint evidence contracts"
         )
     elif not family_discovery_root.exists():
         state = "SUCCESSOR_CONTRACT_FROZEN"
@@ -906,7 +906,8 @@ def build_status(
             "new_mechanism_family_slot_consumed": False,
             "predecessor_corpus_reused": False,
             "calendar_wait_required": False,
-            "outcome_access_wait_required": state
+            "outcome_access_wait_required": False,
+            "outcome_access_prerequisites_remaining": state
             == "EXISTING_FAMILY_QUEUE_EXHAUSTED",
             "development_disposition": (
                 current_inspection.get("state")

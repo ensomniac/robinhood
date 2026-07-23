@@ -22,7 +22,7 @@ def _capacity_manifest(tmp_path, family_id: str, requested_dates: list[str]):
         {
             "schema_version": 1,
             "dataset_id": f"dataset-capacity-{family_id}",
-            "registered_at": "2026-07-27T08:00:00-04:00",
+            "registered_at": "2026-07-23T08:00:00-04:00",
             "requested_dates": requested_dates,
             "dataset_payload": {
                 "lane": "development",
@@ -105,8 +105,14 @@ def _inventory(tmp_path, index_path, *, overlap: bool = False):
     value = {
         "schema_version": 1,
         "campaign_id": batch.CAMPAIGN_ID,
-        "target_iso_week": batch.TARGET_ISO_WEEK,
-        "created_at": "2026-07-27T08:00:00-04:00",
+        "research_batch_id": batch.TARGET_BATCH_ID,
+        "activation_policy": "ROLLING_TERMINAL_REPLACEMENT",
+        "rolling_authorization_sha256": (
+            batch.rolling_discovery_authorization.load_ready_status()[
+                "authorization_sha256"
+            ]
+        ),
+        "created_at": "2026-07-23T08:00:00-04:00",
         "families": families,
         "outcome_exposure_index_sha256": outcome_exposure.audit(index_path)[
             "index_sha256"
@@ -121,10 +127,13 @@ def _inventory(tmp_path, index_path, *, overlap: bool = False):
     return path
 
 
-def test_batch_freeze_fails_before_weekly_reset(tmp_path):
+def test_batch_freeze_fails_before_rolling_authorization(tmp_path):
     index = tmp_path / "exposure.jsonl"
     inventory = _inventory(tmp_path, index)
-    with pytest.raises(contracts.DenseFamilyContractError, match="does not reset"):
+    with pytest.raises(
+        contracts.DenseFamilyContractError,
+        match="not authorized before",
+    ):
         contracts.freeze_batch(
             inventory,
             as_of=date(2026, 7, 22),
@@ -160,7 +169,7 @@ def test_family_contract_cli_reports_fail_closed_json(monkeypatch, capsys):
             "dense_family_contracts.py",
             "missing-inventory.json",
             "--as-of",
-            "2026-07-27",
+            "2026-07-23",
         ],
     )
 
@@ -171,15 +180,15 @@ def test_family_contract_cli_reports_fail_closed_json(monkeypatch, capsys):
     }
 
 
-def test_batch_freezes_exact_three_valid_contracts_after_reset(tmp_path):
+def test_batch_freezes_exact_three_valid_contracts_after_authorization(tmp_path):
     index = tmp_path / "exposure.jsonl"
     inventory = _inventory(tmp_path, index)
     status_path = tmp_path / "status.json"
     batch.prepare(root=tmp_path / "plans", status_path=status_path)
     paths, status = contracts.freeze_batch(
         inventory,
-        as_of=date(2026, 7, 27),
-        actual_today=date(2026, 7, 27),
+        as_of=date(2026, 7, 23),
+        actual_today=date(2026, 7, 23),
         index_path=index,
         output_root=tmp_path / "contracts",
         status_path=status_path,
@@ -207,8 +216,8 @@ def test_batch_freezes_exact_three_valid_contracts_after_reset(tmp_path):
 
     repeated_paths, repeated_status = contracts.freeze_batch(
         inventory,
-        as_of=date(2026, 7, 27),
-        actual_today=date(2026, 7, 27),
+        as_of=date(2026, 7, 23),
+        actual_today=date(2026, 7, 23),
         index_path=index,
         output_root=tmp_path / "contracts",
         status_path=status_path,
@@ -227,7 +236,7 @@ def test_batch_freeze_rejects_unauthorized_status_transition_without_writes(
     status_path.write_text(
         json.dumps(
             {
-                **contracts._waiting_status(),
+                    **contracts._zero_access_status(),
                 "provider_access_permitted": True,
             },
             indent=2,
@@ -244,8 +253,8 @@ def test_batch_freeze_rejects_unauthorized_status_transition_without_writes(
     ):
         contracts.freeze_batch(
             inventory,
-            as_of=date(2026, 7, 27),
-            actual_today=date(2026, 7, 27),
+            as_of=date(2026, 7, 23),
+            actual_today=date(2026, 7, 23),
             index_path=index,
             output_root=output_root,
             status_path=status_path,
@@ -255,7 +264,7 @@ def test_batch_freeze_rejects_unauthorized_status_transition_without_writes(
     assert not output_root.exists()
 
 
-def test_batch_freeze_requires_committed_inventory_after_reset(
+def test_batch_freeze_requires_committed_inventory_after_authorization(
     tmp_path, monkeypatch
 ):
     index = tmp_path / "exposure.jsonl"
@@ -270,8 +279,8 @@ def test_batch_freeze_requires_committed_inventory_after_reset(
     with pytest.raises(strategy_discovery.StrategyDiscoveryError, match="committed"):
         contracts.freeze_batch(
             inventory,
-            as_of=date(2026, 7, 27),
-            actual_today=date(2026, 7, 27),
+            as_of=date(2026, 7, 23),
+            actual_today=date(2026, 7, 23),
             index_path=index,
             output_root=tmp_path / "contracts",
             status_path=tmp_path / "status.json",
@@ -297,8 +306,8 @@ def test_prior_outcome_pair_blocks_confirmation_scope(tmp_path):
     with pytest.raises(contracts.DenseFamilyContractError, match="prior outcome"):
         contracts.freeze_batch(
             inventory,
-            as_of=date(2026, 7, 27),
-            actual_today=date(2026, 7, 27),
+            as_of=date(2026, 7, 23),
+            actual_today=date(2026, 7, 23),
             index_path=index,
             output_root=tmp_path / "contracts",
             status_path=tmp_path / "status.json",
