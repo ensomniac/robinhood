@@ -1,0 +1,2688 @@
+{
+  "artifact_kind": "dense-data-collection-plan",
+  "artifact_sha256": "649297a088c36a1b5c3eb8b007f9be3e0781344338be107dcfe5e9f5396ba0cb",
+  "as_of": "2026-07-23",
+  "authority_path": "strategy_tournament/v2/discovery/liquid-equity-market-residual-reversal/search/liquid-equity-market-residual-reversal-search-ac48890f099b5e8c3c08bd9b41fd43614005eb0f608092aa10f2a8e4a764ff40.json",
+  "authority_sha256": "ac48890f099b5e8c3c08bd9b41fd43614005eb0f608092aa10f2a8e4a764ff40",
+  "binding_sha256": "ac48890f099b5e8c3c08bd9b41fd43614005eb0f608092aa10f2a8e4a764ff40",
+  "broker_actions": 0,
+  "calendar_path": "historical_batches/dense_v2/session-calendar-2020-01-through-2026-07.json",
+  "calendar_sha256": "01b25b1b8192fe8fb9f416d6e8a229a23f80dec1013673049c8e7726252c64d4",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "daily_provider": null,
+  "evaluation_dates": [
+    "2023-01-27",
+    "2023-01-30",
+    "2023-01-31",
+    "2023-02-01",
+    "2023-02-02",
+    "2023-02-03",
+    "2023-02-06",
+    "2023-02-07",
+    "2023-02-08",
+    "2023-02-09",
+    "2023-02-10",
+    "2023-02-13",
+    "2023-02-14",
+    "2023-02-15",
+    "2023-02-16",
+    "2023-02-17",
+    "2023-02-21",
+    "2023-02-22",
+    "2023-02-23",
+    "2023-02-24",
+    "2023-02-27",
+    "2023-02-28",
+    "2023-03-01",
+    "2023-03-02",
+    "2023-03-03",
+    "2023-03-06",
+    "2023-03-07",
+    "2023-03-08",
+    "2023-03-09",
+    "2023-03-10",
+    "2023-03-13",
+    "2023-03-14",
+    "2023-03-15",
+    "2023-03-16",
+    "2023-03-17",
+    "2023-03-20",
+    "2023-03-21",
+    "2023-03-22",
+    "2023-03-23",
+    "2023-03-24",
+    "2023-03-27",
+    "2023-03-28",
+    "2023-03-29",
+    "2023-03-30",
+    "2023-03-31",
+    "2023-04-03",
+    "2023-04-04",
+    "2023-04-05",
+    "2023-04-06",
+    "2023-04-10",
+    "2023-04-11",
+    "2023-04-12",
+    "2023-04-13",
+    "2023-04-14",
+    "2023-04-17",
+    "2023-04-18",
+    "2023-04-19",
+    "2023-04-20",
+    "2023-04-21",
+    "2023-04-24",
+    "2023-04-25",
+    "2023-04-26",
+    "2023-04-27",
+    "2023-04-28",
+    "2023-05-01",
+    "2023-05-02",
+    "2023-05-03",
+    "2023-05-04",
+    "2023-05-05",
+    "2023-05-08",
+    "2023-05-09",
+    "2023-05-10",
+    "2023-05-11",
+    "2023-05-12",
+    "2023-05-15",
+    "2023-05-16",
+    "2023-05-17",
+    "2023-05-18",
+    "2023-05-19",
+    "2023-05-22",
+    "2023-05-23",
+    "2023-05-24",
+    "2023-05-25",
+    "2023-05-26",
+    "2023-05-30",
+    "2023-05-31",
+    "2023-06-01",
+    "2023-06-02",
+    "2023-06-05",
+    "2023-06-06",
+    "2023-06-07",
+    "2023-06-08",
+    "2023-06-09",
+    "2023-06-12",
+    "2023-06-13",
+    "2023-06-14",
+    "2023-06-15",
+    "2023-06-16",
+    "2023-06-20",
+    "2023-06-21",
+    "2023-06-22",
+    "2023-06-23",
+    "2023-06-26",
+    "2023-06-27",
+    "2023-06-28",
+    "2023-06-29",
+    "2023-06-30",
+    "2023-07-05",
+    "2023-07-06",
+    "2023-07-07",
+    "2023-07-10",
+    "2023-07-11",
+    "2023-07-12",
+    "2023-07-13",
+    "2023-07-14",
+    "2023-07-17",
+    "2023-07-18",
+    "2023-07-19",
+    "2023-07-20",
+    "2023-07-21"
+  ],
+  "family_id": "liquid-equity-market-residual-reversal",
+  "lane": "development",
+  "market_outcomes_accessed": false,
+  "provider_requests_before_plan_freeze": 0,
+  "providers": [
+    "Massive SIP unadjusted grouped daily aggregates",
+    "Massive point-in-time split actions through the final frozen session",
+    "Massive point-in-time active U.S. common-stock reference"
+  ],
+  "required_dates": [
+    "2022-04-08",
+    "2022-04-11",
+    "2022-04-12",
+    "2022-04-13",
+    "2022-04-14",
+    "2022-04-18",
+    "2022-04-19",
+    "2022-04-20",
+    "2022-04-21",
+    "2022-04-22",
+    "2022-04-25",
+    "2022-04-26",
+    "2022-04-27",
+    "2022-04-28",
+    "2022-04-29",
+    "2022-05-02",
+    "2022-05-03",
+    "2022-05-04",
+    "2022-05-05",
+    "2022-05-06",
+    "2022-05-09",
+    "2022-05-10",
+    "2022-05-11",
+    "2022-05-12",
+    "2022-05-13",
+    "2022-05-16",
+    "2022-05-17",
+    "2022-05-18",
+    "2022-05-19",
+    "2022-05-20",
+    "2022-05-23",
+    "2022-05-24",
+    "2022-05-25",
+    "2022-05-26",
+    "2022-05-27",
+    "2022-05-31",
+    "2022-06-01",
+    "2022-06-02",
+    "2022-06-03",
+    "2022-06-06",
+    "2022-06-07",
+    "2022-06-08",
+    "2022-06-09",
+    "2022-06-10",
+    "2022-06-13",
+    "2022-06-14",
+    "2022-06-15",
+    "2022-06-16",
+    "2022-06-17",
+    "2022-06-21",
+    "2022-06-22",
+    "2022-06-23",
+    "2022-06-24",
+    "2022-06-27",
+    "2022-06-28",
+    "2022-06-29",
+    "2022-06-30",
+    "2022-07-01",
+    "2022-07-05",
+    "2022-07-06",
+    "2022-07-07",
+    "2022-07-08",
+    "2022-07-11",
+    "2022-07-12",
+    "2022-07-13",
+    "2022-07-14",
+    "2022-07-15",
+    "2022-07-18",
+    "2022-07-19",
+    "2022-07-20",
+    "2022-07-21",
+    "2022-07-22",
+    "2022-07-25",
+    "2022-07-26",
+    "2022-07-27",
+    "2022-07-28",
+    "2022-07-29",
+    "2022-08-01",
+    "2022-08-02",
+    "2022-08-03",
+    "2022-08-04",
+    "2022-08-05",
+    "2022-08-08",
+    "2022-08-09",
+    "2022-08-10",
+    "2022-08-11",
+    "2022-08-12",
+    "2022-08-15",
+    "2022-08-16",
+    "2022-08-17",
+    "2022-08-18",
+    "2022-08-19",
+    "2022-08-22",
+    "2022-08-23",
+    "2022-08-24",
+    "2022-08-25",
+    "2022-08-26",
+    "2022-08-29",
+    "2022-08-30",
+    "2022-08-31",
+    "2022-09-01",
+    "2022-09-02",
+    "2022-09-06",
+    "2022-09-07",
+    "2022-09-08",
+    "2022-09-09",
+    "2022-09-12",
+    "2022-09-13",
+    "2022-09-14",
+    "2022-09-15",
+    "2022-09-16",
+    "2022-09-19",
+    "2022-09-20",
+    "2022-09-21",
+    "2022-09-22",
+    "2022-09-23",
+    "2022-09-26",
+    "2022-09-27",
+    "2022-09-28",
+    "2022-09-29",
+    "2022-09-30",
+    "2022-10-03",
+    "2022-10-04",
+    "2022-10-05",
+    "2022-10-06",
+    "2022-10-07",
+    "2022-10-10",
+    "2022-10-11",
+    "2022-10-12",
+    "2022-10-13",
+    "2022-10-14",
+    "2022-10-17",
+    "2022-10-18",
+    "2022-10-19",
+    "2022-10-20",
+    "2022-10-21",
+    "2022-10-24",
+    "2022-10-25",
+    "2022-10-26",
+    "2022-10-27",
+    "2022-10-28",
+    "2022-10-31",
+    "2022-11-01",
+    "2022-11-02",
+    "2022-11-03",
+    "2022-11-04",
+    "2022-11-07",
+    "2022-11-08",
+    "2022-11-09",
+    "2022-11-10",
+    "2022-11-11",
+    "2022-11-14",
+    "2022-11-15",
+    "2022-11-16",
+    "2022-11-17",
+    "2022-11-18",
+    "2022-11-21",
+    "2022-11-22",
+    "2022-11-23",
+    "2022-11-28",
+    "2022-11-29",
+    "2022-11-30",
+    "2022-12-01",
+    "2022-12-02",
+    "2022-12-05",
+    "2022-12-06",
+    "2022-12-07",
+    "2022-12-08",
+    "2022-12-09",
+    "2022-12-12",
+    "2022-12-13",
+    "2022-12-14",
+    "2022-12-15",
+    "2022-12-16",
+    "2022-12-19",
+    "2022-12-20",
+    "2022-12-21",
+    "2022-12-22",
+    "2022-12-23",
+    "2022-12-27",
+    "2022-12-28",
+    "2022-12-29",
+    "2022-12-30",
+    "2023-01-03",
+    "2023-01-04",
+    "2023-01-05",
+    "2023-01-06",
+    "2023-01-09",
+    "2023-01-10",
+    "2023-01-11",
+    "2023-01-12",
+    "2023-01-13",
+    "2023-01-17",
+    "2023-01-18",
+    "2023-01-19",
+    "2023-01-20",
+    "2023-01-23",
+    "2023-01-24",
+    "2023-01-25",
+    "2023-01-26",
+    "2023-01-27",
+    "2023-01-30",
+    "2023-01-31",
+    "2023-02-01",
+    "2023-02-02",
+    "2023-02-03",
+    "2023-02-06",
+    "2023-02-07",
+    "2023-02-08",
+    "2023-02-09",
+    "2023-02-10",
+    "2023-02-13",
+    "2023-02-14",
+    "2023-02-15",
+    "2023-02-16",
+    "2023-02-17",
+    "2023-02-21",
+    "2023-02-22",
+    "2023-02-23",
+    "2023-02-24",
+    "2023-02-27",
+    "2023-02-28",
+    "2023-03-01",
+    "2023-03-02",
+    "2023-03-03",
+    "2023-03-06",
+    "2023-03-07",
+    "2023-03-08",
+    "2023-03-09",
+    "2023-03-10",
+    "2023-03-13",
+    "2023-03-14",
+    "2023-03-15",
+    "2023-03-16",
+    "2023-03-17",
+    "2023-03-20",
+    "2023-03-21",
+    "2023-03-22",
+    "2023-03-23",
+    "2023-03-24",
+    "2023-03-27",
+    "2023-03-28",
+    "2023-03-29",
+    "2023-03-30",
+    "2023-03-31",
+    "2023-04-03",
+    "2023-04-04",
+    "2023-04-05",
+    "2023-04-06",
+    "2023-04-10",
+    "2023-04-11",
+    "2023-04-12",
+    "2023-04-13",
+    "2023-04-14",
+    "2023-04-17",
+    "2023-04-18",
+    "2023-04-19",
+    "2023-04-20",
+    "2023-04-21",
+    "2023-04-24",
+    "2023-04-25",
+    "2023-04-26",
+    "2023-04-27",
+    "2023-04-28",
+    "2023-05-01",
+    "2023-05-02",
+    "2023-05-03",
+    "2023-05-04",
+    "2023-05-05",
+    "2023-05-08",
+    "2023-05-09",
+    "2023-05-10",
+    "2023-05-11",
+    "2023-05-12",
+    "2023-05-15",
+    "2023-05-16",
+    "2023-05-17",
+    "2023-05-18",
+    "2023-05-19",
+    "2023-05-22",
+    "2023-05-23",
+    "2023-05-24",
+    "2023-05-25",
+    "2023-05-26",
+    "2023-05-30",
+    "2023-05-31",
+    "2023-06-01",
+    "2023-06-02",
+    "2023-06-05",
+    "2023-06-06",
+    "2023-06-07",
+    "2023-06-08",
+    "2023-06-09",
+    "2023-06-12",
+    "2023-06-13",
+    "2023-06-14",
+    "2023-06-15",
+    "2023-06-16",
+    "2023-06-20",
+    "2023-06-21",
+    "2023-06-22",
+    "2023-06-23",
+    "2023-06-26",
+    "2023-06-27",
+    "2023-06-28",
+    "2023-06-29",
+    "2023-06-30",
+    "2023-07-05",
+    "2023-07-06",
+    "2023-07-07",
+    "2023-07-10",
+    "2023-07-11",
+    "2023-07-12",
+    "2023-07-13",
+    "2023-07-14",
+    "2023-07-17",
+    "2023-07-18",
+    "2023-07-19",
+    "2023-07-20",
+    "2023-07-21"
+  ],
+  "research_generation": "new_family",
+  "schema_version": 1,
+  "state": "COLLECTION_PLAN_FROZEN",
+  "substitutions_allowed": false,
+  "symbols": [],
+  "task_count": 441,
+  "tasks": [
+    {
+      "date": "2023-07-21",
+      "kind": "split_actions",
+      "start": "2022-04-08",
+      "task_id": "3fd2b56063ce15b45627cea3fd38309e7f2e3a81f19a32ed7f2a4d70deb62570"
+    },
+    {
+      "date": "2022-04-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "39747e73347051efa89e01d4309fa1c0a28eb38403cccec0ce280c9437b537aa"
+    },
+    {
+      "date": "2022-04-11",
+      "kind": "grouped_daily_bars",
+      "task_id": "894fb42ec84bed10a65f51d2729e4d58482126079413d2f2c9e6d03e08af694e"
+    },
+    {
+      "date": "2022-04-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "a9f310e305bf9df0baaec672288640ca687890355a560c51d7b5f53256c0be1d"
+    },
+    {
+      "date": "2022-04-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "91519fdd44d37e79c2f74b68f50a0ac647646dd70b1c097b73467cb644529d7e"
+    },
+    {
+      "date": "2022-04-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "09674fafe48e1f13ca567ee728ba0ef7bcfbe8ea73478ad9ce546762532566f8"
+    },
+    {
+      "date": "2022-04-18",
+      "kind": "grouped_daily_bars",
+      "task_id": "c4cb7b9e266a2b526b9117e70b75714222407b51cc04d273287594d3401e897b"
+    },
+    {
+      "date": "2022-04-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "e2a2dd1691ca13d705a0b57955e7a6560be5ab49a58d2bf1c3240d2708c2dd11"
+    },
+    {
+      "date": "2022-04-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "2401a5f864d424c6ec9f614ab5c7ac9591b86f38a810c8fa4b9d3c5cf9f38f07"
+    },
+    {
+      "date": "2022-04-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "fb32500515a982db3bebca53254d1af0307296f3cf34da4b9f88b6cfa94c17be"
+    },
+    {
+      "date": "2022-04-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "fec9bf2f488647e154336a6dfb4ebc21c2c04bbbc2933c83263a7fe69985448c"
+    },
+    {
+      "date": "2022-04-25",
+      "kind": "grouped_daily_bars",
+      "task_id": "e38570455d5291081692d04e337f4cb7f4fd2fe4cb5ad5baba965831cb8f3a05"
+    },
+    {
+      "date": "2022-04-26",
+      "kind": "grouped_daily_bars",
+      "task_id": "11d2a690d19408b1493b3068bc61393836f11e731155195d21ed5e570e45b9ce"
+    },
+    {
+      "date": "2022-04-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "ca0b8df2e7011847980fb5300fc46a1063ad883a562efee6479e19a423c90438"
+    },
+    {
+      "date": "2022-04-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "75bb3ad4d6d15a40a235754af19c9cdadc8cc5008be88f369fda8f15e0fff6d5"
+    },
+    {
+      "date": "2022-04-29",
+      "kind": "grouped_daily_bars",
+      "task_id": "a05739ae0d7bf2f7a15f348de08ec3ce65c8c17b25282583719799c0d692e287"
+    },
+    {
+      "date": "2022-05-02",
+      "kind": "grouped_daily_bars",
+      "task_id": "6b8ef25b9206f44923f33525e8c9c3e1c40bce15b497690f0628a26ab96866a5"
+    },
+    {
+      "date": "2022-05-03",
+      "kind": "grouped_daily_bars",
+      "task_id": "8d12100c21246b8f30c6335a3a6d4558c73e3b06a55beb212682a054e68b0ae3"
+    },
+    {
+      "date": "2022-05-04",
+      "kind": "grouped_daily_bars",
+      "task_id": "1ee898f0906118b6ec10279c0d51a0041106cf71b75ddb62bbd37f4207123621"
+    },
+    {
+      "date": "2022-05-05",
+      "kind": "grouped_daily_bars",
+      "task_id": "dbc50fa7091714a358bb42887afd787e7b6e0df234b92809e79ffb665c934b29"
+    },
+    {
+      "date": "2022-05-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "6390195dbdd887a0feb1e76ff105756f23b2b7936693811234a86646c7392042"
+    },
+    {
+      "date": "2022-05-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "24f6755443049a79b6c8750cc7c5219dd6234433456fc6394e7abfed2c5aac3e"
+    },
+    {
+      "date": "2022-05-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "c9ea497c3c4bcc19b530caae9a682be86d566c9081a0a4f1e33c8281b3cc5552"
+    },
+    {
+      "date": "2022-05-11",
+      "kind": "grouped_daily_bars",
+      "task_id": "f8b72b02fe9bc4f9bb16791aeb687e307068bdacc78de48d2943cd091f9cdae1"
+    },
+    {
+      "date": "2022-05-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "4703284c76f649dde4ed30e30f9999347aa443df37cc8016933174c4e5606d44"
+    },
+    {
+      "date": "2022-05-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "360bb6dfa5611cf0e4cd40989304ee8278ce4af18f6679acb169e4bf7e329ed4"
+    },
+    {
+      "date": "2022-05-16",
+      "kind": "grouped_daily_bars",
+      "task_id": "558235ecdba88ce8975c3135293f4e3d74479dfd664884b7088db0a9179bf73c"
+    },
+    {
+      "date": "2022-05-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "f87a00ba618527f851298014cd09df2474e2a7c35cf1e53042d795874a9b3740"
+    },
+    {
+      "date": "2022-05-18",
+      "kind": "grouped_daily_bars",
+      "task_id": "ae7108e4e6c761d98395217d546a9f9a3b9de62a902613cfbd8db31a673d4198"
+    },
+    {
+      "date": "2022-05-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "22265fbc6fe93a2b46b4fbc0e116cc5520890dd7a06ec0759d9414e673491984"
+    },
+    {
+      "date": "2022-05-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "a7e3fc25f133bae65b54e8d56283789b76044e0428d83acb9f18472a4023b3b6"
+    },
+    {
+      "date": "2022-05-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "c14630e1ba6b0676793d4657b6aeffdfa83d942b7c05a8d85b584c937c2e7039"
+    },
+    {
+      "date": "2022-05-24",
+      "kind": "grouped_daily_bars",
+      "task_id": "ec0c5f3824c7377770a6f58f2b1b5e19d7830e2751217883e630462c90cae2bb"
+    },
+    {
+      "date": "2022-05-25",
+      "kind": "grouped_daily_bars",
+      "task_id": "3d1088d28600f58c5460fe265facbf893da85eef6ce36d5858bd541fd1511df7"
+    },
+    {
+      "date": "2022-05-26",
+      "kind": "grouped_daily_bars",
+      "task_id": "32fa8edbac6f602c2f4e54a4ed1916443d133dbdbee2e0933c49a20d288bdd4c"
+    },
+    {
+      "date": "2022-05-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "7466d6ab3da1b8748d82611c3500f2fcc3bdb724030b06f87a8155a3f26076a4"
+    },
+    {
+      "date": "2022-05-31",
+      "kind": "grouped_daily_bars",
+      "task_id": "858c9d01d63f84bd4341c2e3b0428a6134ba62b62ac92dd27378571a72d19eb9"
+    },
+    {
+      "date": "2022-06-01",
+      "kind": "grouped_daily_bars",
+      "task_id": "f4ef2b9fbfb93071ee0fb7ef4c97dbc23addd2ba7f720f1e0211e2afdd1c385b"
+    },
+    {
+      "date": "2022-06-02",
+      "kind": "grouped_daily_bars",
+      "task_id": "b8361d6aacabc1e89114c9e06a19f54301d9b01181548e494b554dba950a7c19"
+    },
+    {
+      "date": "2022-06-03",
+      "kind": "grouped_daily_bars",
+      "task_id": "1c9f7a318884edd84a98aa2b831fe035e52b239f7e45236d565ba1b39fd8d146"
+    },
+    {
+      "date": "2022-06-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "baf2791862c1bbb43f045e852182ffce678ee31be8bf40f506609309251987f1"
+    },
+    {
+      "date": "2022-06-07",
+      "kind": "grouped_daily_bars",
+      "task_id": "2181cebdbd7778f82dd4b3fc87f4248a413c8ffe55516731fc6affd3182b7e3d"
+    },
+    {
+      "date": "2022-06-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "f990a2ed3b5f494fe40741ea45995ced18a4c8dd511950accd5959c3cebc6a63"
+    },
+    {
+      "date": "2022-06-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "e8580e090ca7a5d7829d7a1e8b2c98e259a5f8a1ef41ca5f0e5dbbff22c12df1"
+    },
+    {
+      "date": "2022-06-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "e9036809202ed9f1d9ac9834665740a8decbb897afaced5171fe374bbb7b1362"
+    },
+    {
+      "date": "2022-06-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "13ea3c8393124514c2d508b12509509695b1f9a7c82c710e7bdaa1ad0f6ad1b3"
+    },
+    {
+      "date": "2022-06-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "7e23d1aada044f83d66e256b1536b6fb96c4c058ed5f64e221545c6e5fc1ccaa"
+    },
+    {
+      "date": "2022-06-15",
+      "kind": "grouped_daily_bars",
+      "task_id": "3a802aeeb72bcca08d1ee306a147ceeca290ba012a260bc2ed0b2136059f5808"
+    },
+    {
+      "date": "2022-06-16",
+      "kind": "grouped_daily_bars",
+      "task_id": "2e241b1ebc2c6cd21c296881759135c4ec3b91788c6352dddb615379cfcdeed8"
+    },
+    {
+      "date": "2022-06-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "677c68fbdd2c7272dd01d9352a93e70ec1cea3139a0bec56522cf5ad37fd0254"
+    },
+    {
+      "date": "2022-06-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "520459a5466f728cae1b95a1f18df70ec2d443cc749bf5b4b2b67d17a6963095"
+    },
+    {
+      "date": "2022-06-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "06a76e4f469f167a6dacc8cc2870e79b5959cd0a40fde9be3d966efc87a7ab6b"
+    },
+    {
+      "date": "2022-06-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "55fdeb1e423dddbe3844a42e5656cac4db18a214ef4c956e5ed246d700f21001"
+    },
+    {
+      "date": "2022-06-24",
+      "kind": "grouped_daily_bars",
+      "task_id": "e3f4800548e9e7ab575d85e345785682d17a7307a106a91f3c20df8e8bd376d0"
+    },
+    {
+      "date": "2022-06-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "8a3d79aa14f47c5b1c660dc89b1aa23f02cc84a4704c6c2c77b22eb42b6cf2f4"
+    },
+    {
+      "date": "2022-06-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "aa06ba81ae02f8e982932b1050c2007c12ab56b6a7e1c1e9de405777f014a21a"
+    },
+    {
+      "date": "2022-06-29",
+      "kind": "grouped_daily_bars",
+      "task_id": "9b14b0740970d4f9c77d3f663fe1687ca9c723f6eacf0966d662a8bada2d777d"
+    },
+    {
+      "date": "2022-06-30",
+      "kind": "grouped_daily_bars",
+      "task_id": "5d698cd328a4101415837964a15ae9dbaca49e63f33f20dfc7500d1e77339f53"
+    },
+    {
+      "date": "2022-07-01",
+      "kind": "grouped_daily_bars",
+      "task_id": "7cae316ff73b069dc86ffad6f270015259a9526cef5dfe2b030dfd466837fb06"
+    },
+    {
+      "date": "2022-07-05",
+      "kind": "grouped_daily_bars",
+      "task_id": "85c3a0c18891f6d3c6c6979edae6994d4403d142a2c9ba234436eaa731a53c3d"
+    },
+    {
+      "date": "2022-07-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "d6aff044f17434a09b4dbde40a2b1655b806619e0bc131048e0c1f2301a659b5"
+    },
+    {
+      "date": "2022-07-07",
+      "kind": "grouped_daily_bars",
+      "task_id": "c2a1494b50d05219365730fa8c7ccd9ee02ebe400d2d5e379b81df86799745ae"
+    },
+    {
+      "date": "2022-07-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "d79fd428f1f24aee1d7bf2445b681ce05c8175187ae7a3dcd0a16c868fcc04be"
+    },
+    {
+      "date": "2022-07-11",
+      "kind": "grouped_daily_bars",
+      "task_id": "e6d1902111b1e6e4045753858679bc1500c7e09b26d2f2da42799595c79f772e"
+    },
+    {
+      "date": "2022-07-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "7c056577575974ed119e78b7eb5f04f26d0af319481a8eaccb6aa6540e8b4eb0"
+    },
+    {
+      "date": "2022-07-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "584b42d151675e5ccf4bf301f0212ec40d15d7364cce93b10a5737aa83f6812b"
+    },
+    {
+      "date": "2022-07-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "83945876663883896b9d5687cafc3b61c3d68553e3c4a6ae1bda79eb30949fef"
+    },
+    {
+      "date": "2022-07-15",
+      "kind": "grouped_daily_bars",
+      "task_id": "65412175c9c0b9021376b0a49eac2b22cd28f60424e9f37aaacd40ad40ddc4c8"
+    },
+    {
+      "date": "2022-07-18",
+      "kind": "grouped_daily_bars",
+      "task_id": "4a84a62a423fdce09c0d6e6b30c182a89da2bcbf4fb26485d67090e9c9c09216"
+    },
+    {
+      "date": "2022-07-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "5a1812a4e61835a1ff8d7c8f9b0df053e59b3e106826e667edb47889896f2f7d"
+    },
+    {
+      "date": "2022-07-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "014b826366351e60fee9134347aaa6ce50a9358c7f2c51dfd68475a1adc7b6d6"
+    },
+    {
+      "date": "2022-07-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "ed02edcfe34566be6c636bbc606a10a9e72849e838c5d91b4b26c75e0f48c588"
+    },
+    {
+      "date": "2022-07-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "a2169f1041430911194940bc208493d9777264eb7d42ae70dfe09297d03bdb99"
+    },
+    {
+      "date": "2022-07-25",
+      "kind": "grouped_daily_bars",
+      "task_id": "ffc76364f2bd0687cb4022bfc6a8e69f6a705a4a46fafbbdb06ba28e84326342"
+    },
+    {
+      "date": "2022-07-26",
+      "kind": "grouped_daily_bars",
+      "task_id": "15f728e4c597b3f2eb82b90992513f8b450c8ac344dc80efc69027ad49b5d5e0"
+    },
+    {
+      "date": "2022-07-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "f675c8866e8c62e51b88cfdc2a16d6e90ff1e8b6bb8a3c5bcdc4107c20426078"
+    },
+    {
+      "date": "2022-07-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "0525be4fc8acd7e5b6fc58477dcf504ae6d44776720501e2380ab38e9115520e"
+    },
+    {
+      "date": "2022-07-29",
+      "kind": "grouped_daily_bars",
+      "task_id": "0983c65882036d164bc6f2c8c290bbf1c01ad3f46bae926ec7463ca0adb26b7e"
+    },
+    {
+      "date": "2022-08-01",
+      "kind": "grouped_daily_bars",
+      "task_id": "04dbbab3b185b2276a6d9315432781bfd6eb84a7322b648786df9ef1309680bd"
+    },
+    {
+      "date": "2022-08-02",
+      "kind": "grouped_daily_bars",
+      "task_id": "076ecad165828d8feec22232be080ace0b3e6ba9346195b9733c53d165f4bb96"
+    },
+    {
+      "date": "2022-08-03",
+      "kind": "grouped_daily_bars",
+      "task_id": "529e8c29927c6e3186c6f899f83f62a49ba5b5c3b9fec6e28118bd540f3590ea"
+    },
+    {
+      "date": "2022-08-04",
+      "kind": "grouped_daily_bars",
+      "task_id": "70c1dbe73042975f5178814b3777fd4e52fd0cc5317840cf8a5f290a963c0f65"
+    },
+    {
+      "date": "2022-08-05",
+      "kind": "grouped_daily_bars",
+      "task_id": "d74b40311ddeafed9eadfc210897ca391d6cc190290d6ca623337653f7bc847a"
+    },
+    {
+      "date": "2022-08-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "832f6dcb5aa75733d9e148b4e1960467977cf7988dda17023f237dfc7e4528f8"
+    },
+    {
+      "date": "2022-08-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "b8b56b17ea1dc18d66a5fa4e8f0cb197741d5071d2a253ab075668a5f22a7e53"
+    },
+    {
+      "date": "2022-08-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "2a0516574cdc28f2f3be29cc987a4e536e61a41776fe4cf3a3508957869a70ac"
+    },
+    {
+      "date": "2022-08-11",
+      "kind": "grouped_daily_bars",
+      "task_id": "6d5420815d4893254352e99bf9d4b9ba73e87c78163b6978485ed88b9fdf1f85"
+    },
+    {
+      "date": "2022-08-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "187ca1690725c68904e3dda73d7c68ec61de68a23a2b4904424d4807e7478292"
+    },
+    {
+      "date": "2022-08-15",
+      "kind": "grouped_daily_bars",
+      "task_id": "5197bfd239f9abea799371e54a73961957e6635fe8b085bdd41766c7d33bf488"
+    },
+    {
+      "date": "2022-08-16",
+      "kind": "grouped_daily_bars",
+      "task_id": "18b514c03c99ac2d4848afb1d1870b8c9db0fdf5539610d3d7eaa0f81f5628de"
+    },
+    {
+      "date": "2022-08-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "81dc2e3b38a8dc47f7f05a0037eb65949d56fb4df0b02dd82c27cc97481f7d15"
+    },
+    {
+      "date": "2022-08-18",
+      "kind": "grouped_daily_bars",
+      "task_id": "ddcb485aea0986b70279e5d85e3bdddb6a7d5f18dcf48b182ef236239e92d23d"
+    },
+    {
+      "date": "2022-08-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "037db98886039c657e027387672125dbb292de2309ba02acc888beb0d950f8f4"
+    },
+    {
+      "date": "2022-08-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "1cfacd1a6df0b072d2e9a5abf33197c6be3f6c68ae6356a96a47833a0b3f4d01"
+    },
+    {
+      "date": "2022-08-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "5d7b30a817b2eb6478e5434e64ed14264c67a784e83f3b5db09353775ff1cae0"
+    },
+    {
+      "date": "2022-08-24",
+      "kind": "grouped_daily_bars",
+      "task_id": "530dd632887a9ff05e95fca7205baffecdb0d6cb214f3ed53a0af77aac4462a6"
+    },
+    {
+      "date": "2022-08-25",
+      "kind": "grouped_daily_bars",
+      "task_id": "66e554f16c2d12aa46b35dec4f89b8bbb992dc5255585ea1fd108b15fd3faa67"
+    },
+    {
+      "date": "2022-08-26",
+      "kind": "grouped_daily_bars",
+      "task_id": "90d3dfa028eeba12df6455973cc7974897b45f7304cdc8278661080acfdacc85"
+    },
+    {
+      "date": "2022-08-29",
+      "kind": "grouped_daily_bars",
+      "task_id": "8ee7e9deb50c07fc2a8200750ff1e3c49c269659e424388f5079dbe276969e71"
+    },
+    {
+      "date": "2022-08-30",
+      "kind": "grouped_daily_bars",
+      "task_id": "ffd2c4ece83eab5086ceb1b9480acfd4215f13243f6cab5466d432aa9141c101"
+    },
+    {
+      "date": "2022-08-31",
+      "kind": "grouped_daily_bars",
+      "task_id": "e02fca1ffe07cfb3068f456d6a84108449aefab6d8bd4bcdbd6e02f6715f055b"
+    },
+    {
+      "date": "2022-09-01",
+      "kind": "grouped_daily_bars",
+      "task_id": "6e30595e3cfa37a4119324d89836cf8595549f92c8cce7674efb520fb48bd374"
+    },
+    {
+      "date": "2022-09-02",
+      "kind": "grouped_daily_bars",
+      "task_id": "397523dd6e858023dc4c48e6df55be47d1ff8e75814cd9cd80e431e2fedf889a"
+    },
+    {
+      "date": "2022-09-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "e39c660ab8a0e9837c2bc2426a284c27b0015fe3e153b279a5de9b0b7d0f7c4f"
+    },
+    {
+      "date": "2022-09-07",
+      "kind": "grouped_daily_bars",
+      "task_id": "4570116888616faeafaffab6d4eb0847b35c70c0366d9c64a394da0a5867bf01"
+    },
+    {
+      "date": "2022-09-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "4a73be0e2a7bb806363aef5ebb537df37de9eb27c8bcec7d440da3f1f9803298"
+    },
+    {
+      "date": "2022-09-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "44fbe75df9e48b16387415fce09fc86eed185f99b09e649c1f91ba9d4856e640"
+    },
+    {
+      "date": "2022-09-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "e6e519cae62b0ee8344e75b9aa558b115231a09f10711ea783e1cfc2f43d9b47"
+    },
+    {
+      "date": "2022-09-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "e395928614dad71c30fc3b9d0708b952a003ec33074fcab1388ead68467c9adc"
+    },
+    {
+      "date": "2022-09-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "d2cf81944c9f440197d441f1f89a2c569f76e69cb2ffd844d31a8baa0b0e7dc9"
+    },
+    {
+      "date": "2022-09-15",
+      "kind": "grouped_daily_bars",
+      "task_id": "a29e64b13f9992ac226eb1bbd53d719b904365970f5415e9318aa1271a8c2e65"
+    },
+    {
+      "date": "2022-09-16",
+      "kind": "grouped_daily_bars",
+      "task_id": "f39eb6a3a65b06474ea6a75ef31f385d653324f5a56a5eb46f62cfe1e28a6aae"
+    },
+    {
+      "date": "2022-09-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "59bc6b0807705e39ef95e8fd5f38c9833fe8f8f1e3eae096cfba0577d9480360"
+    },
+    {
+      "date": "2022-09-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "b929ee898c6c22d8d649b9206ae315a71816dd55d577a3b2562096453e60ae0b"
+    },
+    {
+      "date": "2022-09-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "3ed7d6855a2b808e356a3542755c162177f859d128e7f70ee8453c1302ae356c"
+    },
+    {
+      "date": "2022-09-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "b077318e539d8ee0f7fcecf4fa69a79e93f3aea272aed73662cf0c34555db2ae"
+    },
+    {
+      "date": "2022-09-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "829cbecec6f28457e7c90ed1fb5df686a24a4cdfb53bef41a136348be5c330b7"
+    },
+    {
+      "date": "2022-09-26",
+      "kind": "grouped_daily_bars",
+      "task_id": "4cec834a9ad6c2ca6c035466439e648486eca16b749a7be14e8d289383ecb1e5"
+    },
+    {
+      "date": "2022-09-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "e271711cc0cfb05dd1801068bc7609f457e3512c4e0ad0c8f52d7a3985929066"
+    },
+    {
+      "date": "2022-09-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "efc81b4b47423b7c29937b5e5580031cceb3ed13fbbf5ff843582d8876e6c5a9"
+    },
+    {
+      "date": "2022-09-29",
+      "kind": "grouped_daily_bars",
+      "task_id": "1026d6d83e74dc0eca334df570f736c4a646bdc1f04b96b33279053681957e08"
+    },
+    {
+      "date": "2022-09-30",
+      "kind": "grouped_daily_bars",
+      "task_id": "6b6eb1a7351bdec1ed0e7edf73ba8b387e1ead8c6772ab7b03124a127f79115c"
+    },
+    {
+      "date": "2022-10-03",
+      "kind": "grouped_daily_bars",
+      "task_id": "001bb20059c654f65a884bf09d1daef69d5a44bb04755a316b8460ab5d5dddd2"
+    },
+    {
+      "date": "2022-10-04",
+      "kind": "grouped_daily_bars",
+      "task_id": "6d3f111e43d9b4de5108a7581bb2382498465916e527ecd39e30fcea55c343ab"
+    },
+    {
+      "date": "2022-10-05",
+      "kind": "grouped_daily_bars",
+      "task_id": "0b9fbc39c45b34b7638cfa12f59c9c19d6678585fe90cb616287958d79a2d49c"
+    },
+    {
+      "date": "2022-10-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "bc3c6a1be652c5db59ecf2cd738c3d29729930f76e7404651e8b049858ee1082"
+    },
+    {
+      "date": "2022-10-07",
+      "kind": "grouped_daily_bars",
+      "task_id": "e6541c9751b9cd755f8143d9398c8ade80ec4ea3361a89a8e2daba01ba78a184"
+    },
+    {
+      "date": "2022-10-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "02a5560ed90b7a06267a2609b888aa8cd702984a6545cf367284d56cb1bf83c1"
+    },
+    {
+      "date": "2022-10-11",
+      "kind": "grouped_daily_bars",
+      "task_id": "ac49ed5458f0c4b0cf3ee4d6ecfd9bdd125336fb76ac600fcd96f0fb67cf46cb"
+    },
+    {
+      "date": "2022-10-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "8cc3059a5db7eb956427e81727c49d48e52b6a251e4b0b178180fefb28668929"
+    },
+    {
+      "date": "2022-10-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "461280ce739032264a34e5696b03dc29d6f6584ee0ffdeb1e2d4786a29040477"
+    },
+    {
+      "date": "2022-10-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "8e2cf2323b473a0f6c6bc55af39811bdb83c8c0239f33bdb3bfe8651bfdcfaba"
+    },
+    {
+      "date": "2022-10-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "070a32129bc8e59c8d088efd9ec0d5e9c6d430fe28e120cfcab1ccb919cbd35d"
+    },
+    {
+      "date": "2022-10-18",
+      "kind": "grouped_daily_bars",
+      "task_id": "4c006f61a69a1465a8a33f2a0c0ec3edc06610e0e48e1bffd579dcd7a083051e"
+    },
+    {
+      "date": "2022-10-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "5436e98179f72a407adb44e9040e12db3024432046e3870751349e4b10a82fb7"
+    },
+    {
+      "date": "2022-10-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "fc3fab22e2e657e85afe581b2e0f8bddef5eece4886ce80158a7177d6b305eda"
+    },
+    {
+      "date": "2022-10-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "fe3947e637d47200f3098307b968083cb4242cfa3ceef4a84f6218906e2b7d86"
+    },
+    {
+      "date": "2022-10-24",
+      "kind": "grouped_daily_bars",
+      "task_id": "8574fad494e7bf658dfab7d338a0df528ddf59b1dbee20fa28792400dc8b50e3"
+    },
+    {
+      "date": "2022-10-25",
+      "kind": "grouped_daily_bars",
+      "task_id": "dcf07f1214ca2103457ac59767858ff871ceddec9c31e33bfe478af5b6c07be1"
+    },
+    {
+      "date": "2022-10-26",
+      "kind": "grouped_daily_bars",
+      "task_id": "1ea7cb6623e51b175f35ce058c9a824921a0b077fbbe6058cd7a09f33da4f6c9"
+    },
+    {
+      "date": "2022-10-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "d261f4b9506d849ea6c7ed794082337e654d37104d99d117f5f691fe24371161"
+    },
+    {
+      "date": "2022-10-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "79ebe7758aa99fe39c0a9babbb614a36a7de6cd5ce76fbc5cf0b30eb1ec5fe3d"
+    },
+    {
+      "date": "2022-10-31",
+      "kind": "grouped_daily_bars",
+      "task_id": "a72ce138933a53c6a3c15acfcf08b007c20235adbc3fbeb6c65114f801c5fe77"
+    },
+    {
+      "date": "2022-11-01",
+      "kind": "grouped_daily_bars",
+      "task_id": "dfb54f6161ecb7054d55596f80eb6a4edd811dbe854709ff64aaec79968167c8"
+    },
+    {
+      "date": "2022-11-02",
+      "kind": "grouped_daily_bars",
+      "task_id": "5ba27aa21b589a19fb0657814a527dd8723eedcd4bb8abc5e2a27db65bfed916"
+    },
+    {
+      "date": "2022-11-03",
+      "kind": "grouped_daily_bars",
+      "task_id": "708642491a47d505783e5befa352a355ebb2475898d7ee09e1f206b38141be5f"
+    },
+    {
+      "date": "2022-11-04",
+      "kind": "grouped_daily_bars",
+      "task_id": "872c24a0499dae0a709297ce1398c29153190c500fe5a544336983d2ca3ab057"
+    },
+    {
+      "date": "2022-11-07",
+      "kind": "grouped_daily_bars",
+      "task_id": "e8d97c3b4b6fbf520cf45e4eb2e52521382ad4ea36d6c9adbad9a91ae7cadf26"
+    },
+    {
+      "date": "2022-11-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "43500ec7bd3fc8787f059cecfd127d1659bbbf92a91c38446f31c2a6278b5876"
+    },
+    {
+      "date": "2022-11-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "6a8d4a753a77c7c1b5ff8b74821364453ef737ed9aa187ca6056f4ff4618b165"
+    },
+    {
+      "date": "2022-11-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "cb8339e950a9d0b3cd9404c798e71203f314db0f693c0517c0bffe0526739fd3"
+    },
+    {
+      "date": "2022-11-11",
+      "kind": "grouped_daily_bars",
+      "task_id": "69071d6c02b3b841ac39b989119ce71d770401fc80f0d8371e5557c67126b349"
+    },
+    {
+      "date": "2022-11-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "5cf47b71fcbfcb65b5826b93b1592e1b26d65d77e548ac7502ce14e1eb5e93e0"
+    },
+    {
+      "date": "2022-11-15",
+      "kind": "grouped_daily_bars",
+      "task_id": "b824031ed22c7ec896435447ebeee9beafc92bec26f10e5c3e9bfc74d80d847d"
+    },
+    {
+      "date": "2022-11-16",
+      "kind": "grouped_daily_bars",
+      "task_id": "31193fa6385652de6ef61c14db7788ce328b47e40d5d6f0093cce50bd96c04e3"
+    },
+    {
+      "date": "2022-11-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "29b472f0dde43137cf2afa3957bc05b4fd5a0bcce12add01db8287da15cef6a0"
+    },
+    {
+      "date": "2022-11-18",
+      "kind": "grouped_daily_bars",
+      "task_id": "05d3b4cf2bb9fd61e19795b05971fdd1390779b0dc092f03b88a8237b94d76bd"
+    },
+    {
+      "date": "2022-11-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "0d8b1e2cb0d4083f1cd260db835d4991dadf2200e0b553044cfe7c802c8699d2"
+    },
+    {
+      "date": "2022-11-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "e7ad99b1a8fc24673bb03df34f263e309604aa2eebe996d2308b4429babe3a52"
+    },
+    {
+      "date": "2022-11-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "e8bb789d0972c0bee555758379aad9b96c33e2c360defb05cffeb8290a2dbc03"
+    },
+    {
+      "date": "2022-11-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "8327405fefa8189c2c05fab5f26231371572f595283c3c2e432d89c2a99c9a3d"
+    },
+    {
+      "date": "2022-11-29",
+      "kind": "grouped_daily_bars",
+      "task_id": "fc38bb0035ca11ba5cc1ec989b9699327f45b329de682f8ee9f496679206caf0"
+    },
+    {
+      "date": "2022-11-30",
+      "kind": "grouped_daily_bars",
+      "task_id": "cd589cae0cae6891e1aece7c003f47db2d2dc636cf61099d5d165801e286cabc"
+    },
+    {
+      "date": "2022-12-01",
+      "kind": "grouped_daily_bars",
+      "task_id": "422c858b14286378b674896b1834ac7fea71c97e47ebd6dea5e5f12f0f07a702"
+    },
+    {
+      "date": "2022-12-02",
+      "kind": "grouped_daily_bars",
+      "task_id": "85126e7f76aff49100a27fcbb27320693cd3f5b7494c7cf9bbaed11de07f4891"
+    },
+    {
+      "date": "2022-12-05",
+      "kind": "grouped_daily_bars",
+      "task_id": "1a1b2f226b9c82825f6085fd2f5cd4b634e585acec3ac66403a337df0ab84a1f"
+    },
+    {
+      "date": "2022-12-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "5bcfb070f489aaab64f493cb772889dcd6bfbac4472856b73eb68da53da13ead"
+    },
+    {
+      "date": "2022-12-07",
+      "kind": "grouped_daily_bars",
+      "task_id": "71f96a92d1a479afa7796946a1cf5506d86f70262ab94d4f8aed302854fe4a76"
+    },
+    {
+      "date": "2022-12-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "e838aabb2ac02ef4a102e3e8a9c17529e809b86b07e1c48cd316c42cefc5eeea"
+    },
+    {
+      "date": "2022-12-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "2bc8a84bb8601d591e475415fc2965d6ba3270b63b9cee3c91bceb27946fef3d"
+    },
+    {
+      "date": "2022-12-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "3054c3331fbe97a54ba940a19f4646a6c8af0618fbda1efd48fee352a4f35a13"
+    },
+    {
+      "date": "2022-12-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "9e5fb731581120a5d5e2040b5256778d3f788c7a962d4d47ccb69a012ff61d30"
+    },
+    {
+      "date": "2022-12-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "6b48440b5774b6aa21efb8a49e49837fdab99a662cea21ca7615590ad82d9c05"
+    },
+    {
+      "date": "2022-12-15",
+      "kind": "grouped_daily_bars",
+      "task_id": "abece54098bad16ba44b4f87e4cb62172f9853b2ed57639d36713548480a0816"
+    },
+    {
+      "date": "2022-12-16",
+      "kind": "grouped_daily_bars",
+      "task_id": "2c13b72015f808e74e8fbf76a99eee0adea9dfbc5f731ad73a6da74d64e49a8c"
+    },
+    {
+      "date": "2022-12-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "35e987ec8aee814be47f7aafc9bafcb63a4db1e5eff77c54f52f2de4bbb32fa2"
+    },
+    {
+      "date": "2022-12-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "88b39439394b688c14bf43f66a9792560da1b2c3e3d95360ce1d48b5eeade60a"
+    },
+    {
+      "date": "2022-12-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "948c5980455754c28f479c74ac3fe3c64177e8e61f4f27e340359cfd067b8775"
+    },
+    {
+      "date": "2022-12-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "ccb36d79839623e765c5727879893bb5fd713c96c1e35d8f1abdd04a89a864cc"
+    },
+    {
+      "date": "2022-12-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "5b3bb1cc48c534ffd534c0c302eb00c75ffa207ebc772814e6fce6dde8ba9944"
+    },
+    {
+      "date": "2022-12-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "f806c792719557107f1e0ec9b11914e6ad1375b1f35b64c4d4ea7193dcf70158"
+    },
+    {
+      "date": "2022-12-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "a8533d3339131c22d9e2cb3605e9990a4ba866483826c811049688cdf4b31bb0"
+    },
+    {
+      "date": "2022-12-29",
+      "kind": "grouped_daily_bars",
+      "task_id": "c6eb36929369e69517c8abb569b36c642f4aa85fac3fbde0daae5a6fe63f71f7"
+    },
+    {
+      "date": "2022-12-30",
+      "kind": "grouped_daily_bars",
+      "task_id": "0f1b90c99bfb11c12f7a0d4cf88780d140f68b2c68c80e9a8cca640d9d170792"
+    },
+    {
+      "date": "2023-01-03",
+      "kind": "grouped_daily_bars",
+      "task_id": "4ca5235df8406571ec7b66c8589ff6a9cc929f6ed680210f829759bc6e6fe903"
+    },
+    {
+      "date": "2023-01-04",
+      "kind": "grouped_daily_bars",
+      "task_id": "ce49bc184f4e29b398c9e42fc89a648c1bb7c07660796f67f57cac1763ae3283"
+    },
+    {
+      "date": "2023-01-05",
+      "kind": "grouped_daily_bars",
+      "task_id": "e0aa18192830f79e297743d6c733e1a5723240d9a546c52bfc2ba3138b6d0d85"
+    },
+    {
+      "date": "2023-01-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "0223caafcc14e52420a0d7f6ffe75485f08b7f67a958c6dee0f8ab44db447e4b"
+    },
+    {
+      "date": "2023-01-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "89305b6c8fe7031c0a17779524f7b67000e0942900d8e66648cc8161278f714b"
+    },
+    {
+      "date": "2023-01-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "613a8ee4f10663bb2419287e37eeea602fc72c22e79ad50aa2733c5ad467a135"
+    },
+    {
+      "date": "2023-01-11",
+      "kind": "grouped_daily_bars",
+      "task_id": "d152262f1768c2dada9628d68875519455afd585f91b64610d7d23041a6762b8"
+    },
+    {
+      "date": "2023-01-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "a203b51d11796e477af1d8e8784dee6c4825664e79c8a67c0bceaa0b75043a77"
+    },
+    {
+      "date": "2023-01-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "c2ab72de022542a5811047933f3109cd049862749dbbee7348808a03e085644e"
+    },
+    {
+      "date": "2023-01-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "787e770ee3e3a29f274b7a52a093ec1e1d11e56af64e1b8ffcc620fe41f241e4"
+    },
+    {
+      "date": "2023-01-18",
+      "kind": "grouped_daily_bars",
+      "task_id": "32451ada0060df07b3907353bebb533660b26e2b4c794dbb6315aa2086a5d02f"
+    },
+    {
+      "date": "2023-01-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "7835e501dc850d9471fd9a074c9be5e3a8061b4de67aeeb0b24e854c477bf365"
+    },
+    {
+      "date": "2023-01-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "2ac6d53e0b86bddd48b35ea7b035b0b654b21431906e2fc7436c4d1f3f86bc1d"
+    },
+    {
+      "date": "2023-01-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "79b819911655eed196bc0802597f3579dd3946555d646b5183bf9044fc101bb6"
+    },
+    {
+      "date": "2023-01-24",
+      "kind": "grouped_daily_bars",
+      "task_id": "49db055d72b7e20f531d0b527f3ece24d1a11de3d402a5fca08e6b876ad60e86"
+    },
+    {
+      "date": "2023-01-25",
+      "kind": "grouped_daily_bars",
+      "task_id": "bb173db34ebbf15424ae52a999b9e20a37697059a30078dd959f3d6bfb441eb7"
+    },
+    {
+      "date": "2023-01-26",
+      "kind": "grouped_daily_bars",
+      "task_id": "2650394fd6ebad060b25c441608f73e3e17d119a9d46f8e2982d0b130d3f29bd"
+    },
+    {
+      "date": "2023-01-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "40e97ce7d202ef0f35e0f0ad716b6d5a7f185c08c815d75c5872872f9456307a"
+    },
+    {
+      "date": "2023-01-30",
+      "kind": "grouped_daily_bars",
+      "task_id": "f4c8b19c8cfa4c6b7590b5d74305b8deeccffcd9d1f837c99e456097ba109562"
+    },
+    {
+      "date": "2023-01-31",
+      "kind": "grouped_daily_bars",
+      "task_id": "e0e7a64075d8aef6ca57f664932a171a451fc9ef7abb20ed1d9a00ae203c22a8"
+    },
+    {
+      "date": "2023-02-01",
+      "kind": "grouped_daily_bars",
+      "task_id": "b3d95bc519c553ee1e9887efc49a94598295b76e70d7c98b600219e1691ae7df"
+    },
+    {
+      "date": "2023-02-02",
+      "kind": "grouped_daily_bars",
+      "task_id": "c4079ad625f61beac999850b43f5f445d2dc6109acd084d6c596ecc8dd1e5603"
+    },
+    {
+      "date": "2023-02-03",
+      "kind": "grouped_daily_bars",
+      "task_id": "3fe0740ef11e105dff67930247aef81e943101fa6abb5750e3f448abddf0dc2d"
+    },
+    {
+      "date": "2023-02-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "7fcdcd4c20c8e52e1de4919df434e7c0c0103b401f5f6ad911340310acaf5824"
+    },
+    {
+      "date": "2023-02-07",
+      "kind": "grouped_daily_bars",
+      "task_id": "d5fa9e6566bb93c15b11f795de2314c9a7166711d255c3589c67edc8757ffd68"
+    },
+    {
+      "date": "2023-02-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "54175a8bf72ab0cbf12ebd1abbe82baebcfd48923bba3e153a9508ac0cdd52d9"
+    },
+    {
+      "date": "2023-02-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "975dd472c73c23ea99f95f904b6fdc4ab625462b79fc33b20a7e5761ae5343f5"
+    },
+    {
+      "date": "2023-02-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "6b1923205bc91cd88158f6f867ed3f2ea88082030bcd13d0ff35302a7e36bbb0"
+    },
+    {
+      "date": "2023-02-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "596fc19fa09f0d232a3d781fdd62a29fdc58fd193335d9b8561a8373c2cef491"
+    },
+    {
+      "date": "2023-02-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "a4f94b6468f1acfd0829a71b7d48077ad951e1d748fcd3839dfafd1d7f88554c"
+    },
+    {
+      "date": "2023-02-15",
+      "kind": "grouped_daily_bars",
+      "task_id": "2d27c7c324f85f04cb08b71158e94208d5c16ad676f05780a65ba8127394cd03"
+    },
+    {
+      "date": "2023-02-16",
+      "kind": "grouped_daily_bars",
+      "task_id": "02a2866cb19a8cebb7994b003feaf499da5e1312c25f75a6ef0d550728d4cfb5"
+    },
+    {
+      "date": "2023-02-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "c33486cc394e707e55a431f5fdc044c842c1632cd44fe59ff5b8a31ac36a5acf"
+    },
+    {
+      "date": "2023-02-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "a56ba0a5eaad6287e2d453655b24b4eb70aa8988cd9aecbce7811b8af7800985"
+    },
+    {
+      "date": "2023-02-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "189f9f987756fc6cc97b62912f9d39c2b84705f6bd185879af1873b32d1cebe0"
+    },
+    {
+      "date": "2023-02-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "b1d9cda957e8266be1dbdbec3fd4f580117f3bb8ff0f0624b8c05cad6c2adef2"
+    },
+    {
+      "date": "2023-02-24",
+      "kind": "grouped_daily_bars",
+      "task_id": "b9297ffb7b59239d558c0a1a61d4bbf409a8e15a160155ff7bea630df51fc660"
+    },
+    {
+      "date": "2023-02-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "ff0a71ea6ce2a8d77a970e9f4ff4ae5e4d6f5fcc2333d3116a77ef95d721271c"
+    },
+    {
+      "date": "2023-02-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "5beea721d7a777f21a9551ed5bd87b18498237d88151bb4a903dea104a744f36"
+    },
+    {
+      "date": "2023-03-01",
+      "kind": "grouped_daily_bars",
+      "task_id": "74ceb23d9e8410a7b4f89d4e212635315b253771706eb81165866c8a58b5ba83"
+    },
+    {
+      "date": "2023-03-02",
+      "kind": "grouped_daily_bars",
+      "task_id": "1a3bca8018140e93f28e02ed8e545fa6c7f40eeb36330b950915d4ce923866fc"
+    },
+    {
+      "date": "2023-03-03",
+      "kind": "grouped_daily_bars",
+      "task_id": "a6b968671692e6c6359910e2a295567a6d7d84f42c15659536fcc3dcf86ca4df"
+    },
+    {
+      "date": "2023-03-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "dad9855694f1fa8a7f37f98a1fa8c55c2ea1d80c07e578fa236dbc7e7b6bbbb7"
+    },
+    {
+      "date": "2023-03-07",
+      "kind": "grouped_daily_bars",
+      "task_id": "bc49a71de1262bda81b9480ad92edf1c68d755fb7ec62780bdd10c20bbd9286f"
+    },
+    {
+      "date": "2023-03-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "4214c02d8ce2deb128607195dfba177c5ca0270b524663e6845e41736bd0e719"
+    },
+    {
+      "date": "2023-03-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "3cab7416b3549afaebcd3d19d155e5b2ece574243cf2b3a35ba54409f8403212"
+    },
+    {
+      "date": "2023-03-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "a546c1c3599df35bfefc3a3e12576d513ef131acd19e44a74299d5f7982babbd"
+    },
+    {
+      "date": "2023-03-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "64972b4f70941004370072c5918d53d54794f092d39d724c3d6f351d9d9ab2cd"
+    },
+    {
+      "date": "2023-03-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "38e8c8106585e4374659b41e5ae93e16608d555abfac654176fd9621a4bc54ee"
+    },
+    {
+      "date": "2023-03-15",
+      "kind": "grouped_daily_bars",
+      "task_id": "56d980c1ff48a92499e1c10b7be54f9b425c3ceae8ad631e2246b61a348428ee"
+    },
+    {
+      "date": "2023-03-16",
+      "kind": "grouped_daily_bars",
+      "task_id": "39fd9296087eb31e60e671949711309e7857e0d79e8a365ac9ddfcc681c4ee1c"
+    },
+    {
+      "date": "2023-03-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "b4be46f203e24e3d2c0ace243e08342ff1e8af56cbd4b68819c59c187c4857b5"
+    },
+    {
+      "date": "2023-03-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "479814cdd28e50fb866fc8baf0757ca43c59fcdf4015595e5e05295e6fa09dea"
+    },
+    {
+      "date": "2023-03-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "6833c6eff858faeef081721fd94785954ba8c626c6959a8318f247bdf4a040ad"
+    },
+    {
+      "date": "2023-03-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "9e2b17c7299661d7fcb45d958c6b5b50dbda826165ae1b74569ed049e8722997"
+    },
+    {
+      "date": "2023-03-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "65a540a52bc2d28bca125064b6beea25d3ec4984acbc3f72a98f9593c3b98dd1"
+    },
+    {
+      "date": "2023-03-24",
+      "kind": "grouped_daily_bars",
+      "task_id": "ec5d592894380b137ea5d8bf0b385da899fd0087fe9d6d654e7d24040921f4e5"
+    },
+    {
+      "date": "2023-03-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "c757efe48ca833478e0642970df2cf32a825b30be6061bdc6d2f49e803a31fab"
+    },
+    {
+      "date": "2023-03-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "a52ffe29552b7bc161dc6524032ae7cc4b2a8851d56a07dd3842558088049fab"
+    },
+    {
+      "date": "2023-03-29",
+      "kind": "grouped_daily_bars",
+      "task_id": "41254b9dd94ffd24b7e1f1ff73df55a8b3163e5fbf0589bd407b7e2b568c9819"
+    },
+    {
+      "date": "2023-03-30",
+      "kind": "grouped_daily_bars",
+      "task_id": "353c4951b8024e906dc97ca1a7353639642b6449a0a46b2bdb20d1ef0ff3a37c"
+    },
+    {
+      "date": "2023-03-31",
+      "kind": "grouped_daily_bars",
+      "task_id": "2503835d194dafc422118c0a20c1ddc32950ea39b2ce2932625df789506ad929"
+    },
+    {
+      "date": "2023-04-03",
+      "kind": "grouped_daily_bars",
+      "task_id": "0fc93151b79ee3fbe050ebb36d3110d4ed19b5eaec66fc5a5e741ceaa5fd6f5b"
+    },
+    {
+      "date": "2023-04-04",
+      "kind": "grouped_daily_bars",
+      "task_id": "dedbeeea09b56b28ce6b43f0a7e7ba4449e451297f42ee2d720eff2612330124"
+    },
+    {
+      "date": "2023-04-05",
+      "kind": "grouped_daily_bars",
+      "task_id": "f0c694363e923d109c0cb66d6bb12cac998190645ae8652a3aa50f391b889292"
+    },
+    {
+      "date": "2023-04-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "33a27e4629ab448ced61fa754e1521903eb15f4fcc7c8f52355ee57cfffe0d7f"
+    },
+    {
+      "date": "2023-04-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "8ef980c12b0b3ec23a0ae1cdbe37334f0d63acc1d302308d2d41af0f4f7461e8"
+    },
+    {
+      "date": "2023-04-11",
+      "kind": "grouped_daily_bars",
+      "task_id": "c8ff4c12ee0033e57ea296da2cf63843e20c97976fdbd62fd13f71888404229b"
+    },
+    {
+      "date": "2023-04-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "65a3fc5a8d791f38e5992f7bca354693c2202638f05a42339b2c449997c45d7b"
+    },
+    {
+      "date": "2023-04-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "96eff07447a011f52c96a9cce275ca3c571ca93c66f9d581627513efe9979e61"
+    },
+    {
+      "date": "2023-04-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "60b1a939a357eb36c708198447b5063d6d081dff3b2d4df4283d302c1d94d7d9"
+    },
+    {
+      "date": "2023-04-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "b4536f85eed8999af5b0ec041c612c453f6fb5ccdf7bbe02f7b743fea581bf58"
+    },
+    {
+      "date": "2023-04-18",
+      "kind": "grouped_daily_bars",
+      "task_id": "c25f02d37162f40795e8c22c480862fa116e15c47da6f553569bcb731931b51b"
+    },
+    {
+      "date": "2023-04-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "bb859514640f814bb6f9257a3f6422ff8edb3646390e366b70288cdd1718854a"
+    },
+    {
+      "date": "2023-04-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "5dd779f56869ec20b70f0f5f575b18a2c65d2733d8c33605280ff5f55b246cb5"
+    },
+    {
+      "date": "2023-04-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "ce6e741a122b54d9debec7cf7da3db5be1c6996b35f43153050d2384bee72fb0"
+    },
+    {
+      "date": "2023-04-24",
+      "kind": "grouped_daily_bars",
+      "task_id": "6a2dba427a902da05da79e3a9ae00b3c5e01f97398eccea49f8bf10bdc4c76ee"
+    },
+    {
+      "date": "2023-04-25",
+      "kind": "grouped_daily_bars",
+      "task_id": "1305d43e176b2236ea6ce764241481538d5fe09d0b8a63d061fc371acd4c1510"
+    },
+    {
+      "date": "2023-04-26",
+      "kind": "grouped_daily_bars",
+      "task_id": "458c0216a5cfe280c3b253097016873624bdbdd138093217ce462534440e6491"
+    },
+    {
+      "date": "2023-04-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "f0b603b69ab3058f9dcd3100d587e6439ec222ef26ff1282102b6b79f37d370c"
+    },
+    {
+      "date": "2023-04-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "96630c981e7eb8530fe168d7a636fa567db7130fc23aa22804ee68acec8b71f8"
+    },
+    {
+      "date": "2023-05-01",
+      "kind": "grouped_daily_bars",
+      "task_id": "b6e390f28d1c063ac116122600207d27fd9c7118f2d4269e4eeb2ace03561d9e"
+    },
+    {
+      "date": "2023-05-02",
+      "kind": "grouped_daily_bars",
+      "task_id": "eda4b6c617e14cabd9523325a864ef4835fc1a431fbcb59ca3187daa12b52191"
+    },
+    {
+      "date": "2023-05-03",
+      "kind": "grouped_daily_bars",
+      "task_id": "5bafb85ba79660c37b83ccd3aa679883d3878ad93aec05a1d6640e03fa58adc4"
+    },
+    {
+      "date": "2023-05-04",
+      "kind": "grouped_daily_bars",
+      "task_id": "4333ce9cb95010d1e1d9d637f399b12811766e05bf6aa847a355817c7e6b773a"
+    },
+    {
+      "date": "2023-05-05",
+      "kind": "grouped_daily_bars",
+      "task_id": "7370a734af750856fdd8663397aa1657f88d92ded0d6662c8f844d6a385b5aa1"
+    },
+    {
+      "date": "2023-05-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "ee42c3636f5e0bb65e22611193d1b6d03bf53654ad77947a66ad8cefefbcccd8"
+    },
+    {
+      "date": "2023-05-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "127c90f91a4e59e4e1fc50dc966c83227373d85c51e850e38fd2992dbb2f1fe3"
+    },
+    {
+      "date": "2023-05-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "3df95a637c3868631ddeaf6e492650b17a5124da59230e6794265cfdbac1724e"
+    },
+    {
+      "date": "2023-05-11",
+      "kind": "grouped_daily_bars",
+      "task_id": "0f1ad084c0eae51a23496db8819c1ed0bf59d40ea8ba7c93b6d284deb63f4796"
+    },
+    {
+      "date": "2023-05-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "58667d7de7b5419758cd01859edba52fb9aed6e1bf584066e8fea2e5fdf2cf3e"
+    },
+    {
+      "date": "2023-05-15",
+      "kind": "grouped_daily_bars",
+      "task_id": "7265140102aaa25f54f99101f4627db8c2b7658be44bb3a8b9c51e684c479460"
+    },
+    {
+      "date": "2023-05-16",
+      "kind": "grouped_daily_bars",
+      "task_id": "3ddecc5ef2113d583add6b1f12c85bdbdfc2e6f27d8c46de528c296c8016f553"
+    },
+    {
+      "date": "2023-05-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "8278359d009c77d79f1995f21c2cea88e7c0ee4607d34d9000158dfaab54d1a2"
+    },
+    {
+      "date": "2023-05-18",
+      "kind": "grouped_daily_bars",
+      "task_id": "9be3dd608366094d84bc91c8235ef76b40ed3c98ad04ba92c7767f249cb7415a"
+    },
+    {
+      "date": "2023-05-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "35e7b43d450c20b16097de877d467146db69d7c8d3cc8e4900a4c1e104acfc4c"
+    },
+    {
+      "date": "2023-05-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "5cb245006198bcedd0caeeaeb1e873e78bee7466e203be5395213f98a90801f3"
+    },
+    {
+      "date": "2023-05-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "288988c5375908d0ff72cb3e50721d23352a7649fbc9426be501737aa05f62f9"
+    },
+    {
+      "date": "2023-05-24",
+      "kind": "grouped_daily_bars",
+      "task_id": "59ac866b28531473eb54ef17430facb53ac57f3ef6c1c3213436820132cf5538"
+    },
+    {
+      "date": "2023-05-25",
+      "kind": "grouped_daily_bars",
+      "task_id": "fab4393d562db5995648850f078e87900f3fa8a1006c359de95c92e75745c59e"
+    },
+    {
+      "date": "2023-05-26",
+      "kind": "grouped_daily_bars",
+      "task_id": "1dee6f12770690736f4be863ea6c2ad991608dadf33be06d3ac6114d3d55a6db"
+    },
+    {
+      "date": "2023-05-30",
+      "kind": "grouped_daily_bars",
+      "task_id": "10aab6b982a4ac8bc44053d8da8643b89d4b9bbe14ebd4df11f519812d76afb6"
+    },
+    {
+      "date": "2023-05-31",
+      "kind": "grouped_daily_bars",
+      "task_id": "dc80b166993a2aa7deeeed532d96d066dfddd99bbede5d3dcfc772fa55bbc5ae"
+    },
+    {
+      "date": "2023-06-01",
+      "kind": "grouped_daily_bars",
+      "task_id": "ea86b4ae98452f5aa8cd679e862b8e22ac365ea9a5eb48eb21288d50d58655ad"
+    },
+    {
+      "date": "2023-06-02",
+      "kind": "grouped_daily_bars",
+      "task_id": "1e3e68b1625de1d4ab8dd746ce238c9ff12f1615ddcd28362834b9940e9c9f4a"
+    },
+    {
+      "date": "2023-06-05",
+      "kind": "grouped_daily_bars",
+      "task_id": "501b79293e7be9ce744840b97b238d7cd0c4cfbb9e1f986a7348fcecc99bc0f3"
+    },
+    {
+      "date": "2023-06-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "0ae76b6489e502ee551ce33ca6b2c3860be0900f76af0f2c565398be9e523e62"
+    },
+    {
+      "date": "2023-06-07",
+      "kind": "grouped_daily_bars",
+      "task_id": "0307fb45d00739d57bc49ac4e35148c7b4b6e271a9713700a4dba668a5dce430"
+    },
+    {
+      "date": "2023-06-08",
+      "kind": "grouped_daily_bars",
+      "task_id": "f5151f2379c2c183322c219d5ce3beac21487546c676b239c6cd612f95864df1"
+    },
+    {
+      "date": "2023-06-09",
+      "kind": "grouped_daily_bars",
+      "task_id": "c3c428b62ed37eea9a8727c6fbe1f342d5ec3fa2864390e906dad826dd316685"
+    },
+    {
+      "date": "2023-06-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "8ac852c90a1ad22f897c2c35c50d1578985ccc2813677e4ff7f2d69370df14ca"
+    },
+    {
+      "date": "2023-06-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "accba17fc1fded42bc1d543b8849c1fd80cdab4b077aac1ad9aeb6984aba460a"
+    },
+    {
+      "date": "2023-06-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "919f6373dc430d0fd62a3b719faedaa9b8fa4f1951cbdcee1cd0231754a10897"
+    },
+    {
+      "date": "2023-06-15",
+      "kind": "grouped_daily_bars",
+      "task_id": "566869eb339fb82d47f4b089792ed5e6daa174942d5f9cadd703a068ec619a47"
+    },
+    {
+      "date": "2023-06-16",
+      "kind": "grouped_daily_bars",
+      "task_id": "69acc45fa96ea84b79f64e7ecb2c80b3e239b03913ad8153f857a4405f86780a"
+    },
+    {
+      "date": "2023-06-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "b04219e4e8e6a69bca04bfe82d35e45627055adfb4bf32f2299649ccbed3cd38"
+    },
+    {
+      "date": "2023-06-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "bc3967a8b8a26f23ddf18b237a5e209e420b2d7efa21db699822ab19a6552ecf"
+    },
+    {
+      "date": "2023-06-22",
+      "kind": "grouped_daily_bars",
+      "task_id": "add2f45306fb8d31ce4b13e88aba4ed5fec98a8a8d27b0949ce36f45094a84f7"
+    },
+    {
+      "date": "2023-06-23",
+      "kind": "grouped_daily_bars",
+      "task_id": "462fea5e285e52fea0c5c73a737e2affa80be9923d208560a81593dab0e35b38"
+    },
+    {
+      "date": "2023-06-26",
+      "kind": "grouped_daily_bars",
+      "task_id": "a5e6e3b4a4f3b5ee40054be1ed1bc03a78403403cfdf21c6ff61f86706ea6ab1"
+    },
+    {
+      "date": "2023-06-27",
+      "kind": "grouped_daily_bars",
+      "task_id": "89a8c98d1915cff11a59fb17f5f3b0427719a0e3e1affdd371368d093991292f"
+    },
+    {
+      "date": "2023-06-28",
+      "kind": "grouped_daily_bars",
+      "task_id": "5304a727891ff62a7f2f9a11ce87df4b402910bbf4578d077e4086ccb844b39e"
+    },
+    {
+      "date": "2023-06-29",
+      "kind": "grouped_daily_bars",
+      "task_id": "f682dc7eb9796870faedc1156481676cdd9d51405bba7ef81e58608cec70f077"
+    },
+    {
+      "date": "2023-06-30",
+      "kind": "grouped_daily_bars",
+      "task_id": "b4e220e973d0836d89daf85e2bc2cd4713c23c1669ace174a0dd1a1046535b47"
+    },
+    {
+      "date": "2023-07-05",
+      "kind": "grouped_daily_bars",
+      "task_id": "06198bd016d2fc5cec455420484431eb06b61685105fa66c6a717ba82ca53b47"
+    },
+    {
+      "date": "2023-07-06",
+      "kind": "grouped_daily_bars",
+      "task_id": "070df8ef3c01d30bf48ee7f2e4306b23d459ba96c419d604106150fb4c426202"
+    },
+    {
+      "date": "2023-07-07",
+      "kind": "grouped_daily_bars",
+      "task_id": "08c42c3c739dd2d637743f47bd0e3e9f64bf3a8b1482becfefc520f29ee059dc"
+    },
+    {
+      "date": "2023-07-10",
+      "kind": "grouped_daily_bars",
+      "task_id": "f1483d1642f8ffbafce3bd3ac565a500ee22c8546254478f23b4b4e6f473343c"
+    },
+    {
+      "date": "2023-07-11",
+      "kind": "grouped_daily_bars",
+      "task_id": "8f04688b0e71434a8a8d7fe8817040708c391f662320495b0fbcd744a98ded78"
+    },
+    {
+      "date": "2023-07-12",
+      "kind": "grouped_daily_bars",
+      "task_id": "d6977de3a2b23f217e0c5b92d3e377f4111e9724ed1903faba2ce2076130f52f"
+    },
+    {
+      "date": "2023-07-13",
+      "kind": "grouped_daily_bars",
+      "task_id": "4c942c21bfd4cd9743efe75a4683e18a2a7f4bfbbb5a1ef747d317f9ec2214db"
+    },
+    {
+      "date": "2023-07-14",
+      "kind": "grouped_daily_bars",
+      "task_id": "0e61fa005f70c33bcf8c28dbe1d4cd4685597095ee2ed8c23638752b5885a960"
+    },
+    {
+      "date": "2023-07-17",
+      "kind": "grouped_daily_bars",
+      "task_id": "c805531019ac6794e3c861d0241232ea6adbbab8f95f4938ef23e27b19c214d2"
+    },
+    {
+      "date": "2023-07-18",
+      "kind": "grouped_daily_bars",
+      "task_id": "fb790a1643c7c6f27171d943abc5fb20fe917cd4ebb5472d84483ea741ad26b3"
+    },
+    {
+      "date": "2023-07-19",
+      "kind": "grouped_daily_bars",
+      "task_id": "8f1bd618f0047ee3a2b2524164ef9583a439f79c3cb40089cd5d5dae5a6c14ed"
+    },
+    {
+      "date": "2023-07-20",
+      "kind": "grouped_daily_bars",
+      "task_id": "f02f322a49cae6034d2b7c7528a11e62edb1561a59b4040147c933befa4c35c4"
+    },
+    {
+      "date": "2023-07-21",
+      "kind": "grouped_daily_bars",
+      "task_id": "e991c3afc8ae04dbb798af3029186986a0e5510afae6c10fa881570e71883cb4"
+    },
+    {
+      "date": "2023-01-27",
+      "kind": "common_stock_reference",
+      "task_id": "feb704f11f1775f76470465b3abee4ce3b687e037cb6faeaaa2625e04da3ccaf"
+    },
+    {
+      "date": "2023-01-30",
+      "kind": "common_stock_reference",
+      "task_id": "d43cd7ec25ba0c7ea60e3caf578b43a08ee537481513e91c4143c935aa10d1eb"
+    },
+    {
+      "date": "2023-01-31",
+      "kind": "common_stock_reference",
+      "task_id": "15d99cadd37ced89e8c95a07d41c9aa71201aaaa6ca6389d07c297a7e2fd9b9d"
+    },
+    {
+      "date": "2023-02-01",
+      "kind": "common_stock_reference",
+      "task_id": "8e57c4c21064d79af2bfe48c5a985162686ffde380346f90267966657677d7e5"
+    },
+    {
+      "date": "2023-02-02",
+      "kind": "common_stock_reference",
+      "task_id": "db75d76749d8438f9d2e1c6b2b1cff7fdaa5fcd7768c3b79b4a6eb17b4618236"
+    },
+    {
+      "date": "2023-02-03",
+      "kind": "common_stock_reference",
+      "task_id": "dad950f8a4bf50712e0697ce6f668e7f6ee49de3ae55faa5c2385f804cdb4809"
+    },
+    {
+      "date": "2023-02-06",
+      "kind": "common_stock_reference",
+      "task_id": "32359a6ebafaf8599cdb7242b5b9a60ef55474e777e25fcf47b2ce7ae2e99497"
+    },
+    {
+      "date": "2023-02-07",
+      "kind": "common_stock_reference",
+      "task_id": "3356770ac2cb09b9e66c46fc522b6bdd7609883338912fb65e6594ecfba097f1"
+    },
+    {
+      "date": "2023-02-08",
+      "kind": "common_stock_reference",
+      "task_id": "85da2f3a2edcd301983dd62c3047475df275343ab5b2849a85a054ba5961212b"
+    },
+    {
+      "date": "2023-02-09",
+      "kind": "common_stock_reference",
+      "task_id": "94caf74bf1e4f3ae3eb7f6ce3aece3f14bf24cb9f6643da0c2f3fd10c1db40ec"
+    },
+    {
+      "date": "2023-02-10",
+      "kind": "common_stock_reference",
+      "task_id": "d138186a795c8ca6e576a21a62a35934dd3ba04b965628ce004a5508a3c6eb69"
+    },
+    {
+      "date": "2023-02-13",
+      "kind": "common_stock_reference",
+      "task_id": "7eea7c07e1a9025e0bee4a41bcf87c5a75dfe48926e20cb04f3686f9d483ae96"
+    },
+    {
+      "date": "2023-02-14",
+      "kind": "common_stock_reference",
+      "task_id": "ff593c0430b48d69831cac247bcf0a1f49cfd33c3c81d79756cdda8464f7eb99"
+    },
+    {
+      "date": "2023-02-15",
+      "kind": "common_stock_reference",
+      "task_id": "b364e2cd8e12e0315a4528a95c0c5b60740638446eb7759e511b2adcabdd35d7"
+    },
+    {
+      "date": "2023-02-16",
+      "kind": "common_stock_reference",
+      "task_id": "68da7f306941f62a199b708b923339f91bd5d2cc19c28f95b8e180e8518a405b"
+    },
+    {
+      "date": "2023-02-17",
+      "kind": "common_stock_reference",
+      "task_id": "286447da3eed1f9cda6f4bc42275a5c98f9d0c61cf1566a720708b77d761bd00"
+    },
+    {
+      "date": "2023-02-21",
+      "kind": "common_stock_reference",
+      "task_id": "8ba83e6309b87d3535ed662ab733ee4a6d683254c04a01d6badd52d8740bedfa"
+    },
+    {
+      "date": "2023-02-22",
+      "kind": "common_stock_reference",
+      "task_id": "e067f13f70733a19122e3d02b2eb5a99f1ccfa60c97405bb7fd67fbc2ef8f1da"
+    },
+    {
+      "date": "2023-02-23",
+      "kind": "common_stock_reference",
+      "task_id": "de54f72447b72940cb8f5459dee1cc6c3d37da7bfadb724b6b43400fdced45ba"
+    },
+    {
+      "date": "2023-02-24",
+      "kind": "common_stock_reference",
+      "task_id": "6feb4e15e31559e194d5de4dfeb1c377c60a05db70cd9c58ea7d1bf3ac6e83b1"
+    },
+    {
+      "date": "2023-02-27",
+      "kind": "common_stock_reference",
+      "task_id": "2bccf778ee904530b7174aa46f4ce79f61ea6c6adcda694a549d0745fddb5e37"
+    },
+    {
+      "date": "2023-02-28",
+      "kind": "common_stock_reference",
+      "task_id": "b0aae100387f1348e250495476dc0106cbb95e1e64df12f1aba448e88e4242e2"
+    },
+    {
+      "date": "2023-03-01",
+      "kind": "common_stock_reference",
+      "task_id": "057e2768b59d93ffd814ba20ba02e43e183846dff37201992d6231aa36acbb32"
+    },
+    {
+      "date": "2023-03-02",
+      "kind": "common_stock_reference",
+      "task_id": "f96fde803f22f6c967a28a8a875ee4bcbb287e70ce6dde8924b6cbeea9432ab7"
+    },
+    {
+      "date": "2023-03-03",
+      "kind": "common_stock_reference",
+      "task_id": "f04a23f7ffc8f94bbf2259ab5b609c6bd7084674d93f41edcbdf22f8057dd3df"
+    },
+    {
+      "date": "2023-03-06",
+      "kind": "common_stock_reference",
+      "task_id": "a71aeb2a46dc689e1481273d2d9deee685600e782404cb5e1be1002ed72a1d84"
+    },
+    {
+      "date": "2023-03-07",
+      "kind": "common_stock_reference",
+      "task_id": "61c38105fff3d9d5b480f65e67b41902e69c4474b55c679cf16fbc30bb42aee6"
+    },
+    {
+      "date": "2023-03-08",
+      "kind": "common_stock_reference",
+      "task_id": "94a5ddde00208b4f2aba0d218bbcf611fd51784c2836b7d4522e593bdc4255a1"
+    },
+    {
+      "date": "2023-03-09",
+      "kind": "common_stock_reference",
+      "task_id": "3bc51efe521fd07e0e9ae6e4c1ccfa29fb8f6540bb6294c1d54422b361642245"
+    },
+    {
+      "date": "2023-03-10",
+      "kind": "common_stock_reference",
+      "task_id": "378e80e3587aa7b17d602b2f2e13b75acbf5d81c5f354537bb994ac003e8fc40"
+    },
+    {
+      "date": "2023-03-13",
+      "kind": "common_stock_reference",
+      "task_id": "81ad810cbc9fef3ce749bde921f8e4c3ffef99fccfb46c120d3586ee25b86530"
+    },
+    {
+      "date": "2023-03-14",
+      "kind": "common_stock_reference",
+      "task_id": "6b76a54acdc50a6cccd515e3f19ffb214794fd1fcc98885ee0a52c2113e78634"
+    },
+    {
+      "date": "2023-03-15",
+      "kind": "common_stock_reference",
+      "task_id": "1072eccd3cac1654a414d5a8be68ef8bba695b2f5250ca4702ca09f1aa4f4a53"
+    },
+    {
+      "date": "2023-03-16",
+      "kind": "common_stock_reference",
+      "task_id": "4febad75c24f5ac4133f9833ea81765decabb5e9ba054cfb3c9726cd6c30b40b"
+    },
+    {
+      "date": "2023-03-17",
+      "kind": "common_stock_reference",
+      "task_id": "2b01f4541446ea40fb94ea02df2339c6f9d61596140cc7174b30bf454e9ff3cd"
+    },
+    {
+      "date": "2023-03-20",
+      "kind": "common_stock_reference",
+      "task_id": "ab9c3e0be76d10da326c96110fcecf8f2bda79a0b7e5c80b6cc50b203e72ec15"
+    },
+    {
+      "date": "2023-03-21",
+      "kind": "common_stock_reference",
+      "task_id": "33a971d6cd7a7a44d57bea675bebe89daccf506cd97b824e1661359224b0b9dc"
+    },
+    {
+      "date": "2023-03-22",
+      "kind": "common_stock_reference",
+      "task_id": "80fdbd83d886b86d122c16124451be81a9f148ecaa0b955cf80bbc0d6fe9a153"
+    },
+    {
+      "date": "2023-03-23",
+      "kind": "common_stock_reference",
+      "task_id": "78a2ebfdd75158b5ffc7ebfe7cda6c1290947fc41bfc6e337611daae1383b56b"
+    },
+    {
+      "date": "2023-03-24",
+      "kind": "common_stock_reference",
+      "task_id": "d588b055e482e701d123f9a04286c6398dd69cbf104d5983fecfe80102f411f6"
+    },
+    {
+      "date": "2023-03-27",
+      "kind": "common_stock_reference",
+      "task_id": "e9de8024405bb01561204883a3b0035fd9707a3e3010763d9f66e1f87578b728"
+    },
+    {
+      "date": "2023-03-28",
+      "kind": "common_stock_reference",
+      "task_id": "354ddf8c6a8166fd62dcd9a346da6ba044c1db16c6647140095c40dc6a0595a4"
+    },
+    {
+      "date": "2023-03-29",
+      "kind": "common_stock_reference",
+      "task_id": "8c9f5bb3a0797594c1f6d69252503f2b36160115fb38bdc7ccd2a764a37fbfc5"
+    },
+    {
+      "date": "2023-03-30",
+      "kind": "common_stock_reference",
+      "task_id": "e1e5b35cbb3eaf1b0ef591d2df4ee70603c7bae50a5c1dfdfff4a87c5f8385fb"
+    },
+    {
+      "date": "2023-03-31",
+      "kind": "common_stock_reference",
+      "task_id": "fb013f56ff60fab9a47ef4f1c217fe8a8c4d62dc7a437c269b946e2d82aaa450"
+    },
+    {
+      "date": "2023-04-03",
+      "kind": "common_stock_reference",
+      "task_id": "1d2d4e11d8ad16fd054337767511755fb4d07c81a709e44331b8b1505d973757"
+    },
+    {
+      "date": "2023-04-04",
+      "kind": "common_stock_reference",
+      "task_id": "37f656a7c69fd7f45c2b43fd66214e57cc236c9cdc23f29a20a5719cb0cdf9ab"
+    },
+    {
+      "date": "2023-04-05",
+      "kind": "common_stock_reference",
+      "task_id": "6ad39993f4b797a4623a4673d73c78177ceaa5f4862f7e061d2229073d346771"
+    },
+    {
+      "date": "2023-04-06",
+      "kind": "common_stock_reference",
+      "task_id": "c66ac0fb6ed45a2ba454b6a62e44ef0624296cdcb0281d5f39f599a260da0ee2"
+    },
+    {
+      "date": "2023-04-10",
+      "kind": "common_stock_reference",
+      "task_id": "1de8179ac5b7683053a5c56a7818b520e01bf56e0d860efb5bc389300272d0ad"
+    },
+    {
+      "date": "2023-04-11",
+      "kind": "common_stock_reference",
+      "task_id": "0ad269eb1c4a5f52fc9101fe16f010373b59858c92ecc9a88da117313898e0e5"
+    },
+    {
+      "date": "2023-04-12",
+      "kind": "common_stock_reference",
+      "task_id": "78a2263aa54f0eb08ced6b376546b32cab5a4a1482890c10520b7d36993f74ad"
+    },
+    {
+      "date": "2023-04-13",
+      "kind": "common_stock_reference",
+      "task_id": "0a1f2cc702b59e5845d26f1faf67dcd9a93f1404696de283761ff9870cc193c5"
+    },
+    {
+      "date": "2023-04-14",
+      "kind": "common_stock_reference",
+      "task_id": "c3c44793c6d5bd9432735455b861bcbba19da474a254c8093aeca18b77cb6938"
+    },
+    {
+      "date": "2023-04-17",
+      "kind": "common_stock_reference",
+      "task_id": "d561792165f13a681e8dd6a90644c001bcbbdcfa6c81aa9aac21e41c2f5c423b"
+    },
+    {
+      "date": "2023-04-18",
+      "kind": "common_stock_reference",
+      "task_id": "d7f4091aa41aa3c5c22ad1cbd1bcdee4b5a4447368d251942c4719871378aa3b"
+    },
+    {
+      "date": "2023-04-19",
+      "kind": "common_stock_reference",
+      "task_id": "3339350413d74629935125a9099d90f8e6c7cd8adda6c5e39f9b8a842dd8985f"
+    },
+    {
+      "date": "2023-04-20",
+      "kind": "common_stock_reference",
+      "task_id": "cf72ac9cf8fad16b6131be16f5ce5f14046401aec6a28a0e0719fe4441d24c4e"
+    },
+    {
+      "date": "2023-04-21",
+      "kind": "common_stock_reference",
+      "task_id": "8cec2c926e6897be7648bb91deaf563975847fc217bb7d275212bfd3fdfb0a1d"
+    },
+    {
+      "date": "2023-04-24",
+      "kind": "common_stock_reference",
+      "task_id": "7809ca90bf21ea555a440be9c04eebebe844e23baafe568836815882f17ca97d"
+    },
+    {
+      "date": "2023-04-25",
+      "kind": "common_stock_reference",
+      "task_id": "229b5d3b61b6fe568223d3126a841a7baf70c211f50ac03314d6a6e2ba79c81f"
+    },
+    {
+      "date": "2023-04-26",
+      "kind": "common_stock_reference",
+      "task_id": "c8b75e4a38b42c85245247d8f99de95991f96994751ebb6fbdb13c68efcc108f"
+    },
+    {
+      "date": "2023-04-27",
+      "kind": "common_stock_reference",
+      "task_id": "97c8545c9c1e515197612a173761dd0868423963ca96b8f79c1caa9838202ee6"
+    },
+    {
+      "date": "2023-04-28",
+      "kind": "common_stock_reference",
+      "task_id": "03e301470424a7f881e628a97cdb5a823a1604c86f859497f968caa00896f4c5"
+    },
+    {
+      "date": "2023-05-01",
+      "kind": "common_stock_reference",
+      "task_id": "a6689dc830d85fa4e1b89b0a69f13a49bbf0790dda80907636aeeedb49b169b0"
+    },
+    {
+      "date": "2023-05-02",
+      "kind": "common_stock_reference",
+      "task_id": "07ba78207a814ff164d7179ce317c54e8c7c4094ca03dcc90c403d7e36a15cd9"
+    },
+    {
+      "date": "2023-05-03",
+      "kind": "common_stock_reference",
+      "task_id": "e5c05a36f55304c54d33e2cf30d5182e7dd598afa8e80c2a0999a5fb8c322f62"
+    },
+    {
+      "date": "2023-05-04",
+      "kind": "common_stock_reference",
+      "task_id": "5bf1f793fcb7184802cfaf1157d38e5292c978b77cb7a1f5eed364e605c6da6f"
+    },
+    {
+      "date": "2023-05-05",
+      "kind": "common_stock_reference",
+      "task_id": "f9b48ffd82feef2f5bfebddef587635053e50c9b9d2db90b0dcdde160351e0e9"
+    },
+    {
+      "date": "2023-05-08",
+      "kind": "common_stock_reference",
+      "task_id": "90b3c18f87b9f990e4479948d1668266547c9ef596d5c655d053f3a00ac7e49a"
+    },
+    {
+      "date": "2023-05-09",
+      "kind": "common_stock_reference",
+      "task_id": "f71e3a8b4735b35bc8389581864413d295881cd92458576f2c829ae9ff6460b5"
+    },
+    {
+      "date": "2023-05-10",
+      "kind": "common_stock_reference",
+      "task_id": "1c64a9e2e45fc775975ad17e9580179987db31e7902d5a2a9fb8dd9e6ffb8b5f"
+    },
+    {
+      "date": "2023-05-11",
+      "kind": "common_stock_reference",
+      "task_id": "95d92f92bdd289a9ad7f567915ecb2bfabd10afc35af3b9fc372675baf50263e"
+    },
+    {
+      "date": "2023-05-12",
+      "kind": "common_stock_reference",
+      "task_id": "bd5b65c36470f8adf18bc8d28b54e98e115ad0203c790d16d53316c233e2b737"
+    },
+    {
+      "date": "2023-05-15",
+      "kind": "common_stock_reference",
+      "task_id": "050c1907d575e412d17745311cf799747257c0ce8dcc82bc5258c505e8603a42"
+    },
+    {
+      "date": "2023-05-16",
+      "kind": "common_stock_reference",
+      "task_id": "5b6f9e045d99e9765a949c3d179cca7ca6150d6b436a511b3e7b57ff190aaec8"
+    },
+    {
+      "date": "2023-05-17",
+      "kind": "common_stock_reference",
+      "task_id": "1373bb8353fe6ddfe768f3faf40cc49365d5256bdf63ff24f86e7769a35a1f7e"
+    },
+    {
+      "date": "2023-05-18",
+      "kind": "common_stock_reference",
+      "task_id": "af84bafde6c4ef8be12212648e123bdd96fa2f5a1a9e521dd1b423c6d760814f"
+    },
+    {
+      "date": "2023-05-19",
+      "kind": "common_stock_reference",
+      "task_id": "40a16e9f55d9b9e6462250aa5867157b6c621bdc95c06570ee35fc0ccbb0c51c"
+    },
+    {
+      "date": "2023-05-22",
+      "kind": "common_stock_reference",
+      "task_id": "1866e28cb39ae7f1d0602ac955d354b955acb86d2f8fb24e551e59c9ff022527"
+    },
+    {
+      "date": "2023-05-23",
+      "kind": "common_stock_reference",
+      "task_id": "fb26b176c11c9d4789700a66b62e3aab52853159aadba55a73bd640d9ff91e50"
+    },
+    {
+      "date": "2023-05-24",
+      "kind": "common_stock_reference",
+      "task_id": "3db0cc3e77da147711919c041f733f5e12895bea23ae9b2eb449524b0a3d2e99"
+    },
+    {
+      "date": "2023-05-25",
+      "kind": "common_stock_reference",
+      "task_id": "9b6f121ba91df32ce2973b2e7839d93e90b97808287b959ed3151f90c69dd7e9"
+    },
+    {
+      "date": "2023-05-26",
+      "kind": "common_stock_reference",
+      "task_id": "2b33783671b4e32fa4166d18fb90381d2eae117bc869be28c7cb8cc33fce23e4"
+    },
+    {
+      "date": "2023-05-30",
+      "kind": "common_stock_reference",
+      "task_id": "3e98afcb82e9641458ba8d097631c4a5e201abd80fb27a83db28f0cd62311799"
+    },
+    {
+      "date": "2023-05-31",
+      "kind": "common_stock_reference",
+      "task_id": "41d69343fd348fee6cc5ea9ac39157aa234af3ba2d1454c27eb449bac736c655"
+    },
+    {
+      "date": "2023-06-01",
+      "kind": "common_stock_reference",
+      "task_id": "17299c3912fac33ed0163915d656306ad25e200122ff9fe5ea63300c7b3e3878"
+    },
+    {
+      "date": "2023-06-02",
+      "kind": "common_stock_reference",
+      "task_id": "07e39f8af8789c0e2ffc13049da582163b48fbc64257290d6c93a09633e1bfb0"
+    },
+    {
+      "date": "2023-06-05",
+      "kind": "common_stock_reference",
+      "task_id": "5b62b37be7df66b04376b584a639c807ca422564e852f0a57364bbc6f692937f"
+    },
+    {
+      "date": "2023-06-06",
+      "kind": "common_stock_reference",
+      "task_id": "f07102d143aa84fd49771652482749a6ed3b928b9c89339244f3ee00beab8173"
+    },
+    {
+      "date": "2023-06-07",
+      "kind": "common_stock_reference",
+      "task_id": "c43f3983764b49bc1026680b07a59e18b397b8fbe1bf202a819385afbe7f9c49"
+    },
+    {
+      "date": "2023-06-08",
+      "kind": "common_stock_reference",
+      "task_id": "4a742eb3addc498e810103b302de5d2f941187b4d5afa5cde0635c8163ee5408"
+    },
+    {
+      "date": "2023-06-09",
+      "kind": "common_stock_reference",
+      "task_id": "04408bbb1166f68417cd39de162a3ec9775b5b3eba7890a22b773d215008d3fb"
+    },
+    {
+      "date": "2023-06-12",
+      "kind": "common_stock_reference",
+      "task_id": "c0f9c7b8c34986bf41e43b8f30a398d56e27265decc9107bbfb9d171f7c8957d"
+    },
+    {
+      "date": "2023-06-13",
+      "kind": "common_stock_reference",
+      "task_id": "8b240a0b0db30cb50abe88384105fc0141ac24070d6409f76a613c49641fd048"
+    },
+    {
+      "date": "2023-06-14",
+      "kind": "common_stock_reference",
+      "task_id": "26a644b3bcf47069e25023f135db2ec08ed0e46f940ad3f31fb2ebb8b2a505b6"
+    },
+    {
+      "date": "2023-06-15",
+      "kind": "common_stock_reference",
+      "task_id": "cb14233557b19a1fbbc8f2ff79b8f7b7ebc4f974a757e0b1ff7043a8b701ba16"
+    },
+    {
+      "date": "2023-06-16",
+      "kind": "common_stock_reference",
+      "task_id": "f36ad0bfa05c06234f4f4ef716cf3e70127f3eddbf724db56c2ae6cf5da8b96d"
+    },
+    {
+      "date": "2023-06-20",
+      "kind": "common_stock_reference",
+      "task_id": "9668446e7252ca8e16749d3f783b346519f530e013763aeded4f44206dd18230"
+    },
+    {
+      "date": "2023-06-21",
+      "kind": "common_stock_reference",
+      "task_id": "0f4211bd0fa68f212595cfc63ed185086aa29dfd5e30edaea9709dd321f0c367"
+    },
+    {
+      "date": "2023-06-22",
+      "kind": "common_stock_reference",
+      "task_id": "854cb3a3dfa8ea3d37ea29bbf67471d03f2f39ed29f99f6f735e96759dd905dd"
+    },
+    {
+      "date": "2023-06-23",
+      "kind": "common_stock_reference",
+      "task_id": "5ca02cc3d002b3220dca09fd1a4079a47c25ed03dff2542a279d58e52ce7f61a"
+    },
+    {
+      "date": "2023-06-26",
+      "kind": "common_stock_reference",
+      "task_id": "6d2ef373783d058674dd44238c9b7dcd3bfcc4957154d705496a14f63b93eeee"
+    },
+    {
+      "date": "2023-06-27",
+      "kind": "common_stock_reference",
+      "task_id": "1056e343b01b7a9f5891367ce34aefd3490f54c58246dcc397f7d52ec0285377"
+    },
+    {
+      "date": "2023-06-28",
+      "kind": "common_stock_reference",
+      "task_id": "03e6149e1af11a2e9da8b42e6f12a33817df2c741d1ca76f17cef0b3542408f9"
+    },
+    {
+      "date": "2023-06-29",
+      "kind": "common_stock_reference",
+      "task_id": "ef5d34030064585c2fadda205ad64d04fbd07935df1d973c903e64987f73cd80"
+    },
+    {
+      "date": "2023-06-30",
+      "kind": "common_stock_reference",
+      "task_id": "c58511eb32b79ae6f1a1f0830bc9fb062c02173d4251fff3555b229a238957f5"
+    },
+    {
+      "date": "2023-07-05",
+      "kind": "common_stock_reference",
+      "task_id": "313393595c503609efab324c395518b905a571c777dea18447de443d6ad4878f"
+    },
+    {
+      "date": "2023-07-06",
+      "kind": "common_stock_reference",
+      "task_id": "75e0cb64fd9eaf6f21339bc75debd3d1906116ae228ef8f433dfdea29a5590ac"
+    },
+    {
+      "date": "2023-07-07",
+      "kind": "common_stock_reference",
+      "task_id": "35dc4ab4a6eff676b6ff0254c3ed31f00db01fe09fafa037344ed61cdb8751f4"
+    },
+    {
+      "date": "2023-07-10",
+      "kind": "common_stock_reference",
+      "task_id": "4c5f2ac7df3b94ee153853ae6623d8abc8321b4fde80e342889a8a4aff2eb336"
+    },
+    {
+      "date": "2023-07-11",
+      "kind": "common_stock_reference",
+      "task_id": "405fb1d6f8afa05fadb48b6a21f9bfe122b22b0f4d71644f197427994f9eea7b"
+    },
+    {
+      "date": "2023-07-12",
+      "kind": "common_stock_reference",
+      "task_id": "3e16a4ea59fd8657a03eca36cf66803d61b7cfe37fd2a4209006228c3c137692"
+    },
+    {
+      "date": "2023-07-13",
+      "kind": "common_stock_reference",
+      "task_id": "f13fb64fffc53b1b0c483abcfd5fa92966849c2c865f61b0426a5bcafb79df93"
+    },
+    {
+      "date": "2023-07-14",
+      "kind": "common_stock_reference",
+      "task_id": "5b318b217e08afd998c44de7c67347c8ccef3812c178be308c32fe5062834d2f"
+    },
+    {
+      "date": "2023-07-17",
+      "kind": "common_stock_reference",
+      "task_id": "f2af5c3da786077d416c092ca812c7c650ccff5036efa2b272e8b2af29d76917"
+    },
+    {
+      "date": "2023-07-18",
+      "kind": "common_stock_reference",
+      "task_id": "fcc94dac40178b1e635faae367154504d1467424d9ee5b4fcfcd57d138ce452c"
+    },
+    {
+      "date": "2023-07-19",
+      "kind": "common_stock_reference",
+      "task_id": "3574e4aa06e137177a760d92393adb6072854d5e8dbb8f89b9e4266d03942e6e"
+    },
+    {
+      "date": "2023-07-20",
+      "kind": "common_stock_reference",
+      "task_id": "6a9a8890e1bd21f2081dc2d8838d4198236cadb0e0276fd9286349f57a15b7b1"
+    },
+    {
+      "date": "2023-07-21",
+      "kind": "common_stock_reference",
+      "task_id": "ed83c5d4a63e593f5d2f60ad460fa5ce950f679b19ddc09dd9caf34a25db4c41"
+    }
+  ],
+  "universe_semantics": {
+    "historical_identity": "listing-scoped composite FIGI, share-class FIGI fallback, then deterministic sourced fallback",
+    "prior_20_session_median_dollar_volume_minimum": 50000000,
+    "prior_close_minimum": 10.0,
+    "ranking": "top 250 by prior 60-session median close-times-volume",
+    "security_type": "point-in-time active U.S. common stock"
+  },
+  "warmup_sessions": 200
+}
