@@ -64,22 +64,24 @@ The inspected `broad-etf-trend-pullback-v2-cost-floor` development family is
 rejected: all 32 trials had negative 20-bps growth and none passed the complete
 selection-aware gates. Do not repair it or access its confirmation reserve.
 
-The close-to-open ETF successor is now rejected after all 32 trials produced
-negative 20-bps growth and failed the complete selection-aware gates. Continue
-immediately with `cross-sectional-momentum-v5-liquid-common-stock` as defined in
-`CONTINUOUS_STRATEGY_DISCOVERY_V2.md`. It freezes 80 contaminated development
-decision dates, a complete account calendar, five post-settlement embargo
-sessions, and 25 untouched confirmation opportunities. Its 32-trial grid,
-top-250 liquidity universe, split exclusion, production evaluator, and
-implementation hashes must be committed before the cached daily price file is
-opened. The predeclared residual-equity and intraday-ETF new-family lanes
-continue separately when their weekly gate opens.
+The close-to-open ETF successor and the subsequent liquid-common-stock momentum
+successor are now rejected. Momentum v5 evaluated all 32 frozen trials; only
+two retained positive 20-bps growth and stressed PF/drawdown, and both failed
+DSR, Holm, rolling-fold, stationary-bootstrap-lower-bound, and neighbor
+stability gates. Its exact version is terminal and its 25 confirmation
+opportunities remain untouched.
 
-V4 failed before any trial metric because the shared normalizer rejected an
-empty symbol series. V5 preserves that failure and changes only missing-series
-normalization: the symbol remains in the point-in-time denominator and produces
-no substitute signal. The grid, partitions, costs, selection rule, and
-confirmation reserve do not change.
+Continue immediately with
+`two-to-three-day-cross-sectional-reversal-v3-liquid-common-stock-residual`.
+This is a successor inside the already evaluated short-horizon
+cross-sectional-reversal mechanism, so it does not consume a new-family slot
+or require an ISO-week wait. It uses the same top-250 liquid common-stock
+source, 80 explicitly contaminated development decision dates, complete
+account calendar, five post-settlement embargo sessions, and 25 untouched
+confirmation opportunities. Freeze all 48 authorized residual-reversal
+combinations and the production evaluator hashes before reopening the cached
+daily price file. The separately predeclared intraday-ETF family remains
+subject to its weekly activation gate.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`

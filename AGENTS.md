@@ -100,12 +100,28 @@ requires no calendar wait.
 The v4 transition is `FAILED_EMPTY_DAILY_SERIES_BOUNDARY`: its committed
 development search loaded the cached file, then normalization rejected an empty
 symbol series before any candidate, return, account path, trial metric, or
-selection. `cross-sectional-momentum-v5-liquid-common-stock` is the active
-exact successor. It changes only missing-series normalization by leaving the
-symbol in point-in-time membership while omitting its empty bar container, so
-the historical evaluator treats it as missing rather than substituting data.
-The v4 grid, dates, costs, selection rule, and untouched confirmation reserve
-remain unchanged.
+selection. `cross-sectional-momentum-v5-liquid-common-stock` changed only that
+missing-series boundary and then evaluated all 32 unchanged trials. Independent
+inspection `6a9bf3d0...f6fa29` rejected every trial. Two trials retained
+positive 20-bps growth, 1.246 stressed profit factor, and 5.633R drawdown, but
+their DSR probability was only 0.4288, their stationary-bootstrap lower bound
+was negative, two rolling folds lost money and one was flat, and only 20% of
+their one-step neighbors remained positive. No Holm-adjusted test rejected.
+The exact v5 successor is terminal; its 25 confirmation opportunities remain
+untouched.
+
+Continuous work now advances
+`two-to-three-day-cross-sectional-reversal-v3-liquid-common-stock-residual`.
+This is an existing-family successor, not a new mechanism-family activation.
+It reuses the same committed point-in-time liquid-common-stock source and the
+80 now contaminated development decision dates, while retaining the five
+post-settlement embargo sessions and 25 globally untouched confirmation
+opportunities. Before the cached daily price file is reopened it must freeze
+the complete 48-trial residual-reversal grid from the authorized discovery
+plan: prior return `{1,3}` sessions, residual z threshold
+`{-1.5,-2.0,-2.5}`, SPY trend `{SMA100,SMA200}`, stop `{1.0,1.5}×ATR14`,
+and hold `{2,5}` sessions. It consumes no new-family slot and requires no
+calendar wait.
 
 The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1

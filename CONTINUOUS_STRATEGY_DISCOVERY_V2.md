@@ -385,11 +385,38 @@ The cached daily file is loaded once per development or confirmation process.
 No provider request is needed. Preflight opens only committed metadata; the
 price file remains closed until the committed search authorizes development.
 
+## Latest disposition and immediate successor
+
+Independent inspection
+`6a9bf3d06a3ecc3b37e37c6f7304c9945b317cb19a6995af453695f150f6fa29`
+is `REJECTED`. V5 evaluated all 32 trials in 29.5 seconds from one cached load
+with zero provider requests. Two trials had positive 20-bps growth, 1.246
+stressed profit factor, and 5.633R drawdown, but their DSR probability was only
+0.4288, the stationary-bootstrap lower bound was negative, two rolling folds
+lost money and one was flat, and only one of five one-step neighbors remained
+positive. No Holm-adjusted test rejected. No winner or evidence target was
+frozen, and the 25 confirmation opportunities remain untouched.
+
+Continuous work now proceeds with
+`two-to-three-day-cross-sectional-reversal-v3-liquid-common-stock-residual`.
+The mechanism is the already evaluated short-horizon cross-sectional reversal,
+not a new family. Its material successor change is the prospectively frozen
+top-250 liquid common-stock denominator and market-residual standardization.
+It uses the same complete account calendar, 80 explicitly contaminated
+development decision dates, post-settlement five-session embargo, and 25
+untouched confirmation opportunities. Before the cached daily file is reopened,
+freeze all 48 combinations of prior return `{1,3}` sessions, downside residual
+z `{-1.5,-2.0,-2.5}`, SPY trend `{SMA100,SMA200}`, stop
+`{1.0,1.5}×ATR14`, and hold `{2,5}` sessions. It consumes no new-family slot
+and does not wait for an ISO-week boundary.
+
 ## Parallel lanes
 
-The predeclared residual-equity and intraday-ETF families remain subject to the
-new-family weekly budget. Their calendar gate is independent of this successor
-lane and cannot block it.
+The residual-equity implementation is now used only for the existing
+cross-sectional-reversal successor described above. The separately predeclared
+intraday-ETF opening-reversal family remains subject to the new-family weekly
+budget. Its calendar gate is independent and cannot block continuous historical
+work.
 
 The short-horizon oversold-reversal successor above is active now. Its retired
 v1 ten-signal result is hypothesis evidence only, and the already exposed gap
