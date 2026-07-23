@@ -382,9 +382,13 @@ failure artifact and be frozen and committed before provider access:
 python3 dense_collection_recovery.py record-failure \
   path/to/committed-failed-plan.json \
   --recorded-at <actual-current-ISO8601-timestamp>
-# Commit the failure before freezing recovery.
+# Commit the failure, then independently rebuild it.
+python3 dense_collection_recovery_inspection.py \
+  path/to/committed-failure.json \
+  --inspected-at <actual-current-ISO8601-timestamp>
+# Commit the inspection before freezing recovery.
 python3 dense_collection_recovery.py freeze-pullback-recovery \
-  path/to/committed-failure.json --as-of 2026-07-23
+  path/to/committed-failure-inspection.json --as-of 2026-07-23
 # Commit the recovery plan before collection.
 python3 dense_data_collection.py --as-of 2026-07-23 \
   collect path/to/committed-recovery-plan.json

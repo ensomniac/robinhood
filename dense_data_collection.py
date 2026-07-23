@@ -507,6 +507,33 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
             and failure.get("confirmation_outcomes_accessed") is False
         ):
             raise DenseDataCollectionError("collection recovery binding drifted")
+        failure_inspection_path = (
+            PROJECT_ROOT
+            / str(plan.get("recovery_failure_inspection_path", ""))
+        )
+        if enforce_commit:
+            strategy_discovery.require_committed(failure_inspection_path)
+        failure_inspection = strategy_discovery.load_artifact(
+            failure_inspection_path,
+            expected_kind="dense-data-collection-failure-inspection",
+        )
+        inspection_checks = failure_inspection.get("checks")
+        if not (
+            failure_inspection.get("state")
+            == "COLLECTION_FAILURE_INSPECTED"
+            and failure_inspection.get("artifact_sha256")
+            == plan.get("recovery_failure_inspection_sha256")
+            and failure_inspection.get("failure_sha256")
+            == failure["artifact_sha256"]
+            and failure_inspection.get("plan_sha256")
+            == failure["plan_sha256"]
+            and isinstance(inspection_checks, Mapping)
+            and inspection_checks
+            and all(inspection_checks.values())
+        ):
+            raise DenseDataCollectionError(
+                "collection recovery failure inspection drifted"
+            )
         if not (
             recovery_adjustment == RECOVERY_ADJUSTMENT
             and plan.get("family_id") == runtime.ETF_PULLBACK_FAMILY
@@ -521,7 +548,11 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         if not (
             isinstance(implementation_hashes, Mapping)
             and set(implementation_hashes)
-            == {"dense_collection_recovery.py", "dense_data_collection.py"}
+            == {
+                "dense_collection_recovery.py",
+                "dense_collection_recovery_inspection.py",
+                "dense_data_collection.py",
+            }
             and all(
                 isinstance(value, str) and len(value) == 64
                 for value in implementation_hashes.values()

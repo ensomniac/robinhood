@@ -28,6 +28,7 @@ GROUPED_DAILY_FAILURE = "GROUPED_DAILY_TASK_FAILED_BEFORE_PRICE_ACCESS"
 INCOMPLETE_INTRADAY = "INCOMPLETE_SIP_REGULAR_SESSION"
 RECOVERY_IMPLEMENTATION_FILES = (
     "dense_collection_recovery.py",
+    "dense_collection_recovery_inspection.py",
     "dense_data_collection.py",
 )
 
@@ -276,15 +277,62 @@ def _load_failure(
     return failure
 
 
+def _load_inspected_failure(
+    inspection_path: Path,
+    *,
+    enforce_commit: bool,
+) -> tuple[Path, dict[str, Any], dict[str, Any]]:
+    if enforce_commit:
+        strategy_discovery.require_committed(inspection_path)
+    inspection = strategy_discovery.load_artifact(
+        inspection_path,
+        expected_kind="dense-data-collection-failure-inspection",
+    )
+    checks = inspection.get("checks")
+    if not (
+        inspection.get("state") == "COLLECTION_FAILURE_INSPECTED"
+        and isinstance(checks, Mapping)
+        and checks
+        and all(checks.values())
+        and inspection.get("strategy_metrics_accessed") is False
+        and inspection.get("confirmation_outcomes_accessed") is False
+    ):
+        raise DenseCollectionRecoveryError(
+            "collection failure inspection is incomplete"
+        )
+    failure_path = PROJECT_ROOT / str(inspection["failure_path"])
+    failure = _load_failure(
+        failure_path,
+        enforce_commit=enforce_commit,
+    )
+    if not (
+        inspection.get("failure_sha256") == failure["artifact_sha256"]
+        and inspection.get("plan_sha256") == failure["plan_sha256"]
+        and inspection.get("family_id") == failure["family_id"]
+        and inspection.get("lane") == failure["lane"]
+        and inspection.get("failure_code") == failure["failure_code"]
+        and inspection.get("data_outcomes_accessed")
+        == failure["data_outcomes_accessed"]
+        and inspection.get("exposure_scope") == failure["exposure_scope"]
+    ):
+        raise DenseCollectionRecoveryError(
+            "collection failure inspection binding drifted"
+        )
+    return failure_path, failure, inspection
+
+
 def freeze_pullback_recovery(
-    failure_path: Path,
+    failure_inspection_path: Path,
     *,
     as_of: date | None = None,
     actual_today: date | None = None,
     public_root: Path = DEFAULT_PUBLIC_ROOT,
     enforce_commit: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
-    failure = _load_failure(failure_path, enforce_commit=enforce_commit)
+    failure_path, failure, failure_inspection = _load_inspected_failure(
+        failure_inspection_path,
+        enforce_commit=enforce_commit,
+    )
     if not (
         failure.get("family_id") == runtime.ETF_PULLBACK_FAMILY
         and failure.get("lane") == "development"
@@ -344,6 +392,12 @@ def freeze_pullback_recovery(
             "adjustment_semantics": collection.RECOVERY_ADJUSTMENT,
             "recovery_failure_path": collection._repo_path(failure_path),
             "recovery_failure_sha256": failure["artifact_sha256"],
+            "recovery_failure_inspection_path": collection._repo_path(
+                failure_inspection_path
+            ),
+            "recovery_failure_inspection_sha256": failure_inspection[
+                "artifact_sha256"
+            ],
             "supersedes_plan_sha256": plan["artifact_sha256"],
             "recovery_implementation_hashes": _implementation_hashes(
                 enforce_commit=enforce_commit
@@ -364,12 +418,15 @@ def freeze_pullback_recovery(
 
 
 def index_failure_exposure(
-    failure_path: Path,
+    failure_inspection_path: Path,
     *,
     index_path: Path = outcome_exposure.DEFAULT_INDEX,
     enforce_commit: bool = True,
 ) -> tuple[dict[str, Any], bool]:
-    failure = _load_failure(failure_path, enforce_commit=enforce_commit)
+    failure_path, failure, _inspection = _load_inspected_failure(
+        failure_inspection_path,
+        enforce_commit=enforce_commit,
+    )
     if failure.get("data_outcomes_accessed") is not True:
         raise DenseCollectionRecoveryError(
             "outcome-blind failures must not enter the exposure index"

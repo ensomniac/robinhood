@@ -6,6 +6,7 @@ from datetime import UTC, date, datetime, timedelta
 import pytest
 
 import dense_collection_recovery as recovery
+import dense_collection_recovery_inspection as recovery_inspection
 import dense_data_collection as collection
 import dense_data_collection_inspection as inspection
 import dense_strategy_runtime as runtime
@@ -93,6 +94,7 @@ def _artifacts(tmp_path, monkeypatch, *, lane="development"):
     monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(inspection, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(recovery, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(recovery_inspection, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(strategy_discovery, "PROJECT_ROOT", tmp_path)
     confirmation = lane == "confirmation"
     authority_path, authority = strategy_discovery._write_artifact(
@@ -699,6 +701,16 @@ def test_failed_grouped_daily_task_is_recorded_without_outcome_exposure(
     assert failure["data_outcomes_accessed"] is False
     assert failure["strategy_metrics_accessed"] is False
     assert failure["confirmation_outcomes_accessed"] is False
+    inspection_path, inspected = recovery_inspection.inspect(
+        failure_path,
+        inspected_at="2026-07-27T13:02:00+00:00",
+        store_config=config,
+        public_root=tmp_path / "public",
+        enforce_commit=False,
+    )
+    assert inspection_path.is_file()
+    assert inspected["state"] == recovery_inspection.INSPECTION_STATE
+    assert all(inspected["checks"].values())
 
 
 class DailyRangeBackend:
@@ -744,6 +756,7 @@ def _pullback_recovery_plan(tmp_path, monkeypatch):
         "_implementation_hashes",
         lambda **_kwargs: {
             "dense_collection_recovery.py": "c" * 64,
+            "dense_collection_recovery_inspection.py": "i" * 64,
             "dense_data_collection.py": "d" * 64,
         },
     )
@@ -775,8 +788,29 @@ def _pullback_recovery_plan(tmp_path, monkeypatch):
         tmp_path / "failures",
         "failure",
     )
+    inspection_path, _inspection = strategy_discovery._write_artifact(
+        {
+            "schema_version": 1,
+            "artifact_kind": recovery_inspection.INSPECTION_KIND,
+            "campaign_id": plan["campaign_id"],
+            "state": recovery_inspection.INSPECTION_STATE,
+            "family_id": plan["family_id"],
+            "lane": plan["lane"],
+            "failure_path": str(failure_path.relative_to(tmp_path)),
+            "failure_sha256": failure["artifact_sha256"],
+            "plan_sha256": plan["artifact_sha256"],
+            "failure_code": recovery.GROUPED_DAILY_FAILURE,
+            "data_outcomes_accessed": False,
+            "exposure_scope": None,
+            "strategy_metrics_accessed": False,
+            "confirmation_outcomes_accessed": False,
+            "checks": {"all": True},
+        },
+        tmp_path / "failure-inspections",
+        "inspection",
+    )
     recovery_path, recovery_plan = recovery.freeze_pullback_recovery(
-        failure_path,
+        inspection_path,
         as_of=date(2026, 7, 27),
         actual_today=date(2026, 7, 27),
         public_root=tmp_path / "public",
@@ -845,6 +879,8 @@ def test_pullback_recovery_rejects_implementation_hash_drift(
         lambda path: (
             "c" * 64
             if path.name == "dense_collection_recovery.py"
+            else "i" * 64
+            if path.name == "dense_collection_recovery_inspection.py"
             else "d" * 64
         ),
     )
@@ -861,6 +897,7 @@ def test_incomplete_intraday_collection_is_indexed_as_development_exposure(
 ):
     monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(recovery, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(recovery_inspection, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(strategy_discovery, "PROJECT_ROOT", tmp_path)
     config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
     tasks = []
@@ -926,6 +963,8 @@ def test_incomplete_intraday_collection_is_indexed_as_development_exposure(
             "state": recovery.FAILURE_STATE,
             "family_id": plan["family_id"],
             "lane": plan["lane"],
+            "plan_sha256": "a" * 64,
+            "failure_code": recovery.INCOMPLETE_INTRADAY,
             "data_outcomes_accessed": True,
             "exposure_scope": facts["exposure_scope"],
             "strategy_metrics_accessed": False,
@@ -937,9 +976,30 @@ def test_incomplete_intraday_collection_is_indexed_as_development_exposure(
         tmp_path / "failures",
         "failure",
     )
+    inspection_path, _inspection = strategy_discovery._write_artifact(
+        {
+            "schema_version": 1,
+            "artifact_kind": recovery_inspection.INSPECTION_KIND,
+            "campaign_id": "multi-strategy-portfolio-validation-v2",
+            "state": recovery_inspection.INSPECTION_STATE,
+            "family_id": plan["family_id"],
+            "lane": plan["lane"],
+            "failure_path": str(failure_path.relative_to(tmp_path)),
+            "failure_sha256": _failure["artifact_sha256"],
+            "plan_sha256": "a" * 64,
+            "failure_code": recovery.INCOMPLETE_INTRADAY,
+            "data_outcomes_accessed": True,
+            "exposure_scope": facts["exposure_scope"],
+            "strategy_metrics_accessed": False,
+            "confirmation_outcomes_accessed": False,
+            "checks": {"all": True},
+        },
+        tmp_path / "failure-inspections",
+        "inspection",
+    )
     index = tmp_path / "OUTCOME_EXPOSURE_INDEX.jsonl"
     record, appended = recovery.index_failure_exposure(
-        failure_path,
+        inspection_path,
         index_path=index,
         enforce_commit=False,
     )

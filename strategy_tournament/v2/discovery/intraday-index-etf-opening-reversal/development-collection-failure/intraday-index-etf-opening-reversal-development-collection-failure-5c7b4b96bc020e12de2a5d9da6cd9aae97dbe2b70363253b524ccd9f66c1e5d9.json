@@ -1,0 +1,532 @@
+{
+  "artifact_kind": "dense-data-collection-failure",
+  "artifact_sha256": "5c7b4b96bc020e12de2a5d9da6cd9aae97dbe2b70363253b524ccd9f66c1e5d9",
+  "authority_sha256": "8f0db337d207db202cdcfcb360705499f5ce78508fd46bc49e3fb8c20f59face",
+  "binding_sha256": "8f0db337d207db202cdcfcb360705499f5ce78508fd46bc49e3fb8c20f59face",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "collection_started_at": "2026-07-23T23:27:44.312245Z",
+  "completed_tasks": 1440,
+  "confirmation_outcomes_accessed": false,
+  "data_outcomes_accessed": true,
+  "evaluation_tasks_completed": 960,
+  "exposure_scope": {
+    "dates": [
+      "2023-09-19",
+      "2023-09-20",
+      "2023-09-21",
+      "2023-09-22",
+      "2023-09-25",
+      "2023-09-26",
+      "2023-09-27",
+      "2023-09-28",
+      "2023-09-29",
+      "2023-10-02",
+      "2023-10-03",
+      "2023-10-04",
+      "2023-10-05",
+      "2023-10-06",
+      "2023-10-09",
+      "2023-10-10",
+      "2023-10-11",
+      "2023-10-12",
+      "2023-10-13",
+      "2023-10-16",
+      "2023-10-17",
+      "2023-10-18",
+      "2023-10-19",
+      "2023-10-20",
+      "2023-10-23",
+      "2023-10-24",
+      "2023-10-25",
+      "2023-10-26",
+      "2023-10-27",
+      "2023-10-30",
+      "2023-10-31",
+      "2023-11-01",
+      "2023-11-02",
+      "2023-11-03",
+      "2023-11-06",
+      "2023-11-07",
+      "2023-11-08",
+      "2023-11-09",
+      "2023-11-10",
+      "2023-11-13",
+      "2023-11-14",
+      "2023-11-15",
+      "2023-11-16",
+      "2023-11-17",
+      "2023-11-20",
+      "2023-11-21",
+      "2023-11-22",
+      "2023-11-27",
+      "2023-11-28",
+      "2023-11-29",
+      "2023-11-30",
+      "2023-12-01",
+      "2023-12-04",
+      "2023-12-05",
+      "2023-12-06",
+      "2023-12-07",
+      "2023-12-08",
+      "2023-12-11",
+      "2023-12-12",
+      "2023-12-13",
+      "2023-12-14",
+      "2023-12-15",
+      "2023-12-18",
+      "2023-12-19",
+      "2023-12-20",
+      "2023-12-21",
+      "2023-12-22",
+      "2023-12-26",
+      "2023-12-27",
+      "2023-12-28",
+      "2023-12-29",
+      "2024-01-02",
+      "2024-01-03",
+      "2024-01-04",
+      "2024-01-05",
+      "2024-01-08",
+      "2024-01-09",
+      "2024-01-10",
+      "2024-01-11",
+      "2024-01-12",
+      "2024-01-16",
+      "2024-01-17",
+      "2024-01-18",
+      "2024-01-19",
+      "2024-01-22",
+      "2024-01-23",
+      "2024-01-24",
+      "2024-01-25",
+      "2024-01-26",
+      "2024-01-29",
+      "2024-01-30",
+      "2024-01-31",
+      "2024-02-01",
+      "2024-02-02",
+      "2024-02-05",
+      "2024-02-06",
+      "2024-02-07",
+      "2024-02-08",
+      "2024-02-09",
+      "2024-02-12",
+      "2024-02-13",
+      "2024-02-14",
+      "2024-02-15",
+      "2024-02-16",
+      "2024-02-20",
+      "2024-02-21",
+      "2024-02-22",
+      "2024-02-23",
+      "2024-02-26",
+      "2024-02-27",
+      "2024-02-28",
+      "2024-02-29",
+      "2024-03-01",
+      "2024-03-04",
+      "2024-03-05",
+      "2024-03-06",
+      "2024-03-07",
+      "2024-03-08",
+      "2024-03-11",
+      "2024-03-12"
+    ],
+    "symbols": [
+      "DIA",
+      "IWM",
+      "QQQ",
+      "SPY",
+      "XLE",
+      "XLF",
+      "XLK",
+      "XLV"
+    ]
+  },
+  "failure_code": "INCOMPLETE_SIP_REGULAR_SESSION",
+  "failure_details": {
+    "incomplete_sessions": [
+      {
+        "date": "2023-06-26",
+        "expected_minutes": 390,
+        "observed_minutes": 388,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-06-27",
+        "expected_minutes": 390,
+        "observed_minutes": 388,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-06-28",
+        "expected_minutes": 390,
+        "observed_minutes": 386,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-06-30",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-05",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-06",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-07",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-11",
+        "expected_minutes": 390,
+        "observed_minutes": 387,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-13",
+        "expected_minutes": 390,
+        "observed_minutes": 388,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-17",
+        "expected_minutes": 390,
+        "observed_minutes": 386,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-18",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-20",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-21",
+        "expected_minutes": 390,
+        "observed_minutes": 388,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-25",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-26",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-28",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-07-31",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-08-01",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-08-16",
+        "expected_minutes": 390,
+        "observed_minutes": 387,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-08-21",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-08-22",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-08-24",
+        "expected_minutes": 390,
+        "observed_minutes": 388,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-08-25",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-08-28",
+        "expected_minutes": 390,
+        "observed_minutes": 388,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-08-29",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-08-31",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-09-01",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-09-05",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-09-07",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-09-08",
+        "expected_minutes": 390,
+        "observed_minutes": 386,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-09-11",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-09-18",
+        "expected_minutes": 390,
+        "observed_minutes": 388,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-09-19",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-10-05",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-10-12",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-11-07",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-11-10",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-11-13",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-11-17",
+        "expected_minutes": 390,
+        "observed_minutes": 386,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-11-21",
+        "expected_minutes": 390,
+        "observed_minutes": 387,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-11-22",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-11-27",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-12-07",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-12-08",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-12-11",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-12-22",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2023-12-26",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-01-12",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-01-22",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-01-30",
+        "expected_minutes": 390,
+        "observed_minutes": 388,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-01-31",
+        "expected_minutes": 390,
+        "observed_minutes": 388,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-02-06",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-02-14",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-02-20",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-02-21",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-02-23",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-02-27",
+        "expected_minutes": 390,
+        "observed_minutes": 386,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-02-28",
+        "expected_minutes": 390,
+        "observed_minutes": 387,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-03-01",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      },
+      {
+        "date": "2024-03-06",
+        "expected_minutes": 390,
+        "observed_minutes": 389,
+        "symbol": "DIA"
+      }
+    ],
+    "interpolated_minutes": 0,
+    "substituted_sessions": 0
+  },
+  "family_id": "intraday-index-etf-opening-reversal",
+  "lane": "development",
+  "market_price_rows_accessed": 561508,
+  "plan_path": "strategy_tournament/v2/discovery/intraday-index-etf-opening-reversal/development-collection-plan/intraday-index-etf-opening-reversal-development-collection-plan-8bdafb11202f0b032209f26a6b16264a53204cf24a33533e85c739317f3e3ca3.json",
+  "plan_sha256": "8bdafb11202f0b032209f26a6b16264a53204cf24a33533e85c739317f3e3ca3",
+  "provider_telemetry": {
+    "cache_hits": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 449.73958402102505,
+    "request_seconds": 45.84032504318748,
+    "requests": 1440
+  },
+  "recorded_at": "2026-07-23T23:52:05Z",
+  "schema_version": 1,
+  "state": "COLLECTION_FAILED_NO_STRATEGY_METRICS",
+  "strategy_metrics_accessed": false,
+  "substitutions": 0,
+  "task_count": 1440
+}
