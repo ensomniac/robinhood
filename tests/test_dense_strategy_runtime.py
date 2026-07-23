@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+import math
 import time as wall_time
 from datetime import date, datetime, time, timedelta, timezone
 
@@ -223,7 +224,14 @@ def test_trial_compounds_account_and_cost_stress_is_monotonic():
     assert len(result["metrics"]["oof_daily_account_returns"]) == 1
     assert len(result["metrics"]["oof_filled_account_returns"]) == 1
     assert len(result["maturity_rows"][0]["signals"]) == 1
-    assert result["maturity_rows"][0]["signals"][0]["stop_executed"] is True
+    signal = result["maturity_rows"][0]["signals"][0]
+    assert signal["stop_executed"] is True
+    assert signal["net_account_log_growth"] == pytest.approx(
+        math.log1p(signal["primary_account_return_fraction"])
+    )
+    assert signal["stress_20bps_account_log_growth"] == pytest.approx(
+        math.log1p(signal["stress_20bps_account_return_fraction"])
+    )
 
 
 def test_prepared_dataset_reuses_normalized_rows_across_trials():

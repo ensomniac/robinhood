@@ -1382,6 +1382,9 @@ def _trade_signal(
         "stress_20bps_account_return_fraction": stress_20[
             "net_account_return_fraction"
         ],
+        "net_account_log_growth": primary["log_growth"],
+        "stress_10bps_account_log_growth": stress_10["log_growth"],
+        "stress_20bps_account_log_growth": stress_20["log_growth"],
         "net_r": net_r(primary),
         "stress_10bps_r": net_r(stress_10),
         "stress_20bps_r": net_r(stress_20),

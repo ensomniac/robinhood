@@ -205,6 +205,13 @@ class PortfolioMaturityTests(unittest.TestCase):
                     "net_account_return_fraction": value * 0.005,
                     "stress_10bps_account_return_fraction": (value - 0.10) * 0.005,
                     "stress_20bps_account_return_fraction": (value - 0.20) * 0.005,
+                    "net_account_log_growth": math.log1p(value * 0.005),
+                    "stress_10bps_account_log_growth": math.log1p(
+                        (value - 0.10) * 0.005
+                    ),
+                    "stress_20bps_account_log_growth": math.log1p(
+                        (value - 0.20) * 0.005
+                    ),
                     "net_pnl_dollars": value * 500.0,
                     "stress_10bps_net_pnl_dollars": (value - 0.10) * 500.0,
                     "stress_20bps_net_pnl_dollars": (value - 0.20) * 500.0,
@@ -653,6 +660,24 @@ maximum_second_wave_families = 6
                 "portfolio_guard_status=ENTRY_READY",
             ):
                 maturity.validate_record(live, root=root)
+
+    def test_schema_two_historical_trade_log_growth_must_match_return(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            signal = next(
+                record
+                for record in self._strategy_records(
+                    root, "strategy-one", "momentum"
+                )
+                if record.get("mode") == "historical"
+                and record.get("record_type") == "signal"
+            )
+            signal["net_account_log_growth"] += 0.001
+            with self.assertRaisesRegex(
+                maturity.PortfolioMaturityError,
+                "differs from its account return",
+            ):
+                maturity.validate_record(signal, root=root)
 
     def test_live_close_without_flat_terminal_reconciliation_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:

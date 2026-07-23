@@ -1082,6 +1082,15 @@ def _phase_maturity_records(
                 "stress_20bps_account_return_fraction": signal[
                     "stress_20bps_account_return_fraction"
                 ],
+                "net_account_log_growth": math.log1p(
+                    float(signal["primary_account_return_fraction"])
+                ),
+                "stress_10bps_account_log_growth": math.log1p(
+                    float(signal["stress_10bps_account_return_fraction"])
+                ),
+                "stress_20bps_account_log_growth": math.log1p(
+                    float(signal["stress_20bps_account_return_fraction"])
+                ),
                 "net_pnl_dollars": signal["net_pnl_dollars"],
                 "stress_10bps_net_pnl_dollars": signal[
                     "stress_10bps_net_pnl_dollars"

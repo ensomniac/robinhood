@@ -590,15 +590,29 @@ def validate_record(record: Mapping[str, Any], *, root: Path = PROJECT_ROOT) -> 
     for field in ("net_r", "stress_10bps_r", "stress_20bps_r"):
         _finite(record.get(field), field)
     if record_schema == SCHEMA_VERSION and mode == "historical":
-        for field in (
-            "net_account_return_fraction",
-            "stress_10bps_account_return_fraction",
-            "stress_20bps_account_return_fraction",
-        ):
+        return_and_log_fields = (
+            ("net_account_return_fraction", "net_account_log_growth"),
+            (
+                "stress_10bps_account_return_fraction",
+                "stress_10bps_account_log_growth",
+            ),
+            (
+                "stress_20bps_account_return_fraction",
+                "stress_20bps_account_log_growth",
+            ),
+        )
+        for field, log_field in return_and_log_fields:
             value = _finite(record.get(field), field)
             if value <= -1:
                 raise PortfolioMaturityError(
                     f"{field} cannot lose 100 percent or more"
+                )
+            log_value = _finite(record.get(log_field), log_field)
+            if not math.isclose(
+                log_value, math.log1p(value), rel_tol=0.0, abs_tol=1e-12
+            ):
+                raise PortfolioMaturityError(
+                    f"{log_field} differs from its account return"
                 )
         for field in (
             "net_pnl_dollars",
