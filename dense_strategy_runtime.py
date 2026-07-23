@@ -29,6 +29,7 @@ ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
 ETF_HIGH_CONTINUATION_FAMILY = "liquid-etf-52-week-high-continuation"
 ETF_TURN_OF_MONTH_FAMILY = "liquid-etf-turn-of-month-seasonality"
 SECTOR_ETF_ROTATION_FAMILY = "liquid-sector-etf-rotation"
+ETF_CLOSE_TO_OPEN_FAMILY = "liquid-etf-close-to-open-momentum"
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
 EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
 VOLATILITY_COMPRESSION_FAMILY = (
@@ -43,6 +44,7 @@ SUPPORTED_FAMILIES = {
     ETF_HIGH_CONTINUATION_FAMILY,
     ETF_TURN_OF_MONTH_FAMILY,
     SECTOR_ETF_ROTATION_FAMILY,
+    ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
     VOLATILITY_COMPRESSION_FAMILY,
@@ -131,6 +133,103 @@ def _daily_series(dataset: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]
             )
         normalized[symbol] = bars
     return normalized
+
+
+def _fifteen_minute_sessions(
+    dataset: Mapping[str, Any],
+) -> dict[str, dict[str, list[dict[str, Any]]]]:
+    prepared = dataset.get("_prepared_fifteen_minute_bars")
+    if isinstance(prepared, dict):
+        return prepared
+    raw = dataset.get("fifteen_minute_bars")
+    if not isinstance(raw, Mapping) or not raw:
+        raise DenseStrategyRuntimeError(
+            "fifteen_minute_bars must be a non-empty object"
+        )
+    sessions: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for raw_day, raw_symbols in raw.items():
+        day = str(raw_day)
+        if not isinstance(raw_symbols, Mapping) or not raw_symbols:
+            raise DenseStrategyRuntimeError(
+                f"fifteen_minute_bars.{day} must contain symbols"
+            )
+        sessions[day] = {}
+        for raw_symbol, raw_bars in raw_symbols.items():
+            symbol = str(raw_symbol)
+            if not isinstance(raw_bars, list) or not raw_bars:
+                raise DenseStrategyRuntimeError(
+                    f"fifteen_minute_bars.{day}.{symbol} is empty"
+                )
+            bars: list[dict[str, Any]] = []
+            observed_times: list[datetime] = []
+            for index, raw_bar in enumerate(raw_bars):
+                if not isinstance(raw_bar, Mapping):
+                    raise DenseStrategyRuntimeError(
+                        f"fifteen_minute_bars.{day}.{symbol}[{index}] "
+                        "must be an object"
+                    )
+                timestamp = raw_bar.get("timestamp")
+                if not isinstance(timestamp, str):
+                    raise DenseStrategyRuntimeError(
+                        "fifteen-minute timestamp is invalid"
+                    )
+                try:
+                    observed = datetime.fromisoformat(timestamp)
+                except ValueError as exc:
+                    raise DenseStrategyRuntimeError(
+                        "fifteen-minute timestamp must be ISO formatted"
+                    ) from exc
+                if (
+                    observed.tzinfo is None
+                    or observed.date().isoformat() != day
+                ):
+                    raise DenseStrategyRuntimeError(
+                        "fifteen-minute timestamp needs a timezone and "
+                        "matching session date"
+                    )
+                bar = {"timestamp": timestamp}
+                for field in ("open", "high", "low", "close", "volume"):
+                    bar[field] = _number(
+                        raw_bar.get(field),
+                        (
+                            f"fifteen_minute_bars.{day}.{symbol}"
+                            f"[{index}].{field}"
+                        ),
+                        positive=field != "volume",
+                    )
+                if bar["volume"] < 0 or not (
+                    bar["low"] <= min(bar["open"], bar["close"])
+                    and bar["high"] >= max(bar["open"], bar["close"])
+                ):
+                    raise DenseStrategyRuntimeError(
+                        "fifteen-minute OHLCV data is invalid"
+                    )
+                observed_times.append(observed)
+                bars.append(bar)
+            if (
+                observed_times != sorted(observed_times)
+                or len(observed_times) != len(set(observed_times))
+                or observed_times[0].timetz().replace(tzinfo=None)
+                != time(9, 30)
+                or any(
+                    right - left != timedelta(minutes=15)
+                    for left, right in zip(
+                        observed_times, observed_times[1:]
+                    )
+                )
+                or any(
+                    not time(9, 30)
+                    <= item.timetz().replace(tzinfo=None)
+                    < time(16, 0)
+                    for item in observed_times
+                )
+            ):
+                raise DenseStrategyRuntimeError(
+                    "fifteen-minute bars must be unique, chronological, "
+                    "and regular-session aligned"
+                )
+            sessions[day][symbol] = bars
+    return sessions
 
 
 def _bar_maps(
@@ -1184,6 +1283,168 @@ def _sector_rotation_candidates(
     return candidates
 
 
+def _close_to_open_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    sessions = _fifteen_minute_sessions(dataset)
+    decision_time = str(parameters["decision_bar_time"])
+    return_floor = float(parameters["minimum_session_return_fraction"])
+    trend_period = int(parameters["prior_trend_sma"])
+    stop_atr = float(parameters["stop_atr14"])
+    exit_timing = str(parameters["exit_timing"])
+    decision_indices = {"15:15": 23, "15:30": 24}
+    if (
+        len(daily) != 4
+        or set(daily) != {"SPY", "QQQ", "IWM", "DIA"}
+        or decision_time not in decision_indices
+        or return_floor not in {0.005, 0.01}
+        or trend_period not in {20, 60}
+        or stop_atr not in {0.5, 1.0}
+        or exit_timing not in {"next_open", "next_0945_close"}
+        or set(sessions) != set(calendar)
+    ):
+        raise DenseStrategyRuntimeError(
+            "close-to-open inputs or parameters escaped the frozen grid"
+        )
+    if any(
+        set(day_symbols) != set(daily)
+        for day_symbols in sessions.values()
+    ):
+        raise DenseStrategyRuntimeError(
+            "close-to-open sessions do not cover the complete ETF universe"
+        )
+    daily_indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    candidates: list[dict[str, Any]] = []
+    decision_index = decision_indices[decision_time]
+    entry_index = decision_index + 1
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        next_date = calendar[calendar_index + 1]
+        ranked: list[
+            tuple[float, str, float, Sequence[Mapping[str, Any]]]
+        ] = []
+        for symbol in sorted(daily):
+            bars = daily[symbol]
+            day_index = daily_indices[symbol].get(decision_date)
+            current_rows = sessions[decision_date][symbol]
+            next_rows = sessions[next_date][symbol]
+            if (
+                day_index is None
+                or day_index < max(trend_period, 15)
+                or len(current_rows) != 26
+                or len(next_rows) < 1
+            ):
+                continue
+            signal_close = float(current_rows[decision_index]["close"])
+            session_return = (
+                signal_close / float(current_rows[0]["open"]) - 1
+            )
+            prior_trend = statistics.fmean(
+                float(item["close"])
+                for item in bars[day_index - trend_period : day_index]
+            )
+            atr14 = _atr(bars, day_index - 1)
+            if (
+                atr14 is None
+                or session_return + 1e-12 < return_floor
+                or signal_close <= prior_trend
+                or not _cost_floor(session_return)
+            ):
+                continue
+            ranked.append(
+                (-session_return, symbol, atr14, current_rows)
+            )
+        for rank, (
+            negative_return,
+            symbol,
+            atr14,
+            current_rows,
+        ) in enumerate(sorted(ranked), 1):
+            next_rows = sessions[next_date][symbol]
+            entry_price = float(current_rows[entry_index]["open"])
+            stop_price = entry_price - stop_atr * atr14
+            signal_id = (
+                f"{decision_date}-{ETF_CLOSE_TO_OPEN_FAMILY}-{symbol}"
+            )
+            if stop_price <= 0 or stop_price >= entry_price:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": decision_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "rejected",
+                        "rank": rank,
+                        "rejection_reason": "invalid_structural_stop",
+                    }
+                )
+                continue
+            exit_date = next_date
+            exit_price: float | None = None
+            stop_executed = False
+            for row in current_rows[entry_index:]:
+                opening = float(row["open"])
+                if opening <= stop_price:
+                    exit_price = opening
+                    stop_executed = True
+                    exit_date = decision_date
+                    break
+                if float(row["low"]) <= stop_price:
+                    exit_price = stop_price
+                    stop_executed = True
+                    exit_date = decision_date
+                    break
+            if exit_price is None:
+                next_open = float(next_rows[0]["open"])
+                if next_open <= stop_price:
+                    exit_price = next_open
+                    stop_executed = True
+                elif (
+                    exit_timing == "next_0945_close"
+                    and float(next_rows[0]["low"]) <= stop_price
+                ):
+                    exit_price = stop_price
+                    stop_executed = True
+                else:
+                    exit_price = (
+                        next_open
+                        if exit_timing == "next_open"
+                        else float(next_rows[0]["close"])
+                    )
+            marks = (
+                {decision_date: exit_price}
+                if exit_date == decision_date
+                else {
+                    decision_date: float(current_rows[-1]["close"]),
+                    next_date: exit_price,
+                }
+            )
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": decision_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "eligible",
+                    "rank": rank,
+                    "score": -negative_return,
+                    "expected_gross_move_fraction": -negative_return,
+                    "entry_price": entry_price,
+                    "stop_price": stop_price,
+                    "exit_date": exit_date,
+                    "exit_price": exit_price,
+                    "marks": marks,
+                    "stop_executed": stop_executed,
+                    "planned_stop_distance": entry_price - stop_price,
+                }
+            )
+    return candidates
+
+
 def _minute_sessions(
     dataset: Mapping[str, Any],
 ) -> dict[str, dict[str, list[dict[str, Any]]]]:
@@ -1290,9 +1551,24 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
     family_id = dataset.get("family_id")
     if family_id not in SUPPORTED_FAMILIES:
         raise DenseStrategyRuntimeError("dataset family binding is unsupported")
-    _calendar(dataset)
+    calendar = _calendar(dataset)
     prepared = dict(dataset)
-    if family_id in {
+    if family_id == ETF_CLOSE_TO_OPEN_FAMILY:
+        daily = _daily_series(dataset)
+        sessions = _fifteen_minute_sessions(dataset)
+        symbols = dataset.get("symbols")
+        if (
+            symbols != ["SPY", "QQQ", "IWM", "DIA"]
+            or set(daily) != set(symbols)
+            or set(sessions) != set(calendar)
+            or any(set(day_symbols) != set(symbols) for day_symbols in sessions.values())
+        ):
+            raise DenseStrategyRuntimeError(
+                "close-to-open data does not match its complete frozen universe"
+            )
+        prepared["_prepared_daily_bars"] = daily
+        prepared["_prepared_fifteen_minute_bars"] = sessions
+    elif family_id in {
         INTRADAY_ETF_FAMILY,
         OVERSOLD_REVERSAL_FAMILY,
         EQUITY_GAP_CONTINUATION_FAMILY,
@@ -2302,6 +2578,8 @@ def build_candidates(
         return _turn_of_month_candidates(dataset, parameters)
     if family_id == SECTOR_ETF_ROTATION_FAMILY:
         return _sector_rotation_candidates(dataset, parameters)
+    if family_id == ETF_CLOSE_TO_OPEN_FAMILY:
+        return _close_to_open_candidates(dataset, parameters)
     if family_id == OVERSOLD_REVERSAL_FAMILY:
         return _oversold_candidates(dataset, parameters)
     if family_id == EQUITY_GAP_CONTINUATION_FAMILY:
@@ -2928,6 +3206,159 @@ def _production_daily_signal(
     }
 
 
+def _production_close_to_open_signal(
+    decision_data: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+    frozen_universe: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected = {
+        "family_id",
+        "decision_date",
+        "next_session_date",
+        "daily_history_complete",
+        "daily_bars",
+        "symbols",
+        "decision_bars_complete",
+        "fifteen_minute_bars",
+    }
+    if (
+        set(decision_data) != expected
+        or decision_data.get("family_id") != ETF_CLOSE_TO_OPEN_FAMILY
+    ):
+        raise DenseStrategyRuntimeError(
+            "production close-to-open decision-data schema drifted"
+        )
+    decision_date = decision_data.get("decision_date")
+    next_session_date = decision_data.get("next_session_date")
+    if (
+        not isinstance(decision_date, str)
+        or not isinstance(next_session_date, str)
+        or decision_data.get("daily_history_complete") is not True
+        or decision_data.get("decision_bars_complete") is not True
+    ):
+        raise DenseStrategyRuntimeError(
+            "production close-to-open dates or completeness are invalid"
+        )
+    try:
+        decision_day = date.fromisoformat(decision_date)
+        next_day = date.fromisoformat(next_session_date)
+    except ValueError as exc:
+        raise DenseStrategyRuntimeError(
+            "production close-to-open dates are invalid"
+        ) from exc
+    if not 1 <= (next_day - decision_day).days <= 4:
+        raise DenseStrategyRuntimeError(
+            "production close-to-open next session is not adjacent"
+        )
+    frozen_symbols = frozen_universe.get("symbols")
+    if (
+        frozen_symbols != ["SPY", "QQQ", "IWM", "DIA"]
+        or decision_data.get("symbols") != frozen_symbols
+    ):
+        raise DenseStrategyRuntimeError(
+            "production close-to-open universe drifted"
+        )
+    daily = _daily_series(decision_data)
+    if set(daily) != set(frozen_symbols) or any(
+        not bars or str(bars[-1]["date"]) >= decision_date
+        for bars in daily.values()
+    ):
+        raise DenseStrategyRuntimeError(
+            "production close-to-open prior daily history is incomplete"
+        )
+    raw_fifteen = decision_data.get("fifteen_minute_bars")
+    sessions = _fifteen_minute_sessions(
+        {
+            "fifteen_minute_bars": {
+                decision_date: raw_fifteen,
+            }
+        }
+    )
+    rows_by_symbol = sessions[decision_date]
+    if set(rows_by_symbol) != set(frozen_symbols):
+        raise DenseStrategyRuntimeError(
+            "production close-to-open intraday universe is incomplete"
+        )
+    decision_time = str(parameters["decision_bar_time"])
+    return_floor = float(parameters["minimum_session_return_fraction"])
+    trend_period = int(parameters["prior_trend_sma"])
+    stop_atr = float(parameters["stop_atr14"])
+    exit_timing = str(parameters["exit_timing"])
+    decision_indices = {"15:15": 23, "15:30": 24}
+    if (
+        decision_time not in decision_indices
+        or return_floor not in {0.005, 0.01}
+        or trend_period not in {20, 60}
+        or stop_atr not in {0.5, 1.0}
+        or exit_timing not in {"next_open", "next_0945_close"}
+    ):
+        raise DenseStrategyRuntimeError(
+            "production close-to-open rules escaped the frozen grid"
+        )
+    decision_index = decision_indices[decision_time]
+    qualified: list[tuple[float, str, float]] = []
+    for symbol in map(str, frozen_symbols):
+        rows = rows_by_symbol[symbol]
+        bars = daily[symbol]
+        if len(rows) != decision_index + 1 or len(bars) < max(
+            trend_period, 15
+        ):
+            raise DenseStrategyRuntimeError(
+                "production close-to-open observable history is incomplete"
+            )
+        observed = datetime.fromisoformat(str(rows[-1]["timestamp"]))
+        if observed.timetz().replace(tzinfo=None) != time.fromisoformat(
+            decision_time
+        ):
+            raise DenseStrategyRuntimeError(
+                "production close-to-open decision timestamp drifted"
+            )
+        signal_close = float(rows[-1]["close"])
+        session_return = signal_close / float(rows[0]["open"]) - 1
+        prior_trend = statistics.fmean(
+            float(item["close"]) for item in bars[-trend_period:]
+        )
+        atr14 = _atr(bars, len(bars) - 1)
+        if (
+            atr14 is not None
+            and session_return + 1e-12 >= return_floor
+            and signal_close > prior_trend
+            and _cost_floor(session_return)
+        ):
+            qualified.append((session_return, symbol, atr14))
+    if not qualified:
+        raise DenseStrategyRuntimeError(
+            "no exact production close-to-open signal"
+        )
+    session_return, symbol, atr14 = sorted(
+        qualified, key=lambda item: (-item[0], item[1])
+    )[0]
+    trigger = rows_by_symbol[symbol][-1]
+    return {
+        "symbol": symbol,
+        "rank": 1,
+        "score": session_return,
+        "expected_gross_move_fraction": session_return,
+        "atr": atr14,
+        "stop_atr_multiple": stop_atr,
+        "holding_trading_days": 1,
+        "decision_date": decision_date,
+        "next_session_date": next_session_date,
+        "trigger_bar_timestamp": trigger["timestamp"],
+        "entry_interval_minutes": 15,
+        "overnight_hold": True,
+        "exit_plan": {
+            "type": (
+                "stop_or_next_open"
+                if exit_timing == "next_open"
+                else "stop_or_next_0945_close"
+            ),
+            "maximum_hold_sessions": 1,
+            "same_interval_ambiguity": "stop_first",
+        },
+    }
+
+
 def _production_intraday_signal(
     decision_data: Mapping[str, Any],
     parameters: Mapping[str, Any],
@@ -3106,6 +3537,10 @@ def evaluate_production_signal(
     """Rebuild one current signal from the same observable indicators as history."""
     if family_id == INTRADAY_ETF_FAMILY:
         return _production_intraday_signal(
+            decision_data, parameters, frozen_universe
+        )
+    if family_id == ETF_CLOSE_TO_OPEN_FAMILY:
+        return _production_close_to_open_signal(
             decision_data, parameters, frozen_universe
         )
     if family_id in {

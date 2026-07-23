@@ -395,7 +395,16 @@ def evaluate_production(
             raise DenseStrategyPluginError(
                 "intraday signal timestamps are invalid"
             ) from exc
-        next_interval = trigger + timedelta(minutes=1)
+        interval_minutes = signal.get("entry_interval_minutes", 1)
+        if (
+            isinstance(interval_minutes, bool)
+            or not isinstance(interval_minutes, int)
+            or interval_minutes not in {1, 15}
+        ):
+            raise DenseStrategyPluginError(
+                "intraday entry interval is invalid"
+            )
+        next_interval = trigger + timedelta(minutes=interval_minutes)
         if (
             trigger.tzinfo is None
             or quote_observed < next_interval
@@ -474,7 +483,11 @@ def evaluate_production(
         ],
         "holding_trading_days": hold,
         **dict(operational),
-        "protection_time_in_force": "gtc" if hold > 1 else "day",
+        "protection_time_in_force": (
+            "gtc"
+            if hold > 1 or signal.get("overnight_hold") is True
+            else "day"
+        ),
         "executable_ask_depth": quote["executable_ask_depth"],
         "recent_real_minute_volume": quote["recent_real_minute_volume"],
         "exit_plan": exit_plan,
