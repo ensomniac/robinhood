@@ -438,6 +438,14 @@ capacity reconstruction, input completeness, shared-runtime performance,
 production-evaluator parity, tests, and audits. Only a new-family contract
 activation or outcome access waits for the weekly budget reset.
 
+Run `python3 dense_batch_readiness.py status` for the exact machine handoff.
+It verifies the current committed plan, calendar contract and inspection,
+implementation hashes, credential availability, empty pre-collection output
+paths, and global outcome-index hash. It also emits the exact ordered commands
+for calendar collection, independent inspection, capacity allocation, contract
+freeze, and development-data freeze. Its readiness state never grants target
+outcome or broker access.
+
 ## Parallel lanes
 
 The residual-equity implementation is now used only for the existing

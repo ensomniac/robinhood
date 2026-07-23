@@ -149,6 +149,13 @@ the reset requires only the authorized evidence freeze and collection. The
 weekly gate blocks new-family activation and outcome access, not engineering,
 testing, auditing, or historical-source readiness.
 
+`python3 dense_batch_readiness.py status` is the fail-closed handoff authority
+for that preactivation work. Before the reset it must resolve one current
+committed calendar contract and inspection, committed clean implementations,
+available calendar credentials, absent pre-collection outputs, and the current
+outcome-exposure hash. `PREACTIVATION_READY` means the repository and inputs
+are ready; it does not authorize provider, outcome, or broker access.
+
 The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1
 predecessor was retired only because 24 frozen decision dates could not meet
