@@ -69,6 +69,19 @@ retired with its confirmation reserve untouched. Continuous work must advance
 another existing-family successor; this consumes no new mechanism-family slot,
 so the weekly reset is not a work pause.
 
+The active successor is
+`two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1
+predecessor was retired only because 24 frozen decision dates could not meet
+the 30-signal Stage 0 floor; it accessed no market outcomes. V2 retains that
+existing short-horizon reversal mechanism on the complete `DIA`, `IWM`, `QQQ`,
+and `SPY` denominator. Its prospectively declared 32-trial grid covers two- or
+three-session lag, SPY SMA100/SMA200 regime, 0.5%/1.0% cost-clearing
+cross-sectional lag, 1.0/1.5 ATR14 stop, and two/three-session hold. It may use
+the already exposed 1,000-session 2016-2020 partition only as contaminated
+development while the five-session embargo and 500-session 2021-2022
+confirmation reserve remain untouched. The exact evaluator and production
+semantics must be committed before the contract is frozen.
+
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
 `portfolio_execution.py`. `dense_strategy_runtime.py` and

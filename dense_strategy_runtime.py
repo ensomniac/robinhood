@@ -25,6 +25,7 @@ EQUITY_RESIDUAL_FAMILY = "liquid-equity-market-residual-reversal"
 INTRADAY_ETF_FAMILY = "intraday-index-etf-opening-reversal"
 ETF_PULLBACK_FAMILY = "liquid-etf-trend-pullback-cost-floor"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
+ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
 EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
 SUPPORTED_FAMILIES = {
@@ -32,6 +33,7 @@ SUPPORTED_FAMILIES = {
     INTRADAY_ETF_FAMILY,
     ETF_PULLBACK_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
+    ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
 }
@@ -671,6 +673,130 @@ def _etf_cross_sectional_momentum_candidates(
     return candidates
 
 
+def _etf_cross_sectional_reversal_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    lookback = int(parameters["return_lookback_sessions"])
+    trend_period = int(parameters["market_trend_sma"])
+    lag_floor = float(parameters["minimum_lag_fraction"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    if "SPY" not in daily:
+        raise DenseStrategyRuntimeError("ETF reversal data requires SPY")
+    if (
+        lookback not in {2, 3}
+        or trend_period not in {100, 200}
+        or lag_floor not in {0.005, 0.01}
+        or stop_atr not in {1.0, 1.5}
+        or hold not in {2, 3}
+    ):
+        raise DenseStrategyRuntimeError("ETF reversal parameters escaped the grid")
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        spy_index = indices["SPY"].get(decision_date)
+        if spy_index is None or spy_index < max(lookback, trend_period - 1):
+            continue
+        market_trend = _sma(daily["SPY"], spy_index, trend_period)
+        if (
+            market_trend is None
+            or float(daily["SPY"][spy_index]["close"]) <= market_trend
+        ):
+            continue
+        features: list[tuple[float, str, float]] = []
+        for symbol, bars in daily.items():
+            symbol_index = indices[symbol].get(decision_date)
+            if symbol_index is None or symbol_index < lookback:
+                continue
+            atr14 = _atr(bars, symbol_index)
+            if atr14 is None:
+                continue
+            trailing_return = (
+                float(bars[symbol_index]["close"])
+                / float(bars[symbol_index - lookback]["close"])
+                - 1
+            )
+            features.append((trailing_return, symbol, atr14))
+        if len(features) != len(daily):
+            continue
+        benchmark = statistics.median(item[0] for item in features)
+        ranked = [
+            (trailing_return, symbol, atr14, benchmark - trailing_return)
+            for trailing_return, symbol, atr14 in features
+            if benchmark - trailing_return >= lag_floor
+            and _cost_floor(benchmark - trailing_return)
+        ]
+        if not ranked:
+            continue
+        entry_date = calendar[calendar_index + 1]
+        if calendar_index + 1 + hold > len(calendar):
+            continue
+        for rank, (trailing_return, symbol, atr14, lag) in enumerate(
+            sorted(ranked, key=lambda item: (item[0], item[1])), 1
+        ):
+            bars = daily[symbol]
+            entry_index = indices[symbol].get(entry_date)
+            signal_id = (
+                f"{entry_date}-{ETF_CROSS_SECTIONAL_REVERSAL_FAMILY}-{symbol}"
+            )
+            if entry_index is None:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "missing_next_open",
+                    }
+                )
+                continue
+            if entry_index + hold > len(bars):
+                continue
+            exit_dates = {
+                str(item["date"])
+                for item in bars[entry_index : entry_index + hold]
+            }
+            expected_dates = set(
+                calendar[calendar_index + 1 : calendar_index + 1 + hold]
+            )
+            if exit_dates != expected_dates:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "incomplete_holding_bars",
+                    }
+                )
+                continue
+            candidate = _daily_candidate(
+                family_id=ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
+                symbol=symbol,
+                decision_date=decision_date,
+                entry_date=entry_date,
+                bars=bars,
+                entry_index=entry_index,
+                stop_atr=stop_atr,
+                atr14=atr14,
+                hold_sessions=hold,
+                rank=rank,
+                score=-trailing_return,
+            )
+            candidate["expected_gross_move_fraction"] = lag
+            candidates.append(candidate)
+    return candidates
+
+
 def _minute_sessions(
     dataset: Mapping[str, Any],
 ) -> dict[str, dict[str, list[dict[str, Any]]]]:
@@ -866,6 +992,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         if family_id in {
             ETF_PULLBACK_FAMILY,
             ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
+            ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         }:
             symbols = dataset.get("symbols")
             if not isinstance(symbols, list) or set(map(str, symbols)) != set(daily):
@@ -1548,6 +1675,8 @@ def build_candidates(
         return _etf_pullback_candidates(dataset, parameters)
     if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY:
         return _etf_cross_sectional_momentum_candidates(dataset, parameters)
+    if family_id == ETF_CROSS_SECTIONAL_REVERSAL_FAMILY:
+        return _etf_cross_sectional_reversal_candidates(dataset, parameters)
     if family_id == OVERSOLD_REVERSAL_FAMILY:
         return _oversold_candidates(dataset, parameters)
     if family_id == EQUITY_GAP_CONTINUATION_FAMILY:
@@ -1687,6 +1816,7 @@ def _production_daily_signal(
     if family_id in {
         ETF_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
+        ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
     }:
         frozen_symbols = frozen_universe.get("symbols")
         observed_symbols = decision_data.get("symbols")
@@ -1705,14 +1835,22 @@ def _production_daily_signal(
             raise DenseStrategyRuntimeError(
                 "production ETF history does not cover the complete calendar"
             )
-        if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY:
+        if family_id in {
+            ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
+            ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
+        }:
             lookback = int(parameters["return_lookback_sessions"])
             trend_period = int(parameters["market_trend_sma"])
-            excess_floor = float(parameters["minimum_excess_return_fraction"])
+            threshold_field = (
+                "minimum_excess_return_fraction"
+                if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY
+                else "minimum_lag_fraction"
+            )
+            threshold = float(parameters[threshold_field])
             spy_index = indices["SPY"].get(decision_date)
             if spy_index is None or spy_index < max(lookback, trend_period - 1):
                 raise DenseStrategyRuntimeError(
-                    "production ETF momentum history is incomplete"
+                    "production ETF relative-performance history is incomplete"
                 )
             market_trend = _sma(daily["SPY"], spy_index, trend_period)
             if (
@@ -1720,7 +1858,7 @@ def _production_daily_signal(
                 or float(daily["SPY"][spy_index]["close"]) <= market_trend
             ):
                 raise DenseStrategyRuntimeError(
-                    "production ETF momentum market trend gate is closed"
+                    "production ETF relative-performance market trend gate is closed"
                 )
             features: list[tuple[float, str, float]] = []
             for symbol in map(str, frozen_symbols):
@@ -1728,12 +1866,12 @@ def _production_daily_signal(
                 symbol_index = indices[symbol].get(decision_date)
                 if symbol_index is None or symbol_index < lookback:
                     raise DenseStrategyRuntimeError(
-                        "production ETF momentum universe history is incomplete"
+                        "production ETF relative-performance universe history is incomplete"
                     )
                 atr14 = _atr(bars, symbol_index)
                 if atr14 is None:
                     raise DenseStrategyRuntimeError(
-                        "production ETF momentum ATR history is incomplete"
+                        "production ETF relative-performance ATR history is incomplete"
                     )
                 trailing_return = (
                     float(bars[symbol_index]["close"])
@@ -1742,24 +1880,32 @@ def _production_daily_signal(
                 )
                 features.append((trailing_return, symbol, atr14))
             benchmark = statistics.median(item[0] for item in features)
-            qualified = [
-                (trailing_return, symbol, atr14, trailing_return - benchmark)
-                for trailing_return, symbol, atr14 in features
-                if trailing_return - benchmark >= excess_floor
-                and _cost_floor(abs(trailing_return - benchmark))
-            ]
+            direction = (
+                1 if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY else -1
+            )
+            qualified = []
+            for trailing_return, symbol, atr14 in features:
+                relative_move = direction * (trailing_return - benchmark)
+                if relative_move >= threshold and _cost_floor(relative_move):
+                    qualified.append(
+                        (trailing_return, symbol, atr14, relative_move)
+                    )
             if not qualified:
                 raise DenseStrategyRuntimeError(
-                    "no exact production ETF momentum signal"
+                    "no exact production ETF relative-performance signal"
                 )
-            trailing_return, symbol, atr14, excess_return = sorted(
-                qualified, key=lambda item: (-item[0], item[1])
+            trailing_return, symbol, atr14, relative_move = sorted(
+                qualified,
+                key=lambda item: (
+                    -direction * item[0],
+                    item[1],
+                ),
             )[0]
             return {
                 "symbol": symbol,
                 "rank": 1,
-                "score": trailing_return,
-                "expected_gross_move_fraction": abs(excess_return),
+                "score": direction * trailing_return,
+                "expected_gross_move_fraction": relative_move,
                 "atr": atr14,
                 "stop_atr_multiple": float(parameters["stop_atr14"]),
                 "holding_trading_days": int(parameters["maximum_hold_sessions"]),
@@ -2101,6 +2247,7 @@ def evaluate_production_signal(
         EQUITY_RESIDUAL_FAMILY,
         ETF_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
+        ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
     }:
         return _production_daily_signal(
             decision_data, family_id, parameters, frozen_universe

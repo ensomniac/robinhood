@@ -69,11 +69,16 @@ def _load_manifest(path: Path) -> dict[str, Any]:
         ) from exc
 
 
-def _binding(manifest: Mapping[str, Any]) -> dict[str, Any]:
-    raw = manifest["dataset_payload"].get("etf_cross_sectional_momentum_source")
+def _binding(
+    manifest: Mapping[str, Any],
+    *,
+    source_key: str = "etf_cross_sectional_momentum_source",
+    target_family_id: str = TARGET_FAMILY_ID,
+) -> dict[str, Any]:
+    raw = manifest["dataset_payload"].get(source_key)
     if not isinstance(raw, Mapping):
         raise EtfCrossSectionalMomentumPluginError(
-            "dataset lacks the ETF momentum source binding"
+            "dataset lacks the translated ETF source binding"
         )
     binding = dict(raw)
     required_text = (
@@ -89,8 +94,8 @@ def _binding(manifest: Mapping[str, Any]) -> dict[str, Any]:
             "ETF momentum source binding is incomplete"
         )
     if (
-        binding["source_family_id"] not in {SOURCE_FAMILY_ID, TARGET_FAMILY_ID}
-        or binding["target_family_id"] != TARGET_FAMILY_ID
+        binding["source_family_id"] not in {SOURCE_FAMILY_ID, target_family_id}
+        or binding["target_family_id"] != target_family_id
         or binding["format"] not in {"json", "json.gz"}
         or len(binding["external_file_sha256"]) != 64
         or len(binding["dataset_sha256"]) != 64
@@ -117,6 +122,8 @@ def _load_dataset(
     lane: str,
     expected_dates: Sequence[str],
     preregistration_sha256: str | None = None,
+    source_key: str = "etf_cross_sectional_momentum_source",
+    target_family_id: str = TARGET_FAMILY_ID,
 ) -> dict[str, Any]:
     _require_committed(manifest_path)
     manifest = _load_manifest(manifest_path)
@@ -136,7 +143,11 @@ def _load_dataset(
         raise EtfCrossSectionalMomentumPluginError(
             "confirmation data is not winner-bound"
         )
-    binding = _binding(manifest)
+    binding = _binding(
+        manifest,
+        source_key=source_key,
+        target_family_id=target_family_id,
+    )
     try:
         store = HistoricalStoreConfig.from_env(DEFAULT_ENV_PATH)
     except HistoricalStoreError as exc:
@@ -171,7 +182,7 @@ def _load_dataset(
             "external ETF momentum dataset scope drifted"
         )
     translated = dict(dataset)
-    translated["family_id"] = TARGET_FAMILY_ID
+    translated["family_id"] = target_family_id
     return runtime.prepare_dataset(translated)
 
 

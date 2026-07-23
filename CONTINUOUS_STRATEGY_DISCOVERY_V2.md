@@ -227,9 +227,19 @@ frozen, and the 75-session confirmation reserve remains untouched and
 inaccessible.
 
 The exact successor is terminal and cannot be repaired on its evaluated corpus.
-Continuous work moves immediately to the strongest remaining existing-family
-successor with contaminated development and disjoint untouched confirmation;
-the weekly new-family reset is not a work pause.
+Continuous work moves immediately to
+`two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`; the weekly
+new-family reset is not a work pause.
+
+The v1 reversal predecessor was capacity-falsified on 24 dates before any
+market outcomes were accessed. V2 retains the same mechanism on the complete
+four-index-ETF universe and declares all 32 combinations of two/three-session
+return, SPY SMA100/SMA200 regime, 0.5%/1.0% cross-sectional lag, 1.0/1.5 ATR14
+stop, and two/three-session hold. It uses the exposed 1,000-session 2016-2020
+partition only as development training, retains the five-session embargo, and
+keeps all 500 sessions in 2021-2022 inaccessible for confirmation unless a
+selection-adjusted winner is first frozen. The implementation makes zero
+provider or broker requests.
 
 ## Transition chain
 
