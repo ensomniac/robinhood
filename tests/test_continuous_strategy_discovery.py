@@ -6,6 +6,7 @@ from pathlib import Path
 
 import continuous_strategy_discovery as continuous
 import continuous_strategy_discovery_inspection as inspection
+import dense_strategy_plugin
 import strategy_discovery
 
 
@@ -36,7 +37,9 @@ def _weekdays() -> list[dict[str, str]]:
     return rows
 
 
-def test_existing_family_successor_freezes_without_waiting_or_reusing_v1():
+def test_existing_family_successor_freezes_without_waiting_or_reusing_v1(
+    monkeypatch,
+):
     with tempfile.TemporaryDirectory(dir=continuous.PROJECT_ROOT) as directory:
         work = Path(directory)
         root = work / "continuous"
@@ -113,6 +116,15 @@ def test_existing_family_successor_freezes_without_waiting_or_reusing_v1():
         assert set(family["development_dates"]).isdisjoint(
             family["confirmation_dates"]
         )
+        monkeypatch.setattr(dense_strategy_plugin, "_require_committed", lambda path: None)
+        _preflight_path, preflight = strategy_discovery.run_preflight(
+            family_path,
+            root=work / "discovery",
+            enforce_commit=False,
+        )
+        assert preflight["state"] == "CAPACITY_READY"
+        assert preflight["outcomes_accessed"] is False
+        assert preflight["preflight_details"]["external_dataset_opened"] is False
 
 
 def test_status_keeps_new_family_wait_separate_from_continuous_lane(tmp_path: Path):

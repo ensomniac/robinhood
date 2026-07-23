@@ -128,7 +128,7 @@ def test_preflight_reads_only_committed_frozen_metadata(tmp_path, monkeypatch):
     assert checked == [manifest.resolve()]
     assert result["verified_capacity"] == 120
     assert result["point_in_time_complete"] is True
-    assert result["external_outcomes_opened"] is False
+    assert result["external_dataset_opened"] is False
     assert result["provider_telemetry"]["dataset_loads"] == 0
 
 

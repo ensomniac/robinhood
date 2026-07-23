@@ -229,7 +229,7 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
         "verified_capacity": int(binding["formal_capacity"]),
         "point_in_time_complete": all(checks.values()),
         "metadata_checks": checks,
-        "external_outcomes_opened": False,
+        "external_dataset_opened": False,
         "provider_telemetry": _telemetry(dataset_loads=0),
     }
 
