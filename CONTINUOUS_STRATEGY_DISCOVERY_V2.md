@@ -322,7 +322,7 @@ fills. No winner or evidence target was frozen, and all 66 confirmation sessions
 remain untouched.
 
 Continuous discovery now advances
-`cross-sectional-momentum-v4-liquid-common-stock` inside the existing
+`cross-sectional-momentum-v5-liquid-common-stock` inside the existing
 cross-sectional-momentum mechanism. Its v1 equity predecessor
 produced positive 5/10/20-bps returns across 72 signals but failed the drawdown
 gate and concentrated gains in thin securities. The successor therefore tests
@@ -344,6 +344,14 @@ from the existing content-addressed 2025 daily source is opened. This is an
 existing-family successor, consumes no new-family weekly slot, and requires no
 calendar wait.
 
+V4 is terminal as an implementation-boundary failure. Its committed search
+loaded the cached file, then shared normalization rejected an empty symbol
+series before any candidate, return, account path, trial metric, or selection
+was computed. V5 changes only the normalization boundary: empty row containers
+are omitted from the bar map while their symbols remain in point-in-time
+membership and therefore resolve as missing-data misses. The grid, dates,
+costs, selection rule, and untouched confirmation reserve are unchanged.
+
 ## Transition chain
 
 After the implementation commit is pushed, run:
@@ -352,9 +360,9 @@ After the implementation commit is pushed, run:
 python3 liquid_equity_momentum_discovery.py freeze \
   --created-at <actual-current-ISO8601-timestamp>
 python3 strategy_discovery.py preflight \
-  strategy_tournament/v2/continuous/cross-sectional-momentum-v4-liquid-common-stock/family-contract/contract-<sha256>.json
+  strategy_tournament/v2/continuous/cross-sectional-momentum-v5-liquid-common-stock/family-contract/contract-<sha256>.json
 python3 strategy_discovery.py freeze-search \
-  strategy_tournament/v2/continuous/cross-sectional-momentum-v4-liquid-common-stock/family-contract/contract-<sha256>.json
+  strategy_tournament/v2/continuous/cross-sectional-momentum-v5-liquid-common-stock/family-contract/contract-<sha256>.json
 python3 strategy_discovery.py evaluate-development \
   strategy_tournament/v2/discovery/liquid-equity-cross-sectional-momentum/search/liquid-equity-cross-sectional-momentum-search-<sha256>.json
 python3 strategy_discovery.py inspect-development \

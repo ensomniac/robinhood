@@ -226,6 +226,18 @@ def _session_dates() -> list[str]:
     return dates
 
 
+def _nonempty_daily_bars(
+    rows_by_symbol: Mapping[str, Sequence[Mapping[str, Any]]],
+) -> dict[str, Sequence[Mapping[str, Any]]]:
+    """Keep absent series in membership but out of the normalized bar map."""
+
+    return {
+        str(symbol): rows
+        for symbol, rows in rows_by_symbol.items()
+        if rows
+    }
+
+
 def _load_dataset(
     manifest_path: Path,
     *,
@@ -283,6 +295,10 @@ def _load_dataset(
         == "dataset-cross-sectional-momentum-stage0-2026-07-21-v1"
         and source_data.get("symbols")
         == sorted(source_data.get("rows_by_symbol", {}))
+        and all(
+            isinstance(rows, list)
+            for rows in source_data.get("rows_by_symbol", {}).values()
+        )
         and source_data.get("adjustment") == "raw"
         and source_data.get("timeframe") == "1Day"
     ):
@@ -297,7 +313,7 @@ def _load_dataset(
         "universe_by_date": universe,
         "universe_identity_by_date": identities,
         "split_execution_dates_by_symbol": _split_execution_dates(),
-        "daily_bars": dict(source_data["rows_by_symbol"]),
+        "daily_bars": _nonempty_daily_bars(source_data["rows_by_symbol"]),
     }
     return runtime.prepare_dataset(dataset)
 

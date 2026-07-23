@@ -97,6 +97,16 @@ complete grid, scopes, and implementation hashes before opening the cached
 daily price file. This existing mechanism consumes no new-family slot and
 requires no calendar wait.
 
+The v4 transition is `FAILED_EMPTY_DAILY_SERIES_BOUNDARY`: its committed
+development search loaded the cached file, then normalization rejected an empty
+symbol series before any candidate, return, account path, trial metric, or
+selection. `cross-sectional-momentum-v5-liquid-common-stock` is the active
+exact successor. It changes only missing-series normalization by leaving the
+symbol in point-in-time membership while omitting its empty bar container, so
+the historical evaluator treats it as missing rather than substituting data.
+The v4 grid, dates, costs, selection rule, and untouched confirmation reserve
+remain unchanged.
+
 The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1
 predecessor was retired only because 24 frozen decision dates could not meet

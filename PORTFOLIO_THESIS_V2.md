@@ -66,7 +66,7 @@ selection-aware gates. Do not repair it or access its confirmation reserve.
 
 The close-to-open ETF successor is now rejected after all 32 trials produced
 negative 20-bps growth and failed the complete selection-aware gates. Continue
-immediately with `cross-sectional-momentum-v4-liquid-common-stock` as defined in
+immediately with `cross-sectional-momentum-v5-liquid-common-stock` as defined in
 `CONTINUOUS_STRATEGY_DISCOVERY_V2.md`. It freezes 80 contaminated development
 decision dates, a complete account calendar, five post-settlement embargo
 sessions, and 25 untouched confirmation opportunities. Its 32-trial grid,
@@ -74,6 +74,12 @@ top-250 liquidity universe, split exclusion, production evaluator, and
 implementation hashes must be committed before the cached daily price file is
 opened. The predeclared residual-equity and intraday-ETF new-family lanes
 continue separately when their weekly gate opens.
+
+V4 failed before any trial metric because the shared normalizer rejected an
+empty symbol series. V5 preserves that failure and changes only missing-series
+normalization: the symbol remains in the point-in-time denominator and produces
+no substitute signal. The grid, partitions, costs, selection rule, and
+confirmation reserve do not change.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`

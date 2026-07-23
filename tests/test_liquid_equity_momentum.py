@@ -6,6 +6,7 @@ from pathlib import Path
 
 import dense_strategy_runtime as runtime
 import liquid_equity_momentum_discovery as discovery
+import liquid_equity_momentum_plugin as plugin
 
 
 def _days(count: int) -> list[str]:
@@ -87,6 +88,18 @@ def test_split_affected_symbol_is_excluded_before_liquidity_ranking():
     )
 
     assert candidates[0]["symbol"] == "S258"
+
+
+def test_empty_source_series_remains_membership_only():
+    rows = {
+        "EMPTY": [],
+        "READY": [{"date": "2025-01-02", "close": 10.0}],
+    }
+
+    filtered = plugin._nonempty_daily_bars(rows)
+
+    assert set(rows) == {"EMPTY", "READY"}
+    assert set(filtered) == {"READY"}
 
 
 def test_production_rebuilds_the_same_dynamic_universe_and_ranking():

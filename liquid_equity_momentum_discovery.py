@@ -25,7 +25,7 @@ CAMPAIGN_ID = portfolio_maturity.V2_CAMPAIGN_ID
 FAMILY_ID = runtime.LIQUID_EQUITY_MOMENTUM_FAMILY
 MECHANISM_FAMILY = "cross-sectional-momentum"
 STRATEGY_ID = "liquid-equity-cross-sectional-momentum"
-SUCCESSOR_ID = "cross-sectional-momentum-v4-liquid-common-stock"
+SUCCESSOR_ID = "cross-sectional-momentum-v5-liquid-common-stock"
 RESEARCH_GENERATION = "existing_family_successor"
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/continuous"
 DISCOVERY_ROOT = PROJECT_ROOT / "strategy_tournament/v2/discovery"
@@ -67,6 +67,13 @@ PREDECESSOR_INSPECTION = (
     PROJECT_ROOT
     / "strategy_tournament/inspections/cross-sectional-momentum-v1-result-"
     "fa04429130158e31d221151b1d00d4dd3432ec43a8c88595dd0f8bc4a3c0421b.json"
+)
+FAILED_V4_TRANSITION = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/"
+    "liquid-equity-cross-sectional-momentum/development-failures/"
+    "liquid-equity-cross-sectional-momentum-development-failure-"
+    "8f75ec00b45d47d1102045684c59f7e31e86ffbbb5866d583292680f9b7d71e6.json"
 )
 SOURCE_EXTERNAL_RELATIVE = (
     "_derived/cross_sectional_momentum_stage0/"
@@ -173,6 +180,7 @@ def _source_dates(*, enforce_commit: bool) -> list[str]:
         PREDECESSOR_ACTIVATION,
         PREDECESSOR_RESULT,
         PREDECESSOR_INSPECTION,
+        FAILED_V4_TRANSITION,
     )
     if enforce_commit:
         for path in paths:
@@ -199,6 +207,10 @@ def _source_dates(*, enforce_commit: bool) -> list[str]:
     activation = _read(PREDECESSOR_ACTIVATION)
     predecessor = _read(PREDECESSOR_RESULT)
     inspection = _read(PREDECESSOR_INSPECTION)
+    failed_transition = strategy_discovery.load_artifact(
+        FAILED_V4_TRANSITION,
+        expected_kind="development-evaluation-failure",
+    )
     expected_detail_hashes = {
         str(binding.get("detail_path")): str(binding.get("detail_sha256"))
         for binding in activation.get("source_bindings", [])
@@ -220,6 +232,14 @@ def _source_dates(*, enforce_commit: bool) -> list[str]:
         and inspection.get("result_sha256") == predecessor.get("result_sha256")
         and inspection.get("valid") is True
         and observed_detail_hashes == expected_detail_hashes
+        and failed_transition.get("state")
+        == "FAILED_EMPTY_DAILY_SERIES_BOUNDARY"
+        and failed_transition.get("trial_metrics_surfaced") is False
+        and failed_transition.get("confirmation_accessed") is False
+        and failed_transition.get(
+            "strategy_grid_dates_rules_costs_changed_after_failure"
+        )
+        is False
     ):
         raise LiquidEquityMomentumDiscoveryError(
             "predecessor or cached source evidence drifted"
@@ -298,6 +318,7 @@ def _source_evidence_paths() -> list[str]:
         _repo_path(PREDECESSOR_ACTIVATION),
         _repo_path(PREDECESSOR_RESULT),
         _repo_path(PREDECESSOR_INSPECTION),
+        _repo_path(FAILED_V4_TRANSITION),
         "strategy_tournament/v2/OUTCOME_EXPOSURE_INDEX.jsonl",
     ]
 
@@ -396,7 +417,23 @@ def freeze_successor_contract(
         "research_generation": RESEARCH_GENERATION,
         "successor_id": SUCCESSOR_ID,
         "new_mechanism_family_slot_consumed": False,
-        "prior_family_attempt_count": 3,
+        "prior_family_attempt_count": 4,
+        "supersedes_failed_transition": {
+            "successor_id": "cross-sectional-momentum-v4-liquid-common-stock",
+            "failure_path": _repo_path(FAILED_V4_TRANSITION),
+            "failure_file_sha256": sha256_file(FAILED_V4_TRANSITION),
+            "failure_sha256": strategy_discovery.load_artifact(
+                FAILED_V4_TRANSITION,
+                expected_kind="development-evaluation-failure",
+            )["artifact_sha256"],
+            "trial_metrics_surfaced": False,
+            "confirmation_accessed": False,
+            "strategy_grid_dates_rules_costs_changed": False,
+            "implementation_change": (
+                "omit empty row containers from the normalized daily-bar map "
+                "while retaining their symbols in the point-in-time denominator"
+            ),
+        },
         "mechanism": (
             "Rank the complete point-in-time liquid common-stock universe by "
             "completed trailing return and buy the strongest cost-clearing "
