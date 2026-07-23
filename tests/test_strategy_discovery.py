@@ -490,6 +490,42 @@ def test_development_rejects_missing_trial_accounting(monkeypatch):
             )
 
 
+def test_development_rejects_filled_count_maturity_drift(monkeypatch):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        contract_path = _write_contract(
+            work, family_contract(_dataset(work), family_id="filled-count-drift")
+        )
+        discovery.run_preflight(
+            contract_path, root=artifact_root, enforce_commit=False
+        )
+        search_path, _ = discovery.freeze_search(
+            contract_path, root=artifact_root, enforce_commit=False
+        )
+        original = synthetic_plugin.evaluate_development
+
+        def drifted(contract, trials):
+            result = original(contract, trials)
+            metrics = result["trials"][0]["metrics"]
+            metrics["oof_filled_account_returns"] = metrics[
+                "oof_filled_account_returns"
+            ][:-1]
+            metrics["oof_net_pnl_dollars"] = metrics["oof_net_pnl_dollars"][:-1]
+            return result
+
+        monkeypatch.setattr(
+            synthetic_plugin, "evaluate_development", drifted
+        )
+        with pytest.raises(
+            discovery.StrategyDiscoveryError,
+            match="filled-trade accounting differs",
+        ):
+            discovery.evaluate_development(
+                search_path, root=artifact_root, enforce_commit=False
+            )
+
+
 def test_development_rejects_dataset_substitution(monkeypatch):
     with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
         work = Path(directory)

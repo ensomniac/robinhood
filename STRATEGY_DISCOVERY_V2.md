@@ -39,6 +39,8 @@ mandatory. Insufficient untouched inventory is terminal
 `INSUFFICIENT_POWER_CAPACITY`, not permission to extend or substitute dates.
 Inspection checks both the confirmation floor and whether observed development
 fills plus every reserved confirmation session can reach the frozen total target.
+The observed fill count must independently equal the closed signals reconstructed
+from the complete per-date maturity rows before it can size that target.
 
 ## Manifest-driven controller
 

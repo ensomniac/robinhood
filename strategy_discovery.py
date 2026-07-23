@@ -403,6 +403,32 @@ def evaluate_development(
         validate_complete_evaluation(contract, evaluation)
     except LearningExperimentError as exc:
         raise StrategyDiscoveryError(str(exc)) from exc
+    for trial in result.get("trials", []):
+        rows = trial.get("maturity_rows")
+        if not isinstance(rows, list) or [
+            row.get("date") if isinstance(row, Mapping) else None for row in rows
+        ] != list(contract["development_dates"]):
+            raise StrategyDiscoveryError(
+                "development maturity rows must match every frozen date"
+            )
+        closed_signals = 0
+        for row in rows:
+            signals = row.get("signals")
+            if signals is None:
+                closed_signals += row.get("session_outcome") == "filled"
+            elif isinstance(signals, list) and all(
+                isinstance(signal, Mapping) for signal in signals
+            ):
+                closed_signals += len(signals)
+            else:
+                raise StrategyDiscoveryError(
+                    "development maturity-row signals are invalid"
+                )
+        filled_returns = trial["metrics"]["oof_filled_account_returns"]
+        if closed_signals != len(filled_returns):
+            raise StrategyDiscoveryError(
+                "development filled-trade accounting differs from maturity rows"
+            )
     telemetry = result.get("provider_telemetry", {})
     if not isinstance(telemetry, Mapping):
         raise StrategyDiscoveryError("provider telemetry must be an object")
