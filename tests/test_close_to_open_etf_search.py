@@ -65,7 +65,7 @@ def _session(day: str, session_return: float) -> list[dict]:
 
 def _dataset() -> dict:
     days = _days(95)
-    symbols = list(source.SYMBOLS)
+    symbols = list(runtime.CLOSE_TO_OPEN_ETF_SYMBOLS)
     return {
         "family_id": runtime.ETF_CLOSE_TO_OPEN_FAMILY,
         "evaluation_dates": days[70:94],
@@ -167,7 +167,7 @@ def test_production_rebuilds_rank_and_requires_gtc_protection():
             "selected_trial_id": "trial-close-to-open",
             "parameters": _parameters(),
             "universe": {
-                "symbols": list(source.SYMBOLS),
+                "symbols": list(runtime.CLOSE_TO_OPEN_ETF_SYMBOLS),
                 "point_in_time": True,
             },
         },
@@ -187,7 +187,7 @@ def test_production_rebuilds_rank_and_requires_gtc_protection():
                 "next_session_date": dataset["evaluation_dates"][1],
                 "daily_history_complete": True,
                 "daily_bars": prior_daily,
-                "symbols": list(source.SYMBOLS),
+                "symbols": list(runtime.CLOSE_TO_OPEN_ETF_SYMBOLS),
                 "decision_bars_complete": True,
                 "fifteen_minute_bars": decision_rows,
             },
@@ -248,7 +248,7 @@ def test_preflight_opens_only_committed_metadata(tmp_path, monkeypatch):
                     "input_sha256": "b" * 64,
                     "format": "json.gz",
                     "sample_phase": "development",
-                    "symbols": list(source.SYMBOLS),
+                    "symbols": list(runtime.CLOSE_TO_OPEN_ETF_SYMBOLS),
                     "formal_capacity": 120,
                     "provider_requests": 0,
                 },

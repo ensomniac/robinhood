@@ -30,6 +30,7 @@ ETF_HIGH_CONTINUATION_FAMILY = "liquid-etf-52-week-high-continuation"
 ETF_TURN_OF_MONTH_FAMILY = "liquid-etf-turn-of-month-seasonality"
 SECTOR_ETF_ROTATION_FAMILY = "liquid-sector-etf-rotation"
 ETF_CLOSE_TO_OPEN_FAMILY = "liquid-etf-close-to-open-momentum"
+CLOSE_TO_OPEN_ETF_SYMBOLS = ("QQQ", "IWM", "DIA")
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
 EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
 VOLATILITY_COMPRESSION_FAMILY = (
@@ -1296,8 +1297,7 @@ def _close_to_open_candidates(
     exit_timing = str(parameters["exit_timing"])
     decision_indices = {"15:15": 23, "15:30": 24}
     if (
-        len(daily) != 4
-        or set(daily) != {"SPY", "QQQ", "IWM", "DIA"}
+        set(daily) != set(CLOSE_TO_OPEN_ETF_SYMBOLS)
         or decision_time not in decision_indices
         or return_floor not in {0.005, 0.01}
         or trend_period not in {20, 60}
@@ -1558,7 +1558,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         sessions = _fifteen_minute_sessions(dataset)
         symbols = dataset.get("symbols")
         if (
-            symbols != ["SPY", "QQQ", "IWM", "DIA"]
+            symbols != list(CLOSE_TO_OPEN_ETF_SYMBOLS)
             or set(daily) != set(symbols)
             or set(sessions) != set(calendar)
             or any(set(day_symbols) != set(symbols) for day_symbols in sessions.values())
@@ -3252,7 +3252,7 @@ def _production_close_to_open_signal(
         )
     frozen_symbols = frozen_universe.get("symbols")
     if (
-        frozen_symbols != ["SPY", "QQQ", "IWM", "DIA"]
+        frozen_symbols != list(CLOSE_TO_OPEN_ETF_SYMBOLS)
         or decision_data.get("symbols") != frozen_symbols
     ):
         raise DenseStrategyRuntimeError(

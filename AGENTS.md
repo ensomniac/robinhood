@@ -125,8 +125,10 @@ bootstrap lower bound. Its exact 2022 development scope is exposed; its
 The active next lane is a selection-aware successor inside the existing
 close-to-open ETF momentum mechanism. Its v1 exact rule was near flat at
 primary cost but failed stress and drawdown on 2023-2025 outcomes. The
-successor must use only disjoint 2022 sessions from its already inspected
-local four-ETF daily and 15-minute source. Before target-return access it must
+successor must use only the disjoint `QQQ`, `IWM`, and `DIA` date-symbol pairs
+from 2022 in its already inspected local daily and 15-minute source; `SPY` is
+excluded because the sector successor exposed those 2022 development pairs.
+Before target-return access it must
 freeze all 32 combinations of 15:15/15:30 completed decision bar, 0.5%/1.0%
 session-return floor, prior SMA20/SMA60 trend, 0.5/1.0 ATR14 stop, and
 next-open/next-09:45 close exit. The five-times-cost floor, next-observable

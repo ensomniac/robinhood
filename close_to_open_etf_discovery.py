@@ -23,6 +23,7 @@ from learning_experiment import DEVELOPMENT_SEARCH_RULE
 PROJECT_ROOT = Path(__file__).resolve().parent
 CAMPAIGN_ID = portfolio_maturity.V2_CAMPAIGN_ID
 FAMILY_ID = runtime.ETF_CLOSE_TO_OPEN_FAMILY
+TARGET_SYMBOLS = list(runtime.CLOSE_TO_OPEN_ETF_SYMBOLS)
 MECHANISM_FAMILY = "close-to-open-etf-momentum"
 STRATEGY_ID = MECHANISM_FAMILY
 SUCCESSOR_ID = "close-to-open-etf-momentum-v2-liquid-index-etf"
@@ -121,8 +122,8 @@ def _source_graph(
 
 def _outcome_blind_dates() -> list[str]:
     store = HistoricalDayStore.from_env()
-    common = set(store.dates(source.SYMBOLS[0]))
-    for symbol in source.SYMBOLS[1:]:
+    common = set(store.dates(TARGET_SYMBOLS[0]))
+    for symbol in TARGET_SYMBOLS[1:]:
         common &= set(store.dates(symbol))
     dates = [
         day
@@ -170,7 +171,7 @@ def freeze_successor_contract(
         raise CloseToOpenEtfDiscoveryError(
             "close-to-open evidence partition drifted"
         )
-    scope_symbols = sorted(source.SYMBOLS)
+    scope_symbols = sorted(TARGET_SYMBOLS)
     development_scope = {
         "dates": development,
         "symbols": scope_symbols,
@@ -229,7 +230,7 @@ def freeze_successor_contract(
                     ],
                     "format": "json.gz",
                     "sample_phase": "development",
-                    "symbols": list(source.SYMBOLS),
+                    "symbols": TARGET_SYMBOLS,
                     "formal_capacity": len(development),
                     "provider_requests": 0,
                 },
@@ -289,7 +290,7 @@ def freeze_successor_contract(
         ),
         "dataset_lane": "development",
         "universe_requirements": {
-            "symbols": list(source.SYMBOLS),
+            "symbols": TARGET_SYMBOLS,
             "complete_frozen_daily_history": True,
             "complete_regular_session_15_minute_bars": 26,
             "point_in_time": True,
@@ -376,7 +377,7 @@ def freeze_successor_contract(
             "index_sha256"
         ],
         "universe": {
-            "symbols": list(source.SYMBOLS),
+            "symbols": TARGET_SYMBOLS,
             "point_in_time": True,
         },
         "costs_bps_per_side": [5, 10, 20],

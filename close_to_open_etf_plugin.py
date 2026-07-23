@@ -26,6 +26,7 @@ from learning_data import LearningDataError, load_frozen_dataset_contract
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 TARGET_FAMILY_ID = runtime.ETF_CLOSE_TO_OPEN_FAMILY
+TARGET_SYMBOLS = list(runtime.CLOSE_TO_OPEN_ETF_SYMBOLS)
 SOURCE_KEY = "close_to_open_runtime"
 
 
@@ -112,7 +113,7 @@ def _binding(manifest: Mapping[str, Any]) -> dict[str, Any]:
         )
     capacity = binding.get("formal_capacity")
     if (
-        binding.get("symbols") != list(source.SYMBOLS)
+        binding.get("symbols") != TARGET_SYMBOLS
         or isinstance(capacity, bool)
         or not isinstance(capacity, int)
         or capacity < 0
@@ -232,7 +233,7 @@ def _load_dataset(
     fifteen: dict[str, dict[str, list[dict[str, Any]]]] = {
         day: {} for day in expected_dates
     }
-    for symbol in source.SYMBOLS:
+    for symbol in TARGET_SYMBOLS:
         raw_daily = daily_rows[symbol]
         raw_intraday = intraday_rows[symbol]
         if (
@@ -283,7 +284,7 @@ def _load_dataset(
         {
             "family_id": TARGET_FAMILY_ID,
             "evaluation_dates": list(expected_dates),
-            "symbols": list(source.SYMBOLS),
+            "symbols": TARGET_SYMBOLS,
             "daily_bars": daily_bars,
             "fifteen_minute_bars": fifteen,
         }

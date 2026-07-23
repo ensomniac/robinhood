@@ -298,10 +298,12 @@ untouched and cannot repair this exact version.
 Continuous discovery proceeds immediately to the existing close-to-open ETF
 momentum mechanism. Its v1 exact rule on 2023-2025 data was close to flat at
 primary cost but failed stress and drawdown. The successor must use only
-disjoint 2022 sessions from the already inspected local `SPY`, `QQQ`, `IWM`,
-and `DIA` daily plus 15-minute source. Before target-return access it must
-freeze the complete universe, warmup, development, five-session embargo,
-untouched confirmation, and 32 combinations of 15:15/15:30 completed decision
+disjoint 2022 `QQQ`, `IWM`, and `DIA` date-symbol pairs from the already
+inspected local daily plus 15-minute source. `SPY` is excluded because the
+sector successor exposed its 2022 development pairs. Before target-return
+access the close-to-open successor must freeze the complete three-ETF universe,
+warmup, development, five-session embargo, untouched confirmation, and all 32
+combinations of 15:15/15:30 completed decision
 bar, 0.5%/1.0% session-return floor, prior SMA20/SMA60 trend, 0.5/1.0 ATR14
 stop, and next-open/next-09:45 close exit. Entry is the next observable
 15-minute open, ambiguity is stop-first, the five-times-cost floor and one
