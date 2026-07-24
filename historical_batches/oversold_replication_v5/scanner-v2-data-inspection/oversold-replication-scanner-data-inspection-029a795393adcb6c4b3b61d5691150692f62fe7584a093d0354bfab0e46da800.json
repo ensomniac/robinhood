@@ -1,0 +1,33 @@
+{
+  "artifact_kind": "oversold_replication_scanner_data_inspection",
+  "broker_actions": 0,
+  "build_status_file_sha256": "3ea10edd94d46bb891f0d2710a98fbf85fe6e1d5529641cadfacc3d3ee2625dd",
+  "build_status_path": "historical_batches/oversold_replication_v5/scanner-v2-build-status/oversold-replication-scanner-build-status-4e4391eb40bfa48b91e27ac075e4511c01a7b796e19c03a678d424d28228f9b5.json",
+  "build_status_sha256": "4e4391eb40bfa48b91e27ac075e4511c01a7b796e19c03a678d424d28228f9b5",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_symbol_sessions": 2496,
+  "checks": {
+    "all_dates_signal_capable": true,
+    "detail_hash_bound": true,
+    "exact_dates": true,
+    "information_cutoff": true,
+    "no_outcomes": true,
+    "selection_time": true,
+    "summary_complete": true,
+    "summary_hash_bound": true
+  },
+  "dates": 40,
+  "detail_file_sha256": "3d58bddfb8bcd1093bfc60fab3123535aced7a5142e7c16845deccf1523ac5d1",
+  "full_session_target_prices_accessed": false,
+  "inspection_sha256": "029a795393adcb6c4b3b61d5691150692f62fe7584a093d0354bfab0e46da800",
+  "maximum_candidates": 195,
+  "minimum_candidates": 4,
+  "provider_requests": 0,
+  "schema_version": 1,
+  "signal_capable_sessions": 40,
+  "state": "SCANNER_DATA_INSPECTED_CONFIRMATION_INVENTORY_READY",
+  "successor_id": "short-horizon-oversold-reversal-v5-completed-reserve",
+  "summary_file_sha256": "fc0ea05f4c5c7930db56ad794454991c27cd117167f7d8387ec9ef54116cbf4c",
+  "target_outcomes_observed_or_derived": false,
+  "valid": true
+}
