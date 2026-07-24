@@ -883,7 +883,11 @@ search freeze. Search `4ee45ee6...9dba0d` now binds all 32 trials, rolling
 folds, costs, account constraints, neighbor graph, selection gates, and
 implementation hashes before outcomes. Result `34794088...d30fef` completed
 all 32 trials in 1.302 seconds from one cached dataset load with zero provider
-requests; it remains unelected until independent inspection.
+requests. Inspection `36e5695b...f4270a` rejected all 32: every stressed path
+was negative, none passed stressed PF, rolling-fold stability, DSR, Holm, or
+neighbor stability, and the least-adverse path still lost 0.01306 log-return
+with PF 0.198. Its 66-session confirmation reserve remains unopened; no exact
+trial may be repaired or promoted.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
