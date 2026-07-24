@@ -358,7 +358,8 @@ def test_intraday_missing_fixed_universe_date_is_an_explicit_zero_return_day():
 
     missed = result["trial_accounting"][0]
     assert missed["date"] == missed_day
-    assert missed["outcome"] == "missed_data_zero_return_day"
+    assert missed["outcome"] == "zero_return_day"
+    assert missed["zero_return_reason"] == "missed_data"
     assert missed["session_outcome"] == "missed_data"
     assert missed["new_entries"] == 0
     assert result["maturity_rows"][0]["session_outcome"] == "missed_data"

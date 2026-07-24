@@ -4418,9 +4418,7 @@ def evaluate_trial(
         {
             "date": item["date"],
             "outcome": (
-                "missed_data_zero_return_day"
-                if item["date"] in missed_data_dates
-                else "zero_return_day"
+                "zero_return_day"
                 if float(item["daily_account_return_fraction"]) == 0
                 else "account_return_day"
             ),
@@ -4434,6 +4432,11 @@ def evaluate_trial(
             "capital_blocked_signals": item["capital_blocked_signals"],
             "missed_fills": item["missed_fills"],
             "rejected_signals": item["rejected_signals"],
+            **(
+                {"zero_return_reason": "missed_data"}
+                if item["date"] in missed_data_dates
+                else {}
+            ),
         }
         for item in stress["account_path"]
     ]
