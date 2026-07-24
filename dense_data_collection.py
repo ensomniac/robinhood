@@ -307,6 +307,12 @@ def freeze_plan(
     existing_successor = _existing_successor_authorized(
         contract, enforce_commit=enforce_commit
     )
+    historical_data_contract = contract.get("historical_data_contract", {})
+    fixed_symbol_range = (
+        isinstance(historical_data_contract, Mapping)
+        and historical_data_contract.get("daily_request_mode")
+        == "symbol_range"
+    )
     if not existing_successor:
         try:
             batch.require_rolling_activation(
@@ -367,18 +373,17 @@ def freeze_plan(
                 for symbol in symbols
             ]
             providers = ["Alpaca SIP raw-adjustment minute bars"]
-    elif existing_successor:
+    elif existing_successor or fixed_symbol_range:
         symbols = sorted(map(str, contract["universe"].get("symbols", [])))
         if not symbols:
             raise DenseDataCollectionError(
                 "existing ETF successor needs a frozen symbol universe"
             )
-        historical_data_contract = contract.get("historical_data_contract")
         if not isinstance(historical_data_contract, Mapping) or (
             historical_data_contract.get("split_provider") != "massive"
         ):
             raise DenseDataCollectionError(
-                "existing ETF successor historical data contract is invalid"
+                "fixed ETF symbol-range historical data contract is invalid"
             )
         daily_provider = historical_data_contract.get("daily_provider")
         if daily_provider == "alpaca":
@@ -387,7 +392,7 @@ def freeze_plan(
                 and historical_data_contract.get("daily_adjustment") == "raw"
             ):
                 raise DenseDataCollectionError(
-                    "existing ETF successor Alpaca data contract is invalid"
+                    "fixed ETF symbol-range Alpaca data contract is invalid"
                 )
             daily_kind = "daily_symbol_bars"
             daily_provider_label = (
@@ -396,7 +401,7 @@ def freeze_plan(
         elif daily_provider == "massive":
             if historical_data_contract.get("daily_adjusted") is not False:
                 raise DenseDataCollectionError(
-                    "existing ETF successor Massive data contract is invalid"
+                    "fixed ETF symbol-range Massive data contract is invalid"
                 )
             daily_kind = "massive_daily_symbol_bars"
             daily_provider_label = (
@@ -404,7 +409,7 @@ def freeze_plan(
             )
         else:
             raise DenseDataCollectionError(
-                "existing ETF successor daily provider is unsupported"
+                "fixed ETF symbol-range daily provider is unsupported"
             )
         split_task = _task("split_actions", required_dates[-1])
         split_task["start"] = required_dates[0]
@@ -462,7 +467,14 @@ def freeze_plan(
         "research_generation": contract.get("research_generation", "new_family"),
         "daily_provider": (
             contract.get("historical_data_contract", {}).get("daily_provider")
-            if existing_successor
+            if existing_successor or fixed_symbol_range
+            else None
+        ),
+        "daily_request_mode": (
+            contract.get("historical_data_contract", {}).get(
+                "daily_request_mode"
+            )
+            if fixed_symbol_range
             else None
         ),
         "intraday_missing_session_policy": (
@@ -1338,6 +1350,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
     if family_id in {
         runtime.ETF_PULLBACK_FAMILY,
         runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+        runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         *runtime.ETF_OVERSOLD_FAMILIES,
     }:
         symbols = set(map(str, plan["symbols"]))
@@ -1372,10 +1385,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         ]
         if rows:
             bars[symbol] = rows
-    successor_daily = (
-        plan.get("research_generation")
-        == continuous_strategy_discovery.RESEARCH_GENERATION
-    )
+    successor_daily = plan.get("daily_provider") in {"alpaca", "massive"}
     successor_provider = plan.get("daily_provider")
     successor_feed = (
         "Alpaca SIP daily symbol range"
@@ -1410,6 +1420,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
     if family_id in {
         runtime.ETF_PULLBACK_FAMILY,
         runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+        runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         *runtime.ETF_OVERSOLD_FAMILIES,
     }:
         dataset["symbols"] = list(plan["symbols"])
