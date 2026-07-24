@@ -12,10 +12,22 @@ def test_rolling_readiness_resolves_exact_committed_boundary():
         require_credentials=False,
     )
 
-    assert status["state"] == "ALLOCATION_CONTRACT_READY"
+    assert status["state"] == "PREACTIVATION_BLOCKED"
     assert status["activation_permitted"] is True
-    assert status["preactivation_work_complete"] is True
-    assert status["blockers"] == []
+    assert status["preactivation_work_complete"] is False
+    assert status["blockers"] == [
+        "no contiguous untouched target-evidence run has 480 sessions"
+    ]
+    assert status["allocation_capacity"] == {
+        "blocker": (
+            "no contiguous untouched target-evidence run has 480 sessions"
+        ),
+        "largest_contiguous_untouched_run": 28,
+        "ready": False,
+        "required_contiguous_target_sessions": 480,
+        "state": "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY",
+        "total_untouched_sessions": 316,
+    }
     assert status["calendar_boundary"]["output_state"] == (
         "COLLECTED_READY_FOR_ALLOCATION_CONTRACT"
     )
@@ -38,9 +50,13 @@ def test_readiness_advances_to_allocation_contract_after_collection():
         require_credentials=False,
     )
 
-    assert status["state"] == "ALLOCATION_CONTRACT_READY"
+    assert status["state"] == "PREACTIVATION_BLOCKED"
     assert status["activation_permitted"] is True
     assert status["target_outcome_access_permitted"] is False
-    assert status["next_commands"][0].startswith(
-        "python3 dense_calendar_allocation.py freeze "
-    )
+    assert status["remaining_transition_order"] == [
+        "preserve the insufficient-capacity disposition without target outcomes",
+        "continue already-authorized existing-family replication",
+    ]
+    assert status["next_commands"] == [
+        "python3 oversold_replication_discovery.py status"
+    ]

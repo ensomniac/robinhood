@@ -195,6 +195,56 @@ def plan_authorization_sha256() -> str:
     return str(batch.build_plan()["rolling_authorization_sha256"])
 
 
+def _allocation_capacity(
+    calendar_path: Path,
+    *,
+    index_path: Path = outcome_exposure.DEFAULT_INDEX,
+) -> dict[str, Any]:
+    calendar = dense_capacity_inventory._calendar(calendar_path)
+    records = outcome_exposure.read_index(index_path)
+    exposed_dates = dense_capacity_inventory._globally_exposed_dates(
+        records
+    )
+    runs = dense_capacity_inventory._untouched_runs(
+        calendar,
+        exposed_dates,
+    )
+    required = (
+        dense_capacity_inventory.SESSIONS_PER_FAMILY
+        * len(batch.build_plan()["families"])
+    )
+    try:
+        allocations = dense_capacity_inventory._allocate(
+            calendar,
+            exposed_dates,
+        )
+    except dense_capacity_inventory.DenseCapacityInventoryError as exc:
+        return {
+            "state": "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY",
+            "ready": False,
+            "required_contiguous_target_sessions": required,
+            "largest_contiguous_untouched_run": max(
+                (len(run) for run in runs),
+                default=0,
+            ),
+            "total_untouched_sessions": sum(
+                len(run) for run in runs
+            ),
+            "blocker": str(exc),
+        }
+    return {
+        "state": "ALLOCATION_CAPACITY_READY",
+        "ready": len(allocations) == len(batch.build_plan()["families"]),
+        "required_contiguous_target_sessions": required,
+        "largest_contiguous_untouched_run": max(
+            (len(run) for run in runs),
+            default=0,
+        ),
+        "total_untouched_sessions": sum(len(run) for run in runs),
+        "blocker": None,
+    }
+
+
 def build_status(
     *,
     as_of: date | None = None,
@@ -244,6 +294,20 @@ def build_status(
         blockers.append("Alpaca calendar credentials are unavailable")
     calendar_path = PROJECT_ROOT / str(contract["calendar_path"])
     source_path = PROJECT_ROOT / str(contract["source_path"])
+    allocation_capacity = (
+        _allocation_capacity(calendar_path)
+        if collection is not None and calendar_path.is_file()
+        else {
+            "state": "AWAITING_CALENDAR_COLLECTION",
+            "ready": False,
+            "blocker": None,
+        }
+    )
+    if (
+        collection is not None
+        and allocation_capacity["ready"] is not True
+    ):
+        blockers.append(str(allocation_capacity["blocker"]))
     output_state = (
         "COLLECTED_READY_FOR_ALLOCATION_CONTRACT"
         if collection is not None
@@ -273,6 +337,10 @@ def build_status(
                 f"{batch.ACTIVATION_NOT_BEFORE.isoformat()} --collected-at "
                 "<actual-current-ISO8601-timestamp>"
             )
+        ]
+    elif allocation_capacity["ready"] is not True:
+        first_commands = [
+            "python3 oversold_replication_discovery.py status"
         ]
     else:
         first_commands = [
@@ -329,6 +397,7 @@ def build_status(
                 else None
             ),
         },
+        "allocation_capacity": allocation_capacity,
         "implementation_hashes": implementation_hashes,
         "credentials_ready": credentials_ready,
         "outcome_exposure_index_sha256": outcome_exposure.audit()[
@@ -353,24 +422,36 @@ def build_status(
                 "freeze disjoint family evidence and exact family contracts",
                 "collect development inputs only from committed exact contracts",
             ]
+            if allocation_capacity["ready"] is True
+            else [
+                "preserve the insufficient-capacity disposition without target outcomes",
+                "continue already-authorized existing-family replication",
+            ]
         ),
-        "next_commands": [
-            *first_commands,
-            (
-                "python3 dense_capacity_inventory.py --as-of "
-                f"{batch.ACTIVATION_NOT_BEFORE.isoformat()} --created-at "
-                "<actual-current-ISO8601-timestamp>"
-            ),
-            (
-                "python3 dense_family_contracts.py "
-                "<committed-capacity-inventory> --as-of "
-                f"{batch.ACTIVATION_NOT_BEFORE.isoformat()}"
-            ),
-            (
-                "python3 dense_data_collection.py freeze-development "
-                "<committed-family-contract>"
-            ),
-        ],
+        "next_commands": (
+            first_commands
+            if (
+                collection is not None
+                and allocation_capacity["ready"] is not True
+            )
+            else [
+                *first_commands,
+                (
+                    "python3 dense_capacity_inventory.py --as-of "
+                    f"{batch.ACTIVATION_NOT_BEFORE.isoformat()} --created-at "
+                    "<actual-current-ISO8601-timestamp>"
+                ),
+                (
+                    "python3 dense_family_contracts.py "
+                    "<committed-capacity-inventory> --as-of "
+                    f"{batch.ACTIVATION_NOT_BEFORE.isoformat()}"
+                ),
+                (
+                    "python3 dense_data_collection.py freeze-development "
+                    "<committed-family-contract>"
+                ),
+            ]
+        ),
         "provider_access_permitted": (
             activation_permitted and not blockers and collection is None
         ),

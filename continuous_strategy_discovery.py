@@ -893,6 +893,25 @@ def build_status(
             "target_outcome_access_permitted": False,
             "broker_actions_permitted": False,
         }
+    new_family_batch = next_week_discovery_batch.activation_status()
+    if (
+        preactivation_readiness.get("allocation_capacity", {}).get(
+            "ready"
+        )
+        is False
+        and preactivation_readiness.get("allocation_capacity", {}).get(
+            "state"
+        )
+        == "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY"
+    ):
+        new_family_batch = {
+            **new_family_batch,
+            "state": "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY",
+            "evidence_freeze_permitted": False,
+            "blockers": list(
+                preactivation_readiness.get("blockers", [])
+            ),
+        }
     return {
         "schema_version": 1,
         "campaign_id": CAMPAIGN_ID,
@@ -924,7 +943,7 @@ def build_status(
             "calendar_data_inspections": len(calendar_data_inspections),
             "family_contracts": len(family_contracts),
         },
-        "new_family_batch": next_week_discovery_batch.activation_status(),
+        "new_family_batch": new_family_batch,
     }
 
 
