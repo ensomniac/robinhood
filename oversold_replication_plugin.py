@@ -165,6 +165,12 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
     ]
     for evidence_path in evidence_paths:
         _require_committed(evidence_path)
+    signal_dates = contract.get("development_signal_dates")
+    expected_zero_days = (
+        len(contract.get("development_dates", [])) - len(signal_dates)
+        if isinstance(signal_dates, list)
+        else 299
+    )
     checks = {
         "development_lane": payload.get("lane") == "development",
         "family_bound": capacity.get("family_id")
@@ -180,7 +186,8 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
             "confirmation_access_permitted"
         )
         is False,
-        "complete_zero_days": capacity.get("zero_signal_days") == 299,
+        "complete_zero_days": capacity.get("zero_signal_days")
+        == expected_zero_days,
     }
     formal_capacity = capacity.get("formal_capacity")
     if (
