@@ -1,0 +1,23 @@
+{
+  "artifact_kind": "oversold_replication_scanner_selection_inspection",
+  "broker_actions": 0,
+  "checks": {
+    "chronological": true,
+    "exact_rebuild": true,
+    "exact_reserve_dates": true,
+    "globally_untouched": true,
+    "no_broker_actions": true,
+    "no_market_prices": true,
+    "no_outcomes": true,
+    "no_substitutions": true
+  },
+  "dates": 40,
+  "inspection_sha256": "a3fb185ddf0c0f418605db35c1ea97704094375ba5ee704341baa5a818f0ad6b",
+  "market_prices_accessed": false,
+  "provider_requests": 0,
+  "schema_version": 1,
+  "selection_file_sha256": "dba9f5689c7a9a72a0c4e886328ab23c306b9e028321ff8c8280c9704e22540a",
+  "selection_path": "historical_batches/oversold_replication_v5/scanner-v2-selection.json",
+  "state": "SELECTION_INSPECTED_READY",
+  "target_outcomes_observed_or_derived": false
+}
