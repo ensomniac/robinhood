@@ -1969,13 +1969,15 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
     stage_order = {
         "discovery-preflight-inspection": 1,
         "frozen-development-search": 2,
-        "development-search-result": 3,
-        "development-search-inspection": 4,
-        "frozen-strategy-winner": 5,
-        "confirmation-result": 6,
-        "confirmation-inspection": 7,
-        "historical-maturity-ledger": 8,
-        "prospective-shadow-queue": 9,
+        "dense-data-collection-failure": 3,
+        "dense-data-collection-failure-inspection": 4,
+        "development-search-result": 5,
+        "development-search-inspection": 6,
+        "frozen-strategy-winner": 7,
+        "confirmation-result": 8,
+        "confirmation-inspection": 9,
+        "historical-maturity-ledger": 10,
+        "prospective-shadow-queue": 11,
     }
     families: list[dict[str, Any]] = []
     if root.exists():
@@ -2009,6 +2011,9 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
             preflight = values_by_kind.get("discovery-preflight-inspection", {})
             development_inspection = values_by_kind.get(
                 "development-search-inspection", {}
+            )
+            collection_failure_inspection = values_by_kind.get(
+                "dense-data-collection-failure-inspection", {}
             )
             winner = values_by_kind.get("frozen-strategy-winner", {})
             confirmation_inspection = values_by_kind.get(
@@ -2048,6 +2053,14 @@ def build_status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
                 if preflight and preflight.get("state") != "CAPACITY_READY":
                     blockers.append(
                         f"preflight disposition: {preflight.get('state')}"
+                    )
+                elif (
+                    collection_failure_inspection
+                    and not development_inspection
+                ):
+                    blockers.append(
+                        "collection failure disposition: "
+                        f"{collection_failure_inspection.get('failure_code')}"
                     )
                 elif development_inspection and development_inspection.get(
                     "state"

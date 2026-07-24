@@ -675,6 +675,93 @@ def test_intraday_range_dataset_rebuilds_date_symbol_sessions(tmp_path):
     )
 
 
+def test_intraday_range_policy_keeps_only_complete_frozen_sessions(
+    tmp_path,
+):
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    days = _dates(2)
+    symbols = ["DIA", "SPY"]
+    tasks = []
+    for symbol in symbols:
+        task = {
+            "kind": "sip_minute_symbol_range",
+            "start": days[0],
+            "date": days[-1],
+            "symbol": symbol,
+        }
+        task["task_id"] = canonical_sha256(task)
+        tasks.append(task)
+    plan = {
+        "family_id": runtime.LIQUID_INDEX_ETF_OPENING_REVERSAL_FAMILY,
+        "evaluation_dates": days,
+        "required_dates": days,
+        "symbols": symbols,
+        "tasks": tasks,
+        "intraday_missing_session_policy": (
+            collection.INTRADAY_FIXED_UNIVERSE_MISS_POLICY
+        ),
+    }
+
+    def rows(day, count):
+        start = datetime.fromisoformat(f"{day}T09:30:00-05:00")
+        return [
+            {
+                "date_et": day,
+                "time_et": (start + timedelta(minutes=index)).isoformat(),
+                "open": 100.0,
+                "high": 100.2,
+                "low": 99.8,
+                "close": 100.1,
+                "volume": 1_000,
+                "wap": 100.05,
+            }
+            for index in range(count)
+        ]
+
+    for task in tasks:
+        task_rows = [
+            *rows(days[0], 390),
+            *rows(
+                days[1],
+                389 if task["symbol"] == "DIA" else 390,
+            ),
+            *rows("2024-01-04", 210),
+        ]
+        collection._write_external(
+            collection._checkpoint_path(tmp_path, task),
+            {
+                "schema_version": 1,
+                "task": task,
+                "rows": task_rows,
+                "rows_sha256": canonical_sha256(task_rows),
+            },
+            config,
+        )
+
+    dataset = collection.build_dataset(tmp_path, plan)
+    prepared = runtime.prepare_dataset(dataset)
+
+    assert set(dataset["minute_bars"]) == set(days)
+    assert set(dataset["minute_bars"][days[0]]) == set(symbols)
+    assert set(dataset["minute_bars"][days[1]]) == {"SPY"}
+    assert dataset["missed_data_dates"] == [days[1]]
+    assert dataset["missing_session_evidence"] == [
+        {
+            "date": days[1],
+            "symbol": "DIA",
+            "observed_minutes": 389,
+            "expected_minutes": 390,
+        }
+    ]
+    assert prepared["_prepared_missed_data_dates"] == {days[1]}
+    assert (
+        dataset["source_semantics"]["missing_data_policy"]
+        == collection.INTRADAY_FIXED_UNIVERSE_MISS_POLICY
+    )
+    assert dataset["source_semantics"]["interpolation"] == "forbidden"
+    assert dataset["source_semantics"]["substitution"] == "forbidden"
+
+
 def test_collection_is_resumable_idempotent_and_independently_inspected(
     tmp_path, monkeypatch
 ):

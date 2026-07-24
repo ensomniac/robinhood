@@ -55,6 +55,9 @@ INTRADAY_WARMUP_SESSIONS = runtime.STANDARDIZATION_LOOKBACK
 MAX_TASK_ATTEMPTS = 5
 INITIAL_RETRY_DELAY_SECONDS = 1.0
 MAX_RETRY_DELAY_SECONDS = 30.0
+INTRADAY_FIXED_UNIVERSE_MISS_POLICY = (
+    "miss-entire-fixed-universe-entry-date"
+)
 
 
 class DenseDataCollectionError(RuntimeError):
@@ -459,6 +462,13 @@ def freeze_plan(
             if existing_successor
             else None
         ),
+        "intraday_missing_session_policy": (
+            contract.get("historical_data_contract", {}).get(
+                "minute_missing_session_policy"
+            )
+            if intraday
+            else None
+        ),
         "universe_semantics": (
             {
                 "security_type": "point-in-time active U.S. common stock",
@@ -686,6 +696,19 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         ):
             raise DenseDataCollectionError(
                 "daily-provider recovery task topology drifted"
+            )
+    intraday_policy = plan.get("intraday_missing_session_policy")
+    if intraday_policy is not None:
+        if not (
+            intraday_policy == INTRADAY_FIXED_UNIVERSE_MISS_POLICY
+            and plan.get("family_id") in runtime.INTRADAY_ETF_FAMILIES
+            and all(
+                task.get("kind") == "sip_minute_symbol_range"
+                for task in plan["tasks"]
+            )
+        ):
+            raise DenseDataCollectionError(
+                "intraday missing-session policy drifted"
             )
     authority_path = PROJECT_ROOT / str(plan.get("authority_path", ""))
     if enforce_commit:
@@ -1081,6 +1104,34 @@ def _bar(row: Mapping[str, Any], day: str) -> dict[str, Any]:
     }
 
 
+def _complete_intraday_session(
+    rows: Sequence[Mapping[str, Any]], day: str
+) -> bool:
+    timestamps: list[datetime] = []
+    for row in rows:
+        raw = row.get("time_et")
+        if not isinstance(raw, str):
+            return False
+        try:
+            observed = datetime.fromisoformat(raw)
+        except ValueError:
+            return False
+        if observed.tzinfo is None or observed.date().isoformat() != day:
+            return False
+        timestamps.append(observed)
+    return (
+        len(timestamps) == 390
+        and timestamps == sorted(timestamps)
+        and len(timestamps) == len(set(timestamps))
+        and timestamps[0].timetz().replace(tzinfo=None) == wall_time(9, 30)
+        and timestamps[-1].timetz().replace(tzinfo=None) == wall_time(15, 59)
+        and all(
+            right - left == timedelta(minutes=1)
+            for left, right in zip(timestamps, timestamps[1:])
+        )
+    )
+
+
 def _split_factors(
     checkpoint_root: Path, plan: Mapping[str, Any]
 ) -> dict[str, list[tuple[str, float]]]:
@@ -1123,6 +1174,9 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
     if family_id in runtime.INTRADAY_ETF_FAMILIES:
         minute: dict[str, dict[str, list[dict[str, Any]]]] = {}
         expected_symbols = set(map(str, plan["symbols"]))
+        required_dates = set(map(str, plan["required_dates"]))
+        missing_policy = plan.get("intraday_missing_session_policy")
+        missing_sessions: list[dict[str, Any]] = []
         for task in plan["tasks"]:
             rows = _load_checkpoint(_checkpoint_path(checkpoint_root, task), task)
             symbol = str(task["symbol"])
@@ -1133,7 +1187,25 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
                     if task["kind"] == "sip_minute_bars"
                     else str(row["date_et"])
                 )
-                grouped.setdefault(day, []).append(
+                if day not in required_dates and missing_policy is not None:
+                    continue
+                grouped.setdefault(day, []).append(row)
+            for day, day_rows in list(grouped.items()):
+                if (
+                    missing_policy == INTRADAY_FIXED_UNIVERSE_MISS_POLICY
+                    and not _complete_intraday_session(day_rows, day)
+                ):
+                    missing_sessions.append(
+                        {
+                            "date": day,
+                            "symbol": symbol,
+                            "observed_minutes": len(day_rows),
+                            "expected_minutes": 390,
+                        }
+                    )
+                    grouped.pop(day)
+            for day, day_rows in grouped.items():
+                converted = [
                     {
                         "timestamp": row["time_et"],
                         "open": row["open"],
@@ -1146,18 +1218,39 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
                         ),
                         "vwap_denominator": row["volume"],
                     }
-                )
-            for day, converted in grouped.items():
+                    for row in day_rows
+                ]
                 minute.setdefault(day, {})[symbol] = converted
-        if (
-            set(minute) != set(map(str, plan["required_dates"]))
-            or any(
-                set(symbols) != expected_symbols
-                for symbols in minute.values()
+        if missing_policy is None:
+            if (
+                set(minute) != required_dates
+                or any(
+                    set(symbols) != expected_symbols
+                    for symbols in minute.values()
+                )
+            ):
+                raise DenseDataCollectionError(
+                    "intraday task coverage is incomplete"
+                )
+            missed_dates: list[str] = []
+        else:
+            if (
+                missing_policy != INTRADAY_FIXED_UNIVERSE_MISS_POLICY
+                or set(minute) != required_dates
+                or any(not symbols for symbols in minute.values())
+            ):
+                raise DenseDataCollectionError(
+                    "intraday retained coverage is incomplete"
+                )
+            missed_dates = sorted(
+                day
+                for day, symbols in minute.items()
+                if set(symbols) != expected_symbols
             )
-        ):
-            raise DenseDataCollectionError("intraday task coverage is incomplete")
-        return {
+            missing_sessions.sort(
+                key=lambda item: (item["date"], item["symbol"])
+            )
+        dataset = {
             "schema_version": 1,
             "family_id": family_id,
             "evaluation_dates": list(plan["evaluation_dates"]),
@@ -1172,6 +1265,15 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
                 "vwap": "provider SIP minute VWAP multiplied by provider qualifying volume",
             },
         }
+        if missing_policy is not None:
+            dataset["missed_data_dates"] = missed_dates
+            dataset["missing_session_evidence"] = missing_sessions
+            dataset["source_semantics"]["missing_data_policy"] = (
+                INTRADAY_FIXED_UNIVERSE_MISS_POLICY
+            )
+            dataset["source_semantics"]["interpolation"] = "forbidden"
+            dataset["source_semantics"]["substitution"] = "forbidden"
+        return dataset
     daily = _daily_rows(checkpoint_root, plan)
     if family_id in {
         runtime.ETF_PULLBACK_FAMILY,

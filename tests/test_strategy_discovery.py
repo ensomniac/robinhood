@@ -152,6 +152,44 @@ def test_search_freeze_selects_preflight_for_current_implementation_binding(
     assert selected["validated_contract_sha256"] == "b" * 64
 
 
+def test_status_surfaces_inspected_collection_failure(tmp_path, monkeypatch):
+    import continuous_strategy_discovery as continuous
+
+    monkeypatch.setattr(discovery, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(
+        discovery.next_week_discovery_batch,
+        "activation_status",
+        lambda: {"state": "TEST"},
+    )
+    monkeypatch.setattr(
+        continuous,
+        "build_status",
+        lambda: {"state": "TEST"},
+    )
+    family_root = tmp_path / "artifacts" / "failed-family"
+    discovery._write_artifact(
+        {
+            "schema_version": 1,
+            "artifact_kind": "dense-data-collection-failure-inspection",
+            "campaign_id": discovery.CAMPAIGN_ID,
+            "family_id": "failed-family",
+            "state": "COLLECTION_FAILURE_INSPECTED",
+            "failure_code": "INCOMPLETE_SIP_RANGE_REGULAR_SESSION",
+        },
+        family_root / "failure-inspection",
+        "failure-inspection",
+    )
+
+    status = discovery.build_status(root=tmp_path / "artifacts")
+    family = status["families"][0]
+
+    assert family["current_state"] == "COLLECTION_FAILURE_INSPECTED"
+    assert family["blockers"] == [
+        "collection failure disposition: "
+        "INCOMPLETE_SIP_RANGE_REGULAR_SESSION"
+    ]
+
+
 def _freeze_synthetic_winner(work: Path, *, confirmation_count: int = 30):
     artifact_root = work / "artifacts"
     contract_path = _write_contract(

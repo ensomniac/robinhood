@@ -572,6 +572,18 @@ development date-symbol pairs in the global outcome index. The exact
 country-ETF family is terminally retired for insufficient complete SIP minute
 capacity; confirmation remains untouched. Advance a different, more liquid
 outcome-clean family immediately.
+The next immediate lane stays inside the same opening-reversal mechanism but
+uses only `DIA`, `IWM`, `QQQ`, and `SPY`. It prospectively freezes the
+predecessor-identical 32-trial grid on 483 globally untouched full-session
+development dates from 2014-03-31 through 2016-03-07, five later embargo
+sessions, and 315 separately untouched confirmation dates from 2020-12-28
+through 2022-03-29. `liquid_index_etf_opening_reversal.py` binds the exact
+partitions and four-symbol universe. Range collection now freezes the prior
+recovery rule in advance: if any symbol lacks a complete 390-minute sequence,
+the entire fixed-universe entry date is a missed zero-return day; complete
+symbol sessions may remain only as lagged history, with no interpolation,
+substitution, or entry. Commit the implementation and focused tests before
+freezing its exact contract.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
