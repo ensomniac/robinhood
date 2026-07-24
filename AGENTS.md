@@ -291,7 +291,11 @@ deterministic winner selection, costs, partitions, and implementations before
 any daily price collection. Development collection plan
 `691fa05a...923f43` now freezes 1,400 required sessions, all 19 per-symbol
 Massive daily-bar requests, one split-action request, raw adjustment semantics,
-and zero substitutions. Commit it before provider access.
+and zero substitutions. Provider access completed the frozen split-action
+checkpoint, then the first per-symbol daily request returned permanent HTTP 403
+before any market-price row or strategy metric was retained. Record and
+independently inspect that exact outcome-blind failure before retiring this
+provider-bound version.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

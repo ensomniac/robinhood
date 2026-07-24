@@ -25,6 +25,9 @@ DEFAULT_PUBLIC_ROOT = collection.DEFAULT_PUBLIC_ROOT
 FAILURE_KIND = "dense-data-collection-failure"
 FAILURE_STATE = "COLLECTION_FAILED_NO_STRATEGY_METRICS"
 GROUPED_DAILY_FAILURE = "GROUPED_DAILY_TASK_FAILED_BEFORE_PRICE_ACCESS"
+MASSIVE_DAILY_SYMBOL_FAILURE = (
+    "MASSIVE_DAILY_SYMBOL_TASK_FAILED_BEFORE_PRICE_ACCESS"
+)
 INCOMPLETE_INTRADAY = "INCOMPLETE_SIP_REGULAR_SESSION"
 RECOVERY_IMPLEMENTATION_FILES = (
     "dense_collection_recovery.py",
@@ -146,14 +149,36 @@ def _failure_facts(
                 }
             )
     failures = int(telemetry.get("failures", 0))
+    failed_task = next(
+        (
+            task
+            for task in plan["tasks"]
+            if _checkpoint_rows(root, task) is None
+        ),
+        None,
+    )
+    failed_kind = (
+        str(failed_task.get("kind"))
+        if isinstance(failed_task, Mapping)
+        else None
+    )
     if (
         str(plan["tasks"][0]["kind"]) == "split_actions"
         and completed == 1
         and market_price_tasks_completed == 0
         and failures >= 1
+        and failed_kind in {
+            "grouped_daily_bars",
+            "massive_daily_symbol_bars",
+        }
     ):
+        failure_code = (
+            GROUPED_DAILY_FAILURE
+            if failed_kind == "grouped_daily_bars"
+            else MASSIVE_DAILY_SYMBOL_FAILURE
+        )
         return {
-            "failure_code": GROUPED_DAILY_FAILURE,
+            "failure_code": failure_code,
             "completed_tasks": 1,
             "market_price_rows_accessed": 0,
             "evaluation_tasks_completed": 0,
@@ -164,8 +189,8 @@ def _failure_facts(
                 "corporate_action_rows_accessed": (
                     corporate_action_rows_accessed
                 ),
-                "failed_task_kind": "grouped_daily_bars",
-                "price_tasks_started": 0,
+                "failed_task_kind": failed_kind,
+                "price_tasks_completed": 0,
                 "provider_failures": failures,
             },
         }

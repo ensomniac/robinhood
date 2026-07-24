@@ -706,6 +706,9 @@ def test_failed_grouped_daily_task_is_recorded_without_outcome_exposure(
     assert failure["completed_tasks"] == 1
     assert failure["market_price_rows_accessed"] == 0
     assert failure["failure_details"]["corporate_action_rows_accessed"] == 0
+    assert failure["failure_details"]["failed_task_kind"] == (
+        "grouped_daily_bars"
+    )
     assert failure["data_outcomes_accessed"] is False
     assert failure["strategy_metrics_accessed"] is False
     assert failure["confirmation_outcomes_accessed"] is False
@@ -719,6 +722,56 @@ def test_failed_grouped_daily_task_is_recorded_without_outcome_exposure(
     assert inspection_path.is_file()
     assert inspected["state"] == recovery_inspection.INSPECTION_STATE
     assert all(inspected["checks"].values())
+
+
+def test_failed_massive_symbol_task_has_exact_outcome_blind_failure_code(
+    tmp_path,
+    monkeypatch,
+):
+    plan_path, plan, symbols = _artifacts(tmp_path, monkeypatch)
+    plan_value = json.loads(plan_path.read_text(encoding="utf-8"))
+    plan_value.pop("artifact_sha256")
+    for task in plan_value["tasks"][1:]:
+        task["kind"] = "massive_daily_symbol_bars"
+        task["task_id"] = canonical_sha256(
+            {key: value for key, value in task.items() if key != "task_id"}
+        )
+    massive_plan_path, massive_plan = strategy_discovery._write_artifact(
+        plan_value,
+        tmp_path / "massive-plan",
+        "massive-plan",
+    )
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    backend = FakeBackend(symbols, fail_after=1)
+    with pytest.raises(collection.DenseDataCollectionError, match="interruption"):
+        collection.collect(
+            massive_plan_path,
+            as_of=date(2026, 7, 27),
+            store_config=config,
+            public_root=tmp_path / "public",
+            backend=backend,
+            enforce_commit=False,
+            clock=_collection_clock,
+        )
+
+    failure_path, failure = recovery.record_failure(
+        massive_plan_path,
+        recorded_at="2026-07-27T13:01:00+00:00",
+        store_config=config,
+        public_root=tmp_path / "public",
+        enforce_commit=False,
+    )
+
+    assert failure_path.is_file()
+    assert failure["plan_sha256"] == massive_plan["artifact_sha256"]
+    assert failure["failure_code"] == (
+        recovery.MASSIVE_DAILY_SYMBOL_FAILURE
+    )
+    assert failure["failure_details"]["failed_task_kind"] == (
+        "massive_daily_symbol_bars"
+    )
+    assert failure["market_price_rows_accessed"] == 0
+    assert failure["data_outcomes_accessed"] is False
 
 
 class DailyRangeBackend:
