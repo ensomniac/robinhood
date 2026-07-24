@@ -164,6 +164,7 @@ ETF_CLOSE_TO_OPEN_FAMILY = "liquid-etf-close-to-open-momentum"
 CLOSE_TO_OPEN_ETF_SYMBOLS = ("QQQ", "IWM", "DIA")
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
 EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
+EARNINGS_PEAD_FAMILY = "earnings-positive-surprise-drift"
 VOLATILITY_COMPRESSION_FAMILY = (
     "gap-universe-volatility-compression-breakout"
 )
@@ -190,6 +191,7 @@ SUPPORTED_FAMILIES = {
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
+    EARNINGS_PEAD_FAMILY,
     VOLATILITY_COMPRESSION_FAMILY,
 }
 PRIMARY_ROUND_TRIP_COST_FRACTION = 0.001
@@ -3969,6 +3971,185 @@ def _compression_candidates(
     return candidates
 
 
+def _earnings_pead_exit(
+    bars: Sequence[Mapping[str, Any]],
+    *,
+    entry_index: int,
+    stop_price: float,
+    hold_sessions: int,
+) -> tuple[str, float, bool, dict[str, float]]:
+    marks: dict[str, float] = {}
+    final_index = entry_index + hold_sessions - 1
+    if final_index >= len(bars):
+        raise DenseStrategyRuntimeError(
+            "earnings PEAD holding window is incomplete"
+        )
+    for index in range(entry_index, final_index + 1):
+        bar = bars[index]
+        day = str(bar["date"])
+        if float(bar["low"]) <= stop_price:
+            exit_price = min(float(bar["open"]), stop_price)
+            marks[day] = exit_price
+            return day, exit_price, True, marks
+        marks[day] = float(bar["close"])
+    final = bars[final_index]
+    return (
+        str(final["date"]),
+        float(final["close"]),
+        False,
+        marks,
+    )
+
+
+def _earnings_pead_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    raw_metadata = dataset.get("event_metadata_by_date")
+    if not isinstance(raw_metadata, Mapping) or set(raw_metadata) != set(
+        calendar
+    ):
+        raise DenseStrategyRuntimeError(
+            "earnings PEAD event metadata must bind every account date"
+        )
+    daily = _daily_series(dataset)
+    if "SPY" not in daily:
+        raise DenseStrategyRuntimeError(
+            "earnings PEAD data requires SPY trend history"
+        )
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    minimum_surprise = float(parameters["minimum_surprise_ratio"])
+    minimum_gap = float(parameters["minimum_opening_gap_fraction"])
+    trend_gate = str(parameters["market_trend_gate"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold_sessions = int(parameters["maximum_hold_sessions"])
+    if (
+        minimum_surprise not in {0.0, 0.25}
+        or minimum_gap not in {-0.02, 0.0}
+        or trend_gate not in {"SPY>SMA100", "SPY>SMA200"}
+        or stop_atr not in {1.0, 1.5}
+        or hold_sessions not in {2, 5}
+    ):
+        raise DenseStrategyRuntimeError(
+            "earnings PEAD trial parameters escaped the grid"
+        )
+    trend_sessions = 100 if trend_gate.endswith("100") else 200
+    candidates: list[dict[str, Any]] = []
+    spy = daily["SPY"]
+    spy_indices = indices["SPY"]
+    for day in calendar:
+        rows = raw_metadata[day]
+        if not isinstance(rows, list):
+            raise DenseStrategyRuntimeError(
+                f"earnings PEAD metadata is invalid for {day}"
+            )
+        spy_index = spy_indices.get(day)
+        if spy_index is None or spy_index + 1 < trend_sessions:
+            continue
+        trend = _sma(spy, spy_index, trend_sessions)
+        if trend is None or float(spy[spy_index]["close"]) <= trend:
+            continue
+        qualified: list[tuple[float, float, str, dict[str, Any]]] = []
+        for raw in rows:
+            if not isinstance(raw, Mapping):
+                raise DenseStrategyRuntimeError(
+                    f"earnings PEAD metadata row is invalid for {day}"
+                )
+            symbol = str(raw.get("symbol", ""))
+            bars = daily.get(symbol)
+            symbol_index = indices.get(symbol, {}).get(day)
+            if bars is None or symbol_index is None or symbol_index < 20:
+                continue
+            actual = float(raw["actual_eps"])
+            estimate = float(raw["estimated_eps"])
+            surprise = (actual - estimate) / max(abs(estimate), 0.10)
+            if surprise + 1e-12 < minimum_surprise:
+                continue
+            prior_close = float(bars[symbol_index - 1]["close"])
+            entry_price = float(bars[symbol_index]["open"])
+            gap = entry_price / prior_close - 1
+            if gap + 1e-12 < minimum_gap:
+                continue
+            dollar_volume = statistics.median(
+                float(bar["close"]) * float(bar["volume"])
+                for bar in bars[symbol_index - 20 : symbol_index]
+            )
+            if prior_close < 10 or dollar_volume < 50_000_000:
+                continue
+            atr14 = _atr(bars, symbol_index - 1)
+            if (
+                atr14 is None
+                or atr14 / entry_price
+                < MINIMUM_GROSS_TO_COST_MULTIPLE
+                * PRIMARY_ROUND_TRIP_COST_FRACTION
+            ):
+                continue
+            qualified.append(
+                (-surprise, -dollar_volume, symbol, dict(raw))
+            )
+        if not qualified:
+            continue
+        negative_surprise, negative_liquidity, symbol, selected = sorted(
+            qualified
+        )[0]
+        bars = daily[symbol]
+        entry_index = indices[symbol][day]
+        entry_price = float(bars[entry_index]["open"])
+        atr14 = _atr(bars, entry_index - 1)
+        if atr14 is None:
+            continue
+        stop_price = entry_price - stop_atr * atr14
+        signal_id = f"{day}-{EARNINGS_PEAD_FAMILY}-{symbol}"
+        if stop_price <= 0:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        exit_date, exit_price, stop_executed, marks = (
+            _earnings_pead_exit(
+                bars,
+                entry_index=entry_index,
+                stop_price=stop_price,
+                hold_sessions=hold_sessions,
+            )
+        )
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": day,
+                "decision_date": day,
+                "symbol": symbol,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": -negative_surprise,
+                "surprise_ratio": -negative_surprise,
+                "prior_median_dollar_volume": -negative_liquidity,
+                "report_date": selected["report_date"],
+                "report_timing": selected["timing"],
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "exit_date": exit_date,
+                "exit_price": exit_price,
+                "marks": marks,
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+            }
+        )
+    return candidates
+
+
 def build_candidates(
     dataset: Mapping[str, Any],
     family_id: str,
@@ -4040,6 +4221,8 @@ def build_candidates(
         return _oversold_candidates(dataset, parameters)
     if family_id == EQUITY_GAP_CONTINUATION_FAMILY:
         return _gap_continuation_candidates(dataset, parameters)
+    if family_id == EARNINGS_PEAD_FAMILY:
+        return _earnings_pead_candidates(dataset, parameters)
     if family_id == VOLATILITY_COMPRESSION_FAMILY:
         return _compression_candidates(dataset, parameters)
     raise DenseStrategyRuntimeError(f"unsupported dense family: {family_id}")
