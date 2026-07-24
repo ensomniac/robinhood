@@ -64,10 +64,10 @@ V6_INSPECTION = (
     "liquid-equity-market-residual-reversal-replication-development-inspection-"
     "5af65a86d919ed857c6d36adfc0df7e29b1ec0781b8099027595f5131aa275a9.json"
 )
-PREDECESSOR_REFERENCE_CONTRACT = (
+PREDECESSOR_REFERENCE_COLLECTION = (
     ROOT
-    / "reference-contract/residual-temporal-reference-contract-"
-    "babda4be1c6de4bf2991c649aac5c8309b089fc06bebc87a94f1311155c0b36b.json"
+    / "reference-collection/residual-temporal-reference-collection-"
+    "1c861d43cec125804ccf4d3fefa820a4a489c5f922bbc87c3f52ff51a357cf5d.json"
 )
 REFERENCE_DATE_COUNT = 200
 SELECTION_START = "2021-01-04"
@@ -182,49 +182,59 @@ def _v6_bindings() -> tuple[dict[str, Any], dict[str, Any]]:
 
 
 def _preexisting_reference_metadata() -> dict[str, Any]:
-    """Bind metadata cached under the first committed reference contract."""
+    """Bind the complete committed predecessor metadata collection."""
 
-    if not PREDECESSOR_REFERENCE_CONTRACT.is_file():
+    if not PREDECESSOR_REFERENCE_COLLECTION.is_file():
         return {
-            "authorized_predecessor_contract": None,
+            "authorized_predecessor_collection": None,
             "snapshot_count": 0,
             "snapshots": [],
         }
+    strategy_discovery.require_committed(PREDECESSOR_REFERENCE_COLLECTION)
     predecessor = strategy_discovery.load_artifact(
-        PREDECESSOR_REFERENCE_CONTRACT, expected_kind=CONTRACT_KIND
+        PREDECESSOR_REFERENCE_COLLECTION, expected_kind=COLLECTION_KIND
     )
-    if predecessor.get("state") != CONTRACT_STATE:
+    if not (
+        predecessor.get("state") == COLLECTION_STATE
+        and predecessor.get("prices_or_returns_accessed") is False
+        and predecessor.get("strategy_outcomes_accessed") is False
+        and predecessor.get("substitutions") == 0
+        and predecessor.get("broker_actions") == 0
+    ):
         raise ResidualTemporalReferenceError(
-            "predecessor reference contract is invalid"
+            "predecessor reference collection is invalid"
         )
     store = HistoricalStoreConfig.from_env(DEFAULT_ENV_PATH)
-    snapshot_root = (
-        store.root / "_derived" / SUCCESSOR_ID / "reference"
-    )
+    snapshot_root = store.root / str(predecessor["external_relative_path"])
+    declared = {
+        str(item["date"]): item
+        for item in predecessor.get("snapshots", [])
+    }
     snapshots: list[dict[str, Any]] = []
     for day in selected_dates():
         path = snapshot_root / f"{day}.json.gz"
-        if not path.is_file():
-            continue
+        if day not in declared or not path.is_file():
+            raise ResidualTemporalReferenceError(
+                "predecessor reference cache is incomplete"
+            )
         rows = _read_snapshot(path)
+        observed_sha = sha256_file(path)
+        if (
+            len(rows) != declared[day].get("rows")
+            or observed_sha != declared[day].get("sha256")
+        ):
+            raise ResidualTemporalReferenceError(
+                "predecessor reference cache binding drifted"
+            )
         snapshots.append(
-            {
-                "date": day,
-                "rows": len(rows),
-                "sha256": sha256_file(path),
-            }
-        )
-    if [item["date"] for item in snapshots] != selected_dates()[
-        : len(snapshots)
-    ]:
-        raise ResidualTemporalReferenceError(
-            "preexisting reference cache is not a contiguous frozen prefix"
+            {"date": day, "rows": len(rows), "sha256": observed_sha}
         )
     return {
-        "authorized_predecessor_contract": {
-            "path": _repo_path(PREDECESSOR_REFERENCE_CONTRACT),
-            "file_sha256": sha256_file(PREDECESSOR_REFERENCE_CONTRACT),
+        "authorized_predecessor_collection": {
+            "path": _repo_path(PREDECESSOR_REFERENCE_COLLECTION),
+            "file_sha256": sha256_file(PREDECESSOR_REFERENCE_COLLECTION),
             "artifact_sha256": predecessor["artifact_sha256"],
+            "contract_sha256": predecessor["contract_sha256"],
         },
         "snapshot_count": len(snapshots),
         "snapshots": snapshots,
@@ -321,6 +331,11 @@ def freeze_contract(
             "page_limit": 1000,
             "maximum_pages_per_date": 50,
             "prices_or_returns_requested": False,
+            "canonical_symbol_rule": (
+                "retain only case-sensitive provider tickers equal to their "
+                "uppercase representation; exclude temporary lowercase-suffix "
+                "listings that cannot be mapped uniquely to canonical daily bars"
+            ),
         },
         "v6_adverse_evidence": {
             "contract_path": _repo_path(V6_CONTRACT),
@@ -380,6 +395,14 @@ def load_contract(
         and contract.get("broker_actions") == 0
         and contract.get("selection_contract", {}).get("requested_dates")
         == selected_dates()
+        and contract.get("reference_contract", {}).get(
+            "canonical_symbol_rule"
+        )
+        == (
+            "retain only case-sensitive provider tickers equal to their "
+            "uppercase representation; exclude temporary lowercase-suffix "
+            "listings that cannot be mapped uniquely to canonical daily bars"
+        )
     ):
         raise ResidualTemporalReferenceError(
             "reference contract is not collection-ready"

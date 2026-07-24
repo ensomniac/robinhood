@@ -114,7 +114,10 @@ def build_identities(
                 raise ResidualTemporalReferenceInspectionError(
                     f"{day}: reference row contains a price or outcome field"
                 )
-            symbol = str(row.get("ticker") or "").strip().upper()
+            provider_symbol = str(row.get("ticker") or "").strip()
+            if provider_symbol != provider_symbol.upper():
+                continue
+            symbol = provider_symbol
             exchange = str(row.get("primary_exchange") or "").strip().upper()
             security_type = str(row.get("type") or "").strip().upper()
             active = row.get("active")
@@ -232,6 +235,15 @@ def inspect(
             }
         )
     identities = build_identities(snapshots)
+    excluded_noncanonical_symbol_pairs = sum(
+        1
+        for rows in snapshots.values()
+        for row in rows
+        if (
+            str(row.get("ticker") or "").strip()
+            != str(row.get("ticker") or "").strip().upper()
+        )
+    )
     records = outcome_exposure.read_index()
     exact_scope = {
         "dates": expected_dates,
@@ -310,6 +322,9 @@ def inspect(
         "minimum_identities_per_date": min(counts),
         "maximum_identities_per_date": max(counts),
         "identity_pair_count": sum(counts),
+        "excluded_noncanonical_symbol_pairs": (
+            excluded_noncanonical_symbol_pairs
+        ),
         "identity_graph_sha256": canonical_sha256(identities),
         "identity_external_relative_path": str(identity_relative),
         "identity_external_file_sha256": sha256_file(identity_path),

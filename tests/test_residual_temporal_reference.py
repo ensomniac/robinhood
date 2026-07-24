@@ -64,3 +64,40 @@ def test_identity_builder_scopes_duplicate_composite_listings():
             identities["2021-01-04"]["AAB"],
         )
     )
+
+
+def test_identity_builder_excludes_noncanonical_when_issued_symbols():
+    fillers = [
+        {
+            "ticker": f"S{index:03d}",
+            "primary_exchange": "XNYS",
+            "type": "CS",
+            "active": True,
+            "composite_figi": f"UNIQUE-{index:03d}",
+        }
+        for index in range(499)
+    ]
+    snapshots = {
+        "2021-09-15": [
+            {
+                "ticker": "IPW",
+                "primary_exchange": "XNAS",
+                "type": "CS",
+                "active": True,
+                "composite_figi": "IPOWER",
+            },
+            {
+                "ticker": "IPw",
+                "primary_exchange": "XNYS",
+                "type": "CS",
+                "active": True,
+                "name": "International Paper Company",
+            },
+            *fillers,
+        ]
+    }
+
+    identities = inspection.build_identities(snapshots)
+
+    assert len(identities["2021-09-15"]) == 500
+    assert identities["2021-09-15"]["IPW"] == "FIGI-COMPOSITE:IPOWER"
