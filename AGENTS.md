@@ -595,6 +595,10 @@ Search `91fd97bb...d9a4a0b` now binds every unchanged trial, neighbor graph,
 rolling fold, account simulator, cost, deterministic selection gate, exact
 four-symbol universe, and missed-entry data rule. Commit it before collection
 freeze.
+Development plan `0498c59c...1e8095` freezes four resumable SIP range tasks
+over the exact 543 required warmup-plus-development sessions and carries the
+miss-entire-entry-date rule. It records zero requests, prices, substitutions,
+or broker actions before freeze. Commit it before collection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
