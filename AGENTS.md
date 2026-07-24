@@ -656,6 +656,11 @@ universe. Recovery must record and independently inspect the no-metrics
 failure, refresh only implementation hashes, and hard-link the exact cached
 checkpoints under a new search-bound plan with zero additional provider
 requests. Do not alter dates, symbols, bars, rules, or trial parameters.
+Failure `2fa01d08...5ad4c8d5` records 1,661,059 accessed minute rows,
+266 requests, 467 fully complete development dates, the four exact fully
+incomplete circuit-breaker dates, and all per-symbol completeness counts. It
+confirms zero strategy metrics, confirmation access, substitutions,
+interpolation, or broker actions. Commit it before independent inspection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
