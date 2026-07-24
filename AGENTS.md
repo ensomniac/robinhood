@@ -277,7 +277,10 @@ outputs, and implementation hashes. Independent inspection
 `57102f12...23eb85` returned 2,015 sessions from 2008-01-02 through 2015-12-31
 in one request with zero market-price or target-outcome access. Commit the
 calendar, source attestation, and collection record before independent data
-inspection.
+inspection. Inspection `0c2a4501...ce707` independently rehashed those inputs,
+confirmed at least 1,905 full sessions, and found both the 1,200-session
+development target scope and 500-session confirmation target scope globally
+untouched. Freeze the exact successor contract next.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
