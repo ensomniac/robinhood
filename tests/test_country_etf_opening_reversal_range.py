@@ -18,6 +18,14 @@ def test_range_version_changes_only_provider_request_topology(
 
     monkeypatch.setattr(ranged, "DEFAULT_ROOT", tmp_path)
     monkeypatch.setattr(ranged, "_repo_path", repo_path)
+    monkeypatch.setattr(
+        ranged.outcome_exposure, "read_index", lambda *_args, **_kwargs: []
+    )
+    monkeypatch.setattr(
+        ranged.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
 
     _path, contract, capacity_path = ranged.freeze_contract(
         created_at=datetime.now().astimezone().isoformat(),

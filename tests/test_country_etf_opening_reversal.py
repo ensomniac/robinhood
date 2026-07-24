@@ -35,6 +35,14 @@ def test_country_replication_freezes_unchanged_intraday_grid(
 
     monkeypatch.setattr(country, "DEFAULT_ROOT", tmp_path)
     monkeypatch.setattr(country, "_repo_path", repo_path)
+    monkeypatch.setattr(
+        country.outcome_exposure, "read_index", lambda *_args, **_kwargs: []
+    )
+    monkeypatch.setattr(
+        country.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
 
     _path, contract, capacity_path = country.freeze_contract(
         created_at=datetime.now().astimezone().isoformat(),
