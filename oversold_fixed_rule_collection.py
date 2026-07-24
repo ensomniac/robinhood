@@ -117,17 +117,21 @@ def configured():
         "STATUS_ROOT": STATUS_ROOT,
         "DATA_INSPECTION_ROOT": DATA_INSPECTION_ROOT,
         "_load_inventory": _load_inventory,
-        "_inventory_path": replication.development_inventory_path,
         "_input_index_path": replication.development_input_index_path,
     }
     original = {name: getattr(base, name) for name in values}
+    original_inventory_path = base.development._inventory_path
     try:
         for name, value in values.items():
             setattr(base, name, value)
+        base.development._inventory_path = (
+            replication.development_inventory_path
+        )
         yield
     finally:
         for name, value in original.items():
             setattr(base, name, value)
+        base.development._inventory_path = original_inventory_path
 
 
 def freeze_contract(*, created_at: str) -> tuple[Path, dict[str, Any]]:
