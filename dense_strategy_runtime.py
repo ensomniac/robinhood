@@ -2269,10 +2269,10 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             for day, day_symbols in sessions.items():
                 observed_symbols = set(day_symbols)
                 if day in missed_dates:
-                    if not observed_symbols or not observed_symbols < expected_symbols:
+                    if not observed_symbols < expected_symbols:
                         raise DenseStrategyRuntimeError(
-                            "intraday missed-data dates must retain a strict "
-                            "subset of the frozen universe"
+                            "intraday missed-data dates must contain at most "
+                            "a strict subset of the frozen universe"
                         )
                 elif observed_symbols != expected_symbols:
                     raise DenseStrategyRuntimeError(

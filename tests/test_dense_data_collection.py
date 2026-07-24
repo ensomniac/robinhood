@@ -679,7 +679,7 @@ def test_intraday_range_policy_keeps_only_complete_frozen_sessions(
     tmp_path,
 ):
     config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
-    days = _dates(2)
+    days = _dates(3)
     symbols = ["DIA", "SPY"]
     tasks = []
     for symbol in symbols:
@@ -725,7 +725,8 @@ def test_intraday_range_policy_keeps_only_complete_frozen_sessions(
                 days[1],
                 389 if task["symbol"] == "DIA" else 390,
             ),
-            *rows("2024-01-04", 210),
+            *rows(days[2], 389),
+            *rows("2024-01-05", 210),
         ]
         collection._write_external(
             collection._checkpoint_path(tmp_path, task),
@@ -744,16 +745,32 @@ def test_intraday_range_policy_keeps_only_complete_frozen_sessions(
     assert set(dataset["minute_bars"]) == set(days)
     assert set(dataset["minute_bars"][days[0]]) == set(symbols)
     assert set(dataset["minute_bars"][days[1]]) == {"SPY"}
-    assert dataset["missed_data_dates"] == [days[1]]
+    assert dataset["minute_bars"][days[2]] == {}
+    assert dataset["missed_data_dates"] == [days[1], days[2]]
     assert dataset["missing_session_evidence"] == [
         {
             "date": days[1],
             "symbol": "DIA",
             "observed_minutes": 389,
             "expected_minutes": 390,
-        }
+        },
+        {
+            "date": days[2],
+            "symbol": "DIA",
+            "observed_minutes": 389,
+            "expected_minutes": 390,
+        },
+        {
+            "date": days[2],
+            "symbol": "SPY",
+            "observed_minutes": 389,
+            "expected_minutes": 390,
+        },
     ]
-    assert prepared["_prepared_missed_data_dates"] == {days[1]}
+    assert prepared["_prepared_missed_data_dates"] == {
+        days[1],
+        days[2],
+    }
     assert (
         dataset["source_semantics"]["missing_data_policy"]
         == collection.INTRADAY_FIXED_UNIVERSE_MISS_POLICY
@@ -1422,6 +1439,89 @@ def test_symbol_range_failure_summarizes_incomplete_regular_sessions(
             "incomplete_evaluation_sessions": 0,
         },
     ]
+
+
+def test_empty_intraday_missed_date_is_an_implementation_recovery_gap(
+    tmp_path,
+):
+    required_dates = ["2024-01-02", "2024-01-03"]
+    symbols = ["DIA", "SPY"]
+    tasks = []
+    for symbol in symbols:
+        task = {
+            "kind": "sip_minute_symbol_range",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+            "symbol": symbol,
+        }
+        task["task_id"] = canonical_sha256(task)
+        tasks.append(task)
+    plan = {
+        "artifact_sha256": "a" * 64,
+        "family_id": (
+            runtime.LIQUID_INDEX_ETF_OPENING_REVERSAL_POST2016_FAMILY
+        ),
+        "lane": "development",
+        "required_dates": required_dates,
+        "evaluation_dates": required_dates,
+        "symbols": symbols,
+        "task_count": len(tasks),
+        "tasks": tasks,
+        "intraday_missing_session_policy": (
+            collection.INTRADAY_FIXED_UNIVERSE_MISS_POLICY
+        ),
+    }
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    root = (
+        config.root
+        / "dense-v2"
+        / plan["family_id"]
+        / plan["lane"]
+        / plan["artifact_sha256"]
+    )
+
+    def rows(day, count):
+        start = datetime.fromisoformat(f"{day}T09:30:00-05:00")
+        return [
+            {
+                "date_et": day,
+                "time_et": (start + timedelta(minutes=index)).isoformat(),
+            }
+            for index in range(count)
+        ]
+
+    for task in tasks:
+        task_rows = [
+            *rows(required_dates[0], 390),
+            *rows(required_dates[1], 376),
+        ]
+        collection._write_external(
+            collection._checkpoint_path(root, task),
+            {
+                "schema_version": 1,
+                "task": task,
+                "rows": task_rows,
+                "rows_sha256": canonical_sha256(task_rows),
+            },
+            config,
+        )
+
+    facts = recovery._failure_facts(plan, root, {"failures": 0})
+
+    assert (
+        facts["failure_code"]
+        == recovery.EMPTY_MISSED_DATE_REPRESENTATION
+    )
+    assert facts["data_outcomes_accessed"] is True
+    assert facts["failure_details"][
+        "fully_incomplete_evaluation_dates"
+    ] == [required_dates[1]]
+    assert (
+        facts["failure_details"]["fully_complete_evaluation_dates"]
+        == 1
+    )
+    assert facts["failure_details"]["substituted_sessions"] == 0
+    assert facts["failure_details"]["interpolated_minutes"] == 0
 
 
 def test_confirmation_manifest_attests_capture_after_frozen_winner(

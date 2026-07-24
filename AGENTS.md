@@ -644,6 +644,18 @@ Development plan `76f1442e...fef1083` freezes four resumable Alpaca SIP
 symbol-range tasks over the exact 60 warmup plus 1,000 development sessions,
 with zero requests, substitutions, prices, or broker actions before freeze.
 Commit it before provider collection.
+All four ranges completed in 266 paginated requests with zero failures, but
+dataset materialization exposed one fail-closed implementation gap: four
+market-wide circuit-breaker dates had 376 observed minutes for every fixed
+symbol, so no complete symbol session remained to carry the already-frozen
+missed-entry marker. The contract requires those sessions to be explicit
+zero-return days, not collection failures or repaired bars. The runtime now
+permits an empty symbol map only on a preregistered missed-data date, retains
+all missing-session evidence, and still rejects an unmarked empty or partial
+universe. Recovery must record and independently inspect the no-metrics
+failure, refresh only implementation hashes, and hard-link the exact cached
+checkpoints under a new search-bound plan with zero additional provider
+requests. Do not alter dates, symbols, bars, rules, or trial parameters.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

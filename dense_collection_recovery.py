@@ -30,10 +30,17 @@ MASSIVE_DAILY_SYMBOL_FAILURE = (
 )
 INCOMPLETE_INTRADAY = "INCOMPLETE_SIP_REGULAR_SESSION"
 INCOMPLETE_INTRADAY_RANGE = "INCOMPLETE_SIP_RANGE_REGULAR_SESSION"
+EMPTY_MISSED_DATE_REPRESENTATION = (
+    "EMPTY_INTRADAY_MISSED_DATE_REPRESENTATION_GAP"
+)
 RECOVERY_IMPLEMENTATION_FILES = (
     "dense_collection_recovery.py",
     "dense_collection_recovery_inspection.py",
     "dense_data_collection.py",
+)
+INTRADAY_RECOVERY_IMPLEMENTATION_FILES = (
+    *RECOVERY_IMPLEMENTATION_FILES,
+    "dense_strategy_runtime.py",
 )
 
 
@@ -44,6 +51,18 @@ class DenseCollectionRecoveryError(RuntimeError):
 def _implementation_hashes(*, enforce_commit: bool) -> dict[str, str]:
     result: dict[str, str] = {}
     for name in RECOVERY_IMPLEMENTATION_FILES:
+        path = PROJECT_ROOT / name
+        if enforce_commit:
+            strategy_discovery.require_committed(path)
+        result[name] = strategy_discovery._file_hash(path)
+    return result
+
+
+def _intraday_recovery_implementation_hashes(
+    *, enforce_commit: bool
+) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for name in INTRADAY_RECOVERY_IMPLEMENTATION_FILES:
         path = PROJECT_ROOT / name
         if enforce_commit:
             strategy_discovery.require_committed(path)
@@ -282,6 +301,53 @@ def _failure_facts(
             if complete_evaluation_sets
             else set()
         )
+        represented_by_any_complete_session = (
+            set.union(*complete_evaluation_sets)
+            if complete_evaluation_sets
+            else set()
+        )
+        fully_incomplete_evaluation_dates = (
+            evaluation_dates - represented_by_any_complete_session
+        )
+        if (
+            plan.get("intraday_missing_session_policy")
+            == collection.INTRADAY_FIXED_UNIVERSE_MISS_POLICY
+            and fully_incomplete_evaluation_dates
+            and fully_complete_evaluation_dates
+        ):
+            return {
+                "failure_code": EMPTY_MISSED_DATE_REPRESENTATION,
+                "completed_tasks": completed,
+                "market_price_rows_accessed": rows_accessed,
+                "evaluation_tasks_completed": evaluation_tasks_completed,
+                "data_outcomes_accessed": True,
+                "exposure_scope": {
+                    "dates": list(plan["evaluation_dates"]),
+                    "symbols": sorted(map(str, plan["symbols"])),
+                },
+                "failure_details": {
+                    "expected_regular_session_minutes": 390,
+                    "required_symbol_sessions": (
+                        len(required_dates) * len(plan["symbols"])
+                    ),
+                    "incomplete_required_symbol_sessions": sum(
+                        int(item["incomplete_required_sessions"])
+                        for item in intraday_range_summaries
+                    ),
+                    "fully_complete_evaluation_dates": len(
+                        fully_complete_evaluation_dates
+                    ),
+                    "fully_incomplete_evaluation_dates": sorted(
+                        fully_incomplete_evaluation_dates
+                    ),
+                    "per_symbol": intraday_range_summaries,
+                    "provider_extra_session_dates": sorted(
+                        intraday_range_extra_dates
+                    ),
+                    "substituted_sessions": 0,
+                    "interpolated_minutes": 0,
+                },
+            }
         return {
             "failure_code": INCOMPLETE_INTRADAY_RANGE,
             "completed_tasks": completed,
@@ -592,6 +658,142 @@ def freeze_pullback_recovery(
     )
 
 
+def freeze_intraday_representation_recovery(
+    failure_inspection_path: Path,
+    *,
+    search_path: Path,
+    as_of: date | None = None,
+    actual_today: date | None = None,
+    public_root: Path = DEFAULT_PUBLIC_ROOT,
+    enforce_commit: bool = True,
+) -> tuple[Path, dict[str, Any]]:
+    """Rebind cached range checkpoints after an implementation-only repair."""
+
+    failure_path, failure, failure_inspection = _load_inspected_failure(
+        failure_inspection_path,
+        enforce_commit=enforce_commit,
+    )
+    if not (
+        failure.get("family_id")
+        == runtime.LIQUID_INDEX_ETF_OPENING_REVERSAL_POST2016_FAMILY
+        and failure.get("lane") == "development"
+        and failure.get("failure_code")
+        == EMPTY_MISSED_DATE_REPRESENTATION
+        and failure.get("data_outcomes_accessed") is True
+        and failure.get("strategy_metrics_accessed") is False
+        and failure.get("completed_tasks") == failure.get("task_count")
+    ):
+        raise DenseCollectionRecoveryError(
+            "failure is not the bounded empty-missed-date representation gap"
+        )
+    original_plan_path = PROJECT_ROOT / str(failure["plan_path"])
+    original_plan = collection._validate_plan(
+        original_plan_path,
+        enforce_commit=enforce_commit,
+    )
+    if enforce_commit:
+        strategy_discovery.require_committed(search_path)
+    refreshed_search = strategy_discovery.load_artifact(
+        search_path,
+        expected_kind="frozen-development-search",
+    )
+    original_search_path = (
+        PROJECT_ROOT / str(original_plan["authority_path"])
+    )
+    if enforce_commit:
+        strategy_discovery.require_committed(original_search_path)
+    original_search = strategy_discovery.load_artifact(
+        original_search_path,
+        expected_kind="frozen-development-search",
+    )
+    original_contract = dict(original_search["family_contract"])
+    refreshed_contract = dict(refreshed_search["family_contract"])
+    original_contract.pop("implementation_hashes", None)
+    refreshed_contract.pop("implementation_hashes", None)
+    if not (
+        original_plan["artifact_sha256"] == failure["plan_sha256"]
+        and original_contract == refreshed_contract
+        and refreshed_search.get("state") == "SEARCH_FROZEN"
+        and refreshed_search["family_contract"]["family_id"]
+        == failure["family_id"]
+    ):
+        raise DenseCollectionRecoveryError(
+            "refreshed intraday search changed frozen strategy semantics"
+        )
+    strategy_discovery._assert_implementation_current(
+        refreshed_search["family_contract"],
+        enforce_commit=enforce_commit,
+    )
+    today = actual_today or date.today()
+    current = as_of or today
+    if current > today:
+        raise DenseCollectionRecoveryError(
+            "intraday recovery as_of cannot be future-dated"
+        )
+    payload = {
+        key: value
+        for key, value in original_plan.items()
+        if key not in {"artifact_sha256", "as_of"}
+    }
+    refreshed_contract_hash = canonical_sha256(refreshed_contract)
+    payload.update(
+        {
+            "authority_path": collection._repo_path(search_path),
+            "authority_sha256": refreshed_search["artifact_sha256"],
+            "binding_sha256": refreshed_search["artifact_sha256"],
+            "as_of": current.isoformat(),
+            "recovery_kind": collection.INTRADAY_CHECKPOINT_REUSE_RECOVERY,
+            "recovery_failure_path": collection._repo_path(failure_path),
+            "recovery_failure_sha256": failure["artifact_sha256"],
+            "recovery_failure_inspection_path": collection._repo_path(
+                failure_inspection_path
+            ),
+            "recovery_failure_inspection_sha256": failure_inspection[
+                "artifact_sha256"
+            ],
+            "supersedes_plan_sha256": original_plan["artifact_sha256"],
+            "checkpoint_source_plan_path": collection._repo_path(
+                original_plan_path
+            ),
+            "checkpoint_source_plan_sha256": original_plan[
+                "artifact_sha256"
+            ],
+            "recovery_search_refresh": {
+                "original_search_sha256": original_search[
+                    "artifact_sha256"
+                ],
+                "refreshed_search_path": collection._repo_path(search_path),
+                "refreshed_search_sha256": refreshed_search[
+                    "artifact_sha256"
+                ],
+                "semantic_contract_sha256": refreshed_contract_hash,
+                "only_implementation_hashes_changed": True,
+            },
+            "recovery_implementation_hashes": (
+                _intraday_recovery_implementation_hashes(
+                    enforce_commit=enforce_commit
+                )
+            ),
+            "provider_requests_before_plan_freeze": 0,
+            "provider_requests_already_completed": int(
+                failure["provider_telemetry"]["requests"]
+            ),
+            "additional_provider_requests_authorized": 0,
+            "market_outcomes_accessed": True,
+            "strategy_metrics_accessed_before_recovery": False,
+            "substitutions_allowed": False,
+            "broker_actions": 0,
+        }
+    )
+    return strategy_discovery._write_artifact(
+        payload,
+        public_root
+        / str(failure["family_id"])
+        / "development-collection-plan",
+        f"{failure['family_id']}-development-collection-plan",
+    )
+
+
 def index_failure_exposure(
     failure_inspection_path: Path,
     *,
@@ -635,6 +837,12 @@ def _parser() -> argparse.ArgumentParser:
     recovery.add_argument("artifact", type=Path)
     recovery.add_argument("--as-of", type=date.fromisoformat)
     recovery.add_argument("--search", type=Path)
+    intraday = subparsers.add_parser(
+        "freeze-intraday-representation-recovery"
+    )
+    intraday.add_argument("artifact", type=Path)
+    intraday.add_argument("--as-of", type=date.fromisoformat)
+    intraday.add_argument("--search", type=Path, required=True)
     exposure = subparsers.add_parser("index-exposure")
     exposure.add_argument("artifact", type=Path)
     exposure.add_argument(
@@ -673,6 +881,22 @@ def main() -> int:
                 "artifact_sha256": artifact["artifact_sha256"],
                 "state": artifact["state"],
                 "task_count": artifact["task_count"],
+            }
+        elif args.command == "freeze-intraday-representation-recovery":
+            path, artifact = freeze_intraday_representation_recovery(
+                args.artifact,
+                search_path=args.search,
+                as_of=args.as_of,
+                public_root=args.public_root,
+            )
+            result = {
+                "written": collection._repo_path(path),
+                "artifact_sha256": artifact["artifact_sha256"],
+                "state": artifact["state"],
+                "task_count": artifact["task_count"],
+                "additional_provider_requests_authorized": artifact[
+                    "additional_provider_requests_authorized"
+                ],
             }
         else:
             record, appended = index_failure_exposure(

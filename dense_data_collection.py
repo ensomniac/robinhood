@@ -50,6 +50,9 @@ DEFAULT_CALENDAR = dense_capacity_inventory.DEFAULT_CALENDAR
 PLAN_KIND = "dense-data-collection-plan"
 STATUS_KIND = "dense-data-collection-status"
 RECOVERY_ADJUSTMENT = "raw_alpaca_with_frozen_massive_split_actions"
+INTRADAY_CHECKPOINT_REUSE_RECOVERY = (
+    "empty-missed-date-checkpoint-reuse"
+)
 DAILY_WARMUP_SESSIONS = 200
 INTRADAY_WARMUP_SESSIONS = runtime.STANDARDIZATION_LOOKBACK
 MAX_TASK_ATTEMPTS = 5
@@ -516,12 +519,22 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
     if enforce_commit:
         strategy_discovery.require_committed(path)
     plan = strategy_discovery.load_artifact(path, expected_kind=PLAN_KIND)
+    intraday_recovery = (
+        plan.get("recovery_kind")
+        == INTRADAY_CHECKPOINT_REUSE_RECOVERY
+    )
     if not (
         plan.get("state") == "COLLECTION_PLAN_FROZEN"
         and plan.get("campaign_id") == batch.CAMPAIGN_ID
         and plan.get("provider_requests_before_plan_freeze") == 0
         and plan.get("substitutions_allowed") is False
-        and plan.get("market_outcomes_accessed") is False
+        and (
+            plan.get("market_outcomes_accessed") is False
+            or (
+                intraday_recovery
+                and plan.get("market_outcomes_accessed") is True
+            )
+        )
         and plan.get("broker_actions") == 0
         and plan.get("task_count") == len(plan.get("tasks", []))
         and plan.get("task_count", 0) > 0
@@ -529,9 +542,10 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         raise DenseDataCollectionError("collection plan authority drifted")
     recovery_failure_path = plan.get("recovery_failure_path")
     recovery_adjustment = plan.get("adjustment_semantics")
-    if (recovery_failure_path is None) != (
-        recovery_adjustment is None
-    ):
+    recovery_declared = (
+        recovery_adjustment is not None or intraday_recovery
+    )
+    if (recovery_failure_path is not None) != recovery_declared:
         raise DenseDataCollectionError(
             "collection recovery fields must appear together"
         )
@@ -630,7 +644,47 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 raise DenseDataCollectionError(
                     "collection recovery search semantics drifted"
                 )
-        if not (
+        if intraday_recovery:
+            source_plan_path = (
+                PROJECT_ROOT
+                / str(plan.get("checkpoint_source_plan_path", ""))
+            )
+            source_plan = _validate_plan(
+                source_plan_path,
+                enforce_commit=enforce_commit,
+            )
+            if not (
+                recovery_adjustment is None
+                and plan.get("family_id")
+                == runtime.LIQUID_INDEX_ETF_OPENING_REVERSAL_POST2016_FAMILY
+                and plan.get("lane") == "development"
+                and failure.get("failure_code")
+                == "EMPTY_INTRADAY_MISSED_DATE_REPRESENTATION_GAP"
+                and failure.get("data_outcomes_accessed") is True
+                and failure.get("strategy_metrics_accessed") is False
+                and failure.get("completed_tasks")
+                == failure.get("task_count")
+                and plan.get("market_outcomes_accessed") is True
+                and plan.get("strategy_metrics_accessed_before_recovery")
+                is False
+                and plan.get("checkpoint_source_plan_sha256")
+                == source_plan["artifact_sha256"]
+                == failure["plan_sha256"]
+                and plan.get("provider_requests_already_completed")
+                == failure.get("provider_telemetry", {}).get("requests")
+                and plan.get("additional_provider_requests_authorized")
+                == 0
+                and plan.get("tasks") == source_plan.get("tasks")
+                and plan.get("evaluation_dates")
+                == source_plan.get("evaluation_dates")
+                and plan.get("required_dates")
+                == source_plan.get("required_dates")
+                and plan.get("symbols") == source_plan.get("symbols")
+            ):
+                raise DenseDataCollectionError(
+                    "intraday checkpoint-reuse recovery drifted"
+                )
+        elif not (
             recovery_adjustment == RECOVERY_ADJUSTMENT
             and plan.get("family_id") == runtime.ETF_PULLBACK_FAMILY
             and plan.get("lane") == "development"
@@ -641,14 +695,19 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 "collection recovery is outside its frozen outcome-blind scope"
             )
         implementation_hashes = plan.get("recovery_implementation_hashes")
+        expected_implementation_names = {
+            "dense_collection_recovery.py",
+            "dense_collection_recovery_inspection.py",
+            "dense_data_collection.py",
+        }
+        if intraday_recovery:
+            expected_implementation_names.add(
+                "dense_strategy_runtime.py"
+            )
         if not (
             isinstance(implementation_hashes, Mapping)
             and set(implementation_hashes)
-            == {
-                "dense_collection_recovery.py",
-                "dense_collection_recovery_inspection.py",
-                "dense_data_collection.py",
-            }
+            == expected_implementation_names
             and all(
                 isinstance(value, str) and len(value) == 64
                 for value in implementation_hashes.values()
@@ -1172,7 +1231,9 @@ def _adjusted_bar(
 def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, Any]:
     family_id = str(plan["family_id"])
     if family_id in runtime.INTRADAY_ETF_FAMILIES:
-        minute: dict[str, dict[str, list[dict[str, Any]]]] = {}
+        minute: dict[str, dict[str, list[dict[str, Any]]]] = {
+            str(day): {} for day in plan["required_dates"]
+        }
         expected_symbols = set(map(str, plan["symbols"]))
         required_dates = set(map(str, plan["required_dates"]))
         missing_policy = plan.get("intraday_missing_session_policy")
@@ -1237,7 +1298,6 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
             if (
                 missing_policy != INTRADAY_FIXED_UNIVERSE_MISS_POLICY
                 or set(minute) != required_dates
-                or any(not symbols for symbols in minute.values())
             ):
                 raise DenseDataCollectionError(
                     "intraday retained coverage is incomplete"
@@ -1381,6 +1441,69 @@ def _existing_status(
     return matches[0] if matches else None
 
 
+def _materialize_intraday_recovery_checkpoints(
+    *,
+    config: HistoricalStoreConfig,
+    plan: Mapping[str, Any],
+    private_root: Path,
+    enforce_commit: bool,
+) -> None:
+    if (
+        plan.get("recovery_kind")
+        != INTRADAY_CHECKPOINT_REUSE_RECOVERY
+    ):
+        return
+    source_plan_path = (
+        PROJECT_ROOT / str(plan["checkpoint_source_plan_path"])
+    )
+    source_plan = _validate_plan(
+        source_plan_path,
+        enforce_commit=enforce_commit,
+    )
+    source_root = (
+        config.root
+        / "dense-v2"
+        / str(source_plan["family_id"])
+        / str(source_plan["lane"])
+        / str(source_plan["artifact_sha256"])
+    )
+    source_telemetry = _telemetry_state(
+        source_root / "collection-telemetry.json",
+        str(source_plan["artifact_sha256"]),
+    )
+    for task in plan["tasks"]:
+        source_path = _checkpoint_path(source_root, task)
+        source_rows = _load_checkpoint(source_path, task)
+        destination = _checkpoint_path(private_root, task)
+        if destination.exists():
+            destination_rows = _load_checkpoint(destination, task)
+            if canonical_sha256(destination_rows) != canonical_sha256(
+                source_rows
+            ):
+                raise DenseDataCollectionError(
+                    "recovery checkpoint differs from its frozen source"
+                )
+            continue
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            os.link(source_path, destination)
+        except OSError as exc:
+            raise DenseDataCollectionError(
+                "recovery checkpoint hard-link failed"
+            ) from exc
+    telemetry_path = private_root / "collection-telemetry.json"
+    if not telemetry_path.exists():
+        _write_telemetry_state(
+            telemetry_path,
+            plan_sha256=str(plan["artifact_sha256"]),
+            collection_started_at=str(
+                source_telemetry["collection_started_at"]
+            ),
+            telemetry=source_telemetry["provider_telemetry"],
+            config=config,
+        )
+
+
 def collect(
     plan_path: Path,
     *,
@@ -1424,6 +1547,12 @@ def collect(
         / str(plan["lane"])
         / str(plan["artifact_sha256"])
     )
+    _materialize_intraday_recovery_checkpoints(
+        config=config,
+        plan=plan,
+        private_root=private_root,
+        enforce_commit=enforce_commit,
+    )
     client = backend or ProviderBackend()
     owns_backend = backend is None
     telemetry_path = private_root / "collection-telemetry.json"
@@ -1464,6 +1593,13 @@ def collect(
                 _load_checkpoint(path, task)
                 client.telemetry["cache_hits"] += 1
             else:
+                if (
+                    plan.get("recovery_kind")
+                    == INTRADAY_CHECKPOINT_REUSE_RECOVERY
+                ):
+                    raise DenseDataCollectionError(
+                        "intraday recovery forbids an additional provider request"
+                    )
                 attempts = 0
                 while True:
                     attempts += 1

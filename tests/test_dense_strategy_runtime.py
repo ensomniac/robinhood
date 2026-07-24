@@ -516,8 +516,9 @@ def test_intraday_missing_fixed_universe_date_is_an_explicit_zero_return_day():
                 -0.05 if day == missed_day else opening_return,
                 stop_and_target=day == missed_day,
             ),
-        }
+    }
     del minute_bars[missed_day]["SPY"]
+    del minute_bars[missed_day]["QQQ"]
     dataset = runtime.prepare_dataset(
         {
             "family_id": runtime.INTRADAY_ETF_FAMILY,
