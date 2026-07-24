@@ -661,6 +661,11 @@ Failure `2fa01d08...5ad4c8d5` records 1,661,059 accessed minute rows,
 incomplete circuit-breaker dates, and all per-symbol completeness counts. It
 confirms zero strategy metrics, confirmation access, substitutions,
 interpolation, or broker actions. Commit it before independent inspection.
+Inspection `6a797d78...6b70e2a` independently rebuilt every task and row
+count, all completeness sets, the exact four fully incomplete dates, provider
+telemetry, exposed scope, and the absence of a completed dataset or strategy
+metrics. Commit it before the implementation-only search refresh and
+checkpoint-reuse recovery freeze.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
