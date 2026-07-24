@@ -421,7 +421,9 @@ boundaries and earned `CAPACITY_READY` with zero provider requests. Commit that
 inspection before freezing the search or accessing providers. Search manifest
 `e6053ce5...a5153` now binds the committed contract, preflight, and all 32
 declared trials in `SEARCH_FROZEN`; confirmation and broker access remain
-forbidden. Commit it before freezing development collection.
+forbidden. Development collection plan `49c86606...2b42b4` now freezes nine
+raw-SIP daily-bar tasks plus one split-action task over the exact warmup and
+development interval, with no substitutions. Commit it before provider access.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
