@@ -385,6 +385,11 @@ all 1,200 required sessions, the exact nine-symbol scope, split adjustments,
 runtime schema, and 9,000 development instrument-session observations. Runtime
 manifest `87acbac0...508271` is search-bound and ready only after both artifacts
 are committed.
+Result `03051809...9e512b` evaluated all 32 exact trials from one dataset load
+and one cache hit with zero provider requests or failures. The complete account
+and selection-statistics run took 62.42 seconds, 2.42 seconds above the
+performance acceptance; preserve the result and inspect selection before any
+performance change.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
