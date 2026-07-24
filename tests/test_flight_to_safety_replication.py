@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 
 import dense_strategy_runtime as runtime
 import flight_to_safety_replication as replication
+import flight_to_safety_replication2 as replication2
 
 
 def _business_dates(count: int) -> list[str]:
@@ -150,3 +151,78 @@ def test_replication_contract_keeps_exact_grid_and_long_embargo(
     assert len(contract["embargo_dates"]) == 251
     assert len(contract["confirmation_dates"]) == 251
     assert contract["confirmation_signal_capacity"] == 246
+
+
+def test_identity_safe_replication_uses_new_targets_with_same_grid(
+    tmp_path, monkeypatch
+):
+    original_repo_path = replication2._repo_path
+
+    def repo_path(path):
+        try:
+            return original_repo_path(path)
+        except ValueError:
+            return f"strategy_tournament/v2/test/{path.name}"
+
+    monkeypatch.setattr(replication2, "DEFAULT_ROOT", tmp_path)
+    monkeypatch.setattr(replication2, "_repo_path", repo_path)
+    monkeypatch.setattr(
+        replication2.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: [],
+    )
+    monkeypatch.setattr(
+        replication2.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
+
+    _path, contract, capacity = replication2.freeze_contract(
+        created_at=datetime.now().astimezone().isoformat(),
+        enforce_commit=False,
+    )
+    base = replication2._read_contract(replication2.V1_CONTRACT)
+
+    assert capacity.is_file()
+    assert contract["parameter_grid"] == base["parameter_grid"]
+    assert contract["universe"]["target_symbols"] == [
+        "ITOT",
+        "RSP",
+        "VV",
+    ]
+    assert contract["prior_family_attempt_count"] == 2
+    assert contract["predecessor"]["strategy_metrics_accessed"] is False
+    assert contract["new_mechanism_family_slot_consumed"] is False
+
+
+def test_identity_safe_runtime_targets_itot_rsp_and_vv():
+    dates = _business_dates(230)
+    evaluation = dates[-12:]
+    decision = evaluation[3]
+    shocks = {
+        "ITOT": -0.01,
+        "RSP": -0.005,
+        "VV": -0.02,
+        "TLT": 0.01,
+    }
+    raw = {
+        "schema_version": 1,
+        "family_id": runtime.FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+        "evaluation_dates": evaluation,
+        "symbols": ["ITOT", "RSP", "VV", "TLT"],
+        "daily_bars": {
+            symbol: _bars(
+                dates, shock_date=decision, shock_return=shock
+            )
+            for symbol, shock in shocks.items()
+        },
+    }
+    candidates = runtime.build_candidates(
+        runtime.prepare_dataset(raw),
+        runtime.FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+        _parameters(),
+    )
+    observed = [
+        item for item in candidates if item["decision_date"] == decision
+    ]
+    assert [item["symbol"] for item in observed] == ["VV", "ITOT"]

@@ -64,6 +64,10 @@ FLIGHT_TO_SAFETY_REPLICATION_FAMILY = (
     "cross-asset-flight-to-safety-equity-rebound-replication"
 )
 FLIGHT_TO_SAFETY_REPLICATION_TARGET_SYMBOLS = ("IWB", "SCHX", "SPTM")
+FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY = (
+    "cross-asset-flight-to-safety-equity-rebound-replication-v2"
+)
+FLIGHT_TO_SAFETY_REPLICATION_V2_TARGET_SYMBOLS = ("ITOT", "RSP", "VV")
 BREADTH_CAPITULATION_REBOUND_FAMILY = (
     "broad-equity-etf-breadth-capitulation-rebound"
 )
@@ -101,6 +105,7 @@ SUPPORTED_FAMILIES = {
     SECTOR_ETF_GAP_DRIFT_FAMILY,
     FLIGHT_TO_SAFETY_REBOUND_FAMILY,
     FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
+    FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
     BREADTH_CAPITULATION_REBOUND_FAMILY,
     *ETF_OVERSOLD_FAMILIES,
     ETF_CLOSE_TO_OPEN_FAMILY,
@@ -2723,6 +2728,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
+            FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
             BREADTH_CAPITULATION_REBOUND_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
         }:
@@ -2747,6 +2753,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
+            FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
             BREADTH_CAPITULATION_REBOUND_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
         }:
@@ -3848,6 +3855,13 @@ def build_candidates(
             family_id=family_id,
             target_symbols=FLIGHT_TO_SAFETY_REPLICATION_TARGET_SYMBOLS,
         )
+    if family_id == FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY:
+        return _flight_to_safety_rebound_candidates(
+            dataset,
+            parameters,
+            family_id=family_id,
+            target_symbols=FLIGHT_TO_SAFETY_REPLICATION_V2_TARGET_SYMBOLS,
+        )
     if family_id == BREADTH_CAPITULATION_REBOUND_FAMILY:
         return _breadth_capitulation_rebound_candidates(dataset, parameters)
     if family_id in ETF_OVERSOLD_FAMILIES:
@@ -4144,6 +4158,7 @@ def _production_daily_signal(
         SECTOR_ETF_GAP_DRIFT_FAMILY,
         FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
+        FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
         BREADTH_CAPITULATION_REBOUND_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
     }:
@@ -4235,6 +4250,7 @@ def _production_daily_signal(
         if family_id in {
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
+            FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
         }:
             decline_floor = float(
                 parameters["minimum_equity_decline_fraction"]
@@ -4255,11 +4271,14 @@ def _production_daily_signal(
                 raise DenseStrategyRuntimeError(
                     "production flight-to-safety rules escaped the frozen grid"
                 )
-            target_symbols = (
-                FLIGHT_TO_SAFETY_TARGET_SYMBOLS
-                if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY
-                else FLIGHT_TO_SAFETY_REPLICATION_TARGET_SYMBOLS
-            )
+            if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY:
+                target_symbols = FLIGHT_TO_SAFETY_TARGET_SYMBOLS
+            elif family_id == FLIGHT_TO_SAFETY_REPLICATION_FAMILY:
+                target_symbols = FLIGHT_TO_SAFETY_REPLICATION_TARGET_SYMBOLS
+            else:
+                target_symbols = (
+                    FLIGHT_TO_SAFETY_REPLICATION_V2_TARGET_SYMBOLS
+                )
             if frozen_symbols != [
                 *target_symbols,
                 FLIGHT_TO_SAFETY_FEATURE_SYMBOL,
@@ -5485,6 +5504,7 @@ def evaluate_production_signal(
         SECTOR_ETF_GAP_DRIFT_FAMILY,
         FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
+        FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
         BREADTH_CAPITULATION_REBOUND_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
     }:
