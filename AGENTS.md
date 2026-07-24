@@ -636,6 +636,10 @@ Preflight `d5861acf...24da22d` independently rebuilt the committed contract,
 capacity, implementation hashes, exact contaminated-training label, untouched
 confirmation boundary, and zero-new-outcome state. It earned
 `CAPACITY_READY`; commit it before freezing the complete development search.
+Search `be36c26a...06de6fb` now binds every unchanged trial, neighbor graph,
+rolling-origin fold, account simulator, 5/10/20-bps costs, deterministic
+selection gate, exact four-symbol universe, and the miss-entire-entry-date
+rule. Commit it before freezing provider collection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
