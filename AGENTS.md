@@ -666,6 +666,10 @@ count, all completeness sets, the exact four fully incomplete dates, provider
 telemetry, exposed scope, and the absence of a completed dataset or strategy
 metrics. Commit it before the implementation-only search refresh and
 checkpoint-reuse recovery freeze.
+Refreshed preflight `18e32c3e...f41bbe8` revalidated the unchanged committed
+family contract and capacity against only the corrected implementation hashes.
+It accessed no additional outcomes and earned `CAPACITY_READY`. Commit it
+before freezing the implementation-refreshed search.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
