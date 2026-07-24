@@ -16,6 +16,7 @@ import io
 import json
 import os
 from calendar import monthrange
+from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
 from pathlib import Path
@@ -57,6 +58,9 @@ EVENT_END = "2025-12-31"
 PRIOR_DISCARDED_PROVIDER_REQUESTS = 24
 SUPERSEDED_EVENT_CONTRACT_SHA256 = (
     "2c11eaea9ca9ae08f0f09b5029efd116d6e69f7293e2c6bde7c96bd5dc632a08"
+)
+RETAINED_PROVIDER_CONTRACT_SHA256 = (
+    "a1cbdb6050afcf1af7c0639d0374c49ed77a172a14ad510c133919adbf78a945"
 )
 
 
@@ -393,6 +397,350 @@ def _normalize_calendar_row(raw: Mapping[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def _normalized_events(
+    lines: Sequence[str],
+) -> tuple[list[dict[str, Any]], int, int]:
+    """Normalize calendar rows and exclude every ambiguous event identity."""
+
+    normalized: list[dict[str, Any]] = []
+    provider_rows = 0
+    response_count = 0
+    for line in lines:
+        if not line.strip() or line.strip() == "__END__":
+            continue
+        try:
+            item = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise EarningsGapContinuationError(
+                "event response line is not JSON"
+            ) from exc
+        if not isinstance(item, Mapping):
+            raise EarningsGapContinuationError("event response line is malformed")
+        raw_results = _find_results(item.get("response"))
+        if raw_results is None:
+            raise EarningsGapContinuationError(
+                f"{item.get('start_date')}: earnings calendar response is unusable"
+            )
+        response_count += 1
+        provider_rows += len(raw_results)
+        for raw in raw_results:
+            if isinstance(raw, Mapping):
+                row = _normalize_calendar_row(raw)
+                if row is not None:
+                    normalized.append(row)
+    grouped: dict[
+        tuple[str, str, str], list[dict[str, Any]]
+    ] = defaultdict(list)
+    for row in normalized:
+        grouped[
+            (row["symbol"], row["report_date"], row["timing"])
+        ].append(row)
+    ambiguous_event_identities = sum(
+        1 for values in grouped.values() if len(values) != 1
+    )
+    rows = sorted(
+        (
+            values[0]
+            for values in grouped.values()
+            if len(values) == 1
+        ),
+        key=lambda row: (row["report_date"], row["symbol"], row["timing"]),
+    )
+    return rows, provider_rows, ambiguous_event_identities
+
+
+def _raw_spool_lines(path: Path) -> list[str]:
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        raise EarningsGapContinuationError(
+            f"cannot read raw event spool: {exc}"
+        ) from exc
+    payload_lines = [
+        line
+        for line in lines
+        if line.strip() and line.strip() != "__END__"
+    ]
+    if len(payload_lines) != 12 or lines[-1].strip() != "__END__":
+        raise EarningsGapContinuationError(
+            "raw event spool does not contain twelve terminated responses"
+        )
+    starts: list[str] = []
+    for line in payload_lines:
+        try:
+            value = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise EarningsGapContinuationError(
+                "raw event spool is not JSONL"
+            ) from exc
+        if not isinstance(value, Mapping):
+            raise EarningsGapContinuationError(
+                "raw event spool row is malformed"
+            )
+        starts.append(str(value.get("start_date", "")))
+    expected = [item["start_date"] for item in _event_windows()]
+    if starts != expected:
+        raise EarningsGapContinuationError(
+            "raw event spool windows drifted"
+        )
+    return lines
+
+
+def freeze_normalization_contract(
+    provider_contract_path: Path,
+    provider_inspection_path: Path,
+    *,
+    raw_spool_path: Path,
+    created_at: str,
+    root: Path = DEFAULT_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    """Freeze the zero-request duplicate policy against retained raw responses."""
+
+    _timestamp(created_at, "created_at")
+    for path in (provider_contract_path, provider_inspection_path):
+        strategy_discovery.require_committed(path)
+    provider_contract = _read(provider_contract_path)
+    provider_inspection = _read(provider_inspection_path)
+    if not (
+        provider_contract.get("contract_sha256")
+        == RETAINED_PROVIDER_CONTRACT_SHA256
+        and provider_contract.get("prior_discarded_provider_requests") == 24
+        and provider_inspection.get("contract_sha256")
+        == provider_contract.get("contract_sha256")
+        and provider_inspection.get("collection_authorized") is True
+        and provider_inspection.get("valid") is True
+    ):
+        raise EarningsGapContinuationError(
+            "retained provider contract chain is invalid"
+        )
+    _raw_spool_lines(raw_spool_path)
+    value: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_kind": "earnings-gap-event-normalization-contract",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "created_at": created_at,
+        "provider_contract_path": _repo_path(provider_contract_path),
+        "provider_contract_sha256": provider_contract["contract_sha256"],
+        "provider_inspection_path": _repo_path(provider_inspection_path),
+        "provider_inspection_sha256": provider_inspection[
+            "inspection_sha256"
+        ],
+        "raw_spool": (
+            "LOCAL_HISTORICAL_DATA_ROOT/_spool/"
+            f"{raw_spool_path.name}"
+        ),
+        "raw_spool_file_sha256": sha256_file(raw_spool_path),
+        "raw_response_count": 12,
+        "prior_discarded_provider_requests": 24,
+        "effective_provider_requests": 12,
+        "total_provider_requests": 36,
+        "new_provider_requests_authorized": 0,
+        "normalization_rule": (
+            "Normalize the declared symbol, report date, am/pm timing, "
+            "verification, actual EPS, and estimated EPS fields. Group by exact "
+            "symbol/report-date/timing and exclude every identity represented by "
+            "more than one provider row; never choose among duplicate EPS values."
+        ),
+        "normalization_selected_without_forward_outcomes": True,
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "broker_actions_permitted": False,
+        "implementation_sha256": sha256_file(Path(__file__).resolve()),
+    }
+    value["contract_sha256"] = _self_hash(value, "contract_sha256")
+    path = (
+        root
+        / "event-normalization-contract"
+        / f"earnings-gap-event-normalization-contract-"
+        f"{value['contract_sha256']}.json"
+    )
+    _write_json(path, value)
+    return path, value
+
+
+def inspect_normalization_contract(
+    contract_path: Path,
+    *,
+    raw_spool_path: Path,
+    inspected_at: str,
+    root: Path = DEFAULT_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    _timestamp(inspected_at, "inspected_at")
+    strategy_discovery.require_committed(contract_path)
+    recorded = _read(contract_path)
+    if not (
+        recorded.get("artifact_kind")
+        == "earnings-gap-event-normalization-contract"
+        and recorded.get("contract_sha256")
+        == _self_hash(recorded, "contract_sha256")
+        and recorded.get("implementation_sha256")
+        == sha256_file(Path(__file__).resolve())
+        and recorded.get("raw_spool_file_sha256")
+        == sha256_file(raw_spool_path)
+        and recorded.get("new_provider_requests_authorized") == 0
+    ):
+        raise EarningsGapContinuationError(
+            "event normalization contract is invalid"
+        )
+    lines = _raw_spool_lines(raw_spool_path)
+    rows, provider_rows, ambiguous = _normalized_events(lines)
+    value: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_kind": "earnings-gap-event-normalization-inspection",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "inspected_at": inspected_at,
+        "contract_path": _repo_path(contract_path),
+        "contract_file_sha256": sha256_file(contract_path),
+        "contract_sha256": recorded["contract_sha256"],
+        "raw_spool_file_sha256": recorded["raw_spool_file_sha256"],
+        "raw_response_count": 12,
+        "provider_rows": provider_rows,
+        "normalized_unambiguous_events": len(rows),
+        "excluded_ambiguous_event_identities": ambiguous,
+        "new_provider_requests": 0,
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "broker_actions": 0,
+        "ingestion_authorized": True,
+        "valid": True,
+    }
+    value["inspection_sha256"] = _self_hash(value, "inspection_sha256")
+    path = (
+        root
+        / "event-normalization-inspection"
+        / f"earnings-gap-event-normalization-inspection-"
+        f"{value['inspection_sha256']}.json"
+    )
+    _write_json(path, value)
+    return path, value
+
+
+def ingest_normalized_events(
+    contract_path: Path,
+    inspection_path: Path,
+    *,
+    raw_spool_path: Path,
+    collected_at: str,
+    root: Path = DEFAULT_ROOT,
+    store: HistoricalDayStore | None = None,
+) -> tuple[Path, dict[str, Any]]:
+    """Persist the inspected, unambiguous event metadata without new requests."""
+
+    _timestamp(collected_at, "collected_at")
+    for path in (contract_path, inspection_path):
+        strategy_discovery.require_committed(path)
+    contract = _read(contract_path)
+    inspection = _read(inspection_path)
+    if not (
+        contract.get("contract_sha256")
+        == _self_hash(contract, "contract_sha256")
+        and contract.get("implementation_sha256")
+        == sha256_file(Path(__file__).resolve())
+        and contract.get("raw_spool_file_sha256")
+        == sha256_file(raw_spool_path)
+        and inspection.get("contract_sha256")
+        == contract.get("contract_sha256")
+        and inspection.get("raw_spool_file_sha256")
+        == contract.get("raw_spool_file_sha256")
+        and inspection.get("ingestion_authorized") is True
+        and inspection.get("valid") is True
+    ):
+        raise EarningsGapContinuationError(
+            "normalization inspection does not authorize ingestion"
+        )
+    rows, provider_rows, ambiguous = _normalized_events(
+        _raw_spool_lines(raw_spool_path)
+    )
+    source = store or HistoricalDayStore.from_env()
+    private = (
+        source.root
+        / "_derived/earnings_gap_continuation"
+        / contract["contract_sha256"]
+        / "event-calendar.json.gz"
+    )
+    payload = {
+        "schema_version": SCHEMA_VERSION,
+        "normalization_contract_sha256": contract["contract_sha256"],
+        "normalization_inspection_sha256": inspection[
+            "inspection_sha256"
+        ],
+        "collected_at": collected_at,
+        "provider": "Robinhood read-only market-wide earnings calendar",
+        "provider_requests": contract["total_provider_requests"],
+        "effective_provider_requests": contract[
+            "effective_provider_requests"
+        ],
+        "discarded_provider_requests": contract[
+            "prior_discarded_provider_requests"
+        ],
+        "provider_rows": provider_rows,
+        "excluded_ambiguous_event_identities": ambiguous,
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "broker_actions": 0,
+        "events": rows,
+    }
+    if private.exists() and _load_gzip(private) != payload:
+        raise EarningsGapContinuationError(
+            "private normalized event payload drifted"
+        )
+    if not private.exists():
+        _write_gzip(private, payload)
+    positive = [
+        row
+        for row in rows
+        if row["verified"]
+        and row["actual_eps"] is not None
+        and row["estimated_eps"] is not None
+        and row["actual_eps"] > row["estimated_eps"]
+    ]
+    value: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_kind": "earnings-gap-event-collection",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "collected_at": collected_at,
+        "normalization_contract_path": _repo_path(contract_path),
+        "normalization_contract_sha256": contract["contract_sha256"],
+        "normalization_inspection_path": _repo_path(inspection_path),
+        "normalization_inspection_sha256": inspection[
+            "inspection_sha256"
+        ],
+        "provider_requests": contract["total_provider_requests"],
+        "effective_provider_requests": contract[
+            "effective_provider_requests"
+        ],
+        "discarded_provider_requests": contract[
+            "prior_discarded_provider_requests"
+        ],
+        "provider_rows": provider_rows,
+        "normalized_events": len(rows),
+        "excluded_ambiguous_event_identities": ambiguous,
+        "verified_positive_surprises": len(positive),
+        "private_payload_file_sha256": sha256_file(private),
+        "private_payload_content_sha256": canonical_sha256(payload),
+        "private_payload": (
+            "LOCAL_HISTORICAL_DATA_ROOT/_derived/earnings_gap_continuation/"
+            f"{contract['contract_sha256']}/event-calendar.json.gz"
+        ),
+        "new_provider_requests_during_ingestion": 0,
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "broker_actions": 0,
+        "state": "EVENT_METADATA_COLLECTED_UNINSPECTED",
+    }
+    value["collection_sha256"] = _self_hash(value, "collection_sha256")
+    path = (
+        root
+        / "event-collection"
+        / f"earnings-gap-event-collection-{value['collection_sha256']}.json"
+    )
+    _write_json(path, value)
+    return path, value
+
+
 def ingest_event_calendars(
     contract_path: Path,
     inspection_path: Path,
@@ -549,6 +897,20 @@ def _parser() -> argparse.ArgumentParser:
     ingest.add_argument("contract", type=Path)
     ingest.add_argument("inspection", type=Path)
     ingest.add_argument("--collected-at", required=True)
+    normalize = commands.add_parser("freeze-event-normalization")
+    normalize.add_argument("provider_contract", type=Path)
+    normalize.add_argument("provider_inspection", type=Path)
+    normalize.add_argument("--raw-spool", type=Path, required=True)
+    normalize.add_argument("--created-at", required=True)
+    inspect_normalize = commands.add_parser("inspect-event-normalization")
+    inspect_normalize.add_argument("contract", type=Path)
+    inspect_normalize.add_argument("--raw-spool", type=Path, required=True)
+    inspect_normalize.add_argument("--inspected-at", required=True)
+    ingest_normalize = commands.add_parser("ingest-normalized-events")
+    ingest_normalize.add_argument("contract", type=Path)
+    ingest_normalize.add_argument("inspection", type=Path)
+    ingest_normalize.add_argument("--raw-spool", type=Path, required=True)
+    ingest_normalize.add_argument("--collected-at", required=True)
     return parser
 
 
@@ -561,7 +923,7 @@ def main() -> int:
             path, value = inspect_event_collection(
                 args.contract, inspected_at=args.inspected_at
             )
-        else:
+        elif args.command == "ingest-event-calendars":
             lines: list[str] = []
             for line in os.sys.stdin:
                 lines.append(line)
@@ -571,6 +933,26 @@ def main() -> int:
                 args.contract,
                 args.inspection,
                 lines,
+                collected_at=args.collected_at,
+            )
+        elif args.command == "freeze-event-normalization":
+            path, value = freeze_normalization_contract(
+                args.provider_contract,
+                args.provider_inspection,
+                raw_spool_path=args.raw_spool,
+                created_at=args.created_at,
+            )
+        elif args.command == "inspect-event-normalization":
+            path, value = inspect_normalization_contract(
+                args.contract,
+                raw_spool_path=args.raw_spool,
+                inspected_at=args.inspected_at,
+            )
+        else:
+            path, value = ingest_normalized_events(
+                args.contract,
+                args.inspection,
+                raw_spool_path=args.raw_spool,
                 collected_at=args.collected_at,
             )
         print(

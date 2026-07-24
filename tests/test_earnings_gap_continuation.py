@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import unittest
 
 import earnings_gap_continuation as subject
@@ -54,3 +55,47 @@ class EarningsGapContinuationTests(unittest.TestCase):
                 }
             )
         )
+
+    def test_normalized_events_excludes_ambiguous_identity(self):
+        response = {
+            "start_date": "2025-01-01",
+            "response": {
+                "data": {
+                    "results": [
+                        {
+                            "symbol": "AAPL",
+                            "report": {
+                                "date": "2025-01-30",
+                                "timing": "pm",
+                                "verified": True,
+                            },
+                            "eps": {"actual": "2.40", "estimate": "2.35"},
+                        },
+                        {
+                            "symbol": "AAPL",
+                            "report": {
+                                "date": "2025-01-30",
+                                "timing": "pm",
+                                "verified": True,
+                            },
+                            "eps": {"actual": "2.41", "estimate": "2.35"},
+                        },
+                        {
+                            "symbol": "MSFT",
+                            "report": {
+                                "date": "2025-01-29",
+                                "timing": "pm",
+                                "verified": True,
+                            },
+                            "eps": {"actual": "3.23", "estimate": "3.11"},
+                        },
+                    ]
+                }
+            },
+        }
+        rows, provider_rows, ambiguous = subject._normalized_events(
+            [json.dumps(response)]
+        )
+        self.assertEqual(provider_rows, 3)
+        self.assertEqual(ambiguous, 1)
+        self.assertEqual([row["symbol"] for row in rows], ["MSFT"])
