@@ -297,6 +297,70 @@ def _rsi_wilder(
     return 100 - 100 / (1 + relative_strength)
 
 
+def _etf_pullback_feature_cache(
+    daily: Mapping[str, Sequence[Mapping[str, Any]]],
+) -> dict[str, dict[str, dict[str, float | None]]]:
+    """Compute completed-bar pullback features once for the full trial grid."""
+
+    cached: dict[str, dict[str, dict[str, float | None]]] = {}
+    for symbol, bars in daily.items():
+        true_ranges = _true_ranges(bars)
+        closes = [float(item["close"]) for item in bars]
+        changes = [right - left for left, right in zip(closes, closes[1:])]
+        gains = [max(change, 0.0) for change in changes]
+        losses = [max(-change, 0.0) for change in changes]
+        average_gain: float | None = None
+        average_loss: float | None = None
+        symbol_cache: dict[str, dict[str, float | None]] = {}
+        for index, bar in enumerate(bars):
+            rsi2: float | None = None
+            if index == 2:
+                average_gain = statistics.fmean(gains[:2])
+                average_loss = statistics.fmean(losses[:2])
+            elif index > 2:
+                if average_gain is None or average_loss is None:
+                    raise DenseStrategyRuntimeError(
+                        "pullback RSI cache initialization failed"
+                    )
+                average_gain = (average_gain + gains[index - 1]) / 2
+                average_loss = (average_loss + losses[index - 1]) / 2
+            if index >= 2:
+                if average_gain is None or average_loss is None:
+                    raise DenseStrategyRuntimeError(
+                        "pullback RSI cache is incomplete"
+                    )
+                if average_loss == 0:
+                    rsi2 = 100.0 if average_gain > 0 else 50.0
+                else:
+                    relative_strength = average_gain / average_loss
+                    rsi2 = 100 - 100 / (1 + relative_strength)
+            symbol_cache[str(bar["date"])] = {
+                "rsi2": rsi2,
+                "atr14": (
+                    statistics.fmean(true_ranges[index - 13 : index + 1])
+                    if index >= 14
+                    else None
+                ),
+                "decline3": (
+                    closes[index] / closes[index - 3] - 1
+                    if index >= 3
+                    else None
+                ),
+                "sma100": (
+                    statistics.fmean(closes[index - 99 : index + 1])
+                    if index >= 99
+                    else None
+                ),
+                "sma200": (
+                    statistics.fmean(closes[index - 199 : index + 1])
+                    if index >= 199
+                    else None
+                ),
+            }
+        cached[symbol] = symbol_cache
+    return cached
+
+
 def _z_score(current: float, history: Sequence[float]) -> float | None:
     if len(history) < STANDARDIZATION_LOOKBACK:
         return None
@@ -659,6 +723,9 @@ def _etf_pullback_candidates(
         symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
         for symbol, bars in daily.items()
     }
+    feature_cache = dataset.get("_etf_pullback_feature_cache")
+    if not isinstance(feature_cache, Mapping):
+        feature_cache = _etf_pullback_feature_cache(daily)
     candidates: list[dict[str, Any]] = []
     for calendar_index, decision_date in enumerate(calendar[:-1]):
         scored: list[tuple[float, float, str, float]] = []
@@ -666,18 +733,16 @@ def _etf_pullback_candidates(
             symbol_index = indices[symbol].get(decision_date)
             if symbol_index is None or symbol_index < max(trend_period - 1, 3):
                 continue
-            trend = _sma(bars, symbol_index, trend_period)
-            rsi2 = _rsi_wilder(bars, symbol_index, 2)
-            atr14 = _atr(bars, symbol_index)
-            decline = (
-                float(bars[symbol_index]["close"])
-                / float(bars[symbol_index - 3]["close"])
-                - 1
-            )
+            features = feature_cache[symbol][decision_date]
+            trend = features[f"sma{trend_period}"]
+            rsi2 = features["rsi2"]
+            atr14 = features["atr14"]
+            decline = features["decline3"]
             if (
                 trend is None
                 or rsi2 is None
                 or atr14 is None
+                or decline is None
                 or float(bars[symbol_index]["close"]) <= trend
                 or rsi2 > rsi_max
                 or decline > -decline_floor
@@ -2082,6 +2147,10 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                     "ETF pullback data omits a frozen symbol-session"
                 )
         prepared["_prepared_daily_bars"] = daily
+        if family_id == ETF_PULLBACK_FAMILY:
+            prepared["_etf_pullback_feature_cache"] = (
+                _etf_pullback_feature_cache(daily)
+            )
     return prepared
 
 

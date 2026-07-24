@@ -339,6 +339,20 @@ positive growth in every rolling fold or passed DSR, Holm, or PBO. The
 highest-growth path produced 0.02000 log growth from 18 OOF fills, PF 1.381,
 6.547R drawdown, a negative bootstrap lower bound, and DSR 0.3817. Its
 confirmation reserve remains untouched and cannot be opened.
+The measured daily-grid bottleneck is now corrected without altering any
+evaluated rule: completed-bar RSI(2), ATR(14), three-session decline, and
+SMA(100/200) features are computed once per dataset. The exact 32-trial grid
+builds candidates locally in 0.17 seconds on the inspected macro dataset versus
+86.79 seconds for the original full evaluation, and equivalence tests rebuild
+every cached feature from the original functions.
+
+The next immediate historical lane is an outcome-clean successor inside the
+existing equity-gap-continuation mechanism: completed sector-ETF gap drift with
+next-session-open execution, at most five sessions of exposure, and a fixed
+32-trial grid. It uses only the nine sector SPDRs on a disjoint 2016-2021
+partition and consumes no new mechanism-family slot. Freeze its exact contract,
+partitions, grid, falsifiers, and collection graph before accessing any price
+outcome.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
@@ -478,12 +492,10 @@ rolling-fold, DSR, Holm, or neighbor-stability gates. Inspection
 repair it or open its 2021-2022 confirmation reserve. Its incomplete pre-2016
 Alpaca plan and Massive HTTP-403 plan remain adverse data-readiness history.
 
-The current continuous lane is the pre-2016 broad-ETF pullback replication
-defined above. Its per-symbol Massive daily endpoint is distinct from the prior
-grouped-daily HTTP-403 path, but it may be contacted only after the new calendar,
-contract, capacity, search, and collection plan have each been independently
-frozen, inspected where applicable, and committed. No predecessor outcome may
-count toward promotion, and no confirmation target or broker action is permitted
+The current continuous lane is the sector-ETF gap-drift continuation successor
+defined above. The pre-2016 broad-ETF provider-bound replication and macro-ETF
+replication are terminal adverse history. No predecessor outcome may count
+toward promotion, and no confirmation target or broker action is permitted
 during development.
 
 This file governs Codex work in this repository for Robinhood market research,

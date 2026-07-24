@@ -68,6 +68,35 @@ def test_pullback_uses_only_completed_decision_bar_and_enters_next_open():
     assert candidate["exit_date"] <= evaluation_dates[3]
 
 
+def test_pullback_feature_cache_matches_reference_calculations():
+    days = _days(230)
+    closes = [
+        100 + 0.05 * index + math.sin(index / 3)
+        for index in range(len(days))
+    ]
+    bars = [_daily_bar(day, close) for day, close in zip(days, closes, strict=True)]
+
+    cache = runtime._etf_pullback_feature_cache({"SPY": bars})["SPY"]
+
+    for index, day in enumerate(days):
+        expected = {
+            "rsi2": runtime._rsi_wilder(bars, index, 2),
+            "atr14": runtime._atr(bars, index),
+            "decline3": (
+                bars[index]["close"] / bars[index - 3]["close"] - 1
+                if index >= 3
+                else None
+            ),
+            "sma100": runtime._sma(bars, index, 100),
+            "sma200": runtime._sma(bars, index, 200),
+        }
+        for field, expected_value in expected.items():
+            if expected_value is None:
+                assert cache[day][field] is None
+            else:
+                assert cache[day][field] == pytest.approx(expected_value)
+
+
 def test_cost_scenarios_share_the_stressed_contention_selection():
     calendar = _days(2)
     candidates = [
