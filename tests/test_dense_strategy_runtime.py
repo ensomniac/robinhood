@@ -110,6 +110,56 @@ def test_pullback_uses_only_completed_decision_bar_and_enters_next_open():
     assert candidate["exit_date"] <= evaluation_dates[3]
 
 
+def test_pullback_replication_preserves_exact_family_and_universe_identity():
+    days = _days(230)
+    closes = [100 + 0.2 * index for index in range(230)]
+    closes[217:221] = [143.4, 142.0, 140.0, 138.0]
+    daily_bars = {
+        symbol: [
+            _daily_bar(day, close)
+            for day, close in zip(days, closes, strict=True)
+        ]
+        for symbol in runtime.ETF_PULLBACK_REPLICATION_SYMBOLS
+    }
+    evaluation_dates = days[220:229]
+    parameters = {
+        "trend_sma": 100,
+        "rsi2_maximum": 10,
+        "three_session_decline_fraction": 0.02,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 3,
+    }
+    dataset = {
+        "family_id": runtime.ETF_PULLBACK_REPLICATION_FAMILY,
+        "evaluation_dates": evaluation_dates,
+        "symbols": list(runtime.ETF_PULLBACK_REPLICATION_SYMBOLS),
+        "daily_bars": daily_bars,
+    }
+
+    candidates = runtime.build_candidates(
+        dataset,
+        runtime.ETF_PULLBACK_REPLICATION_FAMILY,
+        parameters,
+    )
+
+    assert candidates
+    assert all(
+        runtime.ETF_PULLBACK_REPLICATION_FAMILY
+        in candidate["signal_id"]
+        for candidate in candidates
+    )
+    dataset["symbols"] = list(runtime.ETF_PULLBACK_REPLICATION_SYMBOLS[:-1])
+    with pytest.raises(
+        runtime.DenseStrategyRuntimeError,
+        match="replication universe drifted",
+    ):
+        runtime.build_candidates(
+            dataset,
+            runtime.ETF_PULLBACK_REPLICATION_FAMILY,
+            parameters,
+        )
+
+
 def test_pullback_feature_cache_matches_reference_calculations():
     days = _days(230)
     closes = [
@@ -917,6 +967,66 @@ def test_production_pullback_rebuilds_the_historical_rank_from_completed_bars():
             parameters=parameters,
             frozen_universe={"symbols": ["SPY"]},
         )
+
+
+def test_production_pullback_replication_matches_historical_family():
+    days = _days(230)
+    closes = [100 + 0.2 * index for index in range(230)]
+    closes[217:221] = [143.4, 142.0, 140.0, 138.0]
+    daily_bars = {
+        symbol: [
+            _daily_bar(day, close)
+            for day, close in zip(days, closes, strict=True)
+        ]
+        for symbol in runtime.ETF_PULLBACK_REPLICATION_SYMBOLS
+    }
+    parameters = {
+        "trend_sma": 100,
+        "rsi2_maximum": 10,
+        "three_session_decline_fraction": 0.02,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 3,
+    }
+    symbols = list(runtime.ETF_PULLBACK_REPLICATION_SYMBOLS)
+    decision_date = days[220]
+    historical = runtime.build_candidates(
+        {
+            "family_id": runtime.ETF_PULLBACK_REPLICATION_FAMILY,
+            "evaluation_dates": days[220:229],
+            "symbols": symbols,
+            "daily_bars": daily_bars,
+        },
+        runtime.ETF_PULLBACK_REPLICATION_FAMILY,
+        parameters,
+    )[0]
+    production = runtime.evaluate_production_signal(
+        {
+            "family_id": runtime.ETF_PULLBACK_REPLICATION_FAMILY,
+            "decision_date": decision_date,
+            "next_session_date": days[221],
+            "calendar_dates": days[:221],
+            "daily_history_complete": True,
+            "symbols": symbols,
+            "daily_bars": {
+                symbol: [
+                    bar
+                    for bar in bars
+                    if bar["date"] <= decision_date
+                ]
+                for symbol, bars in daily_bars.items()
+            },
+        },
+        family_id=runtime.ETF_PULLBACK_REPLICATION_FAMILY,
+        parameters=parameters,
+        frozen_universe={"symbols": symbols},
+    )
+
+    assert production["symbol"] == historical["symbol"] == "VAW"
+    assert production["rank"] == historical["rank"] == 1
+    assert production["atr"] == pytest.approx(
+        historical["entry_price"] - historical["stop_price"]
+    )
+    assert production["holding_trading_days"] == 3
 
 
 def test_production_sector_gap_drift_rebuilds_historical_rank():

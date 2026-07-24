@@ -100,6 +100,25 @@ INTRADAY_ETF_FAMILIES = {
     INDEX_ETF_OPENING_MOMENTUM_FAMILY,
 }
 ETF_PULLBACK_FAMILY = "liquid-etf-trend-pullback-cost-floor"
+ETF_PULLBACK_REPLICATION_FAMILY = (
+    "liquid-etf-trend-pullback-cost-floor-replication-v5"
+)
+ETF_PULLBACK_REPLICATION_SYMBOLS = (
+    "VAW",
+    "VCR",
+    "VDC",
+    "VDE",
+    "VFH",
+    "VGT",
+    "VHT",
+    "VIS",
+    "VOX",
+    "VPU",
+)
+ETF_PULLBACK_FAMILIES = {
+    ETF_PULLBACK_FAMILY,
+    ETF_PULLBACK_REPLICATION_FAMILY,
+}
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
 LIQUID_EQUITY_MOMENTUM_FAMILY = "liquid-equity-cross-sectional-momentum"
 ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
@@ -151,6 +170,7 @@ SUPPORTED_FAMILIES = {
     ETF_RESIDUAL_REPLICATION_V3_FAMILY,
     *INTRADAY_ETF_FAMILIES,
     ETF_PULLBACK_FAMILY,
+    ETF_PULLBACK_REPLICATION_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
     LIQUID_EQUITY_MOMENTUM_FAMILY,
     ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
@@ -937,10 +957,20 @@ def _fixed_etf_residual_candidates(
 
 
 def _etf_pullback_candidates(
-    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+    *,
+    family_id: str = ETF_PULLBACK_FAMILY,
 ) -> list[dict[str, Any]]:
     calendar = _calendar(dataset)
     daily = _daily_series(dataset)
+    if family_id == ETF_PULLBACK_REPLICATION_FAMILY and (
+        dataset.get("symbols") != list(ETF_PULLBACK_REPLICATION_SYMBOLS)
+        or set(daily) != set(ETF_PULLBACK_REPLICATION_SYMBOLS)
+    ):
+        raise DenseStrategyRuntimeError(
+            "ETF pullback replication universe drifted from the frozen symbols"
+        )
     trend_period = int(parameters["trend_sma"])
     rsi_max = float(parameters["rsi2_maximum"])
     decline_floor = float(parameters["three_session_decline_fraction"])
@@ -986,7 +1016,7 @@ def _etf_pullback_candidates(
             if entry_index is None:
                 candidates.append(
                     {
-                        "signal_id": f"{entry_date}-{ETF_PULLBACK_FAMILY}-{symbol}",
+                        "signal_id": f"{entry_date}-{family_id}-{symbol}",
                         "signal_date": entry_date,
                         "decision_date": decision_date,
                         "symbol": symbol,
@@ -1008,7 +1038,7 @@ def _etf_pullback_candidates(
             if exit_dates != expected_dates:
                 candidates.append(
                     {
-                        "signal_id": f"{entry_date}-{ETF_PULLBACK_FAMILY}-{symbol}",
+                        "signal_id": f"{entry_date}-{family_id}-{symbol}",
                         "signal_date": entry_date,
                         "decision_date": decision_date,
                         "symbol": symbol,
@@ -1020,7 +1050,7 @@ def _etf_pullback_candidates(
                 continue
             candidates.append(
                 _daily_candidate(
-                    family_id=ETF_PULLBACK_FAMILY,
+                    family_id=family_id,
                     symbol=symbol,
                     decision_date=decision_date,
                     entry_date=entry_date,
@@ -2830,7 +2860,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             prepared["_liquid_equity_momentum_universe_cache"] = {}
             prepared["_liquid_equity_momentum_feature_cache"] = {}
         if family_id in {
-            ETF_PULLBACK_FAMILY,
+            *ETF_PULLBACK_FAMILIES,
             ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
             ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
             ETF_HIGH_CONTINUATION_FAMILY,
@@ -2860,7 +2890,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                 )
         prepared["_prepared_daily_bars"] = daily
         if family_id in {
-            ETF_PULLBACK_FAMILY,
+            *ETF_PULLBACK_FAMILIES,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
@@ -3959,8 +3989,12 @@ def build_candidates(
         return _intraday_candidates(
             dataset, parameters, family_id=family_id
         )
-    if family_id == ETF_PULLBACK_FAMILY:
-        return _etf_pullback_candidates(dataset, parameters)
+    if family_id in ETF_PULLBACK_FAMILIES:
+        return _etf_pullback_candidates(
+            dataset,
+            parameters,
+            family_id=family_id,
+        )
     if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
         return _sector_etf_gap_drift_candidates(dataset, parameters)
     if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY:
@@ -4269,7 +4303,7 @@ def _production_daily_signal(
         ETF_RESIDUAL_REPLICATION_FAMILY,
         ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         ETF_RESIDUAL_REPLICATION_V3_FAMILY,
-        ETF_PULLBACK_FAMILY,
+        *ETF_PULLBACK_FAMILIES,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,
@@ -4298,6 +4332,13 @@ def _production_daily_signal(
         ):
             raise DenseStrategyRuntimeError(
                 "production ETF history does not cover the complete calendar"
+            )
+        if (
+            family_id == ETF_PULLBACK_REPLICATION_FAMILY
+            and frozen_symbols != list(ETF_PULLBACK_REPLICATION_SYMBOLS)
+        ):
+            raise DenseStrategyRuntimeError(
+                "production ETF pullback replication universe escaped the frozen rules"
             )
         if family_id in {
             ETF_RESIDUAL_REPLICATION_FAMILY,
@@ -5752,7 +5793,7 @@ def evaluate_production_signal(
         ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         ETF_RESIDUAL_REPLICATION_V3_FAMILY,
         LIQUID_EQUITY_MOMENTUM_FAMILY,
-        ETF_PULLBACK_FAMILY,
+        *ETF_PULLBACK_FAMILIES,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,

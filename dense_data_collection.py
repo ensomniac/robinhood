@@ -1348,7 +1348,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         return dataset
     daily = _daily_rows(checkpoint_root, plan)
     if family_id in {
-        runtime.ETF_PULLBACK_FAMILY,
+        *runtime.ETF_PULLBACK_FAMILIES,
         runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
         runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         runtime.FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
@@ -1424,7 +1424,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         },
     }
     if family_id in {
-        runtime.ETF_PULLBACK_FAMILY,
+        *runtime.ETF_PULLBACK_FAMILIES,
         runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
         runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         runtime.FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
