@@ -1,0 +1,54 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "5fba37ddf18002f1f90ca880662696c9aa3bdd5109456201d38fe0788d91f6bd",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.025680041988380253,
+  "family_contract_path": "strategy_tournament/v2/continuous/liquid-etf-market-residual-reversal-replication-v1/family-contract/contract-8bd5d5df84662d38e8c7f270ceebc39bd1ecfe6709275fd6a971f5b15c5439cc.json",
+  "family_contract_sha256": "14373013f216f247c4d6de809f88da20a4d4e32eca052e673ebf2284430ac833",
+  "family_id": "liquid-etf-market-residual-reversal-replication-v1",
+  "implementation_sha256": "fcc27d1ef143e30cceb52e93015685a065c07f614c44e678312c3035b0492eb9",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "dates_bound": true,
+      "development_lane": true,
+      "family_bound": true,
+      "point_in_time": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 741
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "8bd5d5df84662d38e8c7f270ceebc39bd1ecfe6709275fd6a971f5b15c5439cc",
+  "verified_capacity": 741
+}
