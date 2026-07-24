@@ -409,8 +409,13 @@ python3 dense_data_collection_inspection.py \
 Independent inspection rebuilds the runtime dataset from every checkpoint,
 rehashes the ignored gzip payload, revalidates full point-in-time scope, and
 only then freezes the Git-visible development or confirmation dataset manifest.
-Commit that manifest before evaluation. The complete development transition for
-each family is then:
+Commit that manifest before evaluation. Preserved manifests from older exact
+versions remain in place. Development resolves exactly one manifest by the
+current frozen search hash, family, lane, and dates; another version's manifest
+can never satisfy that lookup. If implementation code changes before
+evaluation, rerun outcome-blind preflight and freeze a new same-grid search
+binding rather than bypassing the old implementation hash. The complete
+development transition for each family is then:
 
 ```sh
 python3 strategy_discovery.py preflight path/to/committed-family-contract.json

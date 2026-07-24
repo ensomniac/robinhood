@@ -53,11 +53,13 @@ def _manifest(
     *,
     external_exists: bool = True,
     lane: str = "development",
+    development_search_sha256: str | None = None,
+    manifest_root: Path | None = None,
 ) -> Path:
     store = tmp_path / "historical-store"
     external = store / "_derived/dense/pullback.json.gz"
     if external_exists:
-        external.parent.mkdir(parents=True)
+        external.parent.mkdir(parents=True, exist_ok=True)
         with gzip.open(external, "wt", encoding="utf-8") as destination:
             json.dump(dataset, destination, sort_keys=True, separators=(",", ":"))
         file_hash = sha256_file(external)
@@ -66,7 +68,10 @@ def _manifest(
     path, _ = freeze_dataset_contract(
         {
             "schema_version": 1,
-            "dataset_id": f"dataset-dense-pullback-{lane}",
+            "dataset_id": (
+                f"dataset-dense-pullback-{lane}-"
+                f"{(development_search_sha256 or 'explicit')[:8]}"
+            ),
             "registered_at": "2026-07-22T19:00:00-04:00",
             "requested_dates": dataset["evaluation_dates"],
             "dataset_payload": {
@@ -96,9 +101,18 @@ def _manifest(
                     if lane == "confirmation"
                     else {}
                 ),
+                **(
+                    {
+                        "development_search_sha256": (
+                            development_search_sha256
+                        )
+                    }
+                    if development_search_sha256 is not None
+                    else {}
+                ),
             },
         },
-        tmp_path / "manifests",
+        manifest_root or (tmp_path / "manifests"),
     )
     return path
 
@@ -192,6 +206,42 @@ def test_development_loads_dataset_once_and_runs_all_declared_trials(
     ]
     assert result["provider_telemetry"]["requests"] == 0
     assert result["provider_telemetry"]["dataset_loads"] == 1
+
+
+def test_development_manifest_selection_uses_exact_frozen_search_binding(
+    tmp_path,
+    monkeypatch,
+):
+    dataset = _dataset()
+    manifest_root = (
+        tmp_path
+        / runtime.ETF_PULLBACK_FAMILY
+        / "development-dataset"
+    )
+    stale = _manifest(
+        tmp_path,
+        dataset,
+        development_search_sha256="a" * 64,
+        manifest_root=manifest_root,
+    )
+    current = _manifest(
+        tmp_path,
+        dataset,
+        development_search_sha256="b" * 64,
+        manifest_root=manifest_root,
+    )
+    monkeypatch.setattr(plugin, "CONFIRMATION_MANIFEST_ROOT", tmp_path)
+
+    selected = plugin._development_manifest_path(
+        {
+            "family_id": runtime.ETF_PULLBACK_FAMILY,
+            "development_dates": dataset["evaluation_dates"],
+            "development_search_sha256": "b" * 64,
+        }
+    )
+
+    assert selected == current
+    assert selected != stale
 
 
 def test_development_plugin_emits_only_frozen_rolling_origin_test_sessions(

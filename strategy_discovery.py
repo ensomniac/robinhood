@@ -369,10 +369,11 @@ def _find_single(directory: Path, pattern: str, *, kind: str) -> tuple[Path, dic
 def _find_contract_preflight(
     directory: Path,
     family_contract_path: Path,
+    validated_contract_sha256: str,
 ) -> tuple[Path, dict[str, Any]]:
     expected_path = _relative(family_contract_path)
     expected_file_hash = _file_hash(family_contract_path)
-    matches: list[tuple[Path, dict[str, Any]]] = []
+    base_matches: list[tuple[Path, dict[str, Any]]] = []
     for path in sorted(directory.glob("*.json")):
         artifact = load_artifact(
             path, expected_kind="discovery-preflight-inspection"
@@ -381,7 +382,17 @@ def _find_contract_preflight(
             artifact.get("family_contract_path") == expected_path
             and artifact.get("family_contract_sha256") == expected_file_hash
         ):
-            matches.append((path, artifact))
+            base_matches.append((path, artifact))
+    matches = [
+        item
+        for item in base_matches
+        if item[1].get("validated_contract_sha256")
+        == validated_contract_sha256
+    ]
+    if len(matches) == 1:
+        return matches[0]
+    if not matches and len(base_matches) == 1:
+        return base_matches[0]
     if len(matches) != 1:
         raise StrategyDiscoveryError(
             "expected exactly one discovery-preflight-inspection artifact "
@@ -677,6 +688,7 @@ def freeze_search(
     preflight_path, preflight = _find_contract_preflight(
         root / str(contract["family_id"]) / "preflight",
         family_contract_path,
+        _hash(contract),
     )
     if enforce_commit:
         require_committed(preflight_path)

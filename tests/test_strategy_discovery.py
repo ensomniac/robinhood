@@ -119,6 +119,39 @@ def _write_contract(root: Path, value: dict) -> Path:
     return path
 
 
+def test_search_freeze_selects_preflight_for_current_implementation_binding(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(discovery, "PROJECT_ROOT", tmp_path)
+    contract_path = tmp_path / "family-contract.json"
+    contract_path.write_text("{}\n", encoding="utf-8")
+    directory = tmp_path / "preflight"
+    paths = {}
+    for binding in ("a" * 64, "b" * 64):
+        path, _artifact = discovery._write_artifact(
+            {
+                "schema_version": 1,
+                "artifact_kind": "discovery-preflight-inspection",
+                "family_contract_path": "family-contract.json",
+                "family_contract_sha256": discovery._file_hash(contract_path),
+                "validated_contract_sha256": binding,
+            },
+            directory,
+            "preflight",
+        )
+        paths[binding] = path
+
+    selected_path, selected = discovery._find_contract_preflight(
+        directory,
+        contract_path,
+        "b" * 64,
+    )
+
+    assert selected_path == paths["b" * 64]
+    assert selected["validated_contract_sha256"] == "b" * 64
+
+
 def _freeze_synthetic_winner(work: Path, *, confirmation_count: int = 30):
     artifact_root = work / "artifacts"
     contract_path = _write_contract(

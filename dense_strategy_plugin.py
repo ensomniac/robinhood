@@ -234,24 +234,47 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _development_manifest_path(contract: Mapping[str, Any]) -> Path:
+    explicit = contract.get("dataset_manifest")
+    if explicit is not None:
+        return _manifest_path(explicit)
+    expected_search = contract.get("development_search_sha256")
+    if not isinstance(expected_search, str) or len(expected_search) != 64:
+        raise DenseStrategyPluginError(
+            "development search binding is missing"
+        )
+    directory = (
+        CONFIRMATION_MANIFEST_ROOT
+        / str(contract["family_id"])
+        / "development-dataset"
+    )
+    matches: list[Path] = []
+    for path in sorted(directory.glob("dataset-*.json")):
+        manifest = _load_manifest(path)
+        payload = manifest["dataset_payload"]
+        binding = payload.get("dense_runtime")
+        if (
+            payload.get("lane") == "development"
+            and payload.get("development_search_sha256") == expected_search
+            and isinstance(binding, Mapping)
+            and binding.get("family_id") == contract["family_id"]
+            and manifest.get("requested_dates")
+            == contract["development_dates"]
+        ):
+            matches.append(path)
+    if len(matches) != 1:
+        raise DenseStrategyPluginError(
+            "expected exactly one development dataset manifest bound to "
+            f"search {expected_search}; found {len(matches)}"
+        )
+    return matches[0]
+
+
 def evaluate_development(
     contract: Mapping[str, Any], trials: Sequence[Mapping[str, Any]]
 ) -> dict[str, Any]:
     explicit = contract.get("dataset_manifest")
-    if explicit is not None:
-        manifest_path = _manifest_path(explicit)
-    else:
-        directory = (
-            CONFIRMATION_MANIFEST_ROOT
-            / str(contract["family_id"])
-            / "development-dataset"
-        )
-        paths = sorted(directory.glob("dataset-*.json"))
-        if len(paths) != 1:
-            raise DenseStrategyPluginError(
-                "expected exactly one frozen development dataset manifest"
-            )
-        manifest_path = paths[0]
+    manifest_path = _development_manifest_path(contract)
     dataset, _manifest = _load_dataset(
         manifest_path,
         family_id=str(contract["family_id"]),
