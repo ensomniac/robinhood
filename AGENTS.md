@@ -212,8 +212,12 @@ development scope next. Status `c3ba2460...20f6c` now records all 1,474
 symbol-sessions and 570,317 raw SIP minute rows collected with 93 requests,
 zero retries, zero unresolved inputs, and zero confirmation access. The full
 development scope is conservatively recorded in the global outcome index.
-Independently inspect the stored rows before any strategy evaluation. The
-confirmation partition and broker actions remain forbidden.
+Independent inspection `13f9b9c3...ab078` rebuilt all 570,317 rows and the
+private dataset index: 1,026 symbol-sessions are exact 390-minute inputs and
+448 sparse sessions remain in the denominator as no-signal inputs. It computed
+zero return metrics and opened no confirmation evidence. Freeze the exact
+development-search contract and runtime binding next. The confirmation
+partition and broker actions remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
