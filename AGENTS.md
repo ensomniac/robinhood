@@ -494,11 +494,21 @@ calendar wait. Advance the already frozen batch—liquid-equity market-residual
 reversal, intraday index-ETF opening reversal, and liquid-ETF trend pullback—
 by freezing and inspecting its exact disjoint calendar allocation before any
 provider access. Terminal families release their slot immediately.
-Calendar allocation contract `145e5da1...50580c` freezes the three family
-blocks in priority order, 160 target sessions per family from one latest
-contiguous untouched run, warmup-only cross-family overlap, mutually disjoint
-target blocks, and no post-inspection substitutions. It accesses no prices,
-strategy metrics, or target outcomes. Commit it before independent inspection.
+Calendar allocation contract `145e5da1...50580c` preserved the old rolling
+batch boundary but failed independent reconstruction: the current global
+outcome index has no single 480-session untouched run. It accessed no prices,
+strategy metrics, or target outcomes. More importantly, all three exact rolling
+batch families already have terminal inspected development dispositions above;
+do not rerun them through stale readiness metadata.
+
+The next immediate lane is a predeclared long-history replication inside the
+existing intraday opening-reversal mechanism. Preserve the exact 32-trial
+opening-window, downside-z, VWAP-reclaim, ATR-stop, and R-target grid, but use
+the globally outcome-clean fixed country-ETF universe `EWC`, `EWG`, `EWP`,
+`EWQ`, `EWT`, `EWU`, `EWW`, and `EWY` across a larger 2016-2022 partition.
+This corrects the predecessor's 120-session/11-fill power weakness without
+changing its rules after outcomes. Freeze the implementation, exact scopes, and
+provider graph before minute-price access; no calendar wait applies.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
