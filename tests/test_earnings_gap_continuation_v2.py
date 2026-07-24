@@ -67,6 +67,16 @@ def test_artifact_sha_reports_the_artifacts_own_hash() -> None:
         )
         == "contract"
     )
+    assert (
+        continuation._artifact_sha(
+            {
+                "artifact_kind": "earnings-gap-v2-event-retry-failure",
+                "failure_sha256": "retry-failure",
+                "inspection_sha256": "embedded-inspection",
+            }
+        )
+        == "retry-failure"
+    )
 
 
 def test_retry_failure_exhausts_provider_access(tmp_path) -> None:

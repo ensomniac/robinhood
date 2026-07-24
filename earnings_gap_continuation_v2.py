@@ -94,7 +94,7 @@ def _repo_path(path: Path) -> str:
 
 def _artifact_sha(value: dict[str, Any]) -> str | None:
     kind = str(value.get("artifact_kind", ""))
-    if kind.endswith("transport-failure"):
+    if kind.endswith("failure"):
         return value.get("failure_sha256")
     if kind.endswith("inspection"):
         return value.get("inspection_sha256")
