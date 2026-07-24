@@ -748,6 +748,55 @@ def test_oversold_reversal_enters_next_bar_and_resolves_stop_first():
     assert candidate["exit_price"] == pytest.approx(candidate["stop_price"])
 
 
+def test_oversold_reversal_retains_empty_frozen_universe_as_zero_return_day():
+    signal_day, empty_day = _days(2)
+    dataset = runtime.prepare_dataset(
+        {
+            "family_id": runtime.OVERSOLD_REVERSAL_FAMILY,
+            "evaluation_dates": [signal_day, empty_day],
+            "candidate_symbols_by_date": {
+                signal_day: ["AAA"],
+                empty_day: [],
+            },
+            "regular_session_minutes_by_date": {
+                signal_day: 390,
+                empty_day: 390,
+            },
+            "minute_bars": {
+                signal_day: {"AAA": _oversold_session(signal_day)},
+                empty_day: {},
+            },
+        }
+    )
+
+    result = runtime.evaluate_trial(
+        dataset,
+        family_id=runtime.OVERSOLD_REVERSAL_FAMILY,
+        trial_id="trial-empty-universe",
+        parameters={
+            "lookback_minutes": 30,
+            "selloff_threshold": -0.03,
+            "rsi_period": 5,
+            "rsi_maximum": 20.0,
+            "target_r": 1.5,
+        },
+        account_policy={
+            "starting_equity": 100_000.0,
+            "risk_fraction": 0.005,
+            "maximum_concurrent_positions": 3,
+            "maximum_aggregate_risk_fraction": 0.0125,
+            "maximum_gross_notional_fraction": 1.0,
+        },
+    )
+
+    empty = result["trial_accounting"][1]
+    assert empty["date"] == empty_day
+    assert empty["outcome"] == "zero_return_day"
+    assert empty["session_outcome"] == "no_signal"
+    assert empty["new_entries"] == 0
+    assert result["maturity_rows"][1]["signals"] == []
+
+
 def test_trial_compounds_account_and_cost_stress_is_monotonic():
     result = runtime.evaluate_trial(
         _intraday_dataset(),

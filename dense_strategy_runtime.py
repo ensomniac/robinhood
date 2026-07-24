@@ -2779,7 +2779,6 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                 raw_symbols = candidates[day]
                 if (
                     not isinstance(raw_symbols, list)
-                    or not raw_symbols
                     or raw_symbols != sorted(set(map(str, raw_symbols)))
                 ):
                     raise DenseStrategyRuntimeError(
