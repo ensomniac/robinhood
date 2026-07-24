@@ -591,6 +591,10 @@ policy before any new price access. Commit both before generic preflight.
 Preflight `61e4775a...384e2e` independently rebuilt the committed contract,
 capacity, implementation, exact partitions, exposure boundary, and zero-price
 state and earned `CAPACITY_READY`. Commit it before search freeze.
+Search `91fd97bb...d9a4a0b` now binds every unchanged trial, neighbor graph,
+rolling fold, account simulator, cost, deterministic selection gate, exact
+four-symbol universe, and missed-entry data rule. Commit it before collection
+freeze.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
