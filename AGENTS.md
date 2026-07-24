@@ -236,8 +236,17 @@ complete implementation-ready evidence graph. Outcome-blind preflight
 `7779b772...e8df65` earned `CAPACITY_READY` without loading the development
 dataset. Search `9bc236b0...d546f8` now freezes the complete 32-trial family,
 deterministic winner rule, account costs, implementation hashes, and partitions.
-Evaluate all development trials next. The confirmation partition and broker
-actions remain forbidden.
+Its evaluator computed all 32 trials, then failed closed before a result or
+selection artifact because at least one mathematical infinite 20-bps profit
+factor escaped into a schema field that requires finite JSON. Failure
+`10b961c7...4a769f` retires V2 and discloses only that aggregate condition; no
+trial identity, return path, or selection surfaced, and confirmation remained
+untouched. V3 changes only artifact encoding: it emits a finite placeholder
+plus an explicit infinity flag while independent inspection rebuilds the true
+profit factor from unchanged dollar outcomes. The grid, dates, rules, costs,
+selection, and confirmation reserve may not change. Freeze V3 before rerunning
+the exact development family. The confirmation partition and broker actions
+remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

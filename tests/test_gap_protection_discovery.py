@@ -27,7 +27,7 @@ def test_plugin_telemetry_is_warm_and_provider_free():
 def test_discovery_identity_is_existing_family_successor():
     assert (
         discovery.SUCCESSOR_ID
-        == "equity-gap-protection-continuation-v2-development-search"
+        == "equity-gap-protection-continuation-v3-development-search"
     )
 
 

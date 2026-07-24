@@ -499,6 +499,37 @@ def test_trial_compounds_account_and_cost_stress_is_monotonic():
     )
 
 
+def test_trial_serializes_infinite_profit_factor_without_nonfinite_json(
+    monkeypatch,
+):
+    monkeypatch.setattr(runtime, "profit_factor", lambda _values: math.inf)
+
+    result = runtime.evaluate_trial(
+        _intraday_dataset(),
+        family_id=runtime.INTRADAY_ETF_FAMILY,
+        trial_id="trial-infinite-profit-factor",
+        parameters={
+            "opening_window_minutes": 15,
+            "downside_z_threshold": -1.5,
+            "vwap_reclaim_completed_bars": 1,
+            "stop_intraday_atr": 1.0,
+            "target_r": 1.0,
+        },
+        account_policy={
+            "starting_equity": 100_000.0,
+            "risk_fraction": 0.005,
+            "maximum_concurrent_positions": 3,
+            "maximum_aggregate_risk_fraction": 0.0125,
+            "maximum_gross_notional_fraction": 1.0,
+        },
+    )
+
+    metrics = result["metrics"]
+    assert metrics["stress_20bps_profit_factor"] == 0.0
+    assert metrics["stress_20bps_profit_factor_is_infinite"] is True
+    assert math.isfinite(metrics["stress_20bps_profit_factor"])
+
+
 def test_rolling_origin_path_excludes_training_and_finishes_each_fold_flat():
     days = _days(80)
     plan = build_rolling_origin_plan(days)

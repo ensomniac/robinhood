@@ -4431,6 +4431,12 @@ def evaluate_trial(
     dollars = [float(item["net_pnl_dollars"]) for item in stress["closed_trades"]]
     risk_fraction = float(account_policy["risk_fraction"])
     stressed_pf = profit_factor(dollars)
+    stressed_pf_is_infinite = stressed_pf == math.inf
+    serialized_stressed_pf = (
+        0.0
+        if stressed_pf is None or stressed_pf_is_infinite
+        else float(stressed_pf)
+    )
     accounting = [
         {
             "date": item["date"],
@@ -4474,7 +4480,10 @@ def evaluate_trial(
         "metrics": {
             "stress_20bps_total_log_growth": stress["total_log_growth"],
             "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
-            "stress_20bps_profit_factor": stressed_pf or 0.0,
+            "stress_20bps_profit_factor": serialized_stressed_pf,
+            "stress_20bps_profit_factor_is_infinite": (
+                stressed_pf_is_infinite
+            ),
             "stress_20bps_maximum_drawdown_r": stress[
                 "maximum_drawdown_fraction"
             ]
