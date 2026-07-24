@@ -677,6 +677,10 @@ Recovery plan `3dfc9e5a...dfcda85e` binds the inspected failure, unchanged
 four task IDs, refreshed search, exact cached source-plan hash, 266 already
 completed requests, and zero additional provider requests. Commit it before
 materializing hard-linked checkpoints and the corrected dataset.
+Collection status `d32b2cd7...9833dd1` materialized dataset
+`9e266e89...017cac2` from four verified cache hits. Telemetry preserves the
+original 266 requests and reports zero failures or additional fetches. Commit
+the compact status before independent dataset inspection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
