@@ -220,8 +220,11 @@ development-search contract and runtime binding next.
 `gap_protection_discovery.py` and `gap_protection_plugin.py` now rebuild that
 inspected private index into the shared chronological account simulator and
 selection-aware engine, including the same protection cap in historical and
-production evaluation. Commit those implementations before hashing the family
-contract. The confirmation partition and broker actions remain forbidden.
+production evaluation. Family contract `1be96eb8...09180` and capacity
+manifest `0e47ab06...c1a6e` now freeze the exact 32 trials, 57/5/38
+chronological partitions, inspected dataset binding, account simulator, costs,
+falsifiers, and committed implementation hashes. Run the generic outcome-blind
+preflight next. The confirmation partition and broker actions remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
