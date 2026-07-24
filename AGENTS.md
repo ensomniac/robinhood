@@ -280,7 +280,11 @@ calendar, source attestation, and collection record before independent data
 inspection. Inspection `0c2a4501...ce707` independently rehashed those inputs,
 confirmed at least 1,905 full sessions, and found both the 1,200-session
 development target scope and 500-session confirmation target scope globally
-untouched. Freeze the exact successor contract next.
+untouched. Family contract `55686f1a...ad290d` and capacity manifest
+`a035e531...5db1bb` now bind all 32 trials, 19 ETFs, exact partitions, per-symbol
+Massive daily inputs, costs, selection gates, implementation hashes, and the
+current outcome-exposure index before price access. Commit them before generic
+outcome-blind preflight; confirmation remains closed.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
