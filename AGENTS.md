@@ -362,8 +362,13 @@ Contract `1aea0a67...6fda9` and capacity
 `c146846e...0a03a6` now freeze all 32 trials, the exact nine-symbol universe,
 200 warmup plus 1,000 development sessions, five embargo sessions, 250
 confirmation sessions, Alpaca raw SIP daily bars, Massive split actions, all
-cost/statistical gates, and the outcome-clean scopes. Commit both artifacts
-before generic preflight; no market price or target outcome was accessed.
+cost/statistical gates, and the outcome-clean scopes. Both artifacts were
+committed before generic preflight; no market price or target outcome was
+accessed.
+Outcome-blind preflight `2cce7ceb...b8cb2` independently returned
+`CAPACITY_READY` for all 32 trials with the exact partitions, committed
+implementations, confirmation closed, and zero broker actions. Commit it before
+freezing the development search.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
