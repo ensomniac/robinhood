@@ -568,6 +568,9 @@ def _rebuild_development_statistics(
     *,
     development_dates: Sequence[str] | None = None,
     rolling_origin_plan: Sequence[Mapping[str, Any]] | None = None,
+    prior_trial_sharpes: Sequence[float] = (),
+    prior_trial_p_values: Sequence[float] = (),
+    prior_pbo_probability: float = 0.0,
 ) -> dict[str, dict[str, Any]]:
     daily_returns_by_id = {
         str(item["trial_id"]): [
@@ -618,9 +621,35 @@ def _rebuild_development_statistics(
         deviation = statistics.stdev(values) if len(values) > 1 else 0.0
         statistic = mean / (deviation / math.sqrt(len(values))) if deviation else 0.0
         p_values[trial_id] = 1 - NormalDist().cdf(statistic)
-    holm = holm_family_decisions(p_values, alpha=0.10)
+    if (
+        len(prior_trial_sharpes) != len(prior_trial_p_values)
+        or len(trials) + len(prior_trial_sharpes) > MAX_TRIALS_PER_FAMILY
+        or any(
+            not math.isfinite(float(value))
+            for value in prior_trial_sharpes
+        )
+        or any(
+            not 0 <= float(value) <= 1
+            for value in prior_trial_p_values
+        )
+        or not 0 <= float(prior_pbo_probability) <= 1
+    ):
+        raise LearningExperimentError(
+            "prior selection-trial statistics are invalid"
+        )
+    combined_p_values = {
+        **p_values,
+        **{
+            f"prior-trial-{index:03d}": float(value)
+            for index, value in enumerate(prior_trial_p_values, 1)
+        },
+    }
+    holm = holm_family_decisions(combined_p_values, alpha=0.10)
     pbo = probability_of_backtest_overfitting(daily_returns_by_id)
-    trial_sharpes = list(sharpes.values())
+    trial_sharpes = [
+        *sharpes.values(),
+        *map(float, prior_trial_sharpes),
+    ]
     rebuilt: dict[str, dict[str, Any]] = {}
     for item in trials:
         trial_id = str(item["trial_id"])
@@ -689,7 +718,10 @@ def _rebuild_development_statistics(
             "deflated_sharpe_probability": deflated_sharpe_probability(
                 daily_returns, trial_sharpes
             )["probability"],
-            "pbo_probability": pbo["probability"],
+            "pbo_probability": max(
+                float(pbo["probability"]),
+                float(prior_pbo_probability),
+            ),
             "holm_reject_null": holm[trial_id]["reject_null"],
             "rolling_folds_positive": all(
                 sum(math.log1p(value) for value in fold) > 0 for fold in folds
@@ -738,6 +770,15 @@ def select_development_winner(
         normalized["trials"],
         development_dates=development_dates,
         rolling_origin_plan=rolling_origin_plan,
+        prior_trial_sharpes=contract.get(
+            "prior_trial_sharpes", ()
+        ),
+        prior_trial_p_values=contract.get(
+            "prior_trial_p_values", ()
+        ),
+        prior_pbo_probability=float(
+            contract.get("prior_pbo_probability", 0.0)
+        ),
     )
     trial_contracts = {
         str(item["trial_id"]): item for item in frozen["trial_family"]

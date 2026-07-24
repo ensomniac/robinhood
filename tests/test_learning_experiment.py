@@ -276,6 +276,43 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertEqual(rebuilt["oof_daily_account_returns"], daily_left)
         self.assertEqual(rebuilt["oof_filled_account_returns"], filled_left)
 
+    def test_prior_selection_trials_enter_familywise_corrections(self):
+        def trial(trial_id, daily):
+            return {
+                "trial_id": trial_id,
+                "metrics": {
+                    "oof_daily_account_returns": daily,
+                    "oof_filled_account_returns": daily,
+                    "oof_net_pnl_dollars": [
+                        value * 100_000 for value in daily
+                    ],
+                    "risk_fraction": 0.005,
+                    "rules_complete": True,
+                    "trial_accounting_complete": True,
+                },
+            }
+
+        rebuilt = _rebuild_development_statistics(
+            [
+                trial("left", [0.002, -0.001] * 10),
+                trial("right", [0.0015, -0.001] * 10),
+            ],
+            prior_trial_sharpes=[0.2, 0.3],
+            prior_trial_p_values=[0.4, 0.5],
+            prior_pbo_probability=0.4,
+        )
+
+        self.assertGreaterEqual(rebuilt["left"]["pbo_probability"], 0.4)
+        with self.assertRaisesRegex(
+            LearningExperimentError,
+            "prior selection-trial statistics",
+        ):
+            _rebuild_development_statistics(
+                [trial("left", [0.002, -0.001] * 10)],
+                prior_trial_sharpes=[0.2],
+                prior_trial_p_values=[],
+            )
+
     def test_rolling_origin_plan_has_expanding_train_and_embargo(self):
         start = date(2026, 1, 1)
         dates = [(start + timedelta(days=index)).isoformat() for index in range(80)]
