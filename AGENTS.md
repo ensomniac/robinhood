@@ -534,6 +534,10 @@ outcome-blind topology to eight resumable symbol-range tasks; dataset rebuilding
 restores the exact date-symbol minute sessions and tests prove all strategy,
 partition, and universe semantics are unchanged. Commit this V2 implementation
 before freezing its superseding contract.
+V2 contract `cd3389cc...1256f8f` and capacity `9f599f52...39743e9` now bind
+the identical 32 trials, dates, symbols, confirmation reserve, and execution
+rules plus the eight-task symbol-range provider graph. V1 accessed no prices
+and contributes no evidence. Commit V2 before fresh generic preflight.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
