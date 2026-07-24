@@ -712,6 +712,11 @@ confirmation reserve remain untouched. Historical and production evaluators
 share ranking, VWAP confirmation, next-bar entry, stop-first ambiguity, and
 exit semantics. Commit the implementation and parity tests before freezing the
 new-family contract.
+Contract `212e9bcc...6b8e5f4e` and capacity `09cf9988...15b9d6eb` now freeze
+all 32 trials, the four-symbol universe, exact contaminated development alias,
+five-session embargo, 310-session untouched confirmation reserve, costs,
+selection gates, and committed implementations. Commit both before generic
+outcome-blind preflight.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
