@@ -89,6 +89,19 @@ def _repo_path(path: Path) -> str:
     return base._repo_path(path)
 
 
+def _artifact_sha(value: dict[str, Any]) -> str | None:
+    kind = str(value.get("artifact_kind", ""))
+    if kind.endswith("transport-failure"):
+        return value.get("failure_sha256")
+    if kind.endswith("inspection"):
+        return value.get("inspection_sha256")
+    if kind.endswith("collection"):
+        return value.get("collection_sha256")
+    if kind.endswith("contract"):
+        return value.get("contract_sha256")
+    return None
+
+
 def _source_graph(*, enforce_commit: bool) -> tuple[dict[str, Any], dict[str, Any]]:
     for path in (V1_COLLECTION, V1_CAPACITY_INSPECTION):
         if enforce_commit:
@@ -791,19 +804,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "state": value.get(
                         "state", value.get("artifact_kind")
                     ),
-                    "sha256": next(
-                        (
-                            value[key]
-                            for key in (
-                                "failure_sha256",
-                                "inspection_sha256",
-                                "collection_sha256",
-                                "contract_sha256",
-                            )
-                            if key in value
-                        ),
-                        None,
-                    ),
+                    "sha256": _artifact_sha(value),
                     "provider_requests": value.get(
                         "provider_requests", 0
                     ),

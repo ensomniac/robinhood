@@ -54,3 +54,16 @@ def test_transport_failure_records_no_artifact_boundary(tmp_path) -> None:
     assert failure["forward_returns_accessed"] is False
     assert failure["strategy_metrics_computed"] == 0
     assert failure["broker_actions"] == 0
+
+
+def test_artifact_sha_reports_the_artifacts_own_hash() -> None:
+    assert (
+        continuation._artifact_sha(
+            {
+                "artifact_kind": "earnings-gap-v2-event-retry-contract",
+                "contract_sha256": "contract",
+                "failure_sha256": "embedded-failure",
+            }
+        )
+        == "contract"
+    )
