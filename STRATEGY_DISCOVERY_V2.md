@@ -388,7 +388,8 @@ python3 dense_collection_recovery_inspection.py \
   --inspected-at <actual-current-ISO8601-timestamp>
 # Commit the inspection before freezing recovery.
 python3 dense_collection_recovery.py freeze-pullback-recovery \
-  path/to/committed-failure-inspection.json --as-of 2026-07-23
+  path/to/committed-failure-inspection.json --as-of 2026-07-23 \
+  --search path/to/optional-implementation-refreshed-same-grid-search.json
 # Commit the recovery plan before collection.
 python3 dense_data_collection.py --as-of 2026-07-23 \
   collect path/to/committed-recovery-plan.json

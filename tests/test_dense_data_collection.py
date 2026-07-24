@@ -113,7 +113,15 @@ def _artifacts(tmp_path, monkeypatch, *, lane="development"):
                     "confirmation_scope": {"dates": _dates(6), "symbols": ["SPY"]},
                 }
                 if confirmation
-                else {}
+                else {
+                    "family_contract": {
+                        "family_id": runtime.ETF_PULLBACK_FAMILY,
+                        "frozen_semantics": "unchanged",
+                        "implementation_hashes": {
+                            "dense_strategy_plugin.py": "a" * 64
+                        },
+                    }
+                }
             ),
         },
         tmp_path / "authority",
@@ -749,7 +757,7 @@ class DailyRangeBackend:
         return None
 
 
-def _pullback_recovery_plan(tmp_path, monkeypatch):
+def _pullback_recovery_plan(tmp_path, monkeypatch, *, refresh_search=False):
     plan_path, plan, symbols = _artifacts(tmp_path, monkeypatch)
     monkeypatch.setattr(
         recovery,
@@ -809,8 +817,34 @@ def _pullback_recovery_plan(tmp_path, monkeypatch):
         tmp_path / "failure-inspections",
         "inspection",
     )
+    search_path = None
+    if refresh_search:
+        original_search = strategy_discovery.load_artifact(
+            tmp_path / plan["authority_path"],
+            expected_kind="frozen-development-search",
+        )
+        refreshed_contract = dict(original_search["family_contract"])
+        refreshed_contract["implementation_hashes"] = {
+            "dense_strategy_plugin.py": "b" * 64
+        }
+        search_path, _search = strategy_discovery._write_artifact(
+            {
+                "schema_version": 1,
+                "artifact_kind": "frozen-development-search",
+                "state": "SEARCH_FROZEN",
+                "family_contract": refreshed_contract,
+            },
+            tmp_path / "refreshed-search",
+            "search",
+        )
+        monkeypatch.setattr(
+            strategy_discovery,
+            "_assert_implementation_current",
+            lambda *_args, **_kwargs: None,
+        )
     recovery_path, recovery_plan = recovery.freeze_pullback_recovery(
         inspection_path,
+        search_path=search_path,
         as_of=date(2026, 7, 27),
         actual_today=date(2026, 7, 27),
         public_root=tmp_path / "public",
@@ -820,6 +854,21 @@ def _pullback_recovery_plan(tmp_path, monkeypatch):
     assert recovery_plan["supersedes_plan_sha256"] == plan["artifact_sha256"]
     assert recovery_plan["task_count"] == len(symbols) + 1
     return recovery_path, recovery_plan
+
+
+def test_pullback_recovery_refreshes_only_implementation_bound_search(
+    tmp_path,
+    monkeypatch,
+):
+    _path, plan = _pullback_recovery_plan(
+        tmp_path,
+        monkeypatch,
+        refresh_search=True,
+    )
+
+    refresh = plan["recovery_search_refresh"]
+    assert refresh["only_implementation_hashes_changed"] is True
+    assert refresh["refreshed_search_sha256"] == plan["authority_sha256"]
 
 
 def test_pullback_recovery_uses_raw_alpaca_bars_and_frozen_split_actions(

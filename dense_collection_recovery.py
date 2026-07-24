@@ -324,6 +324,7 @@ def _load_inspected_failure(
 def freeze_pullback_recovery(
     failure_inspection_path: Path,
     *,
+    search_path: Path | None = None,
     as_of: date | None = None,
     actual_today: date | None = None,
     public_root: Path = DEFAULT_PUBLIC_ROOT,
@@ -354,6 +355,53 @@ def freeze_pullback_recovery(
     current = as_of or today
     if current > today:
         raise DenseCollectionRecoveryError("recovery as_of cannot be future-dated")
+    search_refresh: dict[str, Any] | None = None
+    if search_path is not None:
+        if enforce_commit:
+            strategy_discovery.require_committed(search_path)
+        refreshed_search = strategy_discovery.load_artifact(
+            search_path,
+            expected_kind="frozen-development-search",
+        )
+        original_search_path = PROJECT_ROOT / str(plan["authority_path"])
+        if enforce_commit:
+            strategy_discovery.require_committed(original_search_path)
+        original_search = strategy_discovery.load_artifact(
+            original_search_path,
+            expected_kind="frozen-development-search",
+        )
+        original_contract = dict(original_search["family_contract"])
+        refreshed_contract = dict(refreshed_search["family_contract"])
+        original_contract.pop("implementation_hashes", None)
+        refreshed_contract.pop("implementation_hashes", None)
+        if not (
+            refreshed_search.get("state") == "SEARCH_FROZEN"
+            and original_contract == refreshed_contract
+            and refreshed_search["family_contract"]["family_id"]
+            == runtime.ETF_PULLBACK_FAMILY
+        ):
+            raise DenseCollectionRecoveryError(
+                "refreshed search changed frozen strategy semantics"
+            )
+        strategy_discovery._assert_implementation_current(
+            refreshed_search["family_contract"],
+            enforce_commit=enforce_commit,
+        )
+        search_refresh = {
+            "original_search_sha256": original_search["artifact_sha256"],
+            "refreshed_search_path": collection._repo_path(search_path),
+            "refreshed_search_sha256": refreshed_search["artifact_sha256"],
+            "semantic_contract_sha256": canonical_sha256(
+                refreshed_contract
+            ),
+            "only_implementation_hashes_changed": True,
+        }
+        plan = {
+            **plan,
+            "authority_path": collection._repo_path(search_path),
+            "authority_sha256": refreshed_search["artifact_sha256"],
+            "binding_sha256": refreshed_search["artifact_sha256"],
+        }
     symbols = sorted(map(str, plan["symbols"]))
     if not symbols:
         raise DenseCollectionRecoveryError("pullback recovery lacks frozen symbols")
@@ -406,6 +454,11 @@ def freeze_pullback_recovery(
             "market_outcomes_accessed": False,
             "substitutions_allowed": False,
             "broker_actions": 0,
+            **(
+                {"recovery_search_refresh": search_refresh}
+                if search_refresh is not None
+                else {}
+            ),
         }
     )
     return strategy_discovery._write_artifact(
@@ -459,6 +512,7 @@ def _parser() -> argparse.ArgumentParser:
     recovery = subparsers.add_parser("freeze-pullback-recovery")
     recovery.add_argument("artifact", type=Path)
     recovery.add_argument("--as-of", type=date.fromisoformat)
+    recovery.add_argument("--search", type=Path)
     exposure = subparsers.add_parser("index-exposure")
     exposure.add_argument("artifact", type=Path)
     exposure.add_argument(
@@ -488,6 +542,7 @@ def main() -> int:
         elif args.command == "freeze-pullback-recovery":
             path, artifact = freeze_pullback_recovery(
                 args.artifact,
+                search_path=args.search,
                 as_of=args.as_of,
                 public_root=args.public_root,
             )

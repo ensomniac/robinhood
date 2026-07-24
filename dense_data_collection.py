@@ -534,6 +534,54 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
             raise DenseDataCollectionError(
                 "collection recovery failure inspection drifted"
             )
+        search_refresh = plan.get("recovery_search_refresh")
+        if search_refresh is not None:
+            if not isinstance(search_refresh, Mapping):
+                raise DenseDataCollectionError(
+                    "collection recovery search refresh is invalid"
+                )
+            original_plan_path = PROJECT_ROOT / str(failure["plan_path"])
+            original_plan = _validate_plan(
+                original_plan_path,
+                enforce_commit=enforce_commit,
+            )
+            original_search_path = (
+                PROJECT_ROOT / str(original_plan["authority_path"])
+            )
+            refreshed_search_path = (
+                PROJECT_ROOT / str(plan["authority_path"])
+            )
+            if enforce_commit:
+                strategy_discovery.require_committed(original_search_path)
+                strategy_discovery.require_committed(refreshed_search_path)
+            original_search = strategy_discovery.load_artifact(
+                original_search_path,
+                expected_kind="frozen-development-search",
+            )
+            refreshed_search = strategy_discovery.load_artifact(
+                refreshed_search_path,
+                expected_kind="frozen-development-search",
+            )
+            original_contract = dict(original_search["family_contract"])
+            refreshed_contract = dict(refreshed_search["family_contract"])
+            original_contract.pop("implementation_hashes", None)
+            refreshed_contract.pop("implementation_hashes", None)
+            if not (
+                original_contract == refreshed_contract
+                and search_refresh.get("original_search_sha256")
+                == original_search["artifact_sha256"]
+                and search_refresh.get("refreshed_search_path")
+                == plan["authority_path"]
+                and search_refresh.get("refreshed_search_sha256")
+                == refreshed_search["artifact_sha256"]
+                and search_refresh.get("semantic_contract_sha256")
+                == canonical_sha256(refreshed_contract)
+                and search_refresh.get("only_implementation_hashes_changed")
+                is True
+            ):
+                raise DenseDataCollectionError(
+                    "collection recovery search semantics drifted"
+                )
         if not (
             recovery_adjustment == RECOVERY_ADJUSTMENT
             and plan.get("family_id") == runtime.ETF_PULLBACK_FAMILY
