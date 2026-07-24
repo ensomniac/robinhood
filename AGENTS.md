@@ -567,6 +567,11 @@ per-symbol completeness total, exposed development scope, telemetry value, and
 the absence of a completed dataset or strategy metrics. After committing the
 inspection, index the exact development exposure and retire this family for
 structural minute-data capacity; do not repair or evaluate it.
+Exposure record `10876882...565c3` now reserves all 8,000 country-ETF
+development date-symbol pairs in the global outcome index. The exact
+country-ETF family is terminally retired for insufficient complete SIP minute
+capacity; confirmation remains untouched. Advance a different, more liquid
+outcome-clean family immediately.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
