@@ -2613,12 +2613,15 @@ def _gap_continuation_candidates(
     volume_threshold = float(parameters["breakout_volume_multiple"])
     signal_cutoff = int(parameters["signal_cutoff_minutes"])
     target_r = float(parameters["target_r"])
+    raw_stop_cap = parameters.get("maximum_structural_stop_fraction")
+    stop_cap = float(raw_stop_cap) if raw_stop_cap is not None else None
     if (
         minimum_gap not in {0.02, 0.04}
         or opening_range not in {5, 15}
         or volume_threshold not in {1.5, 2.5}
         or signal_cutoff not in {60, 120}
         or target_r not in {1.5, 2.0}
+        or (stop_cap is not None and stop_cap not in {0.03, 0.04})
     ):
         raise DenseStrategyRuntimeError(
             "gap-continuation trial parameters escaped the grid"
@@ -2691,6 +2694,20 @@ def _gap_continuation_candidates(
                     "outcome": "rejected",
                     "rank": 1,
                     "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        stop_fraction = (entry_price - stop_price) / entry_price
+        if stop_cap is not None and stop_fraction > stop_cap + 1e-12:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "structural_stop_exceeds_protection_cap",
                 }
             )
             continue

@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 
+import pytest
+
 import dense_strategy_runtime as runtime
 import equity_gap_continuation_discovery as discovery
 import equity_gap_continuation_plugin as plugin
@@ -93,6 +95,13 @@ def _parameters() -> dict:
     }
 
 
+def _wide_stop_dataset() -> dict:
+    dataset = _dataset()
+    for symbol in dataset["minute_bars"][DAY]:
+        dataset["minute_bars"][DAY][symbol][0]["low"] = 90.0
+    return dataset
+
+
 def test_runtime_ranks_volume_then_gap_and_resolves_stop_first():
     prepared = runtime.prepare_dataset(_dataset())
 
@@ -170,6 +179,88 @@ def test_production_rebuilds_the_same_current_ranked_trigger():
     assert result["stop_price"] < result["entry_limit"]
     assert result["expected_gross_move_fraction"] >= 0.005
     assert result["holding_trading_days"] == 1
+
+
+def test_historical_protection_cap_rejects_without_substituting():
+    parameters = {
+        **_parameters(),
+        "maximum_structural_stop_fraction": 0.03,
+    }
+
+    candidates = runtime.build_candidates(
+        runtime.prepare_dataset(_wide_stop_dataset()),
+        runtime.EQUITY_GAP_CONTINUATION_FAMILY,
+        parameters,
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0]["symbol"] == "BBB"
+    assert candidates[0]["outcome"] == "rejected"
+    assert (
+        candidates[0]["rejection_reason"]
+        == "structural_stop_exceeds_protection_cap"
+    )
+
+
+def test_production_enforces_the_same_frozen_protection_cap():
+    dataset = _wide_stop_dataset()
+    parameters = {
+        **_parameters(),
+        "maximum_structural_stop_fraction": 0.03,
+    }
+    bars = {
+        symbol: rows[:16]
+        for symbol, rows in dataset["minute_bars"][DAY].items()
+    }
+    quote_time = datetime.fromisoformat(
+        bars["BBB"][-1]["timestamp"]
+    ) + timedelta(minutes=1, seconds=5)
+    winner = {
+        "strategy_id": "equity-gap-continuation",
+        "strategy_version": "gap-test-v2",
+        "rules_hash": "b" * 64,
+        "exact_rules": {
+            "selected_trial_id": "trial-gap-cap",
+            "parameters": parameters,
+        },
+    }
+
+    with pytest.raises(
+        plugin.EquityGapContinuationPluginError,
+        match="exceeds the frozen protection cap",
+    ):
+        plugin.evaluate_production(
+            winner,
+            {
+                "selected_trial_id": "trial-gap-cap",
+                "parameters": parameters,
+                "session_date": DAY,
+                "candidate_symbols": ["AAA", "BBB"],
+                "candidate_metadata": dataset["candidate_metadata_by_date"][DAY],
+                "selection_complete": True,
+                "bars_by_symbol": bars,
+                "quote": {
+                    "symbol": "BBB",
+                    "observed_at": quote_time.isoformat(),
+                    "halted": False,
+                    "tradable": True,
+                    "bid": 100.98,
+                    "ask": 101.0,
+                    "executable_ask_depth": 10_000,
+                    "recent_real_minute_volume": 3_000,
+                },
+                "operational": {
+                    "account_reconciled": True,
+                    "orders_reconciled": True,
+                    "protection_reconciled": True,
+                    "tradability_reconciled": True,
+                    "news_reconciled": True,
+                    "protective_order_route_ready": True,
+                    "monitoring_ready": True,
+                    "safe_cutoff": "15:45 ET",
+                },
+            },
+        )
 
 
 def test_preflight_uses_only_committed_capacity_metadata(

@@ -1,6 +1,6 @@
 # Robinhood Codex Trading Context
 
-Research refreshed: 2026-07-23
+Research refreshed: 2026-07-24
 
 Strategy version: `2026-07-15-orb-v3`
 
@@ -178,12 +178,23 @@ neighbor stability. Maximum DSR was 0.2706, maximum fills were 11, and the
 least-adverse path lost 0.01377 log-return. No winner may enter its untouched
 35-session confirmation reserve.
 
-The rolling queue therefore releases the intraday slot immediately. Continue
-with the third predeclared residual-equity batch family or an already-authorized
-existing-family successor using contaminated development evidence; neither
-path waits for a future calendar date. Any residual recovery must first solve
-the outcome-blind grouped-daily provider failure without substituting dates,
-symbols, universe identity, or the frozen 48-trial grid.
+The rolling queue therefore releases the intraday slot immediately. A
+protection-capped successor inside the existing equity-gap-continuation family
+is now active; it consumes no new mechanism slot and requires no calendar wait.
+Contaminated development screening identified the causal protection hypothesis,
+but none of those outcomes can promote the successor. Preentry contract
+`9cec2eaf...662f5` freezes a fresh 399-session point-in-time scanner replay, the
+complete 32-trial grid, chronological 60% development allocation, five-session
+embargo, untouched remainder, global outcome filter, and 3%/4% structural-stop
+cap before the causal scanner adapter reopens its compact source. The adapter
+may carry only 09:30-09:34 target-session fields across its information wall;
+its deterministic end-of-day residual is restricted to completed prior-session
+lookbacks. Build and independently inspect that inventory next. Confirmation
+outcomes and broker actions remain forbidden.
+
+The third predeclared residual-equity batch family remains terminally blocked on
+its outcome-blind grouped-daily provider failure. It may resume only without
+substituting dates, symbols, universe identity, or the frozen 48-trial grid.
 
 `python3 dense_batch_readiness.py status` is the fail-closed handoff authority
 for that work. It must resolve one current

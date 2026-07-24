@@ -391,6 +391,12 @@ def _live_trigger(
     volume_threshold = float(parameters["breakout_volume_multiple"])
     signal_cutoff = int(parameters["signal_cutoff_minutes"])
     target_r = float(parameters["target_r"])
+    raw_stop_cap = parameters.get("maximum_structural_stop_fraction")
+    stop_cap = float(raw_stop_cap) if raw_stop_cap is not None else None
+    if stop_cap is not None and stop_cap not in {0.03, 0.04}:
+        raise EquityGapContinuationPluginError(
+            "live structural-stop cap escaped the frozen grid"
+        )
     qualified: list[tuple[int, float, float, str, float]] = []
     for symbol, bars in bars_by_symbol.items():
         if len(bars) <= max(opening_range, runtime.GAP_VOLUME_LOOKBACK_BARS):
@@ -465,6 +471,7 @@ def _live_trigger(
         "gap_fraction": -negative_gap,
         "stop_price": stop,
         "target_r": target_r,
+        "maximum_structural_stop_fraction": stop_cap,
     }
 
 
@@ -603,6 +610,12 @@ def evaluate_production(
     if not 0 < stop < entry < target:
         raise EquityGapContinuationPluginError(
             "live entry protection is invalid"
+        )
+    stop_fraction = (entry - stop) / entry
+    stop_cap = trigger["maximum_structural_stop_fraction"]
+    if stop_cap is not None and stop_fraction > stop_cap + 1e-12:
+        raise EquityGapContinuationPluginError(
+            "live structural stop exceeds the frozen protection cap"
         )
     expected_gross = (target - entry) / entry
     if expected_gross < (
