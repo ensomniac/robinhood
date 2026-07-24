@@ -29,6 +29,7 @@ MASSIVE_DAILY_SYMBOL_FAILURE = (
     "MASSIVE_DAILY_SYMBOL_TASK_FAILED_BEFORE_PRICE_ACCESS"
 )
 INCOMPLETE_INTRADAY = "INCOMPLETE_SIP_REGULAR_SESSION"
+INCOMPLETE_INTRADAY_RANGE = "INCOMPLETE_SIP_RANGE_REGULAR_SESSION"
 RECOVERY_IMPLEMENTATION_FILES = (
     "dense_collection_recovery.py",
     "dense_collection_recovery_inspection.py",
@@ -118,7 +119,10 @@ def _failure_facts(
     market_price_tasks_completed = 0
     evaluation_tasks_completed = 0
     intraday_gaps: list[dict[str, Any]] = []
+    intraday_range_summaries: list[dict[str, Any]] = []
+    intraday_range_extra_dates: set[str] = set()
     evaluation_dates = set(map(str, plan["evaluation_dates"]))
+    required_dates = set(map(str, plan.get("required_dates", [])))
     for task in plan["tasks"]:
         rows = _checkpoint_rows(root, task)
         if rows is None:
@@ -131,10 +135,43 @@ def _failure_facts(
             "daily_symbol_bars",
             "massive_daily_symbol_bars",
             "sip_minute_bars",
+            "sip_minute_symbol_range",
         }:
             market_price_tasks_completed += 1
             rows_accessed += len(rows)
-        if str(task["date"]) in evaluation_dates:
+        if task["kind"] == "sip_minute_symbol_range":
+            grouped: dict[str, list[dict[str, Any]]] = {}
+            for row in rows:
+                day = str(row.get("date_et"))
+                grouped.setdefault(day, []).append(row)
+            complete_required = 0
+            complete_evaluation = 0
+            for day in sorted(required_dates):
+                day_rows = grouped.get(day, [])
+                if _regular_session_complete(day_rows, day):
+                    complete_required += 1
+                    if day in evaluation_dates:
+                        complete_evaluation += 1
+            represented_evaluation = evaluation_dates & set(grouped)
+            if represented_evaluation:
+                evaluation_tasks_completed += 1
+            intraday_range_extra_dates.update(set(grouped) - required_dates)
+            intraday_range_summaries.append(
+                {
+                    "symbol": str(task["symbol"]),
+                    "required_sessions": len(required_dates),
+                    "complete_required_sessions": complete_required,
+                    "incomplete_required_sessions": (
+                        len(required_dates) - complete_required
+                    ),
+                    "evaluation_sessions": len(evaluation_dates),
+                    "complete_evaluation_sessions": complete_evaluation,
+                    "incomplete_evaluation_sessions": (
+                        len(evaluation_dates) - complete_evaluation
+                    ),
+                }
+            )
+        elif str(task["date"]) in evaluation_dates:
             evaluation_tasks_completed += 1
         if (
             task["kind"] == "sip_minute_bars"
@@ -211,6 +248,66 @@ def _failure_facts(
             },
             "failure_details": {
                 "incomplete_sessions": intraday_gaps,
+                "substituted_sessions": 0,
+                "interpolated_minutes": 0,
+            },
+        }
+    if (
+        plan["family_id"] in runtime.INTRADAY_ETF_FAMILIES
+        and completed == int(plan["task_count"])
+        and intraday_range_summaries
+        and any(
+            item["incomplete_required_sessions"] > 0
+            for item in intraday_range_summaries
+        )
+    ):
+        intraday_range_summaries.sort(key=lambda item: item["symbol"])
+        complete_evaluation_sets: list[set[str]] = []
+        for task in plan["tasks"]:
+            rows = _checkpoint_rows(root, task)
+            if rows is None or task["kind"] != "sip_minute_symbol_range":
+                continue
+            grouped: dict[str, list[dict[str, Any]]] = {}
+            for row in rows:
+                grouped.setdefault(str(row.get("date_et")), []).append(row)
+            complete_evaluation_sets.append(
+                {
+                    day
+                    for day in evaluation_dates
+                    if _regular_session_complete(grouped.get(day, []), day)
+                }
+            )
+        fully_complete_evaluation_dates = (
+            set.intersection(*complete_evaluation_sets)
+            if complete_evaluation_sets
+            else set()
+        )
+        return {
+            "failure_code": INCOMPLETE_INTRADAY_RANGE,
+            "completed_tasks": completed,
+            "market_price_rows_accessed": rows_accessed,
+            "evaluation_tasks_completed": evaluation_tasks_completed,
+            "data_outcomes_accessed": evaluation_tasks_completed > 0,
+            "exposure_scope": {
+                "dates": list(plan["evaluation_dates"]),
+                "symbols": sorted(map(str, plan["symbols"])),
+            },
+            "failure_details": {
+                "expected_regular_session_minutes": 390,
+                "required_symbol_sessions": (
+                    len(required_dates) * len(plan["symbols"])
+                ),
+                "incomplete_required_symbol_sessions": sum(
+                    int(item["incomplete_required_sessions"])
+                    for item in intraday_range_summaries
+                ),
+                "fully_complete_evaluation_dates": len(
+                    fully_complete_evaluation_dates
+                ),
+                "per_symbol": intraday_range_summaries,
+                "provider_extra_session_dates": sorted(
+                    intraday_range_extra_dates
+                ),
                 "substituted_sessions": 0,
                 "interpolated_minutes": 0,
             },

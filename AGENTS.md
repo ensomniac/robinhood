@@ -549,6 +549,13 @@ Development collection plan `8c09045e...4d8187` freezes exactly eight
 `sip_minute_symbol_range` tasks spanning the required 2016-09-26 through
 2020-12-23 warmup and development input range, with no substitutions, provider
 requests, prices, or outcomes before freeze. Commit it before collection.
+Collection completed all eight frozen range tasks but failed before dataset
+materialization or strategy metrics: the provider returned each required date,
+yet most country-ETF sessions lacked a complete 390-minute regular-session
+sequence and no evaluation date was complete across all eight symbols.
+`dense_collection_recovery.py` now independently summarizes this exact
+range-task failure without interpolating, substituting, or accessing strategy
+metrics. Commit the recorder before publishing and inspecting the failure.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

@@ -1236,6 +1236,107 @@ def test_incomplete_intraday_collection_is_indexed_as_development_exposure(
     assert outcome_exposure.read_index(index) == [record]
 
 
+def test_symbol_range_failure_summarizes_incomplete_regular_sessions(
+    tmp_path,
+):
+    required_dates = ["2024-01-02", "2024-01-03"]
+    symbols = ["EWC", "EWG"]
+    tasks = []
+    for symbol in symbols:
+        task = {
+            "kind": "sip_minute_symbol_range",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+            "symbol": symbol,
+        }
+        task["task_id"] = canonical_sha256(task)
+        tasks.append(task)
+    plan = {
+        "artifact_sha256": "a" * 64,
+        "family_id": runtime.COUNTRY_ETF_OPENING_REVERSAL_FAMILY,
+        "lane": "development",
+        "required_dates": required_dates,
+        "evaluation_dates": [required_dates[-1]],
+        "symbols": symbols,
+        "task_count": len(tasks),
+        "tasks": tasks,
+    }
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    root = (
+        config.root
+        / "dense-v2"
+        / plan["family_id"]
+        / plan["lane"]
+        / plan["artifact_sha256"]
+    )
+
+    def rows(day, count):
+        start = datetime.fromisoformat(f"{day}T09:30:00-05:00")
+        return [
+            {
+                "date_et": day,
+                "time_et": (start + timedelta(minutes=index)).isoformat(),
+            }
+            for index in range(count)
+        ]
+
+    for task in tasks:
+        task_rows = [
+            *rows(required_dates[0], 390),
+            *rows(
+                required_dates[1],
+                389 if task["symbol"] == "EWC" else 390,
+            ),
+            *rows("2024-01-04", 210),
+        ]
+        collection._write_external(
+            collection._checkpoint_path(root, task),
+            {
+                "schema_version": 1,
+                "task": task,
+                "rows": task_rows,
+                "rows_sha256": canonical_sha256(task_rows),
+            },
+            config,
+        )
+
+    facts = recovery._failure_facts(plan, root, {"failures": 0})
+
+    assert facts["failure_code"] == recovery.INCOMPLETE_INTRADAY_RANGE
+    assert facts["completed_tasks"] == 2
+    assert facts["evaluation_tasks_completed"] == 2
+    assert facts["data_outcomes_accessed"] is True
+    assert facts["failure_details"]["required_symbol_sessions"] == 4
+    assert (
+        facts["failure_details"]["incomplete_required_symbol_sessions"]
+        == 1
+    )
+    assert facts["failure_details"]["fully_complete_evaluation_dates"] == 0
+    assert facts["failure_details"]["provider_extra_session_dates"] == [
+        "2024-01-04"
+    ]
+    assert facts["failure_details"]["per_symbol"] == [
+        {
+            "symbol": "EWC",
+            "required_sessions": 2,
+            "complete_required_sessions": 1,
+            "incomplete_required_sessions": 1,
+            "evaluation_sessions": 1,
+            "complete_evaluation_sessions": 0,
+            "incomplete_evaluation_sessions": 1,
+        },
+        {
+            "symbol": "EWG",
+            "required_sessions": 2,
+            "complete_required_sessions": 2,
+            "incomplete_required_sessions": 0,
+            "evaluation_sessions": 1,
+            "complete_evaluation_sessions": 1,
+            "incomplete_evaluation_sessions": 0,
+        },
+    ]
+
+
 def test_confirmation_manifest_attests_capture_after_frozen_winner(
     tmp_path, monkeypatch
 ):
