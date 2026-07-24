@@ -470,6 +470,9 @@ implementation hash. Commit it before development collection freeze.
 Collection plan `6e4a6ca2...e529357` freezes nine raw SIP symbol ranges plus
 one split-action range over the exact warmup and development dates with zero
 substitutions. Commit it before provider access.
+Collection `fff6800f...cd933dd` completed all 10 tasks in 11 requests with zero
+failures or substitutions under ignored dataset hash
+`a7e62fec...0443062`. Commit the compact status before independent inspection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
