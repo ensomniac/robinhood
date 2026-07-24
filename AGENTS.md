@@ -216,8 +216,12 @@ Independent inspection `13f9b9c3...ab078` rebuilt all 570,317 rows and the
 private dataset index: 1,026 symbol-sessions are exact 390-minute inputs and
 448 sparse sessions remain in the denominator as no-signal inputs. It computed
 zero return metrics and opened no confirmation evidence. Freeze the exact
-development-search contract and runtime binding next. The confirmation
-partition and broker actions remain forbidden.
+development-search contract and runtime binding next.
+`gap_protection_discovery.py` and `gap_protection_plugin.py` now rebuild that
+inspected private index into the shared chronological account simulator and
+selection-aware engine, including the same protection cap in historical and
+production evaluation. Commit those implementations before hashing the family
+contract. The confirmation partition and broker actions remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
