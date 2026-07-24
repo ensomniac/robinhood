@@ -461,6 +461,9 @@ unchanged 32-trial grid, nine-symbol broad-asset universe, 1,000-session
 development, five-session embargo, and untouched 500-session confirmation
 reserve. They record zero price or outcome access and 9,000 formal development
 observations. Commit both before generic preflight.
+Preflight `02d3e16a...7c2e158` independently rebuilt the family, implementation,
+capacity, point-in-time, and zero-outcome boundaries and earned
+`CAPACITY_READY` with no provider request. Commit it before search freeze.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
