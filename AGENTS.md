@@ -632,6 +632,10 @@ that exact boundary, all unchanged 32 trials, the four fixed ETFs, Alpaca SIP
 raw range topology, the miss-entire-date rule, zero substitutions, and 4,000
 formal development instrument-sessions. Commit both before generic preflight;
 confirmation access remains forbidden.
+Preflight `d5861acf...24da22d` independently rebuilt the committed contract,
+capacity, implementation hashes, exact contaminated-training label, untouched
+confirmation boundary, and zero-new-outcome state. It earned
+`CAPACITY_READY`; commit it before freezing the complete development search.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
