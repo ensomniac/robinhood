@@ -1,0 +1,54 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "0242d1e262724b9c390144d9ba82d6a03a96593fad89d680943733b98b77bd72",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.025386166060343385,
+  "family_contract_path": "strategy_tournament/v2/continuous/broad-etf-trend-pullback-v3-pre2016-broad-etf-replication/family-contract/contract-55686f1a2b4a2c8a096c884883fc196f54ba32f681729f54f350c5fd35ad290d.json",
+  "family_contract_sha256": "b7a6a0e9fcb41a356801845e217b36c68adafad352a40e0019bf400dabdb8d87",
+  "family_id": "liquid-etf-trend-pullback-cost-floor",
+  "implementation_sha256": "a1cf124d420a7efa578d6e2c390ecf1937d2374fc2846da47fab83a4fcdca3b0",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "dates_bound": true,
+      "development_lane": true,
+      "family_bound": true,
+      "point_in_time": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 22800
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "55686f1a2b4a2c8a096c884883fc196f54ba32f681729f54f350c5fd35ad290d",
+  "verified_capacity": 22800
+}

@@ -284,7 +284,9 @@ untouched. Family contract `55686f1a...ad290d` and capacity manifest
 `a035e531...5db1bb` now bind all 32 trials, 19 ETFs, exact partitions, per-symbol
 Massive daily inputs, costs, selection gates, implementation hashes, and the
 current outcome-exposure index before price access. Commit them before generic
-outcome-blind preflight; confirmation remains closed.
+outcome-blind preflight; confirmation remains closed. Preflight
+`0242d1e2...7bd72` independently earned `CAPACITY_READY` with zero price or
+broker access. Freeze and commit the exact development search next.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
