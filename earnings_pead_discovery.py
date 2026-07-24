@@ -581,7 +581,7 @@ def freeze_family(
         "capacity_manifest": _repo_path(capacity_path),
         "dataset_manifest": _repo_path(capacity_path),
     }
-    strategy_discovery._validate_family_contract(contract)
+    contract = strategy_discovery._validate_family_contract(contract)
     digest = hashlib.sha256(earnings._canonical(contract)).hexdigest()
     path = (
         root
