@@ -1,0 +1,22 @@
+{
+  "artifact_kind": "oversold_fixed_rule_development_manifest_inspection",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "confirmation_locked": true,
+    "exact_rebuild": true,
+    "one_dataset_load": true,
+    "singleton_capacity": true
+  },
+  "confirmation_access_permitted": false,
+  "family_id": "gap-universe-oversold-reversal",
+  "inspected_at": "2026-07-24T22:37:12Z",
+  "inspection_sha256": "8b82116be350fd46c35d516bce4787e33c35b45ee19c07acb5d2bb5562cb9422",
+  "manifest_file_sha256": "db6206dacb67f06dc12dad90ae8fef076d302107f96d438012cb3742cacc4e2b",
+  "manifest_path": "strategy_tournament/v2/continuous/short-horizon-oversold-reversal-v7-fixed-rule-replication/capacity/dataset-short-horizon-oversold-reversal-v7-fixed-rule-replication-development-08165f50298aafa0ec3bb4bc5f3d4a02c0b605c68a19891f78376e90664fa88f.json",
+  "manifest_sha256": "08165f50298aafa0ec3bb4bc5f3d4a02c0b605c68a19891f78376e90664fa88f",
+  "schema_version": 1,
+  "state": "DEVELOPMENT_MANIFEST_INSPECTED_READY",
+  "successor_id": "short-horizon-oversold-reversal-v7-fixed-rule-replication",
+  "valid": true
+}
