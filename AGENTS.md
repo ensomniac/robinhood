@@ -206,8 +206,10 @@ before opening those 57 sessions; contract `d1bbaddf...1f0f6` now binds the
 exact 1,474 date/symbol pairs, Alpaca SIP raw one-minute semantics, resumable
 content-addressed storage, no interpolation or substitution, and exposure of
 the full development scope before the first provider request. Independently
-inspect and commit that contract next. The confirmation partition and broker
-actions remain forbidden.
+rebuild `91d752a0...82bbb` has earned
+`DEVELOPMENT_COLLECTION_CONTRACT_INSPECTED_READY`. Collect only that
+development scope next. The confirmation partition and broker actions remain
+forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
