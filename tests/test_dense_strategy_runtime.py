@@ -142,6 +142,49 @@ def test_sector_gap_drift_uses_completed_gap_and_next_session_open():
     assert candidate["exit_date"] <= evaluation_dates[2]
 
 
+def test_prepared_sector_gap_drift_reuses_completed_daily_features():
+    days = _days(230)
+    bars = [
+        _daily_bar(day, 100 + 0.1 * index)
+        for index, day in enumerate(days)
+    ]
+    prior_close = float(bars[219]["close"])
+    bars[220].update(
+        {
+            "open": prior_close * 1.02,
+            "close": prior_close * 1.025,
+            "high": prior_close * 1.03,
+            "low": prior_close * 1.015,
+        }
+    )
+    dataset = {
+        "family_id": runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+        "evaluation_dates": days[220:229],
+        "symbols": ["XLF"],
+        "daily_bars": {"XLF": bars},
+    }
+    parameters = {
+        "minimum_gap_fraction": 0.01,
+        "maximum_gap_fraction": 0.04,
+        "trend_sma": 100,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 2,
+    }
+
+    raw = runtime.build_candidates(
+        dataset, runtime.SECTOR_ETF_GAP_DRIFT_FAMILY, parameters
+    )
+    prepared_dataset = runtime.prepare_dataset(dataset)
+    prepared = runtime.build_candidates(
+        prepared_dataset,
+        runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+        parameters,
+    )
+
+    assert "_etf_pullback_feature_cache" in prepared_dataset
+    assert prepared == raw
+
+
 def test_cost_scenarios_share_the_stressed_contention_selection():
     calendar = _days(2)
     candidates = [

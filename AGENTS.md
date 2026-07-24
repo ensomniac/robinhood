@@ -397,6 +397,12 @@ PBO at or below 0.50, or stable positive neighbors; only three stayed within
 PF 0.979, 6.116R drawdown, a negative bootstrap lower bound, DSR 0.534, and
 PBO 0.514. The exact family is terminal and its 2021 confirmation reserve
 remains untouched.
+After that terminal disposition, the runtime was changed only to reuse its
+completed ATR/SMA feature cache across the gap-drift grid. A discarded
+performance-only replay on the already exposed corpus completed all 32 trials
+in 0.71 seconds with one dataset load and zero provider requests versus the
+recorded 62.42 seconds; no new result, inspection, or maturity artifact was
+written.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

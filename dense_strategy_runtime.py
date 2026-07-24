@@ -825,6 +825,9 @@ def _sector_etf_gap_drift_candidates(
         symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
         for symbol, bars in daily.items()
     }
+    feature_cache = dataset.get("_etf_pullback_feature_cache")
+    if not isinstance(feature_cache, Mapping):
+        feature_cache = _etf_pullback_feature_cache(daily)
     candidates: list[dict[str, Any]] = []
     for calendar_index, decision_date in enumerate(calendar[:-1]):
         scored: list[tuple[float, float, str, float]] = []
@@ -838,8 +841,9 @@ def _sector_etf_gap_drift_candidates(
             session_return = (
                 float(decision_bar["close"]) / float(decision_bar["open"]) - 1
             )
-            trend = _sma(bars, symbol_index, trend_period)
-            atr14 = _atr(bars, symbol_index)
+            features = feature_cache[symbol][decision_date]
+            trend = features[f"sma{trend_period}"]
+            atr14 = features["atr14"]
             if (
                 trend is None
                 or atr14 is None
@@ -2260,7 +2264,10 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                     "ETF pullback data omits a frozen symbol-session"
                 )
         prepared["_prepared_daily_bars"] = daily
-        if family_id == ETF_PULLBACK_FAMILY:
+        if family_id in {
+            ETF_PULLBACK_FAMILY,
+            SECTOR_ETF_GAP_DRIFT_FAMILY,
+        }:
             prepared["_etf_pullback_feature_cache"] = (
                 _etf_pullback_feature_cache(daily)
             )
