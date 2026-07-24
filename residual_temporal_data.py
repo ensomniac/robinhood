@@ -189,6 +189,32 @@ def _contaminated_record(
     return matches[0]
 
 
+def _development_scopes(
+    early_identities: Mapping[str, Mapping[str, str]],
+    later_identities: Mapping[str, Mapping[str, str]],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    early_dates = sorted(early_identities)
+    later_dates = sorted(later_identities)
+    fresh_scope = {
+        "dates": early_dates,
+        "symbols_by_date": {
+            day: sorted(early_identities[day]) for day in early_dates
+        },
+    }
+    exact_scope = {
+        "dates": early_dates + later_dates,
+        "symbols_by_date": {
+            **fresh_scope["symbols_by_date"],
+            **{day: ["*"] for day in later_dates},
+        },
+    }
+    exposure_scope = {
+        "dates": early_dates + later_dates,
+        "symbols": ["*"],
+    }
+    return fresh_scope, exact_scope, exposure_scope
+
+
 def _partitions(
     early_dates: Sequence[str], v6_contract: Mapping[str, Any]
 ) -> tuple[list[str], list[str], list[str], list[str], list[str]]:
@@ -255,13 +281,9 @@ def freeze_contract(
         raise ResidualTemporalDataError(
             "v6 contaminated exposure scope drifted"
         )
-    fresh_scope = {
-        "dates": sorted(early_identities),
-        "symbols_by_date": {
-            day: sorted(early_identities[day])
-            for day in sorted(early_identities)
-        },
-    }
+    fresh_scope, exact_development_scope, development_scope = (
+        _development_scopes(early_identities, later_identities)
+    )
     if outcome_exposure.find_overlaps(fresh_scope, records):
         raise ResidualTemporalDataError(
             "new early development scope is no longer untouched"
@@ -283,19 +305,6 @@ def freeze_contract(
             },
         }
     )
-    development_scope = {
-        "dates": development_signals,
-        "symbols_by_date": {
-            **{
-                day: sorted(early_identities[day])
-                for day in sorted(early_identities)
-            },
-            **{
-                day: ["*"]
-                for day in v6_contract["development_signal_dates"]
-            },
-        },
-    }
     implementation_files = (
         "residual_temporal_data.py",
         "residual_temporal_data_inspection.py",
@@ -330,7 +339,11 @@ def freeze_contract(
         "v6_contract_sha256": v6_contract["artifact_sha256"],
         "contaminated_training_exposure": contaminated,
         "contaminated_training_signal_count": len(later_identities),
-        "fresh_development_scope": fresh_scope,
+        "fresh_development_scope_sha256": canonical_sha256(fresh_scope),
+        "fresh_development_identity_pairs": sum(
+            len(symbols_by_date)
+            for symbols_by_date in fresh_scope["symbols_by_date"].values()
+        ),
         "fresh_development_signal_count": len(early_identities),
         "development_dates": development_dates,
         "development_signal_dates": development_signals,
@@ -338,6 +351,9 @@ def freeze_contract(
         "confirmation_dates": confirmation_dates,
         "confirmation_signal_dates": confirmation_signals,
         "development_scope": development_scope,
+        "exact_development_scope_sha256": canonical_sha256(
+            exact_development_scope
+        ),
         "confirmation_scope": confirmation_scope,
         "development_symbol_count": len(symbols),
         "development_symbols_sha256": canonical_sha256(symbols),
@@ -420,10 +436,21 @@ def load_contract(
             )
         if enforce_commit:
             strategy_discovery.require_committed(implementation)
-    records = outcome_exposure.read_index()
-    if outcome_exposure.find_overlaps(
-        contract["fresh_development_scope"], records
+    fresh_scope, exact_scope, exposure_scope = _rebuild_development_scopes(
+        contract
+    )
+    if not (
+        canonical_sha256(fresh_scope)
+        == contract.get("fresh_development_scope_sha256")
+        and canonical_sha256(exact_scope)
+        == contract.get("exact_development_scope_sha256")
+        and exposure_scope == contract.get("development_scope")
     ):
+        raise ResidualTemporalDataError(
+            "development exposure scopes drifted"
+        )
+    records = outcome_exposure.read_index()
+    if outcome_exposure.find_overlaps(fresh_scope, records):
         raise ResidualTemporalDataError(
             "fresh early outcomes were exposed before collection"
         )
@@ -454,6 +481,23 @@ def _load_all_identities(
             "combined development identities drifted"
         )
     return combined
+
+
+def _rebuild_development_scopes(
+    contract: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    combined = _load_all_identities(contract)
+    early_dates = set(reference.selected_dates())
+    later_dates = set(contract["development_signal_dates"]) - early_dates
+    early = {
+        day: combined[day]
+        for day in sorted(early_dates)
+    }
+    later = {
+        day: combined[day]
+        for day in sorted(later_dates)
+    }
+    return _development_scopes(early, later)
 
 
 def _load_contract_inspection(

@@ -27,6 +27,24 @@ def test_temporal_family_uses_equity_residual_runtime():
     assert data.FAMILY_ID in runtime.RESIDUAL_FAMILIES
 
 
+def test_temporal_scope_artifacts_use_hashes_and_conservative_wildcard():
+    early = {
+        "2021-01-04": {"AAA": "identity-a", "BBB": "identity-b"},
+    }
+    later = {
+        "2023-01-03": {"CCC": "identity-c"},
+    }
+
+    fresh, exact, exposure = data._development_scopes(early, later)
+
+    assert fresh["symbols_by_date"]["2021-01-04"] == ["AAA", "BBB"]
+    assert exact["symbols_by_date"]["2023-01-03"] == ["*"]
+    assert exposure == {
+        "dates": ["2021-01-04", "2023-01-03"],
+        "symbols": ["*"],
+    }
+
+
 def test_temporal_empty_series_normalization_changes_no_nonempty_rows():
     dataset = {
         "daily_bars": {

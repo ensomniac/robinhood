@@ -160,9 +160,10 @@ def freeze_family(
             "v6 adverse development disposition drifted"
         )
     records = outcome_exposure.read_index()
-    if outcome_exposure.find_overlaps(
-        contract["fresh_development_scope"], records
-    ):
+    fresh_scope, _exact_scope, exposure_scope = (
+        data._rebuild_development_scopes(contract)
+    )
+    if outcome_exposure.find_overlaps(fresh_scope, records):
         raise ResidualTemporalDiscoveryError(
             "v7 fresh development scope is no longer untouched"
         )
@@ -230,8 +231,17 @@ def freeze_family(
                 contract["confirmation_signal_dates"]
             ),
             "development_scope": dict(contract["development_scope"]),
-            "fresh_development_scope": dict(
-                contract["fresh_development_scope"]
+            "fresh_development_scope_sha256": contract[
+                "fresh_development_scope_sha256"
+            ],
+            "fresh_development_identity_pairs": contract[
+                "fresh_development_identity_pairs"
+            ],
+            "exact_development_scope_sha256": contract[
+                "exact_development_scope_sha256"
+            ],
+            "development_exposure_scope_is_conservative": (
+                contract["development_scope"] == exposure_scope
             ),
             "contaminated_training_exposure": dict(
                 contract["contaminated_training_exposure"]

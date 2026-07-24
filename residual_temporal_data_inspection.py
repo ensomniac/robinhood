@@ -106,10 +106,11 @@ def inspect_contract(
         }
     )
     records = outcome_exposure.read_index()
-    contaminated = data._contaminated_record(records)
-    fresh_overlaps = outcome_exposure.find_overlaps(
-        contract["fresh_development_scope"], records
+    fresh_scope, exact_scope, exposure_scope = data._development_scopes(
+        early, later
     )
+    contaminated = data._contaminated_record(records)
+    fresh_overlaps = outcome_exposure.find_overlaps(fresh_scope, records)
     confirmation_overlaps = outcome_exposure.find_overlaps(
         contract["confirmation_scope"], records
     )
@@ -126,6 +127,12 @@ def inspect_contract(
         == contract["contaminated_training_exposure"],
         "combined_identity_graph_rebuilt": canonical_sha256(combined)
         == contract["identity_graph_sha256"],
+        "fresh_scope_hash_rebuilt": canonical_sha256(fresh_scope)
+        == contract["fresh_development_scope_sha256"],
+        "exact_development_scope_hash_rebuilt": canonical_sha256(exact_scope)
+        == contract["exact_development_scope_sha256"],
+        "conservative_exposure_scope_rebuilt": exposure_scope
+        == contract["development_scope"],
         "development_partition_rebuilt": contract["development_dates"]
         == development_dates
         and contract["development_signal_dates"] == development_signals,
