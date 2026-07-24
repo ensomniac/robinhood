@@ -549,6 +549,132 @@ def test_existing_successor_plan_uses_frozen_alpaca_daily_provider(
     ]
 
 
+def test_country_intraday_range_plan_uses_one_task_per_symbol(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
+    days = _dates(70)
+    calendar = tmp_path / "calendar.json"
+    calendar.write_text(
+        json.dumps(
+            [
+                {"date": day, "open_et": "09:30", "close_et": "16:00"}
+                for day in days
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    authority_path = tmp_path / "search.json"
+    authority_path.write_text("{}\n", encoding="utf-8")
+    symbols = ["EWC", "EWG", "EWP", "EWQ", "EWT", "EWU", "EWW", "EWY"]
+    contract = {
+        "family_id": runtime.COUNTRY_ETF_OPENING_REVERSAL_FAMILY,
+        "research_generation": (
+            collection.continuous_strategy_discovery.RESEARCH_GENERATION
+        ),
+        "development_warmup_dates": days[:60],
+        "development_dates": days[60:],
+        "universe": {"symbols": symbols},
+        "historical_data_contract": {
+            "minute_request_mode": "symbol_range",
+        },
+    }
+    authority = {"artifact_sha256": "a" * 64}
+    monkeypatch.setattr(
+        collection,
+        "_authority",
+        lambda *_args, **_kwargs: (
+            authority,
+            contract,
+            authority["artifact_sha256"],
+        ),
+    )
+    monkeypatch.setattr(
+        collection,
+        "_existing_successor_authorized",
+        lambda *_args, **_kwargs: True,
+    )
+    monkeypatch.setattr(
+        collection,
+        "_capacity_calendar_hash",
+        lambda *_args, **_kwargs: collection._file_hash(calendar),
+    )
+
+    _path, plan = collection.freeze_plan(
+        authority_path,
+        as_of=date(2026, 7, 23),
+        actual_today=date(2026, 7, 23),
+        calendar_path=calendar,
+        public_root=tmp_path / "public",
+        enforce_commit=False,
+    )
+
+    assert plan["task_count"] == len(symbols)
+    assert [task["symbol"] for task in plan["tasks"]] == symbols
+    assert all(
+        task["kind"] == "sip_minute_symbol_range"
+        and task["start"] == days[0]
+        and task["date"] == days[-1]
+        for task in plan["tasks"]
+    )
+
+
+def test_intraday_range_dataset_rebuilds_date_symbol_sessions(tmp_path):
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    days = _dates(2)
+    symbols = ["EWC", "EWG"]
+    tasks = []
+    for symbol in symbols:
+        task = {
+            "kind": "sip_minute_symbol_range",
+            "start": days[0],
+            "date": days[-1],
+            "symbol": symbol,
+        }
+        task["task_id"] = canonical_sha256(task)
+        tasks.append(task)
+    plan = {
+        "family_id": runtime.COUNTRY_ETF_OPENING_REVERSAL_FAMILY,
+        "evaluation_dates": days,
+        "required_dates": days,
+        "symbols": symbols,
+        "tasks": tasks,
+    }
+    for task in tasks:
+        rows = [
+            {
+                "date_et": day,
+                "time_et": f"{day}T09:30:00-05:00",
+                "open": 100.0,
+                "high": 100.2,
+                "low": 99.8,
+                "close": 100.1,
+                "volume": 1_000,
+                "wap": 100.05,
+            }
+            for day in days
+        ]
+        collection._write_external(
+            collection._checkpoint_path(tmp_path, task),
+            {
+                "schema_version": 1,
+                "task": task,
+                "rows": rows,
+                "rows_sha256": canonical_sha256(rows),
+            },
+            config,
+        )
+
+    dataset = collection.build_dataset(tmp_path, plan)
+
+    assert set(dataset["minute_bars"]) == set(days)
+    assert all(
+        set(dataset["minute_bars"][day]) == set(symbols)
+        for day in days
+    )
+
+
 def test_collection_is_resumable_idempotent_and_independently_inspected(
     tmp_path, monkeypatch
 ):

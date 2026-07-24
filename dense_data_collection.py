@@ -334,12 +334,33 @@ def freeze_plan(
         raise DenseDataCollectionError("frozen family warmup dates drifted")
     if intraday:
         symbols = sorted(map(str, contract["universe"]["symbols"]))
-        tasks = [
-            _task("sip_minute_bars", day, symbol)
-            for day in required_dates
-            for symbol in symbols
-        ]
-        providers = ["Alpaca SIP raw-adjustment minute bars"]
+        range_mode = (
+            contract.get("historical_data_contract", {}).get(
+                "minute_request_mode"
+            )
+            == "symbol_range"
+        )
+        if range_mode:
+            tasks = []
+            for symbol in symbols:
+                task = {
+                    "kind": "sip_minute_symbol_range",
+                    "start": required_dates[0],
+                    "date": required_dates[-1],
+                    "symbol": symbol,
+                }
+                task["task_id"] = canonical_sha256(task)
+                tasks.append(task)
+            providers = [
+                "Alpaca SIP raw-adjustment minute bars by frozen symbol range"
+            ]
+        else:
+            tasks = [
+                _task("sip_minute_bars", day, symbol)
+                for day in required_dates
+                for symbol in symbols
+            ]
+            providers = ["Alpaca SIP raw-adjustment minute bars"]
     elif existing_successor:
         symbols = sorted(map(str, contract["universe"].get("symbols", [])))
         if not symbols:
@@ -771,6 +792,16 @@ class ProviderBackend:
             return self.alpaca.fetch_bars(
                 str(task["symbol"]), start, end, bar_size="1 min", use_rth=True
             )
+        if kind == "sip_minute_symbol_range":
+            start_day = date.fromisoformat(str(task["start"]))
+            end_day = date.fromisoformat(day)
+            return self.alpaca.fetch_bars(
+                str(task["symbol"]),
+                datetime.combine(start_day, wall_time(9, 30), tzinfo=EASTERN),
+                datetime.combine(end_day, wall_time(16, 0), tzinfo=EASTERN),
+                bar_size="1 min",
+                use_rth=True,
+            )
         if kind == "daily_symbol_bars":
             start_day = date.fromisoformat(str(task["start"]))
             end_day = date.fromisoformat(day) + timedelta(days=1)
@@ -1094,23 +1125,37 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         expected_symbols = set(map(str, plan["symbols"]))
         for task in plan["tasks"]:
             rows = _load_checkpoint(_checkpoint_path(checkpoint_root, task), task)
-            day = str(task["date"])
             symbol = str(task["symbol"])
-            converted = [
-                {
-                    "timestamp": row["time_et"],
-                    "open": row["open"],
-                    "high": row["high"],
-                    "low": row["low"],
-                    "close": row["close"],
-                    "volume": row["volume"],
-                    "vwap_numerator": float(row["wap"]) * float(row["volume"]),
-                    "vwap_denominator": row["volume"],
-                }
-                for row in rows
-            ]
-            minute.setdefault(day, {})[symbol] = converted
-        if any(set(symbols) != expected_symbols for symbols in minute.values()):
+            grouped: dict[str, list[dict[str, Any]]] = {}
+            for row in rows:
+                day = (
+                    str(task["date"])
+                    if task["kind"] == "sip_minute_bars"
+                    else str(row["date_et"])
+                )
+                grouped.setdefault(day, []).append(
+                    {
+                        "timestamp": row["time_et"],
+                        "open": row["open"],
+                        "high": row["high"],
+                        "low": row["low"],
+                        "close": row["close"],
+                        "volume": row["volume"],
+                        "vwap_numerator": (
+                            float(row["wap"]) * float(row["volume"])
+                        ),
+                        "vwap_denominator": row["volume"],
+                    }
+                )
+            for day, converted in grouped.items():
+                minute.setdefault(day, {})[symbol] = converted
+        if (
+            set(minute) != set(map(str, plan["required_dates"]))
+            or any(
+                set(symbols) != expected_symbols
+                for symbols in minute.values()
+            )
+        ):
             raise DenseDataCollectionError("intraday task coverage is incomplete")
         return {
             "schema_version": 1,

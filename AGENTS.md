@@ -527,6 +527,13 @@ outcome access and earned `CAPACITY_READY`. Commit it before search freeze.
 Search `9168aa81...a42ace6` now binds all 32 unchanged trials, neighbors,
 rolling folds, costs, account simulator, selection algorithm, and
 implementation hashes. Commit it before development collection freeze.
+The first frozen collection topology expanded to 8,480 separately paced
+session-symbol tasks and was discarded before commit, provider access, or
+outcome access. `country_etf_opening_reversal_range.py` changes only that
+outcome-blind topology to eight resumable symbol-range tasks; dataset rebuilding
+restores the exact date-symbol minute sessions and tests prove all strategy,
+partition, and universe semantics are unchanged. Commit this V2 implementation
+before freezing its superseding contract.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
