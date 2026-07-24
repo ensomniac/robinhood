@@ -690,6 +690,15 @@ Development result `f83b90a2...a98b146d` completed all 32 exact trials in
 20.68 seconds with one dataset load, one cache hit, and zero provider requests
 or failures. Commit it before independent trial-accounting and winner-selection
 inspection.
+Inspection `01b5095e...6e2e872f` rejected all 32 trials. None had positive
+20-bps growth, a positive rolling fold set, stressed profit factor or drawdown,
+DSR, Holm rejection, or stable positive neighbors. The least-negative trial
+had 24 OOF fills, -0.07209 stressed log growth, PF 0.184, 14.14R drawdown, a
+-0.00421 one-sided bootstrap lower bound, and DSR 0.258. This exact
+opening-reversal version is terminal; confirmation remains untouched. The
+inspection appended its already-contaminated 4,000 development pairs to the
+global exposure audit and must be committed before advancing another
+mechanism.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
