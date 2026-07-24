@@ -54,6 +54,10 @@ SOURCE_FREEZE_INSPECTION = (
 )
 EVENT_START = "2025-01-01"
 EVENT_END = "2025-12-31"
+PRIOR_DISCARDED_PROVIDER_REQUESTS = 12
+SUPERSEDED_EVENT_CONTRACT_SHA256 = (
+    "aaf6be9f6583cb2fc05694c2204b8a5a17cc6281658f620675dff18ef74729b9"
+)
 
 
 class EarningsGapContinuationError(RuntimeError):
@@ -212,6 +216,16 @@ def build_event_collection_contract(
         "event_end": EVENT_END,
         "requests": _event_windows(),
         "logical_provider_requests": 12,
+        "prior_discarded_provider_requests": PRIOR_DISCARDED_PROVIDER_REQUESTS,
+        "total_provider_requests_after_collection": (
+            12 + PRIOR_DISCARDED_PROVIDER_REQUESTS
+        ),
+        "supersedes_event_contract_sha256": SUPERSEDED_EVENT_CONTRACT_SHA256,
+        "transport_recovery": (
+            "The first twelve responses were discarded when the stdin ingestion "
+            "CLI waited for terminal EOF; no event artifact, prices, forward "
+            "returns, strategy metrics, or broker actions were produced."
+        ),
         "selection_fields": [
             "symbol",
             "report_date",
@@ -290,6 +304,9 @@ def inspect_event_collection(
         "contract_file_sha256": sha256_file(contract_path),
         "contract_sha256": recorded["contract_sha256"],
         "logical_provider_requests": recorded["logical_provider_requests"],
+        "prior_discarded_provider_requests": recorded[
+            "prior_discarded_provider_requests"
+        ],
         "market_prices_accessed": False,
         "forward_returns_accessed": False,
         "broker_actions_permitted": False,
@@ -459,7 +476,9 @@ def ingest_event_calendars(
         "inspection_sha256": inspection["inspection_sha256"],
         "collected_at": collected_at,
         "provider": contract["provider"],
-        "provider_requests": len(expected),
+        "provider_requests": len(expected) + PRIOR_DISCARDED_PROVIDER_REQUESTS,
+        "effective_provider_requests": len(expected),
+        "discarded_provider_requests": PRIOR_DISCARDED_PROVIDER_REQUESTS,
         "provider_rows": provider_rows,
         "market_prices_accessed": False,
         "forward_returns_accessed": False,
@@ -488,7 +507,9 @@ def ingest_event_calendars(
         "contract_sha256": contract["contract_sha256"],
         "inspection_path": _repo_path(inspection_path),
         "inspection_sha256": inspection["inspection_sha256"],
-        "provider_requests": len(expected),
+        "provider_requests": len(expected) + PRIOR_DISCARDED_PROVIDER_REQUESTS,
+        "effective_provider_requests": len(expected),
+        "discarded_provider_requests": PRIOR_DISCARDED_PROVIDER_REQUESTS,
         "provider_rows": provider_rows,
         "normalized_events": len(rows),
         "verified_positive_surprises": len(positive),
@@ -538,10 +559,15 @@ def main() -> int:
                 args.contract, inspected_at=args.inspected_at
             )
         else:
+            lines: list[str] = []
+            for line in os.sys.stdin:
+                lines.append(line)
+                if line.strip() == "__END__":
+                    break
             path, value = ingest_event_calendars(
                 args.contract,
                 args.inspection,
-                list(os.sys.stdin),
+                lines,
                 collected_at=args.collected_at,
             )
         print(
