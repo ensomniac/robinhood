@@ -545,6 +545,10 @@ V2 search `0c581ad5...810363` now binds the unchanged 32 trials, neighbor
 graph, rolling folds, account simulator, costs, deterministic winner selection,
 exact V2 implementation, and range provider topology. Commit it before freezing
 development collection.
+Development collection plan `8c09045e...4d8187` freezes exactly eight
+`sip_minute_symbol_range` tasks spanning the required 2016-09-26 through
+2020-12-23 warmup and development input range, with no substitutions, provider
+requests, prices, or outcomes before freeze. Commit it before collection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
