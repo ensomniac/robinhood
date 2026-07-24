@@ -170,6 +170,10 @@ calendar wait.
 Independent inspection `3bc6e657...2f77bc` rebuilt every source, date,
 identity, split, implementation, and untouched-evidence binding without opening
 market prices; it is the sole collection authority for this exact contract.
+Checkpointed development collection `135c77ca...9f827f` then acquired 1,795,815
+daily rows for 5,950 of 5,985 requested symbols in 186 provider requests with
+zero failures. It computed no strategy metric and opened no confirmation price;
+it remains untrusted until independent row-level liquidity inspection.
 Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
 freeze: its first independent inspection stopped on a missing local artifact-
 hash helper, before any provider or market-price access. It cannot authorize
