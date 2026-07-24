@@ -556,6 +556,12 @@ sequence and no evaluation date was complete across all eight symbols.
 `dense_collection_recovery.py` now independently summarizes this exact
 range-task failure without interpolating, substituting, or accessing strategy
 metrics. Commit the recorder before publishing and inspecting the failure.
+Failure `7f91f4bc...f2e730` records all eight completed range tasks and
+2,943,166 accessed minute rows, but 7,733 of 8,480 required symbol-sessions
+lacked a complete 390-minute sequence and zero development dates were complete
+across the fixed universe. No strategy metrics, confirmation inputs,
+substitutions, interpolation, or broker actions occurred. Commit it before
+independent failure inspection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
