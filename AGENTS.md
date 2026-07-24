@@ -380,6 +380,11 @@ Collection `cb3b135c...ce4bdd` completed all ten tasks in 11 accounted requests
 with zero failures and zero substitutions; raw rows remain only in the ignored
 content-addressed store under dataset hash `85f9a73d...781158`. Commit the
 status before independent dataset reconstruction.
+Inspection `d498ebdf...6788da` independently rehashed and rebuilt every task,
+all 1,200 required sessions, the exact nine-symbol scope, split adjustments,
+runtime schema, and 9,000 development instrument-session observations. Runtime
+manifest `87acbac0...508271` is search-bound and ready only after both artifacts
+are committed.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
