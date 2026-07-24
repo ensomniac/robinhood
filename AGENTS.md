@@ -418,7 +418,10 @@ reserve. They report 9,000 frozen development instrument-session observations
 with zero market-price access. Generic preflight `127b99f4...dd49ab`
 independently rebuilt the family, capacity, point-in-time, and zero-outcome
 boundaries and earned `CAPACITY_READY` with zero provider requests. Commit that
-inspection before freezing the search or accessing providers.
+inspection before freezing the search or accessing providers. Search manifest
+`e6053ce5...a5153` now binds the committed contract, preflight, and all 32
+declared trials in `SEARCH_FROZEN`; confirmation and broker access remain
+forbidden. Commit it before freezing development collection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
