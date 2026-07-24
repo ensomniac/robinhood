@@ -390,6 +390,13 @@ and one cache hit with zero provider requests or failures. The complete account
 and selection-statistics run took 62.42 seconds, 2.42 seconds above the
 performance acceptance; preserve the result and inspect selection before any
 performance change.
+Independent inspection `374b7918...837b6c` rejected every exact trial. None
+had positive 20-bps growth, stressed PF, all-fold growth, DSR, Holm rejection,
+PBO at or below 0.50, or stable positive neighbors; only three stayed within
+6R drawdown. The least-negative path had 85 OOF fills, -0.00320 log growth,
+PF 0.979, 6.116R drawdown, a negative bootstrap lower bound, DSR 0.534, and
+PBO 0.514. The exact family is terminal and its 2021 confirmation reserve
+remains untouched.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
