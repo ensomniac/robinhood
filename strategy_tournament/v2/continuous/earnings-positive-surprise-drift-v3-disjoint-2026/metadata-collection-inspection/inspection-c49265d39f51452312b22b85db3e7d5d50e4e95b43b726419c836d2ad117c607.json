@@ -1,0 +1,33 @@
+{
+  "artifact_kind": "earnings-pead-expansion-metadata-collection-inspection",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "collection_hash": true,
+    "no_broker": true,
+    "no_forward_returns": true,
+    "no_metrics": true,
+    "no_prices": true,
+    "positive_count": true,
+    "private_content": true,
+    "private_file": true,
+    "request_count": true
+  },
+  "collection_file_sha256": "c74a9187cf26bdb69602d20c049bc56a5332991f75344cd0f46d504bb88e2782",
+  "collection_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v3-disjoint-2026/metadata-collection/collection-6a08276f17f83512e6359e3e00483470c1ecbdd70510bbdb4e9e34274e1c2918.json",
+  "collection_sha256": "6a08276f17f83512e6359e3e00483470c1ecbdd70510bbdb4e9e34274e1c2918",
+  "confirmation_access_permitted": false,
+  "expansion_id": "earnings-positive-surprise-drift-v3-disjoint-2026",
+  "family_id": "earnings-positive-surprise-drift",
+  "forward_returns_accessed": false,
+  "inspected_at": "2026-07-24T21:09:00Z",
+  "inspection_sha256": "c49265d39f51452312b22b85db3e7d5d50e4e95b43b726419c836d2ad117c607",
+  "market_prices_accessed": false,
+  "positive_surprise_dates": 62,
+  "provider_requests": 128,
+  "schema_version": 1,
+  "state": "METADATA_CAPACITY_READY",
+  "strategy_metrics_computed": 0,
+  "valid": true,
+  "verified_positive_surprises": 169
+}
