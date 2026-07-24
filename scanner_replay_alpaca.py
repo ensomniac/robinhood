@@ -345,6 +345,7 @@ class AlpacaBulkBarsClient:
         self._last_request_started: float | None = None
         self.request_count = 0
         self.request_seconds = 0.0
+        self.pacing_wait_seconds = 0.0
         self.retry_count = 0
 
     def close(self) -> None:
@@ -364,6 +365,7 @@ class AlpacaBulkBarsClient:
             )
             if remaining > 0:
                 self._sleeper(remaining)
+                self.pacing_wait_seconds += remaining
         self._last_request_started = self._monotonic()
 
     @staticmethod

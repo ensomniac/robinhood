@@ -202,7 +202,11 @@ pairs: 57 development dates/1,474 pairs, five embargo dates, and 38
 confirmation dates/791 pairs. This clears the formal 50-total and
 20-confirmation maximum-entry capacity floors, but no outcome, power, or edge
 claim exists yet. Freeze and inspect a development-only full-minute collection
-before opening those 57 sessions; the confirmation partition and broker
+before opening those 57 sessions; contract `d1bbaddf...1f0f6` now binds the
+exact 1,474 date/symbol pairs, Alpaca SIP raw one-minute semantics, resumable
+content-addressed storage, no interpolation or substitution, and exposure of
+the full development scope before the first provider request. Independently
+inspect and commit that contract next. The confirmation partition and broker
 actions remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
