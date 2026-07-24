@@ -686,6 +686,10 @@ the exact dataset hash, missing-session evidence, frozen scope, runtime schema,
 and zero substitutions. Manifest `7929c6a2...0b60dd4b` binds that inspected
 dataset to refreshed search `c50c1847...dc07394`. Commit both before evaluating
 all 32 trials.
+Development result `f83b90a2...a98b146d` completed all 32 exact trials in
+20.68 seconds with one dataset load, one cache hit, and zero provider requests
+or failures. Commit it before independent trial-accounting and winner-selection
+inspection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
