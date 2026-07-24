@@ -1,0 +1,32 @@
+{
+  "artifact_kind": "oversold_fixed_rule_replication_boundary_inspection",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "confirmation_capacity": true,
+    "confirmation_untouched": true,
+    "development_capacity": true,
+    "exact_rebuild": true,
+    "five_session_embargo": true,
+    "no_broker": true,
+    "no_confirmation_outcomes": true,
+    "no_new_outcomes": true,
+    "no_provider": true,
+    "prior_correction_complete": true,
+    "singleton_rule": true
+  },
+  "confirmation_access_permitted": false,
+  "confirmation_candidate_symbol_sessions": 3648,
+  "contract_file_sha256": "2f1b0949d103529fa0778db484df80a9f944ed73a32ba01b5184684c1b82aee0",
+  "contract_path": "strategy_tournament/v2/continuous/short-horizon-oversold-reversal-v7-fixed-rule-replication/boundary/oversold-fixed-rule-boundary-ccebad3df1754e9627650f455e0df7a7e4beabc223e873887b4125acc37e430b.json",
+  "contract_sha256": "ccebad3df1754e9627650f455e0df7a7e4beabc223e873887b4125acc37e430b",
+  "development_candidate_symbol_sessions": 3216,
+  "family_id": "gap-universe-oversold-reversal",
+  "inspected_at": "2026-07-24T22:29:53Z",
+  "inspection_sha256": "00333f3d188a42405335b4af69c8663afda255a575c64cca4539e2d08ca65e20",
+  "provider_access_permitted_after_separate_collection_contract": true,
+  "schema_version": 1,
+  "state": "BOUNDARY_INSPECTED_COLLECTION_READY",
+  "successor_id": "short-horizon-oversold-reversal-v7-fixed-rule-replication",
+  "valid": true
+}
