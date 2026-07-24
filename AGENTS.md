@@ -467,6 +467,9 @@ capacity, point-in-time, and zero-outcome boundaries and earned
 Search `b0c98cbd...c60a455` now binds every one of the 32 unchanged trials,
 neighbor graph, rolling folds, account simulator, costs, selection rule, and
 implementation hash. Commit it before development collection freeze.
+Collection plan `6e4a6ca2...e529357` freezes nine raw SIP symbol ranges plus
+one split-action range over the exact warmup and development dates with zero
+substitutions. Commit it before provider access.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
