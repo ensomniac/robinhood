@@ -189,6 +189,9 @@ before development outcomes.
 Outcome-blind generic preflight `d57f859c...7316a3` independently reports
 `CAPACITY_READY`; it authorizes only search freeze, never provider, confirmation,
 or broker access.
+Search artifact `f131f2e3...d0d36c` is now `SEARCH_FROZEN` with all 48 declared
+trials and the deterministic winner rule; development evaluation may use only
+that committed artifact.
 Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
 freeze: its first independent inspection stopped on a missing local artifact-
 hash helper, before any provider or market-price access. It cannot authorize
