@@ -286,7 +286,10 @@ Massive daily inputs, costs, selection gates, implementation hashes, and the
 current outcome-exposure index before price access. Commit them before generic
 outcome-blind preflight; confirmation remains closed. Preflight
 `0242d1e2...7bd72` independently earned `CAPACITY_READY` with zero price or
-broker access. Freeze and commit the exact development search next.
+broker access. Search `29d6b9bc...c6a6f3` now freezes the complete trial family,
+deterministic winner selection, costs, partitions, and implementations before
+any daily price collection. Commit it before freezing the exact development
+collection plan.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
