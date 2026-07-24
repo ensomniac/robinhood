@@ -450,6 +450,12 @@ globally outcome-clean fixed universe `AGG`, `HYG`, `LQD`, `MDY`, `USO`, `UUP`,
 `VNQ`, `VOO`, and `VTI`. It must freeze a new exact implementation and disjoint
 date-symbol scopes before accessing any prices. This existing-family replication
 consumes no new mechanism slot and does not wait for a calendar reset.
+`broad_asset_etf_oversold.py` now freezes that replication, while the shared
+historical and production runtimes accept the new exact family ID without
+changing the one-session decline, RSI(2), trend, ATR stop, next-open, ranking,
+or exit semantics. Synthetic parity tests require the historical and production
+paths to select the same top-ranked signal. Commit the implementation before
+contract freeze.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

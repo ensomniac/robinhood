@@ -957,6 +957,63 @@ def test_production_high_beta_oversold_rebuilds_historical_rank():
     assert production["overnight_hold"] is True
 
 
+def test_production_broad_asset_oversold_rebuilds_historical_rank():
+    days = _days(230)
+    daily_bars = {}
+    for symbol, decline in (("VTI", 0.025), ("VOO", 0.02)):
+        bars = [
+            _daily_bar(day, 100 + 0.2 * index)
+            for index, day in enumerate(days)
+        ]
+        bars[220]["open"] = bars[219]["close"] * (1 - decline + 0.005)
+        bars[220]["close"] = bars[219]["close"] * (1 - decline)
+        bars[220]["high"] = bars[219]["close"] * (1 - decline + 0.01)
+        bars[220]["low"] = bars[219]["close"] * (1 - decline - 0.005)
+        daily_bars[symbol] = bars
+    parameters = {
+        "trend_sma": 100,
+        "rsi2_maximum": 10,
+        "one_session_decline_fraction": 0.02,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 2,
+    }
+    historical = runtime.build_candidates(
+        {
+            "family_id": runtime.BROAD_ASSET_ETF_OVERSOLD_FAMILY,
+            "evaluation_dates": days[220:229],
+            "symbols": ["VOO", "VTI"],
+            "daily_bars": daily_bars,
+        },
+        runtime.BROAD_ASSET_ETF_OVERSOLD_FAMILY,
+        parameters,
+    )[0]
+    production = runtime.evaluate_production_signal(
+        {
+            "family_id": runtime.BROAD_ASSET_ETF_OVERSOLD_FAMILY,
+            "decision_date": days[220],
+            "next_session_date": days[221],
+            "calendar_dates": days[:221],
+            "daily_history_complete": True,
+            "symbols": ["VOO", "VTI"],
+            "daily_bars": {
+                symbol: [
+                    bar for bar in bars if bar["date"] <= days[220]
+                ]
+                for symbol, bars in daily_bars.items()
+            },
+        },
+        family_id=runtime.BROAD_ASSET_ETF_OVERSOLD_FAMILY,
+        parameters=parameters,
+        frozen_universe={"symbols": ["VOO", "VTI"]},
+    )
+
+    assert runtime.BROAD_ASSET_ETF_OVERSOLD_FAMILY in historical["signal_id"]
+    assert production["symbol"] == historical["symbol"] == "VTI"
+    assert production["rank"] == historical["rank"] == 1
+    assert production["holding_trading_days"] == 2
+    assert production["overnight_hold"] is True
+
+
 def test_production_equity_rank_rebuilds_top_250_and_residual_signal():
     days = _days(205)
     spy_closes = [100 + 0.1 * index for index in range(len(days))]

@@ -1131,7 +1131,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
     if family_id in {
         runtime.ETF_PULLBACK_FAMILY,
         runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
-        runtime.HIGH_BETA_ETF_OVERSOLD_FAMILY,
+        *runtime.ETF_OVERSOLD_FAMILIES,
     }:
         symbols = set(map(str, plan["symbols"]))
         missing = [
@@ -1203,7 +1203,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
     if family_id in {
         runtime.ETF_PULLBACK_FAMILY,
         runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
-        runtime.HIGH_BETA_ETF_OVERSOLD_FAMILY,
+        *runtime.ETF_OVERSOLD_FAMILIES,
     }:
         dataset["symbols"] = list(plan["symbols"])
     else:

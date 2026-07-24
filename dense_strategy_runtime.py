@@ -32,6 +32,11 @@ ETF_TURN_OF_MONTH_FAMILY = "liquid-etf-turn-of-month-seasonality"
 SECTOR_ETF_ROTATION_FAMILY = "liquid-sector-etf-rotation"
 SECTOR_ETF_GAP_DRIFT_FAMILY = "sector-etf-gap-drift-continuation"
 HIGH_BETA_ETF_OVERSOLD_FAMILY = "high-beta-etf-oversold-reversal"
+BROAD_ASSET_ETF_OVERSOLD_FAMILY = "broad-asset-etf-oversold-reversal"
+ETF_OVERSOLD_FAMILIES = {
+    HIGH_BETA_ETF_OVERSOLD_FAMILY,
+    BROAD_ASSET_ETF_OVERSOLD_FAMILY,
+}
 ETF_CLOSE_TO_OPEN_FAMILY = "liquid-etf-close-to-open-momentum"
 CLOSE_TO_OPEN_ETF_SYMBOLS = ("QQQ", "IWM", "DIA")
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
@@ -50,7 +55,7 @@ SUPPORTED_FAMILIES = {
     ETF_TURN_OF_MONTH_FAMILY,
     SECTOR_ETF_ROTATION_FAMILY,
     SECTOR_ETF_GAP_DRIFT_FAMILY,
-    HIGH_BETA_ETF_OVERSOLD_FAMILY,
+    *ETF_OVERSOLD_FAMILIES,
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
@@ -933,7 +938,10 @@ def _sector_etf_gap_drift_candidates(
 
 
 def _high_beta_etf_oversold_candidates(
-    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+    *,
+    family_id: str = HIGH_BETA_ETF_OVERSOLD_FAMILY,
 ) -> list[dict[str, Any]]:
     calendar = _calendar(dataset)
     daily = _daily_series(dataset)
@@ -987,7 +995,7 @@ def _high_beta_etf_oversold_candidates(
                 candidates.append(
                     {
                         "signal_id": (
-                            f"{entry_date}-{HIGH_BETA_ETF_OVERSOLD_FAMILY}-"
+                            f"{entry_date}-{family_id}-"
                             f"{symbol}"
                         ),
                         "signal_date": entry_date,
@@ -1012,7 +1020,7 @@ def _high_beta_etf_oversold_candidates(
                 candidates.append(
                     {
                         "signal_id": (
-                            f"{entry_date}-{HIGH_BETA_ETF_OVERSOLD_FAMILY}-"
+                            f"{entry_date}-{family_id}-"
                             f"{symbol}"
                         ),
                         "signal_date": entry_date,
@@ -1026,7 +1034,7 @@ def _high_beta_etf_oversold_candidates(
                 continue
             candidates.append(
                 _daily_candidate(
-                    family_id=HIGH_BETA_ETF_OVERSOLD_FAMILY,
+                    family_id=family_id,
                     symbol=symbol,
                     decision_date=decision_date,
                     entry_date=entry_date,
@@ -2364,7 +2372,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             ETF_TURN_OF_MONTH_FAMILY,
             SECTOR_ETF_ROTATION_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
-            HIGH_BETA_ETF_OVERSOLD_FAMILY,
+            *ETF_OVERSOLD_FAMILIES,
         }:
             symbols = dataset.get("symbols")
             if not isinstance(symbols, list) or set(map(str, symbols)) != set(daily):
@@ -2385,7 +2393,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         if family_id in {
             ETF_PULLBACK_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
-            HIGH_BETA_ETF_OVERSOLD_FAMILY,
+            *ETF_OVERSOLD_FAMILIES,
         }:
             prepared["_etf_pullback_feature_cache"] = (
                 _etf_pullback_feature_cache(daily)
@@ -3306,8 +3314,10 @@ def build_candidates(
         return _etf_pullback_candidates(dataset, parameters)
     if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
         return _sector_etf_gap_drift_candidates(dataset, parameters)
-    if family_id == HIGH_BETA_ETF_OVERSOLD_FAMILY:
-        return _high_beta_etf_oversold_candidates(dataset, parameters)
+    if family_id in ETF_OVERSOLD_FAMILIES:
+        return _high_beta_etf_oversold_candidates(
+            dataset, parameters, family_id=family_id
+        )
     if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY:
         return _etf_cross_sectional_momentum_candidates(dataset, parameters)
     if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
@@ -3596,7 +3606,7 @@ def _production_daily_signal(
         ETF_TURN_OF_MONTH_FAMILY,
         SECTOR_ETF_ROTATION_FAMILY,
         SECTOR_ETF_GAP_DRIFT_FAMILY,
-        HIGH_BETA_ETF_OVERSOLD_FAMILY,
+        *ETF_OVERSOLD_FAMILIES,
     }:
         frozen_symbols = frozen_universe.get("symbols")
         observed_symbols = decision_data.get("symbols")
@@ -3615,7 +3625,7 @@ def _production_daily_signal(
             raise DenseStrategyRuntimeError(
                 "production ETF history does not cover the complete calendar"
             )
-        if family_id == HIGH_BETA_ETF_OVERSOLD_FAMILY:
+        if family_id in ETF_OVERSOLD_FAMILIES:
             trend_period = int(parameters["trend_sma"])
             rsi_max = float(parameters["rsi2_maximum"])
             decline_floor = float(
@@ -4567,7 +4577,7 @@ def evaluate_production_signal(
         ETF_TURN_OF_MONTH_FAMILY,
         SECTOR_ETF_ROTATION_FAMILY,
         SECTOR_ETF_GAP_DRIFT_FAMILY,
-        HIGH_BETA_ETF_OVERSOLD_FAMILY,
+        *ETF_OVERSOLD_FAMILIES,
     }:
         return _production_daily_signal(
             decision_data, family_id, parameters, frozen_universe

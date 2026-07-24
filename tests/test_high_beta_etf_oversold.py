@@ -59,6 +59,16 @@ def test_high_beta_oversold_contract_freezes_complete_family(
 
     monkeypatch.setattr(oversold, "DEFAULT_ROOT", tmp_path)
     monkeypatch.setattr(oversold, "_repo_path", repo_path)
+    monkeypatch.setattr(
+        oversold.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: [],
+    )
+    monkeypatch.setattr(
+        oversold.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
 
     _path, contract, capacity_path = oversold.freeze_contract(
         created_at=datetime.now().astimezone().isoformat(),
