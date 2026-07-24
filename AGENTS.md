@@ -288,8 +288,10 @@ outcome-blind preflight; confirmation remains closed. Preflight
 `0242d1e2...7bd72` independently earned `CAPACITY_READY` with zero price or
 broker access. Search `29d6b9bc...c6a6f3` now freezes the complete trial family,
 deterministic winner selection, costs, partitions, and implementations before
-any daily price collection. Commit it before freezing the exact development
-collection plan.
+any daily price collection. Development collection plan
+`691fa05a...923f43` now freezes 1,400 required sessions, all 19 per-symbol
+Massive daily-bar requests, one split-action request, raw adjustment semantics,
+and zero substitutions. Commit it before provider access.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
