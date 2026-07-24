@@ -717,6 +717,9 @@ all 32 trials, the four-symbol universe, exact contaminated development alias,
 five-session embargo, 310-session untouched confirmation reserve, costs,
 selection gates, and committed implementations. Commit both before generic
 outcome-blind preflight.
+Preflight `a8b11e5e...f3f184bb` independently validated the inspected source
+manifest, exact dates, derived-family binding, capacity, and zero external-file
+access and earned `CAPACITY_READY`. Commit it before search freeze.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
