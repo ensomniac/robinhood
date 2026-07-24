@@ -55,6 +55,11 @@ SOURCE_FREEZE_INSPECTION = (
 )
 EVENT_START = "2025-01-01"
 EVENT_END = "2025-12-31"
+SESSION_CALENDAR = (
+    PROJECT_ROOT
+    / "historical_batches/preentry_structure/"
+    "session-calendar-2024-12-through-2026-06.json"
+)
 PRIOR_DISCARDED_PROVIDER_REQUESTS = 24
 SUPERSEDED_EVENT_CONTRACT_SHA256 = (
     "2c11eaea9ca9ae08f0f09b5029efd116d6e69f7293e2c6bde7c96bd5dc632a08"
@@ -741,6 +746,201 @@ def ingest_normalized_events(
     return path, value
 
 
+def inspect_event_capacity(
+    collection_path: Path,
+    *,
+    inspected_at: str,
+    root: Path = DEFAULT_ROOT,
+    store: HistoricalDayStore | None = None,
+) -> tuple[Path, dict[str, Any]]:
+    """Join event metadata to the gap denominator without opening outcomes."""
+
+    _timestamp(inspected_at, "inspected_at")
+    strategy_discovery.require_committed(collection_path)
+    strategy_discovery.require_committed(SESSION_CALENDAR)
+    collection = _read(collection_path)
+    if not (
+        collection.get("artifact_kind") == "earnings-gap-event-collection"
+        and collection.get("collection_sha256")
+        == _self_hash(collection, "collection_sha256")
+        and collection.get("market_prices_accessed") is False
+        and collection.get("forward_returns_accessed") is False
+        and collection.get("broker_actions") == 0
+    ):
+        raise EarningsGapContinuationError(
+            "event collection artifact is invalid"
+        )
+    source = store or HistoricalDayStore.from_env()
+    private = (
+        source.root
+        / "_derived/earnings_gap_continuation"
+        / collection["normalization_contract_sha256"]
+        / "event-calendar.json.gz"
+    )
+    payload = _load_gzip(private)
+    if not (
+        sha256_file(private) == collection["private_payload_file_sha256"]
+        and canonical_sha256(payload)
+        == collection["private_payload_content_sha256"]
+        and payload.get("forward_returns_accessed") is False
+        and payload.get("market_prices_accessed") is False
+    ):
+        raise EarningsGapContinuationError(
+            "private event metadata drifted"
+        )
+    try:
+        calendar_rows = json.loads(
+            SESSION_CALENDAR.read_text(encoding="utf-8")
+        )
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EarningsGapContinuationError(
+            f"session calendar is unavailable: {exc}"
+        ) from exc
+    sessions = [
+        str(row["date"])
+        for row in calendar_rows
+        if isinstance(row, Mapping) and row.get("date")
+    ]
+    if sessions != sorted(set(sessions)):
+        raise EarningsGapContinuationError(
+            "session calendar is invalid"
+        )
+    reaction_rows: dict[
+        tuple[str, str], list[dict[str, Any]]
+    ] = defaultdict(list)
+    for row in payload["events"]:
+        if not (
+            row["verified"]
+            and row["actual_eps"] is not None
+            and row["estimated_eps"] is not None
+            and row["actual_eps"] > row["estimated_eps"]
+            and row["report_date"] in sessions
+        ):
+            continue
+        index = sessions.index(row["report_date"])
+        reaction_day = (
+            row["report_date"]
+            if row["timing"] == "am"
+            else sessions[index + 1]
+            if index + 1 < len(sessions)
+            else None
+        )
+        if reaction_day is not None:
+            reaction_rows[(reaction_day, row["symbol"])].append(row)
+    event_pairs = {
+        pair for pair, rows in reaction_rows.items() if len(rows) == 1
+    }
+    source_selection = gap._load_gzip(gap._selection_path(source))
+    if (
+        canonical_sha256(source_selection)
+        != _read(SOURCE_MANIFEST)["private_selection"]["content_sha256"]
+    ):
+        raise EarningsGapContinuationError(
+            "point-in-time gap selection drifted"
+        )
+
+    def phase_pairs(phase: str) -> set[tuple[str, str]]:
+        value = source_selection["phases"][phase]
+        return {
+            (day, str(row["symbol"]))
+            for day in value["dates"]
+            for row in value["candidates_by_date"][day]
+        }
+
+    development_pairs = sorted(phase_pairs("development") & event_pairs)
+    raw_confirmation_pairs = sorted(
+        phase_pairs("confirmation") & event_pairs
+    )
+    indexed = outcome_exposure.read_index()
+    exposed_pairs: set[tuple[str, str]] = set()
+    exposed_dates: set[str] = set()
+    for record in indexed:
+        for day, symbol in outcome_exposure.scope_pairs(record["scope"]):
+            if symbol == "*":
+                exposed_dates.add(day)
+            else:
+                exposed_pairs.add((day, symbol))
+    clean_confirmation_pairs = [
+        pair
+        for pair in raw_confirmation_pairs
+        if pair[0] not in exposed_dates and pair not in exposed_pairs
+    ]
+    development_signal_dates = sorted(
+        {day for day, _symbol in development_pairs}
+    )
+    raw_confirmation_signal_dates = sorted(
+        {day for day, _symbol in raw_confirmation_pairs}
+    )
+    clean_confirmation_signal_dates = sorted(
+        {day for day, _symbol in clean_confirmation_pairs}
+    )
+    confirmation_floor = 20
+    blockers: list[str] = []
+    if len(development_signal_dates) < 50:
+        blockers.append(
+            "development one-entry-per-day capacity is below 50"
+        )
+    if len(clean_confirmation_signal_dates) < confirmation_floor:
+        blockers.append(
+            "untouched confirmation one-entry-per-day capacity is below 20"
+        )
+    value: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_kind": "earnings-gap-event-capacity-inspection",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "successor_id": SUCCESSOR_ID,
+        "inspected_at": inspected_at,
+        "collection_path": _repo_path(collection_path),
+        "collection_file_sha256": sha256_file(collection_path),
+        "collection_sha256": collection["collection_sha256"],
+        "provider_requests_during_inspection": 0,
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "strategy_returns_computed": 0,
+        "broker_actions": 0,
+        "verified_positive_reaction_pairs": len(event_pairs),
+        "development_event_gap_pairs": len(development_pairs),
+        "development_signal_dates": len(development_signal_dates),
+        "raw_confirmation_event_gap_pairs": len(
+            raw_confirmation_pairs
+        ),
+        "raw_confirmation_signal_dates": len(
+            raw_confirmation_signal_dates
+        ),
+        "excluded_confirmation_pairs": (
+            len(raw_confirmation_pairs)
+            - len(clean_confirmation_pairs)
+        ),
+        "untouched_confirmation_event_gap_pairs": len(
+            clean_confirmation_pairs
+        ),
+        "untouched_confirmation_signal_dates": len(
+            clean_confirmation_signal_dates
+        ),
+        "maximum_one_family_entry_per_day": True,
+        "configured_total_signal_floor": 50,
+        "configured_confirmation_signal_floor": confirmation_floor,
+        "blockers": blockers,
+        "state": (
+            "CAPACITY_READY"
+            if not blockers
+            else "INSUFFICIENT_POWER_CAPACITY"
+        ),
+        "confirmation_access_permitted": False,
+        "valid": True,
+    }
+    value["inspection_sha256"] = _self_hash(value, "inspection_sha256")
+    path = (
+        root
+        / "event-capacity-inspection"
+        / f"earnings-gap-event-capacity-inspection-"
+        f"{value['inspection_sha256']}.json"
+    )
+    _write_json(path, value)
+    return path, value
+
+
 def ingest_event_calendars(
     contract_path: Path,
     inspection_path: Path,
@@ -911,6 +1111,9 @@ def _parser() -> argparse.ArgumentParser:
     ingest_normalize.add_argument("inspection", type=Path)
     ingest_normalize.add_argument("--raw-spool", type=Path, required=True)
     ingest_normalize.add_argument("--collected-at", required=True)
+    capacity = commands.add_parser("inspect-event-capacity")
+    capacity.add_argument("collection", type=Path)
+    capacity.add_argument("--inspected-at", required=True)
     return parser
 
 
@@ -948,12 +1151,17 @@ def main() -> int:
                 raw_spool_path=args.raw_spool,
                 inspected_at=args.inspected_at,
             )
-        else:
+        elif args.command == "ingest-normalized-events":
             path, value = ingest_normalized_events(
                 args.contract,
                 args.inspection,
                 raw_spool_path=args.raw_spool,
                 collected_at=args.collected_at,
+            )
+        else:
+            path, value = inspect_event_capacity(
+                args.collection,
+                inspected_at=args.inspected_at,
             )
         print(
             json.dumps(
