@@ -320,7 +320,10 @@ the full trial family, deterministic winner selection, account costs,
 partitions, and implementations. Development collection plan
 `5e80d293...9a9cd5` freezes 1,200 required sessions, six Alpaca SIP raw daily
 symbol ranges, the committed Massive split-action range, and zero substitutions.
-Commit it before provider access.
+Collection `59cb9c3a...31a26d` completed all seven tasks in eight fully accounted
+provider calls, with zero failures, zero substitutions, and raw rows retained
+only in the ignored content-addressed store. Commit its hashes and telemetry
+before independent dataset reconstruction.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
