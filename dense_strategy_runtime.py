@@ -22,6 +22,13 @@ from learning_statistics import (
 
 
 EQUITY_RESIDUAL_FAMILY = "liquid-equity-market-residual-reversal"
+EQUITY_RESIDUAL_REPLICATION_FAMILY = (
+    "liquid-equity-market-residual-reversal-replication"
+)
+EQUITY_RESIDUAL_FAMILIES = {
+    EQUITY_RESIDUAL_FAMILY,
+    EQUITY_RESIDUAL_REPLICATION_FAMILY,
+}
 INTRADAY_ETF_FAMILY = "intraday-index-etf-opening-reversal"
 COUNTRY_ETF_OPENING_REVERSAL_FAMILY = "country-etf-opening-reversal"
 LIQUID_INDEX_ETF_OPENING_REVERSAL_FAMILY = (
@@ -62,7 +69,7 @@ VOLATILITY_COMPRESSION_FAMILY = (
     "gap-universe-volatility-compression-breakout"
 )
 SUPPORTED_FAMILIES = {
-    EQUITY_RESIDUAL_FAMILY,
+    *EQUITY_RESIDUAL_FAMILIES,
     *INTRADAY_ETF_FAMILIES,
     ETF_PULLBACK_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
@@ -486,6 +493,11 @@ def _daily_candidate(
 def _equity_residual_candidates(
     dataset: Mapping[str, Any], parameters: Mapping[str, Any]
 ) -> list[dict[str, Any]]:
+    family_id = str(dataset.get("family_id"))
+    if family_id not in EQUITY_RESIDUAL_FAMILIES:
+        raise DenseStrategyRuntimeError(
+            "equity residual dataset family binding is invalid"
+        )
     calendar = _calendar(dataset)
     calendar_positions = {day: index for index, day in enumerate(calendar)}
     daily = _daily_series(dataset)
@@ -499,6 +511,28 @@ def _equity_residual_candidates(
         raise DenseStrategyRuntimeError(
             "equity residual data needs point-in-time identity by date"
         )
+    raw_split_dates = dataset.get("split_execution_dates_by_symbol")
+    if (
+        raw_split_dates is None
+        and family_id == EQUITY_RESIDUAL_FAMILY
+    ):
+        # Preserve the already-frozen V5 input contract.  The disjoint
+        # replication below requires an explicit complete split denominator.
+        raw_split_dates = {}
+    if not isinstance(raw_split_dates, Mapping):
+        raise DenseStrategyRuntimeError(
+            "equity residual data needs point-in-time split actions"
+        )
+    split_dates: dict[str, set[str]] = {}
+    for raw_symbol, raw_dates in raw_split_dates.items():
+        if (
+            not isinstance(raw_dates, list)
+            or list(map(str, raw_dates)) != sorted(set(map(str, raw_dates)))
+        ):
+            raise DenseStrategyRuntimeError(
+                "equity residual split dates are invalid"
+            )
+        split_dates[str(raw_symbol)] = set(map(str, raw_dates))
     if "SPY" not in daily:
         raise DenseStrategyRuntimeError("equity residual data needs SPY market bars")
     decision_dates = sorted(map(str, universe))
@@ -607,10 +641,20 @@ def _equity_residual_candidates(
                     - 1
                 )
                 residual = symbol_return - spy_return
+                history_start = str(
+                    bars[max(0, symbol_index - window - STANDARDIZATION_LOOKBACK)][
+                        "date"
+                    ]
+                )
+                recent_split = any(
+                    history_start <= split_day <= day
+                    for split_day in split_dates.get(symbol, set())
+                )
                 eligible_decision = (
                     day in evaluation_set
                     and symbol in universe_sets[day]
                     and symbol_index >= 14
+                    and not recent_split
                 )
                 z_score = (
                     _z_score(residual, residual_history)
@@ -677,11 +721,27 @@ def _equity_residual_candidates(
         if calendar_index + 1 + hold > len(calendar):
             continue
         for rank, (z_score, symbol, atr14) in enumerate(sorted(scored), 1):
+            expected_holding_dates = set(
+                calendar[calendar_index + 1 : calendar_index + 1 + hold]
+            )
+            if expected_holding_dates & split_dates.get(symbol, set()):
+                candidate = {
+                    "signal_id": f"{entry_date}-{family_id}-{symbol}",
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": rank,
+                    "rejection_reason": "split_affected_window",
+                }
+                candidates.append(candidate)
+                tagged_candidates.append((z_score, candidate))
+                continue
             entry_index = indices[symbol].get(entry_date)
             if entry_index is None:
                 candidate = {
                     "signal_id": (
-                        f"{entry_date}-{EQUITY_RESIDUAL_FAMILY}-{symbol}"
+                        f"{entry_date}-{family_id}-{symbol}"
                     ),
                     "signal_date": entry_date,
                     "decision_date": decision_date,
@@ -699,13 +759,10 @@ def _equity_residual_candidates(
                 str(item["date"])
                 for item in daily[symbol][entry_index : entry_index + hold]
             }
-            expected_dates = set(
-                calendar[calendar_index + 1 : calendar_index + 1 + hold]
-            )
-            if exit_dates != expected_dates:
+            if exit_dates != expected_holding_dates:
                 candidate = {
                     "signal_id": (
-                        f"{entry_date}-{EQUITY_RESIDUAL_FAMILY}-{symbol}"
+                        f"{entry_date}-{family_id}-{symbol}"
                     ),
                     "signal_date": entry_date,
                     "decision_date": decision_date,
@@ -718,7 +775,7 @@ def _equity_residual_candidates(
                 tagged_candidates.append((z_score, candidate))
                 continue
             candidate = _daily_candidate(
-                family_id=EQUITY_RESIDUAL_FAMILY,
+                family_id=family_id,
                 symbol=symbol,
                 decision_date=decision_date,
                 entry_date=entry_date,
@@ -3489,7 +3546,7 @@ def build_candidates(
 
     if dataset.get("family_id") != family_id:
         raise DenseStrategyRuntimeError("dataset family binding does not match")
-    if family_id == EQUITY_RESIDUAL_FAMILY:
+    if family_id in EQUITY_RESIDUAL_FAMILIES:
         return _equity_residual_candidates(dataset, parameters)
     if family_id == INDEX_ETF_OPENING_MOMENTUM_FAMILY:
         return _intraday_momentum_candidates(dataset, parameters)
@@ -3611,7 +3668,7 @@ def _production_daily_signal(
         "daily_bars",
     }
     if family_id in {
-        EQUITY_RESIDUAL_FAMILY,
+        *EQUITY_RESIDUAL_FAMILIES,
         LIQUID_EQUITY_MOMENTUM_FAMILY,
     }:
         expected.update(
@@ -4319,7 +4376,7 @@ def _production_daily_signal(
                 "same_interval_ambiguity": "stop_first",
             },
         }
-    if family_id != EQUITY_RESIDUAL_FAMILY:
+    if family_id not in EQUITY_RESIDUAL_FAMILIES:
         raise DenseStrategyRuntimeError("unsupported production daily family")
     if "SPY" not in daily:
         raise DenseStrategyRuntimeError("production equity data needs SPY")
@@ -4945,7 +5002,7 @@ def evaluate_production_signal(
             decision_data, parameters, frozen_universe
         )
     if family_id in {
-        EQUITY_RESIDUAL_FAMILY,
+        *EQUITY_RESIDUAL_FAMILIES,
         LIQUID_EQUITY_MOMENTUM_FAMILY,
         ETF_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,

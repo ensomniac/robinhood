@@ -155,17 +155,23 @@ highest-growth path drew down 12.726R. The exact version cannot be repaired or
 enter confirmation; all 25 confirmation opportunities remain untouched.
 
 Do not manufacture another residual-reversal version from those outcomes.
-The immediate work is the already predeclared dense batch under three released
-rolling slots. The one outcome-blind session calendar is collected in status
-`95b4cba1...213a05`. The first allocation inspection correctly failed because
-the old allocator demanded one 940-session run containing all three warmups and
-target blocks; the largest untouched run has 567 sessions. No target outcome or
-strategy metric was accessed. Freeze and inspect the corrected allocation
-contract: each family receives a mutually disjoint 160-session target block,
-while causal lagged warmup may overlap prior exposed dates or another family's
-earlier target dates only as point-in-time feature input and can never count as
-target evidence. Then freeze all three exact contracts and collect development
-inputs. There is no calendar wait.
+The disjoint long-history replication V6 does not do so. Frozen data contract
+`f22fe7bb...ff535` preserves the complete 48-trial V5 grid but reuses no V5
+evaluation date: it binds 300 independently selected point-in-time
+security-master dates, freezes the first 200 chronologically for development,
+adds a five-session post-hold embargo, and reserves 93 later dates for
+confirmation. All 293 usable decision dates were globally untouched at freeze.
+The implementation also enforces the originally declared top-250 prior-liquidity
+universe and excludes split-affected feature and holding windows. Development
+prices may be opened only after this contract and its independent metadata
+inspection are committed; confirmation prices remain forbidden until an exact
+winner is frozen. The lane consumes no new mechanism-family slot and requires no
+calendar wait.
+
+The predeclared dense batch remains terminal adverse evidence under its
+individual inspections. Its one outcome-blind session calendar is collected in
+status `95b4cba1...213a05`; no failed family may be repaired on its evaluated
+corpus.
 
 The rolling-batch ETF pullback family is now terminal after independent
 development inspection `f460af56...af7174` rebuilt all 32 exact trials on its
