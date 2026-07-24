@@ -588,6 +588,9 @@ Contract `d01b0977...1f943f` and capacity `12a972b0...35fca5` now freeze the
 unchanged 32 trials, four liquid ETFs, 483 development sessions, five-session
 embargo, 315-session confirmation reserve, range topology, and missed-entry
 policy before any new price access. Commit both before generic preflight.
+Preflight `61e4775a...384e2e` independently rebuilt the committed contract,
+capacity, implementation, exact partitions, exposure boundary, and zero-price
+state and earned `CAPACITY_READY`. Commit it before search freeze.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
