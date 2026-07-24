@@ -230,8 +230,10 @@ provider. V2 now makes the already-declared confirmation plugin consume only
 one future inspected dataset whose exact dates and preregistration hash match
 the frozen winner. This is an execution-readiness correction, not a
 strategy-rule, grid, partition, cost, or outcome change. Freeze and inspect the
-V2 contract before development evaluation. The confirmation partition and
-broker actions remain forbidden.
+V2 contract before development evaluation. V2 family contract
+`5d5437b4...1270c` and capacity manifest `acafe215...7b596` now freeze that
+complete implementation-ready evidence graph. Run its outcome-blind generic
+preflight next. The confirmation partition and broker actions remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
