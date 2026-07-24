@@ -30,11 +30,15 @@ LIQUID_INDEX_ETF_OPENING_REVERSAL_FAMILY = (
 LIQUID_INDEX_ETF_OPENING_REVERSAL_POST2016_FAMILY = (
     "liquid-index-etf-opening-reversal-post2016"
 )
+INDEX_ETF_OPENING_MOMENTUM_FAMILY = (
+    "liquid-index-etf-opening-momentum"
+)
 INTRADAY_ETF_FAMILIES = {
     INTRADAY_ETF_FAMILY,
     COUNTRY_ETF_OPENING_REVERSAL_FAMILY,
     LIQUID_INDEX_ETF_OPENING_REVERSAL_FAMILY,
     LIQUID_INDEX_ETF_OPENING_REVERSAL_POST2016_FAMILY,
+    INDEX_ETF_OPENING_MOMENTUM_FAMILY,
 }
 ETF_PULLBACK_FAMILY = "liquid-etf-trend-pullback-cost-floor"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
@@ -2598,6 +2602,169 @@ def _intraday_candidates(
     return candidates
 
 
+def _intraday_momentum_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    sessions = _minute_sessions(dataset)
+    if set(calendar) - set(sessions):
+        raise DenseStrategyRuntimeError(
+            "minute_bars omit frozen evaluation dates"
+        )
+    prepared_missed = dataset.get("_prepared_missed_data_dates")
+    missed_dates = (
+        prepared_missed
+        if isinstance(prepared_missed, set)
+        else _intraday_missed_data_dates(dataset)
+    )
+    opening_window = int(parameters["opening_window_minutes"])
+    minimum_return = float(parameters["minimum_opening_return"])
+    confirmation_bars = int(
+        parameters["vwap_confirmation_completed_bars"]
+    )
+    stop_atr = float(parameters["stop_intraday_atr"])
+    target_r = float(parameters["target_r"])
+    evaluation_dates = set(calendar)
+    candidates: list[dict[str, Any]] = []
+    for day in sorted(sessions):
+        if day not in evaluation_dates or day in missed_dates:
+            continue
+        qualified: dict[str, dict[str, Any]] = {}
+        for symbol, bars in sessions[day].items():
+            if len(bars) <= opening_window + confirmation_bars:
+                continue
+            opening_return = (
+                float(bars[opening_window - 1]["close"])
+                / float(bars[0]["open"])
+                - 1
+            )
+            if (
+                opening_return < minimum_return
+                or not _cost_floor(opening_return)
+            ):
+                continue
+            qualified[symbol] = {
+                "opening_return": opening_return,
+                "numerator": sum(
+                    float(item["vwap_numerator"])
+                    for item in bars[:opening_window]
+                ),
+                "denominator": sum(
+                    float(item["vwap_denominator"])
+                    for item in bars[:opening_window]
+                ),
+                "above": 0,
+            }
+        if not qualified:
+            continue
+        selected: tuple[float, str, int, float] | None = None
+        maximum_completed_index = min(
+            len(sessions[day][symbol]) - 2 for symbol in qualified
+        )
+        for index in range(
+            opening_window, maximum_completed_index + 1
+        ):
+            triggered: list[tuple[float, str, int, float]] = []
+            for symbol, state in qualified.items():
+                if state.get("triggered") is True:
+                    continue
+                bar = sessions[day][symbol][index]
+                state["numerator"] += float(bar["vwap_numerator"])
+                state["denominator"] += float(bar["vwap_denominator"])
+                if state["denominator"] <= 0:
+                    state["above"] = 0
+                    continue
+                exact_vwap = state["numerator"] / state["denominator"]
+                state["above"] = (
+                    state["above"] + 1
+                    if float(bar["close"]) > exact_vwap
+                    else 0
+                )
+                if state["above"] >= confirmation_bars:
+                    state["triggered"] = True
+                    atr = _intraday_atr(
+                        sessions[day][symbol], index
+                    )
+                    if atr is not None:
+                        triggered.append(
+                            (
+                                -float(state["opening_return"]),
+                                symbol,
+                                index + 1,
+                                atr,
+                            )
+                        )
+            if triggered:
+                selected = sorted(triggered)[0]
+                break
+        if selected is None:
+            continue
+        negative_return, symbol, entry_index, atr = selected
+        bars = sessions[day][symbol]
+        signal_id = (
+            f"{day}-{INDEX_ETF_OPENING_MOMENTUM_FAMILY}-{symbol}"
+        )
+        if entry_index >= len(bars):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_bar",
+                }
+            )
+            continue
+        entry_price = float(bars[entry_index]["open"])
+        stop_price = entry_price - stop_atr * atr
+        if stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        target_price = entry_price + target_r * (
+            entry_price - stop_price
+        )
+        exit_price, stop_executed = _intraday_exit(
+            bars,
+            entry_index=entry_index,
+            stop_price=stop_price,
+            target_price=target_price,
+        )
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": day,
+                "decision_date": day,
+                "symbol": symbol,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": -negative_return,
+                "opening_return": -negative_return,
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "target_price": target_price,
+                "exit_date": day,
+                "exit_price": exit_price,
+                "marks": {day: exit_price},
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+            }
+        )
+    return candidates
+
+
 def _simple_rsi(
     bars: Sequence[Mapping[str, Any]], index: int, period: int
 ) -> float | None:
@@ -3324,6 +3491,8 @@ def build_candidates(
         raise DenseStrategyRuntimeError("dataset family binding does not match")
     if family_id == EQUITY_RESIDUAL_FAMILY:
         return _equity_residual_candidates(dataset, parameters)
+    if family_id == INDEX_ETF_OPENING_MOMENTUM_FAMILY:
+        return _intraday_momentum_candidates(dataset, parameters)
     if family_id in INTRADAY_ETF_FAMILIES:
         return _intraday_candidates(
             dataset, parameters, family_id=family_id
@@ -4401,6 +4570,191 @@ def _production_close_to_open_signal(
     }
 
 
+def _production_intraday_momentum_signal(
+    decision_data: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+    frozen_universe: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected = {
+        "family_id",
+        "session_date",
+        "calendar_sessions",
+        "minute_history_complete",
+        "symbols",
+        "minute_bars",
+    }
+    if (
+        set(decision_data) != expected
+        or decision_data.get("family_id")
+        != INDEX_ETF_OPENING_MOMENTUM_FAMILY
+    ):
+        raise DenseStrategyRuntimeError(
+            "production opening-momentum decision-data schema drifted"
+        )
+    frozen_symbols = frozen_universe.get("symbols")
+    if (
+        not isinstance(frozen_symbols, list)
+        or decision_data.get("symbols") != frozen_symbols
+    ):
+        raise DenseStrategyRuntimeError(
+            "production opening-momentum universe drifted"
+        )
+    raw_sessions = decision_data.get("minute_bars")
+    session_date = decision_data.get("session_date")
+    if not isinstance(raw_sessions, Mapping) or not raw_sessions:
+        raise DenseStrategyRuntimeError(
+            "production opening-momentum minute data is missing"
+        )
+    days = sorted(map(str, raw_sessions))
+    if (
+        not isinstance(session_date, str)
+        or days[-1] != session_date
+        or decision_data.get("calendar_sessions") != days
+        or decision_data.get("minute_history_complete") is not True
+    ):
+        raise DenseStrategyRuntimeError(
+            "production opening-momentum session boundary drifted"
+        )
+    expected_symbols = set(map(str, frozen_symbols))
+    counts: dict[str, int] = {}
+    for day in days:
+        raw_day = raw_sessions[day]
+        if (
+            not isinstance(raw_day, Mapping)
+            or set(map(str, raw_day)) != expected_symbols
+        ):
+            raise DenseStrategyRuntimeError(
+                "production opening-momentum universe is incomplete"
+            )
+        lengths = {
+            len(raw_day[symbol]) for symbol in expected_symbols
+        }
+        if len(lengths) != 1:
+            raise DenseStrategyRuntimeError(
+                "production opening-momentum bars are not synchronized"
+            )
+        counts[day] = lengths.pop()
+    if (
+        any(counts[day] != 390 for day in days[:-1])
+        or not 1 <= counts[session_date] <= 390
+    ):
+        raise DenseStrategyRuntimeError(
+            "production opening-momentum session lengths are invalid"
+        )
+    sessions = _minute_sessions(
+        {
+            "minute_bars": raw_sessions,
+            "regular_session_minutes_by_date": counts,
+        }
+    )
+    opening_window = int(parameters["opening_window_minutes"])
+    minimum_return = float(parameters["minimum_opening_return"])
+    confirmation_bars = int(
+        parameters["vwap_confirmation_completed_bars"]
+    )
+    current_length = counts[session_date]
+    if current_length <= opening_window:
+        raise DenseStrategyRuntimeError(
+            "production opening-momentum window is incomplete"
+        )
+    qualified: dict[str, dict[str, Any]] = {}
+    for symbol in map(str, frozen_symbols):
+        bars = sessions[session_date][symbol]
+        opening_return = (
+            float(bars[opening_window - 1]["close"])
+            / float(bars[0]["open"])
+            - 1
+        )
+        if (
+            opening_return < minimum_return
+            or not _cost_floor(opening_return)
+        ):
+            continue
+        qualified[symbol] = {
+            "opening_return": opening_return,
+            "numerator": sum(
+                float(item["vwap_numerator"])
+                for item in bars[:opening_window]
+            ),
+            "denominator": sum(
+                float(item["vwap_denominator"])
+                for item in bars[:opening_window]
+            ),
+            "above": 0,
+        }
+    if not qualified:
+        raise DenseStrategyRuntimeError(
+            "no exact production opening-momentum setup"
+        )
+    first_trigger: (
+        tuple[int, list[tuple[float, str, float, float]]] | None
+    ) = None
+    for index in range(opening_window, current_length):
+        triggered: list[tuple[float, str, float, float]] = []
+        for symbol, state in qualified.items():
+            if state.get("triggered") is True:
+                continue
+            bar = sessions[session_date][symbol][index]
+            state["numerator"] += float(bar["vwap_numerator"])
+            state["denominator"] += float(bar["vwap_denominator"])
+            if state["denominator"] <= 0:
+                state["above"] = 0
+                continue
+            exact_vwap = state["numerator"] / state["denominator"]
+            state["above"] = (
+                state["above"] + 1
+                if float(bar["close"]) > exact_vwap
+                else 0
+            )
+            if state["above"] >= confirmation_bars:
+                state["triggered"] = True
+                atr = _intraday_atr(
+                    sessions[session_date][symbol], index
+                )
+                if atr is not None:
+                    triggered.append(
+                        (
+                            -float(state["opening_return"]),
+                            symbol,
+                            atr,
+                            float(state["opening_return"]),
+                        )
+                    )
+        if triggered:
+            first_trigger = (index, triggered)
+            break
+    if first_trigger is None:
+        raise DenseStrategyRuntimeError(
+            "no exact production opening-momentum signal"
+        )
+    trigger_index, triggered = first_trigger
+    if trigger_index != current_length - 1:
+        raise DenseStrategyRuntimeError(
+            "production opening-momentum signal was already observable"
+        )
+    negative_return, symbol, atr, opening_return = sorted(
+        triggered
+    )[0]
+    trigger_bar = sessions[session_date][symbol][trigger_index]
+    return {
+        "symbol": symbol,
+        "rank": 1,
+        "score": -negative_return,
+        "expected_gross_move_fraction": opening_return,
+        "atr": atr,
+        "stop_atr_multiple": float(parameters["stop_intraday_atr"]),
+        "holding_trading_days": 1,
+        "decision_date": session_date,
+        "trigger_bar_timestamp": trigger_bar["timestamp"],
+        "target_r": float(parameters["target_r"]),
+        "exit_plan": {
+            "type": "stop_target_or_session_close",
+            "target_r": float(parameters["target_r"]),
+            "same_interval_ambiguity": "stop_first",
+        },
+    }
+
+
 def _production_intraday_signal(
     decision_data: Mapping[str, Any],
     family_id: str,
@@ -4578,6 +4932,10 @@ def evaluate_production_signal(
     frozen_universe: Mapping[str, Any],
 ) -> dict[str, Any]:
     """Rebuild one current signal from the same observable indicators as history."""
+    if family_id == INDEX_ETF_OPENING_MOMENTUM_FAMILY:
+        return _production_intraday_momentum_signal(
+            decision_data, parameters, frozen_universe
+        )
     if family_id in INTRADAY_ETF_FAMILIES:
         return _production_intraday_signal(
             decision_data, family_id, parameters, frozen_universe

@@ -699,6 +699,19 @@ opening-reversal version is terminal; confirmation remains untouched. The
 inspection appended its already-contaminated 4,000 development pairs to the
 global exposure audit and must be committed before advancing another
 mechanism.
+The released slot now activates one genuinely different mechanism:
+`liquid-index-etf-opening-momentum`. It tests whether a positive 30- or
+60-minute impulse in `DIA`, `IWM`, `QQQ`, or `SPY` persists after one or two
+additional completed closes above cumulative session VWAP. The fixed 32-trial
+grid adds opening return `{0.5%,1.0%}`, stop `{1.0,1.5}` intraday ATR, and
+target `{1.0,1.5}R`; entry is the next observable minute and exit is stop,
+target, or session close. It may alias the exact inspected post-2016 raw
+minute dataset only as contaminated development input; no prior strategy
+metric is reused. The five-session embargo and 310-session 2021-2022
+confirmation reserve remain untouched. Historical and production evaluators
+share ranking, VWAP confirmation, next-bar entry, stop-first ambiguity, and
+exit semantics. Commit the implementation and parity tests before freezing the
+new-family contract.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
