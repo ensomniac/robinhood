@@ -31,6 +31,15 @@ insufficient source completeness before pagination or document access. It may
 not be repaired on the observed provider corpus; target outcomes and broker
 actions remain forbidden.
 
+The 2025 earnings-gap-continuation v1 capacity lane is
+`INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
+event join produced 153 development pairs across 57 possible entry dates, but
+global exposure exclusions left only 37 untouched confirmation pairs across 14
+possible entry dates. Because the family permits at most one entry per day, it
+cannot satisfy the fixed 20-confirmation-signal floor. Its event collection and
+transport history remain auditable; this exact evidence split may not proceed
+to development or confirmation.
+
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;
 an independently inspected terminal disposition releases its slot immediately.
