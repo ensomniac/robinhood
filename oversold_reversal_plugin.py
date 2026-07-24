@@ -8,9 +8,10 @@ candidate and load exact SIP minute inputs only after their public inspections.
 
 from __future__ import annotations
 
+import math
 import subprocess
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -426,6 +427,94 @@ def _live_trigger(
     }
 
 
+def _validate_live_bars(
+    bars_by_symbol: Mapping[str, Sequence[Mapping[str, Any]]],
+    *,
+    session_date: str,
+) -> tuple[int, datetime]:
+    try:
+        trading_day = date.fromisoformat(session_date)
+    except ValueError as exc:
+        raise OversoldReversalPluginError(
+            "live session_date is invalid"
+        ) from exc
+    lengths = {len(rows) for rows in bars_by_symbol.values()}
+    if len(lengths) != 1:
+        raise OversoldReversalPluginError(
+            "live candidate bars do not share one completed boundary"
+        )
+    length = next(iter(lengths), 0)
+    if length < 31 or length > 380:
+        raise OversoldReversalPluginError(
+            "live candidate minute coverage is incomplete"
+        )
+    expected_start = datetime.combine(
+        trading_day,
+        time(9, 30),
+        tzinfo=MARKET_TIME_ZONE,
+    )
+    shared_last_timestamp: datetime | None = None
+    required_fields = {
+        "timestamp",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+    }
+    for symbol, rows in bars_by_symbol.items():
+        for index, row in enumerate(rows):
+            if not isinstance(row, Mapping) or set(row) != required_fields:
+                raise OversoldReversalPluginError(
+                    f"live bar schema drifted for {symbol}"
+                )
+            try:
+                raw_timestamp = datetime.fromisoformat(
+                    str(row["timestamp"])
+                )
+                observed = raw_timestamp.astimezone(MARKET_TIME_ZONE)
+                opened = float(row["open"])
+                high = float(row["high"])
+                low = float(row["low"])
+                closed = float(row["close"])
+            except (TypeError, ValueError) as exc:
+                raise OversoldReversalPluginError(
+                    f"live bar value is invalid for {symbol}"
+                ) from exc
+            raw_volume = row["volume"]
+            if (
+                raw_timestamp.tzinfo is None
+                or observed != expected_start + timedelta(minutes=index)
+                or isinstance(raw_volume, bool)
+                or not isinstance(raw_volume, int)
+                or raw_volume < 0
+                or not all(
+                    math.isfinite(value)
+                    for value in (opened, high, low, closed)
+                )
+                or min(opened, high, low, closed) <= 0
+                or high < max(opened, low, closed)
+                or low > min(opened, high, closed)
+            ):
+                raise OversoldReversalPluginError(
+                    f"live minute sequence is invalid for {symbol}"
+                )
+        symbol_last_timestamp = datetime.fromisoformat(
+            str(rows[-1]["timestamp"])
+        ).astimezone(MARKET_TIME_ZONE)
+        if shared_last_timestamp is None:
+            shared_last_timestamp = symbol_last_timestamp
+        elif symbol_last_timestamp != shared_last_timestamp:
+            raise OversoldReversalPluginError(
+                "live candidate bars do not share one completed boundary"
+            )
+    if shared_last_timestamp is None:
+        raise OversoldReversalPluginError(
+            "live candidate minute coverage is empty"
+        )
+    return length, shared_last_timestamp
+
+
 def evaluate_production(
     winner: Mapping[str, Any], market_facts: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -455,35 +544,32 @@ def evaluate_production(
     if (
         not isinstance(symbols, list)
         or symbols != sorted(set(map(str, symbols)))
+        or any(
+            not isinstance(symbol, str)
+            or not symbol
+            or symbol != symbol.upper()
+            for symbol in symbols
+        )
         or not isinstance(bars, Mapping)
         or set(bars) != set(symbols)
     ):
         raise OversoldReversalPluginError(
             "live point-in-time candidate denominator is incomplete"
         )
-    bar_lengths = {
-        len(value)
+    if any(
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes))
         for value in bars.values()
-        if isinstance(value, Sequence) and not isinstance(value, (str, bytes))
-    }
-    last_timestamps = {
-        str(value[-1].get("timestamp"))
-        for value in bars.values()
-        if isinstance(value, Sequence)
-        and not isinstance(value, (str, bytes))
-        and value
-        and isinstance(value[-1], Mapping)
-    }
-    if (
-        len(bar_lengths) != 1
-        or len(last_timestamps) != 1
-        or len(bar_lengths) != len(last_timestamps)
     ):
         raise OversoldReversalPluginError(
-            "live candidate bars do not share one completed decision boundary"
+            "live candidate bars are malformed"
         )
+    bar_length, _last_timestamp = _validate_live_bars(
+        bars,
+        session_date=str(market_facts["session_date"]),
+    )
     trigger = _live_trigger(bars, market_facts["parameters"])
-    if trigger["trigger_index"] != next(iter(bar_lengths)) - 1:
+    if trigger["trigger_index"] != bar_length - 1:
         raise OversoldReversalPluginError(
             "live oversold trigger was not discovered at the current boundary"
         )
@@ -519,21 +605,22 @@ def evaluate_production(
         )
     operational = market_facts["operational"]
     required_operational = {
-        "account_reconciled",
-        "orders_reconciled",
-        "protection_reconciled",
-        "tradability_reconciled",
-        "news_reconciled",
+        "before_open_account_reconciled",
+        "before_open_orders_reconciled",
+        "before_open_protection_reconciled",
+        "before_open_tradability_reconciled",
+        "before_open_news_reconciled",
         "protective_order_route_ready",
         "monitoring_ready",
-        "safe_cutoff",
+        "protection_failure_safe_cutoff",
     }
     if (
         not isinstance(operational, Mapping)
         or set(operational) != required_operational
         or any(
             operational[field] is not True
-            for field in required_operational - {"safe_cutoff"}
+            for field in required_operational
+            - {"protection_failure_safe_cutoff"}
         )
     ):
         raise OversoldReversalPluginError("live operational gates are incomplete")
@@ -568,7 +655,9 @@ def evaluate_production(
             "type": "stop_target_or_force_flat",
             "same_interval_ambiguity": "stop_first",
             "force_flat_et": "15:50:00",
-            "safe_cutoff": operational["safe_cutoff"],
+            "safe_cutoff": operational[
+                "protection_failure_safe_cutoff"
+            ],
         },
         **dict(operational),
     }
