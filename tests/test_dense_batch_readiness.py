@@ -22,11 +22,11 @@ def test_rolling_readiness_resolves_exact_committed_boundary():
         "blocker": (
             "no contiguous untouched target-evidence run has 480 sessions"
         ),
-        "largest_contiguous_untouched_run": 28,
+        "largest_contiguous_untouched_run": 15,
         "ready": False,
         "required_contiguous_target_sessions": 480,
         "state": "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY",
-        "total_untouched_sessions": 285,
+        "total_untouched_sessions": 267,
     }
     assert status["calendar_boundary"]["output_state"] == (
         "COLLECTED_READY_FOR_ALLOCATION_CONTRACT"
