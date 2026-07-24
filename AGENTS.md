@@ -309,7 +309,11 @@ pullback grid, but only the six authorized macro ETFs (`DBC`, `EEM`, `EFA`,
 `GLD`, `IEF`, `TLT`) absent from every prior uniform-scope 2016-2022 outcome
 record. The universe is derived from the committed exposure index before price
 access, not from strategy returns. Alpaca already proved daily coverage from
-2016 onward. Freeze and commit this exact successor before generic preflight.
+2016 onward. Contract `35d42c5d...0f3a4e` and capacity
+`cc9f3618...679eba` now freeze all six symbols, 1,000 development sessions,
+five embargo sessions, 500 confirmation sessions, exact costs, selection gates,
+provider semantics, and implementation hashes. Commit them before generic
+preflight; confirmation remains closed.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
