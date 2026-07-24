@@ -415,8 +415,10 @@ entry, deterministic ranking, protection, and exit semantics. Contract
 grid, nine-symbol universe, 2016-12-21 through 2020-12-23 development, five
 session embargo, and untouched 2021-01-05 through 2022-12-30 confirmation
 reserve. They report 9,000 frozen development instrument-session observations
-with zero market-price access. Commit these artifacts before generic preflight
-or provider access.
+with zero market-price access. Generic preflight `127b99f4...dd49ab`
+independently rebuilt the family, capacity, point-in-time, and zero-outcome
+boundaries and earned `CAPACITY_READY` with zero provider requests. Commit that
+inspection before freezing the search or accessing providers.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
