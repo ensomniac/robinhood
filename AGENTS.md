@@ -369,6 +369,10 @@ Outcome-blind preflight `2cce7ceb...b8cb2` independently returned
 `CAPACITY_READY` for all 32 trials with the exact partitions, committed
 implementations, confirmation closed, and zero broker actions. Commit it before
 freezing the development search.
+Search `e8e611f9...653c23` now binds every trial, neighbor graph,
+rolling-origin fold, account simulator, 5/10/20-bps costs, deterministic
+selection rule, and implementation hash before price access. Commit it before
+freezing the development collection graph.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
