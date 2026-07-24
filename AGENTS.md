@@ -356,8 +356,14 @@ outcome. The shared historical/production runtime now implements that exact
 completed-gap decision, next-session-open entry, ATR protection, stop-first
 daily ambiguity, ranking, and two/five-session exit path. The collection layer
 also treats its nine-symbol universe as fixed ETF evidence rather than rebuilding
-a common-stock universe. Commit the implementation and synthetic
-historical/production parity tests before freezing the contract.
+a common-stock universe. The implementation and synthetic historical/production
+parity tests were committed before contract freeze.
+Contract `1aea0a67...6fda9` and capacity
+`c146846e...0a03a6` now freeze all 32 trials, the exact nine-symbol universe,
+200 warmup plus 1,000 development sessions, five embargo sessions, 250
+confirmation sessions, Alpaca raw SIP daily bars, Massive split actions, all
+cost/statistical gates, and the outcome-clean scopes. Commit both artifacts
+before generic preflight; no market price or target outcome was accessed.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
