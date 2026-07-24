@@ -1,0 +1,548 @@
+{
+  "ambiguity_rule": "Exclude every symbol/report-date/timing identity represented by more than one returned row; never choose among duplicates.",
+  "artifact_kind": "earnings-pead-2024-backfill-contract",
+  "authorized_provider_requests": 128,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "contract_sha256": "f49b9ca1d726e90a3cccd4b4eb66886b36018ee35851351160ca44b5311d2484",
+  "created_at": "2026-07-24T21:20:00Z",
+  "event_end": "2024-12-31",
+  "event_start": "2024-01-01",
+  "expansion_id": "earnings-positive-surprise-drift-v3-2024-backfill",
+  "family_id": "earnings-positive-surprise-drift",
+  "forward_returns_accessed": false,
+  "identity_manifest_file_sha256": "f44d4bea43214620918c9696056ffa1d67051d64901fc5deabbe19fb985c381e",
+  "identity_manifest_path": "strategy_validation/equity_gap_continuation/manifests/equity-gap-continuation-v1-0145f77948ff8d7398c69ec7ae2229b72cfb7a07bab055c3dcfb15762d5cea43.json",
+  "implementation_sha256": "a156b67c1003d88b911f061fe51167abb2853cf23fe9e9f21218823c8db11ea9",
+  "market_prices_accessed": false,
+  "maximum_total_symbol_requests": 256,
+  "outcome_exposure_index_sha256": "2cce51dcd144a0d4ca36db9f8082c450e6fa11e31dd50f3ab88b288f727459cf",
+  "previous_2026_provider_requests": 128,
+  "prior_trials_must_enter_selection_correction": true,
+  "provider": "Robinhood MCP read-only earnings results",
+  "provider_method": "get_earnings_results",
+  "requests": [
+    {
+      "symbol": "CRDO"
+    },
+    {
+      "symbol": "OKLO"
+    },
+    {
+      "symbol": "NNE"
+    },
+    {
+      "symbol": "RCAT"
+    },
+    {
+      "symbol": "TEM"
+    },
+    {
+      "symbol": "ASTS"
+    },
+    {
+      "symbol": "CLS"
+    },
+    {
+      "symbol": "IREN"
+    },
+    {
+      "symbol": "SMCI"
+    },
+    {
+      "symbol": "HUT"
+    },
+    {
+      "symbol": "SOUN"
+    },
+    {
+      "symbol": "NBIS"
+    },
+    {
+      "symbol": "QBTS"
+    },
+    {
+      "symbol": "RKLB"
+    },
+    {
+      "symbol": "RXRX"
+    },
+    {
+      "symbol": "ALAB"
+    },
+    {
+      "symbol": "SERV"
+    },
+    {
+      "symbol": "AAOI"
+    },
+    {
+      "symbol": "ACHR"
+    },
+    {
+      "symbol": "APLD"
+    },
+    {
+      "symbol": "CLSK"
+    },
+    {
+      "symbol": "COIN"
+    },
+    {
+      "symbol": "NVDA"
+    },
+    {
+      "symbol": "PGY"
+    },
+    {
+      "symbol": "APP"
+    },
+    {
+      "symbol": "CEG"
+    },
+    {
+      "symbol": "LUNR"
+    },
+    {
+      "symbol": "QUBT"
+    },
+    {
+      "symbol": "RGTI"
+    },
+    {
+      "symbol": "RIOT"
+    },
+    {
+      "symbol": "AG"
+    },
+    {
+      "symbol": "AUR"
+    },
+    {
+      "symbol": "FRO"
+    },
+    {
+      "symbol": "GEV"
+    },
+    {
+      "symbol": "HOOD"
+    },
+    {
+      "symbol": "AVGO"
+    },
+    {
+      "symbol": "BTDR"
+    },
+    {
+      "symbol": "GRRR"
+    },
+    {
+      "symbol": "IONQ"
+    },
+    {
+      "symbol": "MARA"
+    },
+    {
+      "symbol": "MRVL"
+    },
+    {
+      "symbol": "MSTR"
+    },
+    {
+      "symbol": "RUM"
+    },
+    {
+      "symbol": "VST"
+    },
+    {
+      "symbol": "ZIM"
+    },
+    {
+      "symbol": "BE"
+    },
+    {
+      "symbol": "CORZ"
+    },
+    {
+      "symbol": "ENVX"
+    },
+    {
+      "symbol": "INOD"
+    },
+    {
+      "symbol": "MU"
+    },
+    {
+      "symbol": "PLTR"
+    },
+    {
+      "symbol": "SMR"
+    },
+    {
+      "symbol": "STM"
+    },
+    {
+      "symbol": "TIGR"
+    },
+    {
+      "symbol": "UPST"
+    },
+    {
+      "symbol": "AFRM"
+    },
+    {
+      "symbol": "AU"
+    },
+    {
+      "symbol": "CDE"
+    },
+    {
+      "symbol": "HSAI"
+    },
+    {
+      "symbol": "LRCX"
+    },
+    {
+      "symbol": "LTBR"
+    },
+    {
+      "symbol": "PDYN"
+    },
+    {
+      "symbol": "AI"
+    },
+    {
+      "symbol": "ANET"
+    },
+    {
+      "symbol": "COHR"
+    },
+    {
+      "symbol": "EQX"
+    },
+    {
+      "symbol": "MP"
+    },
+    {
+      "symbol": "PAAS"
+    },
+    {
+      "symbol": "SEDG"
+    },
+    {
+      "symbol": "STLA"
+    },
+    {
+      "symbol": "TSLA"
+    },
+    {
+      "symbol": "U"
+    },
+    {
+      "symbol": "VRT"
+    },
+    {
+      "symbol": "AA"
+    },
+    {
+      "symbol": "AMAT"
+    },
+    {
+      "symbol": "AMD"
+    },
+    {
+      "symbol": "FLNC"
+    },
+    {
+      "symbol": "HBM"
+    },
+    {
+      "symbol": "HIMS"
+    },
+    {
+      "symbol": "IAG"
+    },
+    {
+      "symbol": "JOBY"
+    },
+    {
+      "symbol": "PTON"
+    },
+    {
+      "symbol": "SHOP"
+    },
+    {
+      "symbol": "SOFI"
+    },
+    {
+      "symbol": "WDC"
+    },
+    {
+      "symbol": "CLF"
+    },
+    {
+      "symbol": "DAL"
+    },
+    {
+      "symbol": "DJT"
+    },
+    {
+      "symbol": "LMND"
+    },
+    {
+      "symbol": "NTLA"
+    },
+    {
+      "symbol": "SSRM"
+    },
+    {
+      "symbol": "VFC"
+    },
+    {
+      "symbol": "VG"
+    },
+    {
+      "symbol": "CCJ"
+    },
+    {
+      "symbol": "HL"
+    },
+    {
+      "symbol": "KGC"
+    },
+    {
+      "symbol": "MCHP"
+    },
+    {
+      "symbol": "ON"
+    },
+    {
+      "symbol": "ONON"
+    },
+    {
+      "symbol": "TECK"
+    },
+    {
+      "symbol": "UAL"
+    },
+    {
+      "symbol": "FSLR"
+    },
+    {
+      "symbol": "LITE"
+    },
+    {
+      "symbol": "MDB"
+    },
+    {
+      "symbol": "META"
+    },
+    {
+      "symbol": "MRNA"
+    },
+    {
+      "symbol": "RBRK"
+    },
+    {
+      "symbol": "ROKU"
+    },
+    {
+      "symbol": "RUN"
+    },
+    {
+      "symbol": "SNOW"
+    },
+    {
+      "symbol": "TDOC"
+    },
+    {
+      "symbol": "TTD"
+    },
+    {
+      "symbol": "ZETA"
+    },
+    {
+      "symbol": "AEM"
+    },
+    {
+      "symbol": "AGI"
+    },
+    {
+      "symbol": "APH"
+    },
+    {
+      "symbol": "CZR"
+    },
+    {
+      "symbol": "FSM"
+    },
+    {
+      "symbol": "LYFT"
+    },
+    {
+      "symbol": "NEM"
+    },
+    {
+      "symbol": "NXE"
+    },
+    {
+      "symbol": "PINS"
+    },
+    {
+      "symbol": "TOST"
+    },
+    {
+      "symbol": "TXG"
+    },
+    {
+      "symbol": "UMAC"
+    },
+    {
+      "symbol": "AAL"
+    },
+    {
+      "symbol": "AEO"
+    },
+    {
+      "symbol": "ARRY"
+    }
+  ],
+  "schema_version": 1,
+  "selection_rule": "Use the exact previously frozen 128-symbol universe and retain only unambiguous company-verified reports from 2024-01-01 through 2024-12-31 with numeric actual EPS above estimated EPS. This is a distinct development target; it cannot alter late-2025 confirmation.",
+  "source_2026_inspection_file_sha256": "9dadb1aca4cfe931d01fc2040de0cb32e121e02957f85366351649c16bf76ce8",
+  "source_2026_inspection_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v3-disjoint-2026/metadata-collection-inspection/inspection-c49265d39f51452312b22b85db3e7d5d50e4e95b43b726419c836d2ad117c607.json",
+  "strategy_metrics_computed": 0,
+  "symbols": [
+    "CRDO",
+    "OKLO",
+    "NNE",
+    "RCAT",
+    "TEM",
+    "ASTS",
+    "CLS",
+    "IREN",
+    "SMCI",
+    "HUT",
+    "SOUN",
+    "NBIS",
+    "QBTS",
+    "RKLB",
+    "RXRX",
+    "ALAB",
+    "SERV",
+    "AAOI",
+    "ACHR",
+    "APLD",
+    "CLSK",
+    "COIN",
+    "NVDA",
+    "PGY",
+    "APP",
+    "CEG",
+    "LUNR",
+    "QUBT",
+    "RGTI",
+    "RIOT",
+    "AG",
+    "AUR",
+    "FRO",
+    "GEV",
+    "HOOD",
+    "AVGO",
+    "BTDR",
+    "GRRR",
+    "IONQ",
+    "MARA",
+    "MRVL",
+    "MSTR",
+    "RUM",
+    "VST",
+    "ZIM",
+    "BE",
+    "CORZ",
+    "ENVX",
+    "INOD",
+    "MU",
+    "PLTR",
+    "SMR",
+    "STM",
+    "TIGR",
+    "UPST",
+    "AFRM",
+    "AU",
+    "CDE",
+    "HSAI",
+    "LRCX",
+    "LTBR",
+    "PDYN",
+    "AI",
+    "ANET",
+    "COHR",
+    "EQX",
+    "MP",
+    "PAAS",
+    "SEDG",
+    "STLA",
+    "TSLA",
+    "U",
+    "VRT",
+    "AA",
+    "AMAT",
+    "AMD",
+    "FLNC",
+    "HBM",
+    "HIMS",
+    "IAG",
+    "JOBY",
+    "PTON",
+    "SHOP",
+    "SOFI",
+    "WDC",
+    "CLF",
+    "DAL",
+    "DJT",
+    "LMND",
+    "NTLA",
+    "SSRM",
+    "VFC",
+    "VG",
+    "CCJ",
+    "HL",
+    "KGC",
+    "MCHP",
+    "ON",
+    "ONON",
+    "TECK",
+    "UAL",
+    "FSLR",
+    "LITE",
+    "MDB",
+    "META",
+    "MRNA",
+    "RBRK",
+    "ROKU",
+    "RUN",
+    "SNOW",
+    "TDOC",
+    "TTD",
+    "ZETA",
+    "AEM",
+    "AGI",
+    "APH",
+    "CZR",
+    "FSM",
+    "LYFT",
+    "NEM",
+    "NXE",
+    "PINS",
+    "TOST",
+    "TXG",
+    "UMAC",
+    "AAL",
+    "AEO",
+    "ARRY"
+  ],
+  "v2_development_attempts": 32,
+  "v2_rejection_file_sha256": "4f05812bc4da264e253824726eafd6f07452d62d7623d29dc418948205ac5f92",
+  "v2_rejection_path": "strategy_tournament/v2/discovery/earnings-positive-surprise-drift/development-inspection/earnings-positive-surprise-drift-development-inspection-1921a1b3228088abdc5320333b0d8aa56a81f4243701ee5a3936018c27d52c6d.json"
+}
