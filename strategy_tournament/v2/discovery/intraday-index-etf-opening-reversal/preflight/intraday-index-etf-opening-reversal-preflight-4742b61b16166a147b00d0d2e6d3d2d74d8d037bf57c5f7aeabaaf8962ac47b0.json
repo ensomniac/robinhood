@@ -1,0 +1,54 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "4742b61b16166a147b00d0d2e6d3d2d74d8d037bf57c5f7aeabaaf8962ac47b0",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.024892540997825563,
+  "family_contract_path": "strategy_tournament/v2/family-contracts/intraday-index-etf-opening-reversal/contract-97278779287891b951c07a57f4ba1e09c8d67c98bc937ead7077976072fa5a06.json",
+  "family_contract_sha256": "55b1210fc8ee174b0787f3ae4c00eea821dd56ca0b3d9ed1df1dda1fd458a0dc",
+  "family_id": "intraday-index-etf-opening-reversal",
+  "implementation_sha256": "2ec4e2f76f38c93bb2876e46024f483d16cf45d9ed03d58620f9b6c8db55fcc4",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "dates_bound": true,
+      "development_lane": true,
+      "family_bound": true,
+      "point_in_time": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 960
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "915dc40c98715a12c04c47fc5edb48dfea29e16cb67e2d44191d5e56759530b6",
+  "verified_capacity": 960
+}
