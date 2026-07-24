@@ -325,10 +325,10 @@ def inspect(
         "excluded_noncanonical_symbol_pairs": (
             excluded_noncanonical_symbol_pairs
         ),
+        "exact_development_scope_sha256": canonical_sha256(exact_scope),
         "identity_graph_sha256": canonical_sha256(identities),
         "identity_external_relative_path": str(identity_relative),
         "identity_external_file_sha256": sha256_file(identity_path),
-        "exact_development_scope": exact_scope,
         "market_prices_accessed": False,
         "strategy_outcomes_accessed": False,
         "broker_actions": 0,
