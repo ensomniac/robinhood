@@ -317,7 +317,10 @@ preflight; confirmation remains closed. Preflight
 `04d02c87...a2fec5` earned `CAPACITY_READY` without price access. Freeze and
 commit the exact development search next. Search `b2667de9...e33646` now binds
 the full trial family, deterministic winner selection, account costs,
-partitions, and implementations. Commit it before freezing price collection.
+partitions, and implementations. Development collection plan
+`5e80d293...9a9cd5` freezes 1,200 required sessions, six Alpaca SIP raw daily
+symbol ranges, the committed Massive split-action range, and zero substitutions.
+Commit it before provider access.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
