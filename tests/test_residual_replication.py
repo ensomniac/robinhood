@@ -6,6 +6,7 @@ import residual_replication_data as data
 import residual_replication_inspection as inspection
 import residual_replication_plugin as plugin
 import residual_replication_readiness_inspection as readiness
+import residual_replication_normalized_plugin as normalized
 from historical_store import canonical_sha256
 
 
@@ -22,6 +23,29 @@ def test_independent_artifact_hash_excludes_only_its_digest():
     }
 
     assert inspection._artifact_hash(artifact) == artifact["artifact_sha256"]
+
+
+def test_empty_series_normalization_changes_no_nonempty_rows_or_identities():
+    dataset = {
+        "daily_bars": {
+            "SPY": [{"date": "2023-01-03", "close": 100.0}],
+            "EMPTY": [],
+            "FULL": [{"date": "2023-01-03", "close": 10.0}],
+        },
+        "reference_identities_by_date": {
+            "2023-01-03": {"EMPTY": "one", "FULL": "two"}
+        },
+    }
+    before = canonical_sha256(dataset["daily_bars"]["FULL"])
+    identities = canonical_sha256(dataset["reference_identities_by_date"])
+
+    result, removed = normalized._drop_empty_series(dataset)
+
+    assert removed == ["EMPTY"]
+    assert set(result["daily_bars"]) == {"SPY", "FULL"}
+    assert canonical_sha256(result["daily_bars"]["FULL"]) == before
+    assert canonical_sha256(result["reference_identities_by_date"]) == identities
+    assert result["input_normalization"]["nonempty_rows_changed"] == 0
 
 
 def test_frozen_source_graph_is_disjoint_and_power_capable():

@@ -191,7 +191,12 @@ Outcome-blind generic preflight `d57f859c...7316a3` independently reports
 or broker access.
 Search artifact `f131f2e3...d0d36c` is now `SEARCH_FROZEN` with all 48 declared
 trials and the deterministic winner rule; development evaluation may use only
-that committed artifact.
+that committed artifact. Its first evaluation stopped before candidate creation
+because 35 provider-returned symbols had empty daily arrays. It computed zero
+trial returns and cannot be resumed. The only allowed successor is the
+separately committed normalization adapter: verify the original manifest hash,
+remove only empty arrays in memory, retain their point-in-time identities as
+unavailable names, and refreeze the otherwise identical 48-trial contract.
 Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
 freeze: its first independent inspection stopped on a missing local artifact-
 hash helper, before any provider or market-price access. It cannot authorize
