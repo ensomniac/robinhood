@@ -269,7 +269,11 @@ development, five embargo, and 500 confirmation sessions entirely before 2016.
 This existing-family lane consumes no new-family slot, does not open or repair
 the rejected pullback version's 2021-2022 confirmation reserve, and requires no
 calendar wait. Freeze, inspect, commit, and collect each evidence boundary in
-order; do not tune either rejected corpus.
+order; do not tune either rejected corpus. Calendar contract
+`1de12019...98c4b8` now freezes the single Alpaca calendar query, exact
+2008-2015 bounds, minimum capacity, zero-price outcome boundary, immutable
+outputs, and implementation hashes. Commit and independently inspect it before
+the sole authorized calendar request.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
