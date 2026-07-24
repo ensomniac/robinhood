@@ -152,6 +152,15 @@ def inspect_contract(
             "rules_or_parameter_grid_changed"
         ]
         is False,
+        "predecessor_price_access_truthful": (
+            contract["market_prices_accessed_before_freeze"]
+            == (
+                contract.get(
+                    "authorized_predecessor_development_collection"
+                )
+                is not None
+            )
+        ),
         "confirmation_prices_locked": contract[
             "confirmation_prices_accessed"
         ]
@@ -366,6 +375,14 @@ def inspect_collection(
         == symbols_with_rows,
         "empty_series_rebuilt": collection["empty_series"] == empty_series,
         "daily_rows_rebuilt": collection["daily_rows"] == rows,
+        "predecessor_reuse_bound": (
+            collection.get("predecessor_collection_sha256")
+            is None
+            or collection["predecessor_collection_sha256"]
+            == contract[
+                "authorized_predecessor_development_collection"
+            ]["collection_sha256"]
+        ),
         "liquid_universe_capacity": complete_dates == decision_dates
         and minimum_qualified >= 250,
         "strategy_metrics_absent": collection[
@@ -420,6 +437,12 @@ def inspect_collection(
             "dataset_payload": {
                 "lane": "development",
                 "claim_scope": "DEVELOPMENT_ONLY",
+                "evidence_paths": [
+                    _repo_path(contract_path),
+                    _repo_path(collection_path),
+                    _repo_path(inspection_path),
+                    "STRATEGY_DISCOVERY_V2.md",
+                ],
                 "inspected": True,
                 "point_in_time_evidence": True,
                 "confirmation_access_permitted": False,

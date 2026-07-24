@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 import dense_strategy_runtime as runtime
+import pytest
 import residual_temporal_data as data
 import residual_temporal_plugin as plugin
 
@@ -43,6 +44,28 @@ def test_temporal_scope_artifacts_use_hashes_and_conservative_wildcard():
         "dates": ["2021-01-04", "2023-01-03"],
         "symbols": ["*"],
     }
+
+
+def test_predecessor_rebind_rejects_any_semantic_drift():
+    fields = {
+        "development_dates": ["2021-01-04"],
+        "development_signal_dates": ["2021-01-04"],
+        "embargo_dates": ["2021-01-05"],
+        "confirmation_dates": ["2021-01-06"],
+        "confirmation_signal_dates": ["2021-01-06"],
+        "development_symbol_count": 2,
+        "development_symbols_sha256": "symbols",
+        "identity_graph_sha256": "identities",
+        "fresh_development_scope_sha256": "fresh",
+        "exact_development_scope_sha256": "exact",
+    }
+    drifted = {**fields, "development_symbol_count": 3}
+
+    with pytest.raises(
+        data.ResidualTemporalDataError,
+        match="development_symbol_count",
+    ):
+        data._assert_predecessor_semantics(drifted, fields)
 
 
 def test_temporal_empty_series_normalization_changes_no_nonempty_rows():

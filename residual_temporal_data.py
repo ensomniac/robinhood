@@ -49,6 +49,11 @@ CONTAMINATED_EXPOSURE_ID = (
     "development-liquid-equity-market-residual-reversal-replication-"
     "d4c9fb3b7ea04864"
 )
+PREDECESSOR_DEVELOPMENT_COLLECTION = (
+    ROOT
+    / "development-collection/residual-temporal-development-collection-"
+    "229dc2b05df46138324d844387789601281dc06988cdb4cdd3c60dff022e1106.json"
+)
 
 
 class ResidualTemporalDataError(RuntimeError):
@@ -215,6 +220,93 @@ def _development_scopes(
     return fresh_scope, exact_scope, exposure_scope
 
 
+def _predecessor_development_binding() -> tuple[
+    dict[str, Any], dict[str, Any], dict[str, Any]
+] | None:
+    if not PREDECESSOR_DEVELOPMENT_COLLECTION.is_file():
+        return None
+    strategy_discovery.require_committed(PREDECESSOR_DEVELOPMENT_COLLECTION)
+    collection = strategy_discovery.load_artifact(
+        PREDECESSOR_DEVELOPMENT_COLLECTION,
+        expected_kind=COLLECTION_KIND,
+    )
+    predecessor_contract_path = PROJECT_ROOT / str(
+        collection.get("contract_path", "")
+    )
+    strategy_discovery.require_committed(predecessor_contract_path)
+    predecessor_contract = strategy_discovery.load_artifact(
+        predecessor_contract_path,
+        expected_kind=CONTRACT_KIND,
+    )
+    if not (
+        collection.get("state") == COLLECTION_STATE
+        and collection.get("contract_sha256")
+        == predecessor_contract["artifact_sha256"]
+        and collection.get("strategy_metrics_computed") is False
+        and collection.get("confirmation_prices_accessed") is False
+        and collection.get("substitutions") == 0
+        and collection.get("broker_actions") == 0
+        and predecessor_contract.get("rules_or_parameter_grid_changed")
+        is False
+        and predecessor_contract.get("confirmation_prices_accessed")
+        is False
+    ):
+        raise ResidualTemporalDataError(
+            "predecessor development collection is unsafe"
+        )
+    store = HistoricalStoreConfig.from_env(DEFAULT_ENV_PATH)
+    external_path = (
+        store.root / str(collection["external_relative_path"])
+    ).resolve()
+    if (
+        store.root.resolve() not in external_path.parents
+        or not external_path.is_file()
+        or sha256_file(external_path)
+        != collection["external_file_sha256"]
+    ):
+        raise ResidualTemporalDataError(
+            "predecessor development dataset binding drifted"
+        )
+    binding = {
+        "collection_path": _repo_path(PREDECESSOR_DEVELOPMENT_COLLECTION),
+        "collection_file_sha256": sha256_file(
+            PREDECESSOR_DEVELOPMENT_COLLECTION
+        ),
+        "collection_sha256": collection["artifact_sha256"],
+        "contract_path": collection["contract_path"],
+        "contract_sha256": predecessor_contract["artifact_sha256"],
+        "external_relative_path": collection["external_relative_path"],
+        "external_file_sha256": collection["external_file_sha256"],
+        "dataset_sha256": collection["dataset_sha256"],
+        "strategy_metrics_computed": False,
+        "confirmation_prices_accessed": False,
+        "repair_scope": "dataset_manifest_evidence_paths_only",
+    }
+    return binding, collection, predecessor_contract
+
+
+def _assert_predecessor_semantics(
+    contract: Mapping[str, Any],
+    predecessor: Mapping[str, Any],
+) -> None:
+    for field in (
+        "development_dates",
+        "development_signal_dates",
+        "embargo_dates",
+        "confirmation_dates",
+        "confirmation_signal_dates",
+        "development_symbol_count",
+        "development_symbols_sha256",
+        "identity_graph_sha256",
+        "fresh_development_scope_sha256",
+        "exact_development_scope_sha256",
+    ):
+        if contract.get(field) != predecessor.get(field):
+            raise ResidualTemporalDataError(
+                f"predecessor development semantics drifted: {field}"
+            )
+
+
 def _partitions(
     early_dates: Sequence[str], v6_contract: Mapping[str, Any]
 ) -> tuple[list[str], list[str], list[str], list[str], list[str]]:
@@ -315,6 +407,13 @@ def freeze_contract(
         "strategy_discovery.py",
         "learning_statistics.py",
     )
+    predecessor_result = _predecessor_development_binding()
+    predecessor_binding = (
+        predecessor_result[0] if predecessor_result is not None else None
+    )
+    predecessor_contract = (
+        predecessor_result[2] if predecessor_result is not None else None
+    )
     payload = {
         "schema_version": 1,
         "artifact_kind": CONTRACT_KIND,
@@ -381,6 +480,9 @@ def freeze_contract(
             "provider_substitution_allowed": False,
             "interpolation_allowed": False,
             "resumable_symbol_batches": True,
+            "authorized_predecessor_dataset_reuse": (
+                predecessor_binding is not None
+            ),
         },
         "universe_contract": dict(v6_contract["universe_contract"]),
         "implementation_hashes": {
@@ -391,13 +493,20 @@ def freeze_contract(
         "outcome_exposure_index_sha256": outcome_exposure.audit()[
             "index_sha256"
         ],
-        "market_prices_accessed_before_freeze": False,
+        "authorized_predecessor_development_collection": (
+            predecessor_binding
+        ),
+        "market_prices_accessed_before_freeze": (
+            predecessor_binding is not None
+        ),
         "confirmation_prices_accessed": False,
         "strategy_metrics_accessed_before_freeze": False,
         "rules_or_parameter_grid_changed": False,
         "substitutions": 0,
         "broker_actions": 0,
     }
+    if predecessor_contract is not None:
+        _assert_predecessor_semantics(payload, predecessor_contract)
     return strategy_discovery._write_artifact(
         payload,
         root / "data-contract",
@@ -415,7 +524,9 @@ def load_contract(
     )
     if not (
         contract.get("state") == CONTRACT_STATE
-        and contract.get("market_prices_accessed_before_freeze") is False
+        and isinstance(
+            contract.get("market_prices_accessed_before_freeze"), bool
+        )
         and contract.get("confirmation_prices_accessed") is False
         and contract.get("strategy_metrics_accessed_before_freeze") is False
         and contract.get("rules_or_parameter_grid_changed") is False
@@ -425,6 +536,23 @@ def load_contract(
         raise ResidualTemporalDataError(
             "development data contract is not collection-ready"
         )
+    predecessor_result = _predecessor_development_binding()
+    predecessor_binding = (
+        predecessor_result[0] if predecessor_result is not None else None
+    )
+    declared_predecessor = contract.get(
+        "authorized_predecessor_development_collection"
+    )
+    if (
+        contract["market_prices_accessed_before_freeze"]
+        != (declared_predecessor is not None)
+        or declared_predecessor != predecessor_binding
+    ):
+        raise ResidualTemporalDataError(
+            "predecessor development authorization drifted"
+        )
+    if predecessor_result is not None:
+        _assert_predecessor_semantics(contract, predecessor_result[2])
     for name, expected in contract.get("implementation_hashes", {}).items():
         implementation = PROJECT_ROOT / str(name)
         if (
@@ -610,6 +738,90 @@ def collect_development(
         != contract["development_symbols_sha256"]
     ):
         raise ResidualTemporalDataError("development symbol union drifted")
+    predecessor_result = _predecessor_development_binding()
+    if contract.get("authorized_predecessor_development_collection") is not None:
+        if (
+            predecessor_result is None
+            or contract["authorized_predecessor_development_collection"]
+            != predecessor_result[0]
+        ):
+            raise ResidualTemporalDataError(
+                "authorized predecessor development dataset is unavailable"
+            )
+        predecessor = predecessor_result[1]
+        inspection = strategy_discovery.load_artifact(
+            contract_inspection_path,
+            expected_kind=CONTRACT_INSPECTION_KIND,
+        )
+        started_at = datetime.now(timezone.utc)
+        completed_at = datetime.now(timezone.utc)
+        prior_telemetry = predecessor["provider_telemetry"]
+        payload = {
+            **{
+                key: predecessor[key]
+                for key in (
+                    "schema_version",
+                    "artifact_kind",
+                    "state",
+                    "campaign_id",
+                    "family_id",
+                    "external_relative_path",
+                    "external_file_sha256",
+                    "dataset_sha256",
+                    "evaluation_dates",
+                    "decision_dates",
+                    "symbols_requested",
+                    "symbols_with_rows",
+                    "empty_series",
+                    "daily_rows",
+                    "strategy_metrics_computed",
+                    "confirmation_prices_accessed",
+                    "substitutions",
+                    "broker_actions",
+                )
+            },
+            "contract_path": inspection["contract_path"],
+            "contract_sha256": contract["artifact_sha256"],
+            "contract_inspection_path": _repo_path(
+                contract_inspection_path
+            ),
+            "contract_inspection_sha256": inspection["artifact_sha256"],
+            "provider_telemetry": {
+                "daily_bars": {
+                    "requests": 0,
+                    "request_seconds": 0.0,
+                    "pacing_wait_seconds": 0.0,
+                    "cache_hits": 1,
+                    "failures": 0,
+                    "predecessor_requests": prior_telemetry[
+                        "daily_bars"
+                    ]["requests"],
+                },
+                "split_actions": {
+                    "requests": 0,
+                    "request_seconds": 0.0,
+                    "cache_hits": 1,
+                    "failures": 0,
+                    "events": prior_telemetry["split_actions"]["events"],
+                    "sha256": prior_telemetry["split_actions"]["sha256"],
+                    "disposition": "authorized_predecessor_reuse",
+                },
+            },
+            "predecessor_collection_sha256": predecessor[
+                "artifact_sha256"
+            ],
+            "collection_started_at": started_at.isoformat().replace(
+                "+00:00", "Z"
+            ),
+            "collection_completed_at": completed_at.isoformat().replace(
+                "+00:00", "Z"
+            ),
+        }
+        return strategy_discovery._write_artifact(
+            payload,
+            root / "development-collection",
+            "residual-temporal-development-collection",
+        )
     provider = AlpacaBulkConfig.from_env(DEFAULT_ENV_PATH)
     batches = [
         symbols[index : index + provider.batch_size]
