@@ -1353,6 +1353,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         runtime.FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
         runtime.FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+        runtime.ETF_RESIDUAL_REPLICATION_FAMILY,
         runtime.BREADTH_CAPITULATION_REBOUND_FAMILY,
         *runtime.ETF_OVERSOLD_FAMILIES,
     }:
@@ -1426,6 +1427,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         runtime.FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
         runtime.FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+        runtime.ETF_RESIDUAL_REPLICATION_FAMILY,
         runtime.BREADTH_CAPITULATION_REBOUND_FAMILY,
         *runtime.ETF_OVERSOLD_FAMILIES,
     }:

@@ -25,9 +25,29 @@ EQUITY_RESIDUAL_FAMILY = "liquid-equity-market-residual-reversal"
 EQUITY_RESIDUAL_REPLICATION_FAMILY = (
     "liquid-equity-market-residual-reversal-replication"
 )
+ETF_RESIDUAL_REPLICATION_FAMILY = (
+    "liquid-etf-market-residual-reversal-replication-v1"
+)
+ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS = (
+    "IJH",
+    "IJR",
+    "IWD",
+    "IWF",
+    "IWN",
+    "IWO",
+    "SPLG",
+    "VB",
+    "VO",
+    "VXF",
+)
+ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL = "SPY"
 EQUITY_RESIDUAL_FAMILIES = {
     EQUITY_RESIDUAL_FAMILY,
     EQUITY_RESIDUAL_REPLICATION_FAMILY,
+}
+RESIDUAL_FAMILIES = {
+    *EQUITY_RESIDUAL_FAMILIES,
+    ETF_RESIDUAL_REPLICATION_FAMILY,
 }
 INTRADAY_ETF_FAMILY = "intraday-index-etf-opening-reversal"
 COUNTRY_ETF_OPENING_REVERSAL_FAMILY = "country-etf-opening-reversal"
@@ -94,6 +114,7 @@ VOLATILITY_COMPRESSION_FAMILY = (
 )
 SUPPORTED_FAMILIES = {
     *EQUITY_RESIDUAL_FAMILIES,
+    ETF_RESIDUAL_REPLICATION_FAMILY,
     *INTRADAY_ETF_FAMILIES,
     ETF_PULLBACK_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
@@ -522,7 +543,7 @@ def _equity_residual_candidates(
     dataset: Mapping[str, Any], parameters: Mapping[str, Any]
 ) -> list[dict[str, Any]]:
     family_id = str(dataset.get("family_id"))
-    if family_id not in EQUITY_RESIDUAL_FAMILIES:
+    if family_id not in RESIDUAL_FAMILIES:
         raise DenseStrategyRuntimeError(
             "equity residual dataset family binding is invalid"
         )
@@ -823,6 +844,47 @@ def _equity_residual_candidates(
             "tagged_candidates": tagged_candidates,
         }
     return candidates
+
+
+def _fixed_etf_residual_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    """Apply the frozen residual-reversal rules to a fixed ETF denominator."""
+
+    if dataset.get("family_id") != ETF_RESIDUAL_REPLICATION_FAMILY:
+        raise DenseStrategyRuntimeError(
+            "fixed ETF residual dataset family binding is invalid"
+        )
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    expected_symbols = {
+        *ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS,
+        ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL,
+    }
+    if set(daily) != expected_symbols:
+        raise DenseStrategyRuntimeError(
+            "fixed ETF residual universe drifted from the frozen symbols"
+        )
+    decision_dates = calendar[:-5]
+    if isinstance(dataset, dict):
+        augmented = dataset
+    else:
+        augmented = dict(dataset)
+    augmented["universe_by_date"] = {
+        day: list(ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS)
+        for day in decision_dates
+    }
+    augmented["universe_identity_by_date"] = {
+        day: {
+            symbol: f"ETF:{symbol}"
+            for symbol in ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS
+        }
+        for day in decision_dates
+    }
+    augmented["split_execution_dates_by_symbol"] = {
+        symbol: [] for symbol in ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS
+    }
+    return _equity_residual_candidates(augmented, parameters)
 
 
 def _etf_pullback_candidates(
@@ -3834,6 +3896,8 @@ def build_candidates(
 
     if dataset.get("family_id") != family_id:
         raise DenseStrategyRuntimeError("dataset family binding does not match")
+    if family_id == ETF_RESIDUAL_REPLICATION_FAMILY:
+        return _fixed_etf_residual_candidates(dataset, parameters)
     if family_id in EQUITY_RESIDUAL_FAMILIES:
         return _equity_residual_candidates(dataset, parameters)
     if family_id == INDEX_ETF_OPENING_MOMENTUM_FAMILY:
@@ -4149,6 +4213,7 @@ def _production_daily_signal(
             },
         }
     if family_id in {
+        ETF_RESIDUAL_REPLICATION_FAMILY,
         ETF_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
@@ -4179,6 +4244,125 @@ def _production_daily_signal(
             raise DenseStrategyRuntimeError(
                 "production ETF history does not cover the complete calendar"
             )
+        if family_id == ETF_RESIDUAL_REPLICATION_FAMILY:
+            if frozen_symbols != [
+                *ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS,
+                ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL,
+            ]:
+                raise DenseStrategyRuntimeError(
+                    "production ETF residual universe escaped the frozen rules"
+                )
+            window = int(parameters["prior_return_sessions"])
+            threshold = float(parameters["residual_z_threshold"])
+            trend_period = (
+                100
+                if parameters["market_trend_gate"] == "SPY>SMA100"
+                else 200
+            )
+            stop_atr = float(parameters["stop_atr14"])
+            hold_sessions = int(parameters["hold_sessions"])
+            if (
+                window not in {1, 3}
+                or threshold not in {-1.5, -2.0, -2.5}
+                or parameters["market_trend_gate"]
+                not in {"SPY>SMA100", "SPY>SMA200"}
+                or stop_atr not in {1.0, 1.5}
+                or hold_sessions not in {2, 5}
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production ETF residual rules escaped the frozen grid"
+                )
+            spy_bars = daily[ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL]
+            spy_index = indices[
+                ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL
+            ].get(decision_date)
+            if spy_index is None or spy_index < max(
+                trend_period - 1,
+                window,
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production ETF residual market history is incomplete"
+                )
+            market_trend = _sma(spy_bars, spy_index, trend_period)
+            if (
+                market_trend is None
+                or float(spy_bars[spy_index]["close"]) <= market_trend
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production ETF residual market trend gate is closed"
+                )
+            spy_return = (
+                float(spy_bars[spy_index]["close"])
+                / float(spy_bars[spy_index - window]["close"])
+                - 1
+            )
+            qualified: list[tuple[float, str, float, float]] = []
+            for symbol in ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS:
+                bars = daily[symbol]
+                symbol_index = indices[symbol].get(decision_date)
+                if symbol_index is None or symbol_index < max(
+                    STANDARDIZATION_LOOKBACK + window,
+                    14,
+                ):
+                    raise DenseStrategyRuntimeError(
+                        "production ETF residual target history is incomplete"
+                    )
+                residual = (
+                    float(bars[symbol_index]["close"])
+                    / float(bars[symbol_index - window]["close"])
+                    - 1
+                    - spy_return
+                )
+                history: list[float] = []
+                for prior_index in range(window, symbol_index):
+                    prior_day = str(bars[prior_index]["date"])
+                    prior_spy_index = indices[
+                        ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL
+                    ].get(prior_day)
+                    if (
+                        prior_spy_index is None
+                        or prior_spy_index < window
+                    ):
+                        continue
+                    history.append(
+                        float(bars[prior_index]["close"])
+                        / float(bars[prior_index - window]["close"])
+                        - float(spy_bars[prior_spy_index]["close"])
+                        / float(spy_bars[prior_spy_index - window]["close"])
+                    )
+                z_score = _z_score(residual, history)
+                atr14 = _atr(bars, symbol_index)
+                if (
+                    z_score is not None
+                    and z_score <= threshold
+                    and atr14 is not None
+                    and _cost_floor(abs(residual))
+                ):
+                    qualified.append(
+                        (z_score, symbol, atr14, residual)
+                    )
+            if not qualified:
+                raise DenseStrategyRuntimeError(
+                    "no exact production ETF residual signal"
+                )
+            z_score, symbol, atr14, residual = sorted(qualified)[0]
+            return {
+                "symbol": symbol,
+                "rank": 1,
+                "score": z_score,
+                "expected_gross_move_fraction": abs(residual),
+                "atr": atr14,
+                "stop_atr_multiple": stop_atr,
+                "holding_trading_days": hold_sessions,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_maximum_hold_close",
+                    "maximum_hold_sessions": hold_sessions,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
         if family_id in ETF_OVERSOLD_FAMILIES:
             trend_period = int(parameters["trend_sma"])
             rsi_max = float(parameters["rsi2_maximum"])
@@ -5494,6 +5678,7 @@ def evaluate_production_signal(
         )
     if family_id in {
         *EQUITY_RESIDUAL_FAMILIES,
+        ETF_RESIDUAL_REPLICATION_FAMILY,
         LIQUID_EQUITY_MOMENTUM_FAMILY,
         ETF_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
