@@ -480,6 +480,20 @@ before evaluation.
 Result `eb2138f9...4258ef1` completed all 32 exact trials in one local dataset
 load with one cache hit, zero requests, and zero failures. Commit it before
 independent selection reconstruction.
+Inspection `c40c45ae...940721b` rejected all 32 trials: none had positive
+20-bps growth, stressed profit factor, every-fold growth, DSR, Holm rejection,
+PBO at or below 0.50, or stable positive neighbors; three stayed within 6R.
+The least-negative trial had only 11 OOF fills, -0.01303 stressed log growth,
+PF 0.592, 3.728R drawdown, a negative bootstrap lower bound, DSR 0.455, and
+PBO 0.514. The exact replication is terminal and its confirmation reserve is
+untouched. Do not run another oversold replication in response to these results.
+
+The continuous existing-family queue is now exhausted. Rolling authorization
+`bedfb0ea...5e5585` exposes three immediately available mechanism slots with no
+calendar wait. Advance the already frozen batch—liquid-equity market-residual
+reversal, intraday index-ETF opening reversal, and liquid-ETF trend pullback—
+by freezing and inspecting its exact disjoint calendar allocation before any
+provider access. Terminal families release their slot immediately.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
