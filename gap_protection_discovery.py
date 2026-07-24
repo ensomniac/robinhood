@@ -141,7 +141,6 @@ def freeze(
     outcome_exposure.assert_untouched(confirmation_scope, records)
     outcome_exposure.assert_disjoint([development_scope, confirmation_scope])
     evidence_paths = [
-        _repo_path(successor.PREENTRY_INSPECTION),
         _repo_path(collection.PREENTRY_INSPECTION),
         _repo_path(DATA_INSPECTION),
         "strategy_tournament/v2/OUTCOME_EXPOSURE_INDEX.jsonl",
