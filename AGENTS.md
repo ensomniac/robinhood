@@ -195,8 +195,15 @@ ignored storage location to the repository-standard `learning_runs` tree; no
 date, symbol, rule, partition, or search parameter changed. The adapter may
 carry only 09:30-09:34 target-session fields across its information wall; its
 deterministic end-of-day residual is restricted to completed prior-session
-lookbacks. Build and independently inspect that inventory next. Confirmation
-outcomes and broker actions remain forbidden.
+lookbacks. Summary `f22b4392...c1218` and independent inspection
+`b82ec51a...d6a7c` now bind the completed inventory. Conservative whole-date
+exposure filtering retained 100 untouched signal dates and 2,334 candidate
+pairs: 57 development dates/1,474 pairs, five embargo dates, and 38
+confirmation dates/791 pairs. This clears the formal 50-total and
+20-confirmation maximum-entry capacity floors, but no outcome, power, or edge
+claim exists yet. Freeze and inspect a development-only full-minute collection
+before opening those 57 sessions; the confirmation partition and broker
+actions remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

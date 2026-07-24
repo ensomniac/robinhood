@@ -1,0 +1,33 @@
+{
+  "artifact_kind": "gap_protection_preentry_summary",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_outcomes_permitted": false,
+  "contract_path": "strategy_tournament/v2/gap_protection_successor/dataset-equity-gap-protection-continuation-2026-07-24-v2/preentry-contract/gap-protection-preentry-contract-b2c223bcfe81f92a96882b7974774d424b96f45c32bd89e0e02dae44305ad6d1.json",
+  "contract_sha256": "b2c223bcfe81f92a96882b7974774d424b96f45c32bd89e0e02dae44305ad6d1",
+  "dataset_id": "dataset-equity-gap-protection-continuation-2026-07-24-v2",
+  "family_id": "equity-gap-protection-continuation-search",
+  "inventory": {
+    "candidate_pairs": 2334,
+    "confirmation_candidate_pairs": 791,
+    "confirmation_dates": 38,
+    "content_sha256": "0b509c3bbdc1a19cd99bc7124dbc729ccf15ecbc6dd10af0f7ce0fd898f066c0",
+    "development_candidate_pairs": 1474,
+    "development_dates": 57,
+    "eligible_dates": 100,
+    "embargo_dates": 5,
+    "excluded_dates": 299,
+    "file_sha256": "83081cbba34f103773d7f4ba4bd80aee4964a5d4636c2ced236ebdc1127e2052",
+    "global_outcome_index_sha256": "0b938fb55e7fe3ef6edf61004aa22d6927d0b6ef5c7040db4f987139689eb748"
+  },
+  "scanner_summary": {
+    "completed_dates": 399,
+    "detail_sha256": "8911f47b9a589f698262a1098b71d108a47ea40ec39b3e4214bb373cc5089fe5",
+    "information_cutoff": "TARGET_SESSION_09:35_ET",
+    "selection_time_et": "09:35:00"
+  },
+  "schema_version": 1,
+  "state": "PREENTRY_BUILT_AWAITING_INSPECTION",
+  "summary_sha256": "f22b4392e65ea0c3983982481c9b08a59927180b83b51326f4cb5e14794c1218",
+  "target_outcomes_observed_or_derived": false
+}
