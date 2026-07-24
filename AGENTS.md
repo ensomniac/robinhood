@@ -200,7 +200,10 @@ unavailable names, and refreeze the otherwise identical 48-trial contract.
 Revision `df35c971...99d2b` now does exactly that; it was frozen with zero trial
 returns and no confirmation access. It independently earned `CAPACITY_READY`
 under preflight `105184a3...5c35dc`, and replacement search
-`d4008bcb...d6079f` is the only V6 search allowed to evaluate.
+`d4008bcb...d6079f` is the only V6 search allowed to evaluate. Development
+result `d4c9fb3b...9a1438` completed all 48 trials in 30.805 seconds from one
+cached dataset load and zero provider requests; it remains unelected until
+independent inspection.
 Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
 freeze: its first independent inspection stopped on a missing local artifact-
 hash helper, before any provider or market-price access. It cannot authorize
