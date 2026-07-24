@@ -60,6 +60,17 @@ FLIGHT_TO_SAFETY_REBOUND_FAMILY = (
 )
 FLIGHT_TO_SAFETY_TARGET_SYMBOLS = ("MDY", "VOO", "VTI")
 FLIGHT_TO_SAFETY_FEATURE_SYMBOL = "TLT"
+BREADTH_CAPITULATION_REBOUND_FAMILY = (
+    "broad-equity-etf-breadth-capitulation-rebound"
+)
+BREADTH_CAPITULATION_SYMBOLS = (
+    "ITOT",
+    "IWB",
+    "RSP",
+    "SCHX",
+    "SPTM",
+    "VV",
+)
 HIGH_BETA_ETF_OVERSOLD_FAMILY = "high-beta-etf-oversold-reversal"
 BROAD_ASSET_ETF_OVERSOLD_FAMILY = "broad-asset-etf-oversold-reversal"
 ETF_OVERSOLD_FAMILIES = {
@@ -85,6 +96,7 @@ SUPPORTED_FAMILIES = {
     SECTOR_ETF_ROTATION_FAMILY,
     SECTOR_ETF_GAP_DRIFT_FAMILY,
     FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+    BREADTH_CAPITULATION_REBOUND_FAMILY,
     *ETF_OVERSOLD_FAMILIES,
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
@@ -1141,6 +1153,125 @@ def _flight_to_safety_rebound_candidates(
                     hold_sessions=hold,
                     rank=rank,
                     score=-decline + treasury_return,
+                )
+            )
+    return candidates
+
+
+def _breadth_capitulation_rebound_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    required_decliners = int(parameters["minimum_declining_symbols"])
+    median_decline_floor = float(
+        parameters["minimum_median_decline_fraction"]
+    )
+    target_decline_floor = float(
+        parameters["minimum_target_decline_fraction"]
+    )
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    if set(daily) != set(BREADTH_CAPITULATION_SYMBOLS):
+        raise DenseStrategyRuntimeError(
+            "breadth-capitulation data does not match its frozen ETF basket"
+        )
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        observed: list[tuple[float, str, float]] = []
+        for symbol in BREADTH_CAPITULATION_SYMBOLS:
+            bars = daily[symbol]
+            symbol_index = indices[symbol].get(decision_date)
+            if symbol_index is None or symbol_index < 14:
+                observed = []
+                break
+            atr14 = _atr(bars, symbol_index)
+            if atr14 is None:
+                observed = []
+                break
+            session_return = (
+                float(bars[symbol_index]["close"])
+                / float(bars[symbol_index - 1]["close"])
+                - 1
+            )
+            observed.append((session_return, symbol, atr14))
+        if len(observed) != len(BREADTH_CAPITULATION_SYMBOLS):
+            continue
+        returns = [item[0] for item in observed]
+        if (
+            sum(item < 0 for item in returns) < required_decliners
+            or statistics.median(returns) > -median_decline_floor
+        ):
+            continue
+        scored = [
+            item
+            for item in observed
+            if item[0] <= -target_decline_floor
+            and _cost_floor(abs(item[0]))
+        ]
+        entry_date = calendar[calendar_index + 1]
+        if calendar_index + 1 + hold > len(calendar):
+            continue
+        for rank, (session_return, symbol, atr14) in enumerate(
+            sorted(scored), 1
+        ):
+            bars = daily[symbol]
+            entry_index = indices[symbol].get(entry_date)
+            signal_id = (
+                f"{entry_date}-{BREADTH_CAPITULATION_REBOUND_FAMILY}-{symbol}"
+            )
+            if entry_index is None:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "missing_next_open",
+                    }
+                )
+                continue
+            if entry_index + hold > len(bars):
+                continue
+            observed_dates = {
+                str(item["date"])
+                for item in bars[entry_index : entry_index + hold]
+            }
+            expected_dates = set(
+                calendar[calendar_index + 1 : calendar_index + 1 + hold]
+            )
+            if observed_dates != expected_dates:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "incomplete_holding_bars",
+                    }
+                )
+                continue
+            candidates.append(
+                _daily_candidate(
+                    family_id=BREADTH_CAPITULATION_REBOUND_FAMILY,
+                    symbol=symbol,
+                    decision_date=decision_date,
+                    entry_date=entry_date,
+                    bars=bars,
+                    entry_index=entry_index,
+                    stop_atr=stop_atr,
+                    atr14=atr14,
+                    hold_sessions=hold,
+                    rank=rank,
+                    score=-session_return,
                 )
             )
     return candidates
@@ -2582,6 +2713,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             SECTOR_ETF_ROTATION_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+            BREADTH_CAPITULATION_REBOUND_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
         }:
             symbols = dataset.get("symbols")
@@ -2604,6 +2736,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             ETF_PULLBACK_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+            BREADTH_CAPITULATION_REBOUND_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
         }:
             prepared["_etf_pullback_feature_cache"] = (
@@ -3697,6 +3830,8 @@ def build_candidates(
         return _sector_etf_gap_drift_candidates(dataset, parameters)
     if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY:
         return _flight_to_safety_rebound_candidates(dataset, parameters)
+    if family_id == BREADTH_CAPITULATION_REBOUND_FAMILY:
+        return _breadth_capitulation_rebound_candidates(dataset, parameters)
     if family_id in ETF_OVERSOLD_FAMILIES:
         return _high_beta_etf_oversold_candidates(
             dataset, parameters, family_id=family_id
@@ -3990,6 +4125,7 @@ def _production_daily_signal(
         SECTOR_ETF_ROTATION_FAMILY,
         SECTOR_ETF_GAP_DRIFT_FAMILY,
         FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+        BREADTH_CAPITULATION_REBOUND_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
     }:
         frozen_symbols = frozen_universe.get("symbols")
@@ -4154,6 +4290,84 @@ def _production_daily_signal(
                 "rank": 1,
                 "score": -decline + treasury_return,
                 "expected_gross_move_fraction": abs(decline),
+                "atr": atr14,
+                "stop_atr_multiple": stop_atr,
+                "holding_trading_days": hold_sessions,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_maximum_hold_close",
+                    "maximum_hold_sessions": hold_sessions,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
+        if family_id == BREADTH_CAPITULATION_REBOUND_FAMILY:
+            required_decliners = int(
+                parameters["minimum_declining_symbols"]
+            )
+            median_decline_floor = float(
+                parameters["minimum_median_decline_fraction"]
+            )
+            target_decline_floor = float(
+                parameters["minimum_target_decline_fraction"]
+            )
+            stop_atr = float(parameters["stop_atr14"])
+            hold_sessions = int(parameters["maximum_hold_sessions"])
+            if (
+                required_decliners not in {4, 5}
+                or median_decline_floor not in {0.005, 0.01}
+                or target_decline_floor not in {0.01, 0.015}
+                or stop_atr not in {1.0, 1.5}
+                or hold_sessions not in {2, 5}
+                or frozen_symbols != list(BREADTH_CAPITULATION_SYMBOLS)
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production breadth-capitulation rules escaped the frozen grid"
+                )
+            observed: list[tuple[float, str, float]] = []
+            for symbol in BREADTH_CAPITULATION_SYMBOLS:
+                bars = daily[symbol]
+                symbol_index = indices[symbol].get(decision_date)
+                if symbol_index is None or symbol_index < 14:
+                    raise DenseStrategyRuntimeError(
+                        "production breadth-capitulation history is incomplete"
+                    )
+                atr14 = _atr(bars, symbol_index)
+                if atr14 is None:
+                    raise DenseStrategyRuntimeError(
+                        "production breadth-capitulation ATR is incomplete"
+                    )
+                session_return = (
+                    float(bars[symbol_index]["close"])
+                    / float(bars[symbol_index - 1]["close"])
+                    - 1
+                )
+                observed.append((session_return, symbol, atr14))
+            returns = [item[0] for item in observed]
+            if (
+                sum(item < 0 for item in returns) < required_decliners
+                or statistics.median(returns) > -median_decline_floor
+            ):
+                raise DenseStrategyRuntimeError(
+                    "no exact production breadth-capitulation signal"
+                )
+            qualified = [
+                item
+                for item in observed
+                if item[0] <= -target_decline_floor
+                and _cost_floor(abs(item[0]))
+            ]
+            if not qualified:
+                raise DenseStrategyRuntimeError(
+                    "no exact production breadth-capitulation signal"
+                )
+            session_return, symbol, atr14 = sorted(qualified)[0]
+            return {
+                "symbol": symbol,
+                "rank": 1,
+                "score": -session_return,
+                "expected_gross_move_fraction": abs(session_return),
                 "atr": atr14,
                 "stop_atr_multiple": stop_atr,
                 "holding_trading_days": hold_sessions,
@@ -5241,6 +5455,7 @@ def evaluate_production_signal(
         SECTOR_ETF_ROTATION_FAMILY,
         SECTOR_ETF_GAP_DRIFT_FAMILY,
         FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+        BREADTH_CAPITULATION_REBOUND_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
     }:
         return _production_daily_signal(
