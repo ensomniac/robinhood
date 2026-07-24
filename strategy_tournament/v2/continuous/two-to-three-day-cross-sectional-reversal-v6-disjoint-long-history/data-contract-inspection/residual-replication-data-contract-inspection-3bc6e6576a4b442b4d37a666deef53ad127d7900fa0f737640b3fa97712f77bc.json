@@ -1,0 +1,33 @@
+{
+  "artifact_kind": "residual-replication-data-contract-inspection",
+  "artifact_sha256": "3bc6e6576a4b442b4d37a666deef53ad127d7900fa0f737640b3fa97712f77bc",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "artifact_hash_valid": true,
+    "broker_actions_zero": true,
+    "calendar_rebuilt": true,
+    "confirmation_partition_rebuilt": true,
+    "confirmation_prices_locked": true,
+    "confirmation_untouched": true,
+    "development_partition_rebuilt": true,
+    "development_untouched": true,
+    "embargo_rebuilt": true,
+    "source_bindings_rebuilt": true,
+    "source_dates_rebuilt": true,
+    "split_source_rebuilt": true,
+    "strategy_metrics_absent": true,
+    "substitutions_zero": true,
+    "symbol_denominator_rebuilt": true
+  },
+  "confirmation_signal_capacity": 93,
+  "contract_path": "strategy_tournament/v2/continuous/two-to-three-day-cross-sectional-reversal-v6-disjoint-long-history/data-contract/residual-replication-data-contract-fa1bff02df9d68f0e4d13095db233233f221434813d09f91e4d1123663519fa9.json",
+  "contract_sha256": "fa1bff02df9d68f0e4d13095db233233f221434813d09f91e4d1123663519fa9",
+  "development_signal_capacity": 200,
+  "family_id": "liquid-equity-market-residual-reversal-replication",
+  "inspected_at": "2026-07-24T06:07:40Z",
+  "market_prices_accessed": false,
+  "schema_version": 1,
+  "state": "DATA_CONTRACT_INSPECTED",
+  "strategy_metrics_accessed": false
+}
