@@ -15,6 +15,12 @@ from learning_data import LearningDataError, load_frozen_dataset_contract
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+CONFIRMATION_MANIFEST_ROOT = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery"
+    / runtime.EQUITY_GAP_CONTINUATION_FAMILY
+    / "confirmation-dataset"
+)
 
 
 class GapProtectionPluginError(RuntimeError):
@@ -109,6 +115,7 @@ def _load_bound_dataset(
     *,
     lane: str,
     expected_dates: Sequence[str],
+    preregistration_sha256: str | None = None,
 ) -> dict[str, Any]:
     _require_committed(manifest_path)
     manifest = _manifest(manifest_path)
@@ -125,9 +132,20 @@ def _load_bound_dataset(
         and binding.get("sample_phase") == lane
     ):
         raise GapProtectionPluginError("gap-protection dataset scope drifted")
-    if lane != "development":
+    if lane not in {"development", "confirmation"}:
+        raise GapProtectionPluginError("gap-protection dataset lane is invalid")
+    if lane == "confirmation" and not (
+        preregistration_sha256
+        and payload.get("claim_scope")
+        == "EXACT_PREREGISTERED_CONTRACT_ONLY"
+        and payload.get("preregistration_sha256")
+        == preregistration_sha256
+        and payload.get("capture_after_preregistration_attested") is True
+        and binding.get("preregistration_sha256")
+        == preregistration_sha256
+    ):
         raise GapProtectionPluginError(
-            "confirmation dataset collection is not yet admitted"
+            "confirmation dataset is not exact and winner-bound"
         )
     inspection_path = _path(binding.get("input_inspection_path"))
     _require_committed(inspection_path)
@@ -146,7 +164,20 @@ def _load_bound_dataset(
         raise GapProtectionPluginError("input inspection semantics drifted")
     store = HistoricalDayStore.from_env()
     inventory = collection._load_gzip(successor._inventory_path(store))
-    input_index = collection._load_gzip(collection._input_index_path(store))
+    raw_index_path = binding.get("input_index_relative_path")
+    if raw_index_path is None and lane == "development":
+        input_index_path = collection._input_index_path(store)
+    elif isinstance(raw_index_path, str) and raw_index_path:
+        input_index_path = (store.root / raw_index_path).resolve()
+        try:
+            input_index_path.relative_to(store.root.resolve())
+        except ValueError as exc:
+            raise GapProtectionPluginError(
+                "private input index escaped the historical store"
+            ) from exc
+    else:
+        raise GapProtectionPluginError("private input index path is missing")
+    input_index = collection._load_gzip(input_index_path)
     if (
         inventory.get("content_sha256")
         != binding.get("preentry_inventory_content_sha256")
@@ -178,18 +209,26 @@ def _load_bound_dataset(
         minute_bars[day] = {}
         for symbol in symbols:
             frozen = indexed.get((day, symbol))
-            dataset = collection._full_dataset(store, symbol, day)
-            if frozen is None or dataset is None:
+            document = store.load(symbol, day)
+            datasets = (
+                document.get("datasets", [])
+                if isinstance(document, Mapping)
+                else []
+            )
+            matches = [
+                row
+                for row in datasets
+                if isinstance(row, Mapping)
+                and frozen is not None
+                and row.get("id") == frozen.get("dataset_id")
+                and row.get("content_sha256")
+                == frozen.get("dataset_sha256")
+            ]
+            if frozen is None or len(matches) != 1:
                 raise GapProtectionPluginError(
                     f"inspected input is missing: {day} {symbol}"
                 )
-            if (
-                dataset["id"] != frozen["dataset_id"]
-                or dataset["content_sha256"] != frozen["dataset_sha256"]
-            ):
-                raise GapProtectionPluginError(
-                    f"inspected input drifted: {day} {symbol}"
-                )
+            dataset = matches[0]
             rows, exact = collection._expanded_rows(
                 dataset,
                 day=day,
@@ -270,10 +309,68 @@ def evaluate_development(
     }
 
 
-def evaluate_confirmation(_winner: Mapping[str, Any]) -> dict[str, Any]:
-    raise GapProtectionPluginError(
-        "confirmation remains locked until a development winner freezes its counts"
+def _confirmation_manifest(winner: Mapping[str, Any]) -> Path:
+    explicit = winner.get("confirmation_dataset_manifest")
+    if explicit is not None:
+        path = _path(explicit)
+        paths = [path]
+    else:
+        paths = sorted(CONFIRMATION_MANIFEST_ROOT.glob("dataset-*.json"))
+    matches: list[Path] = []
+    for path in paths:
+        try:
+            manifest = _manifest(path)
+        except GapProtectionPluginError:
+            continue
+        payload = manifest["dataset_payload"]
+        if (
+            manifest.get("requested_dates")
+            == winner.get("confirmation_dates")
+            and payload.get("lane") == "confirmation"
+            and payload.get("preregistration_sha256")
+            == winner.get("rules_hash")
+        ):
+            matches.append(path)
+    if len(matches) != 1:
+        raise GapProtectionPluginError(
+            "expected one exact winner-bound confirmation dataset manifest"
+        )
+    return matches[0]
+
+
+def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
+    manifest_path = _confirmation_manifest(winner)
+    dataset = runtime.prepare_dataset(
+        _load_bound_dataset(
+            manifest_path,
+            lane="confirmation",
+            expected_dates=winner["confirmation_dates"],
+            preregistration_sha256=str(winner["rules_hash"]),
+        )
     )
+    exact = runtime.evaluate_trial(
+        dataset,
+        family_id=runtime.EQUITY_GAP_CONTINUATION_FAMILY,
+        trial_id=str(winner["exact_rules"]["selected_trial_id"]),
+        parameters=winner["exact_rules"]["parameters"],
+        account_policy=_account_policy(),
+    )
+    return {
+        "rules_hash": winner["rules_hash"],
+        "parameter_alternatives": 0,
+        "observed_dates": list(winner["confirmation_dates"]),
+        "outcome_access_before_winner_freeze": False,
+        "dataset_manifest": str(manifest_path.relative_to(PROJECT_ROOT)),
+        "scenarios": {
+            "primary_5bps": exact["scenarios"]["5bps"],
+            "stress_10bps": exact["scenarios"]["10bps"],
+            "stress_20bps": exact["scenarios"]["20bps"],
+        },
+        "maturity_rows": exact["maturity_rows"],
+        "rule_violations": [],
+        "capture_complete": True,
+        "provider_telemetry": _telemetry(dataset_loads=1),
+    }
 
 
 def evaluate_production(

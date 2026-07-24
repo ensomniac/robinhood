@@ -27,5 +27,50 @@ def test_plugin_telemetry_is_warm_and_provider_free():
 def test_discovery_identity_is_existing_family_successor():
     assert (
         discovery.SUCCESSOR_ID
-        == "equity-gap-protection-continuation-v1-development-search"
+        == "equity-gap-protection-continuation-v2-development-search"
     )
+
+
+def test_confirmation_consumer_runs_only_the_frozen_winner(monkeypatch):
+    winner = {
+        "rules_hash": "f" * 64,
+        "confirmation_dates": ["2025-01-02"],
+        "exact_rules": {
+            "selected_trial_id": "trial-017",
+            "parameters": {
+                "maximum_structural_stop_fraction": 0.04,
+            },
+        },
+    }
+    manifest = plugin.PROJECT_ROOT / "strategy_tournament/confirmation-dataset.json"
+    exact = {
+        "scenarios": {
+            "5bps": {"daily_account_returns": [0.001]},
+            "10bps": {"daily_account_returns": [0.0009]},
+            "20bps": {"daily_account_returns": [0.0007]},
+        },
+        "maturity_rows": [{"date": "2025-01-02"}],
+    }
+    calls = []
+    monkeypatch.setattr(plugin, "_confirmation_manifest", lambda value: manifest)
+    monkeypatch.setattr(
+        plugin,
+        "_load_bound_dataset",
+        lambda path, **kwargs: calls.append((path, kwargs)) or {"raw": True},
+    )
+    monkeypatch.setattr(plugin.runtime, "prepare_dataset", lambda value: value)
+    monkeypatch.setattr(
+        plugin.runtime,
+        "evaluate_trial",
+        lambda dataset, **kwargs: calls.append((dataset, kwargs)) or exact,
+    )
+
+    result = plugin.evaluate_confirmation(winner)
+
+    assert result["rules_hash"] == winner["rules_hash"]
+    assert result["parameter_alternatives"] == 0
+    assert result["observed_dates"] == winner["confirmation_dates"]
+    assert result["outcome_access_before_winner_freeze"] is False
+    assert calls[0][1]["lane"] == "confirmation"
+    assert calls[0][1]["preregistration_sha256"] == winner["rules_hash"]
+    assert calls[1][1]["trial_id"] == "trial-017"

@@ -22,7 +22,7 @@ from learning_experiment import DEVELOPMENT_SEARCH_RULE
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-SUCCESSOR_ID = "equity-gap-protection-continuation-v1-development-search"
+SUCCESSOR_ID = "equity-gap-protection-continuation-v2-development-search"
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/continuous"
 DATA_INSPECTION = (
     PROJECT_ROOT
@@ -201,7 +201,9 @@ def freeze(
         "family_id": runtime.EQUITY_GAP_CONTINUATION_FAMILY,
         "mechanism_family": "equity-gap-continuation",
         "strategy_id": "equity-gap-continuation",
-        "parent_experiment_id": "equity-gap-continuation-v2-development-search",
+        "parent_experiment_id": (
+            "experiment-equity-gap-protection-continuation-v1-development-search"
+        ),
         "created_at": created_at,
         "status": "INVENTED",
         "research_generation": "existing_family_successor",
@@ -283,9 +285,10 @@ def freeze(
             "Live completeness, fresh quote, spread, depth, halt, tradability, timing, protection, and reconciliation remain mandatory."
         ],
         "material_difference_rationale": (
-            "This successor adds a prospectively frozen causal protection cap "
-            "to eliminate structurally unprotectable opening ranges on a fresh "
-            "historical inventory."
+            "This successor preserves the prospectively frozen causal "
+            "protection cap and fresh historical inventory while freezing a "
+            "winner-bound confirmation consumer before development outcomes "
+            "are opened."
         ),
         "development_dates": development,
         "embargo_dates": embargo,

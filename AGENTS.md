@@ -226,11 +226,12 @@ chronological partitions, inspected dataset binding, account simulator, costs,
 falsifiers, and committed implementation hashes. Generic outcome-blind
 preflight `42685775...74e2d0` independently rebuilt that binding and earned
 `CAPACITY_READY` without opening the development dataset or contacting a
-provider. Before freezing the search, make the already-declared confirmation
-plugin able to consume a future winner-bound inspected dataset without changing
-its implementation hash; this is an execution-readiness correction, not a
-strategy-rule or outcome change. The confirmation partition and broker actions
-remain forbidden.
+provider. V2 now makes the already-declared confirmation plugin consume only
+one future inspected dataset whose exact dates and preregistration hash match
+the frozen winner. This is an execution-readiness correction, not a
+strategy-rule, grid, partition, cost, or outcome change. Freeze and inspect the
+V2 contract before development evaluation. The confirmation partition and
+broker actions remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
