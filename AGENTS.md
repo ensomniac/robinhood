@@ -538,6 +538,9 @@ V2 contract `cd3389cc...1256f8f` and capacity `9f599f52...39743e9` now bind
 the identical 32 trials, dates, symbols, confirmation reserve, and execution
 rules plus the eight-task symbol-range provider graph. V1 accessed no prices
 and contributes no evidence. Commit V2 before fresh generic preflight.
+Fresh preflight `1cb66231...4ccc65` independently rebuilt the committed V2
+contract, capacity, implementation, partitions, and zero-outcome boundary and
+earned `CAPACITY_READY`. Commit it before freezing a fresh V2 search.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
