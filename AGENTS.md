@@ -426,8 +426,11 @@ raw-SIP daily-bar tasks plus one split-action task over the exact warmup and
 development interval, with no substitutions. Collection
 `50d1b2d0...ecf690` completed all 10 tasks in 11 provider requests with zero
 failures or substitutions; its content-addressed dataset hash is
-`794d05c0...db2e8b8`. Commit the compact status before independent inspection;
-the raw ignored dataset is not yet admissible for evaluation.
+`794d05c0...db2e8b8`. Inspection `30f983f5...e1245` independently rebuilt all
+tasks, external and canonical hashes, exact frozen scope, zero substitutions,
+and runtime schema over all 9,000 observations. Runtime manifest
+`a63127cb...df8d81` binds the inspected dataset to the search. Commit both
+artifacts before development evaluation.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
