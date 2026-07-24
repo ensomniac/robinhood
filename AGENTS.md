@@ -410,8 +410,13 @@ short-horizon-oversold-reversal mechanism. Its fixed outcome-clean universe is
 32-trial grid combines completed one-session decline `{1%,2%}`, RSI(2) maximum
 `{5,10}`, trend SMA `{100,200}`, stop `{1.0,1.5}` ATR14, and hold `{2,5}`
 sessions. The historical and production evaluators share next-session-open
-entry, deterministic ranking, protection, and exit semantics. Commit this
-implementation and its parity tests before freezing any evidence contract.
+entry, deterministic ranking, protection, and exit semantics. Contract
+`4bc808a0...8849b82` and capacity manifest `3227ac41...e5197` freeze the complete
+grid, nine-symbol universe, 2016-12-21 through 2020-12-23 development, five
+session embargo, and untouched 2021-01-05 through 2022-12-30 confirmation
+reserve. They report 9,000 frozen development instrument-session observations
+with zero market-price access. Commit these artifacts before generic preflight
+or provider access.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
