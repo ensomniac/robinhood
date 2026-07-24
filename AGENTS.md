@@ -272,8 +272,12 @@ calendar wait. Freeze, inspect, commit, and collect each evidence boundary in
 order; do not tune either rejected corpus. Calendar contract
 `1de12019...98c4b8` now freezes the single Alpaca calendar query, exact
 2008-2015 bounds, minimum capacity, zero-price outcome boundary, immutable
-outputs, and implementation hashes. Commit and independently inspect it before
-the sole authorized calendar request.
+outputs, and implementation hashes. Independent inspection
+`ee6b5fc7...f1f5e4` admitted the sole authorized calendar request. Collection
+`57102f12...23eb85` returned 2,015 sessions from 2008-01-02 through 2015-12-31
+in one request with zero market-price or target-outcome access. Commit the
+calendar, source attestation, and collection record before independent data
+inspection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
