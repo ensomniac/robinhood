@@ -97,6 +97,51 @@ def test_pullback_feature_cache_matches_reference_calculations():
                 assert cache[day][field] == pytest.approx(expected_value)
 
 
+def test_sector_gap_drift_uses_completed_gap_and_next_session_open():
+    days = _days(230)
+    bars = [
+        _daily_bar(day, 100 + 0.1 * index)
+        for index, day in enumerate(days)
+    ]
+    decision_index = 220
+    prior_close = float(bars[decision_index - 1]["close"])
+    bars[decision_index]["open"] = prior_close * 1.02
+    bars[decision_index]["close"] = prior_close * 1.025
+    bars[decision_index]["high"] = prior_close * 1.03
+    bars[decision_index]["low"] = prior_close * 1.015
+    evaluation_dates = days[decision_index:229]
+    parameters = {
+        "minimum_gap_fraction": 0.01,
+        "maximum_gap_fraction": 0.04,
+        "trend_sma": 100,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 2,
+    }
+
+    candidates = runtime.build_candidates(
+        {
+            "family_id": runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+            "evaluation_dates": evaluation_dates,
+            "symbols": ["XLF"],
+            "daily_bars": {"XLF": bars},
+        },
+        runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+        parameters,
+    )
+    candidate = next(
+        item for item in candidates if item["decision_date"] == evaluation_dates[0]
+    )
+
+    assert candidate["signal_date"] == evaluation_dates[1]
+    assert candidate["entry_price"] == pytest.approx(
+        bars[decision_index + 1]["open"]
+    )
+    assert candidate["entry_price"] != pytest.approx(
+        bars[decision_index]["close"]
+    )
+    assert candidate["exit_date"] <= evaluation_dates[2]
+
+
 def test_cost_scenarios_share_the_stressed_contention_selection():
     calendar = _days(2)
     candidates = [
@@ -708,6 +753,65 @@ def test_production_pullback_rebuilds_the_historical_rank_from_completed_bars():
             parameters=parameters,
             frozen_universe={"symbols": ["SPY"]},
         )
+
+
+def test_production_sector_gap_drift_rebuilds_historical_rank():
+    days = _days(230)
+    daily_bars = {}
+    for symbol, gap in (("XLF", 0.02), ("XLK", 0.03)):
+        bars = [
+            _daily_bar(day, 100 + 0.1 * index)
+            for index, day in enumerate(days)
+        ]
+        prior_close = float(bars[220 - 1]["close"])
+        bars[220]["open"] = prior_close * (1 + gap)
+        bars[220]["close"] = prior_close * (1 + gap + 0.005)
+        bars[220]["high"] = prior_close * (1 + gap + 0.01)
+        bars[220]["low"] = prior_close * (1 + gap - 0.005)
+        daily_bars[symbol] = bars
+    parameters = {
+        "minimum_gap_fraction": 0.01,
+        "maximum_gap_fraction": 0.04,
+        "trend_sma": 100,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 2,
+    }
+    evaluation_dates = days[220:229]
+    historical = runtime.build_candidates(
+        {
+            "family_id": runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+            "evaluation_dates": evaluation_dates,
+            "symbols": ["XLF", "XLK"],
+            "daily_bars": daily_bars,
+        },
+        runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+        parameters,
+    )[0]
+    decision_date = evaluation_dates[0]
+    production = runtime.evaluate_production_signal(
+        {
+            "family_id": runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+            "decision_date": decision_date,
+            "next_session_date": evaluation_dates[1],
+            "calendar_dates": days[:221],
+            "daily_history_complete": True,
+            "symbols": ["XLF", "XLK"],
+            "daily_bars": {
+                symbol: [
+                    bar for bar in bars if bar["date"] <= decision_date
+                ]
+                for symbol, bars in daily_bars.items()
+            },
+        },
+        family_id=runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+        parameters=parameters,
+        frozen_universe={"symbols": ["XLF", "XLK"]},
+    )
+
+    assert production["symbol"] == historical["symbol"] == "XLK"
+    assert production["rank"] == historical["rank"] == 1
+    assert production["holding_trading_days"] == 2
+    assert production["overnight_hold"] is True
 
 
 def test_production_equity_rank_rebuilds_top_250_and_residual_signal():

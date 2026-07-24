@@ -352,7 +352,12 @@ next-session-open execution, at most five sessions of exposure, and a fixed
 32-trial grid. It uses only the nine sector SPDRs on a disjoint 2016-2021
 partition and consumes no new mechanism-family slot. Freeze its exact contract,
 partitions, grid, falsifiers, and collection graph before accessing any price
-outcome.
+outcome. The shared historical/production runtime now implements that exact
+completed-gap decision, next-session-open entry, ATR protection, stop-first
+daily ambiguity, ranking, and two/five-session exit path. The collection layer
+also treats its nine-symbol universe as fixed ETF evidence rather than rebuilding
+a common-stock universe. Commit the implementation and synthetic
+historical/production parity tests before freezing the contract.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

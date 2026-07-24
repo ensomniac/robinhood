@@ -1128,7 +1128,10 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
             },
         }
     daily = _daily_rows(checkpoint_root, plan)
-    if family_id == runtime.ETF_PULLBACK_FAMILY:
+    if family_id in {
+        runtime.ETF_PULLBACK_FAMILY,
+        runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+    }:
         symbols = set(map(str, plan["symbols"]))
         missing = [
             (day, symbol)
@@ -1196,7 +1199,10 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
             "adjustment": successor_adjustment,
         },
     }
-    if family_id == runtime.ETF_PULLBACK_FAMILY:
+    if family_id in {
+        runtime.ETF_PULLBACK_FAMILY,
+        runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+    }:
         dataset["symbols"] = list(plan["symbols"])
     else:
         dataset["universe_by_date"] = universe_by_date

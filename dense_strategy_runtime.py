@@ -30,6 +30,7 @@ ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
 ETF_HIGH_CONTINUATION_FAMILY = "liquid-etf-52-week-high-continuation"
 ETF_TURN_OF_MONTH_FAMILY = "liquid-etf-turn-of-month-seasonality"
 SECTOR_ETF_ROTATION_FAMILY = "liquid-sector-etf-rotation"
+SECTOR_ETF_GAP_DRIFT_FAMILY = "sector-etf-gap-drift-continuation"
 ETF_CLOSE_TO_OPEN_FAMILY = "liquid-etf-close-to-open-momentum"
 CLOSE_TO_OPEN_ETF_SYMBOLS = ("QQQ", "IWM", "DIA")
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
@@ -47,6 +48,7 @@ SUPPORTED_FAMILIES = {
     ETF_HIGH_CONTINUATION_FAMILY,
     ETF_TURN_OF_MONTH_FAMILY,
     SECTOR_ETF_ROTATION_FAMILY,
+    SECTOR_ETF_GAP_DRIFT_FAMILY,
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
@@ -804,6 +806,116 @@ def _etf_pullback_candidates(
                     hold_sessions=hold,
                     rank=rank,
                     score=rsi2 + decline,
+                )
+            )
+    return candidates
+
+
+def _sector_etf_gap_drift_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    minimum_gap = float(parameters["minimum_gap_fraction"])
+    maximum_gap = float(parameters["maximum_gap_fraction"])
+    trend_period = int(parameters["trend_sma"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        scored: list[tuple[float, float, str, float]] = []
+        for symbol, bars in daily.items():
+            symbol_index = indices[symbol].get(decision_date)
+            if symbol_index is None or symbol_index < max(trend_period - 1, 14, 1):
+                continue
+            decision_bar = bars[symbol_index]
+            prior_close = float(bars[symbol_index - 1]["close"])
+            gap_fraction = float(decision_bar["open"]) / prior_close - 1
+            session_return = (
+                float(decision_bar["close"]) / float(decision_bar["open"]) - 1
+            )
+            trend = _sma(bars, symbol_index, trend_period)
+            atr14 = _atr(bars, symbol_index)
+            if (
+                trend is None
+                or atr14 is None
+                or gap_fraction < minimum_gap
+                or gap_fraction > maximum_gap
+                or session_return < 0
+                or float(decision_bar["close"]) <= trend
+                or not _cost_floor(gap_fraction)
+            ):
+                continue
+            scored.append((-gap_fraction, -session_return, symbol, atr14))
+        entry_date = calendar[calendar_index + 1]
+        if calendar_index + 1 + hold > len(calendar):
+            continue
+        for rank, (
+            negative_gap,
+            negative_session_return,
+            symbol,
+            atr14,
+        ) in enumerate(sorted(scored), 1):
+            bars = daily[symbol]
+            entry_index = indices[symbol].get(entry_date)
+            if entry_index is None:
+                candidates.append(
+                    {
+                        "signal_id": (
+                            f"{entry_date}-{SECTOR_ETF_GAP_DRIFT_FAMILY}-{symbol}"
+                        ),
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "missing_next_open",
+                    }
+                )
+                continue
+            if entry_index + hold > len(bars):
+                continue
+            exit_dates = {
+                str(item["date"])
+                for item in bars[entry_index : entry_index + hold]
+            }
+            expected_dates = set(
+                calendar[calendar_index + 1 : calendar_index + 1 + hold]
+            )
+            if exit_dates != expected_dates:
+                candidates.append(
+                    {
+                        "signal_id": (
+                            f"{entry_date}-{SECTOR_ETF_GAP_DRIFT_FAMILY}-{symbol}"
+                        ),
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "incomplete_holding_bars",
+                    }
+                )
+                continue
+            gap_fraction = -negative_gap
+            session_return = -negative_session_return
+            candidates.append(
+                _daily_candidate(
+                    family_id=SECTOR_ETF_GAP_DRIFT_FAMILY,
+                    symbol=symbol,
+                    decision_date=decision_date,
+                    entry_date=entry_date,
+                    bars=bars,
+                    entry_index=entry_index,
+                    stop_atr=stop_atr,
+                    atr14=atr14,
+                    hold_sessions=hold,
+                    rank=rank,
+                    score=gap_fraction + session_return,
                 )
             )
     return candidates
@@ -2130,6 +2242,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             ETF_HIGH_CONTINUATION_FAMILY,
             ETF_TURN_OF_MONTH_FAMILY,
             SECTOR_ETF_ROTATION_FAMILY,
+            SECTOR_ETF_GAP_DRIFT_FAMILY,
         }:
             symbols = dataset.get("symbols")
             if not isinstance(symbols, list) or set(map(str, symbols)) != set(daily):
@@ -3065,6 +3178,8 @@ def build_candidates(
         return _intraday_candidates(dataset, parameters)
     if family_id == ETF_PULLBACK_FAMILY:
         return _etf_pullback_candidates(dataset, parameters)
+    if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
+        return _sector_etf_gap_drift_candidates(dataset, parameters)
     if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY:
         return _etf_cross_sectional_momentum_candidates(dataset, parameters)
     if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
@@ -3352,6 +3467,7 @@ def _production_daily_signal(
         ETF_HIGH_CONTINUATION_FAMILY,
         ETF_TURN_OF_MONTH_FAMILY,
         SECTOR_ETF_ROTATION_FAMILY,
+        SECTOR_ETF_GAP_DRIFT_FAMILY,
     }:
         frozen_symbols = frozen_universe.get("symbols")
         observed_symbols = decision_data.get("symbols")
@@ -3370,6 +3486,82 @@ def _production_daily_signal(
             raise DenseStrategyRuntimeError(
                 "production ETF history does not cover the complete calendar"
             )
+        if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
+            minimum_gap = float(parameters["minimum_gap_fraction"])
+            maximum_gap = float(parameters["maximum_gap_fraction"])
+            trend_period = int(parameters["trend_sma"])
+            stop_atr = float(parameters["stop_atr14"])
+            hold_sessions = int(parameters["maximum_hold_sessions"])
+            if (
+                minimum_gap not in {0.01, 0.02}
+                or maximum_gap not in {0.04, 0.08}
+                or minimum_gap >= maximum_gap
+                or trend_period not in {100, 200}
+                or stop_atr not in {1.0, 1.5}
+                or hold_sessions not in {2, 5}
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production sector gap-drift rules escaped the frozen grid"
+                )
+            qualified: list[tuple[float, float, str, float]] = []
+            for symbol in map(str, frozen_symbols):
+                bars = daily[symbol]
+                symbol_index = indices[symbol].get(decision_date)
+                if symbol_index is None or symbol_index < max(
+                    trend_period - 1, 14, 1
+                ):
+                    raise DenseStrategyRuntimeError(
+                        "production sector gap-drift history is incomplete"
+                    )
+                decision_bar = bars[symbol_index]
+                gap_fraction = (
+                    float(decision_bar["open"])
+                    / float(bars[symbol_index - 1]["close"])
+                    - 1
+                )
+                session_return = (
+                    float(decision_bar["close"])
+                    / float(decision_bar["open"])
+                    - 1
+                )
+                trend = _sma(bars, symbol_index, trend_period)
+                atr14 = _atr(bars, symbol_index)
+                if (
+                    trend is not None
+                    and atr14 is not None
+                    and minimum_gap <= gap_fraction <= maximum_gap
+                    and session_return >= 0
+                    and float(decision_bar["close"]) > trend
+                    and _cost_floor(gap_fraction)
+                ):
+                    qualified.append(
+                        (gap_fraction, session_return, symbol, atr14)
+                    )
+            if not qualified:
+                raise DenseStrategyRuntimeError(
+                    "no exact production sector gap-drift signal"
+                )
+            gap_fraction, session_return, symbol, atr14 = sorted(
+                qualified,
+                key=lambda item: (-item[0], -item[1], item[2]),
+            )[0]
+            return {
+                "symbol": symbol,
+                "rank": 1,
+                "score": gap_fraction + session_return,
+                "expected_gross_move_fraction": gap_fraction,
+                "atr": atr14,
+                "stop_atr_multiple": stop_atr,
+                "holding_trading_days": hold_sessions,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_maximum_hold_close",
+                    "maximum_hold_sessions": hold_sessions,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
         if family_id in {
             ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
             ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
@@ -4177,6 +4369,7 @@ def evaluate_production_signal(
         ETF_HIGH_CONTINUATION_FAMILY,
         ETF_TURN_OF_MONTH_FAMILY,
         SECTOR_ETF_ROTATION_FAMILY,
+        SECTOR_ETF_GAP_DRIFT_FAMILY,
     }:
         return _production_daily_signal(
             decision_data, family_id, parameters, frozen_universe
