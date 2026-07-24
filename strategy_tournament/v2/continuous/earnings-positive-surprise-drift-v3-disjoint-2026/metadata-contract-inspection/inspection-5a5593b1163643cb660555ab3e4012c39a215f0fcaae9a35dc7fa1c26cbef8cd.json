@@ -1,0 +1,31 @@
+{
+  "artifact_kind": "earnings-pead-expansion-metadata-contract-inspection",
+  "authorized_provider_requests": 128,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "completed_dates": true,
+    "exact_rebuild": true,
+    "no_broker": true,
+    "no_forward_returns": true,
+    "no_metrics": true,
+    "no_prices": true,
+    "prior_trial_correction": true,
+    "request_count": true,
+    "unique_symbols": true
+  },
+  "contract_file_sha256": "d082c9a2b96c079c68366e15c992c98e130f5a438c2ce3ae299465601c88a974",
+  "contract_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v3-disjoint-2026/metadata-contract/contract-5f42c7b389714a6fa70a6d1db42eea4330cd04d0f3090eaf029336b2462ae3f3.json",
+  "contract_sha256": "5f42c7b389714a6fa70a6d1db42eea4330cd04d0f3090eaf029336b2462ae3f3",
+  "expansion_id": "earnings-positive-surprise-drift-v3-disjoint-2026",
+  "family_id": "earnings-positive-surprise-drift",
+  "forward_returns_accessed": false,
+  "inspected_at": "2026-07-24T21:04:00Z",
+  "inspection_sha256": "5a5593b1163643cb660555ab3e4012c39a215f0fcaae9a35dc7fa1c26cbef8cd",
+  "market_prices_accessed": false,
+  "provider_access_authorized": true,
+  "schema_version": 1,
+  "state": "METADATA_CONTRACT_INSPECTED_READY",
+  "strategy_metrics_computed": 0,
+  "valid": true
+}
