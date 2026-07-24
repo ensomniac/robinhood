@@ -332,6 +332,13 @@ dataset load, one cache hit, zero provider requests, and zero failures in 86.79
 seconds. Commit it before independent selection reconstruction. The run exceeds
 the 60-second performance acceptance and requires profiling after the evidence
 disposition; performance does not alter any trial or selection gate.
+Independent inspection `ba93c8a2...61d489` rejected the exact macro-ETF
+replication. Seven trials had positive 20-bps growth, two passed stressed profit
+factor, three passed drawdown, and two passed neighbor stability, but none had
+positive growth in every rolling fold or passed DSR, Holm, or PBO. The
+highest-growth path produced 0.02000 log growth from 18 OOF fills, PF 1.381,
+6.547R drawdown, a negative bootstrap lower bound, and DSR 0.3817. Its
+confirmation reserve remains untouched and cannot be opened.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
