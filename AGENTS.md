@@ -477,6 +477,9 @@ Inspection `8815c99f...8e4552b` rebuilt every task, hash, frozen scope, runtime
 schema, zero substitutions, and all 9,000 observations. Manifest
 `423456c7...f69220` binds the inspected dataset to the search. Commit both
 before evaluation.
+Result `eb2138f9...4258ef1` completed all 32 exact trials in one local dataset
+load with one cache hit, zero requests, and zero failures. Commit it before
+independent selection reconstruction.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

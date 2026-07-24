@@ -1,0 +1,1031 @@
+{
+  "artifact_kind": "development-search-result",
+  "artifact_sha256": "eb2138f9f7701a8eea3aeffc4c873a134153a0a758ea1a1a64eac90244258ef1",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "elapsed_seconds": 1.3427752919960767,
+  "evaluation_binding": {
+    "compression": "gzip",
+    "content_sha256": "51f61a589b73911187f8788a0e2ce9bc51c707d4bd7d19a6779153aff71d1002",
+    "file_sha256": "4d9cb4eaf6b5ba13e2d300000dc9792d4d447d7c40966103319c6364a04b07b8",
+    "format": "canonical-json",
+    "kind": "external-development-evaluation",
+    "relative_path": "_derived/strategy_discovery_evaluations/51f61a589b73911187f8788a0e2ce9bc51c707d4bd7d19a6779153aff71d1002/evaluation.json.gz",
+    "schema_version": 1,
+    "storage": "LOCAL_HISTORICAL_DATA_ROOT"
+  },
+  "evaluation_summary": {
+    "dataset_manifest": "/Users/ensomniac/trade/robinhood_codex/strategy_tournament/v2/discovery/broad-asset-etf-oversold-reversal/development-dataset/dataset-broad-asset-etf-oversold-reversal-development-b0c98cbdd7b7ff64-423456c740724fa2d1b5e3e731a4efff264f431ea73c4e77cbbfe50983f69220.json",
+    "experiment_id": "experiment-broad-asset-etf-oversold-reversal-v1-outcome-clean",
+    "implementation_sha256": "7b457477faee9ef417868c54d0962305b84c7429b89dea72ab1c7a4b75b58bc2",
+    "trial_count": 32,
+    "trials": [
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 24,
+          "oof_net_pnl_dollars": 24
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 9.346013395144913,
+          "stress_20bps_profit_factor": 0.38920286553016226,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.042810290678048764,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.0,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-6ce929357b3a9759"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 32,
+          "oof_net_pnl_dollars": 32
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 16.307444830234473,
+          "stress_20bps_profit_factor": 0.29543892776921554,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.074439394362149,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.0,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-852ec90022a1fa20"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 24,
+          "oof_net_pnl_dollars": 24
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 7.622156686600023,
+          "stress_20bps_profit_factor": 0.32808218165912967,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.03714174646742801,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.5,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-7dcf4339e335f88a"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 32,
+          "oof_net_pnl_dollars": 32
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 11.886119776238058,
+          "stress_20bps_profit_factor": 0.27984016460811617,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.055845157266524496,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.5,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-ca337ba0d5f13c1c"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 60,
+          "oof_net_pnl_dollars": 60
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 16.104252591535474,
+          "stress_20bps_profit_factor": 0.5154318474052574,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.07743744397179853,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.0,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-e4a2df33990d4a81"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 65,
+          "oof_net_pnl_dollars": 65
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 21.14006788721685,
+          "stress_20bps_profit_factor": 0.4483041110981897,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.09965326836715713,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.0,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-98e1bc1fcaa54ff7"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 60,
+          "oof_net_pnl_dollars": 60
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 14.368275856312396,
+          "stress_20bps_profit_factor": 0.4387818827201619,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.07019038237081231,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.5,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-8db553f626b2a42e"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 65,
+          "oof_net_pnl_dollars": 65
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 16.576245957166847,
+          "stress_20bps_profit_factor": 0.4101245704476747,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.0784866072315362,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.5,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-35e88cff62e01b9a"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 11,
+          "oof_net_pnl_dollars": 11
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 3.7276007337804007,
+          "stress_20bps_profit_factor": 0.5917721322707242,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.013031956057549936,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.0,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-6358dfe36df76448"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 15,
+          "oof_net_pnl_dollars": 15
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 10.425072736251728,
+          "stress_20bps_profit_factor": 0.2588120826807871,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.04775110168907049,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.0,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-92d56bdf98c7e546"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 11,
+          "oof_net_pnl_dollars": 11
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 3.466239856706288,
+          "stress_20bps_profit_factor": 0.45096690359730296,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.015309165116289892,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.5,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-a3671579ea98e431"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 15,
+          "oof_net_pnl_dollars": 15
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 7.553350683691318,
+          "stress_20bps_profit_factor": 0.24979398040415937,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.036324420106530475,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.5,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-a4c639cce9a6a20f"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 30,
+          "oof_net_pnl_dollars": 30
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 6.3857834316385365,
+          "stress_20bps_profit_factor": 0.6981915874540325,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.023155740174005214,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.0,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-58580a756bcd6ca0"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 30,
+          "oof_net_pnl_dollars": 30
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 11.42110552639568,
+          "stress_20bps_profit_factor": 0.48354782100043436,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.04842522116413218,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.0,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-2677cddf722b5c93"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 30,
+          "oof_net_pnl_dollars": 30
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 5.8027665132411865,
+          "stress_20bps_profit_factor": 0.5611231278808085,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.027928419670862445,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.5,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-484b3168c0da972e"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 30,
+          "oof_net_pnl_dollars": 30
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 8.473585668147665,
+          "stress_20bps_profit_factor": 0.4497647849468398,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.03802459461598129,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 2,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.5,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-7f44a3345928983c"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 24,
+          "oof_net_pnl_dollars": 24
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 15.1383010714351,
+          "stress_20bps_profit_factor": 0.39101757616147553,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.06637830164253188,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.0,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-ca41550b1c0c41ce"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 32,
+          "oof_net_pnl_dollars": 32
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 22.85192748991598,
+          "stress_20bps_profit_factor": 0.34677639608670574,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.10439541621472054,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.0,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-eee74f2da2698b80"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 24,
+          "oof_net_pnl_dollars": 24
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 13.403215110036703,
+          "stress_20bps_profit_factor": 0.3370154489993058,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.05949273974904185,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.5,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-fe7186d5919625bc"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 32,
+          "oof_net_pnl_dollars": 32
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 17.38710078304708,
+          "stress_20bps_profit_factor": 0.3397044568060008,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.07884447127592054,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.5,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-93a33a6b4655cf11"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 60,
+          "oof_net_pnl_dollars": 60
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 28.116590280634934,
+          "stress_20bps_profit_factor": 0.4954756976940865,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.12929278887041704,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.0,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-c1f8c6225b0e9df1"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 65,
+          "oof_net_pnl_dollars": 65
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 33.69255065688177,
+          "stress_20bps_profit_factor": 0.461594053966397,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.16102381087091475,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.0,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-bbbac7069e03e9eb"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 60,
+          "oof_net_pnl_dollars": 60
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 27.321081244508783,
+          "stress_20bps_profit_factor": 0.4000837276573276,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.1315053495637526,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.5,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-5b4875c316a5f5e4"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 65,
+          "oof_net_pnl_dollars": 65
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 27.3179310173173,
+          "stress_20bps_profit_factor": 0.4216056182416942,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.1314633760956333,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.01,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.5,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-a036ea382542ba94"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 11,
+          "oof_net_pnl_dollars": 11
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 9.792527942275363,
+          "stress_20bps_profit_factor": 0.5038628615889509,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.0218806924127145,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.0,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-26a66ef87eea79a1"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 15,
+          "oof_net_pnl_dollars": 15
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 14.241217898309255,
+          "stress_20bps_profit_factor": 0.43944411252681803,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.04288158423363867,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.0,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-c6c2aec861d2dc1b"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 11,
+          "oof_net_pnl_dollars": 11
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 8.036338143457167,
+          "stress_20bps_profit_factor": 0.47183671972887264,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.018725765811060655,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.5,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-e0ee788b8cf0b265"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 15,
+          "oof_net_pnl_dollars": 15
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 11.093941970181008,
+          "stress_20bps_profit_factor": 0.3808980958727653,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.038037469254066585,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 5,
+          "stop_atr14": 1.5,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-a1d4bd16bb486364"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 30,
+          "oof_net_pnl_dollars": 30
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 16.367669093674575,
+          "stress_20bps_profit_factor": 0.480614746917949,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.06354821125783115,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.0,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-dbb7302be2d3dfa1"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 30,
+          "oof_net_pnl_dollars": 30
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 21.26637675883711,
+          "stress_20bps_profit_factor": 0.4818453936909564,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.0720750863999469,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.0,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-7830f600f455e830"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 30,
+          "oof_net_pnl_dollars": 30
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 16.039679824738528,
+          "stress_20bps_profit_factor": 0.3932195310552571,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.06553528137377862,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.5,
+          "trend_sma": 100
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-f7cd1ecf2545775f"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 30,
+          "oof_net_pnl_dollars": 30
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 16.927941460690743,
+          "stress_20bps_profit_factor": 0.4400013484939205,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.05965600238582574,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "one_session_decline_fraction": 0.02,
+          "rsi2_maximum": 10,
+          "stop_atr14": 1.5,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-735dd972bda191b1"
+      }
+    ]
+  },
+  "family_id": "broad-asset-etf-oversold-reversal",
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 1,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "search_path": "strategy_tournament/v2/discovery/broad-asset-etf-oversold-reversal/search/broad-asset-etf-oversold-reversal-search-b0c98cbdd7b7ff6430abb9839331595462193316bd1116e419d9c85a2c60a455.json",
+  "search_sha256": "b0c98cbdd7b7ff6430abb9839331595462193316bd1116e419d9c85a2c60a455",
+  "state": "DEVELOPMENT_EVALUATED"
+}
