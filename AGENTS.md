@@ -435,6 +435,21 @@ Development result `20b82cb2...dfb5ea2` completed all 32 exact trials in 1.76
 seconds from one inspected dataset load and one cache hit, with zero provider
 requests or failures. Preserve and commit it before independently rebuilding
 trial accounting, statistics, and selection.
+Independent inspection `f59817d3...47b2ce9` rejected all 32 exact trials.
+None had positive 20-bps growth, stressed profit factor, all-fold growth, DSR,
+Holm rejection, PBO at or below 0.50, or stable positive neighbors; only one
+stayed within 6R drawdown. The least-negative trial had 44 OOF fills,
+-0.00568 stressed log growth, PF 0.907, 3.201R drawdown, negative bootstrap
+lower bound, DSR 0.371, and PBO 0.743. The exact family is terminal and its
+500-session confirmation reserve remains untouched.
+
+The next immediate lane is the prospectively inventoried broad-asset replication
+inside the same short-horizon-oversold-reversal mechanism. It preserves the
+exact 32-trial rule grid above without parameter repair and moves to the
+globally outcome-clean fixed universe `AGG`, `HYG`, `LQD`, `MDY`, `USO`, `UUP`,
+`VNQ`, `VOO`, and `VTI`. It must freeze a new exact implementation and disjoint
+date-symbol scopes before accessing any prices. This existing-family replication
+consumes no new mechanism slot and does not wait for a calendar reset.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
