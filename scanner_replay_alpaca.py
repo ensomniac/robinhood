@@ -714,6 +714,31 @@ def _derived_rows(
     return rows
 
 
+def _opening_derived_rows(
+    symbol: str,
+    *,
+    opening_rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for item in opening_rows:
+        observed = datetime.fromisoformat(str(item["time_et"])).astimezone(
+            EASTERN
+        )
+        rows.append(
+            {
+                "ticker": symbol,
+                "volume": int(item["volume"]),
+                "open": float(item["open"]),
+                "close": float(item["close"]),
+                "high": float(item["high"]),
+                "low": float(item["low"]),
+                "window_start": int(observed.timestamp() * 1_000_000_000),
+                "transactions": int(item["count"]),
+            }
+        )
+    return rows
+
+
 def _target_symbols(
     records: Sequence[Mapping[str, Any]], target_dates: Sequence[str]
 ) -> list[str]:
@@ -752,6 +777,7 @@ def collect_day(
     requested_symbol_total: int | None = None,
     target_symbol_total: int | None = None,
     source_symbol_union_total: int | None = None,
+    opening_only: bool = False,
 ) -> dict[str, Any]:
     output = index_root / "minute_aggs" / day[:4] / f"{day}.csv.gz"
     sidecar = index_root / "attestations" / day[:4] / f"{day}.json"
@@ -797,21 +823,29 @@ def collect_day(
     page_count = 0
     batches = _batches(symbols, client.config.batch_size)
     for batch in batches:
-        values, pages = client.fetch(
-            batch, timeframe="15Min", start=regular_start, end=regular_end
-        )
-        page_count += pages
-        for symbol, rows in values.items():
-            normalized = sorted(
-                (_parse_provider_bar(row, day=day, window="regular") for row in rows),
-                key=lambda item: str(item["time_et"]),
+        if not opening_only:
+            values, pages = client.fetch(
+                batch, timeframe="15Min", start=regular_start, end=regular_end
             )
-            timestamps = [str(item["time_et"]) for item in normalized]
-            if len(timestamps) != len(set(timestamps)) or len(normalized) > 26:
-                raise ScannerReplayError(
-                    f"Alpaca regular-session rows are ambiguous for {symbol} on {day}"
+            page_count += pages
+            for symbol, rows in values.items():
+                normalized = sorted(
+                    (
+                        _parse_provider_bar(row, day=day, window="regular")
+                        for row in rows
+                    ),
+                    key=lambda item: str(item["time_et"]),
                 )
-            regular[symbol] = normalized
+                timestamps = [str(item["time_et"]) for item in normalized]
+                if (
+                    len(timestamps) != len(set(timestamps))
+                    or len(normalized) > 26
+                ):
+                    raise ScannerReplayError(
+                        "Alpaca regular-session rows are ambiguous for "
+                        f"{symbol} on {day}"
+                    )
+                regular[symbol] = normalized
         values, pages = client.fetch(
             batch, timeframe="1Min", start=opening_start, end=opening_end
         )
@@ -845,17 +879,25 @@ def collect_day(
         if datasets:
             result = store.merge(symbol, day, datasets=datasets)
             changed_files += int(result["changed"])
-        if daily_row is None:
+        if daily_row is None and not opening_only:
             continue
         opening_complete += int(_opening_is_exact(opening_rows, day))
-        derived.extend(
-            _derived_rows(
-                symbol,
-                day=day,
-                daily_row=daily_row,
-                opening_rows=opening_rows,
+        if opening_only:
+            derived.extend(
+                _opening_derived_rows(
+                    symbol,
+                    opening_rows=opening_rows,
+                )
             )
-        )
+        else:
+            derived.extend(
+                _derived_rows(
+                    symbol,
+                    day=day,
+                    daily_row=daily_row,
+                    opening_rows=opening_rows,
+                )
+            )
     derived = [*inherited_rows, *derived]
     derived.sort(key=lambda item: (int(item["window_start"]), str(item["ticker"])))
     _gzip_csv(output, derived)
@@ -901,6 +943,11 @@ def collect_day(
         "provider_request_seconds": round(client.request_seconds - seconds_before, 6),
         "source_sha256": _sha256_file(output),
         "captured_at": captured_at,
+        "information_cutoff": (
+            "TARGET_SESSION_09:35_ET"
+            if opening_only
+            else "FULL_COMPLETED_SESSION"
+        ),
         **(
             {
                 "reused_source": {
@@ -932,6 +979,7 @@ def freeze_contract(
     output_root: Path,
     index_root: Path,
     reuse_manifest_path: Path | None = None,
+    target_opening_only: bool = False,
 ) -> tuple[Path, dict[str, Any]]:
     if not dataset_id.startswith("dataset-production-scanner-replay-"):
         raise ScannerReplayError("scanner dataset_id has an invalid namespace")
@@ -1023,6 +1071,10 @@ def freeze_contract(
                 reuse_manifest["collection_contract"]["required_session_dates"]
             )
         )
+        if target_opening_only:
+            candidate_reuse_sessions = [
+                day for day in candidate_reuse_sessions if day not in requested
+            ]
         reusable_root = index_root.parent / str(reuse_manifest["dataset_id"])
         reuse_sessions: list[str] = []
         for day in candidate_reuse_sessions:
@@ -1098,13 +1150,25 @@ def freeze_contract(
             },
         },
         "collection_contract": {
-            "source": "Alpaca historical SIP raw regular-session 15-minute and opening-minute bars",
+            "source": (
+                "Alpaca historical SIP raw regular-session 15-minute bars "
+                "for causal prior sessions and opening-minute bars through "
+                "09:35 ET for target sessions"
+                if target_opening_only
+                else "Alpaca historical SIP raw regular-session 15-minute "
+                "and opening-minute bars"
+            ),
             "endpoint": ALPACA_BARS_URL,
             "feed": "sip",
             "adjustment": "raw",
             "symbol_mapping": "asof=-; symbol discontinuities remain explicit missing history",
             "regular_session_query": "15Min from 09:30:00 through 15:59:59.999999 ET",
             "opening_query": "1Min from 09:30:00 through 09:34:59.999999 ET",
+            "target_session_collection": (
+                "opening_query_only_no_post_09_35_rows"
+                if target_opening_only
+                else "regular_and_opening_queries"
+            ),
             "canonical_store_required": True,
             "derived_index_contract": (
                 "five real opening rows plus one deterministic 15:59 residual row whose "
@@ -1348,6 +1412,11 @@ def collect_contract(
     records = load_security_master(security_path)
     symbols = _target_symbols(records, manifest["requested_dates"])
     required = list(manifest["collection_contract"]["required_session_dates"])
+    target_opening_only = (
+        manifest["collection_contract"].get("target_session_collection")
+        == "opening_query_only_no_post_09_35_rows"
+    )
+    target_dates = set(map(str, manifest["requested_dates"]))
     dataset_id = str(manifest["dataset_id"])
     root = index_root(store, dataset_id)
     reusable = manifest["collection_contract"].get("reusable_source")
@@ -1389,6 +1458,11 @@ def collect_contract(
             inherited_attestation = None
             requested_symbols: Sequence[str] = symbols
             source_symbol_union_total = len(symbols)
+            opening_only = target_opening_only and day in target_dates
+            if opening_only and day in reusable_days:
+                raise ScannerReplayError(
+                    "target opening-only session cannot reuse full-session rows"
+                )
             if day in reusable_days:
                 if reusable_root is None:
                     raise ScannerReplayError("reusable scanner root is missing")
@@ -1430,6 +1504,7 @@ def collect_contract(
                 requested_symbol_total=len(symbols),
                 target_symbol_total=len(symbols),
                 source_symbol_union_total=source_symbol_union_total,
+                opening_only=opening_only,
             )
             completed += int(result["disposition"] == "collected")
             print(

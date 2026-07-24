@@ -17,36 +17,41 @@ from typing import Any
 
 import oversold_replication_reserve_v2 as reserve
 import oversold_replication_source as base
-from historical_store import sha256_file
+from historical_store import HistoricalDayStore, sha256_file
 from learning_data import security_master_sha256
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATASET_ID = (
     "dataset-production-scanner-replay-2026-07-24-"
-    "oversold-replication-completed-reserve-v1"
+    "oversold-replication-completed-reserve-v2"
 )
 SELECTION_SEED = 2026072402
 ROOT = PROJECT_ROOT / "historical_batches/oversold_replication_v5"
-SCANNER_SELECTION_PATH = ROOT / "scanner-selection.json"
+SCANNER_SELECTION_PATH = ROOT / "scanner-v2-selection.json"
 SCANNER_SELECTION_INSPECTION_PATH = (
-    ROOT / "scanner-selection-inspection.json"
+    ROOT / "scanner-v2-selection-inspection.json"
 )
-SCANNER_MANIFEST_ROOT = ROOT / "scanner-manifests"
-CONTROLLER_BINDING_PATH = ROOT / "scanner-controller-binding.json"
+SCANNER_MANIFEST_ROOT = ROOT / "scanner-v2-manifests"
+CONTROLLER_BINDING_PATH = ROOT / "scanner-v2-controller-binding.json"
 SCANNER_CONTRACT_INSPECTION_PATH = (
-    ROOT / "scanner-contract-inspection.json"
+    ROOT / "scanner-v2-contract-inspection.json"
 )
-SCANNER_STATUS_PATH = ROOT / "scanner-collection-status.json"
+SCANNER_STATUS_PATH = ROOT / "scanner-v2-collection-status.json"
 RUN_ROOT = (
     PROJECT_ROOT
-    / "learning_runs/oversold_replication_v5/scanner_replay"
+    / "learning_runs/oversold_replication_v5/scanner_replay_v2"
 )
 DETAIL_PATH = RUN_ROOT / "scanner-replay-detail.json"
 SUMMARY_PATH = RUN_ROOT / "scanner-replay-summary.json"
 SECURITY_MASTER = reserve.SECURITY_MASTER
 SECURITY_SOURCE = reserve.SECURITY_SOURCE
 SECURITY_INSPECTION_ROOT = reserve.SECURITY_INSPECTION_ROOT
+PREDECESSOR_MANIFEST_ROOT = ROOT / "scanner-manifests"
+PREDECESSOR_BINDING_PATH = ROOT / "scanner-controller-binding.json"
+PREDECESSOR_INSPECTION_PATH = ROOT / "scanner-contract-inspection.json"
+PREDECESSOR_STATUS_PATH = ROOT / "scanner-collection-status.json"
+PREDECESSOR_FAILURE_ROOT = ROOT / "scanner-v1-failure"
 
 
 class OversoldReplicationSourceV3Error(RuntimeError):
@@ -132,6 +137,74 @@ def _selection_value() -> dict[str, Any]:
         "target_outcomes_observed_or_derived": False,
         "broker_actions": 0,
     }
+
+
+def retire_predecessor(
+    env_path: Path,
+) -> tuple[Path, dict[str, Any]]:
+    predecessor_manifest = reserve._one(PREDECESSOR_MANIFEST_ROOT)
+    for path in (
+        Path(__file__).resolve(),
+        predecessor_manifest,
+        PREDECESSOR_BINDING_PATH,
+        PREDECESSOR_INSPECTION_PATH,
+    ):
+        base._require_committed(path)
+    if PREDECESSOR_STATUS_PATH.exists():
+        raise OversoldReplicationSourceV3Error(
+            "predecessor scanner has a collection status and needs "
+            "independent exposure review"
+        )
+    manifest = base.alpaca.load_contract(predecessor_manifest)
+    status = base.alpaca.collection_status(
+        manifest,
+        store=HistoricalDayStore.from_env(env_path),
+    )
+    if not (
+        status["session_files"]["ready"] == 0
+        and status["provider_requests"] == 0
+        and status["provider_retries"] == 0
+    ):
+        raise OversoldReplicationSourceV3Error(
+            "predecessor scanner accessed provider data"
+        )
+    content = {
+        "schema_version": 1,
+        "artifact_kind": "oversold_replication_scanner_failure",
+        "state": "RETIRED_POST_0935_TARGET_ACCESS_CONTRACT_FLAW",
+        "dataset_id": manifest["dataset_id"],
+        "manifest_path": base._repo_path(predecessor_manifest),
+        "manifest_file_sha256": sha256_file(predecessor_manifest),
+        "manifest_sha256": manifest["manifest_sha256"],
+        "binding_path": base._repo_path(PREDECESSOR_BINDING_PATH),
+        "binding_file_sha256": sha256_file(PREDECESSOR_BINDING_PATH),
+        "inspection_path": base._repo_path(
+            PREDECESSOR_INSPECTION_PATH
+        ),
+        "inspection_file_sha256": sha256_file(
+            PREDECESSOR_INSPECTION_PATH
+        ),
+        "reason": (
+            "the frozen collector would request full regular-session bars "
+            "on target dates despite the 09:35 ET capacity boundary"
+        ),
+        "replacement_requirement": (
+            "target dates collect only 09:30 through 09:34 minute bars; "
+            "full regular bars remain permitted only for causal prior dates"
+        ),
+        "session_files_ready": 0,
+        "provider_requests": 0,
+        "provider_retries": 0,
+        "full_session_target_prices_accessed": False,
+        "target_outcomes_observed_or_derived": False,
+        "broker_actions": 0,
+    }
+    return reserve._publish(
+        PREDECESSOR_FAILURE_ROOT,
+        "oversold-replication-scanner-v1-failure",
+        content,
+        "failure_sha256",
+    )
 
 
 def freeze_selection() -> dict[str, Any]:
@@ -256,6 +329,7 @@ def configured():
         "SUMMARY_PATH": SUMMARY_PATH,
         "SECURITY_MASTER": SECURITY_MASTER,
         "SECURITY_SOURCE": SECURITY_SOURCE,
+        "TARGET_OPENING_ONLY": True,
         "_selected_dates": _selected_dates,
     }
     original = {name: getattr(base, name) for name in values}
@@ -391,6 +465,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--env", type=Path, default=PROJECT_ROOT / ".env")
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("retire-predecessor")
     sub.add_parser("freeze-selection")
     sub.add_parser("inspect-selection")
     sub.add_parser("freeze-scanner")
@@ -405,7 +480,10 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
-        if args.command == "freeze-selection":
+        if args.command == "retire-predecessor":
+            path, result = retire_predecessor(args.env)
+            result = {**result, "path": base._repo_path(path)}
+        elif args.command == "freeze-selection":
             result = freeze_selection()
         elif args.command == "inspect-selection":
             result = inspect_selection()

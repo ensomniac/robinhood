@@ -254,6 +254,55 @@ class CanonicalScannerCollectionTests(unittest.TestCase):
             self.assertEqual(cached["disposition"], "cached")
             self.assertEqual(client.request_count, calls)
 
+    def test_target_day_collection_stops_at_0935(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = HistoricalDayStore(root / "history")
+            client = FakeBulkClient(date(2026, 3, 3))
+            index = root / "index"
+
+            result = collect_day(
+                "2026-03-03",
+                ["AAA"],
+                client=client,
+                store=store,
+                index_root=index,
+                opening_only=True,
+            )
+
+            self.assertEqual(result["provider_requests"], 1)
+            self.assertEqual(result["regular_session_rows"], 0)
+            self.assertEqual(
+                result["information_cutoff"],
+                "TARGET_SESSION_09:35_ET",
+            )
+            source = (
+                index / "minute_aggs" / "2026" / "2026-03-03.csv.gz"
+            )
+            with gzip.open(
+                source, "rt", encoding="utf-8", newline=""
+            ) as stream:
+                rows = list(csv.DictReader(stream))
+            self.assertEqual(len(rows), 5)
+            parsed = _parse_minute_file(source)
+            self.assertEqual(parsed["AAA"].opening_minutes, 5)
+            self.assertEqual(parsed["AAA"].volume, 100)
+            self.assertEqual(parsed["AAA"].close, 10.1)
+
+            self.assertIsNone(
+                store.select_dataset(
+                    "AAA",
+                    "2026-03-03",
+                    kind="bars",
+                    channel="trades",
+                    timeframe="15m",
+                    providers=("alpaca",),
+                    require_complete=True,
+                    feed="sip",
+                    adjustment="raw",
+                )
+            )
+
     def test_new_campaign_reuses_attested_rows_and_collects_only_delta_symbols(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -366,6 +415,7 @@ class AlpacaFreezeTests(unittest.TestCase):
                 security_path=Path("learning/SECURITY_MASTER.jsonl"),
                 output_root=output,
                 index_root=index,
+                target_opening_only=True,
             )
 
             loaded = load_contract(path)
@@ -378,6 +428,10 @@ class AlpacaFreezeTests(unittest.TestCase):
                 loaded["collection_contract"]["pre_freeze_transport_probe"][
                     "price_rows_retained_or_inspected"
                 ]
+            )
+            self.assertEqual(
+                loaded["collection_contract"]["target_session_collection"],
+                "opening_query_only_no_post_09_35_rows",
             )
             self.assertEqual(
                 loaded["collection_contract"]["session_calendar_path"],

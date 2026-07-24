@@ -63,6 +63,7 @@ REUSE_SCANNER_MANIFEST = (
     "challenger-orb-retest-tranche2-v1-"
     "5805ca2d6d3e1df680b0793855e3c64867a596b30e920b6f47c372df3c92da99.json"
 )
+TARGET_OPENING_ONLY = False
 
 TARGET_START = "2026-01-02"
 TARGET_END = "2026-07-17"
@@ -272,6 +273,7 @@ def freeze_scanner(env_path: Path) -> dict[str, Any]:
         output_root=SCANNER_MANIFEST_ROOT,
         index_root=alpaca.index_root(store, DATASET_ID),
         reuse_manifest_path=REUSE_SCANNER_MANIFEST,
+        target_opening_only=TARGET_OPENING_ONLY,
     )
     return {
         "state": "SCANNER_CONTRACT_FROZEN_AWAITING_INSPECTION",
