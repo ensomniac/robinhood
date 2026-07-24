@@ -25,6 +25,9 @@ EQUITY_RESIDUAL_FAMILY = "liquid-equity-market-residual-reversal"
 EQUITY_RESIDUAL_REPLICATION_FAMILY = (
     "liquid-equity-market-residual-reversal-replication"
 )
+EQUITY_RESIDUAL_TEMPORAL_FAMILY = (
+    "liquid-equity-market-residual-reversal-temporal-expansion-v7"
+)
 ETF_RESIDUAL_REPLICATION_FAMILY = (
     "liquid-etf-market-residual-reversal-replication-v1"
 )
@@ -74,6 +77,7 @@ ETF_RESIDUAL_REPLICATION_V3_TARGET_SYMBOLS = (
 EQUITY_RESIDUAL_FAMILIES = {
     EQUITY_RESIDUAL_FAMILY,
     EQUITY_RESIDUAL_REPLICATION_FAMILY,
+    EQUITY_RESIDUAL_TEMPORAL_FAMILY,
 }
 RESIDUAL_FAMILIES = {
     *EQUITY_RESIDUAL_FAMILIES,
