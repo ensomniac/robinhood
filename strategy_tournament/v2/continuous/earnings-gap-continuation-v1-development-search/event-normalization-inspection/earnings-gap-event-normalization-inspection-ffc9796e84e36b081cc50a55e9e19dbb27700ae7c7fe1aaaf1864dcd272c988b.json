@@ -1,0 +1,22 @@
+{
+  "artifact_kind": "earnings-gap-event-normalization-inspection",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "contract_file_sha256": "d1fbb42988cfe56d66fe8ac78bcfa05077ea2b7548a7f8ef0aa4542707e06da3",
+  "contract_path": "strategy_tournament/v2/continuous/earnings-gap-continuation-v1-development-search/event-normalization-contract/earnings-gap-event-normalization-contract-6fe8fa2b5016ef949ab5fb8bd5dae901192aeb4cef480d407628d9f7ee30f8a1.json",
+  "contract_sha256": "6fe8fa2b5016ef949ab5fb8bd5dae901192aeb4cef480d407628d9f7ee30f8a1",
+  "excluded_ambiguous_event_identities": 1961,
+  "family_id": "earnings-gap-continuation",
+  "forward_returns_accessed": false,
+  "ingestion_authorized": true,
+  "inspected_at": "2026-07-24T05:42:00Z",
+  "inspection_sha256": "ffc9796e84e36b081cc50a55e9e19dbb27700ae7c7fe1aaaf1864dcd272c988b",
+  "market_prices_accessed": false,
+  "new_provider_requests": 0,
+  "normalized_unambiguous_events": 21001,
+  "provider_rows": 25433,
+  "raw_response_count": 12,
+  "raw_spool_file_sha256": "cb095d8747001673d2a6a740c3b20c6a667509cef08976c717879b2373e4fa64",
+  "schema_version": 1,
+  "valid": true
+}
