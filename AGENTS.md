@@ -327,7 +327,11 @@ before independent dataset reconstruction. Inspection
 `dff9cff1...95e6c2` independently admitted runtime manifest
 `0fe21acd...952c12` after rebuilding hashes, dates, symbols, completeness,
 adjustments, and search binding. Commit both artifacts before evaluating all
-32 development trials.
+32 development trials. Result `cb2f7224...bc108` completed every trial from one
+dataset load, one cache hit, zero provider requests, and zero failures in 86.79
+seconds. Commit it before independent selection reconstruction. The run exceeds
+the 60-second performance acceptance and requires profiling after the evidence
+disposition; performance does not alter any trial or selection gate.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
