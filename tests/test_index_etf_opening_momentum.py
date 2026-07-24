@@ -110,6 +110,26 @@ def test_opening_momentum_contract_freezes_new_mechanism_on_reused_inputs(
 
     monkeypatch.setattr(momentum, "DEFAULT_ROOT", tmp_path)
     monkeypatch.setattr(momentum, "_repo_path", repo_path)
+    development = momentum.reversal._post2016_partitions()[1]
+    synthetic_exposure = momentum.outcome_exposure.build_record(
+        exposure_id="test-opening-momentum-development",
+        campaign_id="multi-strategy-portfolio-validation-v2",
+        lane="development",
+        recorded_at=datetime.now().astimezone().isoformat(),
+        source_path="tests/test_index_etf_opening_momentum.py",
+        source_sha256="0" * 64,
+        scope={"dates": development, "symbols": momentum.SYMBOLS},
+    )
+    monkeypatch.setattr(
+        momentum.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: [synthetic_exposure],
+    )
+    monkeypatch.setattr(
+        momentum.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
 
     _path, contract, capacity = momentum.freeze_contract(
         created_at=datetime.now().astimezone().isoformat(),

@@ -112,6 +112,26 @@ def test_post2016_replication_freezes_explicit_contamination_boundary(
 
     monkeypatch.setattr(liquid, "DEFAULT_ROOT", tmp_path)
     monkeypatch.setattr(liquid, "_repo_path", repo_path)
+    development = liquid._post2016_partitions()[1]
+    synthetic_exposure = liquid.outcome_exposure.build_record(
+        exposure_id="test-post2016-opening-reversal-development",
+        campaign_id="multi-strategy-portfolio-validation-v2",
+        lane="development",
+        recorded_at=datetime.now().astimezone().isoformat(),
+        source_path="tests/test_liquid_index_etf_opening_reversal.py",
+        source_sha256="0" * 64,
+        scope={"dates": development, "symbols": liquid.SYMBOLS},
+    )
+    monkeypatch.setattr(
+        liquid.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: [synthetic_exposure],
+    )
+    monkeypatch.setattr(
+        liquid.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
 
     _path, contract, capacity_path = (
         liquid.freeze_post2016_contract(
