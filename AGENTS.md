@@ -609,6 +609,11 @@ Inspection `b19536b9...5e12c3` independently reproduced the exact provider
 start boundary, checkpoint totals, completeness counts, telemetry, exposed
 scope, and absence of a dataset or metrics. Commit it, index the exposed
 development pairs, and retire this exact early-history version.
+Exposure record `87a9c969...083a44` now reserves all 1,932 early-history
+development pairs. The exact version is terminal for provider-history
+incapacity, while its 315-session confirmation reserve remains untouched.
+Continue only with a prospectively frozen post-2016 partition whose target
+pairs are absent from the updated index.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
