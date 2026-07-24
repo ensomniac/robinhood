@@ -541,6 +541,10 @@ and contributes no evidence. Commit V2 before fresh generic preflight.
 Fresh preflight `1cb66231...4ccc65` independently rebuilt the committed V2
 contract, capacity, implementation, partitions, and zero-outcome boundary and
 earned `CAPACITY_READY`. Commit it before freezing a fresh V2 search.
+V2 search `0c581ad5...810363` now binds the unchanged 32 trials, neighbor
+graph, rolling folds, account simulator, costs, deterministic winner selection,
+exact V2 implementation, and range provider topology. Commit it before freezing
+development collection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
