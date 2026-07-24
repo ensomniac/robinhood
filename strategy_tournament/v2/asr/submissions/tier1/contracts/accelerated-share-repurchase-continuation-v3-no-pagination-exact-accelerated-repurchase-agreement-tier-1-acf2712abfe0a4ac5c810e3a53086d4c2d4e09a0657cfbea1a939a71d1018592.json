@@ -1,0 +1,107 @@
+{
+  "access_contract": {
+    "broker_actions_permitted": false,
+    "filing_semantic_classification_permitted": false,
+    "forward_return_access_permitted": false,
+    "market_price_access_permitted": false,
+    "maturity_effect": "NONE",
+    "provider_access_after_independent_inspection_permitted": true,
+    "provider_access_before_independent_inspection_permitted": false
+  },
+  "artifact_kind": "outcome-blind-asr-complete-submission-tier-contract",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "classification_handoff": {
+    "acceptance_datetime_source": "ACCEPTANCE-DATETIME in submission text",
+    "asr_patterns": {
+      "asr_phrase": [
+        "\\baccelerated\\s+(?:share|stock)\\s+repurchase\\b",
+        "\\baccelerated\\s+repurchase\\s+agreement\\b",
+        "\\bASR\\s+agreement\\b"
+      ],
+      "committed_notional": [
+        "\\$\\s?\\d[\\d,.]*(?:\\s?(?:million|billion))?\\b.{0,160}\\b(?:accelerated|ASR|agreement)\\b",
+        "\\b(?:accelerated|ASR|agreement)\\b.{0,160}\\$\\s?\\d[\\d,.]*(?:\\s?(?:million|billion))?\\b"
+      ],
+      "continuing_delivery_or_settlement": [
+        "\\binitial\\s+(?:delivery|deliver)\\b",
+        "\\bfinal\\s+(?:delivery|settlement)\\b",
+        "\\bvaluation\\s+period\\b",
+        "\\bremaining\\s+(?:shares|delivery)\\b",
+        "\\bsettlement\\b.{0,240}\\b(?:shares|cash|delivery|VWAP|average)\\b"
+      ],
+      "executed_agreement": [
+        "\\b(?:entered|entering)\\s+into\\b.{0,400}\\b(?:accelerated|ASR)\\b",
+        "\\b(?:executed|commenced)\\b.{0,400}\\b(?:accelerated|ASR)\\b",
+        "\\b(?:accelerated|ASR)\\b.{0,400}\\b(?:executed|commenced)\\b"
+      ],
+      "generic_only_exclusions": [
+        "\\bboard\\s+(?:has\\s+)?authorized\\b",
+        "\\bmay\\s+repurchase\\b",
+        "\\bopen[- ]market\\s+(?:repurchase|program)\\b",
+        "\\bintends?\\s+to\\s+repurchase\\b"
+      ]
+    },
+    "event_deduplication": "issuer CIK plus normalized agreement date plus committed notional; retain first public SEC acceptance then lexical accession",
+    "semantic_classification_before_collection_inspection_permitted": false
+  },
+  "contract_sha256": "acf2712abfe0a4ac5c810e3a53086d4c2d4e09a0657cfbea1a939a71d1018592",
+  "implementation_hashes": {
+    "asr_submission_collection.py": "abf507740b226e84112ed9d76495a772c4d22d6997c2cd264f23757b5637b40f",
+    "asr_submission_collection_inspection.py": "da024423fe41bc6b1d0008046e441b337a6df4aaabf23171d9fa53ff1a33b3c0",
+    "asr_submission_tier.py": "c745280a71276f4705a90e6b661cb3a8ffc3ab666686bff2ab32fcde2ea3ed4f",
+    "asr_submission_tier_inspection.py": "65f4d4dd57e06333174037b163609fdbd61e671224641ef80e9126ff77631894"
+  },
+  "market_outcomes_accessed": false,
+  "market_price_values_accessed": 0,
+  "private_graph": {
+    "cache_relative_path": "_derived/asr-submission-tier1/22bc40faa5f8f7abddd50b0f6df3dd82efd49c26e70330263be227b23673e622.json.gz",
+    "private_graph_bytes": 16049,
+    "private_graph_file_sha256": "34c3da75fa1572278f4354442588327a7b130ae5abc4807b707e71c699826693",
+    "private_graph_sha256": "22bc40faa5f8f7abddd50b0f6df3dd82efd49c26e70330263be227b23673e622"
+  },
+  "request_contract": {
+    "candidate_404_action": "try_next_frozen_candidate",
+    "candidate_order": "EFTS source CIK order",
+    "endpoint_kind": "accession-bound complete submission text",
+    "maximum_attempts_per_candidate": 3,
+    "maximum_source_bytes": 50000000,
+    "minimum_spacing_seconds": 0.2,
+    "one_successful_submission_per_accession": true,
+    "provider": "SEC_EDGAR_ARCHIVES",
+    "provider_substitution_permitted": false,
+    "retryable_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "timeout_seconds": 30.0
+  },
+  "returns_computed": 0,
+  "schema_version": 1,
+  "selection_contract": {
+    "candidate_url_count": 248,
+    "date_form_issuer_or_event_substitution_permitted": false,
+    "selected_accession_count": 201,
+    "selected_hit_count": 204,
+    "selected_phrase": "\"accelerated repurchase agreement\"",
+    "selected_phrase_sha256": "ce2537f26f7f2b1ba059e16a487f778ec7c46a9b3019d49bf1e9c875760f0c6c",
+    "selection_uses_market_outcomes": false,
+    "source": "complete inspected four-phrase EFTS denominator",
+    "unselected_terminal_reason": "OUTSIDE_FROZEN_HIGH_PRECISION_TIER_UNRESOLVED",
+    "unselected_unique_hit_count": 17278
+  },
+  "staged_capacity_contract": {
+    "capacity_threshold_unchanged": true,
+    "tier_1_semantics_must_be_independently_inspected_before_tier_2": true,
+    "tier_2_may_open_only_if_verified_unique_events_below": 100,
+    "tier_2_scope": "already indexed broader 8-K and 6-K accession candidates only"
+  },
+  "strategy_version": "2026-07-24-accelerated-share-repurchase-continuation-v3",
+  "theme_id": "accelerated-share-repurchase-continuation",
+  "tier_id": "exact-accelerated-repurchase-agreement-tier-1",
+  "verified_event_count": null
+}
