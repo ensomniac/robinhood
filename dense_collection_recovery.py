@@ -33,6 +33,7 @@ INCOMPLETE_INTRADAY_RANGE = "INCOMPLETE_SIP_RANGE_REGULAR_SESSION"
 EMPTY_MISSED_DATE_REPRESENTATION = (
     "EMPTY_INTRADAY_MISSED_DATE_REPRESENTATION_GAP"
 )
+INCOMPLETE_FIXED_DAILY_RANGE = "INCOMPLETE_FIXED_DAILY_SYMBOL_RANGE"
 RECOVERY_IMPLEMENTATION_FILES = (
     "dense_collection_recovery.py",
     "dense_collection_recovery_inspection.py",
@@ -140,6 +141,7 @@ def _failure_facts(
     intraday_gaps: list[dict[str, Any]] = []
     intraday_range_summaries: list[dict[str, Any]] = []
     intraday_range_extra_dates: set[str] = set()
+    daily_range_summaries: list[dict[str, Any]] = []
     evaluation_dates = set(map(str, plan["evaluation_dates"]))
     required_dates = set(map(str, plan.get("required_dates", [])))
     for task in plan["tasks"]:
@@ -192,6 +194,33 @@ def _failure_facts(
             )
         elif str(task["date"]) in evaluation_dates:
             evaluation_tasks_completed += 1
+        if task["kind"] in {
+            "daily_symbol_bars",
+            "massive_daily_symbol_bars",
+        }:
+            observed_daily_dates = {
+                str(row.get("date")) for row in rows
+            }
+            complete_evaluation = evaluation_dates & observed_daily_dates
+            daily_range_summaries.append(
+                {
+                    "symbol": str(task["symbol"]),
+                    "required_sessions": len(required_dates),
+                    "complete_required_sessions": len(
+                        required_dates & observed_daily_dates
+                    ),
+                    "missing_required_sessions": sorted(
+                        required_dates - observed_daily_dates
+                    ),
+                    "evaluation_sessions": len(evaluation_dates),
+                    "complete_evaluation_sessions": len(
+                        complete_evaluation
+                    ),
+                    "missing_evaluation_sessions": sorted(
+                        evaluation_dates - observed_daily_dates
+                    ),
+                }
+            )
         if (
             task["kind"] == "sip_minute_bars"
             and not _regular_session_complete(rows, str(task["date"]))
@@ -376,6 +405,45 @@ def _failure_facts(
                 ),
                 "substituted_sessions": 0,
                 "interpolated_minutes": 0,
+            },
+        }
+    if (
+        completed == int(plan["task_count"])
+        and daily_range_summaries
+        and any(
+            item["missing_required_sessions"]
+            for item in daily_range_summaries
+        )
+    ):
+        daily_range_summaries.sort(key=lambda item: item["symbol"])
+        evaluation_rows_accessed = sum(
+            int(item["complete_evaluation_sessions"])
+            for item in daily_range_summaries
+        )
+        return {
+            "failure_code": INCOMPLETE_FIXED_DAILY_RANGE,
+            "completed_tasks": completed,
+            "market_price_rows_accessed": rows_accessed,
+            "evaluation_tasks_completed": evaluation_tasks_completed,
+            "data_outcomes_accessed": evaluation_rows_accessed > 0,
+            "exposure_scope": {
+                "dates": list(plan["evaluation_dates"]),
+                "symbols": sorted(map(str, plan["symbols"])),
+            },
+            "failure_details": {
+                "required_symbol_sessions": (
+                    len(required_dates) * len(plan["symbols"])
+                ),
+                "missing_required_symbol_sessions": sum(
+                    len(item["missing_required_sessions"])
+                    for item in daily_range_summaries
+                ),
+                "complete_evaluation_symbol_sessions": (
+                    evaluation_rows_accessed
+                ),
+                "per_symbol": daily_range_summaries,
+                "substituted_sessions": 0,
+                "interpolated_sessions": 0,
             },
         }
     raise DenseCollectionRecoveryError(

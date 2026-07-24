@@ -1340,6 +1340,77 @@ def test_incomplete_intraday_collection_is_indexed_as_development_exposure(
     assert outcome_exposure.read_index(index) == [record]
 
 
+def test_incomplete_fixed_daily_range_records_exact_missing_sessions(
+    tmp_path,
+):
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    required_dates = ["2024-01-02", "2024-01-03"]
+    tasks = []
+    for symbol in ("IWB", "SPTM"):
+        task = {
+            "kind": "daily_symbol_bars",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+            "symbol": symbol,
+        }
+        task["task_id"] = canonical_sha256(task)
+        tasks.append(task)
+    plan = {
+        "artifact_sha256": "d" * 64,
+        "family_id": runtime.FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
+        "lane": "development",
+        "required_dates": required_dates,
+        "evaluation_dates": required_dates,
+        "symbols": ["IWB", "SPTM"],
+        "task_count": len(tasks),
+        "tasks": tasks,
+    }
+    root = (
+        config.root
+        / "dense-v2"
+        / plan["family_id"]
+        / plan["lane"]
+        / plan["artifact_sha256"]
+    )
+    for task in tasks:
+        observed_dates = (
+            required_dates
+            if task["symbol"] == "IWB"
+            else required_dates[1:]
+        )
+        rows = [
+            {
+                "symbol": task["symbol"],
+                "date": day,
+                "open": 100.0,
+                "high": 101.0,
+                "low": 99.0,
+                "close": 100.5,
+                "volume": 1_000,
+            }
+            for day in observed_dates
+        ]
+        collection._write_external(
+            collection._checkpoint_path(root, task),
+            {
+                "schema_version": 1,
+                "task": task,
+                "rows": rows,
+                "rows_sha256": canonical_sha256(rows),
+            },
+            config,
+        )
+
+    facts = recovery._failure_facts(plan, root, {"failures": 0})
+
+    assert facts["failure_code"] == recovery.INCOMPLETE_FIXED_DAILY_RANGE
+    assert facts["data_outcomes_accessed"] is True
+    assert facts["failure_details"]["missing_required_symbol_sessions"] == 1
+    assert facts["failure_details"]["per_symbol"][1][
+        "missing_required_sessions"
+    ] == ["2024-01-02"]
+
+
 def test_symbol_range_failure_summarizes_incomplete_regular_sessions(
     tmp_path,
 ):
