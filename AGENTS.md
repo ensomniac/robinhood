@@ -599,6 +599,12 @@ Development plan `0498c59c...1e8095` freezes four resumable SIP range tasks
 over the exact 543 required warmup-plus-development sessions and carries the
 miss-entire-entry-date rule. It records zero requests, prices, substitutions,
 or broker actions before freeze. Commit it before collection.
+All four tasks completed, but the configured provider returned minute history
+only from 2016-01-04, leaving just 35 development dates complete across the
+fixed universe. Failure `4a24c73d...da1c7d` records 68,537 accessed rows and
+2,009 incomplete required symbol-sessions before dataset materialization or
+strategy metrics. No confirmation input, interpolation, substitution, or broker
+action occurred. Commit the failure before independent inspection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
