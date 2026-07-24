@@ -640,6 +640,10 @@ Search `be36c26a...06de6fb` now binds every unchanged trial, neighbor graph,
 rolling-origin fold, account simulator, 5/10/20-bps costs, deterministic
 selection gate, exact four-symbol universe, and the miss-entire-entry-date
 rule. Commit it before freezing provider collection.
+Development plan `76f1442e...fef1083` freezes four resumable Alpaca SIP
+symbol-range tasks over the exact 60 warmup plus 1,000 development sessions,
+with zero requests, substitutions, prices, or broker actions before freeze.
+Commit it before provider collection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
