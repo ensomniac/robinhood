@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 import dense_strategy_runtime as runtime
 import etf_residual_replication as replication
 import etf_residual_replication2 as replication2
+import etf_residual_replication3 as replication3
 
 
 def _business_dates(count: int) -> list[str]:
@@ -281,4 +282,106 @@ def test_identity_safe_residual_contract_preserves_failed_v1_grid(
     )
     assert contract["prior_family_attempt_count"] == 3
     assert contract["predecessor"]["strategy_metrics_accessed"] is False
+    assert contract["new_mechanism_family_slot_consumed"] is False
+
+
+def test_corrected_residual_runtime_uses_third_disjoint_targets():
+    dates = _business_dates(230)
+    evaluation = dates[-12:]
+    decision_index = dates.index(evaluation[3])
+    bars = {
+        "SPY": _bars(dates, phase=0.0),
+        **{
+            symbol: _bars(
+                dates,
+                phase=(index + 1) / 3,
+                shock_index=(
+                    decision_index if symbol == "IYW" else None
+                ),
+                shock_return=-0.04,
+            )
+            for index, symbol in enumerate(
+                runtime.ETF_RESIDUAL_REPLICATION_V3_TARGET_SYMBOLS
+            )
+        },
+    }
+    candidates = runtime.build_candidates(
+        runtime.prepare_dataset(
+            {
+                "schema_version": 1,
+                "family_id": runtime.ETF_RESIDUAL_REPLICATION_V3_FAMILY,
+                "evaluation_dates": evaluation,
+                "symbols": [
+                    *runtime.ETF_RESIDUAL_REPLICATION_V3_TARGET_SYMBOLS,
+                    runtime.ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL,
+                ],
+                "daily_bars": bars,
+            }
+        ),
+        runtime.ETF_RESIDUAL_REPLICATION_V3_FAMILY,
+        _parameters(),
+    )
+    observed = [
+        item
+        for item in candidates
+        if item["decision_date"] == evaluation[3]
+    ]
+
+    assert observed
+    assert observed[0]["symbol"] == "IYW"
+    assert all(
+        item["symbol"]
+        in runtime.ETF_RESIDUAL_REPLICATION_V3_TARGET_SYMBOLS
+        for item in candidates
+    )
+
+
+def test_corrected_residual_contract_binds_failed_v2_exposure(
+    tmp_path, monkeypatch
+):
+    original_repo_path = replication3._repo_path
+
+    def repo_path(path):
+        try:
+            return original_repo_path(path)
+        except ValueError:
+            return f"strategy_tournament/v2/test/{path.name}"
+
+    monkeypatch.setattr(replication3, "DEFAULT_ROOT", tmp_path)
+    monkeypatch.setattr(replication3, "_repo_path", repo_path)
+    actual_records = replication3.outcome_exposure.read_index()
+    predecessor_record = next(
+        item
+        for item in actual_records
+        if item["exposure_id"] == replication3.V2_EXPOSURE_ID
+    )
+    monkeypatch.setattr(
+        replication3.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: [predecessor_record],
+    )
+    monkeypatch.setattr(
+        replication3.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
+
+    _path, contract, capacity = replication3.freeze_contract(
+        created_at=datetime.now().astimezone().isoformat(),
+        enforce_commit=False,
+    )
+    base = replication3.v2._read_contract(replication3.V2_CONTRACT)
+
+    assert capacity.is_file()
+    assert contract["parameter_grid"] == base["parameter_grid"]
+    assert len(contract["trial_family"]) == 48
+    assert contract["universe"]["target_symbols"] == list(
+        runtime.ETF_RESIDUAL_REPLICATION_V3_TARGET_SYMBOLS
+    )
+    assert contract["prior_family_attempt_count"] == 4
+    assert contract["predecessor"]["result_artifact_emitted"] is False
+    assert (
+        contract["predecessor"]["exposure_id"]
+        == replication3.V2_EXPOSURE_ID
+    )
     assert contract["new_mechanism_family_slot_consumed"] is False
