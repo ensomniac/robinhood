@@ -197,6 +197,8 @@ trial returns and cannot be resumed. The only allowed successor is the
 separately committed normalization adapter: verify the original manifest hash,
 remove only empty arrays in memory, retain their point-in-time identities as
 unavailable names, and refreeze the otherwise identical 48-trial contract.
+Revision `df35c971...99d2b` now does exactly that; it was frozen with zero trial
+returns and no confirmation access.
 Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
 freeze: its first independent inspection stopped on a missing local artifact-
 hash helper, before any provider or market-price access. It cannot authorize
