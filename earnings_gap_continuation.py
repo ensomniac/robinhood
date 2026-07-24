@@ -54,9 +54,9 @@ SOURCE_FREEZE_INSPECTION = (
 )
 EVENT_START = "2025-01-01"
 EVENT_END = "2025-12-31"
-PRIOR_DISCARDED_PROVIDER_REQUESTS = 12
+PRIOR_DISCARDED_PROVIDER_REQUESTS = 24
 SUPERSEDED_EVENT_CONTRACT_SHA256 = (
-    "aaf6be9f6583cb2fc05694c2204b8a5a17cc6281658f620675dff18ef74729b9"
+    "2c11eaea9ca9ae08f0f09b5029efd116d6e69f7293e2c6bde7c96bd5dc632a08"
 )
 
 
@@ -222,9 +222,12 @@ def build_event_collection_contract(
         ),
         "supersedes_event_contract_sha256": SUPERSEDED_EVENT_CONTRACT_SHA256,
         "transport_recovery": (
-            "The first twelve responses were discarded when the stdin ingestion "
-            "CLI waited for terminal EOF; no event artifact, prices, forward "
-            "returns, strategy metrics, or broker actions were produced."
+            "The first twelve responses were discarded when stdin ingestion "
+            "waited for terminal EOF. The next twelve were discarded when the "
+            "PTY input queue rejected oversized response lines. No event "
+            "artifact, prices, forward returns, strategy metrics, or broker "
+            "actions were produced. Recovery spools the exact retry outside Git "
+            "before one deterministic file ingestion."
         ),
         "selection_fields": [
             "symbol",

@@ -14,7 +14,7 @@ class EarningsGapContinuationTests(unittest.TestCase):
         self.assertEqual(windows[1]["days"], 28)
         self.assertEqual(windows[-1]["start_date"], "2025-12-01")
         self.assertEqual(windows[-1]["days"], 31)
-        self.assertEqual(subject.PRIOR_DISCARDED_PROVIDER_REQUESTS, 12)
+        self.assertEqual(subject.PRIOR_DISCARDED_PROVIDER_REQUESTS, 24)
 
     def test_normalize_calendar_row_accepts_nested_verified_result(self):
         row = subject._normalize_calendar_row(
