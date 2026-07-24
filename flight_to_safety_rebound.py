@@ -34,6 +34,12 @@ CALENDAR_PATH = (
     / "historical_batches/dense_v2/"
     "session-calendar-2020-01-through-2026-07.json"
 )
+CALENDAR_INSPECTION = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/calendar/allocation/inspection/"
+    "dense-calendar-allocation-inspection-"
+    "5920eedbba8149183cfdfe4dd5ea2468def96316fa1701803958a22348667c50.json"
+)
 TARGET_SYMBOLS = list(runtime.FLIGHT_TO_SAFETY_TARGET_SYMBOLS)
 FEATURE_SYMBOLS = [runtime.FLIGHT_TO_SAFETY_FEATURE_SYMBOL]
 SYMBOLS = [*TARGET_SYMBOLS, *FEATURE_SYMBOLS]
@@ -83,6 +89,26 @@ def _full_sessions() -> list[str]:
             "frozen full-session calendar is not chronological"
         )
     return dates
+
+
+def _calendar_authority(*, enforce_commit: bool) -> dict[str, Any]:
+    if enforce_commit:
+        strategy_discovery.require_committed(CALENDAR_INSPECTION)
+    inspection = strategy_discovery.load_artifact(
+        CALENDAR_INSPECTION,
+        expected_kind="dense-calendar-allocation-inspection",
+    )
+    if not (
+        inspection.get("state") == "CALENDAR_ALLOCATION_INSPECTED_READY"
+        and inspection.get("calendar_path") == _repo_path(CALENDAR_PATH)
+        and inspection.get("calendar_sha256") == sha256_file(CALENDAR_PATH)
+        and inspection.get("target_outcomes_accessed") is False
+        and inspection.get("checks", {}).get("calendar_hash_rebuilt") is True
+    ):
+        raise FlightToSafetyReboundError(
+            "committed calendar inspection does not bind the local calendar"
+        )
+    return inspection
 
 
 def _partitions() -> tuple[
@@ -201,7 +227,9 @@ def freeze_contract(
     slots = _weekly_slots(created_at, enforce_commit=enforce_commit)
     if enforce_commit:
         strategy_discovery.require_committed(Path(__file__).resolve())
-        strategy_discovery.require_committed(CALENDAR_PATH)
+    calendar_inspection = _calendar_authority(
+        enforce_commit=enforce_commit
+    )
     (
         development_warmup,
         development,
@@ -221,6 +249,7 @@ def freeze_contract(
     )
     evidence_paths = [
         _repo_path(CALENDAR_PATH),
+        _repo_path(CALENDAR_INSPECTION),
         "strategy_tournament/v2/OUTCOME_EXPOSURE_INDEX.jsonl",
         "PORTFOLIO_VALIDATION_V2.md",
         "PORTFOLIO_THESIS_V2.md",
@@ -384,6 +413,10 @@ def freeze_contract(
         "outcome_exposure_index_sha256": outcome_exposure.audit()[
             "index_sha256"
         ],
+        "calendar_inspection_path": _repo_path(CALENDAR_INSPECTION),
+        "calendar_inspection_sha256": calendar_inspection[
+            "artifact_sha256"
+        ],
         "universe": {
             "symbols": list(SYMBOLS),
             "target_symbols": list(TARGET_SYMBOLS),
@@ -506,13 +539,22 @@ def validate_contract(
         == FEATURE_SYMBOLS
         and contract.get("historical_data_contract") == expected_history
         and contract.get("calendar_path") == _repo_path(CALENDAR_PATH)
+        and contract.get("calendar_inspection_path")
+        == _repo_path(CALENDAR_INSPECTION)
     ):
         raise FlightToSafetyReboundError(
             "flight-to-safety family contract drifted"
         )
     if enforce_commit:
         strategy_discovery.require_committed(Path(__file__).resolve())
-        strategy_discovery.require_committed(CALENDAR_PATH)
+    inspection = _calendar_authority(enforce_commit=enforce_commit)
+    if (
+        contract.get("calendar_inspection_sha256")
+        != inspection["artifact_sha256"]
+    ):
+        raise FlightToSafetyReboundError(
+            "family contract calendar-inspection binding drifted"
+        )
     _validate_exposure_state(contract)
 
 
