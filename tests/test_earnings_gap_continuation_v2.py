@@ -67,3 +67,22 @@ def test_artifact_sha_reports_the_artifacts_own_hash() -> None:
         )
         == "contract"
     )
+
+
+def test_retry_failure_exhausts_provider_access(tmp_path) -> None:
+    path, failure = continuation.record_retry_failure(
+        recorded_at="2026-07-24T20:20:00Z",
+        root=tmp_path,
+    )
+
+    assert path.exists()
+    assert (
+        failure["state"]
+        == "EVENT_METADATA_RETRY_FAILED_DUPLICATES_NO_ARTIFACT"
+    )
+    assert failure["provider_requests_total"] == 14
+    assert failure["provider_retry_permitted"] is False
+    assert failure["responses_retained"] == 0
+    assert failure["market_prices_accessed"] is False
+    assert failure["forward_returns_accessed"] is False
+    assert failure["broker_actions"] == 0

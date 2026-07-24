@@ -62,6 +62,9 @@ INITIAL_INSPECTION = (
     "1823074d6e47a17910210ad7f0b09cacf1665384e094293eeaa54b1b8374bdbc.json"
 )
 FAILURE_ROOT = DEFAULT_ROOT / "event-transport-failure"
+RETRY_CONTRACT_ROOT = DEFAULT_ROOT / "event-retry-contract"
+RETRY_INSPECTION_ROOT = DEFAULT_ROOT / "event-retry-contract-inspection"
+RETRY_FAILURE_ROOT = DEFAULT_ROOT / "event-retry-failure"
 
 
 class EarningsGapContinuationV2Error(RuntimeError):
@@ -382,6 +385,93 @@ def record_transport_failure(
     path = (
         root
         / f"earnings-gap-v2-event-transport-failure-"
+        f"{value['failure_sha256']}.json"
+    )
+    base._write_json(path, value)
+    return path, value
+
+
+def record_retry_failure(
+    *,
+    recorded_at: str,
+    root: Path = RETRY_FAILURE_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    base._timestamp(recorded_at, "recorded_at")
+    failure_path, failure = _one_transport_failure()
+    contracts = sorted(RETRY_CONTRACT_ROOT.glob("*.json"))
+    inspections = sorted(RETRY_INSPECTION_ROOT.glob("*.json"))
+    if len(contracts) != 1 or len(inspections) != 1:
+        raise EarningsGapContinuationV2Error(
+            "expected one committed retry contract and inspection"
+        )
+    contract_path, inspection_path = contracts[0], inspections[0]
+    for path in (contract_path, inspection_path):
+        strategy_discovery.require_committed(path)
+    contract = _read(contract_path)
+    inspection = _read(inspection_path)
+    private = (
+        HistoricalDayStore.from_env().root
+        / "_derived/earnings_gap_continuation"
+        / contract["contract_sha256"]
+        / "event-calendar.json.gz"
+    )
+    collection_root = DEFAULT_ROOT / "event-collection"
+    if (
+        contract.get("maximum_total_provider_requests") != 14
+        or inspection.get("state")
+        != "EVENT_RETRY_CONTRACT_INSPECTED_READY"
+        or inspection.get("contract_sha256")
+        != contract.get("contract_sha256")
+        or private.exists()
+        or list(collection_root.glob("*.json"))
+    ):
+        raise EarningsGapContinuationV2Error(
+            "retry failure boundary is incomplete"
+        )
+    value: dict[str, Any] = {
+        "schema_version": 1,
+        "artifact_kind": "earnings-gap-v2-event-retry-failure",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "successor_id": SUCCESSOR_ID,
+        "state": "EVENT_METADATA_RETRY_FAILED_DUPLICATES_NO_ARTIFACT",
+        "recorded_at": recorded_at,
+        "initial_failure_path": _repo_path(failure_path),
+        "initial_failure_file_sha256": sha256_file(failure_path),
+        "initial_failure_sha256": failure["failure_sha256"],
+        "contract_path": _repo_path(contract_path),
+        "contract_file_sha256": sha256_file(contract_path),
+        "contract_sha256": contract["contract_sha256"],
+        "inspection_path": _repo_path(inspection_path),
+        "inspection_file_sha256": sha256_file(inspection_path),
+        "inspection_sha256": inspection["inspection_sha256"],
+        "provider_requests_this_attempt": 7,
+        "provider_requests_total": 14,
+        "responses_retained": 0,
+        "failure_boundary": (
+            "the identical seven read-only responses reached normalization, "
+            "which detected duplicate event identities and failed closed "
+            "before writing any private or public collection artifact"
+        ),
+        "provider_retry_permitted": False,
+        "permitted_recovery": (
+            "use only the already committed and independently inspected 2025 "
+            "metadata inventory under a new exact outcome-blind selection "
+            "contract; do not make another 2026 metadata request"
+        ),
+        "private_artifact_written": False,
+        "public_collection_artifact_written": False,
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "strategy_metrics_computed": 0,
+        "broker_actions": 0,
+    }
+    value["failure_sha256"] = base._self_hash(
+        value, "failure_sha256"
+    )
+    path = (
+        root
+        / f"earnings-gap-v2-event-retry-failure-"
         f"{value['failure_sha256']}.json"
     )
     base._write_json(path, value)
@@ -740,6 +830,8 @@ def _parser() -> argparse.ArgumentParser:
     inspect.add_argument("--inspected-at", required=True)
     failure = commands.add_parser("record-transport-failure")
     failure.add_argument("--recorded-at", required=True)
+    retry_failure = commands.add_parser("record-retry-failure")
+    retry_failure.add_argument("--recorded-at", required=True)
     retry = commands.add_parser("freeze-retry-contract")
     retry.add_argument("--created-at", required=True)
     inspect_retry = commands.add_parser("inspect-retry-contract")
@@ -769,6 +861,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         elif args.command == "record-transport-failure":
             path, value = record_transport_failure(
+                recorded_at=args.recorded_at
+            )
+        elif args.command == "record-retry-failure":
+            path, value = record_retry_failure(
                 recorded_at=args.recorded_at
             )
         elif args.command == "freeze-retry-contract":
