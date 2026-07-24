@@ -1,0 +1,13 @@
+{
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "contract_sha256": "93295352a8331e2c609bc352ebd26a61b5651efeb51005181a041b189470a776",
+  "market_price_access_permitted": false,
+  "matched_document_access_permitted": false,
+  "outcome_access_permitted": false,
+  "schema_version": 1,
+  "sec_search_access_permitted": false,
+  "status": "NO_PAGINATION_CONTRACT_PENDING_INSPECTION",
+  "valid": false
+}
