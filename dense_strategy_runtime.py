@@ -31,6 +31,7 @@ ETF_HIGH_CONTINUATION_FAMILY = "liquid-etf-52-week-high-continuation"
 ETF_TURN_OF_MONTH_FAMILY = "liquid-etf-turn-of-month-seasonality"
 SECTOR_ETF_ROTATION_FAMILY = "liquid-sector-etf-rotation"
 SECTOR_ETF_GAP_DRIFT_FAMILY = "sector-etf-gap-drift-continuation"
+HIGH_BETA_ETF_OVERSOLD_FAMILY = "high-beta-etf-oversold-reversal"
 ETF_CLOSE_TO_OPEN_FAMILY = "liquid-etf-close-to-open-momentum"
 CLOSE_TO_OPEN_ETF_SYMBOLS = ("QQQ", "IWM", "DIA")
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
@@ -49,6 +50,7 @@ SUPPORTED_FAMILIES = {
     ETF_TURN_OF_MONTH_FAMILY,
     SECTOR_ETF_ROTATION_FAMILY,
     SECTOR_ETF_GAP_DRIFT_FAMILY,
+    HIGH_BETA_ETF_OVERSOLD_FAMILY,
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
@@ -346,6 +348,11 @@ def _etf_pullback_feature_cache(
                 "decline3": (
                     closes[index] / closes[index - 3] - 1
                     if index >= 3
+                    else None
+                ),
+                "decline1": (
+                    closes[index] / closes[index - 1] - 1
+                    if index >= 1
                     else None
                 ),
                 "sma100": (
@@ -920,6 +927,116 @@ def _sector_etf_gap_drift_candidates(
                     hold_sessions=hold,
                     rank=rank,
                     score=gap_fraction + session_return,
+                )
+            )
+    return candidates
+
+
+def _high_beta_etf_oversold_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    trend_period = int(parameters["trend_sma"])
+    rsi_max = float(parameters["rsi2_maximum"])
+    decline_floor = float(parameters["one_session_decline_fraction"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    feature_cache = dataset.get("_etf_pullback_feature_cache")
+    if not isinstance(feature_cache, Mapping):
+        feature_cache = _etf_pullback_feature_cache(daily)
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        scored: list[tuple[float, float, str, float]] = []
+        for symbol, bars in daily.items():
+            symbol_index = indices[symbol].get(decision_date)
+            if symbol_index is None or symbol_index < max(
+                trend_period - 1, 14, 2
+            ):
+                continue
+            features = feature_cache[symbol][decision_date]
+            trend = features[f"sma{trend_period}"]
+            rsi2 = features["rsi2"]
+            atr14 = features["atr14"]
+            decline = features["decline1"]
+            if (
+                trend is None
+                or rsi2 is None
+                or atr14 is None
+                or decline is None
+                or float(bars[symbol_index]["close"]) <= trend
+                or rsi2 > rsi_max
+                or decline > -decline_floor
+                or not _cost_floor(abs(decline))
+            ):
+                continue
+            scored.append((rsi2, decline, symbol, atr14))
+        entry_date = calendar[calendar_index + 1]
+        if calendar_index + 1 + hold > len(calendar):
+            continue
+        for rank, (rsi2, decline, symbol, atr14) in enumerate(
+            sorted(scored), 1
+        ):
+            bars = daily[symbol]
+            entry_index = indices[symbol].get(entry_date)
+            if entry_index is None:
+                candidates.append(
+                    {
+                        "signal_id": (
+                            f"{entry_date}-{HIGH_BETA_ETF_OVERSOLD_FAMILY}-"
+                            f"{symbol}"
+                        ),
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "missing_next_open",
+                    }
+                )
+                continue
+            if entry_index + hold > len(bars):
+                continue
+            exit_dates = {
+                str(item["date"])
+                for item in bars[entry_index : entry_index + hold]
+            }
+            expected_dates = set(
+                calendar[calendar_index + 1 : calendar_index + 1 + hold]
+            )
+            if exit_dates != expected_dates:
+                candidates.append(
+                    {
+                        "signal_id": (
+                            f"{entry_date}-{HIGH_BETA_ETF_OVERSOLD_FAMILY}-"
+                            f"{symbol}"
+                        ),
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "incomplete_holding_bars",
+                    }
+                )
+                continue
+            candidates.append(
+                _daily_candidate(
+                    family_id=HIGH_BETA_ETF_OVERSOLD_FAMILY,
+                    symbol=symbol,
+                    decision_date=decision_date,
+                    entry_date=entry_date,
+                    bars=bars,
+                    entry_index=entry_index,
+                    stop_atr=stop_atr,
+                    atr14=atr14,
+                    hold_sessions=hold,
+                    rank=rank,
+                    score=rsi2 + decline,
                 )
             )
     return candidates
@@ -2247,6 +2364,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             ETF_TURN_OF_MONTH_FAMILY,
             SECTOR_ETF_ROTATION_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
+            HIGH_BETA_ETF_OVERSOLD_FAMILY,
         }:
             symbols = dataset.get("symbols")
             if not isinstance(symbols, list) or set(map(str, symbols)) != set(daily):
@@ -2267,6 +2385,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         if family_id in {
             ETF_PULLBACK_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
+            HIGH_BETA_ETF_OVERSOLD_FAMILY,
         }:
             prepared["_etf_pullback_feature_cache"] = (
                 _etf_pullback_feature_cache(daily)
@@ -3187,6 +3306,8 @@ def build_candidates(
         return _etf_pullback_candidates(dataset, parameters)
     if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
         return _sector_etf_gap_drift_candidates(dataset, parameters)
+    if family_id == HIGH_BETA_ETF_OVERSOLD_FAMILY:
+        return _high_beta_etf_oversold_candidates(dataset, parameters)
     if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY:
         return _etf_cross_sectional_momentum_candidates(dataset, parameters)
     if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
@@ -3475,6 +3596,7 @@ def _production_daily_signal(
         ETF_TURN_OF_MONTH_FAMILY,
         SECTOR_ETF_ROTATION_FAMILY,
         SECTOR_ETF_GAP_DRIFT_FAMILY,
+        HIGH_BETA_ETF_OVERSOLD_FAMILY,
     }:
         frozen_symbols = frozen_universe.get("symbols")
         observed_symbols = decision_data.get("symbols")
@@ -3493,6 +3615,74 @@ def _production_daily_signal(
             raise DenseStrategyRuntimeError(
                 "production ETF history does not cover the complete calendar"
             )
+        if family_id == HIGH_BETA_ETF_OVERSOLD_FAMILY:
+            trend_period = int(parameters["trend_sma"])
+            rsi_max = float(parameters["rsi2_maximum"])
+            decline_floor = float(
+                parameters["one_session_decline_fraction"]
+            )
+            stop_atr = float(parameters["stop_atr14"])
+            hold_sessions = int(parameters["maximum_hold_sessions"])
+            if (
+                trend_period not in {100, 200}
+                or rsi_max not in {5.0, 10.0}
+                or decline_floor not in {0.01, 0.02}
+                or stop_atr not in {1.0, 1.5}
+                or hold_sessions not in {2, 5}
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production high-beta oversold rules escaped the frozen grid"
+                )
+            qualified: list[tuple[float, float, str, float]] = []
+            for symbol in map(str, frozen_symbols):
+                bars = daily[symbol]
+                symbol_index = indices[symbol].get(decision_date)
+                if symbol_index is None or symbol_index < max(
+                    trend_period - 1, 14, 2
+                ):
+                    raise DenseStrategyRuntimeError(
+                        "production high-beta oversold history is incomplete"
+                    )
+                trend = _sma(bars, symbol_index, trend_period)
+                rsi2 = _rsi_wilder(bars, symbol_index, 2)
+                atr14 = _atr(bars, symbol_index)
+                decline = (
+                    float(bars[symbol_index]["close"])
+                    / float(bars[symbol_index - 1]["close"])
+                    - 1
+                )
+                if (
+                    trend is not None
+                    and rsi2 is not None
+                    and atr14 is not None
+                    and float(bars[symbol_index]["close"]) > trend
+                    and rsi2 <= rsi_max
+                    and decline <= -decline_floor
+                    and _cost_floor(abs(decline))
+                ):
+                    qualified.append((rsi2, decline, symbol, atr14))
+            if not qualified:
+                raise DenseStrategyRuntimeError(
+                    "no exact production high-beta oversold signal"
+                )
+            rsi2, decline, symbol, atr14 = sorted(qualified)[0]
+            return {
+                "symbol": symbol,
+                "rank": 1,
+                "score": rsi2 + decline,
+                "expected_gross_move_fraction": abs(decline),
+                "atr": atr14,
+                "stop_atr_multiple": stop_atr,
+                "holding_trading_days": hold_sessions,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_maximum_hold_close",
+                    "maximum_hold_sessions": hold_sessions,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
         if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
             minimum_gap = float(parameters["minimum_gap_fraction"])
             maximum_gap = float(parameters["maximum_gap_fraction"])
@@ -4377,6 +4567,7 @@ def evaluate_production_signal(
         ETF_TURN_OF_MONTH_FAMILY,
         SECTOR_ETF_ROTATION_FAMILY,
         SECTOR_ETF_GAP_DRIFT_FAMILY,
+        HIGH_BETA_ETF_OVERSOLD_FAMILY,
     }:
         return _production_daily_signal(
             decision_data, family_id, parameters, frozen_universe

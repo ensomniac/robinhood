@@ -404,6 +404,15 @@ in 0.71 seconds with one dataset load and zero provider requests versus the
 recorded 62.42 seconds; no new result, inspection, or maturity artifact was
 written.
 
+The next immediate lane is a disjoint successor inside the existing
+short-horizon-oversold-reversal mechanism. Its fixed outcome-clean universe is
+`ARKK`, `EWJ`, `EWZ`, `FXI`, `GDX`, `KRE`, `SMH`, `XBI`, and `XRT`; its
+32-trial grid combines completed one-session decline `{1%,2%}`, RSI(2) maximum
+`{5,10}`, trend SMA `{100,200}`, stop `{1.0,1.5}` ATR14, and hold `{2,5}`
+sessions. The historical and production evaluators share next-session-open
+entry, deterministic ranking, protection, and exit semantics. Commit this
+implementation and its parity tests before freezing any evidence contract.
+
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
 substituting dates, symbols, universe identity, or the frozen 48-trial grid.
@@ -542,11 +551,11 @@ rolling-fold, DSR, Holm, or neighbor-stability gates. Inspection
 repair it or open its 2021-2022 confirmation reserve. Its incomplete pre-2016
 Alpaca plan and Massive HTTP-403 plan remain adverse data-readiness history.
 
-The current continuous lane is the sector-ETF gap-drift continuation successor
-defined above. The pre-2016 broad-ETF provider-bound replication and macro-ETF
-replication are terminal adverse history. No predecessor outcome may count
-toward promotion, and no confirmation target or broker action is permitted
-during development.
+The current continuous lane is the high-beta ETF oversold-reversal successor
+defined above. The sector-ETF gap-drift, pre-2016 provider-bound pullback, and
+macro-ETF pullback replications are terminal adverse history. No predecessor
+outcome may count toward promotion, and no confirmation target or broker action
+is permitted during development.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday

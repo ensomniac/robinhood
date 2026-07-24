@@ -87,6 +87,11 @@ def test_pullback_feature_cache_matches_reference_calculations():
                 if index >= 3
                 else None
             ),
+            "decline1": (
+                bars[index]["close"] / bars[index - 1]["close"] - 1
+                if index >= 1
+                else None
+            ),
             "sma100": runtime._sma(bars, index, 100),
             "sma200": runtime._sma(bars, index, 200),
         }
@@ -183,6 +188,45 @@ def test_prepared_sector_gap_drift_reuses_completed_daily_features():
 
     assert "_etf_pullback_feature_cache" in prepared_dataset
     assert prepared == raw
+
+
+def test_high_beta_oversold_uses_one_day_decline_and_next_open():
+    days = _days(230)
+    bars = [
+        _daily_bar(day, 100 + 0.2 * index)
+        for index, day in enumerate(days)
+    ]
+    bars[220]["open"] = bars[219]["close"] * 0.98
+    bars[220]["close"] = bars[219]["close"] * 0.975
+    bars[220]["high"] = bars[219]["close"] * 0.985
+    bars[220]["low"] = bars[219]["close"] * 0.97
+    evaluation_dates = days[220:229]
+    parameters = {
+        "trend_sma": 100,
+        "rsi2_maximum": 10,
+        "one_session_decline_fraction": 0.02,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 2,
+    }
+
+    candidates = runtime.build_candidates(
+        {
+            "family_id": runtime.HIGH_BETA_ETF_OVERSOLD_FAMILY,
+            "evaluation_dates": evaluation_dates,
+            "symbols": ["XBI"],
+            "daily_bars": {"XBI": bars},
+        },
+        runtime.HIGH_BETA_ETF_OVERSOLD_FAMILY,
+        parameters,
+    )
+    candidate = next(
+        item for item in candidates if item["decision_date"] == evaluation_dates[0]
+    )
+
+    assert candidate["signal_date"] == evaluation_dates[1]
+    assert candidate["entry_price"] == pytest.approx(bars[221]["open"])
+    assert candidate["entry_price"] != pytest.approx(bars[220]["close"])
+    assert candidate["exit_date"] <= evaluation_dates[2]
 
 
 def test_cost_scenarios_share_the_stressed_contention_selection():
@@ -852,6 +896,62 @@ def test_production_sector_gap_drift_rebuilds_historical_rank():
     )
 
     assert production["symbol"] == historical["symbol"] == "XLK"
+    assert production["rank"] == historical["rank"] == 1
+    assert production["holding_trading_days"] == 2
+    assert production["overnight_hold"] is True
+
+
+def test_production_high_beta_oversold_rebuilds_historical_rank():
+    days = _days(230)
+    daily_bars = {}
+    for symbol, decline in (("XBI", 0.025), ("SMH", 0.02)):
+        bars = [
+            _daily_bar(day, 100 + 0.2 * index)
+            for index, day in enumerate(days)
+        ]
+        bars[220]["open"] = bars[219]["close"] * (1 - decline + 0.005)
+        bars[220]["close"] = bars[219]["close"] * (1 - decline)
+        bars[220]["high"] = bars[219]["close"] * (1 - decline + 0.01)
+        bars[220]["low"] = bars[219]["close"] * (1 - decline - 0.005)
+        daily_bars[symbol] = bars
+    parameters = {
+        "trend_sma": 100,
+        "rsi2_maximum": 10,
+        "one_session_decline_fraction": 0.02,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 2,
+    }
+    historical = runtime.build_candidates(
+        {
+            "family_id": runtime.HIGH_BETA_ETF_OVERSOLD_FAMILY,
+            "evaluation_dates": days[220:229],
+            "symbols": ["SMH", "XBI"],
+            "daily_bars": daily_bars,
+        },
+        runtime.HIGH_BETA_ETF_OVERSOLD_FAMILY,
+        parameters,
+    )[0]
+    production = runtime.evaluate_production_signal(
+        {
+            "family_id": runtime.HIGH_BETA_ETF_OVERSOLD_FAMILY,
+            "decision_date": days[220],
+            "next_session_date": days[221],
+            "calendar_dates": days[:221],
+            "daily_history_complete": True,
+            "symbols": ["SMH", "XBI"],
+            "daily_bars": {
+                symbol: [
+                    bar for bar in bars if bar["date"] <= days[220]
+                ]
+                for symbol, bars in daily_bars.items()
+            },
+        },
+        family_id=runtime.HIGH_BETA_ETF_OVERSOLD_FAMILY,
+        parameters=parameters,
+        frozen_universe={"symbols": ["SMH", "XBI"]},
+    )
+
+    assert production["symbol"] == historical["symbol"] == "XBI"
     assert production["rank"] == historical["rank"] == 1
     assert production["holding_trading_days"] == 2
     assert production["overnight_hold"] is True
