@@ -1,0 +1,22 @@
+{
+  "artifact_kind": "oversold_replication_scanner_build_status",
+  "broker_actions": 0,
+  "completed_dates": 40,
+  "dates": 40,
+  "detail_file_sha256": "3d58bddfb8bcd1093bfc60fab3123535aced7a5142e7c16845deccf1523ac5d1",
+  "detail_path": "learning_runs/oversold_replication_v5/scanner_replay_v2/scanner-replay-detail.json",
+  "full_session_target_prices_accessed": false,
+  "manifest_file_sha256": "8c02f68aa5e463e5be52a668705e12490d06004d9cf0df5b627743c03cc421fb",
+  "manifest_path": "historical_batches/oversold_replication_v5/scanner-v2-manifests/dataset-production-scanner-replay-2026-07-24-oversold-replication-completed-reserve-v2-d23f451dc399506ed3b2933cd2c0fd96d30798164e875ef5f7b8a77954fc441c.json",
+  "manifest_sha256": "d23f451dc399506ed3b2933cd2c0fd96d30798164e875ef5f7b8a77954fc441c",
+  "provider_requests": 0,
+  "schema_version": 1,
+  "state": "SCANNER_REPLAY_BUILT_AWAITING_INSPECTION",
+  "status_sha256": "4e4391eb40bfa48b91e27ac075e4511c01a7b796e19c03a678d424d28228f9b5",
+  "summary_file_sha256": "fc0ea05f4c5c7930db56ad794454991c27cd117167f7d8387ec9ef54116cbf4c",
+  "summary_path": "learning_runs/oversold_replication_v5/scanner_replay_v2/scanner-replay-summary.json",
+  "target_collection_inspection_file_sha256": "7d4713c864619005b42f721f9913f1b8318acd76d19304e8f0df6e8bc4cb76b8",
+  "target_collection_inspection_path": "historical_batches/oversold_replication_v5/scanner-v2-target-collection-inspection/oversold-replication-scanner-target-collection-inspection-918def9407881bc89c48021ce9105007a4c06a4f3a88bbea6e9c49dc9d60e9b6.json",
+  "target_collection_inspection_sha256": "918def9407881bc89c48021ce9105007a4c06a4f3a88bbea6e9c49dc9d60e9b6",
+  "target_outcomes_observed_or_derived": false
+}
