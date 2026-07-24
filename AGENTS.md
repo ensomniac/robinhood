@@ -376,6 +376,10 @@ freezing the development collection graph.
 Collection plan `f3d72604...67857f` freezes 1,200 required sessions, nine
 Alpaca SIP raw daily symbol ranges, one Massive split-action range, and zero
 substitutions. Commit it before the first provider request.
+Collection `cb3b135c...ce4bdd` completed all ten tasks in 11 accounted requests
+with zero failures and zero substitutions; raw rows remain only in the ignored
+content-addressed store under dataset hash `85f9a73d...781158`. Commit the
+status before independent dataset reconstruction.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
