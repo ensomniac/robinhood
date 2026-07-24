@@ -791,12 +791,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "state": value.get(
                         "state", value.get("artifact_kind")
                     ),
-                    "sha256": value.get(
-                        "inspection_sha256",
-                        value.get(
-                            "collection_sha256",
-                            value.get("contract_sha256"),
+                    "sha256": next(
+                        (
+                            value[key]
+                            for key in (
+                                "failure_sha256",
+                                "inspection_sha256",
+                                "collection_sha256",
+                                "contract_sha256",
+                            )
+                            if key in value
                         ),
+                        None,
                     ),
                     "provider_requests": value.get(
                         "provider_requests", 0
