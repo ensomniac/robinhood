@@ -1,0 +1,60 @@
+{
+  "attempted_candidate_count": 201,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "collection_kind": "outcome-blind-asr-complete-submission-tier",
+  "collection_sha256": "6e38e188f9aa162e3c5bdb7de05158b4d4162b07c435dcb79d453bdd3cc3eefc",
+  "contract_inspection_sha256": "63228890e1e59a725b8b12090c1e67904ad6fd8e02b84c32d14aaddee81ee2e1",
+  "contract_sha256": "acf2712abfe0a4ac5c810e3a53086d4c2d4e09a0657cfbea1a939a71d1018592",
+  "failure_count": 5,
+  "filing_semantic_classification_permitted": false,
+  "market_outcomes_accessed": false,
+  "market_price_values_accessed": 0,
+  "maturity_effect": "NONE",
+  "private_collection": {
+    "bytes": 32260,
+    "cache_relative_path": "_derived/asr-submission-tier1-collection/acf2712abfe0a4ac5c810e3a53086d4c2d4e09a0657cfbea1a939a71d1018592-collection.json.gz",
+    "file_sha256": "99e1059a0425fefe8ef308266dd7fe7532d1d2766aece9ff988cc169da70eb83",
+    "private_collection_sha256": "899453efcf95eeac3d37c18db97cfec20eb16a6122e9f3b566d199c42c400624"
+  },
+  "provider_telemetry": {
+    "cache_hits": 0,
+    "download_bytes": 1902456367,
+    "downloads": 196,
+    "pacing_wait_seconds": 22.0663608526811,
+    "request_seconds": 22.2913665875094,
+    "requests": 201,
+    "retry_attempts": 0,
+    "retry_wait_seconds": 0.0,
+    "retryable_http_failures": 0,
+    "terminal_http_candidates": 0,
+    "transport_failures": 0
+  },
+  "publication": {
+    "collector": {
+      "commit": "938f5a2cea0920c0862c38331ef98610cf1bb1ba",
+      "path": "asr_submission_collection.py",
+      "sha256": "abf507740b226e84112ed9d76495a772c4d22d6997c2cd264f23757b5637b40f"
+    },
+    "contract": {
+      "commit": "938f5a2cea0920c0862c38331ef98610cf1bb1ba",
+      "path": "strategy_tournament/v2/asr/submissions/tier1/contracts/accelerated-share-repurchase-continuation-v3-no-pagination-exact-accelerated-repurchase-agreement-tier-1-acf2712abfe0a4ac5c810e3a53086d4c2d4e09a0657cfbea1a939a71d1018592.json",
+      "sha256": "f105d24e953462659bb24a406dadcf66845a3a722369be9be49002bc93c4d9a8"
+    },
+    "contract_inspection": {
+      "commit": "938f5a2cea0920c0862c38331ef98610cf1bb1ba",
+      "path": "strategy_tournament/v2/asr/submissions/tier1/contract-status.json",
+      "sha256": "1264596d7fd437c00a1f57eacd4b143ec280b0825e88a687aa670c215823141a"
+    }
+  },
+  "request_count": 201,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "source_bytes": 1902456367,
+  "state": "SUBMISSIONS_COLLECTED_WITH_FAILURES",
+  "success_count": 196,
+  "tier_id": "exact-accelerated-repurchase-agreement-tier-1",
+  "valid": false,
+  "verified_event_count": null
+}
