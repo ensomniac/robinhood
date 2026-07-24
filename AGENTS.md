@@ -727,6 +727,13 @@ development evaluation.
 Development result `9d59a1da...75736af8` completed all 32 exact trials in
 14.12 seconds with one dataset load, one cache hit, and zero provider requests
 or failures. Commit it before independent selection reconstruction.
+Inspection `2a8e2d84...24901281` rejected all 32 trials. None retained
+positive 20-bps growth, stressed profit factor or drawdown, all-fold growth,
+DSR, Holm rejection, or stable positive neighbors. The least-negative path
+had 22 OOF fills, -0.06194 stressed log growth, PF 0.198, 12.01R drawdown, a
+-0.00386 bootstrap lower bound, and DSR 0.0082. The exact new mechanism is
+terminal; confirmation remains untouched. Do not answer this result with
+another price-only broad-index intraday variation.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
