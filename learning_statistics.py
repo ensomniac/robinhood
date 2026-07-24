@@ -618,7 +618,10 @@ def deflated_sharpe_probability(
         expected_maximum = (1 - gamma) * normal.inv_cdf(
             1 - 1 / count
         ) + gamma * normal.inv_cdf(1 - 1 / (count * math.e))
-        benchmark_annual = statistics.fmean(trials) + trial_deviation * expected_maximum
+        # DSR's rejection threshold is the expected maximum Sharpe under the
+        # zero-skill null.  Cross-trial dispersion scales that threshold; the
+        # observed family mean must not be added to it.
+        benchmark_annual = trial_deviation * expected_maximum
     benchmark = benchmark_annual / math.sqrt(TRADING_DAYS_PER_YEAR)
     skew = _skewness(normalized)
     kurtosis = _kurtosis(normalized)

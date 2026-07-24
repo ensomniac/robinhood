@@ -203,6 +203,24 @@ class StatisticalControlTests(unittest.TestCase):
         self.assertIsNotNone(small["probability"])
         self.assertLess(large["probability"], small["probability"])
 
+    def test_deflated_sharpe_null_threshold_ignores_observed_family_mean(self):
+        returns = [0.01, -0.002, 0.008, -0.001] * 20
+        centered = deflated_sharpe_probability(
+            returns, [-0.1, 0.0, 0.1]
+        )
+        shifted = deflated_sharpe_probability(
+            returns, [1.9, 2.0, 2.1]
+        )
+
+        self.assertAlmostEqual(
+            centered["benchmark_sharpe"],
+            shifted["benchmark_sharpe"],
+        )
+        self.assertAlmostEqual(
+            centered["probability"],
+            shifted["probability"],
+        )
+
     def test_pbo_detects_in_sample_winner_reversal(self):
         first = [0.02] * 8 + [-0.02] * 8
         second = [-0.02] * 8 + [0.02] * 8
