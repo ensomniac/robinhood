@@ -323,7 +323,11 @@ symbol ranges, the committed Massive split-action range, and zero substitutions.
 Collection `59cb9c3a...31a26d` completed all seven tasks in eight fully accounted
 provider calls, with zero failures, zero substitutions, and raw rows retained
 only in the ignored content-addressed store. Commit its hashes and telemetry
-before independent dataset reconstruction.
+before independent dataset reconstruction. Inspection
+`dff9cff1...95e6c2` independently admitted runtime manifest
+`0fe21acd...952c12` after rebuilding hashes, dates, symbols, completeness,
+adjustments, and search binding. Commit both artifacts before evaluating all
+32 development trials.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
