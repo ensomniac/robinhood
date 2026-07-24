@@ -427,6 +427,40 @@ def test_intraday_reclaim_enters_next_bar_and_resolves_ambiguity_stop_first():
     assert candidate["exit_price"] == pytest.approx(candidate["stop_price"])
 
 
+def test_country_etf_replication_preserves_intraday_signal_identity():
+    source = _intraday_dataset()
+    minute_bars = {
+        day: {"EWC": symbols["SPY"]}
+        for day, symbols in source["minute_bars"].items()
+    }
+    dataset = {
+        **source,
+        "family_id": runtime.COUNTRY_ETF_OPENING_REVERSAL_FAMILY,
+        "symbols": ["EWC"],
+        "minute_bars": minute_bars,
+    }
+    parameters = {
+        "opening_window_minutes": 15,
+        "downside_z_threshold": -1.5,
+        "vwap_reclaim_completed_bars": 1,
+        "stop_intraday_atr": 1.0,
+        "target_r": 1.0,
+    }
+
+    candidate = runtime.build_candidates(
+        dataset,
+        runtime.COUNTRY_ETF_OPENING_REVERSAL_FAMILY,
+        parameters,
+    )[0]
+
+    assert candidate["symbol"] == "EWC"
+    assert (
+        runtime.COUNTRY_ETF_OPENING_REVERSAL_FAMILY
+        in candidate["signal_id"]
+    )
+    assert candidate["stop_executed"] is True
+
+
 def test_intraday_selects_the_first_observable_reclaim_without_future_ranking():
     dataset = _intraday_dataset()
     current_day = dataset["evaluation_dates"][0]
@@ -1141,6 +1175,42 @@ def test_production_intraday_signal_requires_current_first_reclaim_bar():
             parameters=parameters,
             frozen_universe={"symbols": ["SPY"]},
         )
+
+
+def test_production_country_etf_reversal_uses_exact_family_binding():
+    days = _days(61)
+    minute_bars = {
+        day: {
+            "EWC": _full_minute_session(
+                day, ((index % 7) - 3) * 0.0005
+            )
+        }
+        for index, day in enumerate(days[:-1])
+    }
+    current = _minute_session(days[-1], -0.05)[:16]
+    minute_bars[days[-1]] = {"EWC": current}
+    signal = runtime.evaluate_production_signal(
+        {
+            "family_id": runtime.COUNTRY_ETF_OPENING_REVERSAL_FAMILY,
+            "session_date": days[-1],
+            "calendar_sessions": days,
+            "minute_history_complete": True,
+            "symbols": ["EWC"],
+            "minute_bars": minute_bars,
+        },
+        family_id=runtime.COUNTRY_ETF_OPENING_REVERSAL_FAMILY,
+        parameters={
+            "opening_window_minutes": 15,
+            "downside_z_threshold": -1.5,
+            "vwap_reclaim_completed_bars": 1,
+            "stop_intraday_atr": 1.0,
+            "target_r": 1.0,
+        },
+        frozen_universe={"symbols": ["EWC"]},
+    )
+
+    assert signal["symbol"] == "EWC"
+    assert signal["trigger_bar_timestamp"] == current[-1]["timestamp"]
 
 
 def test_real_48_trial_equity_runtime_reuses_features_under_sixty_seconds():

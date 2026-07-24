@@ -509,6 +509,12 @@ the globally outcome-clean fixed country-ETF universe `EWC`, `EWG`, `EWP`,
 This corrects the predecessor's 120-session/11-fill power weakness without
 changing its rules after outcomes. Freeze the implementation, exact scopes, and
 provider graph before minute-price access; no calendar wait applies.
+`country_etf_opening_reversal.py` now freezes that unchanged replication, and
+the shared historical, collection, and production paths treat its exact family
+ID as the same no-lookahead intraday mechanism. Synthetic tests preserve
+next-bar entry, stop-first ambiguity, signal identity, fixed-universe coverage,
+and historical/production family binding. Commit the implementation before
+contract freeze.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

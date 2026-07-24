@@ -324,7 +324,7 @@ def freeze_plan(
         raise DenseDataCollectionError("collection calendar drifted from capacity freeze")
     evaluation_dates = list(contract[f"{lane}_dates"])
     family_id = str(contract["family_id"])
-    intraday = family_id == runtime.INTRADAY_ETF_FAMILY
+    intraday = family_id in runtime.INTRADAY_ETF_FAMILIES
     warmup = INTRADAY_WARMUP_SESSIONS if intraday else DAILY_WARMUP_SESSIONS
     warmup_dates = list(contract[f"{lane}_warmup_dates"])
     if len(warmup_dates) != warmup:
@@ -1089,7 +1089,7 @@ def _adjusted_bar(
 
 def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, Any]:
     family_id = str(plan["family_id"])
-    if family_id == runtime.INTRADAY_ETF_FAMILY:
+    if family_id in runtime.INTRADAY_ETF_FAMILIES:
         minute: dict[str, dict[str, list[dict[str, Any]]]] = {}
         expected_symbols = set(map(str, plan["symbols"]))
         for task in plan["tasks"]:

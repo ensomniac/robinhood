@@ -23,6 +23,11 @@ from learning_statistics import (
 
 EQUITY_RESIDUAL_FAMILY = "liquid-equity-market-residual-reversal"
 INTRADAY_ETF_FAMILY = "intraday-index-etf-opening-reversal"
+COUNTRY_ETF_OPENING_REVERSAL_FAMILY = "country-etf-opening-reversal"
+INTRADAY_ETF_FAMILIES = {
+    INTRADAY_ETF_FAMILY,
+    COUNTRY_ETF_OPENING_REVERSAL_FAMILY,
+}
 ETF_PULLBACK_FAMILY = "liquid-etf-trend-pullback-cost-floor"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
 LIQUID_EQUITY_MOMENTUM_FAMILY = "liquid-equity-cross-sectional-momentum"
@@ -46,7 +51,7 @@ VOLATILITY_COMPRESSION_FAMILY = (
 )
 SUPPORTED_FAMILIES = {
     EQUITY_RESIDUAL_FAMILY,
-    INTRADAY_ETF_FAMILY,
+    *INTRADAY_ETF_FAMILIES,
     ETF_PULLBACK_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
     LIQUID_EQUITY_MOMENTUM_FAMILY,
@@ -2235,13 +2240,13 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         prepared["_prepared_daily_bars"] = daily
         prepared["_prepared_fifteen_minute_bars"] = sessions
     elif family_id in {
-        INTRADAY_ETF_FAMILY,
+        *INTRADAY_ETF_FAMILIES,
         OVERSOLD_REVERSAL_FAMILY,
         EQUITY_GAP_CONTINUATION_FAMILY,
         VOLATILITY_COMPRESSION_FAMILY,
     }:
         sessions = _minute_sessions(dataset)
-        if family_id == INTRADAY_ETF_FAMILY:
+        if family_id in INTRADAY_ETF_FAMILIES:
             symbols = dataset.get("symbols")
             if not isinstance(symbols, list) or not symbols:
                 raise DenseStrategyRuntimeError(
@@ -2430,7 +2435,10 @@ def _intraday_exit(
 
 
 def _intraday_candidates(
-    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+    *,
+    family_id: str = INTRADAY_ETF_FAMILY,
 ) -> list[dict[str, Any]]:
     calendar = _calendar(dataset)
     sessions = _minute_sessions(dataset)
@@ -2524,7 +2532,7 @@ def _intraday_candidates(
             continue
         z_score, symbol, entry_index, atr = selected
         bars = sessions[day][symbol]
-        signal_id = f"{day}-{INTRADAY_ETF_FAMILY}-{symbol}"
+        signal_id = f"{day}-{family_id}-{symbol}"
         if entry_index >= len(bars):
             candidates.append(
                 {
@@ -3308,8 +3316,10 @@ def build_candidates(
         raise DenseStrategyRuntimeError("dataset family binding does not match")
     if family_id == EQUITY_RESIDUAL_FAMILY:
         return _equity_residual_candidates(dataset, parameters)
-    if family_id == INTRADAY_ETF_FAMILY:
-        return _intraday_candidates(dataset, parameters)
+    if family_id in INTRADAY_ETF_FAMILIES:
+        return _intraday_candidates(
+            dataset, parameters, family_id=family_id
+        )
     if family_id == ETF_PULLBACK_FAMILY:
         return _etf_pullback_candidates(dataset, parameters)
     if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
@@ -4385,6 +4395,7 @@ def _production_close_to_open_signal(
 
 def _production_intraday_signal(
     decision_data: Mapping[str, Any],
+    family_id: str,
     parameters: Mapping[str, Any],
     frozen_universe: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -4398,7 +4409,7 @@ def _production_intraday_signal(
     }
     if (
         set(decision_data) != expected
-        or decision_data.get("family_id") != INTRADAY_ETF_FAMILY
+        or decision_data.get("family_id") != family_id
     ):
         raise DenseStrategyRuntimeError(
             "production intraday decision-data schema drifted"
@@ -4559,9 +4570,9 @@ def evaluate_production_signal(
     frozen_universe: Mapping[str, Any],
 ) -> dict[str, Any]:
     """Rebuild one current signal from the same observable indicators as history."""
-    if family_id == INTRADAY_ETF_FAMILY:
+    if family_id in INTRADAY_ETF_FAMILIES:
         return _production_intraday_signal(
-            decision_data, parameters, frozen_universe
+            decision_data, family_id, parameters, frozen_universe
         )
     if family_id == ETF_CLOSE_TO_OPEN_FAMILY:
         return _production_close_to_open_signal(
@@ -4871,7 +4882,7 @@ def evaluate_trial(
     candidates = build_candidates(dataset, family_id, parameters)
     missed_data_dates = (
         _intraday_missed_data_dates(dataset)
-        if family_id == INTRADAY_ETF_FAMILY
+        if family_id in INTRADAY_ETF_FAMILIES
         else set()
     )
     if rolling_origin_plan is None:
