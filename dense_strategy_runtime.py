@@ -60,6 +60,10 @@ FLIGHT_TO_SAFETY_REBOUND_FAMILY = (
 )
 FLIGHT_TO_SAFETY_TARGET_SYMBOLS = ("MDY", "VOO", "VTI")
 FLIGHT_TO_SAFETY_FEATURE_SYMBOL = "TLT"
+FLIGHT_TO_SAFETY_REPLICATION_FAMILY = (
+    "cross-asset-flight-to-safety-equity-rebound-replication"
+)
+FLIGHT_TO_SAFETY_REPLICATION_TARGET_SYMBOLS = ("IWB", "SCHX", "SPTM")
 BREADTH_CAPITULATION_REBOUND_FAMILY = (
     "broad-equity-etf-breadth-capitulation-rebound"
 )
@@ -96,6 +100,7 @@ SUPPORTED_FAMILIES = {
     SECTOR_ETF_ROTATION_FAMILY,
     SECTOR_ETF_GAP_DRIFT_FAMILY,
     FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+    FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
     BREADTH_CAPITULATION_REBOUND_FAMILY,
     *ETF_OVERSOLD_FAMILIES,
     ETF_CLOSE_TO_OPEN_FAMILY,
@@ -1030,7 +1035,11 @@ def _sector_etf_gap_drift_candidates(
 
 
 def _flight_to_safety_rebound_candidates(
-    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+    *,
+    family_id: str = FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+    target_symbols: Sequence[str] = FLIGHT_TO_SAFETY_TARGET_SYMBOLS,
 ) -> list[dict[str, Any]]:
     calendar = _calendar(dataset)
     daily = _daily_series(dataset)
@@ -1042,7 +1051,7 @@ def _flight_to_safety_rebound_candidates(
     stop_atr = float(parameters["stop_atr14"])
     hold = int(parameters["maximum_hold_sessions"])
     required_symbols = {
-        *FLIGHT_TO_SAFETY_TARGET_SYMBOLS,
+        *target_symbols,
         FLIGHT_TO_SAFETY_FEATURE_SYMBOL,
     }
     if set(daily) != required_symbols:
@@ -1072,7 +1081,7 @@ def _flight_to_safety_rebound_candidates(
         if treasury_return < treasury_return_floor:
             continue
         scored: list[tuple[float, str, float]] = []
-        for symbol in FLIGHT_TO_SAFETY_TARGET_SYMBOLS:
+        for symbol in target_symbols:
             bars = daily[symbol]
             symbol_index = indices[symbol].get(decision_date)
             if symbol_index is None or symbol_index < max(
@@ -1103,7 +1112,7 @@ def _flight_to_safety_rebound_candidates(
             bars = daily[symbol]
             entry_index = indices[symbol].get(entry_date)
             signal_id = (
-                f"{entry_date}-{FLIGHT_TO_SAFETY_REBOUND_FAMILY}-{symbol}"
+                f"{entry_date}-{family_id}-{symbol}"
             )
             if entry_index is None:
                 candidates.append(
@@ -1142,7 +1151,7 @@ def _flight_to_safety_rebound_candidates(
                 continue
             candidates.append(
                 _daily_candidate(
-                    family_id=FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+                    family_id=family_id,
                     symbol=symbol,
                     decision_date=decision_date,
                     entry_date=entry_date,
@@ -2713,6 +2722,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             SECTOR_ETF_ROTATION_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+            FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
             BREADTH_CAPITULATION_REBOUND_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
         }:
@@ -2736,6 +2746,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             ETF_PULLBACK_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+            FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
             BREADTH_CAPITULATION_REBOUND_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
         }:
@@ -3830,6 +3841,13 @@ def build_candidates(
         return _sector_etf_gap_drift_candidates(dataset, parameters)
     if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY:
         return _flight_to_safety_rebound_candidates(dataset, parameters)
+    if family_id == FLIGHT_TO_SAFETY_REPLICATION_FAMILY:
+        return _flight_to_safety_rebound_candidates(
+            dataset,
+            parameters,
+            family_id=family_id,
+            target_symbols=FLIGHT_TO_SAFETY_REPLICATION_TARGET_SYMBOLS,
+        )
     if family_id == BREADTH_CAPITULATION_REBOUND_FAMILY:
         return _breadth_capitulation_rebound_candidates(dataset, parameters)
     if family_id in ETF_OVERSOLD_FAMILIES:
@@ -4125,6 +4143,7 @@ def _production_daily_signal(
         SECTOR_ETF_ROTATION_FAMILY,
         SECTOR_ETF_GAP_DRIFT_FAMILY,
         FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+        FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
         BREADTH_CAPITULATION_REBOUND_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
     }:
@@ -4213,7 +4232,10 @@ def _production_daily_signal(
                     "same_interval_ambiguity": "stop_first",
                 },
             }
-        if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY:
+        if family_id in {
+            FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+            FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
+        }:
             decline_floor = float(
                 parameters["minimum_equity_decline_fraction"]
             )
@@ -4229,14 +4251,21 @@ def _production_daily_signal(
                 or trend_period not in {100, 200}
                 or stop_atr not in {1.0, 1.5}
                 or hold_sessions not in {2, 5}
-                or frozen_symbols
-                != [
-                    *FLIGHT_TO_SAFETY_TARGET_SYMBOLS,
-                    FLIGHT_TO_SAFETY_FEATURE_SYMBOL,
-                ]
             ):
                 raise DenseStrategyRuntimeError(
                     "production flight-to-safety rules escaped the frozen grid"
+                )
+            target_symbols = (
+                FLIGHT_TO_SAFETY_TARGET_SYMBOLS
+                if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY
+                else FLIGHT_TO_SAFETY_REPLICATION_TARGET_SYMBOLS
+            )
+            if frozen_symbols != [
+                *target_symbols,
+                FLIGHT_TO_SAFETY_FEATURE_SYMBOL,
+            ]:
+                raise DenseStrategyRuntimeError(
+                    "production flight-to-safety universe escaped the frozen rules"
                 )
             treasury_bars = daily[FLIGHT_TO_SAFETY_FEATURE_SYMBOL]
             treasury_index = indices[
@@ -4256,7 +4285,7 @@ def _production_daily_signal(
                     "no exact production flight-to-safety signal"
                 )
             qualified: list[tuple[float, str, float]] = []
-            for symbol in FLIGHT_TO_SAFETY_TARGET_SYMBOLS:
+            for symbol in target_symbols:
                 bars = daily[symbol]
                 symbol_index = indices[symbol].get(decision_date)
                 if symbol_index is None or symbol_index < max(
@@ -5455,6 +5484,7 @@ def evaluate_production_signal(
         SECTOR_ETF_ROTATION_FAMILY,
         SECTOR_ETF_GAP_DRIFT_FAMILY,
         FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+        FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
         BREADTH_CAPITULATION_REBOUND_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
     }:
