@@ -1,0 +1,13 @@
+{
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v2-source-recovery",
+  "contract_sha256": "74f42e7005868db4badef1e2bd473237a0c4a995220ff80bc01054686f2dcf96",
+  "market_price_access_permitted": false,
+  "matched_document_access_permitted": false,
+  "outcome_access_permitted": false,
+  "schema_version": 1,
+  "sec_search_access_permitted": false,
+  "status": "RECOVERY_CONTRACT_PENDING_INSPECTION",
+  "valid": false
+}
