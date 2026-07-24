@@ -1,0 +1,32 @@
+{
+  "artifact_kind": "dense-data-collection-failure-inspection",
+  "artifact_sha256": "5398204386bb172b2b513fca1c6c0195f9e45cf631348d6fa8c05229fd10a96d",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "broker_actions_zero": true,
+    "checkpoint_counts_rebuilt": true,
+    "completed_status_absent": true,
+    "confirmation_outcomes_absent": true,
+    "failure_reopened": true,
+    "market_price_row_access_rebuilt": true,
+    "outcome_exposure_scope_rebuilt": true,
+    "plan_reopened": true,
+    "provider_telemetry_rebuilt": true,
+    "strategy_metrics_absent": true,
+    "substitutions_zero": true
+  },
+  "commit_enforcement_requested": true,
+  "confirmation_outcomes_accessed": false,
+  "data_outcomes_accessed": false,
+  "exposure_scope": null,
+  "failure_code": "GROUPED_DAILY_TASK_FAILED_BEFORE_PRICE_ACCESS",
+  "failure_path": "strategy_tournament/v2/discovery/liquid-equity-market-residual-reversal/development-collection-failure/liquid-equity-market-residual-reversal-development-collection-failure-edad20dbedb6ef533b91cf3e2e515843334da2da32d0eab7b3823864d0cfeab1.json",
+  "failure_sha256": "edad20dbedb6ef533b91cf3e2e515843334da2da32d0eab7b3823864d0cfeab1",
+  "family_id": "liquid-equity-market-residual-reversal",
+  "inspected_at": "2026-07-23T23:59:34Z",
+  "lane": "development",
+  "plan_sha256": "649297a088c36a1b5c3eb8b007f9be3e0781344338be107dcfe5e9f5396ba0cb",
+  "schema_version": 1,
+  "state": "COLLECTION_FAILURE_INSPECTED",
+  "strategy_metrics_accessed": false
+}
