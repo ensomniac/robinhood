@@ -681,6 +681,11 @@ Collection status `d32b2cd7...9833dd1` materialized dataset
 `9e266e89...017cac2` from four verified cache hits. Telemetry preserves the
 original 266 requests and reports zero failures or additional fetches. Commit
 the compact status before independent dataset inspection.
+Inspection `c3fd42e6...2ab9df51` independently rebuilt all checkpoints,
+the exact dataset hash, missing-session evidence, frozen scope, runtime schema,
+and zero substitutions. Manifest `7929c6a2...0b60dd4b` binds that inspected
+dataset to refreshed search `c50c1847...dc07394`. Commit both before evaluating
+all 32 trials.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
