@@ -605,6 +605,10 @@ fixed universe. Failure `4a24c73d...da1c7d` records 68,537 accessed rows and
 2,009 incomplete required symbol-sessions before dataset materialization or
 strategy metrics. No confirmation input, interpolation, substitution, or broker
 action occurred. Commit the failure before independent inspection.
+Inspection `b19536b9...5e12c3` independently reproduced the exact provider
+start boundary, checkpoint totals, completeness counts, telemetry, exposed
+scope, and absence of a dataset or metrics. Commit it, index the exposed
+development pairs, and retire this exact early-history version.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
