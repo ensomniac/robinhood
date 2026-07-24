@@ -521,6 +521,9 @@ sessions, five embargo sessions, and 500 untouched confirmation sessions.
 They bind Alpaca SIP raw minute semantics, exact costs and gates, zero
 substitutions, and 8,000 formal development instrument-sessions before price
 access. Commit both before generic preflight.
+Preflight `f8a22877...595d752` independently rebuilt family identity,
+implementation, 8,000-observation capacity, point-in-time boundaries, and zero
+outcome access and earned `CAPACITY_READY`. Commit it before search freeze.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
