@@ -249,7 +249,9 @@ the exact development family. V3 contract `0f9a28c7...cdf87f` and capacity
 manifest `e72cae52...d8e2b99` now freeze that schema-only recovery with the
 unchanged evidence graph. Outcome-blind preflight `898e86b2...f9f0e0` earned
 `CAPACITY_READY`; freeze the V3 search next. The confirmation partition and
-broker actions remain forbidden.
+broker actions remain forbidden. V3 search `17255874...11ae14` now binds the
+unchanged complete family and serialization fix. Evaluate and independently
+inspect all 32 trials next.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
