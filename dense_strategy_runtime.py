@@ -1890,6 +1890,21 @@ def _minute_sessions(
     return sessions
 
 
+def _intraday_missed_data_dates(dataset: Mapping[str, Any]) -> set[str]:
+    raw = dataset.get("missed_data_dates", [])
+    if not isinstance(raw, list) or any(
+        not isinstance(item, str) or not item for item in raw
+    ):
+        raise DenseStrategyRuntimeError(
+            "missed_data_dates must be an array of ISO dates"
+        )
+    if raw != sorted(raw) or len(raw) != len(set(raw)):
+        raise DenseStrategyRuntimeError(
+            "missed_data_dates must be unique and chronological"
+        )
+    return set(raw)
+
+
 def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
     """Validate and normalize row-level bars once for every trial in a process."""
 
@@ -1927,13 +1942,24 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                     "intraday dataset must name its complete frozen symbols"
                 )
             expected_symbols = {str(symbol) for symbol in symbols}
-            if any(
-                set(day_symbols) != expected_symbols
-                for day_symbols in sessions.values()
-            ):
+            missed_dates = _intraday_missed_data_dates(dataset)
+            if not missed_dates.issubset(sessions):
                 raise DenseStrategyRuntimeError(
-                    "intraday sessions do not cover the complete frozen universe"
+                    "intraday missed-data dates lack retained session evidence"
                 )
+            for day, day_symbols in sessions.items():
+                observed_symbols = set(day_symbols)
+                if day in missed_dates:
+                    if not observed_symbols or not observed_symbols < expected_symbols:
+                        raise DenseStrategyRuntimeError(
+                            "intraday missed-data dates must retain a strict "
+                            "subset of the frozen universe"
+                        )
+                elif observed_symbols != expected_symbols:
+                    raise DenseStrategyRuntimeError(
+                        "intraday sessions do not cover the complete frozen universe"
+                    )
+            prepared["_prepared_missed_data_dates"] = missed_dates
         else:
             candidates = dataset.get("candidate_symbols_by_date")
             calendar = _calendar(dataset)
@@ -2094,6 +2120,16 @@ def _intraday_candidates(
     sessions = _minute_sessions(dataset)
     if set(calendar) - set(sessions):
         raise DenseStrategyRuntimeError("minute_bars omit frozen evaluation dates")
+    prepared_missed = dataset.get("_prepared_missed_data_dates")
+    missed_dates = (
+        prepared_missed
+        if isinstance(prepared_missed, set)
+        else _intraday_missed_data_dates(dataset)
+    )
+    if not missed_dates.issubset(sessions):
+        raise DenseStrategyRuntimeError(
+            "intraday missed-data dates escaped the retained sessions"
+        )
     opening_window = int(parameters["opening_window_minutes"])
     threshold = float(parameters["downside_z_threshold"])
     reclaim_bars = int(parameters["vwap_reclaim_completed_bars"])
@@ -2114,7 +2150,7 @@ def _intraday_candidates(
             history = histories.setdefault(symbol, [])
             z_score = _z_score(opening_return, history)
             history.append(opening_return)
-            if day not in evaluation_dates:
+            if day not in evaluation_dates or day in missed_dates:
                 continue
             if (
                 z_score is None
@@ -2135,7 +2171,7 @@ def _intraday_candidates(
                 ),
                 "above": 0,
             }
-        if day not in evaluation_dates or not qualified:
+        if day not in evaluation_dates or day in missed_dates or not qualified:
             continue
         selected: tuple[float, str, int, float] | None = None
         maximum_completed_index = min(
@@ -4282,6 +4318,8 @@ def _maturity_rows(
     candidates: Sequence[Mapping[str, Any]],
     scenarios: Mapping[int, Mapping[str, Any]],
     risk_fraction: float,
+    *,
+    missed_data_dates: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     candidate_by_id = {str(item["signal_id"]): item for item in candidates}
     trade_maps = {
@@ -4308,7 +4346,11 @@ def _maturity_rows(
     return [
         {
             "date": day,
-            "session_outcome": paths[5][day]["session_outcome"],
+            "session_outcome": (
+                "missed_data"
+                if day in (missed_data_dates or set())
+                else paths[5][day]["session_outcome"]
+            ),
             "eligible_signal": bool(paths[5][day]["new_entries"]),
             "primary_account_return_fraction": paths[5][day][
                 "daily_account_return_fraction"
@@ -4340,6 +4382,11 @@ def evaluate_trial(
 
     full_calendar = _calendar(dataset)
     candidates = build_candidates(dataset, family_id, parameters)
+    missed_data_dates = (
+        _intraday_missed_data_dates(dataset)
+        if family_id == INTRADAY_ETF_FAMILY
+        else set()
+    )
     if rolling_origin_plan is None:
         calendar = full_calendar
     else:
@@ -4371,11 +4418,17 @@ def evaluate_trial(
         {
             "date": item["date"],
             "outcome": (
-                "zero_return_day"
+                "missed_data_zero_return_day"
+                if item["date"] in missed_data_dates
+                else "zero_return_day"
                 if float(item["daily_account_return_fraction"]) == 0
                 else "account_return_day"
             ),
-            "session_outcome": item["session_outcome"],
+            "session_outcome": (
+                "missed_data"
+                if item["date"] in missed_data_dates
+                else item["session_outcome"]
+            ),
             "new_entries": item["new_entries"],
             "open_positions": item["open_positions"],
             "capital_blocked_signals": item["capital_blocked_signals"],
@@ -4384,6 +4437,17 @@ def evaluate_trial(
         }
         for item in stress["account_path"]
     ]
+    if any(
+        item["date"] in missed_data_dates
+        and (
+            float(item["daily_account_return_fraction"]) != 0
+            or item["new_entries"]
+        )
+        for item in stress["account_path"]
+    ):
+        raise DenseStrategyRuntimeError(
+            "intraday missed-data dates must remain explicit zero-return days"
+        )
     return {
         "trial_id": trial_id,
         "parameters": dict(parameters),
@@ -4408,7 +4472,11 @@ def evaluate_trial(
         },
         "trial_accounting": accounting,
         "maturity_rows": _maturity_rows(
-            calendar, candidates, scenarios, risk_fraction
+            calendar,
+            candidates,
+            scenarios,
+            risk_fraction,
+            missed_data_dates=missed_data_dates,
         ),
         "candidate_accounting": [dict(item) for item in candidates],
         "scenarios": {

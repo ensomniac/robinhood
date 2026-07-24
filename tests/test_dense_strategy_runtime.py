@@ -304,6 +304,81 @@ def test_intraday_selects_the_first_observable_reclaim_without_future_ranking():
     )
 
 
+def test_intraday_missing_fixed_universe_date_is_an_explicit_zero_return_day():
+    days = _days(62)
+    missed_day, valid_day = days[-2:]
+    minute_bars = {}
+    for index, day in enumerate(days):
+        opening_return = ((index % 7) - 3) * 0.0005
+        minute_bars[day] = {
+            "SPY": _minute_session(
+                day,
+                -0.05 if day == valid_day else opening_return,
+                stop_and_target=day == valid_day,
+            ),
+            "QQQ": _minute_session(
+                day,
+                -0.05 if day == missed_day else opening_return,
+                stop_and_target=day == missed_day,
+            ),
+        }
+    del minute_bars[missed_day]["SPY"]
+    dataset = runtime.prepare_dataset(
+        {
+            "family_id": runtime.INTRADAY_ETF_FAMILY,
+            "evaluation_dates": [missed_day, valid_day],
+            "symbols": ["SPY", "QQQ"],
+            "regular_session_minutes_by_date": {
+                day: 18 for day in days
+            },
+            "missed_data_dates": [missed_day],
+            "minute_bars": minute_bars,
+        }
+    )
+
+    result = runtime.evaluate_trial(
+        dataset,
+        family_id=runtime.INTRADAY_ETF_FAMILY,
+        trial_id="trial-missed-data",
+        parameters={
+            "opening_window_minutes": 15,
+            "downside_z_threshold": -1.5,
+            "vwap_reclaim_completed_bars": 1,
+            "stop_intraday_atr": 1.0,
+            "target_r": 1.0,
+        },
+        account_policy={
+            "starting_equity": 100_000.0,
+            "risk_fraction": 0.005,
+            "maximum_concurrent_positions": 3,
+            "maximum_aggregate_risk_fraction": 0.0125,
+            "maximum_gross_notional_fraction": 1.0,
+        },
+    )
+
+    missed = result["trial_accounting"][0]
+    assert missed["date"] == missed_day
+    assert missed["outcome"] == "missed_data_zero_return_day"
+    assert missed["session_outcome"] == "missed_data"
+    assert missed["new_entries"] == 0
+    assert result["maturity_rows"][0]["session_outcome"] == "missed_data"
+    assert all(
+        candidate["signal_date"] != missed_day
+        for candidate in result["candidate_accounting"]
+    )
+
+
+def test_intraday_partial_universe_requires_a_frozen_missed_data_date():
+    dataset = _intraday_dataset()
+    dataset["symbols"] = ["SPY", "QQQ"]
+
+    with pytest.raises(
+        runtime.DenseStrategyRuntimeError,
+        match="complete frozen universe",
+    ):
+        runtime.prepare_dataset(dataset)
+
+
 def _oversold_session(day: str) -> list[dict]:
     bars: list[dict] = []
     previous = 100.0
