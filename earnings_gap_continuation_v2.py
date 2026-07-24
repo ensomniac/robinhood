@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import date
@@ -48,6 +49,19 @@ V1_CAPACITY_INSPECTION = (
     "earnings-gap-event-capacity-inspection-"
     "d3ba91c913cc3a21d1faeb5fdb410935ea24deb5484b62fdf229282134df8e3f.json"
 )
+INITIAL_CONTRACT = (
+    DEFAULT_ROOT
+    / "event-contract/"
+    "earnings-gap-v2-event-contract-"
+    "cb5e1b3c066ecbbdb6bc6a1a05858d9c1c8a71bdb4d6962656aec6a3f40cb81b.json"
+)
+INITIAL_INSPECTION = (
+    DEFAULT_ROOT
+    / "event-contract-inspection/"
+    "earnings-gap-v2-event-contract-inspection-"
+    "1823074d6e47a17910210ad7f0b09cacf1665384e094293eeaa54b1b8374bdbc.json"
+)
+FAILURE_ROOT = DEFAULT_ROOT / "event-transport-failure"
 
 
 class EarningsGapContinuationV2Error(RuntimeError):
@@ -264,6 +278,257 @@ def inspect_event_contract(
     return path, value
 
 
+def _one_transport_failure() -> tuple[Path, dict[str, Any]]:
+    matches = sorted(FAILURE_ROOT.glob("*.json"))
+    if len(matches) != 1:
+        raise EarningsGapContinuationV2Error(
+            "expected one committed event transport failure"
+        )
+    path = matches[0]
+    strategy_discovery.require_committed(path)
+    value = _read(path)
+    if not (
+        value.get("failure_sha256")
+        == base._self_hash(value, "failure_sha256")
+        and value.get("state")
+        == "EVENT_METADATA_TRANSPORT_FAILED_NO_ARTIFACT"
+        and value.get("provider_requests") == 7
+        and value.get("market_prices_accessed") is False
+        and value.get("forward_returns_accessed") is False
+        and value.get("strategy_metrics_computed") == 0
+        and value.get("broker_actions") == 0
+    ):
+        raise EarningsGapContinuationV2Error(
+            "event transport failure artifact drifted"
+        )
+    return path, value
+
+
+def record_transport_failure(
+    *,
+    recorded_at: str,
+    root: Path = FAILURE_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    base._timestamp(recorded_at, "recorded_at")
+    for path in (INITIAL_CONTRACT, INITIAL_INSPECTION):
+        strategy_discovery.require_committed(path)
+    contract = _read(INITIAL_CONTRACT)
+    inspection = _read(INITIAL_INSPECTION)
+    private = (
+        HistoricalDayStore.from_env().root
+        / "_derived/earnings_gap_continuation"
+        / contract["contract_sha256"]
+        / "event-calendar.json.gz"
+    )
+    collection_root = DEFAULT_ROOT / "event-collection"
+    if (
+        private.exists()
+        or list(collection_root.glob("*.json"))
+        or inspection.get("state") != "EVENT_CONTRACT_INSPECTED_READY"
+    ):
+        raise EarningsGapContinuationV2Error(
+            "failed transport unexpectedly produced an event artifact"
+        )
+    value: dict[str, Any] = {
+        "schema_version": 1,
+        "artifact_kind": "earnings-gap-v2-event-transport-failure",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "successor_id": SUCCESSOR_ID,
+        "state": "EVENT_METADATA_TRANSPORT_FAILED_NO_ARTIFACT",
+        "recorded_at": recorded_at,
+        "contract_path": _repo_path(INITIAL_CONTRACT),
+        "contract_file_sha256": sha256_file(INITIAL_CONTRACT),
+        "contract_sha256": contract["contract_sha256"],
+        "inspection_path": _repo_path(INITIAL_INSPECTION),
+        "inspection_file_sha256": sha256_file(INITIAL_INSPECTION),
+        "inspection_sha256": inspection["inspection_sha256"],
+        "provider_requests": 7,
+        "responses_retained": 0,
+        "failure_boundary": (
+            "all seven read-only provider calls returned, but canonical PTY "
+            "line buffering rejected oversized response lines and the "
+            "collector exited without a private or public event artifact"
+        ),
+        "permitted_recovery": (
+            "one new contract may authorize the identical seven requests "
+            "using noncanonical no-echo chunked input terminated by an "
+            "explicit sentinel; event selection and every outcome boundary "
+            "must remain unchanged"
+        ),
+        "private_artifact_written": False,
+        "public_collection_artifact_written": False,
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "strategy_metrics_computed": 0,
+        "broker_actions": 0,
+    }
+    value["failure_sha256"] = base._self_hash(
+        value, "failure_sha256"
+    )
+    path = (
+        root
+        / f"earnings-gap-v2-event-transport-failure-"
+        f"{value['failure_sha256']}.json"
+    )
+    base._write_json(path, value)
+    return path, value
+
+
+def build_retry_contract(
+    *,
+    created_at: str,
+    enforce_commit: bool = True,
+) -> dict[str, Any]:
+    base._timestamp(created_at, "created_at")
+    failure_path, failure = _one_transport_failure()
+    if enforce_commit:
+        for path in (
+            Path(__file__).resolve(),
+            INITIAL_CONTRACT,
+            INITIAL_INSPECTION,
+        ):
+            strategy_discovery.require_committed(path)
+    initial = _read(INITIAL_CONTRACT)
+    value: dict[str, Any] = {
+        "schema_version": 1,
+        "artifact_kind": "earnings-gap-v2-event-retry-contract",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "successor_id": SUCCESSOR_ID,
+        "created_at": created_at,
+        "provider": initial["provider"],
+        "provider_method": initial["provider_method"],
+        "event_start": EVENT_START,
+        "event_end": EVENT_END,
+        "requests": _requests(),
+        "logical_provider_requests": 7,
+        "previous_failed_provider_requests": 7,
+        "maximum_total_provider_requests": 14,
+        "selection_fields": initial["selection_fields"],
+        "selection_rule": initial["selection_rule"],
+        "initial_contract_path": _repo_path(INITIAL_CONTRACT),
+        "initial_contract_file_sha256": sha256_file(INITIAL_CONTRACT),
+        "initial_contract_sha256": initial["contract_sha256"],
+        "initial_inspection_path": _repo_path(INITIAL_INSPECTION),
+        "initial_inspection_file_sha256": sha256_file(
+            INITIAL_INSPECTION
+        ),
+        "failure_path": _repo_path(failure_path),
+        "failure_file_sha256": sha256_file(failure_path),
+        "failure_sha256": failure["failure_sha256"],
+        "transport_protocol": {
+            "terminal_mode": "noncanonical_noecho",
+            "write_chunk_bytes": 16_384,
+            "record_delimiter": "newline",
+            "terminal_sentinel": "__END__",
+            "eof_required": False,
+        },
+        "outcome_exposure_index_sha256": outcome_exposure.audit()[
+            "index_sha256"
+        ],
+        "implementation_sha256": sha256_file(
+            Path(__file__).resolve()
+        ),
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "strategy_metrics_computed": 0,
+        "broker_actions": 0,
+    }
+    value["contract_sha256"] = base._self_hash(
+        value, "contract_sha256"
+    )
+    return value
+
+
+def freeze_retry_contract(
+    *,
+    created_at: str,
+    root: Path = DEFAULT_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    value = build_retry_contract(created_at=created_at)
+    path = (
+        root
+        / "event-retry-contract"
+        / f"earnings-gap-v2-event-retry-contract-"
+        f"{value['contract_sha256']}.json"
+    )
+    base._write_json(path, value)
+    return path, value
+
+
+def inspect_retry_contract(
+    contract_path: Path,
+    *,
+    inspected_at: str,
+    root: Path = DEFAULT_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    base._timestamp(inspected_at, "inspected_at")
+    strategy_discovery.require_committed(contract_path)
+    contract = _read(contract_path)
+    rebuilt = build_retry_contract(
+        created_at=str(contract["created_at"])
+    )
+    checks = {
+        "exact_rebuild": rebuilt == contract,
+        "same_requests": contract["requests"] == _requests(),
+        "one_retry_only": (
+            contract["maximum_total_provider_requests"] == 14
+        ),
+        "chunk_safe_transport": contract["transport_protocol"]
+        == {
+            "terminal_mode": "noncanonical_noecho",
+            "write_chunk_bytes": 16_384,
+            "record_delimiter": "newline",
+            "terminal_sentinel": "__END__",
+            "eof_required": False,
+        },
+        "no_prices": contract["market_prices_accessed"] is False,
+        "no_forward_returns": (
+            contract["forward_returns_accessed"] is False
+        ),
+        "no_strategy_metrics": contract["strategy_metrics_computed"] == 0,
+        "no_broker_actions": contract["broker_actions"] == 0,
+    }
+    if not all(checks.values()):
+        raise EarningsGapContinuationV2Error(
+            "event retry contract inspection failed"
+        )
+    value: dict[str, Any] = {
+        "schema_version": 1,
+        "artifact_kind": "earnings-gap-v2-event-retry-contract-inspection",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "successor_id": SUCCESSOR_ID,
+        "state": "EVENT_RETRY_CONTRACT_INSPECTED_READY",
+        "inspected_at": inspected_at,
+        "contract_path": _repo_path(contract_path),
+        "contract_file_sha256": sha256_file(contract_path),
+        "contract_sha256": contract["contract_sha256"],
+        "checks": checks,
+        "collection_authorized": True,
+        "provider_access_authorized": True,
+        "authorized_provider_requests": 7,
+        "maximum_total_provider_requests": 14,
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "strategy_metrics_computed": 0,
+        "broker_actions": 0,
+        "valid": True,
+    }
+    value["inspection_sha256"] = base._self_hash(
+        value, "inspection_sha256"
+    )
+    path = (
+        root
+        / "event-retry-contract-inspection"
+        / f"earnings-gap-v2-event-retry-contract-inspection-"
+        f"{value['inspection_sha256']}.json"
+    )
+    base._write_json(path, value)
+    return path, value
+
+
 @contextmanager
 def _base_event_scope():
     original = (
@@ -297,7 +562,11 @@ def ingest_event_responses(
         strategy_discovery.require_committed(path)
     inspection = _read(inspection_path)
     if not (
-        inspection.get("state") == "EVENT_CONTRACT_INSPECTED_READY"
+        inspection.get("state")
+        in {
+            "EVENT_CONTRACT_INSPECTED_READY",
+            "EVENT_RETRY_CONTRACT_INSPECTED_READY",
+        }
         and inspection.get("provider_access_authorized") is True
         and inspection.get("contract_path") == _repo_path(contract_path)
     ):
@@ -313,11 +582,33 @@ def ingest_event_responses(
             root=root,
             store=store,
         )
+    contract = _read(contract_path)
+    is_retry = (
+        contract.get("artifact_kind")
+        == "earnings-gap-v2-event-retry-contract"
+    )
+    if is_retry:
+        source = store or HistoricalDayStore.from_env()
+        private = (
+            source.root
+            / "_derived/earnings_gap_continuation"
+            / contract["contract_sha256"]
+            / "event-calendar.json.gz"
+        )
+        payload = base._load_gzip(private)
+        payload["provider_requests"] = 14
+        payload["effective_provider_requests"] = 7
+        payload["discarded_provider_requests"] = 7
+        base._write_gzip(private, payload)
+        value["private_payload_file_sha256"] = sha256_file(private)
+        value["private_payload_content_sha256"] = canonical_sha256(
+            payload
+        )
     value["artifact_kind"] = "earnings-gap-v2-event-collection"
     value["successor_id"] = SUCCESSOR_ID
-    value["provider_requests"] = 7
+    value["provider_requests"] = 14 if is_retry else 7
     value["effective_provider_requests"] = 7
-    value["discarded_provider_requests"] = 0
+    value["discarded_provider_requests"] = 7 if is_retry else 0
     value["collection_sha256"] = base._self_hash(
         value, "collection_sha256"
     )
@@ -434,6 +725,13 @@ def _parser() -> argparse.ArgumentParser:
     inspect = commands.add_parser("inspect-event-contract")
     inspect.add_argument("contract", type=Path)
     inspect.add_argument("--inspected-at", required=True)
+    failure = commands.add_parser("record-transport-failure")
+    failure.add_argument("--recorded-at", required=True)
+    retry = commands.add_parser("freeze-retry-contract")
+    retry.add_argument("--created-at", required=True)
+    inspect_retry = commands.add_parser("inspect-retry-contract")
+    inspect_retry.add_argument("contract", type=Path)
+    inspect_retry.add_argument("--inspected-at", required=True)
     ingest = commands.add_parser("ingest-event-responses")
     ingest.add_argument("contract", type=Path)
     ingest.add_argument("inspection", type=Path)
@@ -456,8 +754,25 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.contract,
                 inspected_at=args.inspected_at,
             )
+        elif args.command == "record-transport-failure":
+            path, value = record_transport_failure(
+                recorded_at=args.recorded_at
+            )
+        elif args.command == "freeze-retry-contract":
+            path, value = freeze_retry_contract(
+                created_at=args.created_at
+            )
+        elif args.command == "inspect-retry-contract":
+            path, value = inspect_retry_contract(
+                args.contract,
+                inspected_at=args.inspected_at,
+            )
         elif args.command == "ingest-event-responses":
-            lines = list(__import__("sys").stdin)
+            lines: list[str] = []
+            for line in sys.stdin:
+                lines.append(line)
+                if line.strip() == "__END__":
+                    break
             path, value = ingest_event_responses(
                 args.contract,
                 args.inspection,

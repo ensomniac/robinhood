@@ -33,3 +33,24 @@ def test_base_event_scope_restores_normalizer_boundary() -> None:
         continuation.base.EVENT_END,
         continuation.base.PRIOR_DISCARDED_PROVIDER_REQUESTS,
     ) == before
+
+
+def test_transport_failure_records_no_artifact_boundary(tmp_path) -> None:
+    path, failure = continuation.record_transport_failure(
+        recorded_at="2026-07-24T19:50:00Z",
+        root=tmp_path,
+    )
+
+    assert path.exists()
+    assert (
+        failure["state"]
+        == "EVENT_METADATA_TRANSPORT_FAILED_NO_ARTIFACT"
+    )
+    assert failure["provider_requests"] == 7
+    assert failure["responses_retained"] == 0
+    assert failure["private_artifact_written"] is False
+    assert failure["public_collection_artifact_written"] is False
+    assert failure["market_prices_accessed"] is False
+    assert failure["forward_returns_accessed"] is False
+    assert failure["strategy_metrics_computed"] == 0
+    assert failure["broker_actions"] == 0
