@@ -464,6 +464,9 @@ observations. Commit both before generic preflight.
 Preflight `02d3e16a...7c2e158` independently rebuilt the family, implementation,
 capacity, point-in-time, and zero-outcome boundaries and earned
 `CAPACITY_READY` with no provider request. Commit it before search freeze.
+Search `b0c98cbd...c60a455` now binds every one of the 32 unchanged trials,
+neighbor graph, rolling folds, account simulator, costs, selection rule, and
+implementation hash. Commit it before development collection freeze.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
