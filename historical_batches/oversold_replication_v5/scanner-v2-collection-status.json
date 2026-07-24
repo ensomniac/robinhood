@@ -1,0 +1,21 @@
+{
+  "broker_actions": 0,
+  "dataset_id": "dataset-production-scanner-replay-2026-07-24-oversold-replication-completed-reserve-v2",
+  "delta_symbols_requested": 418,
+  "derived_rows": 3058222,
+  "inherited_derived_rows": 402280,
+  "manifest_path": "historical_batches/oversold_replication_v5/scanner-v2-manifests/dataset-production-scanner-replay-2026-07-24-oversold-replication-completed-reserve-v2-d23f451dc399506ed3b2933cd2c0fd96d30798164e875ef5f7b8a77954fc441c.json",
+  "manifest_sha256": "d23f451dc399506ed3b2933cd2c0fd96d30798164e875ef5f7b8a77954fc441c",
+  "provider_requests": 12880,
+  "provider_retries": 0,
+  "reused_sessions": 19,
+  "schema_version": 1,
+  "session_files": {
+    "invalid": [],
+    "ready": 155,
+    "required": 155
+  },
+  "state": "SCANNER_INPUTS_COLLECTED",
+  "substitutions": 0,
+  "target_outcomes_observed_or_derived": false
+}
