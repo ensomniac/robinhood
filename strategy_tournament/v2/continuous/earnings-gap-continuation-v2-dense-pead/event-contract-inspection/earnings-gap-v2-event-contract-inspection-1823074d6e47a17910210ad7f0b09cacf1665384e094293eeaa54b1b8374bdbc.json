@@ -1,0 +1,30 @@
+{
+  "artifact_kind": "earnings-gap-v2-event-contract-inspection",
+  "authorized_provider_requests": 7,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "completed_boundary": true,
+    "exact_rebuild": true,
+    "no_broker_actions": true,
+    "no_forward_returns": true,
+    "no_prices": true,
+    "no_strategy_metrics": true,
+    "seven_exact_windows": true
+  },
+  "collection_authorized": true,
+  "contract_file_sha256": "34e0e8b8dc6d3fba9799c7aaa8166b920a28401d8caa6f3f2fba44e6ad9124e7",
+  "contract_path": "strategy_tournament/v2/continuous/earnings-gap-continuation-v2-dense-pead/event-contract/earnings-gap-v2-event-contract-cb5e1b3c066ecbbdb6bc6a1a05858d9c1c8a71bdb4d6962656aec6a3f40cb81b.json",
+  "contract_sha256": "cb5e1b3c066ecbbdb6bc6a1a05858d9c1c8a71bdb4d6962656aec6a3f40cb81b",
+  "family_id": "earnings-gap-continuation",
+  "forward_returns_accessed": false,
+  "inspected_at": "2026-07-24T19:42:44Z",
+  "inspection_sha256": "1823074d6e47a17910210ad7f0b09cacf1665384e094293eeaa54b1b8374bdbc",
+  "market_prices_accessed": false,
+  "provider_access_authorized": true,
+  "schema_version": 1,
+  "state": "EVENT_CONTRACT_INSPECTED_READY",
+  "strategy_metrics_computed": 0,
+  "successor_id": "earnings-gap-continuation-v2-dense-pead",
+  "valid": true
+}
