@@ -614,6 +614,19 @@ development pairs. The exact version is terminal for provider-history
 incapacity, while its 315-session confirmation reserve remains untouched.
 Continue only with a prospectively frozen post-2016 partition whose target
 pairs are absent from the updated index.
+The immediate successor does not wait for an ISO-week or literal future date.
+It preserves the same opening-reversal mechanism and unchanged 32-trial grid
+under family ID `liquid-index-etf-opening-reversal-post2016`. Its 1,000
+development sessions from 2016-12-21 through 2020-12-23 are already fully
+represented in the global outcome index and therefore are explicitly
+`CONTAMINATED_TRAINING_ONLY`; they may select a winner but can never satisfy
+confirmation maturity. Five full sessions from 2020-12-28 through 2021-01-04
+form the immutable embargo. The 310-session target block from 2021-01-05
+through 2022-03-29 remains globally untouched and is the only confirmation
+reserve. `liquid_index_etf_opening_reversal.py` fails closed unless all 4,000
+development instrument-sessions are already labeled as exposed and all 1,240
+confirmation instrument-sessions remain untouched. This existing-mechanism
+replication consumes no new mechanism-family slot.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without

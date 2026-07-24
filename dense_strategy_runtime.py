@@ -27,10 +27,14 @@ COUNTRY_ETF_OPENING_REVERSAL_FAMILY = "country-etf-opening-reversal"
 LIQUID_INDEX_ETF_OPENING_REVERSAL_FAMILY = (
     "liquid-index-etf-opening-reversal-long-history"
 )
+LIQUID_INDEX_ETF_OPENING_REVERSAL_POST2016_FAMILY = (
+    "liquid-index-etf-opening-reversal-post2016"
+)
 INTRADAY_ETF_FAMILIES = {
     INTRADAY_ETF_FAMILY,
     COUNTRY_ETF_OPENING_REVERSAL_FAMILY,
     LIQUID_INDEX_ETF_OPENING_REVERSAL_FAMILY,
+    LIQUID_INDEX_ETF_OPENING_REVERSAL_POST2016_FAMILY,
 }
 ETF_PULLBACK_FAMILY = "liquid-etf-trend-pullback-cost-floor"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
