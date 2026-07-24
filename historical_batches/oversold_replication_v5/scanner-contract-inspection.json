@@ -1,0 +1,34 @@
+{
+  "artifact_kind": "oversold_replication_scanner_contract_inspection",
+  "broker_actions": 0,
+  "checks": {
+    "calendar_bound": true,
+    "dataset_bound": true,
+    "no_substitutions": true,
+    "selection_bound": true,
+    "selection_file_bound": true,
+    "selection_inspected": true,
+    "zero_provider_requests": true,
+    "zero_retries": true,
+    "zero_state": true
+  },
+  "controller_binding_checks": {
+    "base_controller_bound": true,
+    "controller_bound": true,
+    "exact_rebuild": true,
+    "identity_recovery_bound": true,
+    "no_broker_actions": true,
+    "no_outcomes": true,
+    "scanner_manifest_bound": true
+  },
+  "inspection_sha256": "00b311d2915a89a98f681811fae311413fbb8f6f74cd736015cf93dc59fbbe60",
+  "manifest_file_sha256": "8ac59570e6416908d5583e00a9d01fef5a69f83398834b914acab5c37e6348f3",
+  "manifest_path": "historical_batches/oversold_replication_v5/scanner-manifests/dataset-production-scanner-replay-2026-07-24-oversold-replication-completed-reserve-v1-4a70faab50f7a1c6efa9df4bb89171ab4678de9d991df0d77e8c10dea16b60c4.json",
+  "manifest_sha256": "4a70faab50f7a1c6efa9df4bb89171ab4678de9d991df0d77e8c10dea16b60c4",
+  "provider_requests": 0,
+  "requested_dates": 40,
+  "required_sessions": 155,
+  "schema_version": 1,
+  "state": "SCANNER_CONTRACT_INSPECTED_PROVIDER_READY",
+  "target_outcomes_observed_or_derived": false
+}
