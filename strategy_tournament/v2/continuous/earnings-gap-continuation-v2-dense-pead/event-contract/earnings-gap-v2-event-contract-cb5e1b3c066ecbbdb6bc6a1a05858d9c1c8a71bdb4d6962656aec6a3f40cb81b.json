@@ -1,0 +1,73 @@
+{
+  "artifact_kind": "earnings-gap-v2-event-collection-contract",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "contract_sha256": "cb5e1b3c066ecbbdb6bc6a1a05858d9c1c8a71bdb4d6962656aec6a3f40cb81b",
+  "created_at": "2026-07-24T19:42:07Z",
+  "event_end": "2026-07-23",
+  "event_start": "2026-01-01",
+  "family_id": "earnings-gap-continuation",
+  "forward_returns_accessed": false,
+  "implementation_sha256": "2e97ddd6b225736b6c0f477abc1404c54a18449d1b60d7c048b935dfa476afd5",
+  "logical_provider_requests": 7,
+  "market_prices_accessed": false,
+  "material_difference_rationale": "V1 was never evaluated and failed only its narrow gap-universe confirmation capacity check. V2 collects later completed event metadata so candidate liquidity and reaction rules can be preregistered on a dense event denominator before any target price or forward-return access.",
+  "outcome_exposure_index_sha256": "6087f38b79f7575c79b30b92d7272c360d5de543791d8660bbd7956553fa9745",
+  "provider": "Robinhood read-only market-wide earnings calendar",
+  "provider_method": "get_earnings_calendar",
+  "requests": [
+    {
+      "days": 31,
+      "filter": null,
+      "start_date": "2026-01-01"
+    },
+    {
+      "days": 28,
+      "filter": null,
+      "start_date": "2026-02-01"
+    },
+    {
+      "days": 31,
+      "filter": null,
+      "start_date": "2026-03-01"
+    },
+    {
+      "days": 30,
+      "filter": null,
+      "start_date": "2026-04-01"
+    },
+    {
+      "days": 31,
+      "filter": null,
+      "start_date": "2026-05-01"
+    },
+    {
+      "days": 30,
+      "filter": null,
+      "start_date": "2026-06-01"
+    },
+    {
+      "days": 23,
+      "filter": null,
+      "start_date": "2026-07-01"
+    }
+  ],
+  "schema_version": 1,
+  "selection_fields": [
+    "symbol",
+    "report_date",
+    "timing",
+    "verified",
+    "actual_eps",
+    "estimated_eps"
+  ],
+  "selection_rule": "Retain unambiguous company-verified reports with numeric actual EPS strictly above estimated EPS. No price, gap, return, or strategy field may influence event inclusion.",
+  "strategy_metrics_computed": 0,
+  "successor_id": "earnings-gap-continuation-v2-dense-pead",
+  "v1_capacity_inspection_file_sha256": "5ce958cf5d0f900b320d97809a84e136c2db183ffb127d2bf5ee891b7d68cde8",
+  "v1_capacity_inspection_path": "strategy_tournament/v2/continuous/earnings-gap-continuation-v1-development-search/event-capacity-inspection/earnings-gap-event-capacity-inspection-d3ba91c913cc3a21d1faeb5fdb410935ea24deb5484b62fdf229282134df8e3f.json",
+  "v1_capacity_inspection_sha256": "d3ba91c913cc3a21d1faeb5fdb410935ea24deb5484b62fdf229282134df8e3f",
+  "v1_collection_file_sha256": "5d84977e4e03371444862b61a6f02ea616ce41c9c1f4a08aa7b81d0dd18c3e9c",
+  "v1_collection_path": "strategy_tournament/v2/continuous/earnings-gap-continuation-v1-development-search/event-collection/earnings-gap-event-collection-5c51a8f58f326bc1fe3c745a8dfc421ff9de51150ed6b933c0bab9b67b9cfbf6.json",
+  "v1_collection_sha256": "5c51a8f58f326bc1fe3c745a8dfc421ff9de51150ed6b933c0bab9b67b9cfbf6"
+}
