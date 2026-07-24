@@ -158,6 +158,27 @@ earlier target dates only as point-in-time feature input and can never count as
 target evidence. Then freeze all three exact contracts and collect development
 inputs. There is no calendar wait.
 
+The rolling-batch ETF pullback family is now terminal after independent
+development inspection `f460af56...af7174` rebuilt all 32 exact trials on its
+120-session target block. Eleven trials retained positive 20-bps log growth,
+three reached stressed profit factor 1.20, 29 stayed within 6R drawdown, and
+five passed neighbor stability, but none passed Deflated Sharpe 0.90, Holm
+rejection, or positive growth in every rolling fold. Maximum DSR was 0.4716 and
+family PBO was 0.60. No winner may enter its untouched 35-session confirmation
+reserve.
+
+The next bounded rolling-batch action is the already-collected intraday ETF
+family. Its 1,440 frozen Alpaca SIP tasks accessed development prices but no
+strategy metric; failure `5c7b4b96...c1e5d9` and inspection
+`e2dd44f7...e5628` identify 60 incomplete DIA symbol-sessions, 28 of them in
+the 120-session target block. The development scope is globally exposed.
+Because Alpaca emits no minute bar when no qualifying trade occurs, recovery
+may only mark the entire fixed-universe decision date missed whenever any of
+the eight ETFs lacks a complete minute sequence. It must interpolate zero
+minutes, substitute zero dates or symbols, preserve explicit zero-return
+account days, and freeze that policy plus implementation hashes before using
+the retained checkpoints.
+
 `python3 dense_batch_readiness.py status` is the fail-closed handoff authority
 for that work. It must resolve one current
 committed calendar contract and inspection, committed clean implementations,
