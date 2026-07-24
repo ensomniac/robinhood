@@ -298,7 +298,11 @@ independently inspect that exact outcome-blind failure before retiring this
 provider-bound version. Failure `cf63e21d...ff503` records the exact Massive
 symbol-task boundary, three fully accounted provider calls, zero price rows,
 zero target exposure, zero strategy metrics, and zero broker actions. Commit it
-before independent reconstruction.
+before independent reconstruction. Independent inspection
+`c0f06e96...d0a0d9` rehashed the plan, private checkpoint, task topology, and
+telemetry and confirmed the outcome-blind failure. The exact provider-bound
+pre-2016 version is terminal; it may not substitute provider, endpoint, dates,
+or symbols. Advance another data-ready historical lane immediately.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
