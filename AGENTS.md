@@ -254,7 +254,14 @@ unchanged complete family and serialization fix. Evaluate and independently
 inspect all 32 trials next. Development result `da3c6b37...bdc5d02` completed
 all trials in 10.77 seconds with one dataset load, one cache hit, and zero
 provider requests or failures. Commit it before independent inspection;
-confirmation remains unopened.
+confirmation remains unopened. Independent inspection
+`e8ed1d2b...ef8a7fd` rejected V3. Sixteen of 32 trials retained positive
+20-bps growth, stressed profit factor, drawdown, positive rolling growth, and
+neighbor stability, but none passed Deflated Sharpe, Holm, or PBO. The best
+path produced 0.01047 log growth from only five OOF fills and DSR 0.1548. The
+exact family is terminal and cannot enter its untouched 38-session confirmation
+reserve. Advance another outcome-clean existing-family lane immediately; do
+not tune this corpus.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
