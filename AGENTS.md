@@ -178,7 +178,11 @@ structurally unobservable 60-session warm-up dates as liquidity failures. Those
 dates remain explicit zero-return days. The separately hash-bound readiness
 inspector measures the same frozen top-250 rule only after its lookback exists;
 it changes no strategy parameter, date, price, or outcome and must itself be
-committed before its result can authorize evaluation.
+committed before its result can authorize evaluation. Inspection
+`786473d9...682a1d` passed with 168 fully observable decision dates and at
+least 776 qualified names on every such date; manifest
+`d546e620...c80545` binds the ignored 1,795,815-row dataset. Confirmation
+remains unopened.
 Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
 freeze: its first independent inspection stopped on a missing local artifact-
 hash helper, before any provider or market-price access. It cannot authorize
