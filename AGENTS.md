@@ -456,6 +456,11 @@ changing the one-session decline, RSI(2), trend, ATR stop, next-open, ranking,
 or exit semantics. Synthetic parity tests require the historical and production
 paths to select the same top-ranked signal. Commit the implementation before
 contract freeze.
+Contract `fc69e5f7...01cde80` and capacity `c4c4eadd...a2a9ac1a` now freeze the
+unchanged 32-trial grid, nine-symbol broad-asset universe, 1,000-session
+development, five-session embargo, and untouched 500-session confirmation
+reserve. They record zero price or outcome access and 9,000 formal development
+observations. Commit both before generic preflight.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
