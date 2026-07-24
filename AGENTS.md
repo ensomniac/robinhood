@@ -295,7 +295,10 @@ and zero substitutions. Provider access completed the frozen split-action
 checkpoint, then the first per-symbol daily request returned permanent HTTP 403
 before any market-price row or strategy metric was retained. Record and
 independently inspect that exact outcome-blind failure before retiring this
-provider-bound version.
+provider-bound version. Failure `cf63e21d...ff503` records the exact Massive
+symbol-task boundary, three fully accounted provider calls, zero price rows,
+zero target exposure, zero strategy metrics, and zero broker actions. Commit it
+before independent reconstruction.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
