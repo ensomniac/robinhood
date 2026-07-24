@@ -208,8 +208,12 @@ content-addressed storage, no interpolation or substitution, and exposure of
 the full development scope before the first provider request. Independently
 rebuild `91d752a0...82bbb` has earned
 `DEVELOPMENT_COLLECTION_CONTRACT_INSPECTED_READY`. Collect only that
-development scope next. The confirmation partition and broker actions remain
-forbidden.
+development scope next. Status `c3ba2460...20f6c` now records all 1,474
+symbol-sessions and 570,317 raw SIP minute rows collected with 93 requests,
+zero retries, zero unresolved inputs, and zero confirmation access. The full
+development scope is conservatively recorded in the global outcome index.
+Independently inspect the stored rows before any strategy evaluation. The
+confirmation partition and broker actions remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
