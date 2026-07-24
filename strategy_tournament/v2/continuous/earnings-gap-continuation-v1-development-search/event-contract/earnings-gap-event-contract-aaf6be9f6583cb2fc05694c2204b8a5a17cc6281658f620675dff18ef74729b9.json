@@ -1,0 +1,100 @@
+{
+  "artifact_kind": "earnings-gap-event-collection-contract",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_dates_sha256": "6bf81c54070b96cf94728ca5ed9b04db22d7a405f687486cf05726ed9a334f24",
+  "confirmation_locked": true,
+  "contract_sha256": "aaf6be9f6583cb2fc05694c2204b8a5a17cc6281658f620675dff18ef74729b9",
+  "created_at": "2026-07-24T05:19:00Z",
+  "development_dates_sha256": "fd803bb565b8bae8612d5f13183984da60c636b59a6aad05d54fa4c554877d94",
+  "development_training_contaminated": true,
+  "event_end": "2025-12-31",
+  "event_start": "2025-01-01",
+  "family_id": "earnings-gap-continuation",
+  "forward_returns_accessed": false,
+  "implementation_sha256": "2c1b91aea117bbe736f8a2847d2d71a9eba10b1e53f10d00139febb22239a6d2",
+  "logical_provider_requests": 12,
+  "market_prices_accessed": false,
+  "provider": "Robinhood read-only market-wide earnings calendar",
+  "provider_method": "get_earnings_calendar",
+  "requests": [
+    {
+      "days": 31,
+      "filter": null,
+      "start_date": "2025-01-01"
+    },
+    {
+      "days": 28,
+      "filter": null,
+      "start_date": "2025-02-01"
+    },
+    {
+      "days": 31,
+      "filter": null,
+      "start_date": "2025-03-01"
+    },
+    {
+      "days": 30,
+      "filter": null,
+      "start_date": "2025-04-01"
+    },
+    {
+      "days": 31,
+      "filter": null,
+      "start_date": "2025-05-01"
+    },
+    {
+      "days": 30,
+      "filter": null,
+      "start_date": "2025-06-01"
+    },
+    {
+      "days": 31,
+      "filter": null,
+      "start_date": "2025-07-01"
+    },
+    {
+      "days": 31,
+      "filter": null,
+      "start_date": "2025-08-01"
+    },
+    {
+      "days": 30,
+      "filter": null,
+      "start_date": "2025-09-01"
+    },
+    {
+      "days": 31,
+      "filter": null,
+      "start_date": "2025-10-01"
+    },
+    {
+      "days": 30,
+      "filter": null,
+      "start_date": "2025-11-01"
+    },
+    {
+      "days": 31,
+      "filter": null,
+      "start_date": "2025-12-01"
+    }
+  ],
+  "schema_version": 1,
+  "selection_fields": [
+    "symbol",
+    "report_date",
+    "timing",
+    "verified",
+    "actual_eps",
+    "estimated_eps"
+  ],
+  "selection_rule": "Retain company-verified reports with numeric actual EPS strictly above numeric estimated EPS; before-market reports map to the same session and after-market reports map to the next frozen session.",
+  "source_bindings": {
+    "private_selection_content_sha256": "caff7defa49976e5534cc3dda8a5784834e059fc5926922ea9d44464b050b17c",
+    "source_freeze_inspection_sha256": "1aa8fad408438bf19824ae1c01ede6ea35c446238d75113666e337e0fdecec67",
+    "source_manifest_sha256": "0145f77948ff8d7398c69ec7ae2229b72cfb7a07bab055c3dcfb15762d5cea43",
+    "strategy_validation/equity_gap_continuation/inspections/equity-gap-continuation-v1-freeze-1aa8fad408438bf19824ae1c01ede6ea35c446238d75113666e337e0fdecec67.json": "b684540c73a82778e147c392885c9ce76d20fac036f0f8f58da61a1b2b3023de",
+    "strategy_validation/equity_gap_continuation/manifests/equity-gap-continuation-v1-0145f77948ff8d7398c69ec7ae2229b72cfb7a07bab055c3dcfb15762d5cea43.json": "f44d4bea43214620918c9696056ffa1d67051d64901fc5deabbe19fb985c381e"
+  },
+  "successor_id": "earnings-gap-continuation-v1-development-search"
+}
