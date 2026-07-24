@@ -627,6 +627,11 @@ reserve. `liquid_index_etf_opening_reversal.py` fails closed unless all 4,000
 development instrument-sessions are already labeled as exposed and all 1,240
 confirmation instrument-sessions remain untouched. This existing-mechanism
 replication consumes no new mechanism-family slot.
+Contract `f78116ad...ed2768e` and capacity `e99bcc4d...7b060e8` now freeze
+that exact boundary, all unchanged 32 trials, the four fixed ETFs, Alpaca SIP
+raw range topology, the miss-entire-date rule, zero substitutions, and 4,000
+formal development instrument-sessions. Commit both before generic preflight;
+confirmation access remains forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
