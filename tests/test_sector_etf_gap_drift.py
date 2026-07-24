@@ -67,6 +67,16 @@ def test_gap_drift_contract_freezes_complete_selection_family(
 
     monkeypatch.setattr(gap_drift, "DEFAULT_ROOT", tmp_path)
     monkeypatch.setattr(gap_drift, "_repo_path", repo_path)
+    monkeypatch.setattr(
+        gap_drift.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: [],
+    )
+    monkeypatch.setattr(
+        gap_drift.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
 
     _path, contract, capacity_path = gap_drift.freeze_contract(
         created_at=datetime.now().astimezone().isoformat(),
