@@ -167,17 +167,23 @@ rejection, or positive growth in every rolling fold. Maximum DSR was 0.4716 and
 family PBO was 0.60. No winner may enter its untouched 35-session confirmation
 reserve.
 
-The next bounded rolling-batch action is the already-collected intraday ETF
-family. Its 1,440 frozen Alpaca SIP tasks accessed development prices but no
-strategy metric; failure `5c7b4b96...c1e5d9` and inspection
-`e2dd44f7...e5628` identify 60 incomplete DIA symbol-sessions, 28 of them in
-the 120-session target block. The development scope is globally exposed.
-Because Alpaca emits no minute bar when no qualifying trade occurs, recovery
-may only mark the entire fixed-universe decision date missed whenever any of
-the eight ETFs lacks a complete minute sequence. It must interpolate zero
-minutes, substitute zero dates or symbols, preserve explicit zero-return
-account days, and freeze that policy plus implementation hashes before using
-the retained checkpoints.
+The rolling-batch intraday ETF family is also terminal after independent
+development inspection `d66c2a87...d8ec21` rebuilt all 32 exact trials from
+1,440 retained Alpaca SIP tasks. Recovery made zero provider requests,
+interpolated zero minutes, substituted zero dates or symbols, and carried the
+28 affected development dates as explicit missed-data zero-return days. None
+of the 32 trials retained positive 20-bps growth, stressed profit factor,
+Deflated Sharpe, Holm rejection, positive growth in every rolling fold, or
+neighbor stability. Maximum DSR was 0.2706, maximum fills were 11, and the
+least-adverse path lost 0.01377 log-return. No winner may enter its untouched
+35-session confirmation reserve.
+
+The rolling queue therefore releases the intraday slot immediately. Continue
+with the third predeclared residual-equity batch family or an already-authorized
+existing-family successor using contaminated development evidence; neither
+path waits for a future calendar date. Any residual recovery must first solve
+the outcome-blind grouped-daily provider failure without substituting dates,
+symbols, universe identity, or the frozen 48-trial grid.
 
 `python3 dense_batch_readiness.py status` is the fail-closed handoff authority
 for that work. It must resolve one current
