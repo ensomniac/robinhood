@@ -1,0 +1,20 @@
+{
+  "artifact_kind": "gap_protection_preentry_build_failure",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_allocation_completed": false,
+  "confirmation_outcomes_permitted": false,
+  "contract_path": "strategy_tournament/v2/gap_protection_successor/dataset-equity-gap-protection-continuation-2026-07-24-v1/preentry-contract/gap-protection-preentry-contract-9cec2eaff4612347730f91c853901e762318a2e0146578ac9f0b95eb760662f5.json",
+  "contract_sha256": "9cec2eaff4612347730f91c853901e762318a2e0146578ac9f0b95eb760662f5",
+  "dataset_id": "dataset-equity-gap-protection-continuation-2026-07-24-v1",
+  "failure_boundary": "all 474 causal source sessions parsed and the 399-date preentry detail written; scanner summary serialization rejected an external ignored detail path before candidate allocation or any strategy evaluation",
+  "failure_category": "PUBLIC_PATH_SERIALIZATION",
+  "failure_sha256": "3e61512f6353248ac3d65995dfbab171a50305d76bf4b84df908ef9313a4504a",
+  "family_id": "equity-gap-protection-continuation-search",
+  "parsed_source_sessions": 474,
+  "preentry_detail_file_sha256": "f3d2352e5eeab6385ca3ab8bf9c0cf30266cbff0131ea18cabe11bc308fca1f8",
+  "provider_requests": 0,
+  "schema_version": 1,
+  "state": "PREENTRY_BUILD_FAILED_STORAGE_BOUNDARY",
+  "strategy_outcomes_observed_or_derived": false
+}

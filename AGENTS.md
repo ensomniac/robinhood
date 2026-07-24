@@ -186,9 +186,15 @@ but none of those outcomes can promote the successor. Preentry contract
 `9cec2eaf...662f5` freezes a fresh 399-session point-in-time scanner replay, the
 complete 32-trial grid, chronological 60% development allocation, five-session
 embargo, untouched remainder, global outcome filter, and 3%/4% structural-stop
-cap before the causal scanner adapter reopens its compact source. The adapter
-may carry only 09:30-09:34 target-session fields across its information wall;
-its deterministic end-of-day residual is restricted to completed prior-session
+cap before the causal scanner adapter reopens its compact source. Its first
+build parsed all 474 causal input sessions, then failed before allocation or
+strategy evaluation because the shared scanner rejected an ignored detail path
+outside the repository. Failure `3e61512f...504a` preserves that boundary with
+zero provider requests. Refreshed contract `b2c223bc...ad6d1` changes only the
+ignored storage location to the repository-standard `learning_runs` tree; no
+date, symbol, rule, partition, or search parameter changed. The adapter may
+carry only 09:30-09:34 target-session fields across its information wall; its
+deterministic end-of-day residual is restricted to completed prior-session
 lookbacks. Build and independently inspect that inventory next. Confirmation
 outcomes and broker actions remain forbidden.
 

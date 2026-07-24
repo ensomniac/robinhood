@@ -36,7 +36,7 @@ from scanner_replay import (
 PROJECT_ROOT = Path(__file__).resolve().parent
 CAMPAIGN_ID = "multi-strategy-portfolio-validation-v2"
 FAMILY_ID = "equity-gap-protection-continuation-search"
-DATASET_ID = "dataset-equity-gap-protection-continuation-2026-07-24-v1"
+DATASET_ID = "dataset-equity-gap-protection-continuation-2026-07-24-v2"
 SCHEMA_VERSION = 1
 DEVELOPMENT_FRACTION = 0.60
 EMBARGO_SESSIONS = 5
@@ -63,6 +63,14 @@ OUTPUT_ROOT = (
 CONTRACT_ROOT = OUTPUT_ROOT / "preentry-contract"
 SUMMARY_ROOT = OUTPUT_ROOT / "preentry-summary"
 INSPECTION_ROOT = OUTPUT_ROOT / "preentry-inspection"
+RECOVERY_FAILURE = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/gap_protection_successor/"
+    "dataset-equity-gap-protection-continuation-2026-07-24-v1/"
+    "preentry-failure/"
+    "gap-protection-preentry-failure-"
+    "3e61512f6353248ac3d65995dfbab171a50305d76bf4b84df908ef9313a4504a.json"
+)
 
 PARAMETER_GRID = {
     "breakout_volume_multiple": [1.5, 2.5],
@@ -175,12 +183,16 @@ def _private_root(store: HistoricalDayStore) -> Path:
     return store.root / "_derived" / "gap_protection_successor" / DATASET_ID
 
 
-def _detail_path(store: HistoricalDayStore) -> Path:
-    return _private_root(store) / "scanner-replay-detail.json"
+def _run_root() -> Path:
+    return PROJECT_ROOT / "learning_runs" / "gap_protection_successor" / DATASET_ID
 
 
-def _private_summary_path(store: HistoricalDayStore) -> Path:
-    return _private_root(store) / "scanner-replay-summary.json"
+def _detail_path(_store: HistoricalDayStore) -> Path:
+    return _run_root() / "scanner-replay-detail.json"
+
+
+def _private_summary_path(_store: HistoricalDayStore) -> Path:
+    return _run_root() / "scanner-replay-summary.json"
 
 
 def _inventory_path(store: HistoricalDayStore) -> Path:
@@ -286,6 +298,16 @@ def build_contract(
         "family_id": FAMILY_ID,
         "dataset_id": DATASET_ID,
         "state": "OUTCOME_BLIND_PREENTRY_FROZEN",
+        "storage_recovery_binding": {
+            "failure_path": _repo_path(RECOVERY_FAILURE),
+            "failure_sha256": sha256_file(RECOVERY_FAILURE),
+            "changed_semantics": False,
+            "changed_dates_symbols_or_grid": False,
+            "recovery_scope": (
+                "write the ignored scanner detail below learning_runs so the "
+                "shared scanner can serialize a repository-relative private path"
+            ),
+        },
         "source_binding": {
             "manifest_path": _repo_path(SOURCE_MANIFEST),
             "manifest_sha256": sha256_file(SOURCE_MANIFEST),
