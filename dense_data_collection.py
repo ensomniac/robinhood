@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import hashlib
+import importlib
 import io
 import json
 import os
@@ -247,11 +248,27 @@ def _existing_successor_authorized(
         continuous_strategy_discovery.RESEARCH_GENERATION
     ):
         return False
+    validator = contract.get("existing_successor_validator")
     try:
-        continuous_strategy_discovery.validate_existing_successor_contract(
-            contract, enforce_commit=enforce_commit
-        )
+        if validator is None:
+            continuous_strategy_discovery.validate_existing_successor_contract(
+                contract, enforce_commit=enforce_commit
+            )
+        elif (
+            isinstance(validator, Mapping)
+            and isinstance(validator.get("module"), str)
+            and isinstance(validator.get("function"), str)
+        ):
+            module = importlib.import_module(str(validator["module"]))
+            function = getattr(module, str(validator["function"]))
+            function(contract, enforce_commit=enforce_commit)
+        else:
+            raise DenseDataCollectionError(
+                "existing successor validator declaration is invalid"
+            )
     except (
+        AttributeError,
+        ImportError,
         continuous_strategy_discovery.ContinuousDiscoveryError,
         outcome_exposure.OutcomeExposureError,
     ) as exc:

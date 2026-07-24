@@ -260,8 +260,16 @@ confirmation remains unopened. Independent inspection
 neighbor stability, but none passed Deflated Sharpe, Holm, or PBO. The best
 path produced 0.01047 log growth from only five OOF fills and DSR 0.1548. The
 exact family is terminal and cannot enter its untouched 38-session confirmation
-reserve. Advance another outcome-clean existing-family lane immediately; do
-not tune this corpus.
+reserve. The immediate successor is
+`broad-etf-trend-pullback-v3-pre2016-broad-etf-replication`, an outcome-clean
+replication of the exact authorized 32-rule pullback grid across the 19 liquid
+ETFs already named by the portfolio plan. It freezes an independently inspected
+2008-2015 exchange calendar before price access, then assigns 200 warmup, 1,200
+development, five embargo, and 500 confirmation sessions entirely before 2016.
+This existing-family lane consumes no new-family slot, does not open or repair
+the rejected pullback version's 2021-2022 confirmation reserve, and requires no
+calendar wait. Freeze, inspect, commit, and collect each evidence boundary in
+order; do not tune either rejected corpus.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
@@ -401,15 +409,13 @@ rolling-fold, DSR, Holm, or neighbor-stability gates. Inspection
 repair it or open its 2021-2022 confirmation reserve. Its incomplete pre-2016
 Alpaca plan and Massive HTTP-403 plan remain adverse data-readiness history.
 
-The next continuous lane is an existing-family successor to
-`short-horizon-oversold-reversal-v1`, which retained only ten signals but
-remained positive at 5/10/20 bps. Begin with an outcome-blind capacity expansion
-on evidence disjoint from its evaluated corpus; freeze and inspect the capacity
-contract before any new price or return access. It does not consume a new-family
-slot. The W31 residual-equity and intraday-ETF new-family lanes remain parallel
-and may not block it. No predecessor outcome may count toward promotion, and no
-target outcome, confirmation reserve, or broker action is permitted by the
-capacity step.
+The current continuous lane is the pre-2016 broad-ETF pullback replication
+defined above. Its per-symbol Massive daily endpoint is distinct from the prior
+grouped-daily HTTP-403 path, but it may be contacted only after the new calendar,
+contract, capacity, search, and collection plan have each been independently
+frozen, inspected where applicable, and committed. No predecessor outcome may
+count toward promotion, and no confirmation target or broker action is permitted
+during development.
 
 This file governs Codex work in this repository for Robinhood market research,
 trade planning, and broker-tool use. It is written for aggressive intraday
