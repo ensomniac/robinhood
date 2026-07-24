@@ -232,8 +232,10 @@ the frozen winner. This is an execution-readiness correction, not a
 strategy-rule, grid, partition, cost, or outcome change. Freeze and inspect the
 V2 contract before development evaluation. V2 family contract
 `5d5437b4...1270c` and capacity manifest `acafe215...7b596` now freeze that
-complete implementation-ready evidence graph. Run its outcome-blind generic
-preflight next. The confirmation partition and broker actions remain forbidden.
+complete implementation-ready evidence graph. Outcome-blind preflight
+`7779b772...e8df65` earned `CAPACITY_READY` without loading the development
+dataset. Freeze the exact development search next. The confirmation partition
+and broker actions remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
