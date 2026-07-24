@@ -1,0 +1,22 @@
+{
+  "artifact_kind": "oversold_replication_reference_contract_inspection",
+  "broker_actions": 0,
+  "checks": {
+    "content_hash": true,
+    "exact_dates": true,
+    "exact_rebuild": true,
+    "no_broker_actions": true,
+    "no_outcomes": true,
+    "reference_only": true,
+    "zero_snapshot_state": true
+  },
+  "contract_file_sha256": "1d7a25e7281754d82f822aea2c9df626d878b1a68eb56c7cef44e7d6f71c5cc8",
+  "contract_path": "historical_batches/oversold_replication_v4/reference-contract/oversold-replication-reference-contract-3c6ec8fe5aa239f5ec6817fbf88c04f7643d7f1da1a5d5f0c5d01b2e1afb4d40.json",
+  "contract_sha256": "3c6ec8fe5aa239f5ec6817fbf88c04f7643d7f1da1a5d5f0c5d01b2e1afb4d40",
+  "inspection_sha256": "58079996343774fa19c1bc26746972b0a6d1ec8d2acb499a72dbcce7d15399df",
+  "market_prices_accessed": false,
+  "provider_requests": 0,
+  "schema_version": 1,
+  "state": "REFERENCE_CONTRACT_INSPECTED_PROVIDER_READY",
+  "target_outcomes_observed_or_derived": false
+}
