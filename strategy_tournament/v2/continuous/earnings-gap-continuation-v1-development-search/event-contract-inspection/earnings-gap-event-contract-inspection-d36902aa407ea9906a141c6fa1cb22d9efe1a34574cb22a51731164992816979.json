@@ -1,0 +1,18 @@
+{
+  "artifact_kind": "earnings-gap-event-contract-inspection",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "collection_authorized": true,
+  "contract_file_sha256": "d1be88e99379b660c0c058f4bfa8ac04b3dcb82e12697b236c571b9254f01359",
+  "contract_path": "strategy_tournament/v2/continuous/earnings-gap-continuation-v1-development-search/event-contract/earnings-gap-event-contract-2c11eaea9ca9ae08f0f09b5029efd116d6e69f7293e2c6bde7c96bd5dc632a08.json",
+  "contract_sha256": "2c11eaea9ca9ae08f0f09b5029efd116d6e69f7293e2c6bde7c96bd5dc632a08",
+  "family_id": "earnings-gap-continuation",
+  "forward_returns_accessed": false,
+  "inspected_at": "2026-07-24T05:26:00Z",
+  "inspection_sha256": "d36902aa407ea9906a141c6fa1cb22d9efe1a34574cb22a51731164992816979",
+  "logical_provider_requests": 12,
+  "market_prices_accessed": false,
+  "prior_discarded_provider_requests": 12,
+  "schema_version": 1,
+  "valid": true
+}
