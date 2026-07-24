@@ -673,6 +673,10 @@ before freezing the implementation-refreshed search.
 Refreshed search `c50c1847...dc07394` is semantically identical to
 `be36c26a...06de6fb`; only its implementation hashes and exact preflight
 binding changed. Commit it before freezing checkpoint-reuse recovery.
+Recovery plan `3dfc9e5a...dfcda85e` binds the inspected failure, unchanged
+four task IDs, refreshed search, exact cached source-plan hash, 266 already
+completed requests, and zero additional provider requests. Commit it before
+materializing hard-linked checkpoints and the corrected dataset.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
