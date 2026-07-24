@@ -313,7 +313,9 @@ access, not from strategy returns. Alpaca already proved daily coverage from
 `cc9f3618...679eba` now freeze all six symbols, 1,000 development sessions,
 five embargo sessions, 500 confirmation sessions, exact costs, selection gates,
 provider semantics, and implementation hashes. Commit them before generic
-preflight; confirmation remains closed.
+preflight; confirmation remains closed. Preflight
+`04d02c87...a2fec5` earned `CAPACITY_READY` without price access. Freeze and
+commit the exact development search next.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
