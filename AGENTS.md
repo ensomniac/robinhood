@@ -431,6 +431,10 @@ tasks, external and canonical hashes, exact frozen scope, zero substitutions,
 and runtime schema over all 9,000 observations. Runtime manifest
 `a63127cb...df8d81` binds the inspected dataset to the search. Commit both
 artifacts before development evaluation.
+Development result `20b82cb2...dfb5ea2` completed all 32 exact trials in 1.76
+seconds from one inspected dataset load and one cache hit, with zero provider
+requests or failures. Preserve and commit it before independently rebuilding
+trial accounting, statistics, and selection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
