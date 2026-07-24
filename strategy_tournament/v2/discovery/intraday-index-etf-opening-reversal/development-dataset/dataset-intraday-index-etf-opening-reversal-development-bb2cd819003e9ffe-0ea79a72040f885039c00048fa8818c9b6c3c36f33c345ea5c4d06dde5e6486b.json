@@ -1,0 +1,619 @@
+{
+  "dataset_id": "dataset-intraday-index-etf-opening-reversal-development-bb2cd819003e9ffe",
+  "dataset_payload": {
+    "claim_scope": "DEVELOPMENT_ONLY",
+    "collected_at": "2026-07-24T00:22:43.515874Z",
+    "dense_runtime": {
+      "dataset_sha256": "c020dedb2f6f19b8361d676e7f6061ad9522303aeb5ac1f73d29faedd6f19b87",
+      "external_file_sha256": "1c32a152dce995af7def355e55bb8b305c27282dee5c796c63a11d5335b6f00a",
+      "external_relative_path": "dense-v2/intraday-index-etf-opening-reversal/development/b242091cde0706c31956fad9be2ed7948130920a0f7a32f23c82be5ce1bc6d83/dataset.json.gz",
+      "family_id": "intraday-index-etf-opening-reversal",
+      "formal_capacity": 960,
+      "format": "json.gz"
+    },
+    "development_search_sha256": "bb2cd819003e9ffe133421145633b8207dadc5875119b8beafa4390bea25c501",
+    "evidence_paths": [
+      "strategy_tournament/v2/discovery/intraday-index-etf-opening-reversal/development-retained-recovery-plan/intraday-index-etf-opening-reversal-development-retained-recovery-plan-b242091cde0706c31956fad9be2ed7948130920a0f7a32f23c82be5ce1bc6d83.json",
+      "strategy_tournament/v2/discovery/intraday-index-etf-opening-reversal/development-retained-recovery/intraday-index-etf-opening-reversal-development-retained-recovery-7745c71f6e39d47684d0b743d89711ec123f56fbcab4944f51f18ce02037a935.json",
+      "strategy_tournament/v2/discovery/intraday-index-etf-opening-reversal/development-retained-recovery-inspection/intraday-index-etf-opening-reversal-development-retained-recovery-inspection-8351c07c463cb66a22a545463bffe4b165242bdd7e8bac85b0d640dbdabe0545.json",
+      "STRATEGY_DISCOVERY_V2.md"
+    ],
+    "inspected": true,
+    "lane": "development",
+    "missing_data_policy": {
+      "account_return_on_missed_dates": 0.0,
+      "complete_symbol_sessions_retained_for_future_history_only": true,
+      "entries_on_missed_dates": 0,
+      "incomplete_sessions": [
+        {
+          "date": "2023-06-26",
+          "expected_minutes": 390,
+          "observed_minutes": 388,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-06-27",
+          "expected_minutes": 390,
+          "observed_minutes": 388,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-06-28",
+          "expected_minutes": 390,
+          "observed_minutes": 386,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-06-30",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-05",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-06",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-07",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-11",
+          "expected_minutes": 390,
+          "observed_minutes": 387,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-13",
+          "expected_minutes": 390,
+          "observed_minutes": 388,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-17",
+          "expected_minutes": 390,
+          "observed_minutes": 386,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-18",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-20",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-21",
+          "expected_minutes": 390,
+          "observed_minutes": 388,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-25",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-26",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-28",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-07-31",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-08-01",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-08-16",
+          "expected_minutes": 390,
+          "observed_minutes": 387,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-08-21",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-08-22",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-08-24",
+          "expected_minutes": 390,
+          "observed_minutes": 388,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-08-25",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-08-28",
+          "expected_minutes": 390,
+          "observed_minutes": 388,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-08-29",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-08-31",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-09-01",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-09-05",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-09-07",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-09-08",
+          "expected_minutes": 390,
+          "observed_minutes": 386,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-09-11",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-09-18",
+          "expected_minutes": 390,
+          "observed_minutes": 388,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-09-19",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-10-05",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-10-12",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-11-07",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-11-10",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-11-13",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-11-17",
+          "expected_minutes": 390,
+          "observed_minutes": 386,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-11-21",
+          "expected_minutes": 390,
+          "observed_minutes": 387,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-11-22",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-11-27",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-12-07",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-12-08",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-12-11",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-12-22",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2023-12-26",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-01-12",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-01-22",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-01-30",
+          "expected_minutes": 390,
+          "observed_minutes": 388,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-01-31",
+          "expected_minutes": 390,
+          "observed_minutes": 388,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-02-06",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-02-14",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-02-20",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-02-21",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-02-23",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-02-27",
+          "expected_minutes": 390,
+          "observed_minutes": 386,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-02-28",
+          "expected_minutes": 390,
+          "observed_minutes": 387,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-03-01",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        },
+        {
+          "date": "2024-03-06",
+          "expected_minutes": 390,
+          "observed_minutes": 389,
+          "symbol": "DIA"
+        }
+      ],
+      "interpolated_minutes": 0,
+      "missed_dates": [
+        "2023-06-26",
+        "2023-06-27",
+        "2023-06-28",
+        "2023-06-30",
+        "2023-07-05",
+        "2023-07-06",
+        "2023-07-07",
+        "2023-07-11",
+        "2023-07-13",
+        "2023-07-17",
+        "2023-07-18",
+        "2023-07-20",
+        "2023-07-21",
+        "2023-07-25",
+        "2023-07-26",
+        "2023-07-28",
+        "2023-07-31",
+        "2023-08-01",
+        "2023-08-16",
+        "2023-08-21",
+        "2023-08-22",
+        "2023-08-24",
+        "2023-08-25",
+        "2023-08-28",
+        "2023-08-29",
+        "2023-08-31",
+        "2023-09-01",
+        "2023-09-05",
+        "2023-09-07",
+        "2023-09-08",
+        "2023-09-11",
+        "2023-09-18",
+        "2023-09-19",
+        "2023-10-05",
+        "2023-10-12",
+        "2023-11-07",
+        "2023-11-10",
+        "2023-11-13",
+        "2023-11-17",
+        "2023-11-21",
+        "2023-11-22",
+        "2023-11-27",
+        "2023-12-07",
+        "2023-12-08",
+        "2023-12-11",
+        "2023-12-22",
+        "2023-12-26",
+        "2024-01-12",
+        "2024-01-22",
+        "2024-01-30",
+        "2024-01-31",
+        "2024-02-06",
+        "2024-02-14",
+        "2024-02-20",
+        "2024-02-21",
+        "2024-02-23",
+        "2024-02-27",
+        "2024-02-28",
+        "2024-03-01",
+        "2024-03-06"
+      ],
+      "missed_evaluation_dates": [
+        "2023-09-19",
+        "2023-10-05",
+        "2023-10-12",
+        "2023-11-07",
+        "2023-11-10",
+        "2023-11-13",
+        "2023-11-17",
+        "2023-11-21",
+        "2023-11-22",
+        "2023-11-27",
+        "2023-12-07",
+        "2023-12-08",
+        "2023-12-11",
+        "2023-12-22",
+        "2023-12-26",
+        "2024-01-12",
+        "2024-01-22",
+        "2024-01-30",
+        "2024-01-31",
+        "2024-02-06",
+        "2024-02-14",
+        "2024-02-20",
+        "2024-02-21",
+        "2024-02-23",
+        "2024-02-27",
+        "2024-02-28",
+        "2024-03-01",
+        "2024-03-06"
+      ],
+      "name": "miss-entire-fixed-universe-entry-date",
+      "substituted_sessions": 0
+    },
+    "point_in_time_evidence": true,
+    "provider_telemetry": {
+      "cache_hits": 1440,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    }
+  },
+  "manifest_sha256": "0ea79a72040f885039c00048fa8818c9b6c3c36f33c345ea5c4d06dde5e6486b",
+  "registered_at": "2026-07-24T00:23:20Z",
+  "requested_dates": [
+    "2023-09-19",
+    "2023-09-20",
+    "2023-09-21",
+    "2023-09-22",
+    "2023-09-25",
+    "2023-09-26",
+    "2023-09-27",
+    "2023-09-28",
+    "2023-09-29",
+    "2023-10-02",
+    "2023-10-03",
+    "2023-10-04",
+    "2023-10-05",
+    "2023-10-06",
+    "2023-10-09",
+    "2023-10-10",
+    "2023-10-11",
+    "2023-10-12",
+    "2023-10-13",
+    "2023-10-16",
+    "2023-10-17",
+    "2023-10-18",
+    "2023-10-19",
+    "2023-10-20",
+    "2023-10-23",
+    "2023-10-24",
+    "2023-10-25",
+    "2023-10-26",
+    "2023-10-27",
+    "2023-10-30",
+    "2023-10-31",
+    "2023-11-01",
+    "2023-11-02",
+    "2023-11-03",
+    "2023-11-06",
+    "2023-11-07",
+    "2023-11-08",
+    "2023-11-09",
+    "2023-11-10",
+    "2023-11-13",
+    "2023-11-14",
+    "2023-11-15",
+    "2023-11-16",
+    "2023-11-17",
+    "2023-11-20",
+    "2023-11-21",
+    "2023-11-22",
+    "2023-11-27",
+    "2023-11-28",
+    "2023-11-29",
+    "2023-11-30",
+    "2023-12-01",
+    "2023-12-04",
+    "2023-12-05",
+    "2023-12-06",
+    "2023-12-07",
+    "2023-12-08",
+    "2023-12-11",
+    "2023-12-12",
+    "2023-12-13",
+    "2023-12-14",
+    "2023-12-15",
+    "2023-12-18",
+    "2023-12-19",
+    "2023-12-20",
+    "2023-12-21",
+    "2023-12-22",
+    "2023-12-26",
+    "2023-12-27",
+    "2023-12-28",
+    "2023-12-29",
+    "2024-01-02",
+    "2024-01-03",
+    "2024-01-04",
+    "2024-01-05",
+    "2024-01-08",
+    "2024-01-09",
+    "2024-01-10",
+    "2024-01-11",
+    "2024-01-12",
+    "2024-01-16",
+    "2024-01-17",
+    "2024-01-18",
+    "2024-01-19",
+    "2024-01-22",
+    "2024-01-23",
+    "2024-01-24",
+    "2024-01-25",
+    "2024-01-26",
+    "2024-01-29",
+    "2024-01-30",
+    "2024-01-31",
+    "2024-02-01",
+    "2024-02-02",
+    "2024-02-05",
+    "2024-02-06",
+    "2024-02-07",
+    "2024-02-08",
+    "2024-02-09",
+    "2024-02-12",
+    "2024-02-13",
+    "2024-02-14",
+    "2024-02-15",
+    "2024-02-16",
+    "2024-02-20",
+    "2024-02-21",
+    "2024-02-22",
+    "2024-02-23",
+    "2024-02-26",
+    "2024-02-27",
+    "2024-02-28",
+    "2024-02-29",
+    "2024-03-01",
+    "2024-03-04",
+    "2024-03-05",
+    "2024-03-06",
+    "2024-03-07",
+    "2024-03-08",
+    "2024-03-11",
+    "2024-03-12"
+  ],
+  "schema_version": 1
+}
