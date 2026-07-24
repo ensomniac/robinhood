@@ -182,7 +182,10 @@ committed before its result can authorize evaluation. Inspection
 `786473d9...682a1d` passed with 168 fully observable decision dates and at
 least 776 qualified names on every such date; manifest
 `d546e620...c80545` binds the ignored 1,795,815-row dataset. Confirmation
-remains unopened.
+remains unopened. Exact family contract `fbb19be5...75f4c` freezes the complete
+48-trial grid, deterministic selection rule, costs, account simulator, 200
+development decision dates, 93-date confirmation reserve, and all falsifiers
+before development outcomes.
 Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
 freeze: its first independent inspection stopped on a missing local artifact-
 hash helper, before any provider or market-price access. It cannot authorize
