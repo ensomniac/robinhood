@@ -670,6 +670,9 @@ Refreshed preflight `18e32c3e...f41bbe8` revalidated the unchanged committed
 family contract and capacity against only the corrected implementation hashes.
 It accessed no additional outcomes and earned `CAPACITY_READY`. Commit it
 before freezing the implementation-refreshed search.
+Refreshed search `c50c1847...dc07394` is semantically identical to
+`be36c26a...06de6fb`; only its implementation hashes and exact preflight
+binding changed. Commit it before freezing checkpoint-reuse recovery.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
