@@ -1,0 +1,32 @@
+{
+  "artifact_kind": "oversold_replication_development_collection_contract_inspection",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_symbol_sessions": 2334,
+  "checks": {
+    "authorization_precedes_access": true,
+    "complete_scope": true,
+    "confirmation_locked": true,
+    "exact_rebuild": true,
+    "inventory_inspected": true,
+    "no_broker_actions": true,
+    "no_outcomes": true,
+    "no_provider_access": true,
+    "substitutions_forbidden": true,
+    "zero_days_retained": true
+  },
+  "confirmation_access_permitted": false,
+  "contract_file_sha256": "5f2f53319995cdadd5053db8a8787beafbb1562b78f285aeeb4a6eb82cbafef2",
+  "contract_path": "strategy_tournament/v2/oversold_replication/dataset-short-horizon-oversold-reversal-v4-broad-development-minutes-2026-07-24-v1/collection-contract/oversold-replication-development-collection-contract-0b036084cbc205eac67f55401114b9ee152cf378beb409574d0e11b3e11c72b9.json",
+  "contract_sha256": "0b036084cbc205eac67f55401114b9ee152cf378beb409574d0e11b3e11c72b9",
+  "dataset_id": "dataset-short-horizon-oversold-reversal-v4-broad-development-minutes-2026-07-24-v1",
+  "evaluation_dates": 399,
+  "family_id": "short-horizon-oversold-reversal",
+  "inspection_sha256": "3b5e5bd5f61a61e25d850183cb2efcc36daa7ac123207b44d00bce2e07cf3772",
+  "provider_access_permitted_after_committed_authorization": true,
+  "schema_version": 1,
+  "signal_dates": 100,
+  "state": "DEVELOPMENT_COLLECTION_CONTRACT_INSPECTED_READY",
+  "successor_id": "short-horizon-oversold-reversal-v4-broad-replication",
+  "valid": true
+}
