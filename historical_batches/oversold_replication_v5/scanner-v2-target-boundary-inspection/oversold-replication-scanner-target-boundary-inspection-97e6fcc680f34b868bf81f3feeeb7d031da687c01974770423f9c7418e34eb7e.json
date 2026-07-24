@@ -1,0 +1,27 @@
+{
+  "artifact_kind": "oversold_replication_scanner_target_boundary_inspection",
+  "broker_actions": 0,
+  "checks": {
+    "controller_bound": true,
+    "exact_selection": true,
+    "target_opening_only": true,
+    "target_reuse_disjoint": true,
+    "zero_provider_requests": true,
+    "zero_provider_retries": true,
+    "zero_ready_files": true
+  },
+  "full_session_target_prices_accessed": false,
+  "inspection_sha256": "97e6fcc680f34b868bf81f3feeeb7d031da687c01974770423f9c7418e34eb7e",
+  "manifest_file_sha256": "8c02f68aa5e463e5be52a668705e12490d06004d9cf0df5b627743c03cc421fb",
+  "manifest_path": "historical_batches/oversold_replication_v5/scanner-v2-manifests/dataset-production-scanner-replay-2026-07-24-oversold-replication-completed-reserve-v2-d23f451dc399506ed3b2933cd2c0fd96d30798164e875ef5f7b8a77954fc441c.json",
+  "manifest_sha256": "d23f451dc399506ed3b2933cd2c0fd96d30798164e875ef5f7b8a77954fc441c",
+  "provider_requests": 0,
+  "required_sessions": 155,
+  "reused_prior_sessions": 19,
+  "reused_target_sessions": 0,
+  "schema_version": 1,
+  "state": "TARGET_0935_BOUNDARY_INSPECTED_PROVIDER_READY",
+  "target_dates": 40,
+  "target_outcomes_observed_or_derived": false,
+  "valid": true
+}
