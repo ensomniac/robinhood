@@ -173,7 +173,12 @@ market prices; it is the sole collection authority for this exact contract.
 Checkpointed development collection `135c77ca...9f827f` then acquired 1,795,815
 daily rows for 5,950 of 5,985 requested symbols in 186 provider requests with
 zero failures. It computed no strategy metric and opened no confirmation price;
-it remains untrusted until independent row-level liquidity inspection.
+its original row-level inspection failed because it treated the first 32
+structurally unobservable 60-session warm-up dates as liquidity failures. Those
+dates remain explicit zero-return days. The separately hash-bound readiness
+inspector measures the same frozen top-250 rule only after its lookback exists;
+it changes no strategy parameter, date, price, or outcome and must itself be
+committed before its result can authorize evaluation.
 Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
 freeze: its first independent inspection stopped on a missing local artifact-
 hash helper, before any provider or market-price access. It cannot authorize

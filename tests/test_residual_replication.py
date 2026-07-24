@@ -5,6 +5,7 @@ from datetime import date, timedelta
 import residual_replication_data as data
 import residual_replication_inspection as inspection
 import residual_replication_plugin as plugin
+import residual_replication_readiness_inspection as readiness
 from historical_store import canonical_sha256
 
 
@@ -81,6 +82,7 @@ def test_replication_liquidity_selection_is_deterministic_top_250():
         "daily_bars": bars,
     }
 
+    complete, minimum, total, warmup = readiness._liquid_capacity(dataset)
     prepared = plugin._select_universes(dataset)
     selected = prepared["universe_by_date"][decision]
 
@@ -90,3 +92,5 @@ def test_replication_liquidity_selection_is_deterministic_top_250():
     assert canonical_sha256(selected) == canonical_sha256(
         prepared["universe_by_date"][decision]
     )
+
+    assert (complete, minimum, total, warmup) == (1, 251, 1, 0)
