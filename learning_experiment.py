@@ -646,6 +646,9 @@ def _rebuild_development_statistics(
     }
     holm = holm_family_decisions(combined_p_values, alpha=0.10)
     pbo = probability_of_backtest_overfitting(daily_returns_by_id)
+    current_pbo = pbo["probability"]
+    if current_pbo is None and prior_trial_sharpes:
+        current_pbo = 0.0
     trial_sharpes = [
         *sharpes.values(),
         *map(float, prior_trial_sharpes),
@@ -719,9 +722,13 @@ def _rebuild_development_statistics(
                 daily_returns, trial_sharpes
             )["probability"],
             "pbo_probability": max(
-                float(pbo["probability"]),
+                float(current_pbo)
+                if current_pbo is not None
+                else float("nan"),
                 float(prior_pbo_probability),
-            ),
+            )
+            if current_pbo is not None
+            else None,
             "holm_reject_null": holm[trial_id]["reject_null"],
             "rolling_folds_positive": all(
                 sum(math.log1p(value) for value in fold) > 0 for fold in folds

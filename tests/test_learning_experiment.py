@@ -303,6 +303,13 @@ class EvaluationContractTests(unittest.TestCase):
         )
 
         self.assertGreaterEqual(rebuilt["left"]["pbo_probability"], 0.4)
+        single = _rebuild_development_statistics(
+            [trial("single", [0.002, -0.001] * 10)],
+            prior_trial_sharpes=[0.2],
+            prior_trial_p_values=[0.4],
+            prior_pbo_probability=0.3,
+        )
+        self.assertEqual(single["single"]["pbo_probability"], 0.3)
         with self.assertRaisesRegex(
             LearningExperimentError,
             "prior selection-trial statistics",
