@@ -156,7 +156,7 @@ enter confirmation; all 25 confirmation opportunities remain untouched.
 
 Do not manufacture another residual-reversal version from those outcomes.
 The disjoint long-history replication V6 does not do so. Frozen data contract
-`f22fe7bb...ff535` preserves the complete 48-trial V5 grid but reuses no V5
+`fa1bff02...19fa9` preserves the complete 48-trial V5 grid but reuses no V5
 evaluation date: it binds 300 independently selected point-in-time
 security-master dates, freezes the first 200 chronologically for development,
 adds a five-session post-hold embargo, and reserves 93 later dates for
@@ -167,6 +167,10 @@ prices may be opened only after this contract and its independent metadata
 inspection are committed; confirmation prices remain forbidden until an exact
 winner is frozen. The lane consumes no new mechanism-family slot and requires no
 calendar wait.
+Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
+freeze: its first independent inspection stopped on a missing local artifact-
+hash helper, before any provider or market-price access. It cannot authorize
+collection.
 
 The predeclared dense batch remains terminal adverse evidence under its
 individual inspections. Its one outcome-blind session calendar is collected in

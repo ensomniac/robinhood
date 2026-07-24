@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 import residual_replication_data as data
+import residual_replication_inspection as inspection
 import residual_replication_plugin as plugin
 from historical_store import canonical_sha256
 
@@ -10,6 +11,16 @@ from historical_store import canonical_sha256
 def _days(count: int) -> list[str]:
     start = date(2023, 1, 3)
     return [(start + timedelta(days=index)).isoformat() for index in range(count)]
+
+
+def test_independent_artifact_hash_excludes_only_its_digest():
+    payload = {"artifact_kind": "example", "state": "FROZEN"}
+    artifact = {
+        **payload,
+        "artifact_sha256": canonical_sha256(payload),
+    }
+
+    assert inspection._artifact_hash(artifact) == artifact["artifact_sha256"]
 
 
 def test_frozen_source_graph_is_disjoint_and_power_capable():

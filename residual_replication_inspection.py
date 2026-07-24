@@ -30,6 +30,16 @@ class ResidualReplicationInspectionError(RuntimeError):
     """A supposedly independent source or collection check did not rebuild."""
 
 
+def _artifact_hash(value: Mapping[str, Any]) -> str:
+    return canonical_sha256(
+        {
+            key: item
+            for key, item in value.items()
+            if key != "artifact_sha256"
+        }
+    )
+
+
 def _repo_path(path: Path) -> str:
     try:
         return str(path.resolve().relative_to(PROJECT_ROOT.resolve()))
@@ -78,7 +88,7 @@ def inspect_contract(
     index = outcome_exposure.read_index()
     checks = {
         "artifact_hash_valid": contract.get("artifact_sha256")
-        == strategy_discovery._artifact_hash(contract),
+        == _artifact_hash(contract),
         "source_bindings_rebuilt": contract.get("source_tranches") == bindings,
         "source_dates_rebuilt": contract.get("source_date_count") == 300
         and contract.get("source_dates_sha256") == canonical_sha256(source_dates),
@@ -288,7 +298,7 @@ def inspect_collection(
     )
     checks = {
         "artifact_hash_valid": collection.get("artifact_sha256")
-        == strategy_discovery._artifact_hash(collection),
+        == _artifact_hash(collection),
         "contract_binding_valid": collection.get("contract_sha256")
         == contract["artifact_sha256"],
         "dataset_file_hash_valid": collection.get("external_file_sha256")
