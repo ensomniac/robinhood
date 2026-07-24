@@ -515,6 +515,12 @@ ID as the same no-lookahead intraday mechanism. Synthetic tests preserve
 next-bar entry, stop-first ambiguity, signal identity, fixed-universe coverage,
 and historical/production family binding. Commit the implementation before
 contract freeze.
+Contract `e97f8797...fd4529b` and capacity `b687ddcf...2702bc8` now freeze the
+unchanged 32-trial grid, eight country ETFs, 60 warmup plus 1,000 development
+sessions, five embargo sessions, and 500 untouched confirmation sessions.
+They bind Alpaca SIP raw minute semantics, exact costs and gates, zero
+substitutions, and 8,000 formal development instrument-sessions before price
+access. Commit both before generic preflight.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
