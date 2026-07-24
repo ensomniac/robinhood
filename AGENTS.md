@@ -879,7 +879,9 @@ Contract `18a8e009...e1abd` and capacity manifest
 development dates, five embargo dates, and 66 untouched confirmation dates.
 Generic preflight `8ecb597a...0a3865` independently earned `CAPACITY_READY`
 with zero outcome, provider, confirmation, or broker access. Commit it before
-search freeze.
+search freeze. Search `4ee45ee6...9dba0d` now binds all 32 trials, rolling
+folds, costs, account constraints, neighbor graph, selection gates, and
+implementation hashes before outcomes.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and
