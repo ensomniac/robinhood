@@ -260,6 +260,12 @@ def inspect_collection(
             "dataset_payload": {
                 "lane": "development",
                 "claim_scope": "DEVELOPMENT_ONLY",
+                "evidence_paths": [
+                    original._repo_path(contract_path),
+                    original._repo_path(collection_path),
+                    original._repo_path(inspection_path),
+                    "STRATEGY_DISCOVERY_V2.md",
+                ],
                 "inspected": True,
                 "point_in_time_evidence": True,
                 "confirmation_access_permitted": False,
