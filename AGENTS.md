@@ -724,6 +724,9 @@ Search `80e98ed9...d62c8aa9` now binds all 32 opening-momentum trials,
 neighbor graph, rolling folds, account simulator, costs, deterministic
 selection, exact input alias, and implementation hashes. Commit it before
 development evaluation.
+Development result `9d59a1da...75736af8` completed all 32 exact trials in
+14.12 seconds with one dataset load, one cache hit, and zero provider requests
+or failures. Commit it before independent selection reconstruction.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
