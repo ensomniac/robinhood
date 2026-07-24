@@ -223,8 +223,14 @@ selection-aware engine, including the same protection cap in historical and
 production evaluation. Family contract `1be96eb8...09180` and capacity
 manifest `0e47ab06...c1a6e` now freeze the exact 32 trials, 57/5/38
 chronological partitions, inspected dataset binding, account simulator, costs,
-falsifiers, and committed implementation hashes. Run the generic outcome-blind
-preflight next. The confirmation partition and broker actions remain forbidden.
+falsifiers, and committed implementation hashes. Generic outcome-blind
+preflight `42685775...74e2d0` independently rebuilt that binding and earned
+`CAPACITY_READY` without opening the development dataset or contacting a
+provider. Before freezing the search, make the already-declared confirmation
+plugin able to consume a future winner-bound inspected dataset without changing
+its implementation hash; this is an execution-readiness correction, not a
+strategy-rule or outcome change. The confirmation partition and broker actions
+remain forbidden.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
