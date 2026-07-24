@@ -562,6 +562,11 @@ lacked a complete 390-minute sequence and zero development dates were complete
 across the fixed universe. No strategy metrics, confirmation inputs,
 substitutions, interpolation, or broker actions occurred. Commit it before
 independent failure inspection.
+Inspection `b556d260...13946c8` independently rebuilt every checkpoint count,
+per-symbol completeness total, exposed development scope, telemetry value, and
+the absence of a completed dataset or strategy metrics. After committing the
+inspection, index the exact development exposure and retire this family for
+structural minute-data capacity; do not repair or evaluate it.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
