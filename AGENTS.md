@@ -186,6 +186,9 @@ remains unopened. Exact family contract `fbb19be5...75f4c` freezes the complete
 48-trial grid, deterministic selection rule, costs, account simulator, 200
 development decision dates, 93-date confirmation reserve, and all falsifiers
 before development outcomes.
+Outcome-blind generic preflight `d57f859c...7316a3` independently reports
+`CAPACITY_READY`; it authorizes only search freeze, never provider, confirmation,
+or broker access.
 Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
 freeze: its first independent inspection stopped on a missing local artifact-
 hash helper, before any provider or market-price access. It cannot authorize
