@@ -373,6 +373,9 @@ Search `e8e611f9...653c23` now binds every trial, neighbor graph,
 rolling-origin fold, account simulator, 5/10/20-bps costs, deterministic
 selection rule, and implementation hash before price access. Commit it before
 freezing the development collection graph.
+Collection plan `f3d72604...67857f` freezes 1,200 required sessions, nine
+Alpaca SIP raw daily symbol ranges, one Massive split-action range, and zero
+substitutions. Commit it before the first provider request.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
