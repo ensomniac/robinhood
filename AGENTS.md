@@ -874,6 +874,12 @@ entry, stop-first ambiguity, one daily entry, maximum one-session hold, exact
 development/embargo/confirmation partitions, and production parity remain
 mandatory. This is an existing mechanism, consumes no new-family slot, and
 requires no calendar wait.
+Contract `18a8e009...e1abd` and capacity manifest
+`4f813da5...f156d2d` freeze those exact 32 trials across 120 disjoint
+development dates, five embargo dates, and 66 untouched confirmation dates.
+Generic preflight `8ecb597a...0a3865` independently earned `CAPACITY_READY`
+with zero outcome, provider, confirmation, or broker access. Commit it before
+search freeze.
 
 The active v2 implementation uses `portfolio_config.toml` schema 2,
 `strategy_discovery.py`, `STRATEGY_DISCOVERY_V2.md`, and

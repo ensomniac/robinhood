@@ -1,0 +1,56 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "8ecb597a3254fa1d3356a3d63bd35adcebbc9fc9eb7c45d8d83b981f9e0a3865",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.024436334031634033,
+  "family_contract_path": "strategy_tournament/v2/continuous/close-to-open-etf-momentum-v2-liquid-index-etf/family-contract/contract-18a8e009f95ceaaf086486fd536e9ccb3e3a7201ad84014033647e40f81e1abd.json",
+  "family_contract_sha256": "4498054d7718cd2bfc40fc0a11b17d6b91bb6374a260b853f726b4353b7de10c",
+  "family_id": "liquid-etf-close-to-open-momentum",
+  "implementation_sha256": "99dcdbb3b95453f005fa6024acdfb37b65df807256d670e80f1bed563bea8cb2",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "confirmation_locked": true,
+      "dates_bound": true,
+      "development_lane": true,
+      "development_phase": true,
+      "family_bound": true,
+      "point_in_time": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 120
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "7b27c94a29d71d831fad5fd4d16e0c9d09ff614085b329e500b48fb6451b0ec4",
+  "verified_capacity": 120
+}
