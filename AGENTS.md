@@ -720,6 +720,10 @@ outcome-blind preflight.
 Preflight `a8b11e5e...f3f184bb` independently validated the inspected source
 manifest, exact dates, derived-family binding, capacity, and zero external-file
 access and earned `CAPACITY_READY`. Commit it before search freeze.
+Search `80e98ed9...d62c8aa9` now binds all 32 opening-momentum trials,
+neighbor graph, rolling folds, account simulator, costs, deterministic
+selection, exact input alias, and implementation hashes. Commit it before
+development evaluation.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
