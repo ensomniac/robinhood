@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 
 import dense_strategy_runtime as runtime
 import etf_residual_replication as replication
+import etf_residual_replication2 as replication2
 
 
 def _business_dates(count: int) -> list[str]:
@@ -189,3 +190,95 @@ def test_fixed_etf_residual_contract_preserves_grid_and_disjoint_dates(
         runtime.ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS
     )
     assert "SPY" not in contract["development_scope"]["symbols"]
+
+
+def test_identity_safe_residual_runtime_uses_replacement_targets():
+    dates = _business_dates(230)
+    evaluation = dates[-12:]
+    decision_index = dates.index(evaluation[3])
+    bars = {
+        "SPY": _bars(dates, phase=0.0),
+        **{
+            symbol: _bars(
+                dates,
+                phase=(index + 1) / 3,
+                shock_index=(
+                    decision_index if symbol == "SOXX" else None
+                ),
+                shock_return=-0.04,
+            )
+            for index, symbol in enumerate(
+                runtime.ETF_RESIDUAL_REPLICATION_V2_TARGET_SYMBOLS
+            )
+        },
+    }
+    candidates = runtime.build_candidates(
+        runtime.prepare_dataset(
+            {
+                "schema_version": 1,
+                "family_id": runtime.ETF_RESIDUAL_REPLICATION_V2_FAMILY,
+                "evaluation_dates": evaluation,
+                "symbols": [
+                    *runtime.ETF_RESIDUAL_REPLICATION_V2_TARGET_SYMBOLS,
+                    runtime.ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL,
+                ],
+                "daily_bars": bars,
+            }
+        ),
+        runtime.ETF_RESIDUAL_REPLICATION_V2_FAMILY,
+        _parameters(),
+    )
+    observed = [
+        item
+        for item in candidates
+        if item["decision_date"] == evaluation[3]
+    ]
+
+    assert observed
+    assert observed[0]["symbol"] == "SOXX"
+    assert all(
+        item["symbol"]
+        in runtime.ETF_RESIDUAL_REPLICATION_V2_TARGET_SYMBOLS
+        for item in candidates
+    )
+
+
+def test_identity_safe_residual_contract_preserves_failed_v1_grid(
+    tmp_path, monkeypatch
+):
+    original_repo_path = replication2._repo_path
+
+    def repo_path(path):
+        try:
+            return original_repo_path(path)
+        except ValueError:
+            return f"strategy_tournament/v2/test/{path.name}"
+
+    monkeypatch.setattr(replication2, "DEFAULT_ROOT", tmp_path)
+    monkeypatch.setattr(replication2, "_repo_path", repo_path)
+    monkeypatch.setattr(
+        replication2.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: [],
+    )
+    monkeypatch.setattr(
+        replication2.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
+
+    _path, contract, capacity = replication2.freeze_contract(
+        created_at=datetime.now().astimezone().isoformat(),
+        enforce_commit=False,
+    )
+    base = replication2._read_contract(replication2.V1_CONTRACT)
+
+    assert capacity.is_file()
+    assert contract["parameter_grid"] == base["parameter_grid"]
+    assert len(contract["trial_family"]) == 48
+    assert contract["universe"]["target_symbols"] == list(
+        runtime.ETF_RESIDUAL_REPLICATION_V2_TARGET_SYMBOLS
+    )
+    assert contract["prior_family_attempt_count"] == 3
+    assert contract["predecessor"]["strategy_metrics_accessed"] is False
+    assert contract["new_mechanism_family_slot_consumed"] is False

@@ -41,6 +41,21 @@ ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS = (
     "VXF",
 )
 ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL = "SPY"
+ETF_RESIDUAL_REPLICATION_V2_FAMILY = (
+    "liquid-etf-market-residual-reversal-replication-v2"
+)
+ETF_RESIDUAL_REPLICATION_V2_TARGET_SYMBOLS = (
+    "IBB",
+    "IGV",
+    "ITB",
+    "MTUM",
+    "QUAL",
+    "SOXX",
+    "USMV",
+    "VEA",
+    "VLUE",
+    "VWO",
+)
 EQUITY_RESIDUAL_FAMILIES = {
     EQUITY_RESIDUAL_FAMILY,
     EQUITY_RESIDUAL_REPLICATION_FAMILY,
@@ -48,6 +63,7 @@ EQUITY_RESIDUAL_FAMILIES = {
 RESIDUAL_FAMILIES = {
     *EQUITY_RESIDUAL_FAMILIES,
     ETF_RESIDUAL_REPLICATION_FAMILY,
+    ETF_RESIDUAL_REPLICATION_V2_FAMILY,
 }
 INTRADAY_ETF_FAMILY = "intraday-index-etf-opening-reversal"
 COUNTRY_ETF_OPENING_REVERSAL_FAMILY = "country-etf-opening-reversal"
@@ -115,6 +131,7 @@ VOLATILITY_COMPRESSION_FAMILY = (
 SUPPORTED_FAMILIES = {
     *EQUITY_RESIDUAL_FAMILIES,
     ETF_RESIDUAL_REPLICATION_FAMILY,
+    ETF_RESIDUAL_REPLICATION_V2_FAMILY,
     *INTRADAY_ETF_FAMILIES,
     ETF_PULLBACK_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
@@ -851,14 +868,23 @@ def _fixed_etf_residual_candidates(
 ) -> list[dict[str, Any]]:
     """Apply the frozen residual-reversal rules to a fixed ETF denominator."""
 
-    if dataset.get("family_id") != ETF_RESIDUAL_REPLICATION_FAMILY:
+    family_id = str(dataset.get("family_id"))
+    if family_id not in {
+        ETF_RESIDUAL_REPLICATION_FAMILY,
+        ETF_RESIDUAL_REPLICATION_V2_FAMILY,
+    }:
         raise DenseStrategyRuntimeError(
             "fixed ETF residual dataset family binding is invalid"
         )
+    target_symbols = (
+        ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS
+        if family_id == ETF_RESIDUAL_REPLICATION_FAMILY
+        else ETF_RESIDUAL_REPLICATION_V2_TARGET_SYMBOLS
+    )
     calendar = _calendar(dataset)
     daily = _daily_series(dataset)
     expected_symbols = {
-        *ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS,
+        *target_symbols,
         ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL,
     }
     if set(daily) != expected_symbols:
@@ -871,18 +897,17 @@ def _fixed_etf_residual_candidates(
     else:
         augmented = dict(dataset)
     augmented["universe_by_date"] = {
-        day: list(ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS)
+        day: list(target_symbols)
         for day in decision_dates
     }
     augmented["universe_identity_by_date"] = {
         day: {
-            symbol: f"ETF:{symbol}"
-            for symbol in ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS
+            symbol: f"ETF:{symbol}" for symbol in target_symbols
         }
         for day in decision_dates
     }
     augmented["split_execution_dates_by_symbol"] = {
-        symbol: [] for symbol in ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS
+        symbol: [] for symbol in target_symbols
     }
     return _equity_residual_candidates(augmented, parameters)
 
@@ -3896,7 +3921,10 @@ def build_candidates(
 
     if dataset.get("family_id") != family_id:
         raise DenseStrategyRuntimeError("dataset family binding does not match")
-    if family_id == ETF_RESIDUAL_REPLICATION_FAMILY:
+    if family_id in {
+        ETF_RESIDUAL_REPLICATION_FAMILY,
+        ETF_RESIDUAL_REPLICATION_V2_FAMILY,
+    }:
         return _fixed_etf_residual_candidates(dataset, parameters)
     if family_id in EQUITY_RESIDUAL_FAMILIES:
         return _equity_residual_candidates(dataset, parameters)
@@ -4214,6 +4242,7 @@ def _production_daily_signal(
         }
     if family_id in {
         ETF_RESIDUAL_REPLICATION_FAMILY,
+        ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         ETF_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
@@ -4244,9 +4273,17 @@ def _production_daily_signal(
             raise DenseStrategyRuntimeError(
                 "production ETF history does not cover the complete calendar"
             )
-        if family_id == ETF_RESIDUAL_REPLICATION_FAMILY:
+        if family_id in {
+            ETF_RESIDUAL_REPLICATION_FAMILY,
+            ETF_RESIDUAL_REPLICATION_V2_FAMILY,
+        }:
+            target_symbols = (
+                ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS
+                if family_id == ETF_RESIDUAL_REPLICATION_FAMILY
+                else ETF_RESIDUAL_REPLICATION_V2_TARGET_SYMBOLS
+            )
             if frozen_symbols != [
-                *ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS,
+                *target_symbols,
                 ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL,
             ]:
                 raise DenseStrategyRuntimeError(
@@ -4297,7 +4334,7 @@ def _production_daily_signal(
                 - 1
             )
             qualified: list[tuple[float, str, float, float]] = []
-            for symbol in ETF_RESIDUAL_REPLICATION_TARGET_SYMBOLS:
+            for symbol in target_symbols:
                 bars = daily[symbol]
                 symbol_index = indices[symbol].get(decision_date)
                 if symbol_index is None or symbol_index < max(
@@ -5679,6 +5716,7 @@ def evaluate_production_signal(
     if family_id in {
         *EQUITY_RESIDUAL_FAMILIES,
         ETF_RESIDUAL_REPLICATION_FAMILY,
+        ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         LIQUID_EQUITY_MOMENTUM_FAMILY,
         ETF_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
