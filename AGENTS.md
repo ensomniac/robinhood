@@ -473,6 +473,10 @@ substitutions. Commit it before provider access.
 Collection `fff6800f...cd933dd` completed all 10 tasks in 11 requests with zero
 failures or substitutions under ignored dataset hash
 `a7e62fec...0443062`. Commit the compact status before independent inspection.
+Inspection `8815c99f...8e4552b` rebuilt every task, hash, frozen scope, runtime
+schema, zero substitutions, and all 9,000 observations. Manifest
+`423456c7...f69220` binds the inspected dataset to the search. Commit both
+before evaluation.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
