@@ -36,6 +36,48 @@ def test_standardization_uses_only_latest_sixty_completed_observations():
     )
 
 
+def test_shared_cost_scenarios_replay_stress_quantities(monkeypatch):
+    calls: list[tuple[int, set[str] | None, dict[str, int] | None]] = []
+
+    def fake_scenario(
+        _scope,
+        _candidates,
+        _policy,
+        cost,
+        *,
+        allowed_signal_ids=None,
+        quantity_by_signal_id=None,
+    ):
+        calls.append(
+            (
+                cost,
+                allowed_signal_ids,
+                quantity_by_signal_id,
+            )
+        )
+        return {
+            "closed_trades": [
+                {"signal_id": "a", "quantity": 11},
+                {"signal_id": "b", "quantity": 7},
+            ]
+        }
+
+    monkeypatch.setattr(runtime, "_scenario", fake_scenario)
+
+    runtime._shared_cost_scenarios(
+        ["2026-07-13"],
+        [],
+        {},
+        rolling_origin_plan=None,
+    )
+
+    assert calls[0] == (20, None, None)
+    assert calls[1:] == [
+        (5, {"a", "b"}, {"a": 11, "b": 7}),
+        (10, {"a", "b"}, {"a": 11, "b": 7}),
+    ]
+
+
 def test_pullback_uses_only_completed_decision_bar_and_enters_next_open():
     days = _days(230)
     closes = [100 + 0.2 * index for index in range(230)]

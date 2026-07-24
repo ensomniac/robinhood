@@ -146,6 +146,7 @@ def simulate_portfolio_account(
     maximum_gross_notional_fraction: float,
     cost_bps_per_side: float,
     allowed_signal_ids: set[str] | None = None,
+    quantity_by_signal_id: Mapping[str, int] | None = None,
 ) -> dict[str, Any]:
     """Chronologically compound a long-only account under portfolio contention.
 
@@ -240,6 +241,29 @@ def simulate_portfolio_account(
         raise LearningStatisticsError(
             "allowed_signal_ids contains an unknown candidate"
         )
+    frozen_quantities: dict[str, int] = {}
+    if quantity_by_signal_id is not None:
+        if not set(quantity_by_signal_id).issubset(seen_ids):
+            raise LearningStatisticsError(
+                "quantity_by_signal_id contains an unknown candidate"
+            )
+        for signal_id, raw_quantity in quantity_by_signal_id.items():
+            if (
+                isinstance(raw_quantity, bool)
+                or not isinstance(raw_quantity, int)
+                or raw_quantity < 1
+            ):
+                raise LearningStatisticsError(
+                    "quantity_by_signal_id values must be positive integers"
+                )
+            frozen_quantities[str(signal_id)] = raw_quantity
+        if (
+            allowed_signal_ids is not None
+            and set(frozen_quantities) != allowed_signal_ids
+        ):
+            raise LearningStatisticsError(
+                "frozen quantities must exactly cover allowed signals"
+            )
 
     by_date: dict[str, list[dict[str, Any]]] = {day_text: [] for day_text in normalized_dates}
     for item in normalized_candidates:
@@ -342,13 +366,18 @@ def simulate_portfolio_account(
                 0.0,
                 current_equity * maximum_gross_notional_fraction - marked_notional,
             )
-            quantity = math.floor(
+            maximum_quantity = math.floor(
                 min(
                     risk_budget / stop_distance,
                     gross_capacity / entry_price,
                     cash / (entry_price * (1 + cost_rate)),
                 )
             )
+            quantity = frozen_quantities.get(signal_id, maximum_quantity)
+            if quantity > maximum_quantity:
+                capacity_reasons.append(
+                    "frozen_quantity_exceeds_current_capacity"
+                )
             if quantity < 1:
                 capacity_reasons.append("risk_notional_or_cash_capacity")
             if capacity_reasons:

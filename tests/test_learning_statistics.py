@@ -176,6 +176,44 @@ class AccountPathTests(unittest.TestCase):
             results[2]["compounded_return_fraction"],
         )
 
+    def test_portfolio_simulator_replays_a_frozen_stress_quantity(self):
+        dates = ["2026-07-13", "2026-07-14"]
+        candidate = {
+            "signal_id": "one",
+            "signal_date": dates[0],
+            "outcome": "eligible",
+            "entry_price": 100.0,
+            "stop_price": 99.0,
+            "exit_date": dates[1],
+            "exit_price": 101.0,
+            "marks": {dates[0]: 100.0, dates[1]: 101.0},
+        }
+
+        result = simulate_portfolio_account(
+            dates,
+            [candidate],
+            starting_equity=100_000,
+            risk_fraction=0.005,
+            maximum_concurrent_positions=3,
+            maximum_new_entries_per_day=5,
+            maximum_aggregate_risk_fraction=0.0125,
+            maximum_gross_notional_fraction=1.0,
+            cost_bps_per_side=5,
+            allowed_signal_ids={"one"},
+            quantity_by_signal_id={"one": 17},
+        )
+
+        self.assertEqual(result["closed_trades"][0]["quantity"], 17)
+        self.assertEqual(
+            result["trial_accounting"][0],
+            {
+                "date": dates[0],
+                "signal_id": "one",
+                "outcome": "filled",
+                "quantity": 17,
+            },
+        )
+
 
 class StatisticalControlTests(unittest.TestCase):
     def test_stationary_bootstrap_is_deterministic_and_block_aware(self):

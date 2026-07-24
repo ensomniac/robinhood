@@ -5744,6 +5744,7 @@ def _scenario(
     cost_bps_per_side: int,
     *,
     allowed_signal_ids: set[str] | None = None,
+    quantity_by_signal_id: Mapping[str, int] | None = None,
 ) -> dict[str, Any]:
     return simulate_portfolio_account(
         calendar,
@@ -5760,6 +5761,7 @@ def _scenario(
         ),
         cost_bps_per_side=cost_bps_per_side,
         allowed_signal_ids=allowed_signal_ids,
+        quantity_by_signal_id=quantity_by_signal_id,
     )
 
 
@@ -5770,6 +5772,7 @@ def _rolling_origin_scenario(
     cost_bps_per_side: int,
     *,
     allowed_signal_ids: set[str] | None = None,
+    quantity_by_signal_id: Mapping[str, int] | None = None,
 ) -> dict[str, Any]:
     starting_equity = float(policy.get("starting_equity", 100_000.0))
     current_equity = starting_equity
@@ -5809,6 +5812,14 @@ def _rolling_origin_scenario(
             else allowed_signal_ids
             & {str(item["signal_id"]) for item in fold_candidates}
         )
+        fold_quantities = (
+            None
+            if quantity_by_signal_id is None
+            else {
+                signal_id: quantity_by_signal_id[signal_id]
+                for signal_id in fold_allowed_signal_ids or set()
+            }
+        )
         fold_policy = {**dict(policy), "starting_equity": current_equity}
         scenario = _scenario(
             test_dates,
@@ -5816,6 +5827,7 @@ def _rolling_origin_scenario(
             fold_policy,
             cost_bps_per_side,
             allowed_signal_ids=fold_allowed_signal_ids,
+            quantity_by_signal_id=fold_quantities,
         )
         account_path.extend(scenario["account_path"])
         trial_accounting.extend(scenario["trial_accounting"])
@@ -5852,6 +5864,10 @@ def _shared_cost_scenarios(
     selected = {
         str(item["signal_id"]) for item in stress["closed_trades"]
     }
+    frozen_quantities = {
+        str(item["signal_id"]): int(item["quantity"])
+        for item in stress["closed_trades"]
+    }
     scenarios = {
         cost: evaluator(
             scope,
@@ -5859,6 +5875,7 @@ def _shared_cost_scenarios(
             policy,
             cost,
             allowed_signal_ids=selected,
+            quantity_by_signal_id=frozen_quantities,
         )
         for cost in (5, 10)
     }
