@@ -64,6 +64,11 @@ V6_INSPECTION = (
     "liquid-equity-market-residual-reversal-replication-development-inspection-"
     "5af65a86d919ed857c6d36adfc0df7e29b1ec0781b8099027595f5131aa275a9.json"
 )
+PREDECESSOR_REFERENCE_CONTRACT = (
+    ROOT
+    / "reference-contract/residual-temporal-reference-contract-"
+    "babda4be1c6de4bf2991c649aac5c8309b089fc06bebc87a94f1311155c0b36b.json"
+)
 REFERENCE_DATE_COUNT = 200
 SELECTION_START = "2021-01-04"
 SELECTION_END = "2022-12-30"
@@ -174,6 +179,57 @@ def _v6_bindings() -> tuple[dict[str, Any], dict[str, Any]]:
             "v6 adverse evidence or untouched reserve drifted"
         )
     return contract, inspection
+
+
+def _preexisting_reference_metadata() -> dict[str, Any]:
+    """Bind metadata cached under the first committed reference contract."""
+
+    if not PREDECESSOR_REFERENCE_CONTRACT.is_file():
+        return {
+            "authorized_predecessor_contract": None,
+            "snapshot_count": 0,
+            "snapshots": [],
+        }
+    predecessor = strategy_discovery.load_artifact(
+        PREDECESSOR_REFERENCE_CONTRACT, expected_kind=CONTRACT_KIND
+    )
+    if predecessor.get("state") != CONTRACT_STATE:
+        raise ResidualTemporalReferenceError(
+            "predecessor reference contract is invalid"
+        )
+    store = HistoricalStoreConfig.from_env(DEFAULT_ENV_PATH)
+    snapshot_root = (
+        store.root / "_derived" / SUCCESSOR_ID / "reference"
+    )
+    snapshots: list[dict[str, Any]] = []
+    for day in selected_dates():
+        path = snapshot_root / f"{day}.json.gz"
+        if not path.is_file():
+            continue
+        rows = _read_snapshot(path)
+        snapshots.append(
+            {
+                "date": day,
+                "rows": len(rows),
+                "sha256": sha256_file(path),
+            }
+        )
+    if [item["date"] for item in snapshots] != selected_dates()[
+        : len(snapshots)
+    ]:
+        raise ResidualTemporalReferenceError(
+            "preexisting reference cache is not a contiguous frozen prefix"
+        )
+    return {
+        "authorized_predecessor_contract": {
+            "path": _repo_path(PREDECESSOR_REFERENCE_CONTRACT),
+            "file_sha256": sha256_file(PREDECESSOR_REFERENCE_CONTRACT),
+            "artifact_sha256": predecessor["artifact_sha256"],
+        },
+        "snapshot_count": len(snapshots),
+        "snapshots": snapshots,
+        "prices_or_returns_accessed": False,
+    }
 
 
 def _pre_reference_exposure_check(
@@ -294,9 +350,10 @@ def freeze_contract(
         "outcome_exposure_index_sha256": outcome_exposure.audit()[
             "index_sha256"
         ],
+        "preexisting_reference_metadata": _preexisting_reference_metadata(),
         "market_prices_accessed": False,
         "strategy_outcomes_accessed": False,
-        "provider_access_before_freeze": False,
+        "provider_access_without_prior_committed_contract": False,
         "broker_actions": 0,
     }
     return strategy_discovery._write_artifact(
@@ -318,7 +375,8 @@ def load_contract(
         contract.get("state") == CONTRACT_STATE
         and contract.get("market_prices_accessed") is False
         and contract.get("strategy_outcomes_accessed") is False
-        and contract.get("provider_access_before_freeze") is False
+        and contract.get("provider_access_without_prior_committed_contract")
+        is False
         and contract.get("broker_actions") == 0
         and contract.get("selection_contract", {}).get("requested_dates")
         == selected_dates()
@@ -404,13 +462,11 @@ def _read_snapshot(path: Path) -> list[dict[str, Any]]:
 def collect(
     contract_path: Path,
     *,
-    completed_at: str,
     root: Path = ROOT,
     store_config: HistoricalStoreConfig | None = None,
     provider_config: MassiveReferenceConfig | None = None,
     enforce_commit: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
-    _timestamp(completed_at, "completed_at")
     contract = load_contract(contract_path, enforce_commit=enforce_commit)
     store = store_config or HistoricalStoreConfig.from_env(DEFAULT_ENV_PATH)
     provider = provider_config or MassiveReferenceConfig.from_env(
@@ -422,7 +478,8 @@ def collect(
     snapshots: list[dict[str, Any]] = []
     cache_hits = 0
     failures = 0
-    started = time.monotonic()
+    monotonic_started = time.monotonic()
+    started_at = datetime.now(timezone.utc)
     with _TelemetryCollector(provider) as collector:
         for index, day in enumerate(dates, 1):
             output = output_root / f"{day}.json.gz"
@@ -471,8 +528,11 @@ def collect(
             ),
             "cache_hits": cache_hits,
             "failures": failures,
-            "elapsed_seconds": round(time.monotonic() - started, 6),
+            "elapsed_seconds": round(
+                time.monotonic() - monotonic_started, 6
+            ),
         }
+    completed_at = datetime.now(timezone.utc)
     payload = {
         "schema_version": 1,
         "artifact_kind": COLLECTION_KIND,
@@ -481,7 +541,10 @@ def collect(
         "family_id": FAMILY_ID,
         "contract_path": _repo_path(contract_path),
         "contract_sha256": contract["artifact_sha256"],
-        "collection_completed_at": completed_at,
+        "collection_started_at": started_at.isoformat().replace("+00:00", "Z"),
+        "collection_completed_at": completed_at.isoformat().replace(
+            "+00:00", "Z"
+        ),
         "external_relative_path": str(relative),
         "snapshots": snapshots,
         "snapshot_count": len(snapshots),
@@ -507,7 +570,6 @@ def _parser() -> argparse.ArgumentParser:
     freeze.add_argument("--created-at", required=True)
     collection = subparsers.add_parser("collect")
     collection.add_argument("contract", type=Path)
-    collection.add_argument("--completed-at", required=True)
     return parser
 
 
@@ -521,7 +583,6 @@ def main() -> int:
         else:
             path, artifact = collect(
                 args.contract,
-                completed_at=args.completed_at,
                 root=args.root,
             )
         print(
