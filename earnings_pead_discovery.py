@@ -21,7 +21,7 @@ import earnings_gap_continuation as earnings
 import outcome_exposure
 import portfolio_maturity
 import strategy_discovery
-from historical_store import HistoricalDayStore, canonical_sha256
+from historical_store import HistoricalDayStore, canonical_sha256, sha256_file
 from learning_data import freeze_dataset_contract
 from learning_experiment import DEVELOPMENT_SEARCH_RULE
 
@@ -31,7 +31,10 @@ CAMPAIGN_ID = portfolio_maturity.V2_CAMPAIGN_ID
 FAMILY_ID = runtime.EARNINGS_PEAD_FAMILY
 MECHANISM_FAMILY = "earnings-gap-continuation"
 STRATEGY_ID = "earnings-positive-surprise-drift"
-SUCCESSOR_ID = "earnings-positive-surprise-drift-v1"
+PREDECESSOR_SUCCESSOR_ID = "earnings-positive-surprise-drift-v1"
+SUCCESSOR_ID = (
+    "earnings-positive-surprise-drift-v2-complete-daily-fallback"
+)
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/continuous"
 SOURCE_COLLECTION = (
     PROJECT_ROOT
@@ -76,10 +79,106 @@ EMBARGO_START = "2025-06-02"
 EMBARGO_END = "2025-06-06"
 CONFIRMATION_START = "2025-06-09"
 CONFIRMATION_END = "2025-12-23"
+V1_SEARCH = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/"
+    "earnings-positive-surprise-drift/search/"
+    "earnings-positive-surprise-drift-search-"
+    "d03f14790ae22e175e83495a957c0e2ed8b184901139318aaf56ce4c4f23e1e6.json"
+)
+FAILURE_ROOT = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/"
+    "earnings-positive-surprise-drift/development-failures"
+)
 
 
 class EarningsPeadDiscoveryError(RuntimeError):
     """The outcome-blind PEAD selection or evidence boundary drifted."""
+
+
+def record_v1_failure(
+    *,
+    recorded_at: str,
+    root: Path = FAILURE_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    earnings._timestamp(recorded_at, "recorded_at")
+    strategy_discovery.require_committed(V1_SEARCH)
+    search = strategy_discovery.load_artifact(
+        V1_SEARCH, expected_kind="frozen-development-search"
+    )
+    contract = search["family_contract"]
+    before = contract["implementation_hashes"][
+        "earnings_pead_plugin.py"
+    ]
+    after = sha256_file(PROJECT_ROOT / "earnings_pead_plugin.py")
+    if before == after:
+        raise EarningsPeadDiscoveryError(
+            "daily-history fallback is not distinct from v1"
+        )
+    payload = {
+        "schema_version": 1,
+        "artifact_kind": "development-evaluation-failure",
+        "state": "FAILED_INCOMPLETE_PREFERRED_DAILY_HISTORY",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "successor_id": PREDECESSOR_SUCCESSOR_ID,
+        "recorded_at": recorded_at,
+        "search_path": _repo_path(V1_SEARCH),
+        "search_sha256": search["artifact_sha256"],
+        "error": "complete daily bar is missing: 2024-01-02 SPY",
+        "failure_boundary": (
+            "development opened only the first prior SPY history document; "
+            "the preferred Alpaca-derived daily aggregate was absent and the "
+            "plugin failed before candidate construction, trial metrics, "
+            "winner selection, result writing, or confirmation access"
+        ),
+        "permitted_recovery": (
+            "retire v1; one new exact successor may add a deterministic "
+            "complete raw daily-bar provider fallback while preserving every "
+            "event, date, partition, grid, cost, selection, and risk rule"
+        ),
+        "dataset_loads": 1,
+        "development_price_documents_opened": 1,
+        "trials_returned": 0,
+        "trial_metrics_surfaced": False,
+        "selection_executed": False,
+        "result_artifact_written": False,
+        "confirmation_accessed": False,
+        "provider_requests": 0,
+        "broker_actions": 0,
+        "plugin_before_sha256": before,
+        "plugin_after_sha256": after,
+    }
+    return strategy_discovery._write_artifact(
+        payload,
+        root,
+        "earnings-positive-surprise-drift-development-failure",
+    )
+
+
+def _failure_chain() -> tuple[Path, dict[str, Any]]:
+    paths = sorted(FAILURE_ROOT.glob("*.json"))
+    if len(paths) != 1:
+        raise EarningsPeadDiscoveryError(
+            "expected one committed v1 development failure"
+        )
+    path = paths[0]
+    strategy_discovery.require_committed(path)
+    value = strategy_discovery.load_artifact(
+        path, expected_kind="development-evaluation-failure"
+    )
+    if not (
+        value.get("state")
+        == "FAILED_INCOMPLETE_PREFERRED_DAILY_HISTORY"
+        and value.get("trial_metrics_surfaced") is False
+        and value.get("result_artifact_written") is False
+        and value.get("confirmation_accessed") is False
+    ):
+        raise EarningsPeadDiscoveryError(
+            "v1 development failure boundary drifted"
+        )
+    return path, value
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -338,6 +437,7 @@ def freeze_family(
             PROJECT_ROOT / "portfolio_config.toml",
         ):
             strategy_discovery.require_committed(path)
+    failure_path, failure = _failure_chain()
     source = store or HistoricalDayStore.from_env()
     selection = _candidate_selection(
         source, enforce_commit=enforce_commit
@@ -367,6 +467,7 @@ def freeze_family(
         _repo_path(SOURCE_CAPACITY_INSPECTION),
         _repo_path(RETRY_FAILURE),
         _repo_path(IDENTITY_MANIFEST),
+        _repo_path(failure_path),
         "strategy_tournament/v2/OUTCOME_EXPOSURE_INDEX.jsonl",
     ]
     capacity_path, _capacity = freeze_dataset_contract(
@@ -426,7 +527,7 @@ def freeze_family(
         "mechanism_family": MECHANISM_FAMILY,
         "strategy_id": STRATEGY_ID,
         "parent_experiment_id": (
-            "earnings-gap-continuation-v1-development-search"
+            f"experiment-{PREDECESSOR_SUCCESSOR_ID}"
         ),
         "created_at": created_at,
         "status": "INVENTED",
@@ -464,10 +565,19 @@ def freeze_family(
             "Selection-adjusted chronological account log growth after costs."
         ),
         "material_difference_rationale": (
-            "This successor removes the v1 2-8 percent opening-gap dependency "
-            "and tests dense multi-session PEAD directly while preserving "
-            "verified reports, immutable timing, risk, and untouched evidence."
+            "This exact successor changes only daily-history loading: when "
+            "the preferred complete Alpaca-derived daily aggregate is absent, "
+            "it uses the frozen complete raw daily provider precedence. Every "
+            "event, date, partition, grid, cost, selection, and risk rule is "
+            "identical to the failed v1 PEAD search."
         ),
+        "predecessor_failure": {
+            "path": _repo_path(failure_path),
+            "artifact_sha256": failure["artifact_sha256"],
+            "state": failure["state"],
+            "trial_metrics_surfaced": False,
+            "confirmation_accessed": False,
+        },
         "universe_requirements": {
             "security_type": "previously observed point-in-time U.S. common stock",
             "prior_close_minimum": 10.0,
@@ -611,11 +721,28 @@ def status(*, root: Path = DEFAULT_ROOT) -> dict[str, Any]:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("status", "freeze"))
+    parser.add_argument(
+        "command", choices=("status", "record-v1-failure", "freeze")
+    )
     parser.add_argument("--created-at")
+    parser.add_argument("--recorded-at")
     args = parser.parse_args(argv)
     if args.command == "status":
         result = status()
+    elif args.command == "record-v1-failure":
+        if not args.recorded_at:
+            raise EarningsPeadDiscoveryError("--recorded-at is required")
+        path, value = record_v1_failure(
+            recorded_at=args.recorded_at
+        )
+        result = {
+            "state": value["state"],
+            "path": _repo_path(path),
+            "trial_metrics_surfaced": False,
+            "confirmation_accessed": False,
+            "provider_requests": 0,
+            "broker_actions": 0,
+        }
     else:
         if not args.created_at:
             raise EarningsPeadDiscoveryError("--created-at is required")

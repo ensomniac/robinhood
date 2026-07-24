@@ -161,6 +161,16 @@ def _daily_bar(
         providers=("alpaca",),
         require_complete=True,
     )
+    if dataset is None:
+        dataset = store.select_dataset(
+            symbol,
+            day,
+            kind="bars",
+            channel="trades",
+            timeframe="1d",
+            providers=("alpaca", "ibkr", "massive"),
+            require_complete=True,
+        )
     if dataset is None or len(dataset.get("rows", [])) != 1:
         raise EarningsPeadPluginError(
             f"complete daily bar is missing: {day} {symbol}"

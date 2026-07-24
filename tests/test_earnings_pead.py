@@ -3,6 +3,7 @@ from datetime import date, timedelta
 import dense_strategy_runtime as runtime
 import earnings_pead_discovery as discovery
 import earnings_pead_plugin as plugin
+from historical_store import HistoricalDayStore
 
 
 def _bar(day: str, close: float) -> dict[str, float | str]:
@@ -104,3 +105,30 @@ def test_pead_production_evaluator_fails_closed() -> None:
     assert result["entry_ready"] is False
     assert result["fail_closed"] is True
     assert result["broker_actions"] == 0
+
+
+def test_complete_raw_daily_fallback_handles_prior_spy_history() -> None:
+    bar = plugin._daily_bar(
+        HistoricalDayStore.from_env(), "SPY", "2024-01-02"
+    )
+
+    assert bar["date"] == "2024-01-02"
+    assert bar["open"] > 0
+    assert bar["volume"] >= 0
+
+
+def test_v1_development_failure_has_no_trial_or_confirmation_metrics(
+    tmp_path,
+) -> None:
+    _path, failure = discovery.record_v1_failure(
+        recorded_at="2026-07-24T20:45:00Z",
+        root=tmp_path,
+    )
+
+    assert (
+        failure["state"]
+        == "FAILED_INCOMPLETE_PREFERRED_DAILY_HISTORY"
+    )
+    assert failure["trials_returned"] == 0
+    assert failure["trial_metrics_surfaced"] is False
+    assert failure["confirmation_accessed"] is False
