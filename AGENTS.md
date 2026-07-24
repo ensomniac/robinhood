@@ -203,7 +203,11 @@ under preflight `105184a3...5c35dc`, and replacement search
 `d4008bcb...d6079f` is the only V6 search allowed to evaluate. Development
 result `d4c9fb3b...9a1438` completed all 48 trials in 30.805 seconds from one
 cached dataset load and zero provider requests; it remains unelected until
-independent inspection.
+independent inspection. Inspection `5af65a86...a275a9` is terminal `REJECTED`:
+all 48 failed rolling-fold stability, Deflated Sharpe, Holm, and PBO. The
+highest stressed-growth trial reached 0.11545 log growth and PF 1.880 but drew
+down 6.796R, had negative folds, DSR 0.6757, and PBO 0.5714. No V6 trial may
+enter confirmation or be repaired on this corpus.
 Earlier contract `f22fe7bb...ff535` is preserved as a superseded pre-price
 freeze: its first independent inspection stopped on a missing local artifact-
 hash helper, before any provider or market-price access. It cannot authorize
