@@ -1,0 +1,57 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "898e86b21e85bf4c40063802edae437854a51ecd066330fa1b8a984b21f9f0e0",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.08815795899135992,
+  "family_contract_path": "strategy_tournament/v2/continuous/equity-gap-protection-continuation-v3-development-search/family-contract/contract-0f9a28c7e089fccf9abc7017204b985986aa21cb96100ac2230dad8971cdf87f.json",
+  "family_contract_sha256": "95bc573520dd5f27dcba333fc73b926c1a67994f57bca0eeee53298877a6a965",
+  "family_id": "equity-gap-continuation-development-search",
+  "implementation_sha256": "0ae65dcbcac5c0e48d402cb7737dcb3c244ef0e4a95f9e0de2027b57b3774114",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "confirmation_locked": true,
+      "dates_bound": true,
+      "development_exposed": true,
+      "development_lane": true,
+      "family_bound": true,
+      "inputs_inspected": true,
+      "point_in_time": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 1474
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "0f9a28c7e089fccf9abc7017204b985986aa21cb96100ac2230dad8971cdf87f",
+  "verified_capacity": 1474
+}
