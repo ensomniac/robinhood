@@ -494,6 +494,11 @@ calendar wait. Advance the already frozen batch—liquid-equity market-residual
 reversal, intraday index-ETF opening reversal, and liquid-ETF trend pullback—
 by freezing and inspecting its exact disjoint calendar allocation before any
 provider access. Terminal families release their slot immediately.
+Calendar allocation contract `145e5da1...50580c` freezes the three family
+blocks in priority order, 160 target sessions per family from one latest
+contiguous untouched run, warmup-only cross-family overlap, mutually disjoint
+target blocks, and no post-inspection substitutions. It accesses no prices,
+strategy metrics, or target outcomes. Commit it before independent inspection.
 
 The third predeclared residual-equity batch family remains terminally blocked on
 its outcome-blind grouped-daily provider failure. It may resume only without
