@@ -224,7 +224,9 @@ before metrics because the subsequently hardened independent plan inspector is
 also contract-hash-bound. Final refreshed contract
 `89089c57...166ca4e` is semantically identical to the original; only
 `dense_data_collection.py` and `dense_collection_plan_inspection.py` hashes
-differ. Commit it, rerun preflight/search, and evaluate only that final binding.
+differ. Final preflight `30f09626...6937ff` revalidated the same 244-decision
+capacity and zero-metric boundary with zero requests. Commit it, refreeze
+search, and evaluate only that final binding.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
