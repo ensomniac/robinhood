@@ -320,6 +320,10 @@ transport, zero retries or substitutions, hash-valid interrupted resume,
 as-filed EPS/TradingSymbol parsing, same-accession common-stock cover, and
 global exposure filtering without replacement. Commit and push the plan before
 independent plan inspection.
+Inspection `b57cc15b...3d016b` independently rebuilt the complete plan and
+passed every lineage, request, transport, derivation, and zero-outcome check.
+Commit and push it, then execute only that metadata graph. Development prices
+and all confirmation outcomes remain forbidden during collection.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
