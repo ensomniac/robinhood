@@ -166,7 +166,9 @@ scopes, and all implementation hashes with zero outcome access. Commit it and
 run the generic outcome-blind preflight before search or collection. Preflight
 `e9ca1f33...2fc638` independently rebuilt the exact family identity,
 point-in-time boundary, zero-outcome state, and 244-decision capacity with zero
-provider requests. Commit it before freezing the complete one-trial search.
+provider requests. Search `7fe9543a...78bcaf` now freezes the complete
+one-trial rule, costs, partitions, implementation, deterministic selection
+logic, and falsifiers. Commit it before freezing any provider request graph.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
