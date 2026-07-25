@@ -188,8 +188,12 @@ cost, and selection grid on `AGG`, `DBA`, `HYG`, `IYR`, `LQD`, `SHY`, `SLV`,
 `TIP`, `USO`, and `UUP`. Those fixed pre-2008 macro ETFs cover rates, credit,
 real estate, metals, energy, agriculture, and the dollar, and their proposed
 2008-2014 pairs are globally untouched. Commit and push the tested
-implementation before freezing its exact contract; access no price or outcome
-before the normal preflight, search, and collection-plan inspection chain.
+implementation before freezing its exact contract. Contract
+`252a0dd5...890d7c` and capacity `0fdea7a3...ff019b` now freeze all 32 trials,
+200 warmup sessions, 1,000 development sessions, five embargo sessions, and
+500 confirmation sessions with 495 decision dates. They accessed zero prices
+or outcomes. Commit them, then run generic outcome-blind preflight; access no
+price before the normal search and collection-plan inspection chain.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
