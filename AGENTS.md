@@ -279,6 +279,9 @@ parsing, same-accession common-stock cover verification, a maximum three-event
 rank per accepted date, and global outcome-exposure filtering without
 replacement. Commit and test the collector and its independent inspector, then
 freeze and inspect the subordinate plan before the first archive request.
+Plan `b17f1cd4...434b43` now freezes that exact collection and derivation graph
+with zero provider access. Commit and push it before independent plan
+inspection.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
