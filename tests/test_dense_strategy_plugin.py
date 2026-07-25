@@ -208,6 +208,41 @@ def test_development_loads_dataset_once_and_runs_all_declared_trials(
     assert result["provider_telemetry"]["dataset_loads"] == 1
 
 
+def test_development_preserves_explicit_relative_manifest_binding(
+    tmp_path, monkeypatch
+):
+    dataset = _dataset()
+    manifest = _manifest(tmp_path, dataset)
+    relative_manifest = manifest.relative_to(tmp_path)
+    monkeypatch.setattr(plugin, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setenv(
+        "LOCAL_HISTORICAL_DATA_ROOT", str(tmp_path / "historical-store")
+    )
+    monkeypatch.setenv("LOCAL_HISTORICAL_MIN_FREE_GIB", "1")
+
+    result = plugin.evaluate_development(
+        {
+            "family_id": runtime.ETF_PULLBACK_FAMILY,
+            "development_dates": dataset["evaluation_dates"],
+            "dataset_manifest": str(relative_manifest),
+        },
+        [
+            {
+                "trial_id": "trial-relative-manifest",
+                "parameters": {
+                    "trend_sma": 100,
+                    "rsi2_maximum": 10,
+                    "three_session_decline_fraction": 0.02,
+                    "stop_atr14": 1.0,
+                    "maximum_hold_sessions": 3,
+                },
+            }
+        ],
+    )
+
+    assert result["dataset_manifest"] == str(relative_manifest)
+
+
 def test_development_manifest_selection_uses_exact_frozen_search_binding(
     tmp_path,
     monkeypatch,

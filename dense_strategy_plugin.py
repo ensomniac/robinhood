@@ -291,7 +291,9 @@ def evaluate_development(
     dataset = runtime.prepare_dataset(dataset)
     policy = _account_policy()
     return {
-        "dataset_manifest": str(manifest_path),
+        "dataset_manifest": (
+            str(explicit) if explicit is not None else str(manifest_path)
+        ),
         "trials": [
             runtime.evaluate_trial(
                 dataset,

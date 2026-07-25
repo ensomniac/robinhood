@@ -53,6 +53,7 @@ def test_source_contract_freezes_one_rule_request_and_locked_confirmation(
         "require_committed",
         lambda _path: None,
     )
+    monkeypatch.setattr(source.outcome_exposure, "read_index", lambda: [])
 
     contract = source.build_source_contract(
         created_at="2026-07-25T01:30:00Z"
@@ -92,6 +93,7 @@ def test_development_collection_retains_only_frozen_development_prices(
         "require_committed",
         lambda _path: None,
     )
+    monkeypatch.setattr(source.outcome_exposure, "read_index", lambda: [])
     monkeypatch.setattr(
         source.outcome_exposure,
         "ensure_record",
@@ -175,6 +177,7 @@ def test_permission_failure_records_one_request_and_zero_outcomes(
         "require_committed",
         lambda _path: None,
     )
+    monkeypatch.setattr(source.outcome_exposure, "read_index", lambda: [])
     monkeypatch.setattr(source, "_repo_path", lambda path: str(path))
     contract = source.build_source_contract(
         created_at="2026-07-25T01:30:00Z"

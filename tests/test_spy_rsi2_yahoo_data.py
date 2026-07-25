@@ -31,6 +31,7 @@ def test_yahoo_fallback_freezes_same_rule_and_partitions_without_outcomes(
         "require_committed",
         lambda _path: None,
     )
+    monkeypatch.setattr(source.outcome_exposure, "read_index", lambda: [])
     monkeypatch.setattr(shared, "_repo_path", lambda path: str(path))
 
     contract = source.build_source_contract(
@@ -74,6 +75,7 @@ def test_yahoo_collection_retains_no_confirmation_prices(
         "require_committed",
         lambda _path: None,
     )
+    monkeypatch.setattr(source.outcome_exposure, "read_index", lambda: [])
     monkeypatch.setattr(shared, "_repo_path", lambda path: str(path))
     monkeypatch.setattr(
         source.outcome_exposure,
