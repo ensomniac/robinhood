@@ -183,7 +183,11 @@ contain 3,640 raw daily price rows and all 3,592 required warmup/development
 symbol-sessions; strategy metrics, confirmation, substitutions, and broker
 access remain zero. Record and independently inspect the exact loader failure,
 index its development scope as exposed, then refresh only implementation hashes
-and materialize a zero-request checkpoint recovery.
+and materialize a zero-request checkpoint recovery. Failure
+`b0912494...1cff272` now records all nine completed tasks, 3,640 price rows,
+1,992 evaluation symbol-sessions, the full 1,992-pair development exposure,
+zero provider failures, and the no-metrics boundary. Commit it before
+independent reconstruction.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
