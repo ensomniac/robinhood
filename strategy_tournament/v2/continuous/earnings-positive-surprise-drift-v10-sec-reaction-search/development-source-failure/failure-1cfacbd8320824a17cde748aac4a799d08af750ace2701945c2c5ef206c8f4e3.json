@@ -1,0 +1,50 @@
+{
+  "artifact_kind": "earnings-sec-reaction-v10-source-policy-failure",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "disposition": {
+    "confirmation_access_permitted": false,
+    "failed_symbol_retry_permitted": false,
+    "failed_symbol_successor_reuse_permitted": false,
+    "remaining_108_symbols_successor_permitted": true,
+    "same_search_resume_permitted": false,
+    "successor_may_register_http_400_as_permanent_missing": true,
+    "successor_search_freeze_required_before_access": true,
+    "v10_promotion_eligible": false
+  },
+  "error": {
+    "category": "unregistered_http_status",
+    "http_status": 400,
+    "sanitized_message": "Yahoo development request returned HTTP 400"
+  },
+  "failed_request": {
+    "endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/APC",
+    "ordinal": 1,
+    "request_sha256": "9c28dba98203f675a69c54d7e6ced558dea3f27d566f03807e7be6421901ea02",
+    "symbol": "APC"
+  },
+  "failure_boundary": {
+    "broker_actions": 0,
+    "confirmation_prices_accessed": false,
+    "development_prices_retained": false,
+    "outcome_exposure_index_changed": false,
+    "provider_requests": 1,
+    "provider_responses": 1,
+    "rows_retained": 0,
+    "strategy_metrics_computed": 0,
+    "symbols_with_retained_rows": [],
+    "tasks_checkpointed": 0,
+    "winner_selection_executed": false
+  },
+  "failure_sha256": "1cfacbd8320824a17cde748aac4a799d08af750ace2701945c2c5ef206c8f4e3",
+  "family_id": "earnings-sec-yoy-eps-reaction-drift",
+  "inspection_file_sha256": "0548861db70433da9bd0e759e1548b8eadb601914807c2bd510a0741de4cc963",
+  "inspection_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v10-sec-reaction-search/search-inspection/inspection-d963335f1458d6792fedb1c3e2dfeefaec0d637f6d4abba016c6785c7473e0a0.json",
+  "inspection_sha256": "d963335f1458d6792fedb1c3e2dfeefaec0d637f6d4abba016c6785c7473e0a0",
+  "observed_at": "2026-07-25T04:26:58Z",
+  "schema_version": 1,
+  "search_file_sha256": "a33d4d4032fb3c9ddf6bfffd580a9a705abb23bf7975f30d5258b2ceb739537a",
+  "search_path": "strategy_tournament/v2/discovery/earnings-sec-yoy-eps-reaction-drift/search/earnings-sec-yoy-eps-reaction-drift-search-0fc621564e338e96b6f3641a145cce3d5fd4fc4da35256c3dce9887da3399f1e.json",
+  "search_sha256": "0fc621564e338e96b6f3641a145cce3d5fd4fc4da35256c3dce9887da3399f1e",
+  "state": "REACTION_V10_HTTP_400_SOURCE_POLICY_FAILURE",
+  "successor_id": "earnings-positive-surprise-drift-v10-sec-reaction-search"
+}
