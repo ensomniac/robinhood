@@ -22,6 +22,7 @@ DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/discovery"
 SUPPORTED_FAMILIES = {
     runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
     runtime.STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
+    runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY,
 }
 
 
@@ -101,15 +102,19 @@ def _expected_tasks(
         }
     )
     tasks = [split_task]
-    recovery = (
-        plan.get("adjustment_semantics")
-        == dense_data_collection.RECOVERY_ADJUSTMENT
-    )
+    recovery_adjustment = plan.get("adjustment_semantics")
     for symbol in symbols:
         task = {
             "kind": (
                 "daily_symbol_bars"
-                if recovery or provider == "alpaca"
+                if (
+                    recovery_adjustment
+                    == dense_data_collection.RECOVERY_ADJUSTMENT
+                    or (
+                        recovery_adjustment is None
+                        and provider == "alpaca"
+                    )
+                )
                 else "massive_daily_symbol_bars"
             ),
             "date": required_dates[-1],
@@ -224,10 +229,10 @@ def inspect_plan(
         dense_data_collection.DAILY_WARMUP_SESSIONS,
     )
     expected_tasks = _expected_tasks(plan, contract)
-    recovery = (
-        plan.get("adjustment_semantics")
-        == dense_data_collection.RECOVERY_ADJUSTMENT
-    )
+    recovery = plan.get("adjustment_semantics") in {
+        dense_data_collection.RECOVERY_ADJUSTMENT,
+        dense_data_collection.MASSIVE_SOURCE_RECOVERY_ADJUSTMENT,
+    }
     records = outcome_exposure.read_index()
     development_outcome_state = _development_outcome_state(
         plan,
@@ -241,6 +246,51 @@ def inspect_plan(
     checkpoint_recovery = (
         plan.get("recovery_kind")
         == dense_data_collection.FIXED_ETF_CHECKPOINT_REUSE_RECOVERY
+    )
+    source_failure: Mapping[str, Any] | None = None
+    source_failure_inspection: Mapping[str, Any] | None = None
+    if recovery and not checkpoint_recovery:
+        source_failure_path = PROJECT_ROOT / str(
+            plan.get("recovery_failure_path", "")
+        )
+        source_failure_inspection_path = PROJECT_ROOT / str(
+            plan.get("recovery_failure_inspection_path", "")
+        )
+        if enforce_commit:
+            strategy_discovery.require_committed(source_failure_path)
+            strategy_discovery.require_committed(
+                source_failure_inspection_path
+            )
+        source_failure = strategy_discovery.load_artifact(
+            source_failure_path,
+            expected_kind="dense-data-collection-failure",
+        )
+        source_failure_inspection = strategy_discovery.load_artifact(
+            source_failure_inspection_path,
+            expected_kind="dense-data-collection-failure-inspection",
+        )
+    expected_providers = (
+        [
+            (
+                "Alpaca SIP raw-adjustment daily bars by frozen "
+                "symbol range"
+            ),
+            (
+                "Massive point-in-time split actions through the "
+                "final frozen session"
+            ),
+        ]
+        if plan["daily_provider"] == "alpaca"
+        else [
+            (
+                "Massive SIP unadjusted daily bars by frozen "
+                "symbol range"
+            ),
+            (
+                "Massive point-in-time split actions through the "
+                "final frozen session"
+            ),
+        ]
     )
     checks = {
         "plan_hash_valid": (
@@ -269,39 +319,16 @@ def inspect_plan(
         "symbols_rebuilt": (
             plan["symbols"]
             == sorted(map(str, contract["universe"]["symbols"]))
-            == list(runtime.CROSS_STYLE_BREADTH_SYMBOLS)
         ),
         "request_graph_rebuilt": (
             plan["tasks"] == expected_tasks
-            and plan["task_count"] == len(expected_tasks) == 9
+            and plan["task_count"] == len(expected_tasks)
+            == len(plan["symbols"]) + 1
         ),
         "provider_semantics_rebuilt": (
             plan["daily_provider"] in {"massive", "alpaca"}
             and plan["daily_request_mode"] == "symbol_range"
-            and plan["providers"]
-            == (
-                [
-                    (
-                        "Alpaca SIP raw-adjustment daily bars by frozen "
-                        "symbol range"
-                    ),
-                    (
-                        "Massive point-in-time split actions through the "
-                        "final frozen session"
-                    ),
-                ]
-                if recovery or plan["daily_provider"] == "alpaca"
-                else [
-                    (
-                        "Massive SIP unadjusted daily bars by frozen "
-                        "symbol range"
-                    ),
-                    (
-                        "Massive point-in-time split actions through the "
-                        "final frozen session"
-                    ),
-                ]
-            )
+            and plan["providers"] == expected_providers
             and plan["substitutions_allowed"] is False
         ),
         "recovery_lineage_rebuilt": (
@@ -318,12 +345,18 @@ def inspect_plan(
             )
             if checkpoint_recovery
             else (
-                isinstance(plan.get("recovery_failure_path"), str)
-                and isinstance(
-                    plan.get("recovery_failure_inspection_path"), str
-                )
+                source_failure is not None
+                and source_failure_inspection is not None
                 and plan.get("supersedes_plan_sha256")
-                == "7f762395047610635bd897ca0b7a908ccf42ec603edee879cb73264d51773f43"
+                == source_failure.get("plan_sha256")
+                and plan.get("recovery_failure_sha256")
+                == source_failure.get("artifact_sha256")
+                and plan.get("recovery_failure_inspection_sha256")
+                == source_failure_inspection.get("artifact_sha256")
+                and source_failure_inspection.get("failure_sha256")
+                == source_failure.get("artifact_sha256")
+                and source_failure.get("data_outcomes_accessed") is False
+                and source_failure.get("strategy_metrics_accessed") is False
             )
             if recovery
             else plan.get("recovery_failure_path") is None

@@ -751,12 +751,27 @@ def freeze_pullback_recovery(
             and failure.get("failure_code")
             == MASSIVE_DAILY_SYMBOL_FAILURE
         )
+        or (
+            recoverable_family
+            == runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY
+            and failure.get("failure_code")
+            == INCOMPLETE_FIXED_DAILY_RANGE
+        )
+    )
+    massive_source_recovery = (
+        recoverable_family
+        == runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY
     )
     if not (
         recoverable_source_failure
         and failure.get("lane") == "development"
         and failure.get("data_outcomes_accessed") is False
-        and failure.get("completed_tasks") == 1
+        and failure.get("completed_tasks")
+        == (
+            failure.get("task_count")
+            if massive_source_recovery
+            else 1
+        )
         and failure.get("market_price_rows_accessed") == 0
     ):
         raise DenseCollectionRecoveryError(
@@ -826,9 +841,14 @@ def freeze_pullback_recovery(
             "fixed-ETF recovery lacks frozen symbols"
         )
     tasks: list[dict[str, Any]] = [dict(plan["tasks"][0])]
+    daily_kind = (
+        "massive_daily_symbol_bars"
+        if massive_source_recovery
+        else "daily_symbol_bars"
+    )
     for symbol in symbols:
         task = {
-            "kind": "daily_symbol_bars",
+            "kind": daily_kind,
             "date": plan["required_dates"][-1],
             "start": plan["required_dates"][0],
             "symbol": symbol,
@@ -853,11 +873,39 @@ def freeze_pullback_recovery(
             "as_of": current.isoformat(),
             "tasks": tasks,
             "task_count": len(tasks),
-            "providers": [
-                "Alpaca SIP raw-adjustment daily bars by frozen symbol range",
-                "Massive point-in-time split actions through the final frozen session",
-            ],
-            "adjustment_semantics": collection.RECOVERY_ADJUSTMENT,
+            "providers": (
+                [
+                    (
+                        "Massive SIP unadjusted daily bars by frozen "
+                        "symbol range"
+                    ),
+                    (
+                        "Massive point-in-time split actions through the "
+                        "final frozen session"
+                    ),
+                ]
+                if massive_source_recovery
+                else [
+                    (
+                        "Alpaca SIP raw-adjustment daily bars by frozen "
+                        "symbol range"
+                    ),
+                    (
+                        "Massive point-in-time split actions through the "
+                        "final frozen session"
+                    ),
+                ]
+            ),
+            "daily_provider": (
+                "massive"
+                if massive_source_recovery
+                else "alpaca"
+            ),
+            "adjustment_semantics": (
+                collection.MASSIVE_SOURCE_RECOVERY_ADJUSTMENT
+                if massive_source_recovery
+                else collection.RECOVERY_ADJUSTMENT
+            ),
             "recovery_failure_path": collection._repo_path(failure_path),
             "recovery_failure_sha256": failure["artifact_sha256"],
             "recovery_failure_inspection_path": collection._repo_path(

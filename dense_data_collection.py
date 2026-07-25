@@ -50,6 +50,9 @@ DEFAULT_CALENDAR = dense_capacity_inventory.DEFAULT_CALENDAR
 PLAN_KIND = "dense-data-collection-plan"
 STATUS_KIND = "dense-data-collection-status"
 RECOVERY_ADJUSTMENT = "raw_alpaca_with_frozen_massive_split_actions"
+MASSIVE_SOURCE_RECOVERY_ADJUSTMENT = (
+    "raw_massive_with_frozen_massive_split_actions"
+)
 INTRADAY_CHECKPOINT_REUSE_RECOVERY = (
     "empty-missed-date-checkpoint-reuse"
 )
@@ -757,18 +760,33 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 raise DenseDataCollectionError(
                     "fixed-ETF checkpoint-reuse recovery drifted"
                 )
-        elif not (
-                recovery_adjustment == RECOVERY_ADJUSTMENT
-                and plan.get("family_id")
-                in {
-                    runtime.ETF_PULLBACK_FAMILY,
-                    runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
-                }
-                and plan.get("lane") == "development"
+        else:
+            source_recovery_valid = (
+                (
+                    recovery_adjustment == RECOVERY_ADJUSTMENT
+                    and plan.get("family_id")
+                    in {
+                        runtime.ETF_PULLBACK_FAMILY,
+                        runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
+                    }
+                    and failure.get("completed_tasks") == 1
+                )
+                or (
+                    recovery_adjustment
+                    == MASSIVE_SOURCE_RECOVERY_ADJUSTMENT
+                    and plan.get("family_id")
+                    == runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY
+                    and failure.get("failure_code")
+                    == "INCOMPLETE_FIXED_DAILY_SYMBOL_RANGE"
+                    and failure.get("completed_tasks")
+                    == failure.get("task_count")
+                )
+            ) and (
+                plan.get("lane") == "development"
                 and failure.get("data_outcomes_accessed") is False
-                and failure.get("completed_tasks") == 1
                 and failure.get("market_price_rows_accessed") == 0
-            ):
+            )
+            if not source_recovery_valid:
                 raise DenseDataCollectionError(
                     "collection recovery is outside its frozen outcome-blind scope"
                 )
@@ -814,10 +832,18 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         for item in plan["tasks"]
     ):
         raise DenseDataCollectionError("collection task IDs are incomplete or invalid")
-    if recovery_adjustment == RECOVERY_ADJUSTMENT:
+    if recovery_adjustment in {
+        RECOVERY_ADJUSTMENT,
+        MASSIVE_SOURCE_RECOVERY_ADJUSTMENT,
+    }:
         symbols = sorted(map(str, plan.get("symbols", [])))
         expected = [("split_actions", "")]
-        expected.extend(("daily_symbol_bars", symbol) for symbol in symbols)
+        daily_kind = (
+            "daily_symbol_bars"
+            if recovery_adjustment == RECOVERY_ADJUSTMENT
+            else "massive_daily_symbol_bars"
+        )
+        expected.extend((daily_kind, symbol) for symbol in symbols)
         observed = [
             (str(task.get("kind")), str(task.get("symbol") or ""))
             for task in plan["tasks"]
@@ -1466,6 +1492,15 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         successor_feed = "Alpaca SIP daily symbol range"
         successor_adjustment = (
             "raw Alpaca bars adjusted only by frozen Massive split actions "
+            "through the dataset end"
+        )
+    elif (
+        plan.get("adjustment_semantics")
+        == MASSIVE_SOURCE_RECOVERY_ADJUSTMENT
+    ):
+        successor_feed = "Massive SIP daily symbol range"
+        successor_adjustment = (
+            "raw Massive bars adjusted only by frozen Massive split actions "
             "through the dataset end"
         )
     dataset: dict[str, Any] = {

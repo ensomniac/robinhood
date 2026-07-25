@@ -6,6 +6,7 @@ from datetime import date, datetime
 import cross_style_breadth_successor as successor
 import dense_collection_recovery
 import dense_collection_plan_inspection as inspection
+import dense_data_collection
 import outcome_exposure
 
 
@@ -24,6 +25,15 @@ FAILURE_INSPECTION = (
     "cross-style-etf-breadth-continuation-development-collection-"
     "failure-inspection-1812d98042611a45a0a9d58ee6dc953f0a9f2ea"
     "882e4d1b0c33268d7c45660e6.json"
+)
+MASSIVE_RECOVERY_FAILURE_INSPECTION = (
+    inspection.PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/"
+    "liquid-etf-market-residual-reversal-replication-v4/"
+    "development-collection-failure-inspection/"
+    "liquid-etf-market-residual-reversal-replication-v4-development-"
+    "collection-failure-inspection-"
+    "13461de6700578ef2eba95f50bf894a5df5e80f880f76897bf058cecc7cdb589.json"
 )
 
 
@@ -168,5 +178,46 @@ def test_recovery_plan_inspection_rebuilds_alpaca_source_only_change(
 
     assert artifact["state"] == inspection.READY_STATE
     assert artifact["task_count"] == 9
+    assert artifact["checks"]["recovery_lineage_rebuilt"] is True
+    assert all(artifact["checks"].values())
+
+
+def test_recovery_plan_inspection_rebuilds_massive_source_only_change(
+    tmp_path, monkeypatch
+):
+    original_repo_path = inspection._repo_path
+
+    def repo_path(path):
+        try:
+            return original_repo_path(path)
+        except inspection.DenseCollectionPlanInspectionError:
+            return f"strategy_tournament/v2/test/{path.name}"
+
+    monkeypatch.setattr(inspection, "_repo_path", repo_path)
+    recovery_plan, plan = (
+        dense_collection_recovery.freeze_pullback_recovery(
+            MASSIVE_RECOVERY_FAILURE_INSPECTION,
+            as_of=date(2026, 7, 25),
+            actual_today=date(2026, 7, 25),
+            public_root=tmp_path / "recovery",
+            enforce_commit=False,
+        )
+    )
+    _path, artifact = inspection.inspect_plan(
+        recovery_plan,
+        root=tmp_path / "inspection",
+        enforce_commit=False,
+    )
+
+    assert plan["daily_provider"] == "massive"
+    assert plan["adjustment_semantics"] == (
+        dense_data_collection.MASSIVE_SOURCE_RECOVERY_ADJUSTMENT
+    )
+    assert {
+        task["kind"] for task in plan["tasks"][1:]
+    } == {"massive_daily_symbol_bars"}
+    assert artifact["state"] == inspection.READY_STATE
+    assert artifact["task_count"] == 11
+    assert artifact["development_outcome_state"] == "UNTOUCHED"
     assert artifact["checks"]["recovery_lineage_rebuilt"] is True
     assert all(artifact["checks"].values())
