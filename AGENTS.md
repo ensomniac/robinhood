@@ -193,7 +193,10 @@ completed status with all eleven checks passing. Commit it, then index the
 failure scope before refreshing implementation hashes. Exposure record
 `dense-collection-failure-b0912494f673d0f9fc81` now marks all 1,992
 development pairs contaminated while the 2020 confirmation reserve remains
-untouched. Refresh only the original contract's implementation hashes next.
+untouched. Refreshed contract `b0bac32d...9d013b` is byte-equivalent to the
+original after removing implementation hashes; only `dense_data_collection.py`
+changed. Commit it and rerun generic zero-outcome preflight before refreshing
+search and freezing checkpoint reuse.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
