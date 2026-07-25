@@ -265,7 +265,12 @@ canonical row, revalidated the exact scope and runtime schema, and froze all
 Result `af24caad...caeb12` completed the exact family in 3.41 seconds from one
 local dataset load, one cache hit, and zero provider requests. Commit it before
 independently rebuilding trial accounting, statistics, power, and deterministic
-selection.
+selection. Inspection `69fa0a69...c5ae4d` confirms `REJECTED`: every stressed
+path lost, and no trial passed PF, drawdown, rolling folds, DSR, Holm, or
+neighbor stability. The least-negative trial had 76 OOF fills, -0.01411 log
+growth, PF 0.865, 7.50R drawdown, and a negative bootstrap lower bound; only
+family PBO passed. Preserve this exact corpus without repair and leave all 498
+confirmation decisions sealed.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
