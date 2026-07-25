@@ -459,6 +459,13 @@ after proving the source search has no development result, the prior preflight
 was outcome-blind, the implementation file set is identical, and every
 non-hash contract field is unchanged. Commit that inspection and refreshed
 contract, rerun preflight and search freeze, then evaluate all 48 trials.
+Implementation refresh `2a5d2001...c07c332` rebuilt source search
+`d42f7a64...d8c105`, proved zero source development results, and produced
+contract `f2749303...cf2ea4`. Only the six frozen implementation hashes changed;
+the semantic contract digest remains `1b4cf06f...33eae`, the implementation
+file set is identical, and confirmation access remains forbidden. Commit and
+push the inspection and refreshed contract, then run generic preflight on that
+exact new contract.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
