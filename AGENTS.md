@@ -379,6 +379,16 @@ corrections, all 635 request hashes, confirmation symbol disjointness,
 implementation bindings, and globally untouched development and confirmation
 scopes. Commit and push it, then collect only the authorized development graph.
 Confirmation provider access remains forbidden.
+The first v13 price collection failed closed on request ordinal 26, symbol
+`AMCF`, because Yahoo returned an OHLC row outside the frozen structural
+envelope. The preceding 26 tasks are retained; the failed task, response body,
+and offending row are not retained. No strategy metric or confirmation price
+was accessed. The v13 failure recorder and inspector bind the exact 27-symbol
+opened prefix, forbid same-version resume, and index its complete requested
+date-symbol scope. Commit and test them before recording and inspecting the
+failure. Only after that inspection may a new exact successor permanently
+exclude all 27 exposed symbols, freeze invalid-OHLCV as whole-symbol
+permanent-missing zero credit, and access the remaining 608 symbols.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
