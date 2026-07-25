@@ -1185,6 +1185,39 @@ def test_pullback_recovery_uses_raw_alpaca_bars_and_frozen_split_actions(
     assert dataset["daily_bars"]["SPY"][0]["close"] == 100.5
 
 
+def test_cross_style_massive_failure_freezes_source_only_alpaca_recovery(
+    tmp_path,
+):
+    failure_inspection = (
+        collection.PROJECT_ROOT
+        / "strategy_tournament/v2/discovery/"
+        "cross-style-etf-breadth-continuation/"
+        "development-collection-failure-inspection/"
+        "cross-style-etf-breadth-continuation-development-collection-"
+        "failure-inspection-1812d98042611a45a0a9d58ee6dc953f0a9f2ea"
+        "882e4d1b0c33268d7c45660e6.json"
+    )
+    _path, plan = recovery.freeze_pullback_recovery(
+        failure_inspection,
+        as_of=date(2026, 7, 25),
+        actual_today=date(2026, 7, 25),
+        public_root=tmp_path,
+        enforce_commit=False,
+    )
+
+    assert plan["family_id"] == (
+        runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY
+    )
+    assert plan["adjustment_semantics"] == collection.RECOVERY_ADJUSTMENT
+    assert plan["task_count"] == 9
+    assert plan["tasks"][0]["kind"] == "split_actions"
+    assert {
+        task["kind"] for task in plan["tasks"][1:]
+    } == {"daily_symbol_bars"}
+    assert plan["market_outcomes_accessed"] is False
+    assert plan["substitutions_allowed"] is False
+
+
 def test_pullback_recovery_rejects_implementation_hash_drift(
     tmp_path,
     monkeypatch,

@@ -78,8 +78,12 @@ market-price rows, zero strategy metrics, and no exposure scope. Commit and
 independently inspect this failure before freezing any source-only recovery.
 Inspection `1812d980...660e6` rebuilt every checkpoint count, zero-price
 boundary, failure code, and provider telemetry with all eleven checks passing.
-Commit it before extending the bounded recovery controller to this fixed ETF
-family. Do not retry the Massive plan or purchase an entitlement.
+The bounded recovery controller now admits this exact inspected,
+zero-price fixed-ETF failure and can freeze Alpaca SIP raw symbol ranges while
+reusing only the frozen Massive split metadata. It cannot change dates,
+symbols, rules, costs, or evidence scopes. Commit and test that implementation
+before freezing the recovery plan. Do not retry the Massive plan or purchase an
+entitlement.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.

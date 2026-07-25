@@ -590,15 +590,28 @@ def freeze_pullback_recovery(
         failure_inspection_path,
         enforce_commit=enforce_commit,
     )
+    recoverable_family = str(failure.get("family_id"))
+    recoverable_source_failure = (
+        (
+            recoverable_family == runtime.ETF_PULLBACK_FAMILY
+            and failure.get("failure_code") == GROUPED_DAILY_FAILURE
+        )
+        or (
+            recoverable_family
+            == runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY
+            and failure.get("failure_code")
+            == MASSIVE_DAILY_SYMBOL_FAILURE
+        )
+    )
     if not (
-        failure.get("family_id") == runtime.ETF_PULLBACK_FAMILY
+        recoverable_source_failure
         and failure.get("lane") == "development"
-        and failure.get("failure_code") == GROUPED_DAILY_FAILURE
         and failure.get("data_outcomes_accessed") is False
         and failure.get("completed_tasks") == 1
+        and failure.get("market_price_rows_accessed") == 0
     ):
         raise DenseCollectionRecoveryError(
-            "only the outcome-blind ETF pullback grouped-daily failure is recoverable"
+            "only an approved outcome-blind fixed-ETF source failure is recoverable"
         )
     original_path = PROJECT_ROOT / str(failure["plan_path"])
     plan = collection._validate_plan(
@@ -634,7 +647,7 @@ def freeze_pullback_recovery(
             refreshed_search.get("state") == "SEARCH_FROZEN"
             and original_contract == refreshed_contract
             and refreshed_search["family_contract"]["family_id"]
-            == runtime.ETF_PULLBACK_FAMILY
+            == recoverable_family
         ):
             raise DenseCollectionRecoveryError(
                 "refreshed search changed frozen strategy semantics"
@@ -660,7 +673,9 @@ def freeze_pullback_recovery(
         }
     symbols = sorted(map(str, plan["symbols"]))
     if not symbols:
-        raise DenseCollectionRecoveryError("pullback recovery lacks frozen symbols")
+        raise DenseCollectionRecoveryError(
+            "fixed-ETF recovery lacks frozen symbols"
+        )
     tasks: list[dict[str, Any]] = [dict(plan["tasks"][0])]
     for symbol in symbols:
         task = {
@@ -720,9 +735,9 @@ def freeze_pullback_recovery(
     return strategy_discovery._write_artifact(
         payload,
         public_root
-        / runtime.ETF_PULLBACK_FAMILY
+        / recoverable_family
         / "development-collection-plan",
-        f"{runtime.ETF_PULLBACK_FAMILY}-development-collection-plan",
+        f"{recoverable_family}-development-collection-plan",
     )
 
 
@@ -905,6 +920,12 @@ def _parser() -> argparse.ArgumentParser:
     recovery.add_argument("artifact", type=Path)
     recovery.add_argument("--as-of", type=date.fromisoformat)
     recovery.add_argument("--search", type=Path)
+    fixed_etf_recovery = subparsers.add_parser(
+        "freeze-fixed-etf-source-recovery"
+    )
+    fixed_etf_recovery.add_argument("artifact", type=Path)
+    fixed_etf_recovery.add_argument("--as-of", type=date.fromisoformat)
+    fixed_etf_recovery.add_argument("--search", type=Path)
     intraday = subparsers.add_parser(
         "freeze-intraday-representation-recovery"
     )
@@ -937,7 +958,10 @@ def main() -> int:
                 "failure_code": artifact["failure_code"],
                 "data_outcomes_accessed": artifact["data_outcomes_accessed"],
             }
-        elif args.command == "freeze-pullback-recovery":
+        elif args.command in {
+            "freeze-pullback-recovery",
+            "freeze-fixed-etf-source-recovery",
+        }:
             path, artifact = freeze_pullback_recovery(
                 args.artifact,
                 search_path=args.search,
