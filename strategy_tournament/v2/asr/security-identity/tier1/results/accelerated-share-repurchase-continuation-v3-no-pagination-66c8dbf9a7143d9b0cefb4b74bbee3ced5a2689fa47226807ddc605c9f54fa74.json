@@ -1,0 +1,37 @@
+{
+  "accession_terminal_counts": {
+    "NO_COMMON_EQUITY_COVER_ROW": 8,
+    "NO_PRIMARY_CURRENT_REPORT_DOCUMENT": 14,
+    "QUALIFIED_UNAMBIGUOUS_COMMON_EQUITY": 1
+  },
+  "application_id": "tier1-frozen-filing-cover-identity-application",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "contract_inspection_sha256": "393c291251a3622b4e4340f08834ee5224fb246eeb37e3537ddd7cf327f986c3",
+  "contract_sha256": "5417e35a76c2a87f6b85ef5acfea4d71172b3b1b4893efe43936a5ed0dcb5ec2",
+  "event_terminal_counts": {
+    "NO_COMMON_EQUITY_COVER_ROW": 18,
+    "NO_PRIMARY_CURRENT_REPORT_DOCUMENT": 39,
+    "QUALIFIED_VERIFIED_COMMON_EQUITY_EVENT": 2
+  },
+  "independent_disclosure_signal_count": 1,
+  "market_outcomes_accessed": false,
+  "market_price_values_accessed": 0,
+  "maturity_effect": "NONE",
+  "private_result": {
+    "bytes": 669,
+    "cache_relative_path": "_derived/asr-tier1-security-identity-result/867004ae2d48b4e5edc98e1e8a30f69f1f822eb3496039c9a9d2172ee46ecaba.json.gz",
+    "file_sha256": "b743d8746df9fd39b637990b10d9344ca603ec3c4fd56017edc8d6c2d6ea9e5f",
+    "private_result_sha256": "867004ae2d48b4e5edc98e1e8a30f69f1f822eb3496039c9a9d2172ee46ecaba"
+  },
+  "result_kind": "outcome-blind-asr-tier1-security-identity-result",
+  "result_sha256": "66c8dbf9a7143d9b0cefb4b74bbee3ced5a2689fa47226807ddc605c9f54fa74",
+  "returns_computed": 0,
+  "schema_version": 1,
+  "security_identity_resolution_complete": true,
+  "semantic_event_count": 59,
+  "state": "TIER1_IDENTITY_RESULT_PENDING_INSPECTION",
+  "valid": true,
+  "verified_event_count": 2
+}
