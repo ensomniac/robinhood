@@ -190,7 +190,10 @@ zero provider failures, and the no-metrics boundary. Commit it before
 independent reconstruction. Inspection `04378553...39f346` independently
 rebuilt every checkpoint, row count, exposure pair, telemetry field, and absent
 completed status with all eleven checks passing. Commit it, then index the
-failure scope before refreshing implementation hashes.
+failure scope before refreshing implementation hashes. Exposure record
+`dense-collection-failure-b0912494f673d0f9fc81` now marks all 1,992
+development pairs contaminated while the 2020 confirmation reserve remains
+untouched. Refresh only the original contract's implementation hashes next.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
