@@ -370,6 +370,10 @@ contract and metadata-only capacity as `CAPACITY_READY` with 1,063 formal
 events, no external dataset load, and zero provider access. Commit and push it,
 then freeze the generic search artifact before independent v13 search
 inspection.
+Search `36a9738a...852da7` now freezes that exact committed contract,
+preflight, 32 current trials, 32 prior paths, and zero-outcome state. Commit and
+push it, then run the dedicated v13 search inspector before the first Yahoo
+development request.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
