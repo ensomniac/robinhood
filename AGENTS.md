@@ -57,8 +57,11 @@ one-trial rule, 155 development decisions, five embargo sessions, 154 reserved
 confirmation decisions, Massive unadjusted symbol-range inputs, split-only
 adjustment, and all implementation hashes. It accessed zero outcomes. Commit
 the contract and capacity manifest, then run the generic outcome-blind
-preflight; do not collect data until its independent preflight inspection is
-committed.
+preflight. Preflight inspection `370dd244...7b048` independently rebuilt the
+155-decision capacity, family identity, point-in-time boundary, and zero-outcome
+state with zero provider requests. Commit that inspection, then freeze the
+generic development search and its exact data-collection plan; do not collect
+data until both are independently inspected and committed.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
