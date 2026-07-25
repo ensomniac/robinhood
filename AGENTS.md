@@ -359,6 +359,12 @@ substitutions and permanent-missing zero credit for preregistered 400/404 or
 identity-envelope failures. Commit and push the implementation before freezing
 the family contract, generic preflight, and search. No provider request is
 authorized by implementation alone.
+Family contract `502abe0b...cd3723` and capacity manifest
+`7854e584...ada76` now freeze the exact grid, 1,063-event denominator, 635
+development requests, 201-event confirmation reserve, all prior return paths,
+64-trial corrections, partitions, selection rule, and implementation hashes
+with zero provider access. Commit and push them, then run and commit generic
+outcome-blind preflight before freezing the development search.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
