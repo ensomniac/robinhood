@@ -42,6 +42,20 @@ or neighbor stability. Its `DIA`, `IWM`, `QQQ`, and `TLT` development corpus
 through 2012-10-15 is adverse history and may not be repaired; its 2012-10-23
 through 2013-12-31 confirmation partition remains untouched.
 
+The continuous existing-family queue is exhausted and rolling authorization
+`bedfb0ea...5e5585` currently releases three replacement slots. The active
+historical lane is a genuinely distinct new mechanism,
+`liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
+internal bar strength `{0.1,0.2}`, one-session decline `{0.5%,1.0%}`,
+trend SMA `{100,200}`, stop `{1.0,1.5}×ATR14`, and hold `{1,2}` sessions.
+The fixed universe is `EEM`, `EFA`, `MDY`, `SPYG`, `SPYV`, `VNQ`, `VTI`,
+`VTV`, and `VUG`. Every proposed 2008-2014 date-symbol pair is currently
+absent from the global outcome-exposure index. Shared historical and production
+paths rank the lowest completed closing location, enter next session open,
+resolve stop first, and enforce the five-times-cost floor. Commit and push the
+implementation and tests before freezing its exact contract; no price,
+confirmation, or broker access is yet permitted.
+
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
 development corpora with confirmation still sealed. The unchanged-rule PEAD

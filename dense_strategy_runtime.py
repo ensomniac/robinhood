@@ -197,6 +197,7 @@ ETF_OVERSOLD_FAMILIES = {
     HIGH_BETA_ETF_OVERSOLD_FAMILY,
     BROAD_ASSET_ETF_OVERSOLD_FAMILY,
 }
+ETF_IBS_REVERSAL_FAMILY = "liquid-equity-etf-ibs-reversal"
 ETF_CLOSE_TO_OPEN_FAMILY = "liquid-etf-close-to-open-momentum"
 CLOSE_TO_OPEN_ETF_SYMBOLS = ("QQQ", "IWM", "DIA")
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
@@ -234,6 +235,7 @@ SUPPORTED_FAMILIES = {
     CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
     STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
     *ETF_OVERSOLD_FAMILIES,
+    ETF_IBS_REVERSAL_FAMILY,
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
@@ -2085,6 +2087,133 @@ def _high_beta_etf_oversold_candidates(
     return candidates
 
 
+def _etf_ibs_reversal_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    ibs_maximum = float(parameters["internal_bar_strength_maximum"])
+    decline_floor = float(parameters["one_session_decline_fraction"])
+    trend_period = int(parameters["trend_sma"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    if (
+        ibs_maximum not in {0.1, 0.2}
+        or decline_floor not in {0.005, 0.01}
+        or trend_period not in {100, 200}
+        or stop_atr not in {1.0, 1.5}
+        or hold not in {1, 2}
+    ):
+        raise DenseStrategyRuntimeError(
+            "ETF IBS reversal parameters escaped the frozen grid"
+        )
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    feature_cache = dataset.get("_etf_pullback_feature_cache")
+    if not isinstance(feature_cache, Mapping):
+        feature_cache = _etf_pullback_feature_cache(daily)
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        scored: list[tuple[float, float, str, float]] = []
+        for symbol, bars in daily.items():
+            symbol_index = indices[symbol].get(decision_date)
+            if symbol_index is None or symbol_index < max(
+                trend_period - 1, 14, 1
+            ):
+                continue
+            bar = bars[symbol_index]
+            bar_range = float(bar["high"]) - float(bar["low"])
+            if bar_range <= 0:
+                continue
+            internal_bar_strength = (
+                float(bar["close"]) - float(bar["low"])
+            ) / bar_range
+            features = feature_cache[symbol][decision_date]
+            trend = features[f"sma{trend_period}"]
+            atr14 = features["atr14"]
+            decline = features["decline1"]
+            if (
+                trend is None
+                or atr14 is None
+                or decline is None
+                or float(bar["close"]) <= trend
+                or internal_bar_strength > ibs_maximum
+                or decline > -decline_floor
+                or not _cost_floor(abs(decline))
+            ):
+                continue
+            scored.append(
+                (internal_bar_strength, decline, symbol, atr14)
+            )
+        entry_date = calendar[calendar_index + 1]
+        if calendar_index + 1 + hold > len(calendar):
+            continue
+        for rank, (
+            internal_bar_strength,
+            decline,
+            symbol,
+            atr14,
+        ) in enumerate(sorted(scored), 1):
+            bars = daily[symbol]
+            entry_index = indices[symbol].get(entry_date)
+            signal_id = f"{entry_date}-{ETF_IBS_REVERSAL_FAMILY}-{symbol}"
+            if entry_index is None:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "missing_next_open",
+                    }
+                )
+                continue
+            if entry_index + hold > len(bars):
+                continue
+            exit_dates = {
+                str(item["date"])
+                for item in bars[entry_index : entry_index + hold]
+            }
+            expected_dates = set(
+                calendar[calendar_index + 1 : calendar_index + 1 + hold]
+            )
+            if exit_dates != expected_dates:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "incomplete_holding_bars",
+                    }
+                )
+                continue
+            candidate = _daily_candidate(
+                family_id=ETF_IBS_REVERSAL_FAMILY,
+                symbol=symbol,
+                decision_date=decision_date,
+                entry_date=entry_date,
+                bars=bars,
+                entry_index=entry_index,
+                stop_atr=stop_atr,
+                atr14=atr14,
+                hold_sessions=hold,
+                rank=rank,
+                score=internal_bar_strength + decline,
+            )
+            candidate["internal_bar_strength"] = internal_bar_strength
+            candidate["one_session_return_fraction"] = decline
+            candidates.append(candidate)
+    return candidates
+
+
 def _etf_cross_sectional_momentum_candidates(
     dataset: Mapping[str, Any], parameters: Mapping[str, Any]
 ) -> list[dict[str, Any]]:
@@ -3415,6 +3544,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
             STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
+            ETF_IBS_REVERSAL_FAMILY,
         }:
             symbols = dataset.get("symbols")
             if not isinstance(symbols, list) or set(map(str, symbols)) != set(daily):
@@ -3442,6 +3572,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
             BREADTH_CAPITULATION_REBOUND_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
+            ETF_IBS_REVERSAL_FAMILY,
         }:
             prepared["_etf_pullback_feature_cache"] = (
                 _etf_pullback_feature_cache(daily)
@@ -5199,6 +5330,8 @@ def build_candidates(
         return _high_beta_etf_oversold_candidates(
             dataset, parameters, family_id=family_id
         )
+    if family_id == ETF_IBS_REVERSAL_FAMILY:
+        return _etf_ibs_reversal_candidates(dataset, parameters)
     if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY:
         return _etf_cross_sectional_momentum_candidates(dataset, parameters)
     if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
@@ -5506,6 +5639,7 @@ def _production_daily_signal(
         CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
         STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
+        ETF_IBS_REVERSAL_FAMILY,
     }:
         frozen_symbols = frozen_universe.get("symbols")
         observed_symbols = decision_data.get("symbols")
@@ -5977,6 +6111,94 @@ def _production_daily_signal(
                 "symbol": symbol,
                 "rank": 1,
                 "score": rsi2 + decline,
+                "expected_gross_move_fraction": abs(decline),
+                "atr": atr14,
+                "stop_atr_multiple": stop_atr,
+                "holding_trading_days": hold_sessions,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_maximum_hold_close",
+                    "maximum_hold_sessions": hold_sessions,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
+        if family_id == ETF_IBS_REVERSAL_FAMILY:
+            ibs_maximum = float(
+                parameters["internal_bar_strength_maximum"]
+            )
+            decline_floor = float(
+                parameters["one_session_decline_fraction"]
+            )
+            trend_period = int(parameters["trend_sma"])
+            stop_atr = float(parameters["stop_atr14"])
+            hold_sessions = int(parameters["maximum_hold_sessions"])
+            if (
+                ibs_maximum not in {0.1, 0.2}
+                or decline_floor not in {0.005, 0.01}
+                or trend_period not in {100, 200}
+                or stop_atr not in {1.0, 1.5}
+                or hold_sessions not in {1, 2}
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production ETF IBS reversal rules escaped the frozen grid"
+                )
+            qualified: list[
+                tuple[float, float, str, float]
+            ] = []
+            for symbol in map(str, frozen_symbols):
+                bars = daily[symbol]
+                symbol_index = indices[symbol].get(decision_date)
+                if symbol_index is None or symbol_index < max(
+                    trend_period - 1, 14, 1
+                ):
+                    raise DenseStrategyRuntimeError(
+                        "production ETF IBS reversal history is incomplete"
+                    )
+                bar = bars[symbol_index]
+                bar_range = float(bar["high"]) - float(bar["low"])
+                if bar_range <= 0:
+                    continue
+                internal_bar_strength = (
+                    float(bar["close"]) - float(bar["low"])
+                ) / bar_range
+                trend = _sma(bars, symbol_index, trend_period)
+                atr14 = _atr(bars, symbol_index)
+                decline = (
+                    float(bar["close"])
+                    / float(bars[symbol_index - 1]["close"])
+                    - 1
+                )
+                if (
+                    trend is not None
+                    and atr14 is not None
+                    and float(bar["close"]) > trend
+                    and internal_bar_strength <= ibs_maximum
+                    and decline <= -decline_floor
+                    and _cost_floor(abs(decline))
+                ):
+                    qualified.append(
+                        (
+                            internal_bar_strength,
+                            decline,
+                            symbol,
+                            atr14,
+                        )
+                    )
+            if not qualified:
+                raise DenseStrategyRuntimeError(
+                    "no exact production ETF IBS reversal signal"
+                )
+            internal_bar_strength, decline, symbol, atr14 = sorted(
+                qualified
+            )[0]
+            return {
+                "symbol": symbol,
+                "rank": 1,
+                "score": internal_bar_strength + decline,
+                "internal_bar_strength": internal_bar_strength,
+                "one_session_return_fraction": decline,
                 "expected_gross_move_fraction": abs(decline),
                 "atr": atr14,
                 "stop_atr_multiple": stop_atr,
@@ -7439,6 +7661,7 @@ def evaluate_production_signal(
         CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
         STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
+        ETF_IBS_REVERSAL_FAMILY,
     }:
         return _production_daily_signal(
             decision_data, family_id, parameters, frozen_universe
