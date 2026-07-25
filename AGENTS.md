@@ -162,7 +162,11 @@ and 11 raw Yahoo daily symbol ranges from 2008-01-02 through 2012-10-15, with
 no retry or substitution. Inspection `f2a8c75f...2df398` independently rebuilt
 all 12 requests, provider semantics, search and calendar bindings, scopes, and
 zero-outcome boundary in zero requests. Commit it, then collect only those
-exact development tasks; confirmation and broker access remain forbidden.
+exact development tasks. Collection `822a9f24...17ef7d` completed all 12
+requests with zero failures, zero substitutions, and 2.2 seconds of pacing;
+row-level data remains outside Git. Commit the compact uninspected status, then
+independently inspect and register the dataset before evaluation. Confirmation
+and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
