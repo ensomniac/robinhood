@@ -393,6 +393,11 @@ Failure record `fb561c85...4747980` now binds the exact 27 attempted requests,
 all 26 retained task hashes, the absent failed task, zero strategy metrics,
 sealed confirmation, and the no-resume boundary. Commit and push it before the
 independent failure inspector writes the exposure index or authorizes v14.
+Inspection `565528f8...11db901` independently rebuilt that record and indexed
+the full requested date-symbol scope for all 27 attempted symbols. V13 is
+terminal. A v14 search may now exclude those symbols, retain the same 32-trial
+grid and 64-trial selection correction, freeze whole-symbol permanent-missing
+handling for invalid OHLCV, and access only the remaining 608 symbols.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
