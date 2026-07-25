@@ -85,6 +85,80 @@ class RetryBackend(FakeBackend):
         return super().fetch(task)
 
 
+def test_yahoo_daily_backend_validates_identity_and_raw_ohlcv():
+    class Response:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {
+                "chart": {
+                    "error": None,
+                    "result": [
+                        {
+                            "meta": {
+                                "symbol": "XLB",
+                                "exchangeTimezoneName": (
+                                    "America/New_York"
+                                ),
+                            },
+                            "timestamp": [
+                                1_577_974_200,
+                                1_578_060_600,
+                            ],
+                            "indicators": {
+                                "quote": [
+                                    {
+                                        "open": [60.0, 60.5],
+                                        "high": [61.0, 61.5],
+                                        "low": [59.5, 60.0],
+                                        "close": [60.5, 61.0],
+                                        "volume": [1_000, 1_200],
+                                    }
+                                ]
+                            },
+                        }
+                    ],
+                }
+            }
+
+    class Session:
+        def __init__(self):
+            self.calls = []
+
+        def get(self, endpoint, **kwargs):
+            self.calls.append((endpoint, kwargs))
+            return Response()
+
+    backend = collection.ProviderBackend.__new__(
+        collection.ProviderBackend
+    )
+    backend._yahoo_session = Session()
+    waits = []
+    backend._paced_sleep = waits.append
+
+    rows = backend.fetch(
+        {
+            "kind": "yahoo_daily_symbol_bars",
+            "symbol": "XLB",
+            "start": "2020-01-02",
+            "date": "2020-01-03",
+        }
+    )
+
+    assert [row["date"] for row in rows] == [
+        "2020-01-02",
+        "2020-01-03",
+    ]
+    assert all(row["symbol"] == "XLB" for row in rows)
+    assert rows[0]["close"] == 60.5
+    assert waits == [collection.YAHOO_PACE_SECONDS]
+    endpoint, request = backend._yahoo_session.calls[0]
+    assert endpoint.endswith("/XLB")
+    assert request["params"]["interval"] == "1d"
+    assert request["params"]["includeAdjustedClose"] == "true"
+
+
 def _dates(count):
     start = date(2024, 1, 2)
     return [(start + timedelta(days=index)).isoformat() for index in range(count)]

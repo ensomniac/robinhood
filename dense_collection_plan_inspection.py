@@ -104,19 +104,24 @@ def _expected_tasks(
     tasks = [split_task]
     recovery_adjustment = plan.get("adjustment_semantics")
     for symbol in symbols:
+        if (
+            recovery_adjustment
+            == dense_data_collection.RECOVERY_ADJUSTMENT
+            or (
+                recovery_adjustment is None
+                and provider == "alpaca"
+            )
+        ):
+            daily_kind = "daily_symbol_bars"
+        elif (
+            recovery_adjustment
+            == dense_data_collection.YAHOO_SOURCE_RECOVERY_ADJUSTMENT
+        ):
+            daily_kind = "yahoo_daily_symbol_bars"
+        else:
+            daily_kind = "massive_daily_symbol_bars"
         task = {
-            "kind": (
-                "daily_symbol_bars"
-                if (
-                    recovery_adjustment
-                    == dense_data_collection.RECOVERY_ADJUSTMENT
-                    or (
-                        recovery_adjustment is None
-                        and provider == "alpaca"
-                    )
-                )
-                else "massive_daily_symbol_bars"
-            ),
+            "kind": daily_kind,
             "date": required_dates[-1],
             "start": required_dates[0],
             "symbol": symbol,
@@ -232,6 +237,7 @@ def inspect_plan(
     recovery = plan.get("adjustment_semantics") in {
         dense_data_collection.RECOVERY_ADJUSTMENT,
         dense_data_collection.MASSIVE_SOURCE_RECOVERY_ADJUSTMENT,
+        dense_data_collection.YAHOO_SOURCE_RECOVERY_ADJUSTMENT,
     }
     records = outcome_exposure.read_index()
     development_outcome_state = _development_outcome_state(
@@ -283,6 +289,17 @@ def inspect_plan(
         if plan["daily_provider"] == "alpaca"
         else [
             (
+                "Yahoo Finance historical chart raw daily OHLCV "
+                "by frozen symbol range"
+            ),
+            (
+                "Massive point-in-time split actions through the "
+                "final frozen session"
+            ),
+        ]
+        if plan["daily_provider"] == "yahoo"
+        else [
+            (
                 "Massive SIP unadjusted daily bars by frozen "
                 "symbol range"
             ),
@@ -326,10 +343,32 @@ def inspect_plan(
             == len(plan["symbols"]) + 1
         ),
         "provider_semantics_rebuilt": (
-            plan["daily_provider"] in {"massive", "alpaca"}
+            plan["daily_provider"] in {"massive", "alpaca", "yahoo"}
             and plan["daily_request_mode"] == "symbol_range"
             and plan["providers"] == expected_providers
             and plan["substitutions_allowed"] is False
+            and (
+                plan.get("source_request_semantics")
+                == {
+                    "endpoint_template": (
+                        dense_data_collection.YAHOO_CHART_ENDPOINT
+                    ),
+                    "interval": "1d",
+                    "events": "history",
+                    "include_adjusted_close": True,
+                    "raw_ohlc_used": True,
+                    "dividend_adjusted_close_used": False,
+                    "exchange_timezone": "America/New_York",
+                    "requests_per_symbol": 1,
+                    "pace_seconds": (
+                        dense_data_collection.YAHOO_PACE_SECONDS
+                    ),
+                    "no_purchase_required": True,
+                    "retries_permitted": 0,
+                }
+                if plan["daily_provider"] == "yahoo"
+                else plan.get("source_request_semantics") is None
+            )
         ),
         "recovery_lineage_rebuilt": (
             (

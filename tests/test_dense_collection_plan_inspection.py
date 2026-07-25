@@ -35,6 +35,15 @@ MASSIVE_RECOVERY_FAILURE_INSPECTION = (
     "collection-failure-inspection-"
     "13461de6700578ef2eba95f50bf894a5df5e80f880f76897bf058cecc7cdb589.json"
 )
+YAHOO_RECOVERY_FAILURE_INSPECTION = (
+    inspection.PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/"
+    "liquid-etf-market-residual-reversal-replication-v4/"
+    "development-collection-failure-inspection/"
+    "liquid-etf-market-residual-reversal-replication-v4-development-"
+    "collection-failure-inspection-"
+    "5fba3464fae7bab79e050a9ad73c6e5c1d9d5a81300fe4ebb1977eff4dd72fbc.json"
+)
 
 
 def test_independent_plan_inspection_rebuilds_all_nine_requests(
@@ -220,4 +229,46 @@ def test_recovery_plan_inspection_rebuilds_massive_source_only_change(
     assert artifact["task_count"] == 11
     assert artifact["development_outcome_state"] == "UNTOUCHED"
     assert artifact["checks"]["recovery_lineage_rebuilt"] is True
+    assert all(artifact["checks"].values())
+
+
+def test_recovery_plan_inspection_rebuilds_yahoo_source_only_change(
+    tmp_path, monkeypatch
+):
+    original_repo_path = inspection._repo_path
+
+    def repo_path(path):
+        try:
+            return original_repo_path(path)
+        except inspection.DenseCollectionPlanInspectionError:
+            return f"strategy_tournament/v2/test/{path.name}"
+
+    monkeypatch.setattr(inspection, "_repo_path", repo_path)
+    recovery_plan, plan = (
+        dense_collection_recovery.freeze_pullback_recovery(
+            YAHOO_RECOVERY_FAILURE_INSPECTION,
+            as_of=date(2026, 7, 25),
+            actual_today=date(2026, 7, 25),
+            public_root=tmp_path / "recovery",
+            enforce_commit=False,
+        )
+    )
+    _path, artifact = inspection.inspect_plan(
+        recovery_plan,
+        root=tmp_path / "inspection",
+        enforce_commit=False,
+    )
+
+    assert plan["daily_provider"] == "yahoo"
+    assert plan["adjustment_semantics"] == (
+        dense_data_collection.YAHOO_SOURCE_RECOVERY_ADJUSTMENT
+    )
+    assert plan["source_request_semantics"]["no_purchase_required"] is True
+    assert {
+        task["kind"] for task in plan["tasks"][1:]
+    } == {"yahoo_daily_symbol_bars"}
+    assert artifact["state"] == inspection.READY_STATE
+    assert artifact["task_count"] == 11
+    assert artifact["development_outcome_state"] == "UNTOUCHED"
+    assert artifact["checks"]["provider_semantics_rebuilt"] is True
     assert all(artifact["checks"].values())

@@ -53,6 +53,13 @@ RECOVERY_ADJUSTMENT = "raw_alpaca_with_frozen_massive_split_actions"
 MASSIVE_SOURCE_RECOVERY_ADJUSTMENT = (
     "raw_massive_with_frozen_massive_split_actions"
 )
+YAHOO_SOURCE_RECOVERY_ADJUSTMENT = (
+    "raw_yahoo_with_frozen_massive_split_actions"
+)
+YAHOO_CHART_ENDPOINT = (
+    "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+)
+YAHOO_PACE_SECONDS = 0.20
 INTRADAY_CHECKPOINT_REUSE_RECOVERY = (
     "empty-missed-date-checkpoint-reuse"
 )
@@ -772,14 +779,25 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                     and failure.get("completed_tasks") == 1
                 )
                 or (
-                    recovery_adjustment
-                    == MASSIVE_SOURCE_RECOVERY_ADJUSTMENT
+                recovery_adjustment
+                == MASSIVE_SOURCE_RECOVERY_ADJUSTMENT
                     and plan.get("family_id")
                     == runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY
                     and failure.get("failure_code")
                     == "INCOMPLETE_FIXED_DAILY_SYMBOL_RANGE"
                     and failure.get("completed_tasks")
                     == failure.get("task_count")
+                )
+                or (
+                    recovery_adjustment
+                    == YAHOO_SOURCE_RECOVERY_ADJUSTMENT
+                    and plan.get("family_id")
+                    == runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY
+                    and failure.get("failure_code")
+                    == (
+                        "MASSIVE_DAILY_SYMBOL_TASK_FAILED_BEFORE_PRICE_ACCESS"
+                    )
+                    and failure.get("completed_tasks") == 1
                 )
             ) and (
                 plan.get("lane") == "development"
@@ -835,6 +853,7 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
     if recovery_adjustment in {
         RECOVERY_ADJUSTMENT,
         MASSIVE_SOURCE_RECOVERY_ADJUSTMENT,
+        YAHOO_SOURCE_RECOVERY_ADJUSTMENT,
     }:
         symbols = sorted(map(str, plan.get("symbols", [])))
         expected = [("split_actions", "")]
@@ -842,6 +861,9 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
             "daily_symbol_bars"
             if recovery_adjustment == RECOVERY_ADJUSTMENT
             else "massive_daily_symbol_bars"
+            if recovery_adjustment
+            == MASSIVE_SOURCE_RECOVERY_ADJUSTMENT
+            else "yahoo_daily_symbol_bars"
         )
         expected.extend((daily_kind, symbol) for symbol in symbols)
         observed = [
@@ -942,6 +964,7 @@ class ProviderBackend:
         self._massive_session = _CountingSession(self.telemetry)
         self._alpaca_session = _CountingSession(self.telemetry)
         self._reference_session = _CountingSession(self.telemetry)
+        self._yahoo_session = _CountingSession(self.telemetry)
 
         def paced_sleep(seconds: float) -> None:
             self.telemetry["pacing_wait_seconds"] += seconds
@@ -955,6 +978,7 @@ class ProviderBackend:
             session=self._alpaca_session,  # type: ignore[arg-type]
             sleeper=paced_sleep,
         )
+        self._paced_sleep = paced_sleep
         reference_config = scanner_replay.MassiveReferenceConfig.from_env(env_path)
         self.reference = scanner_replay.MassiveReferenceCollector(
             reference_config,
@@ -1019,6 +1043,157 @@ class ProviderBackend:
                 day,
                 adjusted=False,
             )
+        if kind == "yahoo_daily_symbol_bars":
+            self._paced_sleep(YAHOO_PACE_SECONDS)
+            symbol = str(task["symbol"])
+            start = datetime.fromisoformat(
+                f"{task['start']}T00:00:00+00:00"
+            )
+            end = datetime.fromisoformat(
+                f"{day}T00:00:00+00:00"
+            ) + timedelta(days=1)
+            response = self._yahoo_session.get(
+                YAHOO_CHART_ENDPOINT.format(symbol=symbol),
+                params={
+                    "period1": int(start.timestamp()),
+                    "period2": int(end.timestamp()),
+                    "interval": "1d",
+                    "events": "history",
+                    "includeAdjustedClose": "true",
+                },
+                headers={
+                    "User-Agent": (
+                        "robinhood-codex-historical-research/1.0"
+                    )
+                },
+                timeout=30,
+            )
+            if response.status_code >= 400:
+                raise DenseDataCollectionError(
+                    f"Yahoo HTTP {response.status_code}"
+                )
+            try:
+                payload = response.json()
+            except ValueError as exc:
+                raise DenseDataCollectionError(
+                    "Yahoo response is not JSON"
+                ) from exc
+            chart = (
+                payload.get("chart")
+                if isinstance(payload, Mapping)
+                else None
+            )
+            results = (
+                chart.get("result")
+                if isinstance(chart, Mapping)
+                else None
+            )
+            if (
+                not isinstance(chart, Mapping)
+                or chart.get("error") is not None
+                or not isinstance(results, list)
+                or len(results) != 1
+            ):
+                raise DenseDataCollectionError(
+                    "Yahoo chart result is missing or ambiguous"
+                )
+            result = results[0]
+            meta = (
+                result.get("meta")
+                if isinstance(result, Mapping)
+                else None
+            )
+            timestamps = (
+                result.get("timestamp")
+                if isinstance(result, Mapping)
+                else None
+            )
+            indicators = (
+                result.get("indicators")
+                if isinstance(result, Mapping)
+                else None
+            )
+            quotes = (
+                indicators.get("quote")
+                if isinstance(indicators, Mapping)
+                else None
+            )
+            quote = (
+                quotes[0]
+                if isinstance(quotes, list) and quotes
+                else None
+            )
+            if not (
+                isinstance(meta, Mapping)
+                and str(meta.get("symbol", "")).upper() == symbol
+                and meta.get("exchangeTimezoneName")
+                == "America/New_York"
+                and isinstance(timestamps, list)
+                and isinstance(quote, Mapping)
+            ):
+                raise DenseDataCollectionError(
+                    "Yahoo identity, timezone, or quote arrays drifted"
+                )
+            arrays = {
+                field: quote.get(field)
+                for field in ("open", "high", "low", "close", "volume")
+            }
+            if any(
+                not isinstance(values, list)
+                or len(values) != len(timestamps)
+                for values in arrays.values()
+            ):
+                raise DenseDataCollectionError(
+                    "Yahoo OHLCV arrays are incomplete"
+                )
+            rows: list[dict[str, Any]] = []
+            for index, raw_timestamp in enumerate(timestamps):
+                values = [arrays[field][index] for field in arrays]
+                if any(value is None for value in values):
+                    continue
+                observed_day = (
+                    datetime.fromtimestamp(
+                        int(raw_timestamp), timezone.utc
+                    )
+                    .astimezone(EASTERN)
+                    .date()
+                    .isoformat()
+                )
+                row = {
+                    "symbol": symbol,
+                    "date": observed_day,
+                    "open": float(arrays["open"][index]),
+                    "high": float(arrays["high"][index]),
+                    "low": float(arrays["low"][index]),
+                    "close": float(arrays["close"][index]),
+                    "volume": int(arrays["volume"][index]),
+                    "count": 0,
+                    "wap": 0,
+                }
+                if (
+                    not str(task["start"]) <= observed_day <= day
+                    or min(
+                        row[field]
+                        for field in ("open", "high", "low", "close")
+                    )
+                    <= 0
+                    or row["volume"] < 0
+                    or row["low"] > min(row["open"], row["close"])
+                    or row["high"] < max(row["open"], row["close"])
+                ):
+                    raise DenseDataCollectionError(
+                        "Yahoo returned an invalid OHLCV row"
+                    )
+                rows.append(row)
+            observed_dates = [str(row["date"]) for row in rows]
+            if (
+                observed_dates != sorted(observed_dates)
+                or len(observed_dates) != len(set(observed_dates))
+            ):
+                raise DenseDataCollectionError(
+                    "Yahoo dates are not unique and chronological"
+                )
+            return rows
         raise DenseDataCollectionError(f"unsupported collection task: {kind}")
 
     def close(self) -> None:
@@ -1028,6 +1203,7 @@ class ProviderBackend:
         self._reference_session.close()
         self._massive_session.close()
         self._alpaca_session.close()
+        self._yahoo_session.close()
 
 
 def _checkpoint_path(root: Path, task: Mapping[str, Any]) -> Path:
@@ -1158,6 +1334,7 @@ def _daily_rows(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, dic
             "grouped_daily_bars",
             "daily_symbol_bars",
             "massive_daily_symbol_bars",
+            "yahoo_daily_symbol_bars",
         }:
             continue
         rows = _load_checkpoint(_checkpoint_path(checkpoint_root, task), task)
@@ -1502,6 +1679,16 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         successor_adjustment = (
             "raw Massive bars adjusted only by frozen Massive split actions "
             "through the dataset end"
+        )
+    elif (
+        plan.get("adjustment_semantics")
+        == YAHOO_SOURCE_RECOVERY_ADJUSTMENT
+    ):
+        successor_feed = "Yahoo Finance historical chart JSON"
+        successor_adjustment = (
+            "raw Yahoo quote OHLC bars adjusted only by frozen Massive "
+            "split actions through the dataset end; dividend-adjusted "
+            "close ignored"
         )
     dataset: dict[str, Any] = {
         "schema_version": 1,

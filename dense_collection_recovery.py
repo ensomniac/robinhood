@@ -160,6 +160,7 @@ def _failure_facts(
             "grouped_daily_bars",
             "daily_symbol_bars",
             "massive_daily_symbol_bars",
+            "yahoo_daily_symbol_bars",
             "sip_minute_bars",
             "sip_minute_symbol_range",
         }:
@@ -202,6 +203,7 @@ def _failure_facts(
         if task["kind"] in {
             "daily_symbol_bars",
             "massive_daily_symbol_bars",
+            "yahoo_daily_symbol_bars",
         }:
             observed_daily_dates = {
                 str(row.get("date")) for row in rows
@@ -757,10 +759,24 @@ def freeze_pullback_recovery(
             and failure.get("failure_code")
             == INCOMPLETE_FIXED_DAILY_RANGE
         )
+        or (
+            recoverable_family
+            == runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY
+            and failure.get("failure_code")
+            == MASSIVE_DAILY_SYMBOL_FAILURE
+        )
     )
     massive_source_recovery = (
         recoverable_family
         == runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY
+        and failure.get("failure_code")
+        == INCOMPLETE_FIXED_DAILY_RANGE
+    )
+    yahoo_source_recovery = (
+        recoverable_family
+        == runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY
+        and failure.get("failure_code")
+        == MASSIVE_DAILY_SYMBOL_FAILURE
     )
     if not (
         recoverable_source_failure
@@ -778,9 +794,11 @@ def freeze_pullback_recovery(
             "only an approved outcome-blind fixed-ETF source failure is recoverable"
         )
     original_path = PROJECT_ROOT / str(failure["plan_path"])
+    if enforce_commit:
+        strategy_discovery.require_committed(original_path)
     plan = collection._validate_plan(
         original_path,
-        enforce_commit=enforce_commit,
+        enforce_commit=False,
     )
     if plan["artifact_sha256"] != failure["plan_sha256"]:
         raise DenseCollectionRecoveryError("failed plan binding drifted")
@@ -844,6 +862,8 @@ def freeze_pullback_recovery(
     daily_kind = (
         "massive_daily_symbol_bars"
         if massive_source_recovery
+        else "yahoo_daily_symbol_bars"
+        if yahoo_source_recovery
         else "daily_symbol_bars"
     )
     for symbol in symbols:
@@ -863,6 +883,8 @@ def freeze_pullback_recovery(
             "artifact_sha256",
             "as_of",
             "providers",
+            "recovery_search_refresh",
+            "source_request_semantics",
             "tasks",
             "task_count",
         }
@@ -887,6 +909,17 @@ def freeze_pullback_recovery(
                 if massive_source_recovery
                 else [
                     (
+                        "Yahoo Finance historical chart raw daily OHLCV "
+                        "by frozen symbol range"
+                    ),
+                    (
+                        "Massive point-in-time split actions through the "
+                        "final frozen session"
+                    ),
+                ]
+                if yahoo_source_recovery
+                else [
+                    (
                         "Alpaca SIP raw-adjustment daily bars by frozen "
                         "symbol range"
                     ),
@@ -899,12 +932,37 @@ def freeze_pullback_recovery(
             "daily_provider": (
                 "massive"
                 if massive_source_recovery
+                else "yahoo"
+                if yahoo_source_recovery
                 else "alpaca"
             ),
             "adjustment_semantics": (
                 collection.MASSIVE_SOURCE_RECOVERY_ADJUSTMENT
                 if massive_source_recovery
+                else collection.YAHOO_SOURCE_RECOVERY_ADJUSTMENT
+                if yahoo_source_recovery
                 else collection.RECOVERY_ADJUSTMENT
+            ),
+            **(
+                {
+                    "source_request_semantics": {
+                        "endpoint_template": (
+                            collection.YAHOO_CHART_ENDPOINT
+                        ),
+                        "interval": "1d",
+                        "events": "history",
+                        "include_adjusted_close": True,
+                        "raw_ohlc_used": True,
+                        "dividend_adjusted_close_used": False,
+                        "exchange_timezone": "America/New_York",
+                        "requests_per_symbol": 1,
+                        "pace_seconds": collection.YAHOO_PACE_SECONDS,
+                        "no_purchase_required": True,
+                        "retries_permitted": 0,
+                    }
+                }
+                if yahoo_source_recovery
+                else {}
             ),
             "recovery_failure_path": collection._repo_path(failure_path),
             "recovery_failure_sha256": failure["artifact_sha256"],
