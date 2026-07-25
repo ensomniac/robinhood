@@ -1,0 +1,14 @@
+{
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "contract_sha256": "e724b4ec1028530bd480004d9b8c510b6f9ec54450e232e046d3d697310e7748",
+  "identity_id": "filing-cover-common-equity-identity-v1",
+  "local_identity_access_permitted": false,
+  "market_price_access_permitted": false,
+  "outcome_access_permitted": false,
+  "provider_access_permitted": false,
+  "schema_version": 1,
+  "status": "SECURITY_IDENTITY_CONTRACT_PENDING_INSPECTION",
+  "valid": false
+}
