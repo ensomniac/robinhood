@@ -293,6 +293,8 @@ use `financial-statement-notes-data-sets`. No archive or metadata row was
 retained. The v12 failure recorder and independent inspector bind that exact
 one-request, zero-row boundary and forbid a same-version retry. Commit and test
 them, then record and inspect v12 before freezing a corrected source successor.
+Failure `7b6165b2...39cd19` now records that terminal boundary. Commit and push
+it before independent reconstruction.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected

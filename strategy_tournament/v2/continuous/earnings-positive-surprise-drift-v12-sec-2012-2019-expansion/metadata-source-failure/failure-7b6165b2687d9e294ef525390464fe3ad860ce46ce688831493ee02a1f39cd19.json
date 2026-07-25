@@ -1,0 +1,56 @@
+{
+  "artifact_kind": "earnings-sec-expansion-source-failure",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_outcomes_accessed": false,
+  "failed_at": "2026-07-25T07:38:53Z",
+  "failed_request": {
+    "filename": "2012q1_notes.zip",
+    "method": "GET",
+    "ordinal": 0,
+    "quarter": "2012q1",
+    "request_sha256": "507fb15cf4d87cf8b7de28c4f148c919d895e5b110e3f3950a0e481dadefaafa",
+    "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2012q1_notes.zip"
+  },
+  "failure_sha256": "7b6165b2687d9e294ef525390464fe3ad860ce46ce688831493ee02a1f39cd19",
+  "family_id": "earnings-positive-surprise-drift",
+  "forward_returns_accessed": false,
+  "inspection_file_sha256": "36cd9ab571ff9a5094684425657995786d6d10781f8e38fcba5cfd0c083b00a1",
+  "inspection_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v12-sec-2012-2019-expansion/metadata-collection-plan-inspection/inspection-59705455815bd3b1f87c2f2d4418024fbdb78d88028335ff0f4bbafd2885c336.json",
+  "inspection_sha256": "59705455815bd3b1f87c2f2d4418024fbdb78d88028335ff0f4bbafd2885c336",
+  "market_prices_accessed": false,
+  "metadata_rows_accessed": 0,
+  "plan_file_sha256": "b626de3edeeeebb48159803a6c2e732dd1f8d43047044a46c24bc3a7ae8098d7",
+  "plan_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v12-sec-2012-2019-expansion/metadata-collection-plan/plan-b17f1cd4982ee5e7c043dedda85e4bacbcbbe4679e91c12cc51c74c40b434b43.json",
+  "plan_sha256": "b17f1cd4982ee5e7c043dedda85e4bacbcbbe4679e91c12cc51c74c40b434b43",
+  "provider_response": {
+    "classification": "PERMANENT_SOURCE_PATH_NOT_FOUND",
+    "http_status": 404,
+    "response_body_retained": false
+  },
+  "provider_telemetry": {
+    "cache_hits": 0,
+    "failures": 1,
+    "requests": 1,
+    "retained_archives": 0,
+    "retained_bytes": 0
+  },
+  "root_path_disposition": {
+    "difference": "official path omits the word 'and' from the frozen root",
+    "frozen_root": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets",
+    "official_index_root": "https://www.sec.gov/files/dera/data/financial-statement-notes-data-sets",
+    "same_version_retry_permitted": false
+  },
+  "schema_version": 1,
+  "state": "SEC_EXPANSION_ARCHIVE_ROOT_404_TERMINAL",
+  "strategy_metrics_computed": 0,
+  "successor_authority": {
+    "market_price_access_permitted": false,
+    "metadata_scope_may_be_reduced_outcome_blind_for_collection_cost": true,
+    "same_archive_filename_graph_required": true,
+    "same_event_semantics_required": true,
+    "same_selection_accounting_required": true,
+    "source_root_correction_permitted_after_inspection": true
+  },
+  "successor_id": "earnings-positive-surprise-drift-v12-sec-2012-2019-expansion"
+}
