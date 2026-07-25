@@ -199,7 +199,10 @@ changed. Commit it and rerun generic zero-outcome preflight before refreshing
 search and freezing checkpoint reuse. Refreshed preflight
 `833cfe00...7c60a5` independently revalidated the same 244-decision capacity,
 family identity, and zero-strategy-outcome boundary with zero provider
-requests. Commit it before freezing the refreshed search.
+requests. Refreshed search `e99d0450...614541` preserves the identical rule,
+dates, symbols, folds, costs, selection, and gates; only the loader
+implementation binding differs. Commit it before freezing zero-request
+checkpoint reuse.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
