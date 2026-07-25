@@ -1,6 +1,6 @@
 # Robinhood Codex Trading Context
 
-Research refreshed: 2026-07-24
+Research refreshed: 2026-07-25
 
 Strategy version: `2026-07-15-orb-v3`
 
@@ -24,12 +24,21 @@ Authorization record `6a7e2748...0fd6e` has independently earned
 variant is retired at Stage 0, and its priority-two Schedule 13D activist-
 continuation variant is retired after representative development. Neither may
 be repaired on its evaluation corpus. Priority-three accelerated-share-
-repurchase continuation froze inspected outcome-blind capacity contract
-`afb19cf7...f6cb7`, but its exact primary EFTS query returned an inexact 10,000+
-denominator. Inspection `6465a585...311912` retired that contract for
-insufficient source completeness before pagination or document access. It may
-not be repaired on the observed provider corpus; target outcomes and broker
-actions remain forbidden.
+repurchase continuation completed its outcome-blind SEC capacity campaign.
+Independent combined inspection `571ce78a...820d82` retained 185 verified
+agreements but only 89 independent accession/ticker/acceptance-time trade
+opportunities. The exact fast-lane candidate is
+`PRESERVED_LATER_SINGLE_RULE_RESEARCH`; no development-search price access or
+repair on that source corpus is permitted.
+
+The residual-reversal v6 replication, its v7 temporal expansion, and the
+fixed-rule oversold v7 replication are independently `REJECTED` on their exact
+development corpora with confirmation still sealed. The active no-calendar-
+wait successor is an unchanged-rule PEAD historical-capacity expansion through
+Massive's configured Benzinga earnings source. Freeze and independently inspect
+its complete metadata-only annual request graph before provider access. No
+price, forward-return, strategy metric, confirmation outcome, or broker action
+is permitted during capacity collection.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
