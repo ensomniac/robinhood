@@ -229,7 +229,9 @@ capacity and zero-metric boundary with zero requests. Commit it, refreeze
 search, and evaluate only that final binding. Final search
 `632229c0...268f92` is now frozen. Commit it, bind the already inspected
 checkpoints to that exact search with zero additional requests, and regenerate
-the runtime manifest before evaluation.
+the runtime manifest before evaluation. Final recovery plan
+`39494707...e730bf` binds the same failure, original task IDs, and zero-request
+authority to that search. Commit and inspect it before materialization.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
