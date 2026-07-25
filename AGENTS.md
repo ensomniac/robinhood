@@ -31,24 +31,16 @@ opportunities. The exact fast-lane candidate is
 `PRESERVED_LATER_SINGLE_RULE_RESEARCH`; no development-search price access or
 repair on that source corpus is permitted.
 
-Sector-SPDR residual-reversal replication v4 is now independently
+Sector-SPDR residual-reversal replication v4 is independently
 `REJECTED_DEVELOPMENT`: all 48 frozen trials lost at 20 bps per side, with the
 least-negative path at -0.07403 log growth, PF 0.656, and 19.59R drawdown.
-Preserve that exact 2008-2013 corpus without repair. The immediate historical
-lane is the unchanged 32-trial flight-to-safety rebound mechanism over `DIA`,
-`IWM`, and `QQQ`, with `TLT` as the completed-session causal feature. It uses
-200 warmup sessions, 1,000 globally untouched development sessions, a
-five-session embargo, and 293 untouched confirmation sessions through
-2013-12-31. This is an existing-family replication, consumes no new ISO-week
-mechanism slot, uses a frozen no-purchase Yahoo raw-OHLCV contract plus Massive
-split actions, and now has an outcome-blind exact family contract
-`c0529b2e...f4d9` plus capacity manifest `e2fd12bb...e3f4`. Freezing accessed
-zero prices or outcomes and made zero provider requests. Search `29cbbeed...f23a`
-and collection plan `a1191e85...36ea` are frozen; plan inspection
-`639832cf...e98` passed. Development dataset `56542d01...5d17` was collected
-with five requests and independently rebuilt by inspection `b66d4ca4...b5333`.
-Its compact manifest is `da6f2844...7364`; confirmation remains untouched.
-Commit this inspected predecessor state before running the 32-trial evaluation.
+Preserve that exact 2008-2013 corpus without repair. The unchanged 32-trial
+flight-to-safety rebound long-history replication is also independently
+`REJECTED_DEVELOPMENT`: all 32 trials lost at 20 bps and inspection
+`acd87b9e...c68e` found zero passes on growth, rolling folds, DSR, Holm, PBO,
+or neighbor stability. Its `DIA`, `IWM`, `QQQ`, and `TLT` development corpus
+through 2012-10-15 is adverse history and may not be repaired; its 2012-10-23
+through 2013-12-31 confirmation partition remains untouched.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
