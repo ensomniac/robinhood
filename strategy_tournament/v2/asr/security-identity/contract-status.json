@@ -1,14 +1,23 @@
 {
+  "ambiguity_and_exchange_gates_rebuilt": true,
   "broker_actions_permitted": false,
   "campaign_id": "multi-strategy-portfolio-validation-v2",
   "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "capacity_thresholds_rebuilt": true,
   "contract_sha256": "e724b4ec1028530bd480004d9b8c510b6f9ec54450e232e046d3d697310e7748",
+  "cover_table_classifier_rebuilt": true,
   "identity_id": "filing-cover-common-equity-identity-v1",
-  "local_identity_access_permitted": false,
+  "inspection_kind": "outcome-blind-asr-security-identity-contract-inspection",
+  "inspection_sha256": "54e81cb3a5ee0cc60b1f85d6e6438bd74387de899ba19c861deaa40b0a60ff7f",
+  "local_identity_access_permitted": true,
+  "market_outcomes_accessed": false,
   "market_price_access_permitted": false,
+  "maturity_effect": "NONE",
   "outcome_access_permitted": false,
   "provider_access_permitted": false,
   "schema_version": 1,
-  "status": "SECURITY_IDENTITY_CONTRACT_PENDING_INSPECTION",
-  "valid": false
+  "source_lineage_rebuilt": true,
+  "status": "SECURITY_IDENTITY_CONTRACT_INSPECTED",
+  "valid": true,
+  "verified_event_count": null
 }
