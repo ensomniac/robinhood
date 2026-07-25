@@ -144,6 +144,39 @@ def test_archive_parser_requires_same_accession_identity_and_positive_yoy_eps(
     assert events[0]["prior_year_eps"] == 1.0
 
 
+def test_archive_parser_streams_large_irrelevant_text_fact(tmp_path):
+    path = tmp_path / "quarter.zip"
+    _archive(path)
+    with zipfile.ZipFile(path) as existing:
+        sub = existing.read("sub.tsv")
+        num = existing.read("num.tsv")
+        original_txt = existing.read("txt.tsv").decode().splitlines()
+    header = original_txt[0].split("\t")
+    large = {field: "" for field in header}
+    large.update(
+        {
+            "adsh": "0000000001-10-000001",
+            "dimh": "large-text",
+            "iprx": "1",
+            "tag": "DisclosureTextBlock",
+            "value": "x" * 131_073,
+        }
+    )
+    original_rows = [
+        dict(zip(header, line.split("\t"), strict=True))
+        for line in original_txt[1:]
+    ]
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("sub.tsv", sub)
+        archive.writestr("num.tsv", num)
+        archive.writestr("txt.tsv", _tsv([large, *original_rows]))
+
+    events, counts = source.derive_archive_events(path)
+
+    assert len(events) == 1
+    assert counts["positive_yoy_eps_events"] == 1
+
+
 def test_identity_with_multiple_common_tickers_is_rejected(tmp_path):
     path = tmp_path / "quarter.zip"
     _archive(path)

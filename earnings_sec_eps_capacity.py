@@ -57,6 +57,7 @@ MINIMUM_UNIQUE_EVENTS = 50
 MINIMUM_DEVELOPMENT_DATES = 30
 MINIMUM_CONFIRMATION_DATES = 20
 MINIMUM_SPACING_SECONDS = 0.20
+CSV_FIELD_SIZE_LIMIT = 2**31 - 1
 TICKER_PATTERN = re.compile(r"^[A-Z][A-Z0-9.-]{0,9}$")
 COMMON_TITLE_PATTERN = re.compile(r"\bcommon\b", re.IGNORECASE)
 DISALLOWED_TITLE_PATTERN = re.compile(
@@ -283,9 +284,14 @@ def _member_name(archive: zipfile.ZipFile, expected: str) -> str:
 
 def _rows(archive: zipfile.ZipFile, filename: str) -> Iterable[dict[str, str]]:
     member = _member_name(archive, filename)
-    with archive.open(member) as raw:
-        with io.TextIOWrapper(raw, encoding="utf-8", newline="") as text:
-            yield from csv.DictReader(text, delimiter="\t")
+    prior_limit = csv.field_size_limit()
+    csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
+    try:
+        with archive.open(member) as raw:
+            with io.TextIOWrapper(raw, encoding="utf-8", newline="") as text:
+                yield from csv.DictReader(text, delimiter="\t")
+    finally:
+        csv.field_size_limit(prior_limit)
 
 
 def _normalized_text(value: Any) -> str:
