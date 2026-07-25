@@ -411,6 +411,10 @@ V14 family contract `fa11b81c...0ea700` and capacity manifest
 exclusion, unchanged 32-trial family, cumulative 64-trial corrections, costs,
 partitions, source-error policy, and sealed confirmation reserve with zero
 provider access. Commit and push both artifacts, then run generic preflight.
+Generic preflight `8929330c...ec8c57` independently reloaded the contract and
+awarded `CAPACITY_READY` from 1,019 formal point-in-time events with zero
+dataset loads or provider requests. Commit and push it before freezing the
+generic development search.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
