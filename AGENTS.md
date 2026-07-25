@@ -475,6 +475,15 @@ dates, 251 reserved confirmation dates, preflight `0b8420fd...4c38e`, and the
 current committed implementation hashes. It accessed no outcomes and permits
 no confirmation or broker action. Commit and push it, then evaluate all 48
 trials from the already inspected local dataset with zero provider requests.
+That evaluation stopped before loading the private dataset because its manifest
+remains correctly bound to source search `d42f7a64...d8c105`, not refreshed
+search `cdd67408...fe927c`. `strategy_dataset_rebind.py` may create a new
+manifest only after rebuilding the committed implementation refresh, proving
+both search contracts differ solely by implementation hashes, reopening the
+committed collection inspection, and preserving every requested date and
+private dataset/file hash. It performs zero provider requests and zero dataset
+loads and rejects any semantic change. Commit and test that tool before
+rebinding this exact dataset; confirmation remains sealed.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
