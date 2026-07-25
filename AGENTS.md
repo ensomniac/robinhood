@@ -219,7 +219,12 @@ substitutions. It remains `COLLECTED_UNINSPECTED`; commit it and independently
 rebuild the external file, rows, scope, and runtime schema before evaluation.
 Inspection `c8c80305...bc361c4` passed all six reconstruction checks and
 manifest `e056363c...eaf6fc1` is `DATASET_INSPECTED_READY`, bound to refreshed
-search `e99d0450...614541`. Commit both before evaluating the one exact trial.
+search `e99d0450...614541`. The first evaluation attempt then failed closed
+before metrics because the subsequently hardened independent plan inspector is
+also contract-hash-bound. Final refreshed contract
+`89089c57...166ca4e` is semantically identical to the original; only
+`dense_data_collection.py` and `dense_collection_plan_inspection.py` hashes
+differ. Commit it, rerun preflight/search, and evaluate only that final binding.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
