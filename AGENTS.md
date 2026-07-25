@@ -114,9 +114,16 @@ to 125 without an eligible cover fact. Independent inspection
 `d92f088b...bc9cd6` rebuilt every classification and earned
 `SEC_COMMON_EQUITY_CAPACITY_READY`: 159 untouched development events across 83
 dates and 237 untouched confirmation events across 116 dates, plus three
-embargo events. Freeze and inspect a development-only market-data and 32-trial
-reaction-confirmed PEAD search contract next. Confirmation prices and all
-broker actions remain forbidden.
+embargo events. The exact Massive development graph then failed on its first
+request with inspected HTTP 403 permission disposition and no returned price.
+Yahoo v9 opened five development-symbol responses before the 32-trial search
+and evaluator hashes were frozen; four tasks retained 1,136 rows and the fifth
+failed its response-schema gate. Independent inspection `8052fecc...4635c2`
+makes v9 terminal and promotion-ineligible and binds the global exposure record
+for AAPL, ADSK, ALGN, AMZN, and ANN. Freeze and inspect the exact
+reaction-confirmed 32-trial evaluator/search plus a 109-symbol successor before
+any further price request. Confirmation prices and all broker actions remain
+forbidden.
 
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;
