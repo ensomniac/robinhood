@@ -281,6 +281,82 @@ def inspect_development_collection(
     return path, value, manifest_path
 
 
+def inspect_collection_failure(
+    failure_path: Path,
+    *,
+    inspected_at: str,
+    root: Path = source.DEFAULT_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    strategy_discovery.require_committed(Path(__file__).resolve())
+    strategy_discovery.require_committed(failure_path)
+    failure = source._read(failure_path)
+    contract_path = source.PROJECT_ROOT / str(failure["contract_path"])
+    source_inspection_path = source.PROJECT_ROOT / str(failure["inspection_path"])
+    strategy_discovery.require_committed(contract_path)
+    strategy_discovery.require_committed(source_inspection_path)
+    contract = source._read(contract_path)
+    source_inspection = source._read(source_inspection_path)
+    checks = {
+        "failure_hash_valid": failure.get("failure_sha256")
+        == source.self_hash(failure, "failure_sha256"),
+        "contract_binding_valid": failure.get("contract_sha256")
+        == contract.get("contract_sha256"),
+        "request_binding_valid": failure.get("request_sha256")
+        == contract.get("development_request", {}).get("request_sha256"),
+        "source_inspection_valid": source_inspection.get("state")
+        == "SOURCE_CONTRACT_INSPECTED_READY"
+        and source_inspection.get("valid") is True,
+        "permission_failure_exact": failure.get("http_status") in {401, 403}
+        and failure.get("failure_category") == "permanent_permission",
+        "one_failed_request": failure.get("provider_telemetry", {}).get("requests")
+        == 1
+        and failure.get("provider_telemetry", {}).get("failures") == 1,
+        "zero_rows_or_private_artifacts": failure.get("retained_rows") == 0
+        and failure.get("private_artifacts_created") == 0,
+        "zero_retry_or_substitution": failure.get("retries") == 0
+        and failure.get("substitutions") == 0,
+        "zero_strategy_metrics": failure.get("strategy_metrics_computed") == 0,
+        "confirmation_untouched": failure.get("confirmation_prices_accessed")
+        is False
+        and not outcome_exposure.find_overlaps(
+            contract["confirmation_scope"],
+            outcome_exposure.read_index(),
+        ),
+        "broker_actions_zero": failure.get("broker_actions") == 0,
+    }
+    if not all(checks.values()):
+        raise SpyRsi2InspectionError(
+            "SPY RSI(2) development source failure inspection failed"
+        )
+    value: dict[str, Any] = {
+        "schema_version": 1,
+        "artifact_kind": "spy-rsi2-development-collection-failure-inspection",
+        "campaign_id": source.CAMPAIGN_ID,
+        "family_id": source.FAMILY_ID,
+        "successor_id": source.SUCCESSOR_ID,
+        "state": "DEVELOPMENT_SOURCE_FAILURE_INSPECTED",
+        "inspected_at": source._timestamp(inspected_at, "inspected_at"),
+        "failure_path": source._repo_path(failure_path),
+        "failure_file_sha256": sha256_file(failure_path),
+        "failure_sha256": failure["failure_sha256"],
+        "checks": checks,
+        "source_retry_authorized": False,
+        "provider_purchase_authorized": False,
+        "confirmation_prices_accessed": False,
+        "strategy_metrics_computed": 0,
+        "broker_actions": 0,
+        "valid": True,
+    }
+    value["inspection_sha256"] = source.self_hash(value, "inspection_sha256")
+    path = (
+        root
+        / "development-collection-failure-inspection"
+        / f"inspection-{value['inspection_sha256']}.json"
+    )
+    source._write(path, value)
+    return path, value
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -290,6 +366,9 @@ def _parser() -> argparse.ArgumentParser:
     collection = subparsers.add_parser("inspect-development")
     collection.add_argument("collection", type=Path)
     collection.add_argument("--inspected-at", required=True)
+    failure = subparsers.add_parser("inspect-failure")
+    failure.add_argument("failure", type=Path)
+    failure.add_argument("--inspected-at", required=True)
     return parser
 
 
@@ -306,7 +385,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "state": value["state"],
                 "sha256": value["inspection_sha256"],
             }
-        else:
+        elif args.command == "inspect-development":
             path, value, manifest_path = inspect_development_collection(
                 args.collection,
                 inspected_at=args.inspected_at,
@@ -314,6 +393,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = {
                 "path": str(path),
                 "manifest_path": str(manifest_path),
+                "state": value["state"],
+                "sha256": value["inspection_sha256"],
+            }
+        else:
+            path, value = inspect_collection_failure(
+                args.failure,
+                inspected_at=args.inspected_at,
+            )
+            result = {
+                "path": str(path),
                 "state": value["state"],
                 "sha256": value["inspection_sha256"],
             }

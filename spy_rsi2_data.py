@@ -589,6 +589,68 @@ def collect_development(
     return path, value
 
 
+def record_collection_failure(
+    contract_path: Path,
+    inspection_path: Path,
+    *,
+    failed_at: str,
+    http_status: int,
+    root: Path = DEFAULT_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    strategy_discovery.require_committed(contract_path)
+    strategy_discovery.require_committed(inspection_path)
+    contract = _read(contract_path)
+    inspection = _read(inspection_path)
+    if not (
+        contract.get("contract_sha256")
+        == self_hash(contract, "contract_sha256")
+        and inspection.get("contract_sha256") == contract["contract_sha256"]
+        and inspection.get("state") == "SOURCE_CONTRACT_INSPECTED_READY"
+        and inspection.get("valid") is True
+        and http_status in {401, 403}
+    ):
+        raise SpyRsi2DataError("development source failure binding is invalid")
+    value: dict[str, Any] = {
+        "schema_version": 1,
+        "artifact_kind": "spy-rsi2-development-collection-failure",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "successor_id": SUCCESSOR_ID,
+        "state": "DEVELOPMENT_SOURCE_PERMANENTLY_UNAVAILABLE",
+        "failed_at": _timestamp(failed_at, "failed_at"),
+        "contract_path": _repo_path(contract_path),
+        "contract_file_sha256": sha256_file(contract_path),
+        "contract_sha256": contract["contract_sha256"],
+        "inspection_path": _repo_path(inspection_path),
+        "inspection_file_sha256": sha256_file(inspection_path),
+        "request_sha256": contract["development_request"]["request_sha256"],
+        "http_status": http_status,
+        "failure_category": "permanent_permission",
+        "provider_telemetry": {
+            "requests": 1,
+            "request_seconds": None,
+            "pacing_wait_seconds": 0.0,
+            "cache_hits": 0,
+            "failures": 1,
+        },
+        "retained_rows": 0,
+        "private_artifacts_created": 0,
+        "retries": 0,
+        "substitutions": 0,
+        "strategy_metrics_computed": 0,
+        "confirmation_prices_accessed": False,
+        "broker_actions": 0,
+    }
+    value["failure_sha256"] = self_hash(value, "failure_sha256")
+    path = (
+        root
+        / "development-collection-failure"
+        / f"failure-{value['failure_sha256']}.json"
+    )
+    _write(path, value)
+    return path, value
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -598,6 +660,11 @@ def _parser() -> argparse.ArgumentParser:
     collect.add_argument("contract", type=Path)
     collect.add_argument("inspection", type=Path)
     collect.add_argument("--collected-at", required=True)
+    failure = subparsers.add_parser("record-failure")
+    failure.add_argument("contract", type=Path)
+    failure.add_argument("inspection", type=Path)
+    failure.add_argument("--failed-at", required=True)
+    failure.add_argument("--http-status", type=int, required=True)
     return parser
 
 
@@ -606,11 +673,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "freeze-source":
             path, value = freeze_source_contract(created_at=args.created_at)
-        else:
+        elif args.command == "collect-development":
             path, value = collect_development(
                 args.contract,
                 args.inspection,
                 collected_at=args.collected_at,
+            )
+        else:
+            path, value = record_collection_failure(
+                args.contract,
+                args.inspection,
+                failed_at=args.failed_at,
+                http_status=args.http_status,
             )
         print(
             json.dumps(
@@ -619,7 +693,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "state": value.get("state", "SOURCE_FROZEN"),
                     "sha256": value.get(
                         "collection_sha256",
-                        value.get("contract_sha256"),
+                        value.get(
+                            "failure_sha256",
+                            value.get("contract_sha256"),
+                        ),
                     ),
                 },
                 indent=2,

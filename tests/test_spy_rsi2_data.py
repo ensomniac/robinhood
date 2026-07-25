@@ -164,3 +164,43 @@ def test_pre2014_confirmation_scope_is_globally_untouched():
         {"dates": split["confirmation_dates"], "symbols": ["SPY"]},
         outcome_exposure.read_index(),
     )
+
+
+def test_permission_failure_records_one_request_and_zero_outcomes(
+    tmp_path: Path,
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        source.strategy_discovery,
+        "require_committed",
+        lambda _path: None,
+    )
+    monkeypatch.setattr(source, "_repo_path", lambda path: str(path))
+    contract = source.build_source_contract(
+        created_at="2026-07-25T01:30:00Z"
+    )
+    contract_path = tmp_path / "contract.json"
+    source._write(contract_path, contract)
+    inspection_path = tmp_path / "inspection.json"
+    source._write(
+        inspection_path,
+        {
+            "state": "SOURCE_CONTRACT_INSPECTED_READY",
+            "contract_sha256": contract["contract_sha256"],
+            "valid": True,
+        },
+    )
+
+    _path, failure = source.record_collection_failure(
+        contract_path,
+        inspection_path,
+        failed_at="2026-07-25T01:31:13Z",
+        http_status=403,
+        root=tmp_path / "public",
+    )
+
+    assert failure["failure_category"] == "permanent_permission"
+    assert failure["provider_telemetry"]["requests"] == 1
+    assert failure["retained_rows"] == 0
+    assert failure["retries"] == 0
+    assert failure["confirmation_prices_accessed"] is False
