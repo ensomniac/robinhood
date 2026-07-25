@@ -208,8 +208,11 @@ task IDs. It records nine prior requests and authorizes zero additional
 requests, substitutions, strategy changes, confirmation access, or broker
 actions. The independent plan inspector now requires the sole exact indexed
 failure exposure, nine prior requests, zero additional requests, unchanged task
-topology, and untouched confirmation before it can admit this recovery. Commit
-and validate that inspector before inspecting or materializing the plan.
+topology, and untouched confirmation before it can admit this recovery.
+Inspection `54239178...8da33e` passed every reconstruction and truthfully
+reports prior market-outcome access with
+`INSPECTED_CHECKPOINT_RECOVERY_BOUND`. Commit it, then materialize from the
+retained checkpoints with zero provider requests.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
