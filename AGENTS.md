@@ -147,10 +147,13 @@ lookbacks, excess-return floors, trend gates, stops, holds, costs, execution,
 and selection-aware rejection gates. The frozen candidate partition will use
 2008-01-02 through 2012-10-15 for warmup/development, five sessions of embargo,
 and reserve 2012-10-23 through 2014-10-28 for untouched confirmation. This is
-an existing-family replication and consumes no new-mechanism slot. Commit and
-push the tested implementation before freezing its exact contract; access no
-prices until the contract, preflight, search, and collection plan have each
-been independently inspected and committed.
+an existing-family replication and consumes no new-mechanism slot. Contract
+`d7a393d1...a16938` and capacity `b34da96a...8fb78` now freeze all 32 trials,
+200 warmup sessions, 1,000 development sessions, five embargo sessions, and
+500 confirmation sessions with 497 decision dates. They accessed zero prices
+or outcomes. Commit them, then run the generic outcome-blind preflight; access
+no prices until the preflight, search, and collection plan have each been
+independently inspected and committed.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
