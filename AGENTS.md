@@ -365,6 +365,11 @@ development requests, 201-event confirmation reserve, all prior return paths,
 64-trial corrections, partitions, selection rule, and implementation hashes
 with zero provider access. Commit and push them, then run and commit generic
 outcome-blind preflight before freezing the development search.
+Generic preflight `d38c2cf0...7c8ee2` independently validated the committed
+contract and metadata-only capacity as `CAPACITY_READY` with 1,063 formal
+events, no external dataset load, and zero provider access. Commit and push it,
+then freeze the generic search artifact before independent v13 search
+inspection.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
