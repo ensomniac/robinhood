@@ -168,8 +168,13 @@ row-level data remains outside Git. Commit the compact uninspected status, then
 independently inspect and register the dataset before evaluation. Inspection
 `2895b798...379c05` rehashed the external file, rebuilt every task and canonical
 row, revalidated the runtime schema, and froze 11,000 instrument-sessions in
-manifest `e8721060...4a60df`. Commit both compact artifacts, then evaluate all
-32 frozen trials locally. Confirmation and broker access remain forbidden.
+manifest `e8721060...4a60df`. Result `864247c2...8efc586` evaluated all 32
+frozen trials from one local dataset load and zero requests. Every 20-bps path
+lost; the least-negative path had -0.49799 log growth, PF 0.587, and 78.62R
+drawdown. The run took 91.56 seconds, exceeding the 60-second performance
+target without changing any evidence gate. Commit the compact result, then
+independently inspect selection and statistics. Confirmation and broker access
+remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
