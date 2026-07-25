@@ -60,9 +60,12 @@ rolling slot. Search `792fee00...c1476` and ten-task plan
 `3210e8e2...194d9` are frozen and independently inspected. Dataset
 `b18703e1...12a4b` was collected in ten requests and inspection
 `70118bd1...e91c1` rebuilt all 9,000 development instrument-sessions; runtime
-manifest `a8f75cc4...c23a0` is `DATASET_INSPECTED_READY`. Confirmation and
-broker access remain forbidden. Commit this exact predecessor before
-evaluation.
+manifest `a8f75cc4...c23a0` is `DATASET_INSPECTED_READY`. Independent
+development inspection `146f7d6a...e0579` now confirms `REJECTED`: every
+20-bps path lost, none passed PF, drawdown, rolling folds, DSR, Holm, or
+neighbor stability, and no winner was selected. Preserve the 2008-2012
+development corpus without repair; its 500-session confirmation reserve remains
+untouched.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
