@@ -92,8 +92,10 @@ is byte-equivalent after removing implementation hashes. Commit it and rebuild
 preflight/search before recovery. Refreshed search `af484c71...841a4` and
 recovery plan `0f9b21b5...744cb` now bind that equality, the inspected Massive
 failure, eight Alpaca SIP daily ranges, and the original split checkpoint.
-Commit the plan, independently inspect it, and only then collect. Do not retry
-the Massive plan or purchase an entitlement.
+Independent inspection `7c25f6bb...afcb4` rebuilt every task, provider,
+recovery-lineage, untouched-scope, and zero-access check. Commit it, then
+collect only that recovery graph. Do not retry the Massive plan or purchase an
+entitlement.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
