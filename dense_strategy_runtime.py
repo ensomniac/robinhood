@@ -166,6 +166,7 @@ CLOSE_TO_OPEN_ETF_SYMBOLS = ("QQQ", "IWM", "DIA")
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
 EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
 EARNINGS_PEAD_FAMILY = "earnings-positive-surprise-drift"
+EARNINGS_SEC_REACTION_FAMILY = "earnings-sec-yoy-eps-reaction-drift"
 VOLATILITY_COMPRESSION_FAMILY = (
     "gap-universe-volatility-compression-breakout"
 )
@@ -194,6 +195,7 @@ SUPPORTED_FAMILIES = {
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
     EARNINGS_PEAD_FAMILY,
+    EARNINGS_SEC_REACTION_FAMILY,
     VOLATILITY_COMPRESSION_FAMILY,
 }
 PRIMARY_ROUND_TRIP_COST_FRACTION = 0.001
@@ -4343,6 +4345,221 @@ def _earnings_pead_candidates(
     return candidates
 
 
+def _earnings_sec_reaction_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Evaluate a next-open trade after a completed SEC reaction session."""
+
+    calendar = _calendar(dataset)
+    raw_metadata = dataset.get("event_metadata_by_date")
+    if not isinstance(raw_metadata, Mapping) or set(raw_metadata) != set(
+        calendar
+    ):
+        raise DenseStrategyRuntimeError(
+            "SEC earnings metadata must bind every account date"
+        )
+    daily = _daily_series(dataset)
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    minimum_eps_change = float(
+        parameters["minimum_yoy_eps_change_ratio"]
+    )
+    minimum_gap = float(
+        parameters["minimum_reaction_opening_gap_fraction"]
+    )
+    confirmation = str(parameters["reaction_confirmation"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold_sessions = int(parameters["maximum_hold_sessions"])
+    if (
+        minimum_eps_change not in {0.25, 0.50}
+        or minimum_gap not in {0.0, 0.01}
+        or confirmation not in {"close>open", "close>prior_close"}
+        or stop_atr not in {1.0, 1.5}
+        or hold_sessions not in {2, 5}
+    ):
+        raise DenseStrategyRuntimeError(
+            "SEC earnings trial parameters escaped the frozen grid"
+        )
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        rows = raw_metadata[decision_date]
+        if not isinstance(rows, list):
+            raise DenseStrategyRuntimeError(
+                f"SEC earnings metadata is invalid for {decision_date}"
+            )
+        qualified: list[
+            tuple[float, float, str, dict[str, Any], float]
+        ] = []
+        for raw in rows:
+            if not isinstance(raw, Mapping):
+                raise DenseStrategyRuntimeError(
+                    f"SEC earnings row is invalid for {decision_date}"
+                )
+            symbol = str(raw.get("symbol", ""))
+            bars = daily.get(symbol)
+            reaction_index = indices.get(symbol, {}).get(decision_date)
+            if bars is None or reaction_index is None or reaction_index < 20:
+                continue
+            if (
+                raw.get("security_identity_state")
+                != "VERIFIED_COMMON_EQUITY_COVER_FACT"
+                or raw.get("reaction_date") != decision_date
+            ):
+                raise DenseStrategyRuntimeError(
+                    "SEC earnings identity or reaction date drifted"
+                )
+            eps_change = float(raw["eps_change_ratio"])
+            if eps_change + 1e-12 < minimum_eps_change:
+                continue
+            prior_close = float(bars[reaction_index - 1]["close"])
+            reaction = bars[reaction_index]
+            opening = float(reaction["open"])
+            close = float(reaction["close"])
+            gap = opening / prior_close - 1
+            if gap + 1e-12 < minimum_gap:
+                continue
+            if (
+                confirmation == "close>open" and close <= opening
+            ) or (
+                confirmation == "close>prior_close"
+                and close <= prior_close
+            ):
+                continue
+            prior_dollar_volume = statistics.median(
+                float(bar["close"]) * float(bar["volume"])
+                for bar in bars[reaction_index - 20 : reaction_index]
+            )
+            if prior_close < 10 or prior_dollar_volume < 50_000_000:
+                continue
+            atr14 = _atr(bars, reaction_index)
+            if atr14 is None:
+                continue
+            reaction_dollar_volume = close * float(reaction["volume"])
+            qualified.append(
+                (
+                    -eps_change,
+                    -reaction_dollar_volume,
+                    symbol,
+                    dict(raw),
+                    atr14,
+                )
+            )
+        if not qualified:
+            continue
+        (
+            negative_eps_change,
+            negative_reaction_liquidity,
+            symbol,
+            selected,
+            atr14,
+        ) = sorted(qualified)[0]
+        bars = daily[symbol]
+        entry_date = calendar[calendar_index + 1]
+        entry_index = indices[symbol].get(entry_date)
+        signal_id = (
+            f"{entry_date}-{EARNINGS_SEC_REACTION_FAMILY}-{symbol}"
+        )
+        if entry_index is None:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_open",
+                }
+            )
+            continue
+        expected_dates = calendar[
+            calendar_index + 1 : calendar_index + 1 + hold_sessions
+        ]
+        observed_dates = [
+            str(bar["date"])
+            for bar in bars[entry_index : entry_index + hold_sessions]
+        ]
+        if (
+            len(expected_dates) != hold_sessions
+            or observed_dates != expected_dates
+        ):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "incomplete_holding_bars",
+                }
+            )
+            continue
+        entry_price = float(bars[entry_index]["open"])
+        expected_gross = atr14 / entry_price
+        if not _cost_floor(expected_gross):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "expected_move_below_cost_floor",
+                    "expected_gross_move_fraction": expected_gross,
+                }
+            )
+            continue
+        stop_price = entry_price - stop_atr * atr14
+        if stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        exit_date, exit_price, stop_executed, marks = _earnings_pead_exit(
+            bars,
+            entry_index=entry_index,
+            stop_price=stop_price,
+            hold_sessions=hold_sessions,
+        )
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": entry_date,
+                "decision_date": decision_date,
+                "symbol": symbol,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": -negative_eps_change,
+                "eps_change_ratio": -negative_eps_change,
+                "reaction_dollar_volume": -negative_reaction_liquidity,
+                "accepted": selected["accepted"],
+                "report_period": selected["report_period"],
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "exit_date": exit_date,
+                "exit_price": exit_price,
+                "marks": marks,
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+                "expected_gross_move_fraction": expected_gross,
+            }
+        )
+    return candidates
+
+
 def build_candidates(
     dataset: Mapping[str, Any],
     family_id: str,
@@ -4418,6 +4635,8 @@ def build_candidates(
         return _gap_continuation_candidates(dataset, parameters)
     if family_id == EARNINGS_PEAD_FAMILY:
         return _earnings_pead_candidates(dataset, parameters)
+    if family_id == EARNINGS_SEC_REACTION_FAMILY:
+        return _earnings_sec_reaction_candidates(dataset, parameters)
     if family_id == VOLATILITY_COMPRESSION_FAMILY:
         return _compression_candidates(dataset, parameters)
     raise DenseStrategyRuntimeError(f"unsupported dense family: {family_id}")
@@ -6212,6 +6431,178 @@ def _production_intraday_signal(
     }
 
 
+def _production_earnings_sec_reaction_signal(
+    decision_data: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+    frozen_universe: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected = {
+        "family_id",
+        "decision_date",
+        "next_session_date",
+        "calendar_dates",
+        "daily_history_complete",
+        "daily_bars",
+        "events",
+    }
+    if (
+        set(decision_data) != expected
+        or decision_data.get("family_id") != EARNINGS_SEC_REACTION_FAMILY
+        or decision_data.get("daily_history_complete") is not True
+    ):
+        raise DenseStrategyRuntimeError(
+            "production SEC earnings decision-data schema drifted"
+        )
+    decision_date = str(decision_data["decision_date"])
+    next_session_date = str(decision_data["next_session_date"])
+    calendar_dates = decision_data["calendar_dates"]
+    if not (
+        isinstance(calendar_dates, list)
+        and calendar_dates
+        and calendar_dates == sorted(set(calendar_dates))
+        and calendar_dates[-1] == decision_date
+    ):
+        raise DenseStrategyRuntimeError(
+            "production SEC earnings calendar is incomplete"
+        )
+    try:
+        decision_day = date.fromisoformat(decision_date)
+        next_session_day = date.fromisoformat(next_session_date)
+    except ValueError as exc:
+        raise DenseStrategyRuntimeError(
+            "production SEC earnings calendar dates are invalid"
+        ) from exc
+    if not 1 <= (next_session_day - decision_day).days <= 4:
+        raise DenseStrategyRuntimeError(
+            "production SEC earnings next session is not adjacent"
+        )
+    excluded = frozen_universe.get("excluded_symbols")
+    if (
+        frozen_universe.get("point_in_time") is not True
+        or frozen_universe.get("security_type")
+        != "SEC same-accession verified common equity"
+        or not isinstance(excluded, list)
+        or excluded != sorted(set(map(str, excluded)))
+    ):
+        raise DenseStrategyRuntimeError(
+            "production SEC earnings universe drifted"
+        )
+    daily = _daily_series(decision_data)
+    if any(
+        str(bar["date"]) > decision_date
+        for bars in daily.values()
+        for bar in bars
+    ):
+        raise DenseStrategyRuntimeError(
+            "production SEC earnings history contains post-decision bars"
+        )
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    events = decision_data["events"]
+    if not isinstance(events, list):
+        raise DenseStrategyRuntimeError(
+            "production SEC earnings events are invalid"
+        )
+    minimum_eps_change = float(
+        parameters["minimum_yoy_eps_change_ratio"]
+    )
+    minimum_gap = float(
+        parameters["minimum_reaction_opening_gap_fraction"]
+    )
+    confirmation = str(parameters["reaction_confirmation"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    if (
+        minimum_eps_change not in {0.25, 0.50}
+        or minimum_gap not in {0.0, 0.01}
+        or confirmation not in {"close>open", "close>prior_close"}
+        or stop_atr not in {1.0, 1.5}
+        or hold not in {2, 5}
+    ):
+        raise DenseStrategyRuntimeError(
+            "production SEC earnings parameters escaped the grid"
+        )
+    qualified: list[tuple[float, float, str, float]] = []
+    for event in events:
+        if not isinstance(event, Mapping):
+            raise DenseStrategyRuntimeError(
+                "production SEC earnings event is invalid"
+            )
+        symbol = str(event.get("symbol", ""))
+        if symbol in excluded:
+            raise DenseStrategyRuntimeError(
+                "production SEC earnings event uses an excluded symbol"
+            )
+        bars = daily.get(symbol)
+        index = indices.get(symbol, {}).get(decision_date)
+        if bars is None or index is None or index < 20:
+            continue
+        if (
+            event.get("security_identity_state")
+            != "VERIFIED_COMMON_EQUITY_COVER_FACT"
+            or event.get("reaction_date") != decision_date
+        ):
+            raise DenseStrategyRuntimeError(
+                "production SEC earnings identity or reaction date drifted"
+            )
+        eps_change = float(event["eps_change_ratio"])
+        if eps_change + 1e-12 < minimum_eps_change:
+            continue
+        prior_close = float(bars[index - 1]["close"])
+        reaction = bars[index]
+        opening = float(reaction["open"])
+        close = float(reaction["close"])
+        gap = opening / prior_close - 1
+        if gap + 1e-12 < minimum_gap:
+            continue
+        if (
+            confirmation == "close>open" and close <= opening
+        ) or (
+            confirmation == "close>prior_close" and close <= prior_close
+        ):
+            continue
+        prior_dollar_volume = statistics.median(
+            float(bar["close"]) * float(bar["volume"])
+            for bar in bars[index - 20 : index]
+        )
+        atr14 = _atr(bars, index)
+        if (
+            prior_close < 10
+            or prior_dollar_volume < 50_000_000
+            or atr14 is None
+        ):
+            continue
+        reaction_dollar_volume = close * float(reaction["volume"])
+        qualified.append(
+            (-eps_change, -reaction_dollar_volume, symbol, atr14)
+        )
+    if not qualified:
+        raise DenseStrategyRuntimeError(
+            "no exact production SEC earnings reaction signal"
+        )
+    negative_eps, _negative_liquidity, symbol, atr14 = sorted(qualified)[0]
+    reference_price = float(daily[symbol][-1]["close"])
+    return {
+        "symbol": symbol,
+        "rank": 1,
+        "score": -negative_eps,
+        "expected_gross_move_fraction": atr14 / reference_price,
+        "atr": atr14,
+        "stop_atr_multiple": stop_atr,
+        "holding_trading_days": hold,
+        "decision_date": decision_date,
+        "next_session_date": next_session_date,
+        "overnight_hold": True,
+        "exit_plan": {
+            "type": "stop_or_maximum_hold_close",
+            "maximum_hold_sessions": hold,
+            "same_interval_ambiguity": "stop_first",
+        },
+    }
+
+
 def evaluate_production_signal(
     decision_data: Mapping[str, Any],
     *,
@@ -6230,6 +6621,10 @@ def evaluate_production_signal(
         )
     if family_id == ETF_CLOSE_TO_OPEN_FAMILY:
         return _production_close_to_open_signal(
+            decision_data, parameters, frozen_universe
+        )
+    if family_id == EARNINGS_SEC_REACTION_FAMILY:
+        return _production_earnings_sec_reaction_signal(
             decision_data, parameters, frozen_universe
         )
     if family_id in {
