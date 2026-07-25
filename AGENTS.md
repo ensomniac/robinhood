@@ -175,7 +175,15 @@ sessions and 249 development sessions. It records zero requests and no
 substitutions. Independent inspection `d9888737...e14dda` rebuilt every
 authority, calendar, partition, symbol, request, provider, and zero-access
 binding; development and confirmation scopes remain globally untouched. Commit
-it, then collect only the inspected nine-task graph.
+it, then collect only the inspected nine-task graph. That collection completed
+all nine frozen requests but stopped before dataset or strategy evaluation
+because the shared loader had not registered this new fixed-ETF family and
+incorrectly requested an equity reference snapshot. The retained checkpoints
+contain 3,640 raw daily price rows and all 3,592 required warmup/development
+symbol-sessions; strategy metrics, confirmation, substitutions, and broker
+access remain zero. Record and independently inspect the exact loader failure,
+index its development scope as exposed, then refresh only implementation hashes
+and materialize a zero-request checkpoint recovery.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected

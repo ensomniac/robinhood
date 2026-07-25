@@ -1444,6 +1444,148 @@ def test_incomplete_fixed_daily_range_records_exact_missing_sessions(
     ] == ["2024-01-02"]
 
 
+def test_complete_style_etf_ranges_record_loader_registration_gap(
+    tmp_path,
+):
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    required_dates = ["2024-01-02", "2024-01-03"]
+    symbols = ["SCHG", "SCHV"]
+    tasks = []
+    for symbol in symbols:
+        task = {
+            "kind": "daily_symbol_bars",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+            "symbol": symbol,
+        }
+        task["task_id"] = canonical_sha256(task)
+        tasks.append(task)
+    plan = {
+        "artifact_sha256": "e" * 64,
+        "family_id": runtime.STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
+        "lane": "development",
+        "required_dates": required_dates,
+        "evaluation_dates": required_dates,
+        "symbols": symbols,
+        "task_count": len(tasks),
+        "tasks": tasks,
+    }
+    root = (
+        config.root
+        / "dense-v2"
+        / plan["family_id"]
+        / plan["lane"]
+        / plan["artifact_sha256"]
+    )
+    for task in tasks:
+        rows = [
+            {
+                "symbol": task["symbol"],
+                "date": day,
+                "open": 100.0,
+                "high": 101.0,
+                "low": 99.0,
+                "close": 100.5,
+                "volume": 1_000_000,
+            }
+            for day in required_dates
+        ]
+        collection._write_external(
+            collection._checkpoint_path(root, task),
+            {
+                "schema_version": 1,
+                "task": task,
+                "rows": rows,
+                "rows_sha256": canonical_sha256(rows),
+            },
+            config,
+        )
+
+    facts = recovery._failure_facts(plan, root, {"failures": 0})
+
+    assert (
+        facts["failure_code"]
+        == recovery.FIXED_ETF_DATASET_REGISTRATION_GAP
+    )
+    assert facts["data_outcomes_accessed"] is True
+    assert facts["market_price_rows_accessed"] == 4
+    assert facts["exposure_scope"] == {
+        "dates": required_dates,
+        "symbols": symbols,
+    }
+
+
+def test_style_etf_dataset_uses_fixed_universe_without_reference_snapshot(
+    tmp_path,
+):
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    required_dates = ["2024-01-02", "2024-01-03"]
+    symbols = ["SCHG", "SCHV"]
+    split_task = {
+        "kind": "split_actions",
+        "start": required_dates[0],
+        "date": required_dates[-1],
+    }
+    split_task["task_id"] = canonical_sha256(split_task)
+    tasks = [split_task]
+    for symbol in symbols:
+        task = {
+            "kind": "daily_symbol_bars",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+            "symbol": symbol,
+        }
+        task["task_id"] = canonical_sha256(task)
+        tasks.append(task)
+    plan = {
+        "family_id": runtime.STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
+        "required_dates": required_dates,
+        "evaluation_dates": required_dates,
+        "symbols": symbols,
+        "tasks": tasks,
+        "daily_provider": "alpaca",
+    }
+    collection._write_external(
+        collection._checkpoint_path(tmp_path, split_task),
+        {
+            "schema_version": 1,
+            "task": split_task,
+            "rows": [],
+            "rows_sha256": canonical_sha256([]),
+        },
+        config,
+    )
+    for task in tasks[1:]:
+        rows = [
+            {
+                "symbol": task["symbol"],
+                "date": day,
+                "open": 100.0,
+                "high": 101.0,
+                "low": 99.0,
+                "close": 100.5,
+                "volume": 1_000_000,
+            }
+            for day in required_dates
+        ]
+        collection._write_external(
+            collection._checkpoint_path(tmp_path, task),
+            {
+                "schema_version": 1,
+                "task": task,
+                "rows": rows,
+                "rows_sha256": canonical_sha256(rows),
+            },
+            config,
+        )
+
+    dataset = collection.build_dataset(tmp_path, plan)
+
+    assert dataset["symbols"] == symbols
+    assert set(dataset["daily_bars"]) == set(symbols)
+    assert "universe_by_date" not in dataset
+
+
 def test_symbol_range_failure_summarizes_incomplete_regular_sessions(
     tmp_path,
 ):

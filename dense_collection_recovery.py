@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 from collections.abc import Mapping
 from datetime import date, datetime, time, timedelta
@@ -12,6 +13,7 @@ from typing import Any
 import dense_data_collection as collection
 import dense_strategy_runtime as runtime
 import outcome_exposure
+import sector_etf_gap_drift as artifact_support
 import strategy_discovery
 from historical_store import (
     DEFAULT_ENV_PATH,
@@ -34,6 +36,9 @@ EMPTY_MISSED_DATE_REPRESENTATION = (
     "EMPTY_INTRADAY_MISSED_DATE_REPRESENTATION_GAP"
 )
 INCOMPLETE_FIXED_DAILY_RANGE = "INCOMPLETE_FIXED_DAILY_SYMBOL_RANGE"
+FIXED_ETF_DATASET_REGISTRATION_GAP = (
+    "FIXED_ETF_DATASET_FAMILY_REGISTRATION_GAP"
+)
 RECOVERY_IMPLEMENTATION_FILES = (
     "dense_collection_recovery.py",
     "dense_collection_recovery_inspection.py",
@@ -408,6 +413,50 @@ def _failure_facts(
             },
         }
     if (
+        plan["family_id"]
+        == runtime.STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY
+        and completed == int(plan["task_count"])
+        and daily_range_summaries
+        and all(
+            not item["missing_required_sessions"]
+            for item in daily_range_summaries
+        )
+    ):
+        daily_range_summaries.sort(key=lambda item: item["symbol"])
+        evaluation_rows_accessed = sum(
+            int(item["complete_evaluation_sessions"])
+            for item in daily_range_summaries
+        )
+        return {
+            "failure_code": FIXED_ETF_DATASET_REGISTRATION_GAP,
+            "completed_tasks": completed,
+            "market_price_rows_accessed": rows_accessed,
+            "evaluation_tasks_completed": evaluation_tasks_completed,
+            "data_outcomes_accessed": evaluation_rows_accessed > 0,
+            "exposure_scope": {
+                "dates": list(plan["evaluation_dates"]),
+                "symbols": sorted(map(str, plan["symbols"])),
+            },
+            "failure_details": {
+                "required_symbol_sessions": (
+                    len(required_dates) * len(plan["symbols"])
+                ),
+                "complete_required_symbol_sessions": sum(
+                    int(item["complete_required_sessions"])
+                    for item in daily_range_summaries
+                ),
+                "complete_evaluation_symbol_sessions": (
+                    evaluation_rows_accessed
+                ),
+                "per_symbol": daily_range_summaries,
+                "loader_failure": (
+                    "fixed ETF family dispatched to equity reference universe"
+                ),
+                "substituted_sessions": 0,
+                "interpolated_sessions": 0,
+            },
+        }
+    if (
         completed == int(plan["task_count"])
         and daily_range_summaries
         and any(
@@ -575,6 +624,106 @@ def _load_inspected_failure(
             "collection failure inspection binding drifted"
         )
     return failure_path, failure, inspection
+
+
+def _failure_exposure_is_indexed(failure: Mapping[str, Any]) -> bool:
+    expected_id = (
+        f"dense-collection-failure-{failure['artifact_sha256'][:20]}"
+    )
+    return any(
+        record.get("exposure_id") == expected_id
+        and record.get("source_sha256") == failure["artifact_sha256"]
+        and record.get("scope") == failure["exposure_scope"]
+        and record.get("lane") == "development"
+        for record in outcome_exposure.read_index()
+    )
+
+
+def refresh_fixed_etf_registration_contract(
+    failure_inspection_path: Path,
+    *,
+    enforce_commit: bool = True,
+) -> tuple[Path, dict[str, Any]]:
+    """Refresh only implementation hashes after the inspected loader gap."""
+
+    _failure_path, failure, _inspection = _load_inspected_failure(
+        failure_inspection_path,
+        enforce_commit=enforce_commit,
+    )
+    if not (
+        failure.get("family_id")
+        == runtime.STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY
+        and failure.get("lane") == "development"
+        and failure.get("failure_code")
+        == FIXED_ETF_DATASET_REGISTRATION_GAP
+        and failure.get("data_outcomes_accessed") is True
+        and failure.get("strategy_metrics_accessed") is False
+        and failure.get("completed_tasks") == failure.get("task_count")
+        and _failure_exposure_is_indexed(failure)
+    ):
+        raise DenseCollectionRecoveryError(
+            "fixed-ETF contract refresh lacks inspected, indexed loader-gap authority"
+        )
+    original_plan_path = PROJECT_ROOT / str(failure["plan_path"])
+    original_plan = collection._validate_plan(
+        original_plan_path,
+        enforce_commit=enforce_commit,
+    )
+    original_search_path = (
+        PROJECT_ROOT / str(original_plan["authority_path"])
+    )
+    if enforce_commit:
+        strategy_discovery.require_committed(original_search_path)
+    original_search = strategy_discovery.load_artifact(
+        original_search_path,
+        expected_kind="frozen-development-search",
+    )
+    preflight_path = (
+        PROJECT_ROOT / str(original_search["preflight_path"])
+    )
+    if enforce_commit:
+        strategy_discovery.require_committed(preflight_path)
+    preflight = strategy_discovery.load_artifact(
+        preflight_path,
+        expected_kind="discovery-preflight-inspection",
+    )
+    original_contract_path = (
+        PROJECT_ROOT / str(preflight["family_contract_path"])
+    )
+    if enforce_commit:
+        strategy_discovery.require_committed(original_contract_path)
+    original_contract = json.loads(
+        original_contract_path.read_text(encoding="utf-8")
+    )
+    if not isinstance(original_contract, dict):
+        raise DenseCollectionRecoveryError(
+            "original fixed-ETF contract is malformed"
+        )
+    refreshed = copy.deepcopy(original_contract)
+    refreshed.pop("implementation_hashes", None)
+    refreshed = strategy_discovery._validate_family_contract(refreshed)
+    original_semantics = copy.deepcopy(original_contract)
+    refreshed_semantics = copy.deepcopy(refreshed)
+    original_semantics.pop("implementation_hashes", None)
+    refreshed_semantics.pop("implementation_hashes", None)
+    if not (
+        original_semantics == refreshed_semantics
+        and original_search["family_contract"] == original_contract
+    ):
+        raise DenseCollectionRecoveryError(
+            "fixed-ETF contract refresh changed frozen strategy semantics"
+        )
+    strategy_discovery._assert_implementation_current(
+        refreshed,
+        enforce_commit=enforce_commit,
+    )
+    digest = canonical_sha256(refreshed)
+    path = (
+        original_contract_path.parent
+        / f"contract-{digest}.json"
+    )
+    artifact_support._write_json(path, refreshed)
+    return path, refreshed
 
 
 def freeze_pullback_recovery(
@@ -877,6 +1026,144 @@ def freeze_intraday_representation_recovery(
     )
 
 
+def freeze_fixed_etf_registration_recovery(
+    failure_inspection_path: Path,
+    *,
+    search_path: Path,
+    as_of: date | None = None,
+    actual_today: date | None = None,
+    public_root: Path = DEFAULT_PUBLIC_ROOT,
+    enforce_commit: bool = True,
+) -> tuple[Path, dict[str, Any]]:
+    """Rebind complete fixed-ETF checkpoints after a loader registration repair."""
+
+    failure_path, failure, failure_inspection = _load_inspected_failure(
+        failure_inspection_path,
+        enforce_commit=enforce_commit,
+    )
+    if not (
+        failure.get("family_id")
+        == runtime.STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY
+        and failure.get("lane") == "development"
+        and failure.get("failure_code")
+        == FIXED_ETF_DATASET_REGISTRATION_GAP
+        and failure.get("data_outcomes_accessed") is True
+        and failure.get("strategy_metrics_accessed") is False
+        and failure.get("completed_tasks") == failure.get("task_count")
+        and _failure_exposure_is_indexed(failure)
+    ):
+        raise DenseCollectionRecoveryError(
+            "failure is not the inspected, indexed fixed-ETF loader gap"
+        )
+    original_plan_path = PROJECT_ROOT / str(failure["plan_path"])
+    original_plan = collection._validate_plan(
+        original_plan_path,
+        enforce_commit=enforce_commit,
+    )
+    if enforce_commit:
+        strategy_discovery.require_committed(search_path)
+    refreshed_search = strategy_discovery.load_artifact(
+        search_path,
+        expected_kind="frozen-development-search",
+    )
+    original_search_path = (
+        PROJECT_ROOT / str(original_plan["authority_path"])
+    )
+    if enforce_commit:
+        strategy_discovery.require_committed(original_search_path)
+    original_search = strategy_discovery.load_artifact(
+        original_search_path,
+        expected_kind="frozen-development-search",
+    )
+    original_contract = copy.deepcopy(original_search["family_contract"])
+    refreshed_contract = copy.deepcopy(refreshed_search["family_contract"])
+    original_contract.pop("implementation_hashes", None)
+    refreshed_contract.pop("implementation_hashes", None)
+    if not (
+        original_plan["artifact_sha256"] == failure["plan_sha256"]
+        and original_contract == refreshed_contract
+        and refreshed_search.get("state") == "SEARCH_FROZEN"
+        and refreshed_search["family_contract"]["family_id"]
+        == failure["family_id"]
+    ):
+        raise DenseCollectionRecoveryError(
+            "refreshed fixed-ETF search changed frozen strategy semantics"
+        )
+    strategy_discovery._assert_implementation_current(
+        refreshed_search["family_contract"],
+        enforce_commit=enforce_commit,
+    )
+    today = actual_today or date.today()
+    current = as_of or today
+    if current > today:
+        raise DenseCollectionRecoveryError(
+            "fixed-ETF recovery as_of cannot be future-dated"
+        )
+    payload = {
+        key: value
+        for key, value in original_plan.items()
+        if key not in {"artifact_sha256", "as_of"}
+    }
+    payload.update(
+        {
+            "authority_path": collection._repo_path(search_path),
+            "authority_sha256": refreshed_search["artifact_sha256"],
+            "binding_sha256": refreshed_search["artifact_sha256"],
+            "as_of": current.isoformat(),
+            "recovery_kind": (
+                collection.FIXED_ETF_CHECKPOINT_REUSE_RECOVERY
+            ),
+            "recovery_failure_path": collection._repo_path(failure_path),
+            "recovery_failure_sha256": failure["artifact_sha256"],
+            "recovery_failure_inspection_path": collection._repo_path(
+                failure_inspection_path
+            ),
+            "recovery_failure_inspection_sha256": failure_inspection[
+                "artifact_sha256"
+            ],
+            "supersedes_plan_sha256": original_plan["artifact_sha256"],
+            "checkpoint_source_plan_path": collection._repo_path(
+                original_plan_path
+            ),
+            "checkpoint_source_plan_sha256": original_plan[
+                "artifact_sha256"
+            ],
+            "recovery_search_refresh": {
+                "original_search_sha256": original_search[
+                    "artifact_sha256"
+                ],
+                "refreshed_search_path": collection._repo_path(search_path),
+                "refreshed_search_sha256": refreshed_search[
+                    "artifact_sha256"
+                ],
+                "semantic_contract_sha256": canonical_sha256(
+                    refreshed_contract
+                ),
+                "only_implementation_hashes_changed": True,
+            },
+            "recovery_implementation_hashes": _implementation_hashes(
+                enforce_commit=enforce_commit
+            ),
+            "provider_requests_before_plan_freeze": 0,
+            "provider_requests_already_completed": int(
+                failure["provider_telemetry"]["requests"]
+            ),
+            "additional_provider_requests_authorized": 0,
+            "market_outcomes_accessed": True,
+            "strategy_metrics_accessed_before_recovery": False,
+            "substitutions_allowed": False,
+            "broker_actions": 0,
+        }
+    )
+    return strategy_discovery._write_artifact(
+        payload,
+        public_root
+        / str(failure["family_id"])
+        / "development-collection-plan",
+        f"{failure['family_id']}-development-collection-plan",
+    )
+
+
 def index_failure_exposure(
     failure_inspection_path: Path,
     *,
@@ -932,6 +1219,18 @@ def _parser() -> argparse.ArgumentParser:
     intraday.add_argument("artifact", type=Path)
     intraday.add_argument("--as-of", type=date.fromisoformat)
     intraday.add_argument("--search", type=Path, required=True)
+    refresh_fixed_etf = subparsers.add_parser(
+        "refresh-fixed-etf-registration-contract"
+    )
+    refresh_fixed_etf.add_argument("artifact", type=Path)
+    fixed_etf_checkpoint = subparsers.add_parser(
+        "freeze-fixed-etf-registration-recovery"
+    )
+    fixed_etf_checkpoint.add_argument("artifact", type=Path)
+    fixed_etf_checkpoint.add_argument("--as-of", type=date.fromisoformat)
+    fixed_etf_checkpoint.add_argument(
+        "--search", type=Path, required=True
+    )
     exposure = subparsers.add_parser("index-exposure")
     exposure.add_argument("artifact", type=Path)
     exposure.add_argument(
@@ -976,6 +1275,31 @@ def main() -> int:
             }
         elif args.command == "freeze-intraday-representation-recovery":
             path, artifact = freeze_intraday_representation_recovery(
+                args.artifact,
+                search_path=args.search,
+                as_of=args.as_of,
+                public_root=args.public_root,
+            )
+            result = {
+                "written": collection._repo_path(path),
+                "artifact_sha256": artifact["artifact_sha256"],
+                "state": artifact["state"],
+                "task_count": artifact["task_count"],
+                "additional_provider_requests_authorized": artifact[
+                    "additional_provider_requests_authorized"
+                ],
+            }
+        elif args.command == "refresh-fixed-etf-registration-contract":
+            path, artifact = refresh_fixed_etf_registration_contract(
+                args.artifact
+            )
+            result = {
+                "written": collection._repo_path(path),
+                "validated_contract_sha256": canonical_sha256(artifact),
+                "only_implementation_hashes_changed": True,
+            }
+        elif args.command == "freeze-fixed-etf-registration-recovery":
+            path, artifact = freeze_fixed_etf_registration_recovery(
                 args.artifact,
                 search_path=args.search,
                 as_of=args.as_of,

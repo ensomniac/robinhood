@@ -53,6 +53,9 @@ RECOVERY_ADJUSTMENT = "raw_alpaca_with_frozen_massive_split_actions"
 INTRADAY_CHECKPOINT_REUSE_RECOVERY = (
     "empty-missed-date-checkpoint-reuse"
 )
+FIXED_ETF_CHECKPOINT_REUSE_RECOVERY = (
+    "fixed-etf-dataset-registration-checkpoint-reuse"
+)
 DAILY_WARMUP_SESSIONS = 200
 INTRADAY_WARMUP_SESSIONS = runtime.STANDARDIZATION_LOOKBACK
 MAX_TASK_ATTEMPTS = 5
@@ -61,6 +64,20 @@ MAX_RETRY_DELAY_SECONDS = 30.0
 INTRADAY_FIXED_UNIVERSE_MISS_POLICY = (
     "miss-entire-fixed-universe-entry-date"
 )
+FIXED_DAILY_ETF_FAMILIES = {
+    *runtime.ETF_PULLBACK_FAMILIES,
+    runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
+    runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
+    runtime.FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
+    runtime.FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+    runtime.ETF_RESIDUAL_REPLICATION_FAMILY,
+    runtime.ETF_RESIDUAL_REPLICATION_V2_FAMILY,
+    runtime.ETF_RESIDUAL_REPLICATION_V3_FAMILY,
+    runtime.BREADTH_CAPITULATION_REBOUND_FAMILY,
+    runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
+    runtime.STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
+    *runtime.ETF_OVERSOLD_FAMILIES,
+}
 
 
 class DenseDataCollectionError(RuntimeError):
@@ -535,6 +552,13 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         plan.get("recovery_kind")
         == INTRADAY_CHECKPOINT_REUSE_RECOVERY
     )
+    fixed_etf_checkpoint_recovery = (
+        plan.get("recovery_kind")
+        == FIXED_ETF_CHECKPOINT_REUSE_RECOVERY
+    )
+    checkpoint_recovery = (
+        intraday_recovery or fixed_etf_checkpoint_recovery
+    )
     if not (
         plan.get("state") == "COLLECTION_PLAN_FROZEN"
         and plan.get("campaign_id") == batch.CAMPAIGN_ID
@@ -543,7 +567,7 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         and (
             plan.get("market_outcomes_accessed") is False
             or (
-                intraday_recovery
+                checkpoint_recovery
                 and plan.get("market_outcomes_accessed") is True
             )
         )
@@ -555,7 +579,7 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
     recovery_failure_path = plan.get("recovery_failure_path")
     recovery_adjustment = plan.get("adjustment_semantics")
     recovery_declared = (
-        recovery_adjustment is not None or intraday_recovery
+        recovery_adjustment is not None or checkpoint_recovery
     )
     if (recovery_failure_path is not None) != recovery_declared:
         raise DenseDataCollectionError(
@@ -656,7 +680,8 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 raise DenseDataCollectionError(
                     "collection recovery search semantics drifted"
                 )
-        if intraday_recovery:
+        source_plan: dict[str, Any] | None = None
+        if checkpoint_recovery:
             source_plan_path = (
                 PROJECT_ROOT
                 / str(plan.get("checkpoint_source_plan_path", ""))
@@ -665,6 +690,8 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 source_plan_path,
                 enforce_commit=enforce_commit,
             )
+        if intraday_recovery:
+            assert source_plan is not None
             if not (
                 recovery_adjustment is None
                 and plan.get("family_id")
@@ -696,7 +723,40 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 raise DenseDataCollectionError(
                     "intraday checkpoint-reuse recovery drifted"
                 )
-            elif not (
+        elif fixed_etf_checkpoint_recovery:
+            assert source_plan is not None
+            if not (
+                recovery_adjustment is None
+                and plan.get("family_id")
+                == runtime.STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY
+                and plan.get("lane") == "development"
+                and failure.get("failure_code")
+                == "FIXED_ETF_DATASET_FAMILY_REGISTRATION_GAP"
+                and failure.get("data_outcomes_accessed") is True
+                and failure.get("strategy_metrics_accessed") is False
+                and failure.get("completed_tasks")
+                == failure.get("task_count")
+                and plan.get("market_outcomes_accessed") is True
+                and plan.get("strategy_metrics_accessed_before_recovery")
+                is False
+                and plan.get("checkpoint_source_plan_sha256")
+                == source_plan["artifact_sha256"]
+                == failure["plan_sha256"]
+                and plan.get("provider_requests_already_completed")
+                == failure.get("provider_telemetry", {}).get("requests")
+                and plan.get("additional_provider_requests_authorized")
+                == 0
+                and plan.get("tasks") == source_plan.get("tasks")
+                and plan.get("evaluation_dates")
+                == source_plan.get("evaluation_dates")
+                and plan.get("required_dates")
+                == source_plan.get("required_dates")
+                and plan.get("symbols") == source_plan.get("symbols")
+            ):
+                raise DenseDataCollectionError(
+                    "fixed-ETF checkpoint-reuse recovery drifted"
+                )
+        elif not (
                 recovery_adjustment == RECOVERY_ADJUSTMENT
                 and plan.get("family_id")
                 in {
@@ -1352,19 +1412,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
             dataset["source_semantics"]["substitution"] = "forbidden"
         return dataset
     daily = _daily_rows(checkpoint_root, plan)
-    if family_id in {
-        *runtime.ETF_PULLBACK_FAMILIES,
-        runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
-        runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
-        runtime.FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
-        runtime.FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
-        runtime.ETF_RESIDUAL_REPLICATION_FAMILY,
-        runtime.ETF_RESIDUAL_REPLICATION_V2_FAMILY,
-        runtime.ETF_RESIDUAL_REPLICATION_V3_FAMILY,
-        runtime.BREADTH_CAPITULATION_REBOUND_FAMILY,
-        runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
-        *runtime.ETF_OVERSOLD_FAMILIES,
-    }:
+    if family_id in FIXED_DAILY_ETF_FAMILIES:
         symbols = set(map(str, plan["symbols"]))
         missing = [
             (day, symbol)
@@ -1429,19 +1477,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
             "adjustment": successor_adjustment,
         },
     }
-    if family_id in {
-        *runtime.ETF_PULLBACK_FAMILIES,
-        runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
-        runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
-        runtime.FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
-        runtime.FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
-        runtime.ETF_RESIDUAL_REPLICATION_FAMILY,
-        runtime.ETF_RESIDUAL_REPLICATION_V2_FAMILY,
-        runtime.ETF_RESIDUAL_REPLICATION_V3_FAMILY,
-        runtime.BREADTH_CAPITULATION_REBOUND_FAMILY,
-        runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
-        *runtime.ETF_OVERSOLD_FAMILIES,
-    }:
+    if family_id in FIXED_DAILY_ETF_FAMILIES:
         dataset["symbols"] = list(plan["symbols"])
     else:
         dataset["universe_by_date"] = universe_by_date
@@ -1471,17 +1507,17 @@ def _existing_status(
     return matches[0] if matches else None
 
 
-def _materialize_intraday_recovery_checkpoints(
+def _materialize_checkpoint_recovery_checkpoints(
     *,
     config: HistoricalStoreConfig,
     plan: Mapping[str, Any],
     private_root: Path,
     enforce_commit: bool,
 ) -> None:
-    if (
-        plan.get("recovery_kind")
-        != INTRADAY_CHECKPOINT_REUSE_RECOVERY
-    ):
+    if plan.get("recovery_kind") not in {
+        INTRADAY_CHECKPOINT_REUSE_RECOVERY,
+        FIXED_ETF_CHECKPOINT_REUSE_RECOVERY,
+    }:
         return
     source_plan_path = (
         PROJECT_ROOT / str(plan["checkpoint_source_plan_path"])
@@ -1577,7 +1613,7 @@ def collect(
         / str(plan["lane"])
         / str(plan["artifact_sha256"])
     )
-    _materialize_intraday_recovery_checkpoints(
+    _materialize_checkpoint_recovery_checkpoints(
         config=config,
         plan=plan,
         private_root=private_root,
@@ -1623,12 +1659,12 @@ def collect(
                 _load_checkpoint(path, task)
                 client.telemetry["cache_hits"] += 1
             else:
-                if (
-                    plan.get("recovery_kind")
-                    == INTRADAY_CHECKPOINT_REUSE_RECOVERY
-                ):
+                if plan.get("recovery_kind") in {
+                    INTRADAY_CHECKPOINT_REUSE_RECOVERY,
+                    FIXED_ETF_CHECKPOINT_REUSE_RECOVERY,
+                }:
                     raise DenseDataCollectionError(
-                        "intraday recovery forbids an additional provider request"
+                        "checkpoint recovery forbids an additional provider request"
                     )
                 attempts = 0
                 while True:
