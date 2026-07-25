@@ -442,6 +442,12 @@ seconds from one dataset load and zero provider requests. All trial and
 total growth, but none passed rolling-fold stability, DSR, Holm, or cumulative
 PBO in the compact preliminary surface. Commit and push the result before
 independent reconstruction; do not select, repair, or access confirmation.
+Inspection `01996122...883591` independently rebuilt every return path,
+selection statistic, neighbor relation, and account row and formally rejected
+all 32 trials. Cumulative PBO is 0.60, maximum DSR probability is 0.252, and no
+trial passes rolling-fold stability or Holm. V14 is terminal on its evaluated
+corpus: do not repair it, freeze a winner, or access its still-untouched
+confirmation reserve. Continue immediately with a disjoint mechanism family.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
