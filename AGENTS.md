@@ -315,6 +315,11 @@ Inspection `9ce9ba60...27ce1d` independently rebuilt every source, request,
 hash, partition, hold-plus-embargo, common-equity, cumulative-selection, and
 zero-outcome check. It authorizes only a subordinate metadata collection plan;
 commit and push it before freezing that exact execution graph.
+Plan `13e496b9...776bad` now freezes those 16 requests, one-at-a-time SEC
+transport, zero retries or substitutions, hash-valid interrupted resume,
+as-filed EPS/TradingSymbol parsing, same-accession common-stock cover, and
+global exposure filtering without replacement. Commit and push the plan before
+independent plan inspection.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
