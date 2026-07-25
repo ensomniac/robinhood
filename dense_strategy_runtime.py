@@ -74,6 +74,20 @@ ETF_RESIDUAL_REPLICATION_V3_TARGET_SYMBOLS = (
     "IYW",
     "IYZ",
 )
+ETF_RESIDUAL_REPLICATION_V4_FAMILY = (
+    "liquid-etf-market-residual-reversal-replication-v4"
+)
+ETF_RESIDUAL_REPLICATION_V4_TARGET_SYMBOLS = (
+    "XLB",
+    "XLE",
+    "XLF",
+    "XLI",
+    "XLK",
+    "XLP",
+    "XLU",
+    "XLV",
+    "XLY",
+)
 EQUITY_RESIDUAL_FAMILIES = {
     EQUITY_RESIDUAL_FAMILY,
     EQUITY_RESIDUAL_REPLICATION_FAMILY,
@@ -84,6 +98,7 @@ RESIDUAL_FAMILIES = {
     ETF_RESIDUAL_REPLICATION_FAMILY,
     ETF_RESIDUAL_REPLICATION_V2_FAMILY,
     ETF_RESIDUAL_REPLICATION_V3_FAMILY,
+    ETF_RESIDUAL_REPLICATION_V4_FAMILY,
 }
 INTRADAY_ETF_FAMILY = "intraday-index-etf-opening-reversal"
 COUNTRY_ETF_OPENING_REVERSAL_FAMILY = "country-etf-opening-reversal"
@@ -195,6 +210,7 @@ SUPPORTED_FAMILIES = {
     ETF_RESIDUAL_REPLICATION_FAMILY,
     ETF_RESIDUAL_REPLICATION_V2_FAMILY,
     ETF_RESIDUAL_REPLICATION_V3_FAMILY,
+    ETF_RESIDUAL_REPLICATION_V4_FAMILY,
     *INTRADAY_ETF_FAMILIES,
     ETF_PULLBACK_FAMILY,
     ETF_PULLBACK_REPLICATION_FAMILY,
@@ -943,6 +959,7 @@ def _fixed_etf_residual_candidates(
         ETF_RESIDUAL_REPLICATION_FAMILY,
         ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         ETF_RESIDUAL_REPLICATION_V3_FAMILY,
+        ETF_RESIDUAL_REPLICATION_V4_FAMILY,
     }:
         raise DenseStrategyRuntimeError(
             "fixed ETF residual dataset family binding is invalid"
@@ -956,6 +973,9 @@ def _fixed_etf_residual_candidates(
         ),
         ETF_RESIDUAL_REPLICATION_V3_FAMILY: (
             ETF_RESIDUAL_REPLICATION_V3_TARGET_SYMBOLS
+        ),
+        ETF_RESIDUAL_REPLICATION_V4_FAMILY: (
+            ETF_RESIDUAL_REPLICATION_V4_TARGET_SYMBOLS
         ),
     }[family_id]
     calendar = _calendar(dataset)
@@ -5114,6 +5134,7 @@ def build_candidates(
         ETF_RESIDUAL_REPLICATION_FAMILY,
         ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         ETF_RESIDUAL_REPLICATION_V3_FAMILY,
+        ETF_RESIDUAL_REPLICATION_V4_FAMILY,
     }:
         return _fixed_etf_residual_candidates(dataset, parameters)
     if family_id in EQUITY_RESIDUAL_FAMILIES:
@@ -5454,6 +5475,7 @@ def _production_daily_signal(
         ETF_RESIDUAL_REPLICATION_FAMILY,
         ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         ETF_RESIDUAL_REPLICATION_V3_FAMILY,
+        ETF_RESIDUAL_REPLICATION_V4_FAMILY,
         *ETF_PULLBACK_FAMILIES,
         SPY_RSI2_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
@@ -5751,6 +5773,7 @@ def _production_daily_signal(
             ETF_RESIDUAL_REPLICATION_FAMILY,
             ETF_RESIDUAL_REPLICATION_V2_FAMILY,
             ETF_RESIDUAL_REPLICATION_V3_FAMILY,
+            ETF_RESIDUAL_REPLICATION_V4_FAMILY,
         }:
             target_symbols = {
                 ETF_RESIDUAL_REPLICATION_FAMILY: (
@@ -5761,6 +5784,9 @@ def _production_daily_signal(
                 ),
                 ETF_RESIDUAL_REPLICATION_V3_FAMILY: (
                     ETF_RESIDUAL_REPLICATION_V3_TARGET_SYMBOLS
+                ),
+                ETF_RESIDUAL_REPLICATION_V4_FAMILY: (
+                    ETF_RESIDUAL_REPLICATION_V4_TARGET_SYMBOLS
                 ),
             }[family_id]
             if frozen_symbols != [
@@ -7375,6 +7401,7 @@ def evaluate_production_signal(
         ETF_RESIDUAL_REPLICATION_FAMILY,
         ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         ETF_RESIDUAL_REPLICATION_V3_FAMILY,
+        ETF_RESIDUAL_REPLICATION_V4_FAMILY,
         LIQUID_EQUITY_MOMENTUM_FAMILY,
         *ETF_PULLBACK_FAMILIES,
         SPY_RSI2_PULLBACK_FAMILY,

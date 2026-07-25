@@ -26,7 +26,7 @@ def test_rolling_readiness_resolves_exact_committed_boundary():
         "ready": False,
         "required_contiguous_target_sessions": 480,
         "state": "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY",
-        "total_untouched_sessions": 267,
+        "total_untouched_sessions": 212,
     }
     assert status["calendar_boundary"]["output_state"] == (
         "COLLECTED_READY_FOR_ALLOCATION_CONTRACT"

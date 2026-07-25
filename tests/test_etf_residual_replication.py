@@ -7,6 +7,7 @@ import dense_strategy_runtime as runtime
 import etf_residual_replication as replication
 import etf_residual_replication2 as replication2
 import etf_residual_replication3 as replication3
+import etf_residual_replication4 as replication4
 
 
 def _business_dates(count: int) -> list[str]:
@@ -384,4 +385,105 @@ def test_corrected_residual_contract_binds_failed_v2_exposure(
         contract["predecessor"]["exposure_id"]
         == replication3.V2_EXPOSURE_ID
     )
+    assert contract["new_mechanism_family_slot_consumed"] is False
+
+
+def test_sector_spdr_residual_runtime_uses_untouched_targets():
+    dates = _business_dates(230)
+    evaluation = dates[-12:]
+    decision_index = dates.index(evaluation[3])
+    bars = {
+        "SPY": _bars(dates, phase=0.0),
+        **{
+            symbol: _bars(
+                dates,
+                phase=(index + 1) / 3,
+                shock_index=(
+                    decision_index if symbol == "XLE" else None
+                ),
+                shock_return=-0.04,
+            )
+            for index, symbol in enumerate(
+                runtime.ETF_RESIDUAL_REPLICATION_V4_TARGET_SYMBOLS
+            )
+        },
+    }
+    candidates = runtime.build_candidates(
+        runtime.prepare_dataset(
+            {
+                "schema_version": 1,
+                "family_id": runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY,
+                "evaluation_dates": evaluation,
+                "symbols": [
+                    *runtime.ETF_RESIDUAL_REPLICATION_V4_TARGET_SYMBOLS,
+                    runtime.ETF_RESIDUAL_REPLICATION_FEATURE_SYMBOL,
+                ],
+                "daily_bars": bars,
+            }
+        ),
+        runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY,
+        _parameters(),
+    )
+    observed = [
+        item
+        for item in candidates
+        if item["decision_date"] == evaluation[3]
+    ]
+
+    assert observed
+    assert observed[0]["symbol"] == "XLE"
+    assert all(
+        item["symbol"]
+        in runtime.ETF_RESIDUAL_REPLICATION_V4_TARGET_SYMBOLS
+        for item in candidates
+    )
+
+
+def test_sector_spdr_contract_preserves_grid_and_untouched_partitions(
+    tmp_path, monkeypatch
+):
+    original_repo_path = replication4._repo_path
+
+    def repo_path(path):
+        try:
+            return original_repo_path(path)
+        except ValueError:
+            return f"strategy_tournament/v2/test/{path.name}"
+
+    monkeypatch.setattr(replication4, "DEFAULT_ROOT", tmp_path)
+    monkeypatch.setattr(replication4, "_repo_path", repo_path)
+    monkeypatch.setattr(
+        replication4.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: [],
+    )
+    monkeypatch.setattr(
+        replication4.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
+
+    _path, contract, capacity = replication4.freeze_contract(
+        created_at=datetime.now().astimezone().isoformat(),
+        enforce_commit=False,
+    )
+    base = replication4._read_contract(replication4.V3_CONTRACT)
+
+    assert capacity.is_file()
+    assert contract["parameter_grid"] == base["parameter_grid"]
+    assert len(contract["trial_family"]) == 48
+    assert len(contract["development_dates"]) == 1_200
+    assert len(contract["development_signal_dates"]) == 1_195
+    assert len(contract["embargo_dates"]) == 5
+    assert len(contract["confirmation_dates"]) == 500
+    assert contract["confirmation_signal_capacity"] == 495
+    assert contract["universe"]["target_symbols"] == list(
+        runtime.ETF_RESIDUAL_REPLICATION_V4_TARGET_SYMBOLS
+    )
+    assert contract["development_scope"]["symbols"] == list(
+        runtime.ETF_RESIDUAL_REPLICATION_V4_TARGET_SYMBOLS
+    )
+    assert "SPY" not in contract["development_scope"]["symbols"]
+    assert contract["prior_family_attempt_count"] == 5
+    assert contract["predecessor"]["state"] == "REJECTED"
     assert contract["new_mechanism_family_slot_consumed"] is False
