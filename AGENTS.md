@@ -121,7 +121,10 @@ implementation hashes. Commit it and run zero-outcome preflight before freezing
 search or collection. Preflight `adcf86ed...7fefe` independently rebuilt the
 113-decision capacity, point-in-time boundary, family identity, and zero-outcome
 state with zero provider requests. Commit it, then freeze search; no successor
-provider access is yet permitted.
+provider access is yet permitted. Search `5df9cb0b...a9fad` now freezes the
+complete one-trial family, deterministic selection rule, costs, partitions,
+implementation, and falsifiers. Commit it, then freeze and inspect the exact
+development collection graph before provider access.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 102 weekly
 decision dates.
