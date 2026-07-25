@@ -246,6 +246,12 @@ the complete development search. Search `9cf8b774...780123` now binds every
 unchanged trial, neighbor graph, rolling-origin fold, account simulator,
 5/10/20-bps costs, deterministic selection rule, exact scopes, and committed
 implementations. Commit it before freezing the development collection graph.
+An initial planner invocation omitted the contract's explicit historical
+calendar argument and failed before writing an artifact or accessing a
+provider. Plan `e34f7233...d0bd2b6` then froze the correct contract-bound
+calendar, one Massive split range, and nine raw Yahoo symbol ranges with zero
+requests or substitutions. Commit it before independent request-graph
+inspection.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
