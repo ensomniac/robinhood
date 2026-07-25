@@ -128,6 +128,11 @@ def _requests() -> list[dict[str, Any]]:
 
 
 def build_contract(*, created_at: str) -> dict[str, Any]:
+    for path in (
+        Path(__file__).resolve(),
+        PROJECT_ROOT / "earnings_massive_capacity_inspection.py",
+    ):
+        strategy_discovery.require_committed(path)
     created = _timestamp(created_at, "created_at")
     requests_graph = _requests()
     value: dict[str, Any] = {

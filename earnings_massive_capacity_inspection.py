@@ -27,6 +27,7 @@ def inspect_contract(
     inspected_at: str,
     root: Path = source.DEFAULT_ROOT,
 ) -> tuple[Path, dict[str, Any]]:
+    strategy_discovery.require_committed(Path(__file__).resolve())
     strategy_discovery.require_committed(contract_path)
     contract = source._read(contract_path)
     rebuilt = source.build_contract(created_at=contract["created_at"])

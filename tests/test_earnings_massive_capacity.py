@@ -2,6 +2,7 @@ import json
 
 import earnings_massive_capacity as capacity
 import earnings_massive_capacity_inspection as inspection
+import pytest
 from historical_store import HistoricalDayStore
 
 
@@ -52,6 +53,17 @@ def test_contract_freezes_annual_metadata_requests_without_outcomes(
     assert contract["forward_returns_accessed"] is False
     assert contract["strategy_metrics_computed"] == 0
     assert contract["broker_actions"] == 0
+
+
+def test_contract_refuses_uncommitted_implementation(monkeypatch):
+    monkeypatch.setattr(
+        capacity.strategy_discovery,
+        "require_committed",
+        lambda _path: (_ for _ in ()).throw(RuntimeError("uncommitted")),
+    )
+
+    with pytest.raises(RuntimeError, match="uncommitted"):
+        capacity.build_contract(created_at="2026-07-25T01:00:00Z")
 
 
 def test_inspection_rejects_duplicate_eligible_events_from_capacity(
