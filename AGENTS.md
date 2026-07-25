@@ -40,6 +40,17 @@ historical-capacity expansion through Massive's Benzinga earnings source is
 and permits no retry or purchase. Continue immediately with a prospectively
 frozen mechanism on locally available, globally untouched evidence.
 
+The next mechanism implementation is
+`cross-style-etf-breadth-continuation-v1`, a single fixed weekly rule over
+`SCHG`, `SCHV`, `SPYG`, `SPYV`, `VONE`, `VTV`, `VTWO`, and `VUG`. It uses
+already-completed 2015-2017 date-symbol pairs for development, a fixed
+five-session embargo, and already-completed 2018-2020 date-symbol pairs for
+untouched confirmation. The implementation opens no outcomes: freeze and
+independently inspect its exact family contract before any provider access.
+Confirmation remains forbidden unless the exact inspected development result
+freezes a winner and the dynamic power target fits the reserved 154 weekly
+decision dates.
+
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
 event join produced 153 development pairs across 57 possible entry dates, but

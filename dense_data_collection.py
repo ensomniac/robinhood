@@ -1357,6 +1357,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         runtime.ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         runtime.ETF_RESIDUAL_REPLICATION_V3_FAMILY,
         runtime.BREADTH_CAPITULATION_REBOUND_FAMILY,
+        runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
         *runtime.ETF_OVERSOLD_FAMILIES,
     }:
         symbols = set(map(str, plan["symbols"]))
@@ -1433,6 +1434,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         runtime.ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         runtime.ETF_RESIDUAL_REPLICATION_V3_FAMILY,
         runtime.BREADTH_CAPITULATION_REBOUND_FAMILY,
+        runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
         *runtime.ETF_OVERSOLD_FAMILIES,
     }:
         dataset["symbols"] = list(plan["symbols"])

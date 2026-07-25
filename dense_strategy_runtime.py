@@ -155,6 +155,20 @@ BREADTH_CAPITULATION_SYMBOLS = (
     "SPTM",
     "VV",
 )
+CROSS_STYLE_BREADTH_CONTINUATION_FAMILY = (
+    "cross-style-etf-breadth-continuation"
+)
+CROSS_STYLE_BREADTH_SYMBOLS = (
+    "SCHG",
+    "SCHV",
+    "SPYG",
+    "SPYV",
+    "VONE",
+    "VTV",
+    "VTWO",
+    "VUG",
+)
+CROSS_STYLE_BREADTH_TARGET_SYMBOL = "SCHG"
 HIGH_BETA_ETF_OVERSOLD_FAMILY = "high-beta-etf-oversold-reversal"
 BROAD_ASSET_ETF_OVERSOLD_FAMILY = "broad-asset-etf-oversold-reversal"
 ETF_OVERSOLD_FAMILIES = {
@@ -190,6 +204,7 @@ SUPPORTED_FAMILIES = {
     FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
     FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
     BREADTH_CAPITULATION_REBOUND_FAMILY,
+    CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
     *ETF_OVERSOLD_FAMILIES,
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
@@ -1628,6 +1643,141 @@ def _breadth_capitulation_rebound_candidates(
                     score=-session_return,
                 )
             )
+    return candidates
+
+
+def _cross_style_breadth_continuation_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    normalized_parameters = {
+        "breadth_sma": int(parameters["breadth_sma"]),
+        "minimum_breadth_count": int(parameters["minimum_breadth_count"]),
+        "target_trend_sma": int(parameters["target_trend_sma"]),
+        "stop_atr14": float(parameters["stop_atr14"]),
+        "maximum_hold_sessions": int(parameters["maximum_hold_sessions"]),
+    }
+    expected_parameters = {
+        "breadth_sma": 100,
+        "minimum_breadth_count": 7,
+        "target_trend_sma": 200,
+        "stop_atr14": 1.5,
+        "maximum_hold_sessions": 5,
+    }
+    if normalized_parameters != expected_parameters:
+        raise DenseStrategyRuntimeError(
+            "cross-style breadth rules drifted from the frozen exact rule"
+        )
+    if set(daily) != set(CROSS_STYLE_BREADTH_SYMBOLS):
+        raise DenseStrategyRuntimeError(
+            "cross-style breadth data does not match its frozen ETF basket"
+        )
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    candidates: list[dict[str, Any]] = []
+    hold = expected_parameters["maximum_hold_sessions"]
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        next_session = calendar[calendar_index + 1]
+        if (
+            date.fromisoformat(decision_date).isocalendar()[:2]
+            == date.fromisoformat(next_session).isocalendar()[:2]
+        ):
+            continue
+        breadth_count = 0
+        complete = True
+        for symbol in CROSS_STYLE_BREADTH_SYMBOLS:
+            bars = daily[symbol]
+            symbol_index = indices[symbol].get(decision_date)
+            breadth = (
+                _sma(bars, symbol_index, 100)
+                if symbol_index is not None
+                else None
+            )
+            if breadth is None:
+                complete = False
+                break
+            if float(bars[symbol_index]["close"]) > breadth:
+                breadth_count += 1
+        if not complete or breadth_count < 7:
+            continue
+        target_bars = daily[CROSS_STYLE_BREADTH_TARGET_SYMBOL]
+        target_index = indices[CROSS_STYLE_BREADTH_TARGET_SYMBOL].get(
+            decision_date
+        )
+        if target_index is None:
+            continue
+        trend = _sma(target_bars, target_index, 200)
+        atr14 = _atr(target_bars, target_index)
+        decision_close = float(target_bars[target_index]["close"])
+        if (
+            trend is None
+            or atr14 is None
+            or decision_close <= trend
+            or not _cost_floor(atr14 / decision_close)
+        ):
+            continue
+        entry_date = next_session
+        if calendar_index + 1 + hold > len(calendar):
+            continue
+        entry_index = indices[CROSS_STYLE_BREADTH_TARGET_SYMBOL].get(
+            entry_date
+        )
+        signal_id = (
+            f"{entry_date}-{CROSS_STYLE_BREADTH_CONTINUATION_FAMILY}-"
+            f"{CROSS_STYLE_BREADTH_TARGET_SYMBOL}"
+        )
+        if entry_index is None:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": CROSS_STYLE_BREADTH_TARGET_SYMBOL,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_open",
+                }
+            )
+            continue
+        observed_dates = {
+            str(item["date"])
+            for item in target_bars[entry_index : entry_index + hold]
+        }
+        expected_dates = set(
+            calendar[calendar_index + 1 : calendar_index + 1 + hold]
+        )
+        if observed_dates != expected_dates:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": CROSS_STYLE_BREADTH_TARGET_SYMBOL,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "incomplete_holding_bars",
+                }
+            )
+            continue
+        candidate = _daily_candidate(
+            family_id=CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
+            symbol=CROSS_STYLE_BREADTH_TARGET_SYMBOL,
+            decision_date=decision_date,
+            entry_date=entry_date,
+            bars=target_bars,
+            entry_index=entry_index,
+            stop_atr=1.5,
+            atr14=atr14,
+            hold_sessions=hold,
+            rank=1,
+            score=breadth_count + (decision_close / trend - 1),
+        )
+        candidate["expected_gross_move_fraction"] = atr14 / decision_close
+        candidate["breadth_count"] = breadth_count
+        candidates.append(candidate)
     return candidates
 
 
@@ -3070,6 +3220,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
             BREADTH_CAPITULATION_REBOUND_FAMILY,
+            CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
         }:
             symbols = dataset.get("symbols")
@@ -4611,6 +4762,10 @@ def build_candidates(
         )
     if family_id == BREADTH_CAPITULATION_REBOUND_FAMILY:
         return _breadth_capitulation_rebound_candidates(dataset, parameters)
+    if family_id == CROSS_STYLE_BREADTH_CONTINUATION_FAMILY:
+        return _cross_style_breadth_continuation_candidates(
+            dataset, parameters
+        )
     if family_id in ETF_OVERSOLD_FAMILIES:
         return _high_beta_etf_oversold_candidates(
             dataset, parameters, family_id=family_id
@@ -4915,6 +5070,7 @@ def _production_daily_signal(
         FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
         FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
         BREADTH_CAPITULATION_REBOUND_FAMILY,
+        CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
     }:
         frozen_symbols = frozen_universe.get("symbols")
@@ -4941,6 +5097,92 @@ def _production_daily_signal(
             raise DenseStrategyRuntimeError(
                 "production ETF pullback replication universe escaped the frozen rules"
             )
+        if family_id == CROSS_STYLE_BREADTH_CONTINUATION_FAMILY:
+            normalized_parameters = {
+                "breadth_sma": int(parameters["breadth_sma"]),
+                "minimum_breadth_count": int(
+                    parameters["minimum_breadth_count"]
+                ),
+                "target_trend_sma": int(parameters["target_trend_sma"]),
+                "stop_atr14": float(parameters["stop_atr14"]),
+                "maximum_hold_sessions": int(
+                    parameters["maximum_hold_sessions"]
+                ),
+            }
+            expected_parameters = {
+                "breadth_sma": 100,
+                "minimum_breadth_count": 7,
+                "target_trend_sma": 200,
+                "stop_atr14": 1.5,
+                "maximum_hold_sessions": 5,
+            }
+            if (
+                frozen_symbols != list(CROSS_STYLE_BREADTH_SYMBOLS)
+                or normalized_parameters != expected_parameters
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production cross-style breadth rules drifted"
+                )
+            if (
+                decision_day.isocalendar()[:2]
+                == next_session_day.isocalendar()[:2]
+            ):
+                raise DenseStrategyRuntimeError(
+                    "no exact production cross-style weekly decision"
+                )
+            breadth_count = 0
+            for symbol in CROSS_STYLE_BREADTH_SYMBOLS:
+                bars = daily[symbol]
+                symbol_index = indices[symbol].get(decision_date)
+                if symbol_index is None or symbol_index < 99:
+                    raise DenseStrategyRuntimeError(
+                        "production cross-style breadth history is incomplete"
+                    )
+                breadth = _sma(bars, symbol_index, 100)
+                if (
+                    breadth is not None
+                    and float(bars[symbol_index]["close"]) > breadth
+                ):
+                    breadth_count += 1
+            target_bars = daily[CROSS_STYLE_BREADTH_TARGET_SYMBOL]
+            target_index = indices[CROSS_STYLE_BREADTH_TARGET_SYMBOL].get(
+                decision_date
+            )
+            if target_index is None or target_index < 199:
+                raise DenseStrategyRuntimeError(
+                    "production cross-style target history is incomplete"
+                )
+            trend = _sma(target_bars, target_index, 200)
+            atr14 = _atr(target_bars, target_index)
+            decision_close = float(target_bars[target_index]["close"])
+            if (
+                breadth_count < 7
+                or trend is None
+                or atr14 is None
+                or decision_close <= trend
+                or not _cost_floor(atr14 / decision_close)
+            ):
+                raise DenseStrategyRuntimeError(
+                    "no exact production cross-style breadth signal"
+                )
+            return {
+                "symbol": CROSS_STYLE_BREADTH_TARGET_SYMBOL,
+                "rank": 1,
+                "score": breadth_count + (decision_close / trend - 1),
+                "breadth_count": breadth_count,
+                "expected_gross_move_fraction": atr14 / decision_close,
+                "atr": atr14,
+                "stop_atr_multiple": 1.5,
+                "holding_trading_days": 5,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_maximum_hold_close",
+                    "maximum_hold_sessions": 5,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
         if family_id == SPY_RSI2_PULLBACK_FAMILY:
             expected_parameters = {
                 "trend_sma": 200,
@@ -6645,6 +6887,7 @@ def evaluate_production_signal(
         FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
         FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
         BREADTH_CAPITULATION_REBOUND_FAMILY,
+        CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
     }:
         return _production_daily_signal(
