@@ -49,6 +49,21 @@ cannot satisfy the fixed 20-confirmation-signal floor. Its event collection and
 transport history remain auditable; this exact evidence split may not proceed
 to development or confirmation.
 
+Continuous discovery now advances the existing PEAD mechanism on older,
+globally disjoint SEC evidence rather than waiting for new calendar data.
+`earnings-positive-surprise-drift-v5-sec-yoy-eps-reaction` uses as-filed
+Financial Statement and Notes archives to bind each positive year-over-year
+quarterly EPS change to the same accession's unambiguous common-equity ticker,
+exchange, security title, and acceptance timestamp. Contract
+`66416e49...26d25e` freezes eight exact 2010-2011 archives, ends development on
+2010-12-17, preserves the maximum five-session holding window plus five complete
+embargo sessions, and reserves filings from 2011-01-10 onward for confirmation.
+Independent inspection `b4772474...d818f1` rebuilt every implementation, request,
+partition, exposure-index, and zero-outcome binding and earned
+`SEC_EPS_CONTRACT_INSPECTED_READY`. Collect only those eight metadata archives
+next. Do not access a market price, forward return, confirmation outcome, or
+broker, and do not infer historical identity from a current ticker map.
+
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;
 an independently inspected terminal disposition releases its slot immediately.
