@@ -1,0 +1,32 @@
+{
+  "artifact_kind": "spy-rsi2-development-collection-failure-inspection",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "broker_actions_zero": true,
+    "confirmation_untouched": true,
+    "contract_binding_valid": true,
+    "failure_hash_valid": true,
+    "one_failed_request": true,
+    "permission_failure_exact": true,
+    "request_binding_valid": true,
+    "source_inspection_valid": true,
+    "zero_retry_or_substitution": true,
+    "zero_rows_or_private_artifacts": true,
+    "zero_strategy_metrics": true
+  },
+  "confirmation_prices_accessed": false,
+  "failure_file_sha256": "007a9e3d37e0af33f900e37516b6bca613fcb8743d24f8aca3321102d6b9aeb3",
+  "failure_path": "strategy_tournament/v2/continuous/broad-etf-trend-pullback-v3-fixed-spy-rsi2/development-collection-failure/failure-a9328b93058bb5729722a68e1dda722273c40cf21283c491fc5c9c87914cdcda.json",
+  "failure_sha256": "a9328b93058bb5729722a68e1dda722273c40cf21283c491fc5c9c87914cdcda",
+  "family_id": "spy-rsi2-trend-pullback",
+  "inspected_at": "2026-07-25T01:35:21Z",
+  "inspection_sha256": "1e248873335b55c5c514315591ce0de7854aa1b9a782fc9f55c8874d95c2e539",
+  "provider_purchase_authorized": false,
+  "schema_version": 1,
+  "source_retry_authorized": false,
+  "state": "DEVELOPMENT_SOURCE_FAILURE_INSPECTED",
+  "strategy_metrics_computed": 0,
+  "successor_id": "broad-etf-trend-pullback-v3-fixed-spy-rsi2",
+  "valid": true
+}
