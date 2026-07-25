@@ -52,6 +52,13 @@ counter; the repaired contract must bind the independently inspected
 `ROLLING_TERMINAL_REPLACEMENT` authority, which retains all prior trials and
 dispositions while limiting the campaign to three concurrent active mechanism
 families.
+Family contract `8da2d2d4...d5fba6` now freezes that active slot, the exact
+one-trial rule, 155 development decisions, five embargo sessions, 154 reserved
+confirmation decisions, Massive unadjusted symbol-range inputs, split-only
+adjustment, and all implementation hashes. It accessed zero outcomes. Commit
+the contract and capacity manifest, then run the generic outcome-blind
+preflight; do not collect data until its independent preflight inspection is
+committed.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
