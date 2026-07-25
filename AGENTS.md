@@ -272,6 +272,13 @@ partitions, rolling authority, common-equity gates, cumulative selection
 accounting, and zero-outcome fields. Commit and push the inspection before any
 SEC archive request. It authorizes metadata collection only; all market prices,
 confirmation outcomes, and broker actions remain forbidden.
+The separate metadata collector now supports only a subordinate plan bound to
+that committed inspection. It freezes the same 32 requests, zero retries or
+substitutions, hash-valid cache resume, legacy as-filed EPS/TradingSymbol
+parsing, same-accession common-stock cover verification, a maximum three-event
+rank per accepted date, and global outcome-exposure filtering without
+replacement. Commit and test the collector and its independent inspector, then
+freeze and inspect the subordinate plan before the first archive request.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
