@@ -202,7 +202,11 @@ Yahoo symbol ranges through 2012-10-15, with no retry or substitution. Commit
 it, then independently rebuild the request graph. Inspection
 `4195359e...6c3099` passed all 11 request, provider, calendar, search, scope,
 and zero-outcome checks with zero provider access. Commit it, then collect only
-the exact development graph; confirmation remains sealed.
+the exact development graph; confirmation remains sealed. Collection
+`4f5f477a...c29364` completed all 11 authorized requests with zero failures,
+zero substitutions, and two seconds of pacing; row-level data remains outside
+Git. Commit the compact uninspected status, then independently rehash and
+rebuild the dataset before any development evaluation.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
