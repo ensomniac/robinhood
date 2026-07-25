@@ -115,8 +115,10 @@ That successor implementation is
 113 weekly development decisions from 2016-10-18 through 2018-12-31, five
 embargo sessions, and 102 untouched confirmation decisions from 2019-01-09
 through 2020-12-31. It changes no rule or parameter and consumes no new rolling
-mechanism-family slot. Commit and test the implementation before freezing its
-contract; no successor provider access is yet permitted.
+mechanism-family slot. Contract `0f690326...af3da` now freezes that exact graph,
+v1 lineage, declared contamination, Alpaca SIP transport, and current
+implementation hashes. Commit it and run zero-outcome preflight before freezing
+search or collection; no successor provider access is yet permitted.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.

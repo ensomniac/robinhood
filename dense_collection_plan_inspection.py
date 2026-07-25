@@ -117,6 +117,33 @@ def _expected_tasks(
     return tasks
 
 
+def _development_outcome_state(
+    contract: Mapping[str, Any],
+    records: Sequence[Mapping[str, Any]],
+    *,
+    enforce_commit: bool,
+) -> str:
+    declared_contamination = (
+        contract.get("research_generation") == "existing_family_successor"
+        and contract.get("partitions", {}).get(
+            "contaminated_training_declared"
+        )
+        is True
+    )
+    if not declared_contamination:
+        outcome_exposure.assert_untouched(
+            contract["development_scope"], records
+        )
+        return "UNTOUCHED"
+    if not dense_data_collection._existing_successor_authorized(
+        contract, enforce_commit=enforce_commit
+    ):
+        raise DenseCollectionPlanInspectionError(
+            "declared development contamination lacks an authorized successor"
+        )
+    return "DECLARED_CONTAMINATION_BOUND"
+
+
 def inspect_plan(
     plan_path: Path,
     *,
@@ -155,8 +182,10 @@ def inspect_plan(
         == dense_data_collection.RECOVERY_ADJUSTMENT
     )
     records = outcome_exposure.read_index()
-    outcome_exposure.assert_untouched(
-        contract["development_scope"], records
+    development_outcome_state = _development_outcome_state(
+        contract,
+        records,
+        enforce_commit=enforce_commit,
     )
     outcome_exposure.assert_untouched(
         contract["confirmation_scope"], records
@@ -240,7 +269,10 @@ def inspect_plan(
             and plan["market_outcomes_accessed"] is False
             and plan["broker_actions"] == 0
         ),
-        "development_scope_untouched": True,
+        "development_scope_integrity_rebuilt": (
+            development_outcome_state
+            in {"UNTOUCHED", "DECLARED_CONTAMINATION_BOUND"}
+        ),
         "confirmation_scope_untouched": True,
     }
     if not all(checks.values()):
@@ -263,6 +295,7 @@ def inspect_plan(
         "calendar_path": _repo_path(calendar_path),
         "calendar_sha256": sha256_file(calendar_path),
         "task_count": len(expected_tasks),
+        "development_outcome_state": development_outcome_state,
         "provider_requests": 0,
         "market_outcomes_accessed": False,
         "confirmation_outcomes_accessed": False,

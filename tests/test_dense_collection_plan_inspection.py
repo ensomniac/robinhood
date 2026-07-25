@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
-from datetime import date
+from datetime import date, datetime
 
+import cross_style_breadth_successor as successor
 import dense_collection_recovery
 import dense_collection_plan_inspection as inspection
 import outcome_exposure
@@ -81,6 +82,33 @@ def test_plan_inspection_rejects_contaminated_development(
         pass
     else:
         raise AssertionError("contaminated development plan was accepted")
+
+
+def test_successor_accepts_only_its_bound_declared_contamination(
+    tmp_path, monkeypatch
+):
+    original_repo_path = successor._repo_path
+
+    def repo_path(path):
+        try:
+            return original_repo_path(path)
+        except ValueError:
+            return f"strategy_tournament/v2/test/{path.name}"
+
+    monkeypatch.setattr(successor, "DEFAULT_ROOT", tmp_path)
+    monkeypatch.setattr(successor, "_repo_path", repo_path)
+    _path, contract, _capacity = successor.freeze_contract(
+        created_at=datetime.now().astimezone().isoformat(),
+        enforce_commit=False,
+    )
+
+    state = inspection._development_outcome_state(
+        contract,
+        outcome_exposure.read_index(),
+        enforce_commit=False,
+    )
+
+    assert state == "DECLARED_CONTAMINATION_BOUND"
 
 
 def test_recovery_plan_inspection_rebuilds_alpaca_source_only_change(
