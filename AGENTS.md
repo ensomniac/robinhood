@@ -33,12 +33,12 @@ repair on that source corpus is permitted.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
-development corpora with confirmation still sealed. The active no-calendar-
-wait successor is an unchanged-rule PEAD historical-capacity expansion through
-Massive's configured Benzinga earnings source. Freeze and independently inspect
-its complete metadata-only annual request graph before provider access. No
-price, forward-return, strategy metric, confirmation outcome, or broker action
-is permitted during capacity collection.
+development corpora with confirmation still sealed. The unchanged-rule PEAD
+historical-capacity expansion through Massive's Benzinga earnings source is
+`METADATA_SOURCE_UNAVAILABLE_INSPECTED`: the first frozen request received HTTP
+403 because that optional entitlement is not configured. It retained zero rows
+and permits no retry or purchase. Continue immediately with a prospectively
+frozen mechanism on locally available, globally untouched evidence.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
