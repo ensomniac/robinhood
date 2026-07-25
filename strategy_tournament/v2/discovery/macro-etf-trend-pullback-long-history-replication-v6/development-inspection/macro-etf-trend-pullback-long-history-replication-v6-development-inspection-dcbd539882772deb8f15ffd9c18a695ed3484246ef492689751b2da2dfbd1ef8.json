@@ -1,0 +1,1888 @@
+{
+  "artifact_kind": "development-search-inspection",
+  "artifact_sha256": "dcbd539882772deb8f15ffd9c18a695ed3484246ef492689751b2da2dfbd1ef8",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "confirmation_inventory": 495,
+  "development_account_inspection": null,
+  "evidence_counts_frozen_before_confirmation": false,
+  "family_id": "macro-etf-trend-pullback-long-history-replication-v6",
+  "inspection": {
+    "complete_trial_family_rebuilt": true,
+    "multiple_testing_rebuilt": true,
+    "neighbor_stability_rebuilt": true,
+    "power_target_rebuilt": true,
+    "trial_accounting_rebuilt": true,
+    "valid": true,
+    "winner_selection_rebuilt": true
+  },
+  "maximum_total_signal_capacity": 495,
+  "result_path": "strategy_tournament/v2/discovery/macro-etf-trend-pullback-long-history-replication-v6/development/macro-etf-trend-pullback-long-history-replication-v6-development-7674a7982553935acc36487a576f6d7f5458481f663e67b895e1ab5c44bb3651.json",
+  "result_sha256": "7674a7982553935acc36487a576f6d7f5458481f663e67b895e1ab5c44bb3651",
+  "schema_version": 1,
+  "selection": {
+    "reason": "no trial survived the frozen selection-aware gates",
+    "selected_trial_id": null,
+    "status": "REJECTED",
+    "trial_classifications": [
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 68,
+          "oof_net_pnl_dollars": 68
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.0,
+        "neighbors": [
+          "trial-3e395ac28357ed3f",
+          "trial-75f516e2cc7ecf2c",
+          "trial-858aa55055273f81",
+          "trial-a702b72d0b63d1aa",
+          "trial-f12480f158e7e69c"
+        ],
+        "positive_20bps_neighbors": 0,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.0013306310633417154,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.023547965450327724,
+            -0.015396232969564945,
+            -0.029796635740603872,
+            -0.0022660800857263385,
+            -0.021273965969828383
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0021288468925656336,
+            "central_upper": -0.0005903313902180243,
+            "lower_one_sided": -0.0019431754411237553,
+            "mean_block_length": 8,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0019431754411237553,
+          "stress_20bps_maximum_drawdown_r": 18.463361332516424,
+          "stress_20bps_profit_factor": 0.5152034205236165,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.09228088021605126,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-0da94983133d4c73"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 99,
+          "oof_net_pnl_dollars": 99
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.4,
+        "neighbors": [
+          "trial-31250b8ba987e5f6",
+          "trial-3e5604e7c10900d9",
+          "trial-4b724055c824ba43",
+          "trial-a9aa26b435a8b651",
+          "trial-c5a564b6e729d61f"
+        ],
+        "positive_20bps_neighbors": 2,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.11768306500630626,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.02669618301747613,
+            -0.028299567393473474,
+            -0.010980960090318993,
+            0.004181360582680396,
+            0.00535957738272971
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0005906483723176903,
+            "central_upper": 0.00047805236142225884,
+            "lower_one_sided": -0.00046973050186612116,
+            "mean_block_length": 10,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.00046973050186612116,
+          "stress_20bps_maximum_drawdown_r": 9.500034018622072,
+          "stress_20bps_profit_factor": 0.9792352887817395,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.0030434065009062312,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-0e2ae5cf9f9d23c6"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 68,
+          "oof_net_pnl_dollars": 68
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.4,
+        "neighbors": [
+          "trial-3e395ac28357ed3f",
+          "trial-494cbb04eba2d0e0",
+          "trial-4c28f49ef4cd3d9c",
+          "trial-75f516e2cc7ecf2c",
+          "trial-9efbd745db4d2ad9"
+        ],
+        "positive_20bps_neighbors": 2,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.08099139369655109,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.02293052805459155,
+            -0.010208933382230348,
+            0.02706720906426869,
+            -0.006622355680071631,
+            -0.0052986190633301745
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0012788496188961892,
+            "central_upper": 0.0008419057515073132,
+            "lower_one_sided": -0.0010814716070650131,
+            "mean_block_length": 8,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0010814716070650131,
+          "stress_20bps_maximum_drawdown_r": 8.494966604107335,
+          "stress_20bps_profit_factor": 0.8863204306894096,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.017993227115955013,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-1ab4353796005259"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 84,
+          "oof_net_pnl_dollars": 84
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.4,
+        "neighbors": [
+          "trial-31250b8ba987e5f6",
+          "trial-3e395ac28357ed3f",
+          "trial-4b724055c824ba43",
+          "trial-9efbd745db4d2ad9",
+          "trial-f12480f158e7e69c"
+        ],
+        "positive_20bps_neighbors": 2,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.06539957903969895,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.021187609566504638,
+            -0.02470370647845458,
+            -0.005555354459422398,
+            0.006595565723018369,
+            -0.015266900341469509
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0007193980624937013,
+            "central_upper": 0.0002737827392430649,
+            "lower_one_sided": -0.0005790568876628167,
+            "mean_block_length": 9,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0005790568876628167,
+          "stress_20bps_maximum_drawdown_r": 9.186898758913097,
+          "stress_20bps_profit_factor": 0.8638263288144902,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.017742785989823477,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-1f67baac150ce28a"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 46,
+          "oof_net_pnl_dollars": 46
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.4,
+        "neighbors": [
+          "trial-3e395ac28357ed3f",
+          "trial-494cbb04eba2d0e0",
+          "trial-4b724055c824ba43",
+          "trial-a702b72d0b63d1aa",
+          "trial-c5a564b6e729d61f"
+        ],
+        "positive_20bps_neighbors": 2,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.030964376513862423,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.0031564865175033496,
+            -0.015024384288443398,
+            -0.010330097851352828,
+            0.0025053676207663538,
+            0.0016517388461025073
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.00111062799276187,
+            "central_upper": 9.179724566955907e-05,
+            "lower_one_sided": -0.0009833769902005958,
+            "mean_block_length": 7,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0009833769902005958,
+          "stress_20bps_maximum_drawdown_r": 9.178093226442229,
+          "stress_20bps_profit_factor": 0.681916965856787,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.024353862190430713,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-284a714b2472ed4c"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 139,
+          "oof_net_pnl_dollars": 139
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.0,
+        "neighbors": [
+          "trial-0e2ae5cf9f9d23c6",
+          "trial-1f67baac150ce28a",
+          "trial-52d3aa45940e5b36",
+          "trial-d1b28fd49fb621cf",
+          "trial-fe8d0f29be4dd512"
+        ],
+        "positive_20bps_neighbors": 0,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.03610112492772649,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.0157860045968588,
+            -0.04272253875230094,
+            0.0014375173564986036,
+            0.000267029041083751,
+            -0.014569392365815103
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.000737544660121317,
+            "central_upper": 0.00017502616529079898,
+            "lower_one_sided": -0.0006287287922505944,
+            "mean_block_length": 12,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0006287287922505944,
+          "stress_20bps_maximum_drawdown_r": 10.926905341919756,
+          "stress_20bps_profit_factor": 0.8239121338064089,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.03980138012367489,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-31250b8ba987e5f6"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 76,
+          "oof_net_pnl_dollars": 76
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": true,
+          "positive_20bps_total_growth": true,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.6,
+        "neighbors": [
+          "trial-494cbb04eba2d0e0",
+          "trial-4c28f49ef4cd3d9c",
+          "trial-9a7e05e310f42648",
+          "trial-a9aa26b435a8b651",
+          "trial-c5a564b6e729d61f"
+        ],
+        "positive_20bps_neighbors": 3,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.16822753933857865,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.0046390704171673305,
+            0.0020773892691620024,
+            0.009415625153761119,
+            -0.011350244401568253,
+            0.006282495246284937
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0008900619744816289,
+            "central_upper": 0.0011778772546658881,
+            "lower_one_sided": -0.0006843380864285014,
+            "mean_block_length": 9,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0006843380864285014,
+          "stress_20bps_maximum_drawdown_r": 8.378431322261303,
+          "stress_20bps_profit_factor": 1.0655078403473286,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.011064335684807136,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-35ded81a446fcbed"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 68,
+          "oof_net_pnl_dollars": 68
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.0,
+        "neighbors": [
+          "trial-0da94983133d4c73",
+          "trial-1ab4353796005259",
+          "trial-1f67baac150ce28a",
+          "trial-284a714b2472ed4c",
+          "trial-52d3aa45940e5b36"
+        ],
+        "positive_20bps_neighbors": 0,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.0032262821070566236,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.017105817811934355,
+            -0.012814978259377966,
+            -0.008903221623402048,
+            -0.0032206431138805,
+            -0.017831560384891865
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0013761060796678222,
+            "central_upper": -0.0004247458133306291,
+            "lower_one_sided": -0.0012480251982358033,
+            "mean_block_length": 8,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0012480251982358033,
+          "stress_20bps_maximum_drawdown_r": 12.197044814490287,
+          "stress_20bps_profit_factor": 0.5392733002506332,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.059876221193486734,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-3e395ac28357ed3f"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 99,
+          "oof_net_pnl_dollars": 99
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.2,
+        "neighbors": [
+          "trial-0e2ae5cf9f9d23c6",
+          "trial-69e60aff341b28eb",
+          "trial-86bff59cbb6b45cf",
+          "trial-c42f4d8a9f4197ba",
+          "trial-fe8d0f29be4dd512"
+        ],
+        "positive_20bps_neighbors": 1,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.05746413855353305,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.02563324227481215,
+            -0.03400507823973347,
+            -0.028311443973076087,
+            0.008794524737822237,
+            -0.0027168887160623784
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.001114328608511024,
+            "central_upper": 0.00047169252822278654,
+            "lower_one_sided": -0.0009014621886917183,
+            "mean_block_length": 10,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0009014621886917183,
+          "stress_20bps_maximum_drawdown_r": 13.77181520000077,
+          "stress_20bps_profit_factor": 0.8711542904933972,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.03060564391623755,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-3e5604e7c10900d9"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 46,
+          "oof_net_pnl_dollars": 46
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": true,
+          "positive_20bps_total_growth": true,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": true,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.6,
+        "neighbors": [
+          "trial-1ab4353796005259",
+          "trial-284a714b2472ed4c",
+          "trial-35ded81a446fcbed",
+          "trial-4f9971c2a8d728cd",
+          "trial-e7490233d7303821"
+        ],
+        "positive_20bps_neighbors": 3,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.17950599358498567,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.003971109623102079,
+            -0.002580809246718864,
+            0.01874518224792719,
+            -0.005501447304807111,
+            0.006015051127874639
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0008189433287527406,
+            "central_upper": 0.0015248431709222149,
+            "lower_one_sided": -0.0006263211678056723,
+            "mean_block_length": 7,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0006263211678056723,
+          "stress_20bps_maximum_drawdown_r": 5.359443735201719,
+          "stress_20bps_profit_factor": 1.123055138820508,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.012706867201173774,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-494cbb04eba2d0e0"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 64,
+          "oof_net_pnl_dollars": 64
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": true,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.2,
+        "neighbors": [
+          "trial-0e2ae5cf9f9d23c6",
+          "trial-1f67baac150ce28a",
+          "trial-284a714b2472ed4c",
+          "trial-c42f4d8a9f4197ba",
+          "trial-e7490233d7303821"
+        ],
+        "positive_20bps_neighbors": 1,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.14634364734047584,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.022714279496587206,
+            -0.02742090607257284,
+            -0.005963127762078372,
+            0.00881434922651167,
+            0.005340838022925759
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0006911217778029505,
+            "central_upper": 0.0008115896898628825,
+            "lower_one_sided": -0.0005242671622999169,
+            "mean_block_length": 8,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0005242671622999169,
+          "stress_20bps_maximum_drawdown_r": 9.783035181104681,
+          "stress_20bps_profit_factor": 1.039079103595155,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.0034854329113734217,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-4b724055c824ba43"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 109,
+          "oof_net_pnl_dollars": 109
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.2,
+        "neighbors": [
+          "trial-1ab4353796005259",
+          "trial-35ded81a446fcbed",
+          "trial-52d3aa45940e5b36",
+          "trial-8c3881a5dd488074",
+          "trial-d1b28fd49fb621cf"
+        ],
+        "positive_20bps_neighbors": 1,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.06848269569985686,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.015661473253679857,
+            -0.008098851120624539,
+            0.020202794359840997,
+            -0.01887229102933406,
+            -0.005299192597458847
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0011771573661133626,
+            "central_upper": 0.0007188903037282908,
+            "lower_one_sided": -0.0009768150772265839,
+            "mean_block_length": 10,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0009768150772265839,
+          "stress_20bps_maximum_drawdown_r": 11.84505246958929,
+          "stress_20bps_profit_factor": 0.8863855064659003,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.027729013641256302,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-4c28f49ef4cd3d9c"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 46,
+          "oof_net_pnl_dollars": 46
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": true,
+          "positive_20bps_total_growth": true,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.6,
+        "neighbors": [
+          "trial-494cbb04eba2d0e0",
+          "trial-75f516e2cc7ecf2c",
+          "trial-9a7e05e310f42648",
+          "trial-a702b72d0b63d1aa",
+          "trial-f9eeb36d296bef9d"
+        ],
+        "positive_20bps_neighbors": 3,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.1738406189515042,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.004269837698490475,
+            0.0057517839310490355,
+            0.014772479441732135,
+            -0.005801160473229443,
+            0.004745601887554292
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.001657774392378722,
+            "central_upper": 0.0025215780467825934,
+            "lower_one_sided": -0.0011813152356413992,
+            "mean_block_length": 7,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0011813152356413992,
+          "stress_20bps_maximum_drawdown_r": 10.787816714490628,
+          "stress_20bps_profit_factor": 1.101165885864817,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.015198867088615545,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-4f9971c2a8d728cd"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 110,
+          "oof_net_pnl_dollars": 110
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.0,
+        "neighbors": [
+          "trial-31250b8ba987e5f6",
+          "trial-3e395ac28357ed3f",
+          "trial-4c28f49ef4cd3d9c",
+          "trial-858aa55055273f81",
+          "trial-c5a564b6e729d61f"
+        ],
+        "positive_20bps_neighbors": 0,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.006492710414038027,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.012040381241121443,
+            -0.011486875988961302,
+            -0.014971923933814819,
+            -0.010711667032981305,
+            -0.017873088125374467
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0011268702363056537,
+            "central_upper": -5.0042716863519825e-05,
+            "lower_one_sided": -0.0010019730010134282,
+            "mean_block_length": 10,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0010019730010134282,
+          "stress_20bps_maximum_drawdown_r": 13.635527655147328,
+          "stress_20bps_profit_factor": 0.668509205651177,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.06708393632225333,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-52d3aa45940e5b36"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 84,
+          "oof_net_pnl_dollars": 84
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.4,
+        "neighbors": [
+          "trial-75f516e2cc7ecf2c",
+          "trial-9efbd745db4d2ad9",
+          "trial-ad9188d11cb444e0",
+          "trial-f12480f158e7e69c",
+          "trial-f9eeb36d296bef9d"
+        ],
+        "positive_20bps_neighbors": 2,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.11251365668642697,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.02277125993157348,
+            -0.02193432549122448,
+            0.01674842224738518,
+            -0.0014320475449699252,
+            -0.026521443776375164
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0015580351795050319,
+            "central_upper": 0.0014106566537889398,
+            "lower_one_sided": -0.0012022439244534348,
+            "mean_block_length": 9,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0012022439244534348,
+          "stress_20bps_maximum_drawdown_r": 15.534659967566578,
+          "stress_20bps_profit_factor": 0.9628107985738552,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.010368134633610906,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-61b465df736c157c"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 77,
+          "oof_net_pnl_dollars": 77
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.2,
+        "neighbors": [
+          "trial-3e5604e7c10900d9",
+          "trial-858aa55055273f81",
+          "trial-9a7e05e310f42648",
+          "trial-a702b72d0b63d1aa",
+          "trial-c5a564b6e729d61f"
+        ],
+        "positive_20bps_neighbors": 1,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.028294401505833202,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.0024150404435669143,
+            -0.015261588675915436,
+            -0.035143694797072564,
+            -0.0024980604506192458,
+            0.0070574524985158454
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0014605975918975912,
+            "central_upper": 0.00033718874665494234,
+            "lower_one_sided": -0.001256352962304468,
+            "mean_block_length": 9,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.001256352962304468,
+          "stress_20bps_maximum_drawdown_r": 11.297636264487453,
+          "stress_20bps_profit_factor": 0.7830387734577277,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.04343085098152449,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-69e60aff341b28eb"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 68,
+          "oof_net_pnl_dollars": 68
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.2,
+        "neighbors": [
+          "trial-0da94983133d4c73",
+          "trial-1ab4353796005259",
+          "trial-4f9971c2a8d728cd",
+          "trial-61b465df736c157c",
+          "trial-8c3881a5dd488074"
+        ],
+        "positive_20bps_neighbors": 1,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.07457547653606279,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.02821816286092819,
+            -0.0031697667977890025,
+            0.025671868955366276,
+            -0.004969838517147038,
+            -0.0197453972657139
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0021159275617187384,
+            "central_upper": 0.0014712298929611708,
+            "lower_one_sided": -0.0017311750178076182,
+            "mean_block_length": 8,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0017311750178076182,
+          "stress_20bps_maximum_drawdown_r": 12.998956761408364,
+          "stress_20bps_profit_factor": 0.868101765461112,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.03043129648621186,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-75f516e2cc7ecf2c"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 110,
+          "oof_net_pnl_dollars": 110
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.0,
+        "neighbors": [
+          "trial-0da94983133d4c73",
+          "trial-52d3aa45940e5b36",
+          "trial-69e60aff341b28eb",
+          "trial-8c3881a5dd488074",
+          "trial-fe8d0f29be4dd512"
+        ],
+        "positive_20bps_neighbors": 0,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.006102392946495418,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.013576437044646698,
+            -0.012037380472106653,
+            -0.03433518324790373,
+            -0.008648373794984843,
+            -0.021268785978601497
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0015916018181608425,
+            "central_upper": -2.7790016168930313e-05,
+            "lower_one_sided": -0.0014120465343425309,
+            "mean_block_length": 10,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0014120465343425309,
+          "stress_20bps_maximum_drawdown_r": 18.155585435413002,
+          "stress_20bps_profit_factor": 0.685599690004919,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.08986616053824342,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-858aa55055273f81"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 99,
+          "oof_net_pnl_dollars": 99
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": true,
+          "positive_20bps_total_growth": true,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.6,
+        "neighbors": [
+          "trial-3e5604e7c10900d9",
+          "trial-9a7e05e310f42648",
+          "trial-a9aa26b435a8b651",
+          "trial-ad9188d11cb444e0",
+          "trial-f9eeb36d296bef9d"
+        ],
+        "positive_20bps_neighbors": 3,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.15584293687368395,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.041599494173392024,
+            -0.016169152068646588,
+            -0.019494547422161997,
+            0.004250877469220658,
+            -0.000280459784552958
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0010333334078425622,
+            "central_upper": 0.0012679437277230657,
+            "lower_one_sided": -0.0007620624491473943,
+            "mean_block_length": 10,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0007620624491473943,
+          "stress_20bps_maximum_drawdown_r": 14.107046486624597,
+          "stress_20bps_profit_factor": 1.0330283950372798,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.00990621236725114,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-86bff59cbb6b45cf"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 110,
+          "oof_net_pnl_dollars": 110
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.2,
+        "neighbors": [
+          "trial-4c28f49ef4cd3d9c",
+          "trial-75f516e2cc7ecf2c",
+          "trial-858aa55055273f81",
+          "trial-9a7e05e310f42648",
+          "trial-ad9188d11cb444e0"
+        ],
+        "positive_20bps_neighbors": 1,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.07758342908213998,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.012693322237413407,
+            0.006344210613263133,
+            0.011647338771782732,
+            -0.018463247665847924,
+            -0.019688573747519835
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.001794686094540813,
+            "central_upper": 0.0012556702206728944,
+            "lower_one_sided": -0.0014732210024186586,
+            "mean_block_length": 10,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0014732210024186586,
+          "stress_20bps_maximum_drawdown_r": 17.60884594220253,
+          "stress_20bps_profit_factor": 0.906349454859291,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.0328535942657353,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-8c3881a5dd488074"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 77,
+          "oof_net_pnl_dollars": 77
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": true,
+          "positive_20bps_total_growth": true,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.6,
+        "neighbors": [
+          "trial-35ded81a446fcbed",
+          "trial-4f9971c2a8d728cd",
+          "trial-69e60aff341b28eb",
+          "trial-86bff59cbb6b45cf",
+          "trial-8c3881a5dd488074"
+        ],
+        "positive_20bps_neighbors": 3,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.20312284829639216,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.015878042018435127,
+            0.020077124965240306,
+            -0.002830817270091868,
+            -0.01208699127115351,
+            0.0052182536238268235
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0013481109624632712,
+            "central_upper": 0.002104769820489865,
+            "lower_one_sided": -0.0009333942702241247,
+            "mean_block_length": 9,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0009333942702241247,
+          "stress_20bps_maximum_drawdown_r": 14.299482999422585,
+          "stress_20bps_profit_factor": 1.1095288289029182,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.02625561206625688,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-9a7e05e310f42648"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 83,
+          "oof_net_pnl_dollars": 83
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": true,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.2,
+        "neighbors": [
+          "trial-1ab4353796005259",
+          "trial-1f67baac150ce28a",
+          "trial-61b465df736c157c",
+          "trial-d1b28fd49fb621cf",
+          "trial-e7490233d7303821"
+        ],
+        "positive_20bps_neighbors": 1,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.13752435338962538,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.01702558010527047,
+            -0.03256180035385542,
+            0.02421456972060663,
+            -0.004314564982771388,
+            -0.0021927680181098017
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0008211745800650724,
+            "central_upper": 0.0010101224630241377,
+            "lower_one_sided": -0.000627235742686896,
+            "mean_block_length": 9,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.000627235742686896,
+          "stress_20bps_maximum_drawdown_r": 10.134523957733842,
+          "stress_20bps_profit_factor": 1.0120986445941118,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.0021710164711404947,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-9efbd745db4d2ad9"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 46,
+          "oof_net_pnl_dollars": 46
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.2,
+        "neighbors": [
+          "trial-0da94983133d4c73",
+          "trial-284a714b2472ed4c",
+          "trial-4f9971c2a8d728cd",
+          "trial-69e60aff341b28eb",
+          "trial-c42f4d8a9f4197ba"
+        ],
+        "positive_20bps_neighbors": 1,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.007914205837950175,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            -0.010171401873401403,
+            -0.018701384441690973,
+            -0.03207989577465808,
+            0.003793257548084844,
+            0.002488772760118957
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0020583550249633265,
+            "central_upper": -0.00034682264497142256,
+            "lower_one_sided": -0.001843770742608919,
+            "mean_block_length": 7,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.001843770742608919,
+          "stress_20bps_maximum_drawdown_r": 13.555073780983351,
+          "stress_20bps_profit_factor": 0.5643847302257377,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.054670651781546654,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-a702b72d0b63d1aa"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 97,
+          "oof_net_pnl_dollars": 97
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": true,
+          "positive_20bps_total_growth": true,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.6,
+        "neighbors": [
+          "trial-0e2ae5cf9f9d23c6",
+          "trial-35ded81a446fcbed",
+          "trial-86bff59cbb6b45cf",
+          "trial-d1b28fd49fb621cf",
+          "trial-e7490233d7303821"
+        ],
+        "positive_20bps_neighbors": 3,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.15257240095107902,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.03161059099393464,
+            -0.035084824154316345,
+            0.0008253038599728376,
+            -0.0005096185160768384,
+            0.010230220263340013
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0007670175663872235,
+            "central_upper": 0.0009640111904688259,
+            "lower_one_sided": -0.0005612152521877891,
+            "mean_block_length": 10,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0005612152521877891,
+          "stress_20bps_maximum_drawdown_r": 10.697796310650087,
+          "stress_20bps_profit_factor": 1.0349596024446959,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.007071672446854301,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-a9aa26b435a8b651"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 139,
+          "oof_net_pnl_dollars": 139
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.2,
+        "neighbors": [
+          "trial-61b465df736c157c",
+          "trial-86bff59cbb6b45cf",
+          "trial-8c3881a5dd488074",
+          "trial-d1b28fd49fb621cf",
+          "trial-fe8d0f29be4dd512"
+        ],
+        "positive_20bps_neighbors": 1,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.10569866906828658,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.020977868855126737,
+            -0.03884568533694485,
+            0.019000467937848344,
+            -0.0068363213431003565,
+            -0.011238565481396606
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.00115852163931774,
+            "central_upper": 0.0010790538056834249,
+            "lower_one_sided": -0.0009135932506304695,
+            "mean_block_length": 12,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0009135932506304695,
+          "stress_20bps_maximum_drawdown_r": 16.85333283637924,
+          "stress_20bps_profit_factor": 0.9598378234313802,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.016942235368466733,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-ad9188d11cb444e0"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 64,
+          "oof_net_pnl_dollars": 64
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.4,
+        "neighbors": [
+          "trial-3e5604e7c10900d9",
+          "trial-4b724055c824ba43",
+          "trial-a702b72d0b63d1aa",
+          "trial-f12480f158e7e69c",
+          "trial-f9eeb36d296bef9d"
+        ],
+        "positive_20bps_neighbors": 2,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.056256316322540696,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.022214870693793413,
+            -0.03331296347288374,
+            -0.025479134407593654,
+            0.013244410396025707,
+            -0.002672107274763873
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0013860993726679445,
+            "central_upper": 0.0005228471061294212,
+            "lower_one_sided": -0.0011417280037604766,
+            "mean_block_length": 8,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0011417280037604766,
+          "stress_20bps_maximum_drawdown_r": 14.216573493906258,
+          "stress_20bps_profit_factor": 0.8337419504334482,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.026004924065422146,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-c42f4d8a9f4197ba"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 77,
+          "oof_net_pnl_dollars": 77
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.2,
+        "neighbors": [
+          "trial-0e2ae5cf9f9d23c6",
+          "trial-284a714b2472ed4c",
+          "trial-35ded81a446fcbed",
+          "trial-52d3aa45940e5b36",
+          "trial-69e60aff341b28eb"
+        ],
+        "positive_20bps_neighbors": 1,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.05228136253831298,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.0018698679554417356,
+            -0.008794589276535888,
+            -0.01564407232202129,
+            -0.0033400876539741915,
+            0.004694995777862854
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0008143792398561792,
+            "central_upper": 0.00028674767449023164,
+            "lower_one_sided": -0.0007015624185107177,
+            "mean_block_length": 9,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0007015624185107177,
+          "stress_20bps_maximum_drawdown_r": 6.724736843283874,
+          "stress_20bps_profit_factor": 0.8374449341860221,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.021213885519226778,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-c5a564b6e729d61f"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 137,
+          "oof_net_pnl_dollars": 137
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.4,
+        "neighbors": [
+          "trial-31250b8ba987e5f6",
+          "trial-4c28f49ef4cd3d9c",
+          "trial-9efbd745db4d2ad9",
+          "trial-a9aa26b435a8b651",
+          "trial-ad9188d11cb444e0"
+        ],
+        "positive_20bps_neighbors": 2,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.09972581763029008,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.015376642346353808,
+            -0.052824029948917,
+            0.026765703731908067,
+            -0.011143397366471387,
+            0.00798920977222078
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.00088850153313975,
+            "central_upper": 0.0007135175221155051,
+            "lower_one_sided": -0.0007197844943333586,
+            "mean_block_length": 12,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0007197844943333586,
+          "stress_20bps_maximum_drawdown_r": 14.065360622751344,
+          "stress_20bps_profit_factor": 0.9516189171082076,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.013835871464905737,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-d1b28fd49fb621cf"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 63,
+          "oof_net_pnl_dollars": 63
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": true,
+          "positive_20bps_total_growth": true,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 1.0,
+        "neighbors": [
+          "trial-494cbb04eba2d0e0",
+          "trial-4b724055c824ba43",
+          "trial-9efbd745db4d2ad9",
+          "trial-a9aa26b435a8b651",
+          "trial-f9eeb36d296bef9d"
+        ],
+        "positive_20bps_neighbors": 5,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.2035549665246897,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.022788404899455463,
+            -0.02892574289754766,
+            0.01553487866520662,
+            4.6905243902261315e-05,
+            0.010217567248491296
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0007741412847159519,
+            "central_upper": 0.0013455341101850395,
+            "lower_one_sided": -0.0005354727160500025,
+            "mean_block_length": 8,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0005354727160500025,
+          "stress_20bps_maximum_drawdown_r": 8.859112200451102,
+          "stress_20bps_profit_factor": 1.150932306377976,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.01966201315950798,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-e7490233d7303821"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 84,
+          "oof_net_pnl_dollars": 84
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.0,
+        "neighbors": [
+          "trial-0da94983133d4c73",
+          "trial-1f67baac150ce28a",
+          "trial-61b465df736c157c",
+          "trial-c42f4d8a9f4197ba",
+          "trial-fe8d0f29be4dd512"
+        ],
+        "positive_20bps_neighbors": 0,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.031142729834083175,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.0224092311068707,
+            -0.026781504557553064,
+            -0.024981630297061765,
+            0.012387872520687685,
+            -0.028111278941985333
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.00125099248888347,
+            "central_upper": 0.00015960937129801692,
+            "lower_one_sided": -0.0010906515324491878,
+            "mean_block_length": 9,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0010906515324491878,
+          "stress_20bps_maximum_drawdown_r": 14.250638569998486,
+          "stress_20bps_profit_factor": 0.7809015543016118,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.045077310169041776,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-f12480f158e7e69c"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 64,
+          "oof_net_pnl_dollars": 64
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": true,
+          "positive_20bps_total_growth": true,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.6,
+        "neighbors": [
+          "trial-4f9971c2a8d728cd",
+          "trial-61b465df736c157c",
+          "trial-86bff59cbb6b45cf",
+          "trial-c42f4d8a9f4197ba",
+          "trial-e7490233d7303821"
+        ],
+        "positive_20bps_neighbors": 3,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.1840861971030935,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.03201052069838021,
+            -0.01888013947062138,
+            0.004545106402893348,
+            0.002459773870057317,
+            -0.00028112452713578663
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0011289383607088518,
+            "central_upper": 0.0019659825793651494,
+            "lower_one_sided": -0.0008284505329981592,
+            "mean_block_length": 8,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0008284505329981592,
+          "stress_20bps_maximum_drawdown_r": 10.233323325851362,
+          "stress_20bps_profit_factor": 1.099422272358284,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.019854136973573706,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-f9eeb36d296bef9d"
+      },
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 139,
+          "oof_net_pnl_dollars": 139
+        },
+        "gates": {
+          "backtest_overfitting": false,
+          "deflated_sharpe": false,
+          "holm_family": false,
+          "neighbor_stability": false,
+          "positive_20bps_total_growth": false,
+          "rolling_fold_stability": false,
+          "rule_completeness": true,
+          "stressed_drawdown": false,
+          "stressed_profit_factor": false,
+          "trial_accounting": true
+        },
+        "neighbor_positive_fraction": 0.0,
+        "neighbors": [
+          "trial-31250b8ba987e5f6",
+          "trial-3e5604e7c10900d9",
+          "trial-858aa55055273f81",
+          "trial-ad9188d11cb444e0",
+          "trial-f12480f158e7e69c"
+        ],
+        "positive_20bps_neighbors": 0,
+        "rebuilt_metrics": {
+          "deflated_sharpe_probability": 0.027803843531072327,
+          "holm_reject_null": false,
+          "pbo_probability": 0.7714285714285715,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rolling_origin_fold_log_growth": [
+            0.014274031747794968,
+            -0.04726465309429752,
+            -0.00968669696424732,
+            0.00794640886491804,
+            -0.027090000435518118
+          ],
+          "rules_complete": true,
+          "stationary_bootstrap": {
+            "central_lower": -0.0010891026129584058,
+            "central_upper": 0.000230142653639043,
+            "lower_one_sided": -0.0009643438438526952,
+            "mean_block_length": 12,
+            "samples": 2000
+          },
+          "stress_20bps_bootstrap_lower_mean_account_return": -0.0009643438438526952,
+          "stress_20bps_maximum_drawdown_r": 16.119073274522112,
+          "stress_20bps_profit_factor": 0.8146530832605282,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.061820909881349945,
+          "trial_accounting_complete": true
+        },
+        "status": "REJECTED",
+        "trial_id": "trial-fe8d0f29be4dd512"
+      }
+    ]
+  },
+  "state": "REJECTED"
+}

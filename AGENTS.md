@@ -215,7 +215,13 @@ from this manifest with zero provider access. Result
 `7674a798...bb3651` evaluated all 32 trials in 4.07 seconds from one local
 dataset load, one cache hit, and zero provider requests. Commit this
 uninspected result, then independently rebuild its accounting, statistics, and
-deterministic selection disposition.
+deterministic selection disposition. Inspection `dcbd5398...bd1ef8` confirms
+`REJECTED`: ten trials retained positive 20-bps growth and eight passed
+neighbor stability, but none passed stressed PF, rolling folds, DSR, Holm, or
+PBO. The highest-growth trial produced 0.02626 log growth, PF 1.110, 14.30R
+drawdown, a negative -0.000933 bootstrap lower bound, and PBO 0.771. Preserve
+this exact corpus without repair; all 495 confirmation decisions remain sealed.
+Continue immediately with another disjoint existing-family replication.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
