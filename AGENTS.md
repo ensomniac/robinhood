@@ -116,8 +116,10 @@ at the next session open, resolve stop first, and preserve the cost floor. The
 proposed 2008-2014 pairs have zero global outcome overlaps. Contract
 `769b8deb...a9159` and capacity `0f7f5264...fc3a1` freeze the complete grid,
 200 warmup, 1,000 development, five embargo, and 500 confirmation sessions.
-They accessed zero prices or outcomes. Commit both before outcome-blind
-preflight; provider, confirmation, and broker access remain forbidden.
+They accessed zero prices or outcomes. Preflight `c577a640...5e3f7`
+independently rebuilt 995 development decisions and every zero-outcome boundary
+in zero provider requests. Commit it before freezing the complete search;
+provider, confirmation, and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
