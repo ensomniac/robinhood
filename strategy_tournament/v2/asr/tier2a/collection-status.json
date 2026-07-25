@@ -1,0 +1,59 @@
+{
+  "attempted_candidate_count": 1823,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "collection_kind": "outcome-blind-asr-tier2a-matched-documents",
+  "collection_sha256": "684746044327a01ca20d6f77ed829bad68e28e6c7ca5e1fe4ff0b09422b91499",
+  "complete_submission_access_permitted": false,
+  "contract_inspection_sha256": "9e93fbaa16b8652b9a63816d1b2e1320ac4a0db3cc1b6fdd05e39508e274c12a",
+  "contract_sha256": "8d6329d52263dd2ef5397a8ef73fc74fe8b575820cafe122e9e93aa976eac58c",
+  "document_semantic_candidate_count": null,
+  "failure_count": 0,
+  "local_document_semantics_permitted": false,
+  "market_outcomes_accessed": false,
+  "market_price_values_accessed": 0,
+  "maturity_effect": "NONE",
+  "private_collection": {
+    "bytes": 287783,
+    "cache_relative_path": "_derived/asr-tier2a-collection/8d6329d52263dd2ef5397a8ef73fc74fe8b575820cafe122e9e93aa976eac58c.json.gz",
+    "file_sha256": "24e072dffd5c06ab414cd0a4589a5deeb5109c76a59a5c321d1dbdaf5d3e8500",
+    "private_collection_sha256": "8a7016a187e6529005c2b31fcd75a9870c5c042620b820579784a5c7dff21dfe"
+  },
+  "provider_telemetry": {
+    "cache_hits": 0,
+    "download_bytes": 814928963,
+    "downloads": 1823,
+    "failures": 0,
+    "pacing_wait_seconds": 189.6721461309353,
+    "request_seconds": 91.90284479095135,
+    "requests": 1823,
+    "retry_attempts": 0
+  },
+  "publication": {
+    "collector": {
+      "commit": "b6d115ff85560b14c3a64e38b18c7872abc242db",
+      "path": "asr_tier2a.py",
+      "sha256": "e424b80f09a5b86677cf347dc417e38a9b6f094282d75e7462368116cb9b824d"
+    },
+    "contract": {
+      "commit": "b6d115ff85560b14c3a64e38b18c7872abc242db",
+      "path": "strategy_tournament/v2/asr/tier2a/contracts/accelerated-share-repurchase-continuation-v3-no-pagination-tier2a-8d6329d52263dd2ef5397a8ef73fc74fe8b575820cafe122e9e93aa976eac58c.json",
+      "sha256": "8165b1a51391ade5aa641bd6fd63d1d9140296930e9c0a365527a96e85cb3f30"
+    },
+    "contract_inspection": {
+      "commit": "b6d115ff85560b14c3a64e38b18c7872abc242db",
+      "path": "strategy_tournament/v2/asr/tier2a/contract-status.json",
+      "sha256": "ca447a2c4194c157b50443dc35336a96a736f1e3892d826d9effd4401c91d4cb"
+    }
+  },
+  "request_count": 1823,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "source_bytes": 814928963,
+  "state": "TIER2A_DOCUMENTS_PENDING_INSPECTION",
+  "success_count": 1823,
+  "tier_id": "item-1-01-current-report-matched-documents-tier-2a",
+  "valid": true,
+  "verified_event_count": null
+}
