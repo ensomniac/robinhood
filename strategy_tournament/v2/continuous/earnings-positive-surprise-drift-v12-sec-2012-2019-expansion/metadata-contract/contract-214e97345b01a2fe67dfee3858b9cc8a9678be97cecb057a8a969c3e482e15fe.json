@@ -1,0 +1,384 @@
+{
+  "artifact_kind": "earnings-sec-expansion-capacity-contract",
+  "authorized_metadata_requests": 32,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_thresholds": {
+    "minimum_confirmation_event_dates": 20,
+    "minimum_development_event_dates": 50,
+    "minimum_unique_events": 100,
+    "required_confirmation_signals_formula": "max(20, ceil(required_total_signals * 0.30))",
+    "required_total_signals_formula": "max(50, frozen_power_target)"
+  },
+  "confirmation_outcomes_accessed": false,
+  "contract_sha256": "214e97345b01a2fe67dfee3858b9cc8a9678be97cecb057a8a969c3e482e15fe",
+  "created_at": "2026-07-25T07:26:04Z",
+  "dataset_page": "https://www.sec.gov/data-research/sec-markets-data/financial-statement-notes-data-sets",
+  "documentation_url": "https://www.sec.gov/dera/data/fsnds.pdf",
+  "event_semantics": {
+    "amendments_excluded": true,
+    "as_filed_acceptance_timestamp_required": true,
+    "consolidated_nondimensional_only": true,
+    "current_period_matches_submission_period": true,
+    "duplicate_accession_or_event_key_receives_zero_credit": true,
+    "entry_observation_boundary": "next regular-session open after completed reaction session",
+    "eps_tags_priority": [
+      "EarningsPerShareDiluted",
+      "EarningsPerShareBasicAndDiluted",
+      "EarningsPerShareBasic"
+    ],
+    "event_key": [
+      "accepted",
+      "ticker",
+      "adsh"
+    ],
+    "event_rank": [
+      "descending EPS change ratio",
+      "descending EPS absolute change",
+      "canonical ticker",
+      "accession"
+    ],
+    "external_or_current_ticker_mapping_permitted": false,
+    "forms": [
+      "10-Q"
+    ],
+    "maximum_events_per_accepted_date": 3,
+    "positive_yoy_eps_change_required": true,
+    "prior_comparison_days": [
+      300,
+      430
+    ],
+    "quarter_duration": 1,
+    "reaction_session": "first fully observable regular session after SEC acceptance",
+    "same_accession_common_stock_shares_cover_fact_required": true,
+    "same_accession_trading_symbol_required": true
+  },
+  "family_id": "earnings-positive-surprise-drift",
+  "forward_returns_accessed": false,
+  "implementation_hashes": {
+    "earnings_sec_cover_identity.py": "9877e98b764f143ffbdce05f575921bf7ec9157e93613457e2601a35cbbe19ea",
+    "earnings_sec_expansion_capacity.py": "eb3f973627e56e5de8c26d9d5f9cd5b7290bdab75c9006df14ff6fb5bd3198f6",
+    "earnings_sec_expansion_capacity_inspection.py": "eed46d090e4a512e6b6ef2440c12535adee9e3a9f275276af481fc298acab0f3",
+    "earnings_sec_legacy_capacity.py": "6c14cc4a37b1d4af2ca7bf6c964069f87776d9571f5808616de0aba97d6e1970",
+    "outcome_exposure.py": "b3835233e2359d2f033dbb726b898e2d5087f4e01f05a3def2771ddf86d53a4a",
+    "strategy_discovery.py": "22cdd0bf03a508e84f9ae81cf4ab4f298e95e672153ced3ff31e4366739b2e5a"
+  },
+  "market_prices_accessed": false,
+  "metadata_rows_accessed": 0,
+  "outcome_exposure_index_sha256": "bbdcfc0fe71395fd35aa42d1d53274975c59103661dc42da15c597d53422e532",
+  "partitions": {
+    "confirmation": [
+      "2018-01-08",
+      "2019-12-31"
+    ],
+    "confirmation_market_outcomes_remain_untouched": true,
+    "development": [
+      "2012-01-01",
+      "2017-12-15"
+    ],
+    "development_and_confirmation_filtered_against_global_exposure": true,
+    "embargo": [
+      "2017-12-16",
+      "2018-01-07"
+    ],
+    "five_complete_session_embargo_required": true,
+    "maximum_hold_sessions": 5
+  },
+  "provider": "U.S. SEC Financial Statement and Notes Data Sets",
+  "provider_requests_executed": 0,
+  "request_policy": {
+    "exact_archives_only": true,
+    "interrupted_collection_may_reuse_hash_valid_zip": true,
+    "market_price_requests_permitted": 0,
+    "minimum_spacing_seconds": 0.2,
+    "retries_permitted": 0,
+    "substitutions_permitted": 0,
+    "unexpected_archive_members_fail_closed": true
+  },
+  "requests": [
+    {
+      "filename": "2012q1_notes.zip",
+      "method": "GET",
+      "ordinal": 0,
+      "quarter": "2012q1",
+      "request_sha256": "507fb15cf4d87cf8b7de28c4f148c919d895e5b110e3f3950a0e481dadefaafa",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2012q1_notes.zip"
+    },
+    {
+      "filename": "2012q2_notes.zip",
+      "method": "GET",
+      "ordinal": 1,
+      "quarter": "2012q2",
+      "request_sha256": "5c4dcf99a0aa301e78b533c64f7dcccd3a84de7c520176cdb9c02530546ac405",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2012q2_notes.zip"
+    },
+    {
+      "filename": "2012q3_notes.zip",
+      "method": "GET",
+      "ordinal": 2,
+      "quarter": "2012q3",
+      "request_sha256": "9edd1809f3788291ef4b5f68135ff13d36bb14f9769dcd4ab03127e3f3271d6e",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2012q3_notes.zip"
+    },
+    {
+      "filename": "2012q4_notes.zip",
+      "method": "GET",
+      "ordinal": 3,
+      "quarter": "2012q4",
+      "request_sha256": "51fa8bf9a376bf1514b9a09d1c77f9aa36769538bbfbbf73970a4ac51408c747",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2012q4_notes.zip"
+    },
+    {
+      "filename": "2013q1_notes.zip",
+      "method": "GET",
+      "ordinal": 4,
+      "quarter": "2013q1",
+      "request_sha256": "819950f2c5657f9322a4f92ab8f2bc14f849150f656dc0506e800495a6721d17",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2013q1_notes.zip"
+    },
+    {
+      "filename": "2013q2_notes.zip",
+      "method": "GET",
+      "ordinal": 5,
+      "quarter": "2013q2",
+      "request_sha256": "1854c828bd3f2d65c49a321edd2afe7297e068f3d22bd8989bf6af2bf64214e0",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2013q2_notes.zip"
+    },
+    {
+      "filename": "2013q3_notes.zip",
+      "method": "GET",
+      "ordinal": 6,
+      "quarter": "2013q3",
+      "request_sha256": "8c0956094ac1d1eeee6dbec2007a66575508f114a9ced3d239c46d2bfee673db",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2013q3_notes.zip"
+    },
+    {
+      "filename": "2013q4_notes.zip",
+      "method": "GET",
+      "ordinal": 7,
+      "quarter": "2013q4",
+      "request_sha256": "736bf5d1e94c97f812638319198ea3def61e632d9445a075845f6261d40223d9",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2013q4_notes.zip"
+    },
+    {
+      "filename": "2014q1_notes.zip",
+      "method": "GET",
+      "ordinal": 8,
+      "quarter": "2014q1",
+      "request_sha256": "9afd9cfbdb5b1c895666b55ba7221d9bb5c9b226684a0982960d6ef2cf0ddf20",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2014q1_notes.zip"
+    },
+    {
+      "filename": "2014q2_notes.zip",
+      "method": "GET",
+      "ordinal": 9,
+      "quarter": "2014q2",
+      "request_sha256": "fca5c8483b203d09b35b0fe250bc3a5b309053f9056a6a409c949d26b6da0d45",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2014q2_notes.zip"
+    },
+    {
+      "filename": "2014q3_notes.zip",
+      "method": "GET",
+      "ordinal": 10,
+      "quarter": "2014q3",
+      "request_sha256": "f6f47e6eb1a60cb645cc796e61196608e282783a1779303734582ad1d7489c74",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2014q3_notes.zip"
+    },
+    {
+      "filename": "2014q4_notes.zip",
+      "method": "GET",
+      "ordinal": 11,
+      "quarter": "2014q4",
+      "request_sha256": "03d522d699767e267c900acd9098e986d3680b449bbab584333acd437534530d",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2014q4_notes.zip"
+    },
+    {
+      "filename": "2015q1_notes.zip",
+      "method": "GET",
+      "ordinal": 12,
+      "quarter": "2015q1",
+      "request_sha256": "da9e09ebf0ac24263e032814934b3194a20c59b770276804c84fbe7201e074bc",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2015q1_notes.zip"
+    },
+    {
+      "filename": "2015q2_notes.zip",
+      "method": "GET",
+      "ordinal": 13,
+      "quarter": "2015q2",
+      "request_sha256": "ff1438d4885b13a354bcc4c28a6cd43fa80dba105ddcab751775f9f5acf742e6",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2015q2_notes.zip"
+    },
+    {
+      "filename": "2015q3_notes.zip",
+      "method": "GET",
+      "ordinal": 14,
+      "quarter": "2015q3",
+      "request_sha256": "f904767ed60efa345dd672fc880f350eee4aacc1ab36795ae1fba281eeb4c9da",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2015q3_notes.zip"
+    },
+    {
+      "filename": "2015q4_notes.zip",
+      "method": "GET",
+      "ordinal": 15,
+      "quarter": "2015q4",
+      "request_sha256": "9956f67370a17e029c5ff49ce3ca12ede1a91452b087322e3dfc7f3be14beb50",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2015q4_notes.zip"
+    },
+    {
+      "filename": "2016q1_notes.zip",
+      "method": "GET",
+      "ordinal": 16,
+      "quarter": "2016q1",
+      "request_sha256": "809550b675f6c102b19a013bf289be3ab45f4526573da7c2d1fbdf768611aef4",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2016q1_notes.zip"
+    },
+    {
+      "filename": "2016q2_notes.zip",
+      "method": "GET",
+      "ordinal": 17,
+      "quarter": "2016q2",
+      "request_sha256": "11ff5cabda1fc0fa912337daa13650df2c8fcffc16236207579309b3b38238a3",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2016q2_notes.zip"
+    },
+    {
+      "filename": "2016q3_notes.zip",
+      "method": "GET",
+      "ordinal": 18,
+      "quarter": "2016q3",
+      "request_sha256": "38e138e45efacc96a1388b0dd33db53c3c9332f23ac807ee7f8a40b8fa3cb77c",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2016q3_notes.zip"
+    },
+    {
+      "filename": "2016q4_notes.zip",
+      "method": "GET",
+      "ordinal": 19,
+      "quarter": "2016q4",
+      "request_sha256": "e424a16a7836416cd7f4915ffe29dae4e96f9aadf4d081b9ab0c888e30dfa0b3",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2016q4_notes.zip"
+    },
+    {
+      "filename": "2017q1_notes.zip",
+      "method": "GET",
+      "ordinal": 20,
+      "quarter": "2017q1",
+      "request_sha256": "75d6b57fd7db059127641be612da38a3a92b97fa4050ac1e6371bdfdb85a7e7b",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2017q1_notes.zip"
+    },
+    {
+      "filename": "2017q2_notes.zip",
+      "method": "GET",
+      "ordinal": 21,
+      "quarter": "2017q2",
+      "request_sha256": "855cc6968fde7c250b6dab79dfbbd7297c514e6356553c29f31ef6f9784661a2",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2017q2_notes.zip"
+    },
+    {
+      "filename": "2017q3_notes.zip",
+      "method": "GET",
+      "ordinal": 22,
+      "quarter": "2017q3",
+      "request_sha256": "34dd396c509da931727be1772dbfee952220d8a6166426507181e5e2cdd64d54",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2017q3_notes.zip"
+    },
+    {
+      "filename": "2017q4_notes.zip",
+      "method": "GET",
+      "ordinal": 23,
+      "quarter": "2017q4",
+      "request_sha256": "1dad67b5550362107175cedabdfe2c5e7568aba96c3a1fb255affe2365e7624b",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2017q4_notes.zip"
+    },
+    {
+      "filename": "2018q1_notes.zip",
+      "method": "GET",
+      "ordinal": 24,
+      "quarter": "2018q1",
+      "request_sha256": "fd2ede23ccef1d5b2b34a1f377cacd06101338d5b36217e70b5503c75aa3cd50",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2018q1_notes.zip"
+    },
+    {
+      "filename": "2018q2_notes.zip",
+      "method": "GET",
+      "ordinal": 25,
+      "quarter": "2018q2",
+      "request_sha256": "ffffdc3cb2338e8230f43da451824b395410fa44ae2c13d42d6a1b960182701e",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2018q2_notes.zip"
+    },
+    {
+      "filename": "2018q3_notes.zip",
+      "method": "GET",
+      "ordinal": 26,
+      "quarter": "2018q3",
+      "request_sha256": "791b298e7b03b8e1c1364c280eb84eb7d1ac9d9519f56c5c488f92a1f3823415",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2018q3_notes.zip"
+    },
+    {
+      "filename": "2018q4_notes.zip",
+      "method": "GET",
+      "ordinal": 27,
+      "quarter": "2018q4",
+      "request_sha256": "5d932a8b58684c2cb0da9ebff84c7289d9303f5fd7ee4c187c5154b1df1feb38",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2018q4_notes.zip"
+    },
+    {
+      "filename": "2019q1_notes.zip",
+      "method": "GET",
+      "ordinal": 28,
+      "quarter": "2019q1",
+      "request_sha256": "620f703b82a7a94b9c09c86c7302135e5592eca87729b65f25d4a26944156488",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2019q1_notes.zip"
+    },
+    {
+      "filename": "2019q2_notes.zip",
+      "method": "GET",
+      "ordinal": 29,
+      "quarter": "2019q2",
+      "request_sha256": "cd07d57d603215bf2b76987c05312265124f2063a0e78d3c73e3678dd855c47c",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2019q2_notes.zip"
+    },
+    {
+      "filename": "2019q3_notes.zip",
+      "method": "GET",
+      "ordinal": 30,
+      "quarter": "2019q3",
+      "request_sha256": "7c7bc6267e2bf5117455833af4e20ec1be99e303fb42ea2c9dd0ff7d83ce3830",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2019q3_notes.zip"
+    },
+    {
+      "filename": "2019q4_notes.zip",
+      "method": "GET",
+      "ordinal": 31,
+      "quarter": "2019q4",
+      "request_sha256": "d18cff603cf6269a4db14b8bcccecad4ed472b1a4f3deef30bc82692834175f1",
+      "url": "https://www.sec.gov/files/dera/data/financial-statement-and-notes-data-sets/2019q4_notes.zip"
+    }
+  ],
+  "research_rationale": {
+    "new_evidence_purpose": "test the unchanged reaction-confirmed PEAD mechanism on a larger, later, symbol-date-disjoint SEC denominator",
+    "prior_exact_version_disposition": "REJECTED",
+    "prior_failure_mode": "no prior trial had more than seven OOF fills; zero trials passed DSR, Holm, PBO, or rolling-fold stability",
+    "repair_on_prior_corpus_permitted": false
+  },
+  "rolling_authority": {
+    "activation_policy": "ROLLING_TERMINAL_REPLACEMENT",
+    "authorization_file_sha256": "fa0c95f87d0620d5907fc87049431d65520834f940894ac1fc0ea1433950f865",
+    "authorization_path": "strategy_tournament/v2/rolling_authorization/rolling-discovery-authorization-bedfb0ea139cfe806b1b780828e59f1d98e3a125c50ae2b8d86b662d5d5e5585.json",
+    "authorization_sha256": "bedfb0ea139cfe806b1b780828e59f1d98e3a125c50ae2b8d86b662d5d5e5585",
+    "calendar_wait_required": false,
+    "existing_mechanism_family": true,
+    "new_mechanism_family_slot_consumed": false,
+    "status_file_sha256": "675f6bfe27cc47b7c68c43813dbfa3301ee04d4937b85987db9089929ae00d05",
+    "status_path": "strategy_tournament/v2/rolling_authorization/status.json"
+  },
+  "schema_version": 1,
+  "selection_accounting": {
+    "confirmation_cannot_influence_trial_selection": true,
+    "future_search_trial_cap": 32,
+    "prior_evaluated_trials_same_mechanism": 32,
+    "prior_trials_must_enter_deflated_sharpe_correction": true,
+    "prior_trials_must_enter_family_overfitting_accounting": true
+  },
+  "state": "SEC_EXPANSION_CAPACITY_CONTRACT_FROZEN",
+  "strategy_metrics_computed": 0,
+  "successor_id": "earnings-positive-surprise-drift-v12-sec-2012-2019-expansion"
+}

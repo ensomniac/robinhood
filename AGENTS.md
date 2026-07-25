@@ -265,6 +265,8 @@ trials into cumulative DSR and overfitting accounting. Commit the implementation
 and tests before freezing and independently inspecting the exact metadata
 contract. No archive, market price, forward return, confirmation outcome, or
 broker action may be accessed before that committed inspection.
+Contract `214e9734...2e15fe` now freezes that exact 32-request graph with zero
+provider access. Commit and push it before independent contract inspection.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
