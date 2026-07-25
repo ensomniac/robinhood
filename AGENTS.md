@@ -233,7 +233,12 @@ historical and production ranking, next-open entry, ATR protection, stop-first
 ambiguity, and one/two-session exit semantics. The implementation passed 1,547
 tests plus 49 subtests and repository-wide Ruff before any contract or price
 access. Commit and push this implementation boundary, then freeze the exact
-contract and capacity without consuming another new-mechanism slot.
+contract and capacity without consuming another new-mechanism slot. Contract
+`44c92ccd...d9e9e8` and capacity `d04ab57d...ce980a` now freeze the unchanged
+32 trials, nine-symbol universe, 200 warmup sessions, 1,000 development
+sessions, five-session embargo, 500-session confirmation reserve, all costs,
+selection gates, and implementation hashes with zero price access. Commit both
+artifacts before generic outcome-blind preflight.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
