@@ -156,9 +156,11 @@ rebuilt the family identity, 997-decision capacity, point-in-time boundary, and
 zero-outcome state in zero provider requests. Commit it, then freeze the exact
 development search. Search `964e1c38...74240d` now binds the complete 32-trial
 grid, deterministic selection rule, rolling-origin partitions, costs, scopes,
-and committed implementation hashes. Commit it, then freeze and independently
-inspect the exact development collection plan; access no prices until both are
-committed.
+and committed implementation hashes. Development plan
+`c7a03b29...44bad6` freezes exactly 12 requests: one Massive split-action range
+and 11 raw Yahoo daily symbol ranges from 2008-01-02 through 2012-10-15, with
+no retry or substitution. Commit it, then independently inspect every request
+and binding; access no prices until the inspection is committed.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
