@@ -196,7 +196,10 @@ development pairs contaminated while the 2020 confirmation reserve remains
 untouched. Refreshed contract `b0bac32d...9d013b` is byte-equivalent to the
 original after removing implementation hashes; only `dense_data_collection.py`
 changed. Commit it and rerun generic zero-outcome preflight before refreshing
-search and freezing checkpoint reuse.
+search and freezing checkpoint reuse. Refreshed preflight
+`833cfe00...7c60a5` independently revalidated the same 244-decision capacity,
+family identity, and zero-strategy-outcome boundary with zero provider
+requests. Commit it before freezing the refreshed search.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
