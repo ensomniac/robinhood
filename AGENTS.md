@@ -80,6 +80,17 @@ freeze apart from refreshed implementation hashes and its explicit recovery
 lineage. Inspection `e452ebda...42cf3a` has independently earned
 `SEC_EPS_CONTRACT_INSPECTED_READY`; recover the metadata denominator from the
 eight exact cached archives with zero provider requests next.
+Collection `24b9490d...b348c4` completed that recovery from eight cache hits,
+but the frozen v5 source retained zero fully resolved identities and zero
+events. Legacy 2010-2011 TXT facts use priority `iprx=0` and expose
+`TradingSymbol` without the separately required exchange and security-title
+facts; their numeric EPS facts likewise use `iprx=0` and `USD`, not the v5
+contract's `USD/shares`. This is an outcome-blind source-schema mismatch, not
+edge evidence. Commit and independently inspect the exact zero-capacity result
+before any successor. A v6 metadata source may prospectively bind those observed
+legacy encodings only to form a provisional event denominator; it must then
+freeze and verify each candidate's filing cover before any price or return
+access. V5 itself may not be repaired or promoted.
 
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;
