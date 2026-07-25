@@ -1,0 +1,31 @@
+{
+  "artifact_kind": "earnings-sec-common-equity-cover-contract-inspection",
+  "broker_actions": 0,
+  "cached_cover_derivation_permitted": true,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "all_524_events_bound": true,
+    "broker_actions_zero": true,
+    "cover_fact_exact": true,
+    "exact_rebuild": true,
+    "external_mapping_forbidden": true,
+    "hash_valid": true,
+    "no_replacement": true,
+    "outcomes_absent": true,
+    "prices_closed": true,
+    "provisional_capacity_bound": true,
+    "zero_provider_requests": true
+  },
+  "contract_file_sha256": "d5e227d674719b24ae0bc195d6d344ec27ad2d218c68ed55e9dfdec1781e49a2",
+  "contract_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v7-sec-cover-common-equity/cover-contract/contract-48dbede1ae239bd03f8da444d104be47af7ba5b18abad8ee16de8aca5693024c.json",
+  "contract_sha256": "48dbede1ae239bd03f8da444d104be47af7ba5b18abad8ee16de8aca5693024c",
+  "family_id": "earnings-positive-surprise-drift",
+  "inspected_at": "2026-07-25T03:13:28Z",
+  "inspection_sha256": "a1d417565feef134584323e4a87f2c5645d2b8ae8a9c92ddb5242d48d7bb7ca1",
+  "market_price_access_permitted": false,
+  "provider_requests": 0,
+  "schema_version": 1,
+  "state": "SEC_COVER_CONTRACT_INSPECTED_READY",
+  "successor_id": "earnings-positive-surprise-drift-v7-sec-cover-common-equity",
+  "valid": true
+}
