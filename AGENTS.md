@@ -75,6 +75,11 @@ reuses all eight hash-valid archives with zero new provider requests.
 Independent inspection `228596d0...acd81b` has now reproduced the default CSV
 failure, rehashed every archive and required member, rebuilt the exact cached
 byte total, and authorized only that implementation-only zero-request recovery.
+Recovery contract `1a55bfd3...71963b` is semantically identical to the original
+freeze apart from refreshed implementation hashes and its explicit recovery
+lineage. Inspection `e452ebda...42cf3a` has independently earned
+`SEC_EPS_CONTRACT_INSPECTED_READY`; recover the metadata denominator from the
+eight exact cached archives with zero provider requests next.
 
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;
