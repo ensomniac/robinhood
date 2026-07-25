@@ -1,0 +1,15 @@
+{
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "contract_sha256": "e6e4c05163f8a9b18792ffc8b0b4f7ecf96f532dab75c31b53fc3a2c18d28afe",
+  "local_semantics_permitted": false,
+  "market_price_access_permitted": false,
+  "outcome_access_permitted": false,
+  "provider_access_permitted": false,
+  "resolution_id": "tier2a-qualified-complete-submission-resolution",
+  "schema_version": 1,
+  "security_identity_access_permitted": false,
+  "status": "RESOLUTION_CONTRACT_PENDING_INSPECTION",
+  "valid": false
+}
