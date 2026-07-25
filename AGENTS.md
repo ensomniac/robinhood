@@ -71,6 +71,12 @@ search, calendar, warmup, symbols, request IDs, provider semantics, and both
 untouched scopes. Inspection `81b991aa...5e277` passed every reconstruction
 with zero requests or outcomes. Commit it, then collect only the exact nine
 development tasks; confirmation and broker access remain forbidden.
+That exact Massive plan stopped before price access: the split-action metadata
+request completed, then the first daily symbol request returned HTTP 403.
+Failure `204fd581...66176` records two provider requests, one failure, zero
+market-price rows, zero strategy metrics, and no exposure scope. Commit and
+independently inspect this failure before freezing any source-only recovery.
+Do not retry the Massive plan or purchase an entitlement.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
