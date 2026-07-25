@@ -101,7 +101,9 @@ That recovery returned 503 complete rows per symbol from 2016-01-04 through
 `32f1ed08...b4426` therefore closes v1 as
 `INCOMPLETE_FIXED_DAILY_SYMBOL_RANGE` with zero strategy metrics and full
 development-scope outcome exposure. Commit, independently inspect, and index
-that exposure. Do not truncate or substitute dates inside v1.
+that exposure. Inspection `a4e6f82c...4e34f` reconstructed all 4,024 price
+rows, 1,976 missing required symbol-sessions, telemetry, and the full exposure
+scope. Commit it, then index v1. Do not truncate or substitute dates inside v1.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
