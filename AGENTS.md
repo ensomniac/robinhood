@@ -398,6 +398,14 @@ the full requested date-symbol scope for all 27 attempted symbols. V13 is
 terminal. A v14 search may now exclude those symbols, retain the same 32-trial
 grid and 64-trial selection correction, freeze whole-symbol permanent-missing
 handling for invalid OHLCV, and access only the remaining 608 symbols.
+The v14 implementation now fixes that exact successor boundary at 1,019
+development events across 499 signal dates and 608 untouched symbols. It uses
+a new content-addressed namespace, cannot reuse any v13 task, retains the
+201-event/118-date/178-symbol sealed confirmation reserve, and converts only
+the exact invalid-OHLCV anomaly into whole-symbol zero credit. Every other
+unregistered schema error remains fail-closed. Commit and test this
+implementation before freezing its family contract; provider access remains
+forbidden until the resulting generic search is independently inspected.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected

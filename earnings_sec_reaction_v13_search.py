@@ -434,8 +434,13 @@ def build_contract(
     created_at: str,
     capacity_manifest: Path,
     store: HistoricalDayStore | None = None,
+    selected_override: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    selected = selection(store)
+    selected = (
+        dict(selected_override)
+        if selected_override is not None
+        else selection(store)
+    )
     prior = prior_statistics()
     strategy_discovery.require_committed(PRIOR_SEARCH)
     frozen_prior = strategy_discovery.load_artifact(
