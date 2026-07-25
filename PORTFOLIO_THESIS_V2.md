@@ -127,14 +127,24 @@ the complete DSR, Holm, PBO, or rolling-fold gates. This is an underpowered
 mechanism test, not authority to repair its evaluated corpus or open its
 confirmation reserve.
 
-The immediate successor is the outcome-clean 2012-2019 SEC expansion. It keeps
-the same causal reaction-confirmed PEAD thesis, freezes all 32 quarterly
-metadata archives before access, uses 2012-2017 for development, preserves the
-full holding-plus-embargo boundary, and seals 2018-2019 for confirmation.
-Same-accession common-equity evidence remains mandatory. The prior 32 evaluated
-trials enter cumulative selection correction. This event-specific,
-date-symbol-disjoint path replaces the stale contiguous-calendar dependency and
-requires no literal future-date wait.
+The 2012-2019 v12 expansion stopped before retaining a byte or metadata row
+because its frozen SEC archive root contained one incorrect path component.
+The inspected failure makes v12 terminal and permits only a corrected-source
+successor. No price, return, strategy metric, or confirmation outcome was
+accessed.
+
+The immediate successor is the outcome-clean 2012-2015 v13 corrected-source
+expansion. It keeps the same causal reaction-confirmed PEAD thesis and
+same-accession common-equity gates. It freezes 16 quarterly metadata archives,
+uses 2012-2014 for development, preserves the full holding-plus-five-session
+embargo boundary, and seals 2015 for confirmation. The scope reduction is
+outcome-blind and reduces collection cost; capacity inspection must still
+establish at least 100 unique events, 50 development signal dates, and 20
+confirmation signal dates before a price contract may be frozen. The prior 32
+evaluated trials enter cumulative selection correction, producing 64
+mechanism-level trials if the new 32-trial search runs in full. This
+event-specific, date-symbol-disjoint path replaces the stale
+contiguous-calendar dependency and requires no literal future-date wait.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`

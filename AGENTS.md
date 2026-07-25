@@ -253,18 +253,13 @@ materially distinct admissible family.
 The stale rolling-batch requirement for one contiguous 480-session untouched
 calendar is not a research pause. Three rolling slots are open, and historical
 successors may use globally disjoint date-symbol or event evidence immediately.
-The active no-calendar-wait lane is
-`earnings-positive-surprise-drift-v12-sec-2012-2019-expansion`, an
-existing-mechanism PEAD replication. It freezes 32 exact SEC Financial
-Statement and Notes quarterly archives, uses 2012-01-01 through 2017-12-15 for
-development, preserves a five-complete-session embargo boundary, and reserves
-2018-01-08 through 2019-12-31 for untouched confirmation. Its capacity graph
-requires same-accession TradingSymbol and common-stock-shares cover evidence,
-forbids current ticker mapping, and carries the 32 previously evaluated PEAD
-trials into cumulative DSR and overfitting accounting. Commit the implementation
-and tests before freezing and independently inspecting the exact metadata
-contract. No archive, market price, forward return, confirmation outcome, or
-broker action may be accessed before that committed inspection.
+The no-calendar-wait v12 PEAD lane froze 32 exact SEC Financial Statement and
+Notes quarterly archives, 2012-2017 development, and 2018-2019 confirmation.
+Its capacity graph requires same-accession TradingSymbol and
+common-stock-shares cover evidence, forbids current ticker mapping, and carries
+the 32 previously evaluated PEAD trials into cumulative DSR and overfitting
+accounting. No archive, market price, forward return, confirmation outcome, or
+broker action may be accessed before a committed contract inspection.
 Contract `214e9734...2e15fe` now freezes that exact 32-request graph with zero
 provider access. Commit and push it before independent contract inspection.
 Inspection `ae3509f4...178d08` independently rebuilt all request hashes,
@@ -298,6 +293,20 @@ it before independent reconstruction.
 Inspection `7cb930f1...9fca48` independently passed every lineage, request,
 404, absent-cache, telemetry, and zero-outcome check. V12 is terminal. Commit
 and push the inspection before freezing the corrected-root successor.
+
+The corrected-root successor implementation is
+`earnings-positive-surprise-drift-v13-sec-2012-2015-corrected-source`. It binds
+that inspected zero-row v12 failure, corrects only the SEC archive root, and
+uses the failure-authorized outcome-blind scope reduction to collect 16
+quarterly archives rather than 32. Development is 2012-01-01 through
+2014-12-19; the hold-plus-five-session embargo runs through 2015-01-11; and
+2015-01-12 through 2015-12-31 remains sealed for confirmation. The event
+semantics and prior 32-trial selection accounting are unchanged, so a complete
+new 32-trial search would be corrected across 64 cumulative mechanism trials.
+Commit and push the implementation and tests, then freeze and independently
+inspect the contract and subordinate collection plan before the first provider
+request. Metadata capacity alone may authorize a later development-search
+freeze; it never authorizes price or confirmation access directly.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
