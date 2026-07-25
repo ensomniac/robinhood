@@ -311,6 +311,10 @@ Contract `02553913...9268b3` now freezes the corrected 16-request graph,
 partitions, unchanged event semantics, cumulative 64-trial accounting, current
 outcome-exposure index, and all implementation hashes with zero provider or
 outcome access. Commit and push it before independent contract inspection.
+Inspection `9ce9ba60...27ce1d` independently rebuilt every source, request,
+hash, partition, hold-plus-embargo, common-equity, cumulative-selection, and
+zero-outcome check. It authorizes only a subordinate metadata collection plan;
+commit and push it before freezing that exact execution graph.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
