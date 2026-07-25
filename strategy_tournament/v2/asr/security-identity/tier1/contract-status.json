@@ -1,0 +1,14 @@
+{
+  "application_id": "tier1-frozen-filing-cover-identity-application",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "contract_sha256": "5417e35a76c2a87f6b85ef5acfea4d71172b3b1b4893efe43936a5ed0dcb5ec2",
+  "local_identity_access_permitted": false,
+  "market_price_access_permitted": false,
+  "outcome_access_permitted": false,
+  "provider_access_permitted": false,
+  "schema_version": 1,
+  "status": "TIER1_IDENTITY_CONTRACT_PENDING_INSPECTION",
+  "valid": false
+}
