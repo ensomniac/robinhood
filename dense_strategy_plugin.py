@@ -479,6 +479,17 @@ def evaluate_production(
         raise DenseStrategyPluginError("live stop inputs are invalid") from exc
     if entry <= 0 or stop <= 0 or stop >= entry:
         raise DenseStrategyPluginError("live structural stop is invalid")
+    expected_gross_move_fraction = float(
+        signal["expected_gross_move_fraction"]
+    )
+    if winner["family_id"] == runtime.SPY_RSI2_PULLBACK_FAMILY:
+        expected_gross_move_fraction = (
+            float(signal["mean_reversion_reference_price"]) / entry - 1
+        )
+        if not runtime._cost_floor(expected_gross_move_fraction):
+            raise DenseStrategyPluginError(
+                "live SPY RSI(2) expected move is below the frozen cost floor"
+            )
     hold = int(signal["holding_trading_days"])
     exit_plan = dict(signal["exit_plan"])
     if "target_r" in signal:
@@ -501,9 +512,7 @@ def evaluate_production(
         "ask": quote["ask"],
         "entry_limit": entry,
         "stop_price": stop,
-        "expected_gross_move_fraction": signal[
-            "expected_gross_move_fraction"
-        ],
+        "expected_gross_move_fraction": expected_gross_move_fraction,
         "holding_trading_days": hold,
         **dict(operational),
         "protection_time_in_force": (

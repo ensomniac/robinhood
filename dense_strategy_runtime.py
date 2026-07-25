@@ -123,6 +123,7 @@ ETF_PULLBACK_FAMILIES = {
     ETF_PULLBACK_FAMILY,
     ETF_PULLBACK_REPLICATION_FAMILY,
 }
+SPY_RSI2_PULLBACK_FAMILY = "spy-rsi2-trend-pullback"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
 LIQUID_EQUITY_MOMENTUM_FAMILY = "liquid-equity-cross-sectional-momentum"
 ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
@@ -176,6 +177,7 @@ SUPPORTED_FAMILIES = {
     *INTRADAY_ETF_FAMILIES,
     ETF_PULLBACK_FAMILY,
     ETF_PULLBACK_REPLICATION_FAMILY,
+    SPY_RSI2_PULLBACK_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
     LIQUID_EQUITY_MOMENTUM_FAMILY,
     ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
@@ -1069,6 +1071,195 @@ def _etf_pullback_candidates(
                     score=rsi2 + decline,
                 )
             )
+    return candidates
+
+
+def _spy_rsi2_pullback_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Evaluate the one preregistered SPY RSI(2) mean-reversion rule."""
+
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    if dataset.get("symbols") != ["SPY"] or set(daily) != {"SPY"}:
+        raise DenseStrategyRuntimeError(
+            "SPY RSI(2) pullback data must contain only frozen symbol SPY"
+        )
+    expected_parameters = {
+        "trend_sma": 200,
+        "rsi2_maximum": 10.0,
+        "mean_reversion_sma": 5,
+        "stop_atr14": 1.5,
+        "maximum_hold_sessions": 5,
+    }
+    normalized_parameters = {
+        "trend_sma": int(parameters["trend_sma"]),
+        "rsi2_maximum": float(parameters["rsi2_maximum"]),
+        "mean_reversion_sma": int(parameters["mean_reversion_sma"]),
+        "stop_atr14": float(parameters["stop_atr14"]),
+        "maximum_hold_sessions": int(parameters["maximum_hold_sessions"]),
+    }
+    if normalized_parameters != expected_parameters:
+        raise DenseStrategyRuntimeError(
+            "SPY RSI(2) pullback parameters drifted from the preregistered rule"
+        )
+    bars = daily["SPY"]
+    indices = {str(bar["date"]): index for index, bar in enumerate(bars)}
+    features = dataset.get("_etf_pullback_feature_cache")
+    if not isinstance(features, Mapping):
+        features = _etf_pullback_feature_cache(daily)
+    symbol_features = features["SPY"]
+    stop_atr = normalized_parameters["stop_atr14"]
+    hold = normalized_parameters["maximum_hold_sessions"]
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        decision_index = indices.get(decision_date)
+        if decision_index is None or decision_index < 199:
+            continue
+        decision_features = symbol_features[decision_date]
+        trend = decision_features["sma200"]
+        rsi2 = decision_features["rsi2"]
+        atr14 = decision_features["atr14"]
+        decision_close = float(bars[decision_index]["close"])
+        if (
+            trend is None
+            or rsi2 is None
+            or atr14 is None
+            or decision_close <= trend
+            or rsi2 > normalized_parameters["rsi2_maximum"]
+        ):
+            continue
+        entry_date = calendar[calendar_index + 1]
+        entry_index = indices.get(entry_date)
+        signal_id = f"{entry_date}-{SPY_RSI2_PULLBACK_FAMILY}-SPY"
+        if entry_index is None:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": "SPY",
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_open",
+                }
+            )
+            continue
+        expected_dates = calendar[
+            calendar_index + 1 : calendar_index + 1 + hold
+        ]
+        if len(expected_dates) < hold:
+            continue
+        observed_dates = [
+            str(item["date"])
+            for item in bars[entry_index : entry_index + hold]
+        ]
+        if observed_dates != expected_dates:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": "SPY",
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "incomplete_holding_bars",
+                }
+            )
+            continue
+        entry_price = float(bars[entry_index]["open"])
+        mean_reversion_reference = _sma(
+            bars,
+            decision_index,
+            normalized_parameters["mean_reversion_sma"],
+        )
+        if mean_reversion_reference is None:
+            continue
+        expected_gross = mean_reversion_reference / entry_price - 1
+        if not _cost_floor(expected_gross):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": "SPY",
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "expected_move_below_cost_floor",
+                    "expected_gross_move_fraction": expected_gross,
+                }
+            )
+            continue
+        stop_price = entry_price - stop_atr * atr14
+        if stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": "SPY",
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        exit_index = entry_index + hold - 1
+        exit_price = float(bars[exit_index]["close"])
+        stop_executed = False
+        for index in range(entry_index, entry_index + hold):
+            bar = bars[index]
+            opening = float(bar["open"])
+            if opening <= stop_price:
+                exit_index = index
+                exit_price = opening
+                stop_executed = True
+                break
+            if float(bar["low"]) <= stop_price:
+                exit_index = index
+                exit_price = stop_price
+                stop_executed = True
+                break
+            exit_sma = _sma(
+                bars,
+                index,
+                normalized_parameters["mean_reversion_sma"],
+            )
+            if exit_sma is None:
+                raise DenseStrategyRuntimeError(
+                    "SPY RSI(2) pullback exit SMA is unavailable"
+                )
+            if float(bar["close"]) >= exit_sma:
+                exit_index = index
+                exit_price = float(bar["close"])
+                break
+        marks = {
+            str(bars[index]["date"]): (
+                exit_price if index == exit_index else float(bars[index]["close"])
+            )
+            for index in range(entry_index, exit_index + 1)
+        }
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": entry_date,
+                "decision_date": decision_date,
+                "symbol": "SPY",
+                "outcome": "eligible",
+                "rank": 1,
+                "score": -float(rsi2),
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "exit_date": str(bars[exit_index]["date"]),
+                "exit_price": exit_price,
+                "marks": marks,
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+                "expected_gross_move_fraction": expected_gross,
+                "mean_reversion_reference_price": mean_reversion_reference,
+            }
+        )
     return candidates
 
 
@@ -2866,6 +3057,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             prepared["_liquid_equity_momentum_feature_cache"] = {}
         if family_id in {
             *ETF_PULLBACK_FAMILIES,
+            SPY_RSI2_PULLBACK_FAMILY,
             ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
             ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
             ETF_HIGH_CONTINUATION_FAMILY,
@@ -2896,6 +3088,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         prepared["_prepared_daily_bars"] = daily
         if family_id in {
             *ETF_PULLBACK_FAMILIES,
+            SPY_RSI2_PULLBACK_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
@@ -4179,6 +4372,8 @@ def build_candidates(
             parameters,
             family_id=family_id,
         )
+    if family_id == SPY_RSI2_PULLBACK_FAMILY:
+        return _spy_rsi2_pullback_candidates(dataset, parameters)
     if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
         return _sector_etf_gap_drift_candidates(dataset, parameters)
     if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY:
@@ -4490,6 +4685,7 @@ def _production_daily_signal(
         ETF_RESIDUAL_REPLICATION_V2_FAMILY,
         ETF_RESIDUAL_REPLICATION_V3_FAMILY,
         *ETF_PULLBACK_FAMILIES,
+        SPY_RSI2_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,
@@ -4526,6 +4722,69 @@ def _production_daily_signal(
             raise DenseStrategyRuntimeError(
                 "production ETF pullback replication universe escaped the frozen rules"
             )
+        if family_id == SPY_RSI2_PULLBACK_FAMILY:
+            expected_parameters = {
+                "trend_sma": 200,
+                "rsi2_maximum": 10.0,
+                "mean_reversion_sma": 5,
+                "stop_atr14": 1.5,
+                "maximum_hold_sessions": 5,
+            }
+            normalized_parameters = {
+                "trend_sma": int(parameters["trend_sma"]),
+                "rsi2_maximum": float(parameters["rsi2_maximum"]),
+                "mean_reversion_sma": int(parameters["mean_reversion_sma"]),
+                "stop_atr14": float(parameters["stop_atr14"]),
+                "maximum_hold_sessions": int(parameters["maximum_hold_sessions"]),
+            }
+            if (
+                frozen_symbols != ["SPY"]
+                or normalized_parameters != expected_parameters
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production SPY RSI(2) pullback rules drifted"
+                )
+            bars = daily["SPY"]
+            symbol_index = indices["SPY"].get(decision_date)
+            if symbol_index is None or symbol_index < 199:
+                raise DenseStrategyRuntimeError(
+                    "production SPY RSI(2) history is incomplete"
+                )
+            trend = _sma(bars, symbol_index, 200)
+            rsi2 = _rsi_wilder(bars, symbol_index, 2)
+            atr14 = _atr(bars, symbol_index)
+            reference = _sma(bars, symbol_index, 5)
+            decision_close = float(bars[symbol_index]["close"])
+            if (
+                trend is None
+                or rsi2 is None
+                or atr14 is None
+                or reference is None
+                or decision_close <= trend
+                or rsi2 > 10.0
+            ):
+                raise DenseStrategyRuntimeError(
+                    "no exact production SPY RSI(2) pullback signal"
+                )
+            return {
+                "symbol": "SPY",
+                "rank": 1,
+                "score": -rsi2,
+                "expected_gross_move_fraction": reference / decision_close - 1,
+                "mean_reversion_reference_price": reference,
+                "atr": atr14,
+                "stop_atr_multiple": 1.5,
+                "holding_trading_days": 5,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_completed_sma5_reclaim_or_maximum_hold_close",
+                    "mean_reversion_sma": 5,
+                    "maximum_hold_sessions": 5,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
         if family_id in {
             ETF_RESIDUAL_REPLICATION_FAMILY,
             ETF_RESIDUAL_REPLICATION_V2_FAMILY,
@@ -5980,6 +6239,7 @@ def evaluate_production_signal(
         ETF_RESIDUAL_REPLICATION_V3_FAMILY,
         LIQUID_EQUITY_MOMENTUM_FAMILY,
         *ETF_PULLBACK_FAMILIES,
+        SPY_RSI2_PULLBACK_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,
