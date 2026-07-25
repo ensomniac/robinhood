@@ -226,7 +226,10 @@ also contract-hash-bound. Final refreshed contract
 `dense_data_collection.py` and `dense_collection_plan_inspection.py` hashes
 differ. Final preflight `30f09626...6937ff` revalidated the same 244-decision
 capacity and zero-metric boundary with zero requests. Commit it, refreeze
-search, and evaluate only that final binding.
+search, and evaluate only that final binding. Final search
+`632229c0...268f92` is now frozen. Commit it, bind the already inspected
+checkpoints to that exact search with zero additional requests, and regenerate
+the runtime manifest before evaluation.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
