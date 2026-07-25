@@ -131,7 +131,10 @@ substitutions or provider access. Commit and independently inspect it before
 collection. Inspection `79444d28...94973` rebuilt the committed search,
 calendar, 748-session warmup/development partition, eight-symbol request graph,
 Alpaca/Massive semantics, declared v1 contamination, and untouched confirmation
-scope. Commit it, then collect only plan `ab8fcef6...9a07c`.
+scope. Collection `09f022d0...3143d` completed that plan with nine requests,
+zero failures, zero substitutions, and dataset hash `98e1343c...78fb`; it is
+`COLLECTED_UNINSPECTED`. Commit the compact status, then independently inspect
+the external row-level dataset before evaluation.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 102 weekly
 decision dates.
