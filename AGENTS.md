@@ -52,9 +52,12 @@ The fixed universe is `EEM`, `EFA`, `MDY`, `SPYG`, `SPYV`, `VNQ`, `VTI`,
 `VTV`, and `VUG`. Every proposed 2008-2014 date-symbol pair is currently
 absent from the global outcome-exposure index. Shared historical and production
 paths rank the lowest completed closing location, enter next session open,
-resolve stop first, and enforce the five-times-cost floor. Commit and push the
-implementation and tests before freezing its exact contract; no price,
-confirmation, or broker access is yet permitted.
+resolve stop first, and enforce the five-times-cost floor. Contract
+`f44a7eef...e6521` and capacity `f18e1e2e...9f105` now freeze all 32 trials,
+200 warmup sessions, 1,000 development sessions, five embargo sessions, and
+500 confirmation sessions through 2014-10-28. The freeze consumed one released
+rolling slot with zero provider, price, confirmation, or broker access. Commit
+and push both artifacts before generic preflight.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
