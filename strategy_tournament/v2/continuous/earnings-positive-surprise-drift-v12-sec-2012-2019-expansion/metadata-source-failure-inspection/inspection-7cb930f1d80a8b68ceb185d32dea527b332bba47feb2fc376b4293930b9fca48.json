@@ -1,0 +1,30 @@
+{
+  "artifact_kind": "earnings-sec-expansion-source-failure-inspection",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "bounded_successor_only": true,
+    "committed_inspected_plan_bound": true,
+    "exact_failure_rebuild": true,
+    "failure_hash_valid": true,
+    "first_request_exact": true,
+    "http_404_permanent": true,
+    "source_root_difference_exact": true,
+    "zero_outcome_or_broker": true,
+    "zero_retained_metadata": true
+  },
+  "confirmation_access_authorized": false,
+  "corrected_source_successor_permitted": true,
+  "failure_file_sha256": "d75383c9a0e2f44aa6e0eceadc07b8e7d2b5241f532f70535218d143cd347044",
+  "failure_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v12-sec-2012-2019-expansion/metadata-source-failure/failure-7b6165b2687d9e294ef525390464fe3ad860ce46ce688831493ee02a1f39cd19.json",
+  "failure_sha256": "7b6165b2687d9e294ef525390464fe3ad860ce46ce688831493ee02a1f39cd19",
+  "family_id": "earnings-positive-surprise-drift",
+  "inspected_at": "2026-07-25T07:39:22Z",
+  "inspection_sha256": "7cb930f1d80a8b68ceb185d32dea527b332bba47feb2fc376b4293930b9fca48",
+  "market_price_access_authorized": false,
+  "schema_version": 1,
+  "state": "SEC_EXPANSION_ARCHIVE_ROOT_404_INSPECTED_TERMINAL",
+  "successor_id": "earnings-positive-surprise-drift-v12-sec-2012-2019-expansion",
+  "v12_resume_permitted": false,
+  "valid": true
+}

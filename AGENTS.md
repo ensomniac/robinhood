@@ -295,6 +295,9 @@ one-request, zero-row boundary and forbid a same-version retry. Commit and test
 them, then record and inspect v12 before freezing a corrected source successor.
 Failure `7b6165b2...39cd19` now records that terminal boundary. Commit and push
 it before independent reconstruction.
+Inspection `7cb930f1...9fca48` independently passed every lineage, request,
+404, absent-cache, telemetry, and zero-outcome check. V12 is terminal. Commit
+and push the inspection before freezing the corrected-root successor.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
