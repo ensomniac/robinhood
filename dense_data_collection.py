@@ -696,16 +696,21 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 raise DenseDataCollectionError(
                     "intraday checkpoint-reuse recovery drifted"
                 )
-        elif not (
-            recovery_adjustment == RECOVERY_ADJUSTMENT
-            and plan.get("family_id") == runtime.ETF_PULLBACK_FAMILY
-            and plan.get("lane") == "development"
-            and failure.get("data_outcomes_accessed") is False
-            and failure.get("completed_tasks") == 1
-        ):
-            raise DenseDataCollectionError(
-                "collection recovery is outside its frozen outcome-blind scope"
-            )
+            elif not (
+                recovery_adjustment == RECOVERY_ADJUSTMENT
+                and plan.get("family_id")
+                in {
+                    runtime.ETF_PULLBACK_FAMILY,
+                    runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
+                }
+                and plan.get("lane") == "development"
+                and failure.get("data_outcomes_accessed") is False
+                and failure.get("completed_tasks") == 1
+                and failure.get("market_price_rows_accessed") == 0
+            ):
+                raise DenseDataCollectionError(
+                    "collection recovery is outside its frozen outcome-blind scope"
+                )
         implementation_hashes = plan.get("recovery_implementation_hashes")
         expected_implementation_names = {
             "dense_collection_recovery.py",

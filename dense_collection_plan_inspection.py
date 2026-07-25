@@ -86,9 +86,17 @@ def _expected_tasks(
         }
     )
     tasks = [split_task]
+    recovery = (
+        plan.get("adjustment_semantics")
+        == dense_data_collection.RECOVERY_ADJUSTMENT
+    )
     for symbol in symbols:
         task = {
-            "kind": "massive_daily_symbol_bars",
+            "kind": (
+                "daily_symbol_bars"
+                if recovery
+                else "massive_daily_symbol_bars"
+            ),
             "date": required_dates[-1],
             "start": required_dates[0],
             "symbol": symbol,
@@ -131,6 +139,10 @@ def inspect_plan(
         dense_data_collection.DAILY_WARMUP_SESSIONS,
     )
     expected_tasks = _expected_tasks(plan, contract)
+    recovery = (
+        plan.get("adjustment_semantics")
+        == dense_data_collection.RECOVERY_ADJUSTMENT
+    )
     records = outcome_exposure.read_index()
     outcome_exposure.assert_untouched(
         contract["development_scope"], records
@@ -175,17 +187,42 @@ def inspect_plan(
             plan["daily_provider"] == "massive"
             and plan["daily_request_mode"] == "symbol_range"
             and plan["providers"]
-            == [
-                (
-                    "Massive SIP unadjusted daily bars by frozen "
-                    "symbol range"
-                ),
-                (
-                    "Massive point-in-time split actions through the "
-                    "final frozen session"
-                ),
-            ]
+            == (
+                [
+                    (
+                        "Alpaca SIP raw-adjustment daily bars by frozen "
+                        "symbol range"
+                    ),
+                    (
+                        "Massive point-in-time split actions through the "
+                        "final frozen session"
+                    ),
+                ]
+                if recovery
+                else [
+                    (
+                        "Massive SIP unadjusted daily bars by frozen "
+                        "symbol range"
+                    ),
+                    (
+                        "Massive point-in-time split actions through the "
+                        "final frozen session"
+                    ),
+                ]
+            )
             and plan["substitutions_allowed"] is False
+        ),
+        "recovery_lineage_rebuilt": (
+            (
+                isinstance(plan.get("recovery_failure_path"), str)
+                and isinstance(
+                    plan.get("recovery_failure_inspection_path"), str
+                )
+                and plan.get("supersedes_plan_sha256")
+                == "7f762395047610635bd897ca0b7a908ccf42ec603edee879cb73264d51773f43"
+            )
+            if recovery
+            else plan.get("recovery_failure_path") is None
         ),
         "zero_access_boundary_rebuilt": (
             plan["provider_requests_before_plan_freeze"] == 0

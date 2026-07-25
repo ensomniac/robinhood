@@ -82,7 +82,10 @@ The bounded recovery controller now admits this exact inspected,
 zero-price fixed-ETF failure and can freeze Alpaca SIP raw symbol ranges while
 reusing only the frozen Massive split metadata. It cannot change dates,
 symbols, rules, costs, or evidence scopes. Commit and test that implementation
-before freezing the recovery plan. Do not retry the Massive plan or purchase an
+before freezing the recovery plan. Because the fail-closed collection validator
+is search-bound implementation, refresh only the implementation hashes in the
+family contract, preflight, and search before freezing recovery; all semantic
+fields must compare identical. Do not retry the Massive plan or purchase an
 entitlement.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
