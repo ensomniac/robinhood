@@ -282,7 +282,8 @@ def evaluate_development(
         expected_dates=contract["development_dates"],
         development_search_sha256=(
             str(contract["development_search_sha256"])
-            if contract.get("development_search_sha256") is not None
+            if explicit is None
+            and contract.get("development_search_sha256") is not None
             else None
         ),
         enforce_commit=explicit is None,
