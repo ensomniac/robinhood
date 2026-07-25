@@ -178,6 +178,19 @@ passed growth, PF, drawdown, rolling folds, DSR, Holm, or neighbor stability.
 Preserve this exact development corpus without repair; its 497-decision
 confirmation reserve remains untouched.
 
+Continuous historical discovery now advances the unresolved existing
+`broad-etf-trend-pullback` mechanism without consuming a new-family slot. One
+prior 1,000-session macro-ETF corpus retained positive 20-bps growth and PF
+1.38 but failed selection-aware stability gates; the later Vanguard-sector
+replication was adverse. The v6 implementation preserves the complete
+32-trial trend SMA, RSI2, three-session decline, ATR stop, hold, execution,
+cost, and selection grid on `AGG`, `DBA`, `HYG`, `IYR`, `LQD`, `SHY`, `SLV`,
+`TIP`, `USO`, and `UUP`. Those fixed pre-2008 macro ETFs cover rates, credit,
+real estate, metals, energy, agriculture, and the dollar, and their proposed
+2008-2014 pairs are globally untouched. Commit and push the tested
+implementation before freezing its exact contract; access no price or outcome
+before the normal preflight, search, and collection-plan inspection chain.
+
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
 development corpora with confirmation still sealed. The unchanged-rule PEAD

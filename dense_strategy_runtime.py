@@ -134,9 +134,31 @@ ETF_PULLBACK_REPLICATION_SYMBOLS = (
     "VOX",
     "VPU",
 )
+ETF_PULLBACK_REPLICATION_V6_FAMILY = (
+    "macro-etf-trend-pullback-long-history-replication-v6"
+)
+ETF_PULLBACK_REPLICATION_V6_SYMBOLS = (
+    "AGG",
+    "DBA",
+    "HYG",
+    "IYR",
+    "LQD",
+    "SHY",
+    "SLV",
+    "TIP",
+    "USO",
+    "UUP",
+)
 ETF_PULLBACK_FAMILIES = {
     ETF_PULLBACK_FAMILY,
     ETF_PULLBACK_REPLICATION_FAMILY,
+    ETF_PULLBACK_REPLICATION_V6_FAMILY,
+}
+ETF_PULLBACK_REPLICATION_SYMBOLS_BY_FAMILY = {
+    ETF_PULLBACK_REPLICATION_FAMILY: ETF_PULLBACK_REPLICATION_SYMBOLS,
+    ETF_PULLBACK_REPLICATION_V6_FAMILY: (
+        ETF_PULLBACK_REPLICATION_V6_SYMBOLS
+    ),
 }
 SPY_RSI2_PULLBACK_FAMILY = "spy-rsi2-trend-pullback"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
@@ -243,8 +265,7 @@ SUPPORTED_FAMILIES = {
     ETF_RESIDUAL_REPLICATION_V3_FAMILY,
     ETF_RESIDUAL_REPLICATION_V4_FAMILY,
     *INTRADAY_ETF_FAMILIES,
-    ETF_PULLBACK_FAMILY,
-    ETF_PULLBACK_REPLICATION_FAMILY,
+    *ETF_PULLBACK_FAMILIES,
     SPY_RSI2_PULLBACK_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
     LIQUID_EQUITY_MOMENTUM_FAMILY,
@@ -1052,9 +1073,12 @@ def _etf_pullback_candidates(
 ) -> list[dict[str, Any]]:
     calendar = _calendar(dataset)
     daily = _daily_series(dataset)
-    if family_id == ETF_PULLBACK_REPLICATION_FAMILY and (
-        dataset.get("symbols") != list(ETF_PULLBACK_REPLICATION_SYMBOLS)
-        or set(daily) != set(ETF_PULLBACK_REPLICATION_SYMBOLS)
+    expected_replication_symbols = (
+        ETF_PULLBACK_REPLICATION_SYMBOLS_BY_FAMILY.get(family_id)
+    )
+    if expected_replication_symbols is not None and (
+        dataset.get("symbols") != list(expected_replication_symbols)
+        or set(daily) != set(expected_replication_symbols)
     ):
         raise DenseStrategyRuntimeError(
             "ETF pullback replication universe drifted from the frozen symbols"
@@ -6028,9 +6052,12 @@ def _production_daily_signal(
             raise DenseStrategyRuntimeError(
                 "production ETF history does not cover the complete calendar"
             )
+        expected_replication_symbols = (
+            ETF_PULLBACK_REPLICATION_SYMBOLS_BY_FAMILY.get(family_id)
+        )
         if (
-            family_id == ETF_PULLBACK_REPLICATION_FAMILY
-            and frozen_symbols != list(ETF_PULLBACK_REPLICATION_SYMBOLS)
+            expected_replication_symbols is not None
+            and frozen_symbols != list(expected_replication_symbols)
         ):
             raise DenseStrategyRuntimeError(
                 "production ETF pullback replication universe escaped the frozen rules"
@@ -7424,6 +7451,7 @@ def _production_daily_signal(
             "holding_trading_days": int(parameters["maximum_hold_sessions"]),
             "decision_date": decision_date,
             "next_session_date": next_session_date,
+            "overnight_hold": True,
             "exit_plan": {
                 "type": "stop_or_maximum_hold_close",
                 "maximum_hold_sessions": int(parameters["maximum_hold_sessions"]),
