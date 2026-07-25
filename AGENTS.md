@@ -98,8 +98,12 @@ runtime schema, and froze 9,000 instrument-sessions in manifest
 `a9a5a4ac...2a8a0`. Result `1872300e...5e3c` evaluated all 32 frozen trials
 from one local dataset load and zero provider requests. Every 20-bps path lost;
 the least-negative path had -0.11032 log growth, PF 0.296, and 20.89R drawdown.
-Commit the immutable result before independent selection reconstruction;
-confirmation and broker access remain forbidden.
+Independent inspection `f5f34199...1958c` rebuilt complete accounting,
+stationary-bootstrap statistics, family-wide tests, neighbor stability, power,
+and deterministic selection and confirms `REJECTED`: PBO passed, but no trial
+passed growth, PF, drawdown, rolling folds, DSR, Holm, or neighbor stability.
+Preserve this exact development corpus without repair; its 498-decision
+confirmation reserve remains untouched.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
