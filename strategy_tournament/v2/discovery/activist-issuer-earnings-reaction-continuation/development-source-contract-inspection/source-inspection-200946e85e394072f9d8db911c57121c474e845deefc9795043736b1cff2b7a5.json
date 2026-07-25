@@ -1,0 +1,30 @@
+{
+  "artifact_kind": "activist-earnings-development-source-inspection",
+  "artifact_sha256": "200946e85e394072f9d8db911c57121c474e845deefc9795043736b1cff2b7a5",
+  "authorized_provider_requests": 40,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_provider_access_authorized": false,
+  "confirmation_requests_permitted": 0,
+  "contract_path": "strategy_tournament/v2/discovery/activist-issuer-earnings-reaction-continuation/development-source-contract/source-contract-a06f55e5654b470b0e9216f7ace553d616ad71a8bf3a5ded346f3669ab1d7cb9.json",
+  "contract_sha256": "a06f55e5654b470b0e9216f7ace553d616ad71a8bf3a5ded346f3669ab1d7cb9",
+  "development_provider_access_authorized": true,
+  "family_id": "activist-issuer-earnings-reaction-continuation",
+  "inspected_at": "2026-07-25T18:09:37Z",
+  "inspection": {
+    "confirmation_untouched_rebuilt": true,
+    "contract_hash_rebuilt": true,
+    "development_scope_rebuilt": true,
+    "event_inventory_rebuilt": true,
+    "request_hashes_rebuilt": true,
+    "search_binding_rebuilt": true,
+    "valid": true,
+    "zero_preinspection_price_access_rebuilt": true
+  },
+  "market_prices_accessed": false,
+  "schema_version": 1,
+  "search_path": "strategy_tournament/v2/discovery/activist-issuer-earnings-reaction-continuation/search/activist-issuer-earnings-reaction-continuation-search-3945273e1f42dd0dfc14187df11a70351cda32e199f8936baac707f96b96831d.json",
+  "search_sha256": "3945273e1f42dd0dfc14187df11a70351cda32e199f8936baac707f96b96831d",
+  "state": "SOURCE_CONTRACT_INSPECTED_READY",
+  "strategy_metrics_computed": 0
+}
