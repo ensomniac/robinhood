@@ -105,8 +105,18 @@ provisional rows from eight cache hits. Independent inspection
 `c52d5dd1...ae1716` rebuilt them and earned
 `SEC_LEGACY_PROVISIONAL_CAPACITY_READY`: 208 untouched development rows across
 95 dates and 311 untouched confirmation rows across 141 dates, plus five embargo
-rows. Freeze and inspect the exact filing-cover request graph next; the rows are
-not yet proven common equities and price access remains forbidden.
+rows.
+V7 cover contract `48dbede1...3024c` and inspection
+`a1d41756...bb7ca1` froze the same-accession as-filed `dei`
+`EntityCommonStockSharesOutstanding` gate before reopening the fixed cache.
+Result `0ee86355...09e97` verified 399 common-equity events and gave zero credit
+to 125 without an eligible cover fact. Independent inspection
+`d92f088b...bc9cd6` rebuilt every classification and earned
+`SEC_COMMON_EQUITY_CAPACITY_READY`: 159 untouched development events across 83
+dates and 237 untouched confirmation events across 116 dates, plus three
+embargo events. Freeze and inspect a development-only market-data and 32-trial
+reaction-confirmed PEAD search contract next. Confirmation prices and all
+broker actions remain forbidden.
 
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;

@@ -1,0 +1,58 @@
+{
+  "artifact_kind": "earnings-sec-common-equity-cover-result-inspection",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "authority_chain_valid": true,
+    "broker_actions_zero": true,
+    "classification_counts_rebuilt": true,
+    "events_rebuilt": true,
+    "input_count_rebuilt": true,
+    "outcomes_absent": true,
+    "private_hash_valid": true,
+    "result_hash_valid": true,
+    "verified_count_rebuilt": true,
+    "zero_provider_requests": true
+  },
+  "classification_counts": {
+    "NO_ELIGIBLE_COMMON_STOCK_SHARES_FACT": 125,
+    "VERIFIED_COMMON_EQUITY_COVER_FACT": 399
+  },
+  "confirmation_outcomes_accessed": false,
+  "contract_sha256": "48dbede1ae239bd03f8da444d104be47af7ba5b18abad8ee16de8aca5693024c",
+  "development_market_data_contract_freeze_permitted": true,
+  "family_id": "earnings-positive-surprise-drift",
+  "forward_returns_accessed": false,
+  "globally_contaminated_events": 0,
+  "inspected_at": "2026-07-25T03:15:53Z",
+  "inspection_sha256": "d92f088b79121b384fe010e768e1c6f41c97c49e8db44c45b5dbe6fdb2bc9cd6",
+  "market_price_access_permitted": false,
+  "market_prices_accessed": false,
+  "provider_requests": 0,
+  "result_file_sha256": "da075161ba1ba30256539c2a7ebffca3879ee1316792cbc140661ea0a9b58daf",
+  "result_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v7-sec-cover-common-equity/cover-result/result-0ee86355bb5bb6f7a469f737a74f68752f2c72058fd22db154ef0bd801f09e97.json",
+  "result_sha256": "0ee86355bb5bb6f7a469f737a74f68752f2c72058fd22db154ef0bd801f09e97",
+  "schema_version": 1,
+  "state": "SEC_COMMON_EQUITY_CAPACITY_READY",
+  "strategy_metrics_computed": 0,
+  "successor_id": "earnings-positive-surprise-drift-v7-sec-cover-common-equity",
+  "untouched_partition_counts": {
+    "confirmation": {
+      "event_dates": 116,
+      "events": 237,
+      "symbols": 187
+    },
+    "development": {
+      "event_dates": 83,
+      "events": 159,
+      "symbols": 114
+    },
+    "embargo": {
+      "event_dates": 2,
+      "events": 3,
+      "symbols": 3
+    }
+  },
+  "valid": true,
+  "verified_common_equity_events": 399
+}

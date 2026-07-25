@@ -98,12 +98,28 @@ Deflated Sharpe, Holm, or all-fold stability gates. The strongest growth path
 had 12.726R drawdown and DSR probability 0.0850. No winner or power target was
 frozen, and all 25 confirmation opportunities remain untouched.
 
-The existing-family search surface is now exhausted without a defensible
-survivor. Further outcome-guided variants would be repeated selection, not
-independent discovery. The independently inspected rolling authorization
-releases the three terminal predecessor slots immediately. Work therefore
-continues with the predeclared three-family dense batch without a calendar wait;
-target outcomes remain closed until exact disjoint family contracts freeze.
+The liquid-reversal, ETF pullback, ETF momentum, and fixed oversold development
+surfaces are exhausted without a defensible survivor. Further outcome-guided
+variants on those corpora would be repeated selection, not independent
+discovery. Their independently inspected terminal dispositions release their
+rolling slots immediately; no ISO-week boundary blocks other already
+authorized, globally disjoint historical evidence.
+
+The active successor is the reaction-confirmed PEAD mechanism on point-in-time
+2010-2011 SEC filings. Frozen and independently inspected metadata and cover
+gates now provide 159 untouched development events across 83 dates, a complete
+five-session holding plus five-session embargo, and 237 still-sealed
+confirmation events across 116 dates. Each retained event has positive
+year-over-year quarterly EPS change, one same-accession TradingSymbol, and a
+same-accession as-filed common-stock-shares cover fact. No current ticker map,
+price, forward return, confirmation outcome, or broker action was used to earn
+capacity.
+
+Freeze a development-only daily-market-data contract and the complete 32-trial
+reaction search before accessing development prices. The reaction confirmation
+must be observable before the next-session open, every trial and zero day must
+enter selection accounting, and confirmation market data remains closed until
+one exact inspected development winner freezes its power and reserve targets.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`
