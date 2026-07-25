@@ -92,8 +92,11 @@ all ten tasks, provider semantics, scope, hashes, and zero-outcome boundary with
 zero provider requests. Collection `8c8fbf33...dd357` completed all ten tasks
 in ten requests with zero failures and zero substitutions; external dataset
 `60a85bad...ca2ab` remains outside Git. Commit the compact uninspected status
-before additive data inspection; confirmation and broker access remain
-forbidden.
+before additive data inspection. Inspection `57a4cc56...652b3` rehashed the
+external file, rebuilt all tasks and the canonical dataset, revalidated the
+runtime schema, and froze 9,000 instrument-sessions in manifest
+`a9a5a4ac...2a8a0`. Commit these exact inspected artifacts before local
+development evaluation; confirmation and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
