@@ -282,6 +282,11 @@ freeze and inspect the subordinate plan before the first archive request.
 Plan `b17f1cd4...434b43` now freezes that exact collection and derivation graph
 with zero provider access. Commit and push it before independent plan
 inspection.
+Inspection `59705455...85c336` rebuilt every request, hash, lineage, parser,
+ranking, transport, and zero-outcome boundary and earned
+`SEC_EXPANSION_COLLECTION_PLAN_INSPECTED_READY`. Commit and push it, then
+execute only the 32 frozen SEC archive requests. Market-price, confirmation,
+and broker access remain forbidden.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
