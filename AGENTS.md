@@ -484,6 +484,13 @@ committed collection inspection, and preserving every requested date and
 private dataset/file hash. It performs zero provider requests and zero dataset
 loads and rejects any semantic change. Commit and test that tool before
 rebinding this exact dataset; confirmation remains sealed.
+Binding inspection `df61cbee...bb841e` now binds refreshed manifest
+`47531539...6142d7` to search `cdd67408...fe927c` while preserving all 746
+requested dates, private dataset hash `e29c3d0a...41ca1`, and private file hash
+`7fce3a94...96d3b`. It rebuilt collection inspection
+`11d797f8...b44a50` with zero dataset loads, provider requests, outcomes,
+confirmation access, or broker actions. Commit and push both artifacts, then
+rerun all 48 development trials.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
