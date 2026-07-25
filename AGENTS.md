@@ -75,9 +75,12 @@ one-session advance `{0.5%,1.0%}`, trend SMA `{100,200}`, stop
 `EWQ`, `EWT`, `EWU`, `EWW`, and `EWY`. Historical and production paths both
 rank the highest completed close location, enter only at the next session open,
 resolve stop first, and enforce the five-times-cost floor. The proposed
-2008-2014 date-symbol pairs have zero global outcome overlaps. No contract,
-price, or outcome authority exists until this implementation is committed and
-the exact contract is subsequently frozen and independently inspected.
+2008-2014 date-symbol pairs have zero global outcome overlaps. Contract
+`6307579b...6d09d` and capacity manifest `8b47eb2a...08964` freeze all 32
+trials, 200 warmup sessions, 1,000 development sessions, five embargo sessions,
+and 500 confirmation sessions through 2014-10-28. They accessed zero prices or
+target outcomes. Commit these exact artifacts before the generic outcome-blind
+preflight; provider access and confirmation remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
