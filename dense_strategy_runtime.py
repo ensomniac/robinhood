@@ -159,6 +159,10 @@ FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY = (
     "cross-asset-flight-to-safety-equity-rebound-replication-v2"
 )
 FLIGHT_TO_SAFETY_REPLICATION_V2_TARGET_SYMBOLS = ("ITOT", "RSP", "VV")
+FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY = (
+    "cross-asset-flight-to-safety-equity-rebound-replication-v3-long-history"
+)
+FLIGHT_TO_SAFETY_REPLICATION_V3_TARGET_SYMBOLS = ("DIA", "IWM", "QQQ")
 BREADTH_CAPITULATION_REBOUND_FAMILY = (
     "broad-equity-etf-breadth-capitulation-rebound"
 )
@@ -225,6 +229,7 @@ SUPPORTED_FAMILIES = {
     FLIGHT_TO_SAFETY_REBOUND_FAMILY,
     FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
     FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+    FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
     BREADTH_CAPITULATION_REBOUND_FAMILY,
     CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
     STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
@@ -3405,6 +3410,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+            FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
             BREADTH_CAPITULATION_REBOUND_FAMILY,
             CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
             STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
@@ -3433,6 +3439,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+            FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
             BREADTH_CAPITULATION_REBOUND_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
         }:
@@ -5171,6 +5178,13 @@ def build_candidates(
             family_id=family_id,
             target_symbols=FLIGHT_TO_SAFETY_REPLICATION_V2_TARGET_SYMBOLS,
         )
+    if family_id == FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY:
+        return _flight_to_safety_rebound_candidates(
+            dataset,
+            parameters,
+            family_id=family_id,
+            target_symbols=FLIGHT_TO_SAFETY_REPLICATION_V3_TARGET_SYMBOLS,
+        )
     if family_id == BREADTH_CAPITULATION_REBOUND_FAMILY:
         return _breadth_capitulation_rebound_candidates(dataset, parameters)
     if family_id == CROSS_STYLE_BREADTH_CONTINUATION_FAMILY:
@@ -5487,6 +5501,7 @@ def _production_daily_signal(
         FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
         FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+        FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
         BREADTH_CAPITULATION_REBOUND_FAMILY,
         CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
         STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
@@ -5979,6 +5994,7 @@ def _production_daily_signal(
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+            FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
         }:
             decline_floor = float(
                 parameters["minimum_equity_decline_fraction"]
@@ -6003,9 +6019,13 @@ def _production_daily_signal(
                 target_symbols = FLIGHT_TO_SAFETY_TARGET_SYMBOLS
             elif family_id == FLIGHT_TO_SAFETY_REPLICATION_FAMILY:
                 target_symbols = FLIGHT_TO_SAFETY_REPLICATION_TARGET_SYMBOLS
-            else:
+            elif family_id == FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY:
                 target_symbols = (
                     FLIGHT_TO_SAFETY_REPLICATION_V2_TARGET_SYMBOLS
+                )
+            else:
+                target_symbols = (
+                    FLIGHT_TO_SAFETY_REPLICATION_V3_TARGET_SYMBOLS
                 )
             if frozen_symbols != [
                 *target_symbols,
@@ -7414,6 +7434,7 @@ def evaluate_production_signal(
         FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
         FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+        FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
         BREADTH_CAPITULATION_REBOUND_FAMILY,
         CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
         STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,

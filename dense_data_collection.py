@@ -80,6 +80,7 @@ FIXED_DAILY_ETF_FAMILIES = {
     runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
     runtime.FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
     runtime.FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
+    runtime.FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
     runtime.ETF_RESIDUAL_REPLICATION_FAMILY,
     runtime.ETF_RESIDUAL_REPLICATION_V2_FAMILY,
     runtime.ETF_RESIDUAL_REPLICATION_V3_FAMILY,
@@ -435,6 +436,22 @@ def freeze_plan(
             daily_provider_label = (
                 "Massive SIP unadjusted daily bars by frozen symbol range"
             )
+        elif daily_provider == "yahoo":
+            if not (
+                historical_data_contract.get("daily_adjustment")
+                == YAHOO_SOURCE_RECOVERY_ADJUSTMENT
+                and historical_data_contract.get("no_purchase_required")
+                is True
+                and historical_data_contract.get("retries_permitted") == 0
+            ):
+                raise DenseDataCollectionError(
+                    "fixed ETF symbol-range Yahoo data contract is invalid"
+                )
+            daily_kind = "yahoo_daily_symbol_bars"
+            daily_provider_label = (
+                "Yahoo Finance historical chart raw daily OHLCV "
+                "by frozen symbol range"
+            )
         else:
             raise DenseDataCollectionError(
                 "fixed ETF symbol-range daily provider is unsupported"
@@ -503,6 +520,28 @@ def freeze_plan(
                 "daily_request_mode"
             )
             if fixed_symbol_range
+            else None
+        ),
+        "source_request_semantics": (
+            {
+                "endpoint_template": YAHOO_CHART_ENDPOINT,
+                "interval": "1d",
+                "events": "history",
+                "include_adjusted_close": True,
+                "raw_ohlc_used": True,
+                "dividend_adjusted_close_used": False,
+                "exchange_timezone": "America/New_York",
+                "requests_per_symbol": 1,
+                "pace_seconds": YAHOO_PACE_SECONDS,
+                "no_purchase_required": True,
+                "retries_permitted": 0,
+            }
+            if (
+                contract.get("historical_data_contract", {}).get(
+                    "daily_provider"
+                )
+                == "yahoo"
+            )
             else None
         ),
         "intraday_missing_session_policy": (
@@ -1655,13 +1694,19 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         ]
         if rows:
             bars[symbol] = rows
-    successor_daily = plan.get("daily_provider") in {"alpaca", "massive"}
+    successor_daily = plan.get("daily_provider") in {
+        "alpaca",
+        "massive",
+        "yahoo",
+    }
     successor_provider = plan.get("daily_provider")
     successor_feed = (
         "Alpaca SIP daily symbol range"
         if successor_daily and successor_provider == "alpaca"
         else "Massive SIP daily symbol range"
         if successor_daily and successor_provider == "massive"
+        else "Yahoo Finance historical chart JSON"
+        if successor_daily and successor_provider == "yahoo"
         else "Massive SIP grouped daily"
     )
     successor_adjustment = (
@@ -1669,6 +1714,12 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         if successor_daily and successor_provider == "alpaca"
         else "raw Massive bars adjusted only by frozen split actions through the dataset end"
         if successor_daily and successor_provider == "massive"
+        else (
+            "raw Yahoo quote OHLC bars adjusted only by frozen Massive "
+            "split actions through the dataset end; dividend-adjusted "
+            "close ignored"
+        )
+        if successor_daily and successor_provider == "yahoo"
         else "raw grouped bars adjusted only by frozen split actions through the dataset end"
     )
     if plan.get("adjustment_semantics") == RECOVERY_ADJUSTMENT:

@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 import dense_strategy_runtime as runtime
 import flight_to_safety_replication as replication
 import flight_to_safety_replication2 as replication2
+import flight_to_safety_replication3 as replication3
 
 
 def _business_dates(count: int) -> list[str]:
@@ -226,3 +227,115 @@ def test_identity_safe_runtime_targets_itot_rsp_and_vv():
         item for item in candidates if item["decision_date"] == decision
     ]
     assert [item["symbol"] for item in observed] == ["VV", "ITOT"]
+
+
+def test_long_history_replication_freezes_exact_grid_and_disjoint_dates(
+    tmp_path, monkeypatch
+):
+    original_repo_path = replication3._repo_path
+
+    def repo_path(path):
+        try:
+            return original_repo_path(path)
+        except ValueError:
+            return f"strategy_tournament/v2/test/{path.name}"
+
+    monkeypatch.setattr(replication3, "DEFAULT_ROOT", tmp_path)
+    monkeypatch.setattr(replication3, "_repo_path", repo_path)
+    monkeypatch.setattr(
+        replication3.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: [],
+    )
+    monkeypatch.setattr(
+        replication3.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "0" * 64},
+    )
+
+    _path, contract, capacity = replication3.freeze_contract(
+        created_at=datetime.now().astimezone().isoformat(),
+        enforce_commit=False,
+    )
+    base = replication3._read_contract(replication3.V2_CONTRACT)
+
+    assert capacity.is_file()
+    assert contract["parameter_grid"] == base["parameter_grid"]
+    assert contract["universe"]["target_symbols"] == ["DIA", "IWM", "QQQ"]
+    assert contract["development_dates"][0] == "2008-10-17"
+    assert contract["development_dates"][-1] == "2012-10-15"
+    assert contract["embargo_dates"] == [
+        "2012-10-16",
+        "2012-10-17",
+        "2012-10-18",
+        "2012-10-19",
+        "2012-10-22",
+    ]
+    assert contract["confirmation_dates"][0] == "2012-10-23"
+    assert contract["confirmation_dates"][-1] == "2013-12-31"
+    assert contract["confirmation_signal_capacity"] == 288
+    assert contract["historical_data_contract"]["daily_provider"] == "yahoo"
+    assert contract["new_mechanism_family_slot_consumed"] is False
+    assert contract["prior_family_attempt_count"] == 3
+
+
+def test_long_history_runtime_targets_dia_iwm_and_qqq():
+    dates = _business_dates(230)
+    evaluation = dates[-12:]
+    decision = evaluation[3]
+    shocks = {
+        "DIA": -0.01,
+        "IWM": -0.005,
+        "QQQ": -0.02,
+        "TLT": 0.01,
+    }
+    raw = {
+        "schema_version": 1,
+        "family_id": runtime.FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
+        "evaluation_dates": evaluation,
+        "symbols": ["DIA", "IWM", "QQQ", "TLT"],
+        "daily_bars": {
+            symbol: _bars(
+                dates, shock_date=decision, shock_return=shock
+            )
+            for symbol, shock in shocks.items()
+        },
+    }
+    prepared = runtime.prepare_dataset(raw)
+    candidates = runtime.build_candidates(
+        prepared,
+        runtime.FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
+        _parameters(),
+    )
+    observed = [
+        item for item in candidates if item["decision_date"] == decision
+    ]
+
+    assert [item["symbol"] for item in observed] == ["QQQ", "DIA"]
+
+    decision_index = dates.index(decision)
+    production = runtime.evaluate_production_signal(
+        {
+            "family_id": runtime.FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
+            "decision_date": decision,
+            "next_session_date": dates[decision_index + 1],
+            "calendar_dates": dates[: decision_index + 1],
+            "daily_history_complete": True,
+            "symbols": ["DIA", "IWM", "QQQ", "TLT"],
+            "daily_bars": {
+                symbol: bars[: decision_index + 1]
+                for symbol, bars in raw["daily_bars"].items()
+            },
+        },
+        family_id=runtime.FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
+        parameters=_parameters(),
+        frozen_universe={
+            "symbols": ["DIA", "IWM", "QQQ", "TLT"],
+            "target_symbols": ["DIA", "IWM", "QQQ"],
+            "feature_symbols": ["TLT"],
+            "point_in_time": True,
+        },
+    )
+
+    assert production["symbol"] == "QQQ"
+    assert production["overnight_hold"] is True

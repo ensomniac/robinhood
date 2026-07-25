@@ -227,7 +227,9 @@ def test_recovery_plan_inspection_rebuilds_massive_source_only_change(
     } == {"massive_daily_symbol_bars"}
     assert artifact["state"] == inspection.READY_STATE
     assert artifact["task_count"] == 11
-    assert artifact["development_outcome_state"] == "UNTOUCHED"
+    assert artifact["development_outcome_state"] == (
+        "SELF_DEVELOPMENT_EXPOSURE_BOUND"
+    )
     assert artifact["checks"]["recovery_lineage_rebuilt"] is True
     assert all(artifact["checks"].values())
 
@@ -269,6 +271,8 @@ def test_recovery_plan_inspection_rebuilds_yahoo_source_only_change(
     } == {"yahoo_daily_symbol_bars"}
     assert artifact["state"] == inspection.READY_STATE
     assert artifact["task_count"] == 11
-    assert artifact["development_outcome_state"] == "UNTOUCHED"
+    assert artifact["development_outcome_state"] == (
+        "SELF_DEVELOPMENT_EXPOSURE_BOUND"
+    )
     assert artifact["checks"]["provider_semantics_rebuilt"] is True
     assert all(artifact["checks"].values())

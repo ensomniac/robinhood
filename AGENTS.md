@@ -31,6 +31,19 @@ opportunities. The exact fast-lane candidate is
 `PRESERVED_LATER_SINGLE_RULE_RESEARCH`; no development-search price access or
 repair on that source corpus is permitted.
 
+Sector-SPDR residual-reversal replication v4 is now independently
+`REJECTED_DEVELOPMENT`: all 48 frozen trials lost at 20 bps per side, with the
+least-negative path at -0.07403 log growth, PF 0.656, and 19.59R drawdown.
+Preserve that exact 2008-2013 corpus without repair. The immediate historical
+lane is the unchanged 32-trial flight-to-safety rebound mechanism over `DIA`,
+`IWM`, and `QQQ`, with `TLT` as the completed-session causal feature. It uses
+200 warmup sessions, 1,000 globally untouched development sessions, a
+five-session embargo, and 293 untouched confirmation sessions through
+2013-12-31. This is an existing-family replication, consumes no new ISO-week
+mechanism slot, uses a frozen no-purchase Yahoo raw-OHLCV contract plus Massive
+split actions, and must be frozen and independently inspected before any price
+access.
+
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
 development corpora with confirmation still sealed. The unchanged-rule PEAD

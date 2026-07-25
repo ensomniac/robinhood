@@ -23,6 +23,7 @@ SUPPORTED_FAMILIES = {
     runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
     runtime.STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
     runtime.ETF_RESIDUAL_REPLICATION_V4_FAMILY,
+    runtime.FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
 }
 
 
@@ -80,6 +81,12 @@ def _expected_tasks(
         provider == "alpaca"
         and historical.get("daily_feed") == "sip"
         and historical.get("daily_adjustment") == "raw"
+    ) or (
+        provider == "yahoo"
+        and historical.get("daily_adjustment")
+        == dense_data_collection.YAHOO_SOURCE_RECOVERY_ADJUSTMENT
+        and historical.get("no_purchase_required") is True
+        and historical.get("retries_permitted") == 0
     )
     if not (
         provider_valid
@@ -116,6 +123,10 @@ def _expected_tasks(
         elif (
             recovery_adjustment
             == dense_data_collection.YAHOO_SOURCE_RECOVERY_ADJUSTMENT
+            or (
+                recovery_adjustment is None
+                and provider == "yahoo"
+            )
         ):
             daily_kind = "yahoo_daily_symbol_bars"
         else:
@@ -190,10 +201,34 @@ def _development_outcome_state(
         is True
     )
     if not declared_contamination:
-        outcome_exposure.assert_untouched(
+        overlaps = outcome_exposure.find_overlaps(
             contract["development_scope"], records
         )
-        return "UNTOUCHED"
+        if not overlaps:
+            return "UNTOUCHED"
+        overlap_ids = {item["exposure_id"] for item in overlaps}
+        matching = [
+            record
+            for record in records
+            if record["exposure_id"] in overlap_ids
+        ]
+        expected_prefix = (
+            "strategy_tournament/v2/discovery/"
+            f"{contract['family_id']}/development/"
+        )
+        if (
+            len(matching) == 1
+            and matching[0].get("lane") == "development"
+            and str(matching[0].get("source_path", "")).startswith(
+                expected_prefix
+            )
+            and matching[0].get("scope")
+            == contract["development_scope"]
+        ):
+            return "SELF_DEVELOPMENT_EXPOSURE_BOUND"
+        raise outcome_exposure.OutcomeExposureError(
+            "development scope has foreign or partial outcome exposure"
+        )
     if not dense_data_collection._existing_successor_authorized(
         contract, enforce_commit=enforce_commit
     ):
@@ -423,6 +458,7 @@ def inspect_plan(
             development_outcome_state
             in {
                 "UNTOUCHED",
+                "SELF_DEVELOPMENT_EXPOSURE_BOUND",
                 "DECLARED_CONTAMINATION_BOUND",
                 "INSPECTED_CHECKPOINT_RECOVERY_BOUND",
             }

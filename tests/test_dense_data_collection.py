@@ -623,6 +623,100 @@ def test_existing_successor_plan_uses_frozen_alpaca_daily_provider(
     ]
 
 
+def test_existing_successor_plan_uses_frozen_direct_yahoo_provider(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
+    days = _dates(1_200)
+    calendar = tmp_path / "calendar.json"
+    calendar.write_text(
+        json.dumps(
+            [
+                {"date": day, "open_et": "09:30", "close_et": "16:00"}
+                for day in days
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    authority_path = tmp_path / "search.json"
+    authority_path.write_text("{}\n", encoding="utf-8")
+    contract = {
+        "family_id": runtime.FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
+        "research_generation": (
+            collection.continuous_strategy_discovery.RESEARCH_GENERATION
+        ),
+        "development_dates": days[200:],
+        "development_warmup_dates": days[:200],
+        "universe": {"symbols": ["DIA", "IWM", "QQQ", "TLT"]},
+        "historical_data_contract": {
+            "daily_provider": "yahoo",
+            "daily_endpoint": collection.YAHOO_CHART_ENDPOINT,
+            "daily_request_mode": "symbol_range",
+            "daily_adjustment": (
+                collection.YAHOO_SOURCE_RECOVERY_ADJUSTMENT
+            ),
+            "split_provider": "massive",
+            "provider_substitutions_allowed": False,
+            "no_purchase_required": True,
+            "retries_permitted": 0,
+        },
+    }
+    authority = {"artifact_sha256": "a" * 64}
+    monkeypatch.setattr(
+        collection,
+        "_authority",
+        lambda *_args, **_kwargs: (
+            authority,
+            contract,
+            authority["artifact_sha256"],
+        ),
+    )
+    monkeypatch.setattr(
+        collection,
+        "_existing_successor_authorized",
+        lambda *_args, **_kwargs: True,
+    )
+    monkeypatch.setattr(
+        collection,
+        "_capacity_calendar_hash",
+        lambda *_args, **_kwargs: collection._file_hash(calendar),
+    )
+
+    _path, plan = collection.freeze_plan(
+        authority_path,
+        as_of=date(2026, 7, 25),
+        actual_today=date(2026, 7, 25),
+        calendar_path=calendar,
+        public_root=tmp_path / "public",
+        enforce_commit=False,
+    )
+
+    assert plan["daily_provider"] == "yahoo"
+    assert plan["task_count"] == 5
+    assert [task["kind"] for task in plan["tasks"]] == [
+        "split_actions",
+        "yahoo_daily_symbol_bars",
+        "yahoo_daily_symbol_bars",
+        "yahoo_daily_symbol_bars",
+        "yahoo_daily_symbol_bars",
+    ]
+    assert plan["source_request_semantics"] == {
+        "endpoint_template": collection.YAHOO_CHART_ENDPOINT,
+        "interval": "1d",
+        "events": "history",
+        "include_adjusted_close": True,
+        "raw_ohlc_used": True,
+        "dividend_adjusted_close_used": False,
+        "exchange_timezone": "America/New_York",
+        "requests_per_symbol": 1,
+        "pace_seconds": collection.YAHOO_PACE_SECONDS,
+        "no_purchase_required": True,
+        "retries_permitted": 0,
+    }
+
+
 def test_country_intraday_range_plan_uses_one_task_per_symbol(
     tmp_path, monkeypatch
 ):
