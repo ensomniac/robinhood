@@ -145,6 +145,26 @@ ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
 ETF_HIGH_CONTINUATION_FAMILY = "liquid-etf-52-week-high-continuation"
 ETF_TURN_OF_MONTH_FAMILY = "liquid-etf-turn-of-month-seasonality"
 SECTOR_ETF_ROTATION_FAMILY = "liquid-sector-etf-rotation"
+SECTOR_ETF_ROTATION_REPLICATION_FAMILY = (
+    "liquid-sector-etf-rotation-long-history-replication"
+)
+SECTOR_ETF_ROTATION_REPLICATION_BENCHMARK = "IWB"
+SECTOR_ETF_ROTATION_REPLICATION_TARGET_SYMBOLS = (
+    "VAW",
+    "VCR",
+    "VDC",
+    "VDE",
+    "VFH",
+    "VGT",
+    "VHT",
+    "VIS",
+    "VOX",
+    "VPU",
+)
+SECTOR_ETF_ROTATION_FAMILIES = {
+    SECTOR_ETF_ROTATION_FAMILY,
+    SECTOR_ETF_ROTATION_REPLICATION_FAMILY,
+}
 SECTOR_ETF_GAP_DRIFT_FAMILY = "sector-etf-gap-drift-continuation"
 FLIGHT_TO_SAFETY_REBOUND_FAMILY = (
     "cross-asset-flight-to-safety-equity-rebound"
@@ -231,7 +251,7 @@ SUPPORTED_FAMILIES = {
     ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
     ETF_HIGH_CONTINUATION_FAMILY,
     ETF_TURN_OF_MONTH_FAMILY,
-    SECTOR_ETF_ROTATION_FAMILY,
+    *SECTOR_ETF_ROTATION_FAMILIES,
     SECTOR_ETF_GAP_DRIFT_FAMILY,
     FLIGHT_TO_SAFETY_REBOUND_FAMILY,
     FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
@@ -3274,19 +3294,38 @@ def _turn_of_month_candidates(
     return candidates
 
 
+def _sector_rotation_spec(
+    family_id: str,
+) -> tuple[str, int]:
+    if family_id == SECTOR_ETF_ROTATION_FAMILY:
+        return "SPY", 11
+    if family_id == SECTOR_ETF_ROTATION_REPLICATION_FAMILY:
+        return (
+            SECTOR_ETF_ROTATION_REPLICATION_BENCHMARK,
+            len(SECTOR_ETF_ROTATION_REPLICATION_TARGET_SYMBOLS),
+        )
+    raise DenseStrategyRuntimeError(
+        "unsupported sector-rotation family"
+    )
+
+
 def _sector_rotation_candidates(
-    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+    *,
+    family_id: str = SECTOR_ETF_ROTATION_FAMILY,
 ) -> list[dict[str, Any]]:
     calendar = _calendar(dataset)
     daily = _daily_series(dataset)
+    benchmark_symbol, target_count = _sector_rotation_spec(family_id)
     lookback = int(parameters["return_lookback_sessions"])
     excess_floor = float(parameters["minimum_excess_return_fraction"])
     trend_period = int(parameters["market_trend_sma"])
     stop_atr = float(parameters["stop_atr14"])
     hold = int(parameters["maximum_hold_sessions"])
     if (
-        "SPY" not in daily
-        or len(daily) != 12
+        benchmark_symbol not in daily
+        or len(daily) != target_count + 1
         or lookback not in {5, 20}
         or excess_floor not in {0.0, 0.01}
         or trend_period not in {20, 60}
@@ -3302,23 +3341,34 @@ def _sector_rotation_candidates(
     }
     candidates: list[dict[str, Any]] = []
     for calendar_index, decision_date in enumerate(calendar[:-1]):
-        spy_index = indices["SPY"].get(decision_date)
-        if spy_index is None or spy_index < max(lookback, trend_period - 1):
-            continue
-        trend = _sma(daily["SPY"], spy_index, trend_period)
-        if (
-            trend is None
-            or float(daily["SPY"][spy_index]["close"]) <= trend
+        benchmark_index = indices[benchmark_symbol].get(decision_date)
+        if benchmark_index is None or benchmark_index < max(
+            lookback, trend_period - 1
         ):
             continue
-        spy_return = (
-            float(daily["SPY"][spy_index]["close"])
-            / float(daily["SPY"][spy_index - lookback]["close"])
+        trend = _sma(
+            daily[benchmark_symbol], benchmark_index, trend_period
+        )
+        if (
+            trend is None
+            or float(
+                daily[benchmark_symbol][benchmark_index]["close"]
+            )
+            <= trend
+        ):
+            continue
+        benchmark_return = (
+            float(daily[benchmark_symbol][benchmark_index]["close"])
+            / float(
+                daily[benchmark_symbol][benchmark_index - lookback][
+                    "close"
+                ]
+            )
             - 1
         )
         ranked: list[tuple[float, str, float, float]] = []
         for symbol, bars in daily.items():
-            if symbol == "SPY":
+            if symbol == benchmark_symbol:
                 continue
             symbol_index = indices[symbol].get(decision_date)
             if symbol_index is None or symbol_index < lookback:
@@ -3331,7 +3381,7 @@ def _sector_rotation_candidates(
                 / float(bars[symbol_index - lookback]["close"])
                 - 1
             )
-            excess = trailing_return - spy_return
+            excess = trailing_return - benchmark_return
             if excess + 1e-12 < excess_floor or not _cost_floor(excess):
                 continue
             ranked.append((-trailing_return, symbol, atr14, excess))
@@ -3346,7 +3396,7 @@ def _sector_rotation_candidates(
             bars = daily[symbol]
             entry_index = indices[symbol].get(entry_date)
             signal_id = (
-                f"{entry_date}-{SECTOR_ETF_ROTATION_FAMILY}-{symbol}"
+                f"{entry_date}-{family_id}-{symbol}"
             )
             if entry_index is None:
                 candidates.append(
@@ -3386,7 +3436,7 @@ def _sector_rotation_candidates(
                 )
                 continue
             candidate = _daily_candidate(
-                family_id=SECTOR_ETF_ROTATION_FAMILY,
+                family_id=family_id,
                 symbol=symbol,
                 decision_date=decision_date,
                 entry_date=entry_date,
@@ -3838,7 +3888,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
             ETF_HIGH_CONTINUATION_FAMILY,
             ETF_TURN_OF_MONTH_FAMILY,
-            SECTOR_ETF_ROTATION_FAMILY,
+            *SECTOR_ETF_ROTATION_FAMILIES,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
@@ -5658,8 +5708,10 @@ def build_candidates(
         return _etf_high_continuation_candidates(dataset, parameters)
     if family_id == ETF_TURN_OF_MONTH_FAMILY:
         return _turn_of_month_candidates(dataset, parameters)
-    if family_id == SECTOR_ETF_ROTATION_FAMILY:
-        return _sector_rotation_candidates(dataset, parameters)
+    if family_id in SECTOR_ETF_ROTATION_FAMILIES:
+        return _sector_rotation_candidates(
+            dataset, parameters, family_id=family_id
+        )
     if family_id == ETF_CLOSE_TO_OPEN_FAMILY:
         return _close_to_open_candidates(dataset, parameters)
     if family_id == OVERSOLD_REVERSAL_FAMILY:
@@ -5945,7 +5997,7 @@ def _production_daily_signal(
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,
         ETF_TURN_OF_MONTH_FAMILY,
-        SECTOR_ETF_ROTATION_FAMILY,
+        *SECTOR_ETF_ROTATION_FAMILIES,
         SECTOR_ETF_GAP_DRIFT_FAMILY,
         FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
@@ -7080,7 +7132,10 @@ def _production_daily_signal(
                     "same_interval_ambiguity": "stop_first",
                 },
             }
-        if family_id == SECTOR_ETF_ROTATION_FAMILY:
+        if family_id in SECTOR_ETF_ROTATION_FAMILIES:
+            benchmark_symbol, target_count = _sector_rotation_spec(
+                family_id
+            )
             lookback = int(parameters["return_lookback_sessions"])
             excess_floor = float(
                 parameters["minimum_excess_return_fraction"]
@@ -7089,9 +7144,9 @@ def _production_daily_signal(
             stop_atr = float(parameters["stop_atr14"])
             hold_sessions = int(parameters["maximum_hold_sessions"])
             if (
-                len(frozen_symbols) != 12
+                len(frozen_symbols) != target_count + 1
                 or set(map(str, frozen_symbols)) != set(daily)
-                or "SPY" not in daily
+                or benchmark_symbol not in daily
                 or lookback not in {5, 20}
                 or excess_floor not in {0.0, 0.01}
                 or trend_period not in {20, 60}
@@ -7101,29 +7156,44 @@ def _production_daily_signal(
                 raise DenseStrategyRuntimeError(
                     "production sector-rotation rules escaped the frozen grid"
                 )
-            spy_index = indices["SPY"].get(decision_date)
-            if spy_index is None or spy_index < max(
+            benchmark_index = indices[benchmark_symbol].get(
+                decision_date
+            )
+            if benchmark_index is None or benchmark_index < max(
                 lookback, trend_period - 1
             ):
                 raise DenseStrategyRuntimeError(
-                    "production sector-rotation SPY history is incomplete"
+                    "production sector-rotation benchmark history is incomplete"
                 )
-            trend = _sma(daily["SPY"], spy_index, trend_period)
+            trend = _sma(
+                daily[benchmark_symbol],
+                benchmark_index,
+                trend_period,
+            )
             if (
                 trend is None
-                or float(daily["SPY"][spy_index]["close"]) <= trend
+                or float(
+                    daily[benchmark_symbol][benchmark_index]["close"]
+                )
+                <= trend
             ):
                 raise DenseStrategyRuntimeError(
                     "production sector-rotation market trend gate is closed"
                 )
-            spy_return = (
-                float(daily["SPY"][spy_index]["close"])
-                / float(daily["SPY"][spy_index - lookback]["close"])
+            benchmark_return = (
+                float(
+                    daily[benchmark_symbol][benchmark_index]["close"]
+                )
+                / float(
+                    daily[benchmark_symbol][
+                        benchmark_index - lookback
+                    ]["close"]
+                )
                 - 1
             )
             qualified: list[tuple[float, str, float, float]] = []
             for symbol in map(str, frozen_symbols):
-                if symbol == "SPY":
+                if symbol == benchmark_symbol:
                     continue
                 bars = daily[symbol]
                 symbol_index = indices[symbol].get(decision_date)
@@ -7141,7 +7211,7 @@ def _production_daily_signal(
                     / float(bars[symbol_index - lookback]["close"])
                     - 1
                 )
-                excess = trailing_return - spy_return
+                excess = trailing_return - benchmark_return
                 if excess >= excess_floor and _cost_floor(excess):
                     qualified.append(
                         (trailing_return, symbol, atr14, excess)
@@ -7163,6 +7233,7 @@ def _production_daily_signal(
                 "holding_trading_days": hold_sessions,
                 "decision_date": decision_date,
                 "next_session_date": next_session_date,
+                "overnight_hold": True,
                 "exit_plan": {
                     "type": "stop_or_maximum_hold_close",
                     "maximum_hold_sessions": hold_sessions,
@@ -8173,7 +8244,7 @@ def evaluate_production_signal(
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,
         ETF_TURN_OF_MONTH_FAMILY,
-        SECTOR_ETF_ROTATION_FAMILY,
+        *SECTOR_ETF_ROTATION_FAMILIES,
         SECTOR_ETF_GAP_DRIFT_FAMILY,
         FLIGHT_TO_SAFETY_REBOUND_FAMILY,
         FLIGHT_TO_SAFETY_REPLICATION_FAMILY,

@@ -137,6 +137,21 @@ PF, drawdown, rolling folds, DSR, Holm, or neighbor stability. Preserve this
 exact corpus without repair; its 495-decision confirmation reserve remains
 untouched.
 
+The current ISO-week new-mechanism budget is exhausted, but this is not a
+historical-discovery waiting condition. The active bounded lane is the
+unchanged 32-trial `sector-etf-rotation` grid on a globally untouched
+long-history replication. It substitutes equivalent Vanguard sector ETFs
+`VAW`, `VCR`, `VDC`, `VDE`, `VFH`, `VGT`, `VHT`, `VIS`, `VOX`, and `VPU`
+with broad-market benchmark `IWB`, while preserving the predecessor's
+lookbacks, excess-return floors, trend gates, stops, holds, costs, execution,
+and selection-aware rejection gates. The frozen candidate partition will use
+2008-01-02 through 2012-10-15 for warmup/development, five sessions of embargo,
+and reserve 2012-10-23 through 2014-10-28 for untouched confirmation. This is
+an existing-family replication and consumes no new-mechanism slot. Commit and
+push the tested implementation before freezing its exact contract; access no
+prices until the contract, preflight, search, and collection plan have each
+been independently inspected and committed.
+
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
 development corpora with confirmation still sealed. The unchanged-rule PEAD
