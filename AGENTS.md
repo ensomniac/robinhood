@@ -267,6 +267,11 @@ contract. No archive, market price, forward return, confirmation outcome, or
 broker action may be accessed before that committed inspection.
 Contract `214e9734...2e15fe` now freezes that exact 32-request graph with zero
 provider access. Commit and push it before independent contract inspection.
+Inspection `ae3509f4...178d08` independently rebuilt all request hashes,
+partitions, rolling authority, common-equity gates, cumulative selection
+accounting, and zero-outcome fields. Commit and push the inspection before any
+SEC archive request. It authorizes metadata collection only; all market prices,
+confirmation outcomes, and broker actions remain forbidden.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
