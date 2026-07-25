@@ -91,6 +91,10 @@ before any successor. A v6 metadata source may prospectively bind those observed
 legacy encodings only to form a provisional event denominator; it must then
 freeze and verify each candidate's filing cover before any price or return
 access. V5 itself may not be repaired or promoted.
+Independent inspection `88198d4e...f6a147` rebuilt all eight archives and
+formally assigned v5 `INSUFFICIENT_SEC_EPS_METADATA_CAPACITY` with zero
+development, embargo, or confirmation events. Its exact source version is
+terminal.
 
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;

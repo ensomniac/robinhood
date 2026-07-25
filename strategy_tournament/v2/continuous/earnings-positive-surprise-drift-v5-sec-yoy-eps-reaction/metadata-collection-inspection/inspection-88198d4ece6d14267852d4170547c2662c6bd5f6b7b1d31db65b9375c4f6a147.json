@@ -1,0 +1,67 @@
+{
+  "artifact_kind": "earnings-sec-fsnds-eps-capacity-collection-inspection",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_thresholds": {
+    "minimum_confirmation_event_dates": 20,
+    "minimum_development_event_dates": 30,
+    "minimum_unique_events": 50
+  },
+  "checks": {
+    "all_frozen_archives_present": true,
+    "archive_counts_rebuilt": true,
+    "archive_order_matches": true,
+    "broker_actions_zero": true,
+    "collection_hash_valid": true,
+    "confirmation_outcomes_absent": true,
+    "contract_binding_valid": true,
+    "contract_inspection_valid": true,
+    "event_count_rebuilt": true,
+    "events_rebuilt": true,
+    "forward_returns_absent": true,
+    "market_prices_absent": true,
+    "no_retry_or_substitution": true,
+    "private_file_hash_valid": true,
+    "provider_accounting_complete": true,
+    "provider_failures_zero": true,
+    "strategy_metrics_absent": true
+  },
+  "collection_file_sha256": "c19044de64574b8c3afd7ab4d5a138bec90498e09351e56d41b98cd1f906421a",
+  "collection_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v5-sec-yoy-eps-reaction/metadata-collection/collection-24b9490ded8126bb559e25eba6d7bd2512cb15e621d7fc2e73783aa329b348c4.json",
+  "collection_sha256": "24b9490ded8126bb559e25eba6d7bd2512cb15e621d7fc2e73783aa329b348c4",
+  "confirmation_outcomes_accessed": false,
+  "confirmation_price_access_permitted": false,
+  "contract_sha256": "1a55bfd350ed753d1973d28bb4f7b94bdc946b5d74c02444c45fa48b5171963b",
+  "development_price_access_permitted": false,
+  "duplicate_event_rows_zero_credit": 0,
+  "family_id": "earnings-positive-surprise-drift",
+  "forward_returns_accessed": false,
+  "globally_contaminated_event_count": 0,
+  "inspected_at": "2026-07-25T02:48:58Z",
+  "inspection_sha256": "88198d4ece6d14267852d4170547c2662c6bd5f6b7b1d31db65b9375c4f6a147",
+  "market_prices_accessed": false,
+  "provider_requests": 0,
+  "schema_version": 1,
+  "state": "INSUFFICIENT_SEC_EPS_METADATA_CAPACITY",
+  "strategy_metrics_computed": 0,
+  "successor_id": "earnings-positive-surprise-drift-v5-sec-yoy-eps-reaction",
+  "total_unique_events": 0,
+  "untouched_partition_counts": {
+    "confirmation": {
+      "event_dates": 0,
+      "events": 0,
+      "symbols": 0
+    },
+    "development": {
+      "event_dates": 0,
+      "events": 0,
+      "symbols": 0
+    },
+    "embargo": {
+      "event_dates": 0,
+      "events": 0,
+      "symbols": 0
+    }
+  },
+  "valid": true
+}
