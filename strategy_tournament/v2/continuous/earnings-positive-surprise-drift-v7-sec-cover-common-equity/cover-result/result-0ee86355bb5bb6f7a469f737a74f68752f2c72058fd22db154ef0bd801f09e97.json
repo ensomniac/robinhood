@@ -1,0 +1,39 @@
+{
+  "artifact_kind": "earnings-sec-common-equity-cover-result",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "classification_counts": {
+    "NO_ELIGIBLE_COMMON_STOCK_SHARES_FACT": 125,
+    "VERIFIED_COMMON_EQUITY_COVER_FACT": 399
+  },
+  "confirmation_outcomes_accessed": false,
+  "contract_file_sha256": "d5e227d674719b24ae0bc195d6d344ec27ad2d218c68ed55e9dfdec1781e49a2",
+  "contract_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v7-sec-cover-common-equity/cover-contract/contract-48dbede1ae239bd03f8da444d104be47af7ba5b18abad8ee16de8aca5693024c.json",
+  "contract_sha256": "48dbede1ae239bd03f8da444d104be47af7ba5b18abad8ee16de8aca5693024c",
+  "derived_at": "2026-07-25T03:13:59Z",
+  "family_id": "earnings-positive-surprise-drift",
+  "forward_returns_accessed": false,
+  "input_provisional_events": 524,
+  "inspection_file_sha256": "b5d1c7a798daa97f4c90046345516463fa5f7326c22f689131cf57a338e67cc5",
+  "inspection_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v7-sec-cover-common-equity/cover-contract-inspection/inspection-a1d417565feef134584323e4a87f2c5645d2b8ae8a9c92ddb5242d48d7bb7ca1.json",
+  "inspection_sha256": "a1d417565feef134584323e4a87f2c5645d2b8ae8a9c92ddb5242d48d7bb7ca1",
+  "market_prices_accessed": false,
+  "private_artifact": {
+    "cache_relative_path": "_derived/earnings_sec_cover_identity/events/01bb6f5cd6e6b3f66d3a9b02b0c22e5e254117685a5107e5f3946c87cdbadbc6.json.gz",
+    "compressed_bytes": 27591,
+    "content_sha256": "01bb6f5cd6e6b3f66d3a9b02b0c22e5e254117685a5107e5f3946c87cdbadbc6",
+    "file_sha256": "801fa340b1dc797f967400dd446523a700664189e2ab1b6a8fbae2c74b70da53"
+  },
+  "provider_telemetry": {
+    "cache_hits": 8,
+    "failures": 0,
+    "request_count": 0,
+    "substitutions": 0
+  },
+  "result_sha256": "0ee86355bb5bb6f7a469f737a74f68752f2c72058fd22db154ef0bd801f09e97",
+  "schema_version": 1,
+  "state": "SEC_COVER_IDENTITIES_DERIVED_UNINSPECTED",
+  "strategy_metrics_computed": 0,
+  "successor_id": "earnings-positive-surprise-drift-v7-sec-cover-common-equity",
+  "verified_common_equity_events": 399
+}
