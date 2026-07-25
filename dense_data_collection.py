@@ -649,10 +649,16 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 raise DenseDataCollectionError(
                     "collection recovery search refresh is invalid"
                 )
-            original_plan_path = PROJECT_ROOT / str(failure["plan_path"])
+            original_plan_path = PROJECT_ROOT / str(
+                failure["plan_path"]
+            )
+            if enforce_commit:
+                strategy_discovery.require_committed(
+                    original_plan_path
+                )
             original_plan = _validate_plan(
                 original_plan_path,
-                enforce_commit=enforce_commit,
+                enforce_commit=False,
             )
             original_search_path = (
                 PROJECT_ROOT / str(original_plan["authority_path"])
