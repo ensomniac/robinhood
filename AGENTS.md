@@ -211,7 +211,11 @@ rebuild the dataset before any development evaluation. Inspection
 rebuilt every task, and revalidated the exact scope and runtime schema. Manifest
 `89526a90...3cd38a` freezes 10,000 instrument-sessions across the 1,000
 development dates. Commit both artifacts, then evaluate all 32 frozen trials
-from this manifest with zero provider access.
+from this manifest with zero provider access. Result
+`7674a798...bb3651` evaluated all 32 trials in 4.07 seconds from one local
+dataset load, one cache hit, and zero provider requests. Commit this
+uninspected result, then independently rebuild its accounting, statistics, and
+deterministic selection disposition.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
