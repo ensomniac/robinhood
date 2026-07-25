@@ -233,7 +233,10 @@ the runtime manifest before evaluation. Final recovery plan
 `39494707...e730bf` binds the same failure, original task IDs, and zero-request
 authority to that search. Inspection `0f1efa21...64a275` independently passed
 every recovery, exposure, task, provider, and confirmation check. Commit it,
-then materialize and inspect the final search-bound manifest.
+then materialize and inspect the final search-bound manifest. Status
+`faa0ee37...473170` materialized the exact dataset with nine cache hits and
+zero additional requests or substitutions. Commit it before final independent
+dataset inspection.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
