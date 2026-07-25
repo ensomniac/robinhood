@@ -1,0 +1,22 @@
+{
+  "application_id": "tier1-frozen-filing-cover-identity-application",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "combined_capacity_contract_freeze_permitted": true,
+  "independent_disclosure_signal_count": 1,
+  "independent_signal_count_rebuilt": true,
+  "inspection_kind": "outcome-blind-asr-tier1-identity-result-inspection",
+  "inspection_sha256": "7395be4f63ee56485f6aac3abc6a47858127113227fd3b9c1d23596af935e00e",
+  "market_outcomes_accessed": false,
+  "market_price_access_permitted": false,
+  "maturity_effect": "NONE",
+  "outcome_access_permitted": false,
+  "private_result_sha256": "867004ae2d48b4e5edc98e1e8a30f69f1f822eb3496039c9a9d2172ee46ecaba",
+  "result_sha256": "66c8dbf9a7143d9b0cefb4b74bbee3ced5a2689fa47226807ddc605c9f54fa74",
+  "schema_version": 1,
+  "security_identity_rebuilt": true,
+  "terminal_counts_rebuilt": true,
+  "valid": true,
+  "verified_event_count": 2
+}
