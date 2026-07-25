@@ -1,0 +1,32 @@
+{
+  "artifact_kind": "dense-data-collection-failure-inspection",
+  "artifact_sha256": "1812d98042611a45a0a9d58ee6dc953f0a9f2ea882e4d1b0c33268d7c45660e6",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "broker_actions_zero": true,
+    "checkpoint_counts_rebuilt": true,
+    "completed_status_absent": true,
+    "confirmation_outcomes_absent": true,
+    "failure_reopened": true,
+    "market_price_row_access_rebuilt": true,
+    "outcome_exposure_scope_rebuilt": true,
+    "plan_reopened": true,
+    "provider_telemetry_rebuilt": true,
+    "strategy_metrics_absent": true,
+    "substitutions_zero": true
+  },
+  "commit_enforcement_requested": true,
+  "confirmation_outcomes_accessed": false,
+  "data_outcomes_accessed": false,
+  "exposure_scope": null,
+  "failure_code": "MASSIVE_DAILY_SYMBOL_TASK_FAILED_BEFORE_PRICE_ACCESS",
+  "failure_path": "strategy_tournament/v2/discovery/cross-style-etf-breadth-continuation/development-collection-failure/cross-style-etf-breadth-continuation-development-collection-failure-204fd58190aea9865fb54ba12ba3b1c010d00afdd126b4eadaab8bb4e7666176.json",
+  "failure_sha256": "204fd58190aea9865fb54ba12ba3b1c010d00afdd126b4eadaab8bb4e7666176",
+  "family_id": "cross-style-etf-breadth-continuation",
+  "inspected_at": "2026-07-25T05:45:09Z",
+  "lane": "development",
+  "plan_sha256": "7f762395047610635bd897ca0b7a908ccf42ec603edee879cb73264d51773f43",
+  "schema_version": 1,
+  "state": "COLLECTION_FAILURE_INSPECTED",
+  "strategy_metrics_accessed": false
+}

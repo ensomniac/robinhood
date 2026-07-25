@@ -76,7 +76,10 @@ request completed, then the first daily symbol request returned HTTP 403.
 Failure `204fd581...66176` records two provider requests, one failure, zero
 market-price rows, zero strategy metrics, and no exposure scope. Commit and
 independently inspect this failure before freezing any source-only recovery.
-Do not retry the Massive plan or purchase an entitlement.
+Inspection `1812d980...660e6` rebuilt every checkpoint count, zero-price
+boundary, failure code, and provider telemetry with all eleven checks passing.
+Commit it before extending the bounded recovery controller to this fixed ETF
+family. Do not retry the Massive plan or purchase an entitlement.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
