@@ -1,0 +1,58 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "fda42decc2a596d276590fb03dc32098dd156d2decb14bf8036d6b5efae9b876",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.30750262504443526,
+  "family_contract_path": "strategy_tournament/v2/continuous/activist-issuer-earnings-reaction-continuation-v1-development-search/family-contract/contract-3ba7e6800a7c327bb5e8a3afb25241141ca9e42b87bfac2c9b927a03bb740b3f.json",
+  "family_contract_sha256": "573a52d145b05183348524e4bac28f2a19a0e16f002fef3d6258af519eba5a0c",
+  "family_id": "activist-issuer-earnings-reaction-continuation",
+  "implementation_sha256": "1c36ad2f6023c2691e45b8ff66877613a895aea4871c168a22e44ba76242dec1",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "confirmation_dates_bound": true,
+      "confirmation_locked": true,
+      "dates_bound": true,
+      "development_lane": true,
+      "experiment_bound": true,
+      "family_bound": true,
+      "point_in_time": true,
+      "zero_provider_requests": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 291
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "2d79cd9a54479b7c06067ae9525e26ed822f3b65c31d633ca661fec95cb80787",
+  "verified_capacity": 291
+}
