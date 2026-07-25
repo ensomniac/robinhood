@@ -307,6 +307,10 @@ Commit and push the implementation and tests, then freeze and independently
 inspect the contract and subordinate collection plan before the first provider
 request. Metadata capacity alone may authorize a later development-search
 freeze; it never authorizes price or confirmation access directly.
+Contract `02553913...9268b3` now freezes the corrected 16-request graph,
+partitions, unchanged event semantics, cumulative 64-trial accounting, current
+outcome-exposure index, and all implementation hashes with zero provider or
+outcome access. Commit and push it before independent contract inspection.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
