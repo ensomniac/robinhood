@@ -89,8 +89,11 @@ fields must compare identical. Refreshed contract `275f3ec6...84e01` differs
 from `8da2d2d4...d5fba6` only in the hash of
 `dense_data_collection.py`; every rule, date, symbol, partition, cost, and gate
 is byte-equivalent after removing implementation hashes. Commit it and rebuild
-preflight/search before recovery. Do not retry the Massive plan or purchase an
-entitlement.
+preflight/search before recovery. Refreshed search `af484c71...841a4` and
+recovery plan `0f9b21b5...744cb` now bind that equality, the inspected Massive
+failure, eight Alpaca SIP daily ranges, and the original split checkpoint.
+Commit the plan, independently inspect it, and only then collect. Do not retry
+the Massive plan or purchase an entitlement.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
