@@ -498,6 +498,14 @@ surface has zero positive 20-bps paths, zero stressed PF at least 1.20, zero
 drawdowns at or below 6R, and zero rolling-fold, DSR, Holm, or PBO survivors;
 the best stressed log growth is still -0.02713. Commit and push the result, then
 independently rebuild selection before any terminal disposition.
+Inspection `09097003...444a1` independently rebuilt all 48 return paths,
+account rows, stationary bootstraps, neighbor relations, DSR, Holm, and family
+PBO. The family PBO gate passed at 0.3429, but zero trials passed positive
+20-bps growth, stressed PF, drawdown, rolling folds, DSR, Holm, or neighbor
+stability; maximum DSR is 0.0000535 and the least drawdown is 11.89R. The exact
+family is `REJECTED`; confirmation remains sealed and no trial may be repaired
+or promoted. Commit and push the inspection and exposure record, then advance
+immediately to a disjoint historical mechanism.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
