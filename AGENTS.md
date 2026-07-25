@@ -406,6 +406,11 @@ the exact invalid-OHLCV anomaly into whole-symbol zero credit. Every other
 unregistered schema error remains fail-closed. Commit and test this
 implementation before freezing its family contract; provider access remains
 forbidden until the resulting generic search is independently inspected.
+V14 family contract `fa11b81c...0ea700` and capacity manifest
+`5837852e...a381d4` now freeze the complete 608-request graph, the 27-symbol
+exclusion, unchanged 32-trial family, cumulative 64-trial corrections, costs,
+partitions, source-error policy, and sealed confirmation reserve with zero
+provider access. Commit and push both artifacts, then run generic preflight.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
