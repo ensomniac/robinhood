@@ -242,7 +242,10 @@ artifacts before generic outcome-blind preflight. Preflight
 `53f594bc...7f6b0d` independently rebuilt the exact family, 998-decision
 capacity, implementation, exposure boundary, and zero-outcome state and earned
 `CAPACITY_READY` with no provider or broker access. Commit it before freezing
-the complete development search.
+the complete development search. Search `9cf8b774...780123` now binds every
+unchanged trial, neighbor graph, rolling-origin fold, account simulator,
+5/10/20-bps costs, deterministic selection rule, exact scopes, and committed
+implementations. Commit it before freezing the development collection graph.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
