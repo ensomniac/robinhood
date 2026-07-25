@@ -158,7 +158,12 @@ sessions with stop-first daily ambiguity. This is materially distinct from the
 rejected fixed-SCHG weekly breadth rule and reuses no promotion evidence.
 Commit and validate the implementation before freezing its exact contract;
 provider, confirmation, and broker access remain forbidden until their
-respective inspected predecessors permit them.
+respective inspected predecessors permit them. Contract
+`5fa5ec12...5a545c1` now freezes the one exact rule, 244 possible development
+decision dates, five embargo sessions, 241 reserved confirmation decision
+dates, Alpaca SIP raw daily ranges, Massive split actions, global untouched
+scopes, and all implementation hashes with zero outcome access. Commit it and
+run the generic outcome-blind preflight before search or collection.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
