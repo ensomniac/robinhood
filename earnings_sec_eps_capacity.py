@@ -38,6 +38,11 @@ FAMILY_ID = "earnings-positive-surprise-drift"
 SUCCESSOR_ID = "earnings-positive-surprise-drift-v5-sec-yoy-eps-reaction"
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/continuous" / SUCCESSOR_ID
 PRIVATE_NAMESPACE = "_derived/earnings_sec_eps_capacity"
+RECOVERY_INSPECTION = (
+    DEFAULT_ROOT
+    / "metadata-collection-failure-inspection"
+    / "inspection-228596d0026fdd2e4202e2b8c8ad65dc967a5d39c8c68d3107761f02bdacd81b.json"
+)
 DATASET_PAGE = (
     "https://www.sec.gov/data-research/sec-markets-data/"
     "financial-statement-notes-data-sets"
@@ -169,6 +174,46 @@ def _requests() -> list[dict[str, Any]]:
     return result
 
 
+def _recovery_lineage() -> dict[str, Any]:
+    strategy_discovery.require_committed(RECOVERY_INSPECTION)
+    inspection = _read(RECOVERY_INSPECTION)
+    if not (
+        inspection.get("inspection_sha256")
+        == self_hash(inspection, "inspection_sha256")
+        and inspection.get("state")
+        == "SEC_EPS_COLLECTION_FAILURE_INSPECTED_RECOVERY_READY"
+        and inspection.get("valid") is True
+        and inspection.get("archive_count") == len(ARCHIVES)
+        and inspection.get("recovery_authority", {}).get(
+            "additional_provider_requests_permitted"
+        )
+        == 0
+        and inspection.get("recovery_authority", {}).get(
+            "event_semantic_changes_permitted"
+        )
+        is False
+    ):
+        raise EarningsSecEpsCapacityError(
+            "SEC EPS recovery inspection is not valid"
+        )
+    return {
+        "failure_sha256": inspection["failure_sha256"],
+        "failure_inspection_path": _repo_path(RECOVERY_INSPECTION),
+        "failure_inspection_file_sha256": sha256_file(RECOVERY_INSPECTION),
+        "failure_inspection_sha256": inspection["inspection_sha256"],
+        "implementation_only_recovery": True,
+        "permitted_change": inspection["recovery_authority"][
+            "permitted_change"
+        ],
+        "additional_provider_requests_permitted": 0,
+        "archive_changes_permitted": False,
+        "event_semantic_changes_permitted": False,
+        "partition_changes_permitted": False,
+        "capacity_threshold_changes_permitted": False,
+        "required_cached_archives": inspection["archive_artifacts"],
+    }
+
+
 def build_contract(*, created_at: str) -> dict[str, Any]:
     for path in (
         Path(__file__).resolve(),
@@ -235,6 +280,7 @@ def build_contract(*, created_at: str) -> dict[str, Any]:
             "prior_family_trials_must_enter_selection_correction": True,
             "no_exact_prior_version_repair": True,
         },
+        "recovery_lineage": _recovery_lineage(),
         "outcome_exposure_index_sha256": outcome_exposure.audit()["index_sha256"],
         "implementation_hashes": {
             "earnings_sec_eps_capacity.py": sha256_file(Path(__file__).resolve()),
@@ -612,6 +658,40 @@ def collect(
             "committed SEC EPS contract or inspection is invalid"
         )
     source = store or HistoricalDayStore.from_env()
+    recovery = contract.get("recovery_lineage")
+    if not isinstance(recovery, Mapping):
+        raise EarningsSecEpsCapacityError(
+            "SEC EPS collection requires inspected recovery lineage"
+        )
+    required_archives = {
+        str(item["request_sha256"]): item
+        for item in recovery.get("required_cached_archives", [])
+    }
+    if (
+        recovery.get("additional_provider_requests_permitted") != 0
+        or len(required_archives) != len(contract["requests"])
+    ):
+        raise EarningsSecEpsCapacityError(
+            "SEC EPS recovery cache authority is invalid"
+        )
+    for request in contract["requests"]:
+        destination = (
+            source.root
+            / PRIVATE_NAMESPACE
+            / "archives"
+            / f"{request['request_sha256']}.zip"
+        )
+        cached = _cached_archive(destination, request)
+        required = required_archives.get(str(request["request_sha256"]))
+        if not (
+            cached is not None
+            and isinstance(required, Mapping)
+            and cached["file_sha256"] == required.get("file_sha256")
+            and cached["bytes"] == required.get("bytes")
+        ):
+            raise EarningsSecEpsCapacityError(
+                f"required recovery archive differs for {request['quarter']}"
+            )
     config = SecConfig.from_env(
         PROJECT_ROOT / ".env",
         source.root / PRIVATE_NAMESPACE,

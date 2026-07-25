@@ -1,3 +1,4 @@
+import hashlib
 import io
 import zipfile
 from pathlib import Path
@@ -123,6 +124,8 @@ def test_contract_freezes_exact_archives_and_zero_outcomes(monkeypatch):
     assert contract["market_prices_accessed"] is False
     assert contract["forward_returns_accessed"] is False
     assert contract["broker_actions"] == 0
+    assert contract["recovery_lineage"]["additional_provider_requests_permitted"] == 0
+    assert len(contract["recovery_lineage"]["required_cached_archives"]) == 8
 
 
 def test_archive_parser_requires_same_accession_identity_and_positive_yoy_eps(
@@ -261,7 +264,45 @@ def test_collection_resumes_from_valid_archives_without_duplicate_requests(
     archive = tmp_path / "fixture.zip"
     _archive(archive)
     payload = archive.read_bytes()
+    payload_sha256 = hashlib.sha256(payload).hexdigest()
+    requests = source._requests()
+    monkeypatch.setattr(
+        source,
+        "_recovery_lineage",
+        lambda: {
+            "failure_sha256": "f" * 64,
+            "failure_inspection_path": "fixture.json",
+            "failure_inspection_file_sha256": "e" * 64,
+            "failure_inspection_sha256": (
+                "228596d0026fdd2e4202e2b8c8ad65dc967a5d39c8c68d3107761f02bdacd81b"
+            ),
+            "implementation_only_recovery": True,
+            "permitted_change": "raise Python CSV field_size_limit",
+            "additional_provider_requests_permitted": 0,
+            "archive_changes_permitted": False,
+            "event_semantic_changes_permitted": False,
+            "partition_changes_permitted": False,
+            "capacity_threshold_changes_permitted": False,
+            "required_cached_archives": [
+                {
+                    "request_sha256": request["request_sha256"],
+                    "file_sha256": payload_sha256,
+                    "bytes": len(payload),
+                }
+                for request in requests
+            ],
+        },
+    )
     store = HistoricalDayStore(tmp_path / "private")
+    for request in requests:
+        destination = (
+            store.root
+            / source.PRIVATE_NAMESPACE
+            / "archives"
+            / f"{request['request_sha256']}.zip"
+        )
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(payload)
     contract_path, _ = source.freeze_contract(
         created_at="2026-07-25T02:00:00Z", root=tmp_path / "public"
     )
@@ -289,9 +330,10 @@ def test_collection_resumes_from_valid_archives_without_duplicate_requests(
         minimum_spacing_seconds=0,
     )
 
-    assert len(session.calls) == 8
+    assert len(session.calls) == 0
     assert len(second_session.calls) == 0
-    assert first["provider_telemetry"]["request_count"] == 8
+    assert first["provider_telemetry"]["request_count"] == 0
+    assert first["provider_telemetry"]["cache_hits"] == 8
     assert second["provider_telemetry"]["cache_hits"] == 8
     assert collection_path.exists()
 

@@ -66,6 +66,20 @@ def inspect_contract(
         is True,
         "outcome_index_current": contract.get("outcome_exposure_index_sha256")
         == outcome_exposure.audit()["index_sha256"],
+        "recovery_inspection_bound": contract.get("recovery_lineage", {}).get(
+            "failure_inspection_sha256"
+        )
+        == "228596d0026fdd2e4202e2b8c8ad65dc967a5d39c8c68d3107761f02bdacd81b",
+        "zero_request_recovery": contract.get("recovery_lineage", {}).get(
+            "additional_provider_requests_permitted"
+        )
+        == 0
+        and len(
+            contract.get("recovery_lineage", {}).get(
+                "required_cached_archives", []
+            )
+        )
+        == len(source.ARCHIVES),
         "market_prices_absent": contract.get("market_prices_accessed") is False,
         "forward_returns_absent": contract.get("forward_returns_accessed")
         is False,
