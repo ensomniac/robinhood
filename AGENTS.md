@@ -67,6 +67,18 @@ neighbor stability, and no winner was selected. Preserve the 2008-2012
 development corpus without repair; its 500-session confirmation reserve remains
 untouched.
 
+The released historical-discovery slot now advances the materially distinct
+`country-equity-etf-close-strength-continuation-v1` implementation. Its
+prospective 32-trial grid combines completed close location `{0.8,0.9}`,
+one-session advance `{0.5%,1.0%}`, trend SMA `{100,200}`, stop
+`{1.0,1.5}×ATR14`, and hold `{1,2}` sessions over `EWC`, `EWG`, `EWJ`, `EWP`,
+`EWQ`, `EWT`, `EWU`, `EWW`, and `EWY`. Historical and production paths both
+rank the highest completed close location, enter only at the next session open,
+resolve stop first, and enforce the five-times-cost floor. The proposed
+2008-2014 date-symbol pairs have zero global outcome overlaps. No contract,
+price, or outcome authority exists until this implementation is committed and
+the exact contract is subsequently frozen and independently inspected.
+
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
 development corpora with confirmation still sealed. The unchanged-rule PEAD

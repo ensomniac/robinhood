@@ -198,6 +198,9 @@ ETF_OVERSOLD_FAMILIES = {
     BROAD_ASSET_ETF_OVERSOLD_FAMILY,
 }
 ETF_IBS_REVERSAL_FAMILY = "liquid-equity-etf-ibs-reversal"
+ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY = (
+    "country-equity-etf-close-strength-continuation"
+)
 ETF_CLOSE_TO_OPEN_FAMILY = "liquid-etf-close-to-open-momentum"
 CLOSE_TO_OPEN_ETF_SYMBOLS = ("QQQ", "IWM", "DIA")
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
@@ -236,6 +239,7 @@ SUPPORTED_FAMILIES = {
     STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
     *ETF_OVERSOLD_FAMILIES,
     ETF_IBS_REVERSAL_FAMILY,
+    ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
@@ -2214,6 +2218,151 @@ def _etf_ibs_reversal_candidates(
     return candidates
 
 
+def _etf_close_strength_continuation_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    close_location_minimum = float(
+        parameters["close_location_minimum"]
+    )
+    advance_floor = float(
+        parameters["one_session_advance_fraction"]
+    )
+    trend_period = int(parameters["trend_sma"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    if (
+        close_location_minimum not in {0.8, 0.9}
+        or advance_floor not in {0.005, 0.01}
+        or trend_period not in {100, 200}
+        or stop_atr not in {1.0, 1.5}
+        or hold not in {1, 2}
+    ):
+        raise DenseStrategyRuntimeError(
+            "ETF close-strength continuation parameters escaped the frozen grid"
+        )
+    indices = {
+        symbol: {
+            str(bar["date"]): index
+            for index, bar in enumerate(bars)
+        }
+        for symbol, bars in daily.items()
+    }
+    feature_cache = dataset.get("_etf_pullback_feature_cache")
+    if not isinstance(feature_cache, Mapping):
+        feature_cache = _etf_pullback_feature_cache(daily)
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        scored: list[tuple[float, float, str, float]] = []
+        for symbol, bars in daily.items():
+            symbol_index = indices[symbol].get(decision_date)
+            if symbol_index is None or symbol_index < max(
+                trend_period - 1, 14, 1
+            ):
+                continue
+            bar = bars[symbol_index]
+            bar_range = float(bar["high"]) - float(bar["low"])
+            if bar_range <= 0:
+                continue
+            close_location = (
+                float(bar["close"]) - float(bar["low"])
+            ) / bar_range
+            features = feature_cache[symbol][decision_date]
+            trend = features[f"sma{trend_period}"]
+            atr14 = features["atr14"]
+            advance = features["decline1"]
+            if (
+                trend is None
+                or atr14 is None
+                or advance is None
+                or float(bar["close"]) <= trend
+                or close_location < close_location_minimum
+                or advance < advance_floor
+                or not _cost_floor(advance)
+            ):
+                continue
+            scored.append(
+                (-close_location, -advance, symbol, atr14)
+            )
+        entry_date = calendar[calendar_index + 1]
+        if calendar_index + 1 + hold > len(calendar):
+            continue
+        for rank, (
+            negative_close_location,
+            negative_advance,
+            symbol,
+            atr14,
+        ) in enumerate(sorted(scored), 1):
+            close_location = -negative_close_location
+            advance = -negative_advance
+            bars = daily[symbol]
+            entry_index = indices[symbol].get(entry_date)
+            signal_id = (
+                f"{entry_date}-"
+                f"{ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY}-{symbol}"
+            )
+            if entry_index is None:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "missing_next_open",
+                    }
+                )
+                continue
+            if entry_index + hold > len(bars):
+                continue
+            exit_dates = {
+                str(item["date"])
+                for item in bars[
+                    entry_index : entry_index + hold
+                ]
+            }
+            expected_dates = set(
+                calendar[
+                    calendar_index + 1 : calendar_index + 1 + hold
+                ]
+            )
+            if exit_dates != expected_dates:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": (
+                            "incomplete_holding_bars"
+                        ),
+                    }
+                )
+                continue
+            candidate = _daily_candidate(
+                family_id=ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
+                symbol=symbol,
+                decision_date=decision_date,
+                entry_date=entry_date,
+                bars=bars,
+                entry_index=entry_index,
+                stop_atr=stop_atr,
+                atr14=atr14,
+                hold_sessions=hold,
+                rank=rank,
+                score=close_location + advance,
+            )
+            candidate["close_location"] = close_location
+            candidate["one_session_return_fraction"] = advance
+            candidates.append(candidate)
+    return candidates
+
+
 def _etf_cross_sectional_momentum_candidates(
     dataset: Mapping[str, Any], parameters: Mapping[str, Any]
 ) -> list[dict[str, Any]]:
@@ -3545,6 +3694,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
             ETF_IBS_REVERSAL_FAMILY,
+            ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
         }:
             symbols = dataset.get("symbols")
             if not isinstance(symbols, list) or set(map(str, symbols)) != set(daily):
@@ -3573,6 +3723,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             BREADTH_CAPITULATION_REBOUND_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
             ETF_IBS_REVERSAL_FAMILY,
+            ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
         }:
             prepared["_etf_pullback_feature_cache"] = (
                 _etf_pullback_feature_cache(daily)
@@ -5332,6 +5483,10 @@ def build_candidates(
         )
     if family_id == ETF_IBS_REVERSAL_FAMILY:
         return _etf_ibs_reversal_candidates(dataset, parameters)
+    if family_id == ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY:
+        return _etf_close_strength_continuation_candidates(
+            dataset, parameters
+        )
     if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY:
         return _etf_cross_sectional_momentum_candidates(dataset, parameters)
     if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
@@ -5640,6 +5795,7 @@ def _production_daily_signal(
         STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
         ETF_IBS_REVERSAL_FAMILY,
+        ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
     }:
         frozen_symbols = frozen_universe.get("symbols")
         observed_symbols = decision_data.get("symbols")
@@ -6200,6 +6356,104 @@ def _production_daily_signal(
                 "internal_bar_strength": internal_bar_strength,
                 "one_session_return_fraction": decline,
                 "expected_gross_move_fraction": abs(decline),
+                "atr": atr14,
+                "stop_atr_multiple": stop_atr,
+                "holding_trading_days": hold_sessions,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_maximum_hold_close",
+                    "maximum_hold_sessions": hold_sessions,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
+        if family_id == ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY:
+            close_location_minimum = float(
+                parameters["close_location_minimum"]
+            )
+            advance_floor = float(
+                parameters["one_session_advance_fraction"]
+            )
+            trend_period = int(parameters["trend_sma"])
+            stop_atr = float(parameters["stop_atr14"])
+            hold_sessions = int(
+                parameters["maximum_hold_sessions"]
+            )
+            if (
+                close_location_minimum not in {0.8, 0.9}
+                or advance_floor not in {0.005, 0.01}
+                or trend_period not in {100, 200}
+                or stop_atr not in {1.0, 1.5}
+                or hold_sessions not in {1, 2}
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production ETF close-strength continuation rules "
+                    "escaped the frozen grid"
+                )
+            qualified: list[
+                tuple[float, float, str, float]
+            ] = []
+            for symbol in map(str, frozen_symbols):
+                bars = daily[symbol]
+                symbol_index = indices[symbol].get(decision_date)
+                if symbol_index is None or symbol_index < max(
+                    trend_period - 1, 14, 1
+                ):
+                    raise DenseStrategyRuntimeError(
+                        "production ETF close-strength continuation "
+                        "history is incomplete"
+                    )
+                bar = bars[symbol_index]
+                bar_range = float(bar["high"]) - float(bar["low"])
+                if bar_range <= 0:
+                    continue
+                close_location = (
+                    float(bar["close"]) - float(bar["low"])
+                ) / bar_range
+                trend = _sma(bars, symbol_index, trend_period)
+                atr14 = _atr(bars, symbol_index)
+                advance = (
+                    float(bar["close"])
+                    / float(bars[symbol_index - 1]["close"])
+                    - 1
+                )
+                if (
+                    trend is not None
+                    and atr14 is not None
+                    and float(bar["close"]) > trend
+                    and close_location >= close_location_minimum
+                    and advance >= advance_floor
+                    and _cost_floor(advance)
+                ):
+                    qualified.append(
+                        (
+                            -close_location,
+                            -advance,
+                            symbol,
+                            atr14,
+                        )
+                    )
+            if not qualified:
+                raise DenseStrategyRuntimeError(
+                    "no exact production ETF close-strength continuation "
+                    "signal"
+                )
+            (
+                negative_close_location,
+                negative_advance,
+                symbol,
+                atr14,
+            ) = sorted(qualified)[0]
+            close_location = -negative_close_location
+            advance = -negative_advance
+            return {
+                "symbol": symbol,
+                "rank": 1,
+                "score": close_location + advance,
+                "close_location": close_location,
+                "one_session_return_fraction": advance,
+                "expected_gross_move_fraction": advance,
                 "atr": atr14,
                 "stop_atr_multiple": stop_atr,
                 "holding_trading_days": hold_sessions,
@@ -7662,6 +7916,7 @@ def evaluate_production_signal(
         STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
         ETF_IBS_REVERSAL_FAMILY,
+        ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
     }:
         return _production_daily_signal(
             decision_data, family_id, parameters, frozen_universe
