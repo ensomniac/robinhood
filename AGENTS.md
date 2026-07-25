@@ -206,7 +206,10 @@ checkpoint reuse. Recovery plan `6f4c7422...77541e` binds the inspected and
 indexed failure, original plan, refreshed search, and the exact nine retained
 task IDs. It records nine prior requests and authorizes zero additional
 requests, substitutions, strategy changes, confirmation access, or broker
-actions. Commit and independently inspect it before materialization.
+actions. The independent plan inspector now requires the sole exact indexed
+failure exposure, nine prior requests, zero additional requests, unchanged task
+topology, and untouched confirmation before it can admit this recovery. Commit
+and validate that inspector before inspecting or materializing the plan.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected

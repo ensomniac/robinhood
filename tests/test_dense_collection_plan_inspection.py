@@ -120,6 +120,7 @@ def test_successor_accepts_only_its_bound_declared_contamination(
     )
 
     state = inspection._development_outcome_state(
+        {},
         contract,
         predecessor_records,
         enforce_commit=False,

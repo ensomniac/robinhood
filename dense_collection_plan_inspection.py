@@ -122,11 +122,56 @@ def _expected_tasks(
 
 
 def _development_outcome_state(
+    plan: Mapping[str, Any],
     contract: Mapping[str, Any],
     records: Sequence[Mapping[str, Any]],
     *,
     enforce_commit: bool,
 ) -> str:
+    checkpoint_recovery = (
+        plan.get("recovery_kind")
+        == dense_data_collection.FIXED_ETF_CHECKPOINT_REUSE_RECOVERY
+    )
+    if checkpoint_recovery:
+        failure_path = PROJECT_ROOT / str(
+            plan.get("recovery_failure_path", "")
+        )
+        if enforce_commit:
+            strategy_discovery.require_committed(failure_path)
+        failure = strategy_discovery.load_artifact(
+            failure_path,
+            expected_kind="dense-data-collection-failure",
+        )
+        expected_id = (
+            f"dense-collection-failure-"
+            f"{failure['artifact_sha256'][:20]}"
+        )
+        overlaps = outcome_exposure.find_overlaps(
+            contract["development_scope"], records
+        )
+        matching = [
+            record
+            for record in records
+            if record.get("exposure_id") == expected_id
+        ]
+        if not (
+            failure.get("artifact_sha256")
+            == plan.get("recovery_failure_sha256")
+            and failure.get("exposure_scope")
+            == contract["development_scope"]
+            and failure.get("strategy_metrics_accessed") is False
+            and len(matching) == 1
+            and matching[0].get("source_sha256")
+            == failure["artifact_sha256"]
+            and matching[0].get("scope")
+            == contract["development_scope"]
+            and {item.get("exposure_id") for item in overlaps}
+            == {expected_id}
+        ):
+            raise DenseCollectionPlanInspectionError(
+                "checkpoint recovery is not bound to its sole inspected exposure"
+            )
+        return "INSPECTED_CHECKPOINT_RECOVERY_BOUND"
     declared_contamination = (
         contract.get("research_generation") == "existing_family_successor"
         and contract.get("partitions", {}).get(
@@ -185,12 +230,17 @@ def inspect_plan(
     )
     records = outcome_exposure.read_index()
     development_outcome_state = _development_outcome_state(
+        plan,
         contract,
         records,
         enforce_commit=enforce_commit,
     )
     outcome_exposure.assert_untouched(
         contract["confirmation_scope"], records
+    )
+    checkpoint_recovery = (
+        plan.get("recovery_kind")
+        == dense_data_collection.FIXED_ETF_CHECKPOINT_REUSE_RECOVERY
     )
     checks = {
         "plan_hash_valid": (
@@ -261,6 +311,18 @@ def inspect_plan(
                     plan.get("recovery_failure_inspection_path"), str
                 )
                 and plan.get("supersedes_plan_sha256")
+                == plan.get("checkpoint_source_plan_sha256")
+                and plan.get("provider_requests_already_completed") == 9
+                and plan.get("additional_provider_requests_authorized")
+                == 0
+            )
+            if checkpoint_recovery
+            else (
+                isinstance(plan.get("recovery_failure_path"), str)
+                and isinstance(
+                    plan.get("recovery_failure_inspection_path"), str
+                )
+                and plan.get("supersedes_plan_sha256")
                 == "7f762395047610635bd897ca0b7a908ccf42ec603edee879cb73264d51773f43"
             )
             if recovery
@@ -268,12 +330,30 @@ def inspect_plan(
         ),
         "zero_access_boundary_rebuilt": (
             plan["provider_requests_before_plan_freeze"] == 0
-            and plan["market_outcomes_accessed"] is False
+            and (
+                (
+                    plan["market_outcomes_accessed"] is True
+                    and plan.get(
+                        "strategy_metrics_accessed_before_recovery"
+                    )
+                    is False
+                    and plan.get(
+                        "additional_provider_requests_authorized"
+                    )
+                    == 0
+                )
+                if checkpoint_recovery
+                else plan["market_outcomes_accessed"] is False
+            )
             and plan["broker_actions"] == 0
         ),
         "development_scope_integrity_rebuilt": (
             development_outcome_state
-            in {"UNTOUCHED", "DECLARED_CONTAMINATION_BOUND"}
+            in {
+                "UNTOUCHED",
+                "DECLARED_CONTAMINATION_BOUND",
+                "INSPECTED_CHECKPOINT_RECOVERY_BOUND",
+            }
         ),
         "confirmation_scope_untouched": True,
     }
@@ -299,7 +379,7 @@ def inspect_plan(
         "task_count": len(expected_tasks),
         "development_outcome_state": development_outcome_state,
         "provider_requests": 0,
-        "market_outcomes_accessed": False,
+        "market_outcomes_accessed": plan["market_outcomes_accessed"],
         "confirmation_outcomes_accessed": False,
         "broker_actions": 0,
         "outcome_exposure_index_sha256": outcome_exposure.audit()[
