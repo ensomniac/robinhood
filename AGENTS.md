@@ -84,8 +84,11 @@ the family identity, 998-decision capacity, point-in-time boundary, and
 zero-outcome state in zero provider requests. Search `24504e22...1ea5e` now
 binds the committed preflight, complete 32-trial grid, deterministic selection
 rule, rolling-origin partitions, costs, scopes, and implementation hashes.
-Commit this exact search before freezing its provider request graph; provider
-access and confirmation remain forbidden.
+Development plan `135c8362...25114` freezes exactly ten requests: one Massive
+split-action range and nine raw Yahoo daily symbol ranges from 2008-01-02
+through 2012-10-15. It binds the committed search and contract calendar with no
+retries or substitutions. Commit this exact plan before independent inspection;
+provider access and confirmation remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
