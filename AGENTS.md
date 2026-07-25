@@ -63,6 +63,15 @@ partition, exposure-index, and zero-outcome binding and earned
 `SEC_EPS_CONTRACT_INSPECTED_READY`. Collect only those eight metadata archives
 next. Do not access a market price, forward return, confirmation outcome, or
 broker, and do not infer historical identity from a current ticker map.
+All eight archives are now cached from eight exact provider requests, but the
+first derivation stopped before an event row because an SEC TXT fact exceeded
+Python's default 131,072-byte CSV field limit. Failure
+`9e7a0cdc...410c07` records 813,202,794 cached bytes, zero provider failures,
+retries, substitutions, prices, returns, strategy metrics, or confirmation
+outcomes. Preserve and inspect that failure before changing the parser. The only
+permitted recovery raises the parser field limit without changing any archive,
+event semantic, date, partition, identity rule, or capacity threshold, then
+reuses all eight hash-valid archives with zero new provider requests.
 
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;
