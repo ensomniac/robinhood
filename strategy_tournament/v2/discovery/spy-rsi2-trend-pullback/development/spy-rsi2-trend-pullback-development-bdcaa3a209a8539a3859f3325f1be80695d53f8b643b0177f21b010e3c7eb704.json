@@ -1,0 +1,70 @@
+{
+  "artifact_kind": "development-search-result",
+  "artifact_sha256": "bdcaa3a209a8539a3859f3325f1be80695d53f8b643b0177f21b010e3c7eb704",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "elapsed_seconds": 0.12172729102894664,
+  "evaluation_binding": {
+    "compression": "gzip",
+    "content_sha256": "c420df0d574760d3d1594884841f1111069e8b31fc8dd3e106dc82da816f9131",
+    "file_sha256": "42e73763db0d5f079c48cd24ee7b442329c0948c75792ad2e33111e3ec97d27e",
+    "format": "canonical-json",
+    "kind": "external-development-evaluation",
+    "relative_path": "_derived/strategy_discovery_evaluations/c420df0d574760d3d1594884841f1111069e8b31fc8dd3e106dc82da816f9131/evaluation.json.gz",
+    "schema_version": 1,
+    "storage": "LOCAL_HISTORICAL_DATA_ROOT"
+  },
+  "evaluation_summary": {
+    "dataset_manifest": "strategy_tournament/v2/continuous/broad-etf-trend-pullback-v3-fixed-spy-rsi2/yahoo-development-dataset/dataset-broad-etf-trend-pullback-v3-fixed-spy-rsi2-yahoo-development-5e82ade37ef4eae5b1e791103626d47d7dea55cd6675ba7fd231f0fe361ebe92.json",
+    "experiment_id": "experiment-broad-etf-trend-pullback-v3-fixed-spy-rsi2",
+    "implementation_sha256": "4083d620d7f32b5a43bcb3fec9167b9f8b5c4101214e3a29b7d9a3df3746adb8",
+    "trial_count": 1,
+    "trials": [
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 1967,
+          "oof_filled_account_returns": 80,
+          "oof_net_pnl_dollars": 80
+        },
+        "maturity_rows": 1967,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 6.272308301340179,
+          "stress_20bps_profit_factor": 1.1764794785475832,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": 0.016692994082642965,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "maximum_hold_sessions": 5,
+          "mean_reversion_sma": 5,
+          "rsi2_maximum": 10.0,
+          "stop_atr14": 1.5,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 1967,
+        "trial_id": "trial-1e13a95f6924e284"
+      }
+    ]
+  },
+  "family_id": "spy-rsi2-trend-pullback",
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 1,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "search_path": "strategy_tournament/v2/discovery/spy-rsi2-trend-pullback/search/spy-rsi2-trend-pullback-search-53c19d7706563787008b4c8e0c9a47408757033aec9ab52e6189577682208be0.json",
+  "search_sha256": "53c19d7706563787008b4c8e0c9a47408757033aec9ab52e6189577682208be0",
+  "state": "DEVELOPMENT_EVALUATED"
+}
