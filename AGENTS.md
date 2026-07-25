@@ -64,6 +64,12 @@ generic development search. Search `ab703111...4497e` now binds the only trial,
 deterministic selection rule, rolling-origin folds, costs, scopes, and current
 implementation hashes. Commit it, then freeze and independently inspect its
 exact data-collection plan; do not collect data until both are committed.
+Development plan `7f762395...73f43` freezes nine total Massive requests: one
+split-action range and eight unadjusted daily symbol ranges from 2014-03-14
+through 2017-12-29. The additive independent inspector rebuilds the committed
+search, calendar, warmup, symbols, request IDs, provider semantics, and both
+untouched scopes. Commit the plan and inspector implementation, then run and
+commit that inspection before opening any request.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
