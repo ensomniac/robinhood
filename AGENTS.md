@@ -254,7 +254,10 @@ requests or substitutions. Commit it before independent request-graph
 inspection. Inspection `46235880...4a0c80` independently rebuilt all ten
 tasks, providers, calendar, search and scope hashes, and the zero-outcome
 boundary with no provider or broker access. Commit it, then collect only this
-exact development graph.
+exact development graph. Collection `6610c0d6...7f7a83` completed all ten
+authorized requests with zero failures, zero substitutions, and 1.8 seconds of
+pacing; row-level data remains outside Git. Commit the compact uninspected
+status before independent dataset reconstruction.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
