@@ -238,7 +238,11 @@ contract and capacity without consuming another new-mechanism slot. Contract
 32 trials, nine-symbol universe, 200 warmup sessions, 1,000 development
 sessions, five-session embargo, 500-session confirmation reserve, all costs,
 selection gates, and implementation hashes with zero price access. Commit both
-artifacts before generic outcome-blind preflight.
+artifacts before generic outcome-blind preflight. Preflight
+`53f594bc...7f6b0d` independently rebuilt the exact family, 998-decision
+capacity, implementation, exposure boundary, and zero-outcome state and earned
+`CAPACITY_READY` with no provider or broker access. Commit it before freezing
+the complete development search.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
