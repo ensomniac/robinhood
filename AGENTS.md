@@ -419,6 +419,11 @@ Search `c2cdc08d...2574e1` now freezes the exact v14 contract, preflight, 32
 current trials, 32 prior paths, all 608 requests, and zero-outcome state.
 Commit and push it, then run the dedicated v14 search inspector before the
 first remaining Yahoo development request.
+Inspection `b1d626bb...22c17b1` exactly rebuilt the v14 contract, 64-trial
+corrections, all 608 request hashes, 27-symbol exclusion, exact source policy,
+confirmation symbol disjointness, and globally untouched development and
+confirmation scopes. Commit and push it, then collect only the authorized
+development graph. Confirmation provider access remains forbidden.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
