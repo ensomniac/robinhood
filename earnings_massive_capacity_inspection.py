@@ -291,6 +291,97 @@ def inspect_collection(
     return path, value
 
 
+def inspect_permission_failure(
+    failure_path: Path,
+    *,
+    inspected_at: str,
+    root: Path = source.DEFAULT_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    strategy_discovery.require_committed(Path(__file__).resolve())
+    strategy_discovery.require_committed(failure_path)
+    failure = source._read(failure_path)
+    contract_path = source.PROJECT_ROOT / str(failure["contract_path"])
+    inspection_path = source.PROJECT_ROOT / str(failure["inspection_path"])
+    strategy_discovery.require_committed(contract_path)
+    strategy_discovery.require_committed(inspection_path)
+    contract = source._read(contract_path)
+    contract_inspection = source._read(inspection_path)
+    checks = {
+        "failure_hash_valid": failure.get("failure_sha256")
+        == source.self_hash(failure, "failure_sha256"),
+        "contract_binding_valid": failure.get("contract_sha256")
+        == contract.get("contract_sha256")
+        == contract_inspection.get("contract_sha256"),
+        "contract_inspection_valid": contract_inspection.get("state")
+        == "METADATA_CONTRACT_INSPECTED_READY"
+        and contract_inspection.get("valid") is True,
+        "first_frozen_request_bound": failure.get(
+            "attempted_request_ordinal"
+        )
+        == 0
+        and failure.get("attempted_request_sha256")
+        == contract["requests"][0]["request_sha256"],
+        "permission_status_valid": failure.get("provider_http_status")
+        in (401, 403)
+        and failure.get("failure_category") == "PERMANENT_PERMISSION",
+        "one_request_accounted": failure.get("provider_telemetry", {}).get(
+            "request_count"
+        )
+        == 1
+        and failure.get("provider_telemetry", {}).get("failures") == 1,
+        "no_retry_or_substitution": failure.get(
+            "provider_telemetry", {}
+        ).get("retries")
+        == 0
+        and failure.get("provider_telemetry", {}).get("substitutions") == 0,
+        "no_rows_or_private_artifact": failure.get("rows_retained") == 0
+        and failure.get("private_artifact_created") is False,
+        "market_prices_absent": failure.get("market_prices_accessed") is False,
+        "forward_returns_absent": failure.get("forward_returns_accessed")
+        is False,
+        "strategy_metrics_absent": failure.get("strategy_metrics_computed") == 0,
+        "broker_actions_zero": failure.get("broker_actions") == 0,
+    }
+    if not all(checks.values()):
+        raise EarningsMassiveInspectionError(
+            "Massive earnings permission failure inspection failed"
+        )
+    value: dict[str, Any] = {
+        "schema_version": 1,
+        "artifact_kind": (
+            "earnings-massive-metadata-collection-failure-inspection"
+        ),
+        "campaign_id": source.CAMPAIGN_ID,
+        "family_id": source.FAMILY_ID,
+        "successor_id": source.SUCCESSOR_ID,
+        "state": "METADATA_SOURCE_UNAVAILABLE_INSPECTED",
+        "inspected_at": source._timestamp(inspected_at, "inspected_at"),
+        "failure_path": source._repo_path(failure_path),
+        "failure_file_sha256": sha256_file(failure_path),
+        "failure_sha256": failure["failure_sha256"],
+        "contract_sha256": contract["contract_sha256"],
+        "checks": checks,
+        "provider_requests": 0,
+        "rows_retained": 0,
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "strategy_metrics_computed": 0,
+        "confirmation_outcomes_accessed": False,
+        "broker_actions": 0,
+        "valid": True,
+    }
+    value["inspection_sha256"] = source.self_hash(
+        value, "inspection_sha256"
+    )
+    path = (
+        root
+        / "metadata-collection-failure-inspection"
+        / f"inspection-{value['inspection_sha256']}.json"
+    )
+    source._write(path, value)
+    return path, value
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -300,13 +391,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     collection = subparsers.add_parser("inspect-collection")
     collection.add_argument("artifact", type=Path)
     collection.add_argument("--inspected-at", required=True)
+    failure = subparsers.add_parser("inspect-permission-failure")
+    failure.add_argument("artifact", type=Path)
+    failure.add_argument("--inspected-at", required=True)
     args = parser.parse_args(argv)
     if args.command == "inspect-contract":
         path, value = inspect_contract(
             args.artifact, inspected_at=args.inspected_at
         )
-    else:
+    elif args.command == "inspect-collection":
         path, value = inspect_collection(
+            args.artifact, inspected_at=args.inspected_at
+        )
+    else:
+        path, value = inspect_permission_failure(
             args.artifact, inspected_at=args.inspected_at
         )
     print(

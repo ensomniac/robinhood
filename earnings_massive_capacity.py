@@ -427,6 +427,79 @@ def collect(
     return path, value
 
 
+def record_permission_failure(
+    contract_path: Path,
+    inspection_path: Path,
+    *,
+    failed_at: str,
+    status_code: int = 403,
+    root: Path = DEFAULT_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    """Persist the single frozen request's permanent permission failure."""
+
+    strategy_discovery.require_committed(Path(__file__).resolve())
+    strategy_discovery.require_committed(contract_path)
+    strategy_discovery.require_committed(inspection_path)
+    contract = _read(contract_path)
+    inspection = _read(inspection_path)
+    if not (
+        contract.get("contract_sha256")
+        == self_hash(contract, "contract_sha256")
+        and inspection.get("inspection_sha256")
+        == self_hash(inspection, "inspection_sha256")
+        and inspection.get("contract_sha256") == contract["contract_sha256"]
+        and inspection.get("state") == "METADATA_CONTRACT_INSPECTED_READY"
+        and status_code in (401, 403)
+    ):
+        raise EarningsMassiveCapacityError(
+            "permission failure lineage or status is invalid"
+        )
+    value: dict[str, Any] = {
+        "schema_version": 1,
+        "artifact_kind": "earnings-massive-metadata-collection-failure",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "successor_id": SUCCESSOR_ID,
+        "state": "METADATA_SOURCE_UNAVAILABLE",
+        "failed_at": _timestamp(failed_at, "failed_at"),
+        "contract_path": _repo_path(contract_path),
+        "contract_file_sha256": sha256_file(contract_path),
+        "contract_sha256": contract["contract_sha256"],
+        "inspection_path": _repo_path(inspection_path),
+        "inspection_file_sha256": sha256_file(inspection_path),
+        "inspection_sha256": inspection["inspection_sha256"],
+        "attempted_request_ordinal": 0,
+        "attempted_request_sha256": contract["requests"][0][
+            "request_sha256"
+        ],
+        "provider_http_status": status_code,
+        "failure_category": "PERMANENT_PERMISSION",
+        "provider_telemetry": {
+            "request_count": 1,
+            "requests_succeeded": 0,
+            "failures": 1,
+            "retries": 0,
+            "substitutions": 0,
+            "cache_hits": 0,
+        },
+        "rows_retained": 0,
+        "private_artifact_created": False,
+        "market_prices_accessed": False,
+        "forward_returns_accessed": False,
+        "strategy_metrics_computed": 0,
+        "confirmation_outcomes_accessed": False,
+        "broker_actions": 0,
+    }
+    value["failure_sha256"] = self_hash(value, "failure_sha256")
+    path = (
+        root
+        / "metadata-collection-failure"
+        / f"failure-{value['failure_sha256']}.json"
+    )
+    _write(path, value)
+    return path, value
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -436,18 +509,32 @@ def main(argv: Sequence[str] | None = None) -> int:
     collect_parser.add_argument("contract", type=Path)
     collect_parser.add_argument("inspection", type=Path)
     collect_parser.add_argument("--collected-at", required=True)
+    failure = subparsers.add_parser("record-permission-failure")
+    failure.add_argument("contract", type=Path)
+    failure.add_argument("inspection", type=Path)
+    failure.add_argument("--failed-at", required=True)
+    failure.add_argument("--status-code", type=int, default=403)
     args = parser.parse_args(argv)
     if args.command == "freeze-contract":
         path, value = freeze_contract(created_at=args.created_at)
         digest = value["contract_sha256"]
         state = "METADATA_CONTRACT_FROZEN"
-    else:
+    elif args.command == "collect":
         path, value = collect(
             args.contract,
             args.inspection,
             collected_at=args.collected_at,
         )
         digest = value["collection_sha256"]
+        state = value["state"]
+    else:
+        path, value = record_permission_failure(
+            args.contract,
+            args.inspection,
+            failed_at=args.failed_at,
+            status_code=args.status_code,
+        )
+        digest = value["failure_sha256"]
         state = value["state"]
     print(
         json.dumps(

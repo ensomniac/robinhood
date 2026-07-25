@@ -143,3 +143,37 @@ def test_unexpected_pagination_fails_closed(monkeypatch):
         assert "exceeded the frozen row limit" in str(exc)
     else:
         raise AssertionError("unexpected pagination must fail closed")
+
+
+def test_permission_failure_is_hash_bound_and_inspectable(
+    tmp_path, monkeypatch
+):
+    _commit_bypass(monkeypatch)
+    monkeypatch.setattr(capacity, "_repo_path", lambda path: str(path))
+    contract_path, _ = capacity.freeze_contract(
+        created_at="2026-07-25T01:00:00Z",
+        root=tmp_path,
+    )
+    contract_inspection_path, _ = inspection.inspect_contract(
+        contract_path,
+        inspected_at="2026-07-25T01:01:00Z",
+        root=tmp_path,
+    )
+    failure_path, failure = capacity.record_permission_failure(
+        contract_path,
+        contract_inspection_path,
+        failed_at="2026-07-25T01:02:00Z",
+        root=tmp_path,
+    )
+    result_path, result = inspection.inspect_permission_failure(
+        failure_path,
+        inspected_at="2026-07-25T01:03:00Z",
+        root=tmp_path,
+    )
+
+    assert failure["state"] == "METADATA_SOURCE_UNAVAILABLE"
+    assert failure["provider_telemetry"]["request_count"] == 1
+    assert failure["rows_retained"] == 0
+    assert result["state"] == "METADATA_SOURCE_UNAVAILABLE_INSPECTED"
+    assert result["valid"] is True
+    assert json.loads(result_path.read_text())["provider_requests"] == 0
