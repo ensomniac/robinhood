@@ -251,7 +251,10 @@ calendar argument and failed before writing an artifact or accessing a
 provider. Plan `e34f7233...d0bd2b6` then froze the correct contract-bound
 calendar, one Massive split range, and nine raw Yahoo symbol ranges with zero
 requests or substitutions. Commit it before independent request-graph
-inspection.
+inspection. Inspection `46235880...4a0c80` independently rebuilt all ten
+tasks, providers, calendar, search and scope hashes, and the zero-outcome
+boundary with no provider or broker access. Commit it, then collect only this
+exact development graph.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
