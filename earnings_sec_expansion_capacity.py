@@ -145,13 +145,22 @@ def rolling_authority() -> dict[str, Any]:
     if not (
         authorization.get("authorization_sha256")
         == self_hash(authorization, "authorization_sha256")
-        and authorization.get("state") == "ROLLING_DISCOVERY_AUTHORIZED"
-        and authorization.get("valid") is True
+        and authorization.get("activation_policy")
+        == "ROLLING_TERMINAL_REPLACEMENT"
+        and int(
+            authorization.get(
+                "maximum_concurrent_active_mechanism_families", 0
+            )
+        )
+        == 3
         and status.get("authorization_sha256")
         == authorization["authorization_sha256"]
         and status.get("state") == "ROLLING_DISCOVERY_AUTHORIZED"
         and status.get("valid") is True
-        and int(status.get("maximum_concurrent_active_families", 0)) == 3
+        and int(status.get("active_family_count", -1))
+        + int(status.get("available_slot_count", -1))
+        == 3
+        and status.get("selection_accounting_complete") is True
     ):
         raise EarningsSecExpansionCapacityError(
             "rolling discovery authority is not valid"

@@ -79,6 +79,16 @@ def test_request_graph_is_deterministic_and_hash_bound():
         ).hexdigest()
 
 
+def test_real_rolling_authority_schema_is_accepted(monkeypatch):
+    _commit_bypass(monkeypatch)
+
+    authority = source.rolling_authority()
+
+    assert authority["activation_policy"] == "ROLLING_TERMINAL_REPLACEMENT"
+    assert authority["calendar_wait_required"] is False
+    assert authority["new_mechanism_family_slot_consumed"] is False
+
+
 def test_independent_inspection_rebuilds_exact_zero_outcome_contract(
     monkeypatch, tmp_path: Path
 ):
