@@ -122,8 +122,9 @@ in zero provider requests. Search `dd5e80f1...bfa5e` now binds all 32 trials,
 deterministic selection, costs, partitions, and implementation hashes. Commit it
 before freezing collection. Plan `58ae32d7...b8769` freezes one Massive split
 range plus nine raw Yahoo symbol ranges through 2012-10-15, with no retry or
-substitution. Commit it before independent inspection; provider, confirmation,
-and broker access remain forbidden.
+substitution. Inspection `14d9d51a...8c460` independently rebuilt all ten
+tasks and zero-outcome bindings in zero requests. Commit it before collection;
+confirmation and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
