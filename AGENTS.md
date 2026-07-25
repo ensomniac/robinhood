@@ -415,6 +415,10 @@ Generic preflight `8929330c...ec8c57` independently reloaded the contract and
 awarded `CAPACITY_READY` from 1,019 formal point-in-time events with zero
 dataset loads or provider requests. Commit and push it before freezing the
 generic development search.
+Search `c2cdc08d...2574e1` now freezes the exact v14 contract, preflight, 32
+current trials, 32 prior paths, all 608 requests, and zero-outcome state.
+Commit and push it, then run the dedicated v14 search inspector before the
+first remaining Yahoo development request.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
