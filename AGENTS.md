@@ -56,8 +56,13 @@ resolve stop first, and enforce the five-times-cost floor. Contract
 `f44a7eef...e6521` and capacity `f18e1e2e...9f105` now freeze all 32 trials,
 200 warmup sessions, 1,000 development sessions, five embargo sessions, and
 500 confirmation sessions through 2014-10-28. The freeze consumed one released
-rolling slot with zero provider, price, confirmation, or broker access. Commit
-and push both artifacts before generic preflight.
+rolling slot. Search `792fee00...c1476` and ten-task plan
+`3210e8e2...194d9` are frozen and independently inspected. Dataset
+`b18703e1...12a4b` was collected in ten requests and inspection
+`70118bd1...e91c1` rebuilt all 9,000 development instrument-sessions; runtime
+manifest `a8f75cc4...c23a0` is `DATASET_INSPECTED_READY`. Confirmation and
+broker access remain forbidden. Commit this exact predecessor before
+evaluation.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
