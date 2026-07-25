@@ -7,6 +7,7 @@ frozen plugin contract after an inspected preflight opens that exact scope.
 from __future__ import annotations
 
 import argparse
+import copy
 import gzip
 import hashlib
 import importlib
@@ -554,6 +555,184 @@ def _assert_implementation_current(
             )
         if enforce_commit:
             require_committed(path)
+
+
+def _contract_without_implementation_hashes(
+    value: Mapping[str, Any],
+) -> dict[str, Any]:
+    contract = copy.deepcopy(dict(value))
+    contract.pop("implementation_hashes", None)
+    return contract
+
+
+def _write_family_contract(
+    contract: Mapping[str, Any],
+    directory: Path,
+) -> Path:
+    content = dict(contract)
+    digest = _hash(content)
+    path = directory / f"contract-{digest}.json"
+    rendered = json.dumps(content, indent=2, sort_keys=True) + "\n"
+    directory.mkdir(parents=True, exist_ok=True)
+    if path.exists() and path.read_text(encoding="utf-8") != rendered:
+        raise StrategyDiscoveryError(
+            "content-addressed family contract has other content"
+        )
+    if not path.exists():
+        temporary = path.with_suffix(".json.tmp")
+        temporary.write_text(rendered, encoding="utf-8")
+        temporary.replace(path)
+    return path
+
+
+def refresh_implementation_contract(
+    search_path: Path,
+    *,
+    root: Path = DEFAULT_ROOT,
+    enforce_commit: bool = True,
+) -> tuple[Path, dict[str, Any]]:
+    """Rebind an outcome-free frozen search to current committed code.
+
+    The original contract and search remain immutable.  This transition is
+    deliberately unavailable after any development evaluation has been
+    created for the source search, and it permits no semantic contract change.
+    """
+
+    if enforce_commit:
+        require_committed(search_path)
+    search = load_artifact(
+        search_path,
+        expected_kind="frozen-development-search",
+    )
+    if search.get("state") != "SEARCH_FROZEN":
+        raise StrategyDiscoveryError(
+            "implementation refresh requires a frozen search"
+        )
+    family_id = str(search["family_contract"]["family_id"])
+    development_root = root / family_id / "development"
+    for result_path in sorted(development_root.glob("*.json")):
+        result = load_artifact(
+            result_path,
+            expected_kind="development-search-result",
+        )
+        if result.get("search_sha256") == search["artifact_sha256"]:
+            raise StrategyDiscoveryError(
+                "implementation refresh is forbidden after development evaluation"
+            )
+
+    preflight_path = PROJECT_ROOT / str(search["preflight_path"])
+    if enforce_commit:
+        require_committed(preflight_path)
+    preflight = load_artifact(
+        preflight_path,
+        expected_kind="discovery-preflight-inspection",
+    )
+    if not (
+        preflight.get("state") == "CAPACITY_READY"
+        and preflight.get("outcomes_accessed") is False
+        and preflight.get("family_contract_sha256")
+        == _file_hash(
+            PROJECT_ROOT / str(preflight["family_contract_path"])
+        )
+    ):
+        raise StrategyDiscoveryError(
+            "implementation refresh lacks an outcome-blind ready preflight"
+        )
+    original_contract_path = (
+        PROJECT_ROOT / str(preflight["family_contract_path"])
+    )
+    if enforce_commit:
+        require_committed(original_contract_path)
+    original_contract = _read_object(original_contract_path)
+    source_contract = dict(search["family_contract"])
+    normalized_original_contract = _validate_family_contract(
+        _contract_without_implementation_hashes(original_contract)
+    )
+    if (
+        _contract_without_implementation_hashes(normalized_original_contract)
+        != _contract_without_implementation_hashes(source_contract)
+        or (
+            "implementation_hashes" in original_contract
+            and original_contract != source_contract
+        )
+    ):
+        raise StrategyDiscoveryError(
+            "source search and family contract binding drifted"
+        )
+
+    refreshed_contract = _validate_family_contract(
+        _contract_without_implementation_hashes(source_contract)
+    )
+    original_semantics = _contract_without_implementation_hashes(
+        source_contract
+    )
+    refreshed_semantics = _contract_without_implementation_hashes(
+        refreshed_contract
+    )
+    if original_semantics != refreshed_semantics:
+        raise StrategyDiscoveryError(
+            "implementation refresh changed frozen strategy semantics"
+        )
+    _assert_implementation_current(
+        refreshed_contract,
+        enforce_commit=enforce_commit,
+    )
+    original_hashes = dict(source_contract["implementation_hashes"])
+    refreshed_hashes = dict(refreshed_contract["implementation_hashes"])
+    changed_files = sorted(
+        path
+        for path in original_hashes
+        if original_hashes[path] != refreshed_hashes.get(path)
+    )
+    if not changed_files:
+        raise StrategyDiscoveryError(
+            "implementation refresh is unnecessary; frozen code is current"
+        )
+    if set(original_hashes) != set(refreshed_hashes):
+        raise StrategyDiscoveryError(
+            "implementation refresh changed the frozen implementation file set"
+        )
+
+    refreshed_contract_path = _write_family_contract(
+        refreshed_contract,
+        original_contract_path.parent,
+    )
+    payload = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_kind": "implementation-refresh-inspection",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": family_id,
+        "state": "IMPLEMENTATION_REFRESH_INSPECTED",
+        "source_search_path": _relative(search_path),
+        "source_search_sha256": search["artifact_sha256"],
+        "source_contract_path": _relative(original_contract_path),
+        "source_contract_sha256": _file_hash(original_contract_path),
+        "refreshed_contract_path": _relative(refreshed_contract_path),
+        "refreshed_contract_sha256": _file_hash(refreshed_contract_path),
+        "semantic_contract_sha256": _hash(original_semantics),
+        "original_implementation_hashes": original_hashes,
+        "refreshed_implementation_hashes": refreshed_hashes,
+        "changed_implementation_files": changed_files,
+        "only_implementation_hashes_changed": True,
+        "source_development_evaluations": 0,
+        "strategy_outcomes_accessed": False,
+        "confirmation_access_permitted": False,
+        "broker_actions_permitted": False,
+        "inspection": {
+            "source_search_hash_valid": True,
+            "source_contract_binding_rebuilt": True,
+            "outcome_blind_preflight_rebuilt": True,
+            "development_result_absence_rebuilt": True,
+            "semantic_contract_equality_rebuilt": True,
+            "current_implementation_hashes_rebuilt": True,
+            "valid": True,
+        },
+    }
+    return _write_artifact(
+        payload,
+        root / family_id / "implementation-refresh",
+        f"{family_id}-implementation-refresh",
+    )
 
 
 def _development_evidence_dates(contract: Mapping[str, Any]) -> list[str]:
@@ -2178,6 +2357,10 @@ def _parser() -> argparse.ArgumentParser:
     subparsers.add_parser("status")
     for command, help_text in (
         ("preflight", "run and inspect outcome-blind capacity"),
+        (
+            "refresh-implementation",
+            "inspect and rebind an outcome-free search to current code",
+        ),
         ("freeze-search", "freeze the complete development search"),
         ("evaluate-development", "evaluate every frozen development trial"),
         ("inspect-development", "rebuild selection and freeze power targets"),
@@ -2202,6 +2385,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             function = {
                 "preflight": run_preflight,
+                "refresh-implementation": refresh_implementation_contract,
                 "freeze-search": freeze_search,
                 "evaluate-development": evaluate_development,
                 "inspect-development": inspect_development,
@@ -2222,6 +2406,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "state": artifact["state"],
                 "broker_actions_permitted": False,
             }
+            if args.command == "refresh-implementation":
+                result["refreshed_contract"] = artifact[
+                    "refreshed_contract_path"
+                ]
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (StrategyDiscoveryError, LearningExperimentError, OSError, ValueError) as exc:

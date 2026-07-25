@@ -35,6 +35,24 @@ def test_v14_contract_freezes_source_policy_and_selection_correction(
     monkeypatch.setattr(
         search.market, "_repo_path", lambda path: str(path)
     )
+    source_records = [
+        record
+        for record in search.outcome_exposure.read_index()
+        if record["exposure_id"].startswith(
+            "source-failure-earnings-sec-reaction-v13-"
+        )
+    ]
+    assert len(source_records) == 1
+    monkeypatch.setattr(
+        search.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: source_records,
+    )
+    monkeypatch.setattr(
+        search.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: {"index_sha256": "a" * 64},
+    )
     selected = search.selection()
     capacity_path, _manifest = freeze_dataset_contract(
         {

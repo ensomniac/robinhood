@@ -448,6 +448,17 @@ all 32 trials. Cumulative PBO is 0.60, maximum DSR probability is 0.252, and no
 trial passes rolling-fold stability or Holm. V14 is terminal on its evaluated
 corpus: do not repair it, freeze a winner, or access its still-untouched
 confirmation reserve. Continue immediately with a disjoint mechanism family.
+The next committed preregistered path is
+`liquid-etf-market-residual-reversal-replication-v2`, whose 48-trial search,
+development collection, and dataset inspection are already complete while its
+246-session confirmation reserve remains sealed. Its first generic evaluation
+attempt accessed no outcomes because the controller correctly detected
+infrastructure implementation drift after later loader repairs. Use
+`strategy_discovery.py refresh-implementation` to create a new contract only
+after proving the source search has no development result, the prior preflight
+was outcome-blind, the implementation file set is identical, and every
+non-hash contract field is unchanged. Commit that inspection and refreshed
+contract, rerun preflight and search freeze, then evaluate all 48 trials.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
@@ -1393,7 +1404,11 @@ fixed-ETF rank from complete observable history, accepts an intraday signal only
 on its first completed reclaim bar, derives stop/target/hold paths from the exact
 parameters, and rejects stale-session or incomplete-denominator inputs. The
 generic discovery controller reopens the committed search, dataset, result, and
-inspection chain and rechecks its hashes before an exact winner can be frozen. The
+inspection chain and rechecks its hashes before an exact winner can be frozen.
+The `refresh-implementation` transition preserves a drifted search and contract
+as immutable history and can only rebind an outcome-free search to current
+committed code; it fails closed after any development result or semantic or
+implementation-file-set change. The
 same controller reopens the winner, confirmation dataset, development inspection,
 and confirmation result again before confirmation inspection or historical
 ledger admission. The 48-trial equity runtime shares only

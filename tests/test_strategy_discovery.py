@@ -940,6 +940,128 @@ def test_evaluations_reject_code_drift_from_frozen_implementation(monkeypatch):
             )
 
 
+def test_outcome_free_search_can_refresh_only_implementation_hashes(monkeypatch):
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        contract_path = _write_contract(
+            work,
+            family_contract(
+                _dataset(work),
+                family_id="implementation-refresh",
+            ),
+        )
+        discovery.run_preflight(
+            contract_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        search_path, search = discovery.freeze_search(
+            contract_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        implementation = (
+            discovery.PROJECT_ROOT / "tests/synthetic_discovery_plugin.py"
+        ).resolve()
+        original_file_hash = discovery._file_hash
+
+        def repaired_hash(path):
+            if path.resolve() == implementation:
+                return "0" * 64
+            return original_file_hash(path)
+
+        monkeypatch.setattr(discovery, "_file_hash", repaired_hash)
+        _inspection_path, inspection = (
+            discovery.refresh_implementation_contract(
+                search_path,
+                root=artifact_root,
+                enforce_commit=False,
+            )
+        )
+
+        refreshed_path = (
+            discovery.PROJECT_ROOT
+            / inspection["refreshed_contract_path"]
+        )
+        refreshed = json.loads(refreshed_path.read_text(encoding="utf-8"))
+        assert inspection["state"] == "IMPLEMENTATION_REFRESH_INSPECTED"
+        assert inspection["only_implementation_hashes_changed"] is True
+        assert inspection["strategy_outcomes_accessed"] is False
+        assert inspection["changed_implementation_files"] == [
+            "tests/synthetic_discovery_plugin.py"
+        ]
+        assert discovery._contract_without_implementation_hashes(
+            refreshed
+        ) == discovery._contract_without_implementation_hashes(
+            search["family_contract"]
+        )
+        assert refreshed["implementation_hashes"][
+            "tests/synthetic_discovery_plugin.py"
+        ] == "0" * 64
+
+        discovery.run_preflight(
+            refreshed_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        _refreshed_search_path, refreshed_search = discovery.freeze_search(
+            refreshed_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        assert (
+            refreshed_search["family_contract"]["implementation_hashes"]
+            ["tests/synthetic_discovery_plugin.py"]
+            == "0" * 64
+        )
+
+
+def test_implementation_refresh_rejects_evaluated_source_search():
+    with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
+        work = Path(directory)
+        artifact_root = work / "artifacts"
+        contract_path = _write_contract(
+            work,
+            family_contract(
+                _dataset(work),
+                family_id="evaluated-implementation-refresh",
+            ),
+        )
+        discovery.run_preflight(
+            contract_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        search_path, search = discovery.freeze_search(
+            contract_path,
+            root=artifact_root,
+            enforce_commit=False,
+        )
+        discovery._write_artifact(
+            {
+                "schema_version": 1,
+                "artifact_kind": "development-search-result",
+                "state": "DEVELOPMENT_EVALUATED",
+                "search_sha256": search["artifact_sha256"],
+            },
+            artifact_root
+            / "evaluated-implementation-refresh"
+            / "development",
+            "development",
+        )
+
+        with pytest.raises(
+            discovery.StrategyDiscoveryError,
+            match="forbidden after development evaluation",
+        ):
+            discovery.refresh_implementation_contract(
+                search_path,
+                root=artifact_root,
+                enforce_commit=False,
+            )
+
+
 def test_insufficient_confirmation_inventory_freezes_without_outcome_access():
     with tempfile.TemporaryDirectory(dir=discovery.PROJECT_ROOT) as directory:
         work = Path(directory)
