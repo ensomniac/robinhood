@@ -131,8 +131,11 @@ rebuilt every task, hash, row, scope, and runtime check and froze 9,000
 instrument-sessions in manifest `f06c16d4...35b0f`. Result
 `829632d0...1864d` evaluated all 32 trials from one dataset load and zero
 requests. Every 20-bps path was negative; the least-negative path had -0.00493
-log growth, PF 0.984, and 18.01R drawdown. Commit it before independent
-inspection; confirmation and broker access remain forbidden.
+log growth, PF 0.984, and 18.01R drawdown. Inspection
+`9fa999d4...86acc` confirms `REJECTED`: PBO passed, but no trial passed growth,
+PF, drawdown, rolling folds, DSR, Holm, or neighbor stability. Preserve this
+exact corpus without repair; its 495-decision confirmation reserve remains
+untouched.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
