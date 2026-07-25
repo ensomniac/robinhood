@@ -168,7 +168,11 @@ run the generic outcome-blind preflight before search or collection. Preflight
 point-in-time boundary, zero-outcome state, and 244-decision capacity with zero
 provider requests. Search `7fe9543a...78bcaf` now freezes the complete
 one-trial rule, costs, partitions, implementation, deterministic selection
-logic, and falsifiers. Commit it before freezing any provider request graph.
+logic, and falsifiers. Development plan `b3b177da...5b8c71` now freezes one
+Massive split range plus eight Alpaca SIP raw daily symbol ranges from
+2018-03-13 through 2019-12-31, covering exactly 200 feature-only warmup
+sessions and 249 development sessions. It records zero requests and no
+substitutions. Commit and independently inspect it before collection.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
