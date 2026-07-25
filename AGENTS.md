@@ -466,6 +466,10 @@ the semantic contract digest remains `1b4cf06f...33eae`, the implementation
 file set is identical, and confirmation access remains forbidden. Commit and
 push the inspection and refreshed contract, then run generic preflight on that
 exact new contract.
+Refreshed preflight `0b8420fd...4c38e` independently rebuilt 741 formal
+decisions and earned `CAPACITY_READY` with zero dataset loads, provider
+requests, failures, outcomes, confirmation access, or broker actions. Commit
+and push it, then freeze the refreshed development search.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
