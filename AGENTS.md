@@ -470,6 +470,11 @@ Refreshed preflight `0b8420fd...4c38e` independently rebuilt 741 formal
 decisions and earned `CAPACITY_READY` with zero dataset loads, provider
 requests, failures, outcomes, confirmation access, or broker actions. Commit
 and push it, then freeze the refreshed development search.
+Search `cdd67408...fe927c` now binds all 48 original trials, 746 development
+dates, 251 reserved confirmation dates, preflight `0b8420fd...4c38e`, and the
+current committed implementation hashes. It accessed no outcomes and permits
+no confirmation or broker action. Commit and push it, then evaluate all 48
+trials from the already inspected local dataset with zero provider requests.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
