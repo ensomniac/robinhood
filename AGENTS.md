@@ -154,8 +154,11 @@ an existing-family replication and consumes no new-mechanism slot. Contract
 or outcomes. Generic preflight inspection `f559d42f...5230ea` independently
 rebuilt the family identity, 997-decision capacity, point-in-time boundary, and
 zero-outcome state in zero provider requests. Commit it, then freeze the exact
-development search; access no prices until the search and collection plan have
-each been independently inspected and committed.
+development search. Search `964e1c38...74240d` now binds the complete 32-trial
+grid, deterministic selection rule, rolling-origin partitions, costs, scopes,
+and committed implementation hashes. Commit it, then freeze and independently
+inspect the exact development collection plan; access no prices until both are
+committed.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
