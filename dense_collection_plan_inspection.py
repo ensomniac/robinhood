@@ -19,6 +19,10 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 ARTIFACT_KIND = "dense-data-collection-plan-inspection"
 READY_STATE = "COLLECTION_PLAN_INSPECTED_READY"
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/discovery"
+SUPPORTED_FAMILIES = {
+    runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
+    runtime.STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
+}
 
 
 class DenseCollectionPlanInspectionError(ValueError):
@@ -155,9 +159,7 @@ def inspect_plan(
     plan = dense_data_collection._validate_plan(
         plan_path, enforce_commit=enforce_commit
     )
-    if plan.get("family_id") != (
-        runtime.CROSS_STYLE_BREADTH_CONTINUATION_FAMILY
-    ):
+    if plan.get("family_id") not in SUPPORTED_FAMILIES:
         raise DenseCollectionPlanInspectionError(
             "unsupported plan family for this independent inspector"
         )

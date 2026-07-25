@@ -169,6 +169,9 @@ CROSS_STYLE_BREADTH_SYMBOLS = (
     "VUG",
 )
 CROSS_STYLE_BREADTH_TARGET_SYMBOL = "SCHG"
+STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY = (
+    "style-etf-20-day-breakout-continuation"
+)
 HIGH_BETA_ETF_OVERSOLD_FAMILY = "high-beta-etf-oversold-reversal"
 BROAD_ASSET_ETF_OVERSOLD_FAMILY = "broad-asset-etf-oversold-reversal"
 ETF_OVERSOLD_FAMILIES = {
@@ -205,6 +208,7 @@ SUPPORTED_FAMILIES = {
     FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
     BREADTH_CAPITULATION_REBOUND_FAMILY,
     CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
+    STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
     *ETF_OVERSOLD_FAMILIES,
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
@@ -1781,6 +1785,164 @@ def _cross_style_breadth_continuation_candidates(
     return candidates
 
 
+def _style_etf_breakout_continuation_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    """Evaluate one fixed daily cross-style closing-breakout rule."""
+
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    normalized_parameters = {
+        "breadth_sma": int(parameters["breadth_sma"]),
+        "minimum_breadth_count": int(parameters["minimum_breadth_count"]),
+        "breakout_lookback_sessions": int(
+            parameters["breakout_lookback_sessions"]
+        ),
+        "trend_sma": int(parameters["trend_sma"]),
+        "stop_atr14": float(parameters["stop_atr14"]),
+        "maximum_hold_sessions": int(parameters["maximum_hold_sessions"]),
+    }
+    expected_parameters = {
+        "breadth_sma": 100,
+        "minimum_breadth_count": 6,
+        "breakout_lookback_sessions": 20,
+        "trend_sma": 200,
+        "stop_atr14": 1.5,
+        "maximum_hold_sessions": 5,
+    }
+    if normalized_parameters != expected_parameters:
+        raise DenseStrategyRuntimeError(
+            "style ETF breakout rules drifted from the frozen exact rule"
+        )
+    if set(daily) != set(CROSS_STYLE_BREADTH_SYMBOLS):
+        raise DenseStrategyRuntimeError(
+            "style ETF breakout data does not match its frozen basket"
+        )
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    candidates: list[dict[str, Any]] = []
+    hold = expected_parameters["maximum_hold_sessions"]
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        breadth_count = 0
+        complete = True
+        for symbol in CROSS_STYLE_BREADTH_SYMBOLS:
+            bars = daily[symbol]
+            symbol_index = indices[symbol].get(decision_date)
+            breadth = (
+                _sma(bars, symbol_index, 100)
+                if symbol_index is not None
+                else None
+            )
+            if breadth is None:
+                complete = False
+                break
+            if float(bars[symbol_index]["close"]) > breadth:
+                breadth_count += 1
+        if not complete or breadth_count < 6:
+            continue
+        ranked: list[tuple[float, str, float, float]] = []
+        for symbol in CROSS_STYLE_BREADTH_SYMBOLS:
+            bars = daily[symbol]
+            symbol_index = indices[symbol].get(decision_date)
+            if symbol_index is None or symbol_index < 200:
+                continue
+            trend = _sma(bars, symbol_index, 200)
+            atr14 = _atr(bars, symbol_index)
+            decision_close = float(bars[symbol_index]["close"])
+            prior_high = max(
+                float(item["close"])
+                for item in bars[symbol_index - 20 : symbol_index]
+            )
+            trailing_return = (
+                decision_close
+                / float(bars[symbol_index - 20]["close"])
+                - 1
+            )
+            if (
+                trend is None
+                or atr14 is None
+                or decision_close <= trend
+                or decision_close <= prior_high
+                or not _cost_floor(atr14 / decision_close)
+            ):
+                continue
+            ranked.append(
+                (trailing_return, symbol, atr14, decision_close)
+            )
+        if not ranked:
+            continue
+        trailing_return, symbol, atr14, decision_close = sorted(
+            ranked,
+            key=lambda item: (-item[0], item[1]),
+        )[0]
+        if calendar_index + 1 + hold > len(calendar):
+            continue
+        entry_date = calendar[calendar_index + 1]
+        bars = daily[symbol]
+        entry_index = indices[symbol].get(entry_date)
+        signal_id = (
+            f"{entry_date}-{STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY}-"
+            f"{symbol}"
+        )
+        if entry_index is None:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_open",
+                }
+            )
+            continue
+        observed_dates = {
+            str(item["date"])
+            for item in bars[entry_index : entry_index + hold]
+        }
+        expected_dates = set(
+            calendar[calendar_index + 1 : calendar_index + 1 + hold]
+        )
+        if observed_dates != expected_dates:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "incomplete_holding_bars",
+                }
+            )
+            continue
+        candidate = _daily_candidate(
+            family_id=STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
+            symbol=symbol,
+            decision_date=decision_date,
+            entry_date=entry_date,
+            bars=bars,
+            entry_index=entry_index,
+            stop_atr=1.5,
+            atr14=atr14,
+            hold_sessions=hold,
+            rank=1,
+            score=trailing_return,
+        )
+        candidate["breadth_count"] = breadth_count
+        candidate["trailing_return_fraction"] = trailing_return
+        candidate["breakout_reference_price"] = max(
+            float(item["close"])
+            for item in bars[indices[symbol][decision_date] - 20 : indices[symbol][decision_date]]
+        )
+        candidate["expected_gross_move_fraction"] = atr14 / decision_close
+        candidates.append(candidate)
+    return candidates
+
+
 def _high_beta_etf_oversold_candidates(
     dataset: Mapping[str, Any],
     parameters: Mapping[str, Any],
@@ -3221,6 +3383,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
             BREADTH_CAPITULATION_REBOUND_FAMILY,
             CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
+            STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
         }:
             symbols = dataset.get("symbols")
@@ -4766,6 +4929,10 @@ def build_candidates(
         return _cross_style_breadth_continuation_candidates(
             dataset, parameters
         )
+    if family_id == STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY:
+        return _style_etf_breakout_continuation_candidates(
+            dataset, parameters
+        )
     if family_id in ETF_OVERSOLD_FAMILIES:
         return _high_beta_etf_oversold_candidates(
             dataset, parameters, family_id=family_id
@@ -5071,6 +5238,7 @@ def _production_daily_signal(
         FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
         BREADTH_CAPITULATION_REBOUND_FAMILY,
         CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
+        STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
     }:
         frozen_symbols = frozen_universe.get("symbols")
@@ -5170,6 +5338,110 @@ def _production_daily_signal(
                 "rank": 1,
                 "score": breadth_count + (decision_close / trend - 1),
                 "breadth_count": breadth_count,
+                "expected_gross_move_fraction": atr14 / decision_close,
+                "atr": atr14,
+                "stop_atr_multiple": 1.5,
+                "holding_trading_days": 5,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_maximum_hold_close",
+                    "maximum_hold_sessions": 5,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
+        if family_id == STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY:
+            expected_parameters = {
+                "breadth_sma": 100,
+                "minimum_breadth_count": 6,
+                "breakout_lookback_sessions": 20,
+                "trend_sma": 200,
+                "stop_atr14": 1.5,
+                "maximum_hold_sessions": 5,
+            }
+            normalized_parameters = {
+                "breadth_sma": int(parameters["breadth_sma"]),
+                "minimum_breadth_count": int(
+                    parameters["minimum_breadth_count"]
+                ),
+                "breakout_lookback_sessions": int(
+                    parameters["breakout_lookback_sessions"]
+                ),
+                "trend_sma": int(parameters["trend_sma"]),
+                "stop_atr14": float(parameters["stop_atr14"]),
+                "maximum_hold_sessions": int(
+                    parameters["maximum_hold_sessions"]
+                ),
+            }
+            if (
+                frozen_symbols != list(CROSS_STYLE_BREADTH_SYMBOLS)
+                or normalized_parameters != expected_parameters
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production style ETF breakout rules drifted"
+                )
+            breadth_count = 0
+            ranked: list[tuple[float, str, float, float, float]] = []
+            for symbol in CROSS_STYLE_BREADTH_SYMBOLS:
+                bars = daily[symbol]
+                symbol_index = indices[symbol].get(decision_date)
+                if symbol_index is None or symbol_index < 200:
+                    raise DenseStrategyRuntimeError(
+                        "production style ETF breakout history is incomplete"
+                    )
+                breadth = _sma(bars, symbol_index, 100)
+                if (
+                    breadth is not None
+                    and float(bars[symbol_index]["close"]) > breadth
+                ):
+                    breadth_count += 1
+                trend = _sma(bars, symbol_index, 200)
+                atr14 = _atr(bars, symbol_index)
+                decision_close = float(bars[symbol_index]["close"])
+                prior_high = max(
+                    float(item["close"])
+                    for item in bars[symbol_index - 20 : symbol_index]
+                )
+                trailing_return = (
+                    decision_close
+                    / float(bars[symbol_index - 20]["close"])
+                    - 1
+                )
+                if (
+                    trend is not None
+                    and atr14 is not None
+                    and decision_close > trend
+                    and decision_close > prior_high
+                    and _cost_floor(atr14 / decision_close)
+                ):
+                    ranked.append(
+                        (
+                            trailing_return,
+                            symbol,
+                            atr14,
+                            decision_close,
+                            prior_high,
+                        )
+                    )
+            if breadth_count < 6 or not ranked:
+                raise DenseStrategyRuntimeError(
+                    "no exact production style ETF breakout signal"
+                )
+            (
+                trailing_return,
+                symbol,
+                atr14,
+                decision_close,
+                prior_high,
+            ) = sorted(ranked, key=lambda item: (-item[0], item[1]))[0]
+            return {
+                "symbol": symbol,
+                "rank": 1,
+                "score": trailing_return,
+                "breadth_count": breadth_count,
+                "trailing_return_fraction": trailing_return,
+                "breakout_reference_price": prior_high,
                 "expected_gross_move_fraction": atr14 / decision_close,
                 "atr": atr14,
                 "stop_atr_multiple": 1.5,
@@ -6888,6 +7160,7 @@ def evaluate_production_signal(
         FLIGHT_TO_SAFETY_REPLICATION_V2_FAMILY,
         BREADTH_CAPITULATION_REBOUND_FAMILY,
         CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
+        STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
     }:
         return _production_daily_signal(

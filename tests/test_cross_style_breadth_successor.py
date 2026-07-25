@@ -8,6 +8,23 @@ import cross_style_breadth_successor as successor
 def test_source_capacity_successor_preserves_rule_and_declares_contamination(
     tmp_path, monkeypatch
 ):
+    exposure_audit = successor.outcome_exposure.audit()
+    predecessor_records = [
+        record
+        for record in successor.outcome_exposure.read_index()
+        if record["exposure_id"] == successor.PREDECESSOR_EXPOSURE_ID
+    ]
+    assert len(predecessor_records) == 1
+    monkeypatch.setattr(
+        successor.outcome_exposure,
+        "read_index",
+        lambda *_args, **_kwargs: predecessor_records,
+    )
+    monkeypatch.setattr(
+        successor.outcome_exposure,
+        "audit",
+        lambda *_args, **_kwargs: exposure_audit,
+    )
     original_repo_path = successor._repo_path
 
     def repo_path(path):

@@ -146,9 +146,19 @@ stability, DSR zero, Holm false, and PBO one. Independent inspection
 power logic and confirms `REJECTED`: no trial survived. V2 is terminal without
 confirmation or repair; preserve its indexed 4,384-pair development exposure
 and continue the next admissible family.
-Confirmation remains forbidden unless the exact inspected development result
-freezes a winner and the dynamic power target fits the reserved 102 weekly
-decision dates.
+The next rolling-slot mechanism is the single-rule
+`style-etf-20-day-breakout-continuation-v1`. It uses the still-globally-
+untouched 2019 sessions for development, the first five complete 2020 sessions
+as embargo, and the remaining 2020 sessions as reserved confirmation over the
+same eight liquid style ETFs. It requires at least six ETFs above completed
+SMA100, then selects only the strongest 20-session-return ETF that closes
+strictly above completed SMA200 and every prior 20-session close. Entry is the
+next session open, the stop is 1.5 completed ATR14, and the maximum hold is five
+sessions with stop-first daily ambiguity. This is materially distinct from the
+rejected fixed-SCHG weekly breadth rule and reuses no promotion evidence.
+Commit and validate the implementation before freezing its exact contract;
+provider, confirmation, and broker access remain forbidden until their
+respective inspected predecessors permit them.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
