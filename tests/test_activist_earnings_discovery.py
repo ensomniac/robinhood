@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import activist_earnings_discovery as discovery
+import activist_earnings_data as data
 import dense_strategy_runtime as runtime
 from learning_experiment import enumerate_trials
 
@@ -118,3 +119,52 @@ def test_runtime_enters_only_after_completed_reaction() -> None:
     assert candidates[0]["decision_date"] == reaction_date
     assert candidates[0]["signal_date"] == calendar[26]
     assert candidates[0]["outcome"] == "eligible"
+
+
+def test_yahoo_response_parser_preserves_raw_daily_ohlcv() -> None:
+    request = data._request("ABC")
+    timestamp = int(
+        datetime(2023, 1, 3, 14, 30, tzinfo=timezone.utc).timestamp()
+    )
+    task = data._parse_response(
+        request,
+        {
+            "chart": {
+                "error": None,
+                "result": [
+                    {
+                        "meta": {
+                            "symbol": "ABC",
+                            "exchangeTimezoneName": "America/New_York",
+                        },
+                        "timestamp": [timestamp],
+                        "indicators": {
+                            "quote": [
+                                {
+                                    "open": [10.0],
+                                    "high": [11.0],
+                                    "low": [9.5],
+                                    "close": [10.5],
+                                    "volume": [1000],
+                                }
+                            ]
+                        },
+                    }
+                ],
+            }
+        },
+    )
+    assert task["status"] == "COMPLETE"
+    assert task["rows"] == [
+        {
+            "date": "2023-01-03",
+            "open": 10.0,
+            "high": 11.0,
+            "low": 9.5,
+            "close": 10.5,
+            "volume": 1000,
+        }
+    ]
+    assert task["task_sha256"] == data._hash(
+        {key: value for key, value in task.items() if key != "task_sha256"}
+    )
