@@ -1,0 +1,33 @@
+{
+  "artifact_kind": "earnings-sec-development-market-data-contract-inspection",
+  "authorized_provider_requests": 114,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "broker_actions_zero": true,
+    "confirmation_closed": true,
+    "confirmation_scope_untouched": true,
+    "contract_exactly_rebuilt": true,
+    "contract_hash_valid": true,
+    "cover_capacity_bound": true,
+    "development_capacity_bound": true,
+    "development_scope_untouched": true,
+    "one_request_per_symbol": true,
+    "outcomes_absent": true,
+    "split_adjusted": true,
+    "zero_retry_or_substitution": true
+  },
+  "confirmation_provider_access_authorized": false,
+  "contract_file_sha256": "f7d47a5919492fa586598dff3188f4ea2062861cfa7c0fc36c6fe54e22f84e14",
+  "contract_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v8-sec-development-data/market-data-contract/contract-ac48ecddc2d3dc64daa1a8d5d212227ad46df082d767091915ee7c2b7cbfcc7d.json",
+  "contract_sha256": "ac48ecddc2d3dc64daa1a8d5d212227ad46df082d767091915ee7c2b7cbfcc7d",
+  "development_provider_access_authorized": true,
+  "family_id": "earnings-sec-yoy-eps-reaction-drift",
+  "inspected_at": "2026-07-25T03:31:05Z",
+  "inspection_sha256": "6de9a626dea70f24e8364e5027c16293fe32f325815b3f9964ed121a6e578cb1",
+  "schema_version": 1,
+  "state": "MARKET_DATA_CONTRACT_INSPECTED_READY",
+  "strategy_metrics_computed": 0,
+  "successor_id": "earnings-positive-surprise-drift-v8-sec-development-data",
+  "valid": true
+}
