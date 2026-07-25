@@ -138,7 +138,11 @@ the external row-level dataset before evaluation. Inspection
 `3302318d...9f60c` independently rebuilt all nine tasks, canonical dataset and
 external-file hashes, exact frozen scope, runtime schema, and zero
 substitutions; manifest `d54ac867...5ef3a` is `DATASET_INSPECTED_READY`.
-Commit both before development evaluation.
+Development result `bc63b8dc...b3f47` evaluated the single frozen trial with
+zero provider requests. Its compact uninspected summary is adverse at 20 bps:
+-7.37% log growth, 0.58 profit factor, 16.17R drawdown, no positive-fold
+stability, DSR zero, Holm false, and PBO one. Commit it and independently
+rebuild selection before assigning the terminal v2 disposition.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 102 weekly
 decision dates.

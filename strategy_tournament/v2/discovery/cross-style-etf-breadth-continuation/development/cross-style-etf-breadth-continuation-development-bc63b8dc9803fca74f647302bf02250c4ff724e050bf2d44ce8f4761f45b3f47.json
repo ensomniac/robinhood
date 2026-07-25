@@ -1,0 +1,70 @@
+{
+  "artifact_kind": "development-search-result",
+  "artifact_sha256": "bc63b8dc9803fca74f647302bf02250c4ff724e050bf2d44ce8f4761f45b3f47",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "elapsed_seconds": 0.2873687910614535,
+  "evaluation_binding": {
+    "compression": "gzip",
+    "content_sha256": "ea4c7d34a98bb928f9cfc298033163fe6296f3951578ab39c22462b1cfd81a69",
+    "file_sha256": "ed31116d876b334d5ec0139092d5948e726a3890460e557e4cfc045056ee3298",
+    "format": "canonical-json",
+    "kind": "external-development-evaluation",
+    "relative_path": "_derived/strategy_discovery_evaluations/ea4c7d34a98bb928f9cfc298033163fe6296f3951578ab39c22462b1cfd81a69/evaluation.json.gz",
+    "schema_version": 1,
+    "storage": "LOCAL_HISTORICAL_DATA_ROOT"
+  },
+  "evaluation_summary": {
+    "dataset_manifest": "/Users/ensomniac/trade/robinhood_codex/strategy_tournament/v2/discovery/cross-style-etf-breadth-continuation/development-dataset/dataset-cross-style-etf-breadth-continuation-development-5df9cb0bada54ec3-d54ac867c3426bfdce3e16e5faf5ce6c704bd8093e8526286ea5e72ae415ef3a.json",
+    "experiment_id": "experiment-cross-style-etf-breadth-continuation-v2",
+    "implementation_sha256": "9b8d4e133e7a733d76457600cdb89c9fd9a22726f9f552987a30f8ddc3f59713",
+    "trial_count": 1,
+    "trials": [
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 503,
+          "oof_filled_account_returns": 68,
+          "oof_net_pnl_dollars": 68
+        },
+        "maturity_rows": 503,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 16.169940702887576,
+          "stress_20bps_profit_factor": 0.5801247501860978,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.07372177613508236,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "breadth_sma": 100,
+          "maximum_hold_sessions": 5,
+          "minimum_breadth_count": 7,
+          "stop_atr14": 1.5,
+          "target_trend_sma": 200
+        },
+        "trial_accounting_rows": 503,
+        "trial_id": "trial-b5edc386d8fde90b"
+      }
+    ]
+  },
+  "family_id": "cross-style-etf-breadth-continuation",
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 1,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "search_path": "strategy_tournament/v2/discovery/cross-style-etf-breadth-continuation/search/cross-style-etf-breadth-continuation-search-5df9cb0bada54ec3c350ede6d5e571b2004a3c61beaf520cf88c539886da9fad.json",
+  "search_sha256": "5df9cb0bada54ec3c350ede6d5e571b2004a3c61beaf520cf88c539886da9fad",
+  "state": "DEVELOPMENT_EVALUATED"
+}
