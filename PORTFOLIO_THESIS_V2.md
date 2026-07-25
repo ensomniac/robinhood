@@ -146,6 +146,13 @@ mechanism-level trials if the new 32-trial search runs in full. This
 event-specific, date-symbol-disjoint path replaces the stale
 contiguous-calendar dependency and requires no literal future-date wait.
 
+Independent capacity inspection now confirms 1,063 untouched 2012-2014
+development events across 507 signal dates and 369 sealed 2015 confirmation
+events across 176 dates. The event denominator is sufficient, but no market
+price or strategy outcome has been opened. The next authority boundary is an
+immutable 32-trial reaction-confirmed development search whose selection
+statistics account for all 64 cumulative trials across the mechanism.
+
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`
 and its independent retirement in

@@ -1,0 +1,50 @@
+{
+  "artifact_kind": "earnings-sec-corrected-expansion-capacity-inspection",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "archive_graph_complete": true,
+    "collection_hash_valid": true,
+    "plan_chain_valid": true,
+    "plan_inspected": true,
+    "private_derivation_exact": true,
+    "request_accounting_complete": true,
+    "zero_market_outcomes_or_broker": true,
+    "zero_retry_or_substitution": true
+  },
+  "collection_file_sha256": "f09ab7b1def5310bcd5c20e04ac86b3e882ac06c412c2cf2c4e4ec13d087c9cb",
+  "collection_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v13-sec-2012-2015-corrected-source/metadata-collection/collection-db4f8d3dd780611217586cfc25ca237188a5031fd5e048123f260efeb1733af9.json",
+  "collection_sha256": "db4f8d3dd780611217586cfc25ca237188a5031fd5e048123f260efeb1733af9",
+  "confirmation_events": 369,
+  "confirmation_events_before_exposure_filter": 369,
+  "confirmation_exposed_events_zero_credit": 0,
+  "confirmation_market_price_access_authorized": false,
+  "confirmation_signal_dates": 176,
+  "development_events": 1063,
+  "development_events_before_exposure_filter": 1063,
+  "development_exposed_events_zero_credit": 0,
+  "development_market_price_access_authorized": true,
+  "development_search_freeze_required_before_price_access": true,
+  "development_signal_dates": 507,
+  "family_id": "earnings-positive-surprise-drift",
+  "forward_returns_accessed": false,
+  "inspected_at": "2026-07-25T07:57:00Z",
+  "inspection_sha256": "4eb73e802bd925e6a67f55e2096c5dea3b82d2670d4870e5c5b98e1aea11fb5c",
+  "market_prices_accessed": false,
+  "minimums": {
+    "confirmation_signal_dates": 20,
+    "development_signal_dates": 50,
+    "unique_events": 100
+  },
+  "schema_version": 1,
+  "selection_accounting": {
+    "cumulative_trial_count_if_full_search": 64,
+    "future_search_trial_cap": 32,
+    "prior_evaluated_trials_same_mechanism": 32
+  },
+  "state": "SEC_CORRECTED_EXPANSION_CAPACITY_READY",
+  "strategy_metrics_computed": 0,
+  "successor_id": "earnings-positive-surprise-drift-v13-sec-2012-2015-corrected-source",
+  "valid": true,
+  "verified_common_equity_events_total": 1444
+}

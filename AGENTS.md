@@ -332,6 +332,15 @@ ignored content-addressed store. Commit and push this uninspected artifact,
 then independently reopen all archives, rebuild every event, apply the global
 exposure index without replacement, and decide capacity. Do not infer capacity
 or open prices from the collection summary.
+Inspection `4eb73e80...11fb5c` independently rebuilt all 16 archives and
+confirmed 1,063 untouched development events across 507 signal dates plus 369
+still-sealed confirmation events across 176 dates. All capacity thresholds and
+eight integrity checks passed with zero exposed-event substitutions, prices,
+returns, strategy metrics, confirmation outcomes, or broker actions. Commit
+and push the inspection. Before any development price access, freeze and
+independently inspect the unchanged reaction-confirmed 32-trial search and make
+the prior 32 evaluated trials enter the cumulative DSR and family-overfitting
+corrections.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
