@@ -570,6 +570,7 @@ def _rebuild_development_statistics(
     rolling_origin_plan: Sequence[Mapping[str, Any]] | None = None,
     prior_trial_sharpes: Sequence[float] = (),
     prior_trial_p_values: Sequence[float] = (),
+    prior_trial_daily_returns_by_id: Mapping[str, Sequence[float]] | None = None,
     prior_pbo_probability: float = 0.0,
 ) -> dict[str, dict[str, Any]]:
     daily_returns_by_id = {
@@ -621,9 +622,40 @@ def _rebuild_development_statistics(
         deviation = statistics.stdev(values) if len(values) > 1 else 0.0
         statistic = mean / (deviation / math.sqrt(len(values))) if deviation else 0.0
         p_values[trial_id] = 1 - NormalDist().cdf(statistic)
+    prior_return_paths: dict[str, list[float]] = {}
+    if prior_trial_daily_returns_by_id is not None:
+        if not isinstance(prior_trial_daily_returns_by_id, Mapping) or set(
+            prior_trial_daily_returns_by_id
+        ) != set(daily_returns_by_id):
+            raise LearningExperimentError(
+                "prior selection-trial return paths are invalid"
+            )
+        for trial_id, raw_values in prior_trial_daily_returns_by_id.items():
+            if (
+                not isinstance(raw_values, Sequence)
+                or isinstance(raw_values, (str, bytes))
+                or not raw_values
+            ):
+                raise LearningExperimentError(
+                    "prior selection-trial return paths are invalid"
+                )
+            values = [float(value) for value in raw_values]
+            if any(not math.isfinite(value) or value <= -1 for value in values):
+                raise LearningExperimentError(
+                    "prior selection-trial return paths are invalid"
+                )
+            prior_return_paths[str(trial_id)] = values
+        if len({len(values) for values in prior_return_paths.values()}) != 1:
+            raise LearningExperimentError(
+                "prior selection-trial return paths are invalid"
+            )
     if (
         len(prior_trial_sharpes) != len(prior_trial_p_values)
         or len(trials) + len(prior_trial_sharpes) > MAX_TRIALS_PER_FAMILY
+        or (
+            prior_return_paths
+            and len(prior_return_paths) != len(prior_trial_sharpes)
+        )
         or any(
             not math.isfinite(float(value))
             for value in prior_trial_sharpes
@@ -645,7 +677,18 @@ def _rebuild_development_statistics(
         },
     }
     holm = holm_family_decisions(combined_p_values, alpha=0.10)
-    pbo = probability_of_backtest_overfitting(daily_returns_by_id)
+    pbo_paths = (
+        {
+            trial_id: [
+                *prior_return_paths[trial_id],
+                *daily_returns_by_id[trial_id],
+            ]
+            for trial_id in daily_returns_by_id
+        }
+        if prior_return_paths
+        else daily_returns_by_id
+    )
+    pbo = probability_of_backtest_overfitting(pbo_paths)
     current_pbo = pbo["probability"]
     if current_pbo is None and prior_trial_sharpes:
         current_pbo = 0.0
@@ -782,6 +825,9 @@ def select_development_winner(
         ),
         prior_trial_p_values=contract.get(
             "prior_trial_p_values", ()
+        ),
+        prior_trial_daily_returns_by_id=contract.get(
+            "prior_trial_daily_returns_by_id"
         ),
         prior_pbo_probability=float(
             contract.get("prior_pbo_probability", 0.0)

@@ -21,8 +21,11 @@ from learning_experiment import (
     validate_transition,
     _rebuild_development_statistics,
 )
-from learning_statistics import stationary_bootstrap_summary
 from learning_registry import append_event
+from learning_statistics import (
+    probability_of_backtest_overfitting,
+    stationary_bootstrap_summary,
+)
 
 
 def hypothesis_contract(lane="catalyst_falsification"):
@@ -318,6 +321,59 @@ class EvaluationContractTests(unittest.TestCase):
                 [trial("left", [0.002, -0.001] * 10)],
                 prior_trial_sharpes=[0.2],
                 prior_trial_p_values=[],
+            )
+
+    def test_prior_disjoint_paths_recompute_cumulative_pbo(self):
+        def trial(trial_id, daily):
+            return {
+                "trial_id": trial_id,
+                "metrics": {
+                    "oof_daily_account_returns": daily,
+                    "oof_filled_account_returns": daily,
+                    "oof_net_pnl_dollars": [
+                        value * 100_000 for value in daily
+                    ],
+                    "risk_fraction": 0.005,
+                    "rules_complete": True,
+                    "trial_accounting_complete": True,
+                },
+            }
+
+        current = [
+            trial("left", [0.002, -0.001, 0.001, -0.0005] * 5),
+            trial("right", [-0.001, 0.002, -0.0005, 0.001] * 5),
+        ]
+        prior = {
+            "left": [-0.001, 0.002, -0.0005, 0.001] * 5,
+            "right": [0.002, -0.001, 0.001, -0.0005] * 5,
+        }
+        rebuilt = _rebuild_development_statistics(
+            current,
+            prior_trial_sharpes=[0.2, 0.3],
+            prior_trial_p_values=[0.4, 0.5],
+            prior_trial_daily_returns_by_id=prior,
+        )
+        expected = probability_of_backtest_overfitting(
+            {
+                item["trial_id"]: [
+                    *prior[item["trial_id"]],
+                    *item["metrics"]["oof_daily_account_returns"],
+                ]
+                for item in current
+            }
+        )["probability"]
+
+        self.assertEqual(rebuilt["left"]["pbo_probability"], expected)
+        self.assertEqual(rebuilt["right"]["pbo_probability"], expected)
+        with self.assertRaisesRegex(
+            LearningExperimentError,
+            "prior selection-trial return paths",
+        ):
+            _rebuild_development_statistics(
+                current,
+                prior_trial_sharpes=[0.2, 0.3],
+                prior_trial_p_values=[0.4, 0.5],
+                prior_trial_daily_returns_by_id={"left": prior["left"]},
             )
 
     def test_rolling_origin_plan_has_expanding_train_and_embargo(self):

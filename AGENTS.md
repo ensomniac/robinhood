@@ -341,6 +341,14 @@ and push the inspection. Before any development price access, freeze and
 independently inspect the unchanged reaction-confirmed 32-trial search and make
 the prior 32 evaluated trials enter the cumulative DSR and family-overfitting
 corrections.
+For repeated disjoint-corpus searches of an identical parameter grid, cumulative
+PBO is recomputed from each parameter path concatenated across the prior and
+current out-of-fold calendars. Do not use the prior family's standalone PBO as
+an irreversible maximum: that would make independent replication incapable of
+changing the estimate. DSR still receives all 64 current-plus-prior trial
+Sharpes, and Holm still receives all 64 one-sided p-values. The prior 32 daily
+return paths, Sharpes, p-values, result hash, inspection hash, and external
+evaluation hash must all be frozen into the v13 search before new price access.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected

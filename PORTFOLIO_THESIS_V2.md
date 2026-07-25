@@ -152,6 +152,11 @@ events across 176 dates. The event denominator is sufficient, but no market
 price or strategy outcome has been opened. The next authority boundary is an
 immutable 32-trial reaction-confirmed development search whose selection
 statistics account for all 64 cumulative trials across the mechanism.
+Cumulative PBO uses each identical parameter path concatenated across the
+disjoint prior and current out-of-fold calendars. DSR and Holm still count the
+two 32-trial searches separately, for 64 total trial statistics. This preserves
+selection penalties without treating the prior underpowered corpus's standalone
+PBO as an irreversible veto on independent replication.
 
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`
