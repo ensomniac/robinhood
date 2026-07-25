@@ -187,7 +187,10 @@ and materialize a zero-request checkpoint recovery. Failure
 `b0912494...1cff272` now records all nine completed tasks, 3,640 price rows,
 1,992 evaluation symbol-sessions, the full 1,992-pair development exposure,
 zero provider failures, and the no-metrics boundary. Commit it before
-independent reconstruction.
+independent reconstruction. Inspection `04378553...39f346` independently
+rebuilt every checkpoint, row count, exposure pair, telemetry field, and absent
+completed status with all eleven checks passing. Commit it, then index the
+failure scope before refreshing implementation hashes.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
