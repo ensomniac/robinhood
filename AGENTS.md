@@ -68,8 +68,9 @@ Development plan `7f762395...73f43` freezes nine total Massive requests: one
 split-action range and eight unadjusted daily symbol ranges from 2014-03-14
 through 2017-12-29. The additive independent inspector rebuilds the committed
 search, calendar, warmup, symbols, request IDs, provider semantics, and both
-untouched scopes. Commit the plan and inspector implementation, then run and
-commit that inspection before opening any request.
+untouched scopes. Inspection `81b991aa...5e277` passed every reconstruction
+with zero requests or outcomes. Commit it, then collect only the exact nine
+development tasks; confirmation and broker access remain forbidden.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
