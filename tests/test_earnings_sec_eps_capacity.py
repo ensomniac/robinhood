@@ -4,6 +4,7 @@ from pathlib import Path
 
 import earnings_sec_eps_capacity as source
 import earnings_sec_eps_capacity_inspection as inspection
+import earnings_sec_eps_failure_inspection as failure_inspection
 from historical_store import HistoricalDayStore
 
 
@@ -260,3 +261,25 @@ def test_collection_resumes_from_valid_archives_without_duplicate_requests(
     assert first["provider_telemetry"]["request_count"] == 8
     assert second["provider_telemetry"]["cache_hits"] == 8
     assert collection_path.exists()
+
+
+def test_failure_inspector_reproduces_default_csv_field_limit(tmp_path):
+    path = tmp_path / "large-field.zip"
+    large_value = "x" * 131_073
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(
+            "txt.tsv",
+            _tsv(
+                [
+                    {
+                        "adsh": "0000000001-10-000001",
+                        "tag": "DisclosureTextBlock",
+                        "value": large_value,
+                    }
+                ]
+            ),
+        )
+
+    assert failure_inspection.reproduce_csv_limit(path) == (
+        "field larger than field limit (131072)"
+    )
