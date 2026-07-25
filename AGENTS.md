@@ -95,8 +95,11 @@ in ten requests with zero failures and zero substitutions; external dataset
 before additive data inspection. Inspection `57a4cc56...652b3` rehashed the
 external file, rebuilt all tasks and the canonical dataset, revalidated the
 runtime schema, and froze 9,000 instrument-sessions in manifest
-`a9a5a4ac...2a8a0`. Commit these exact inspected artifacts before local
-development evaluation; confirmation and broker access remain forbidden.
+`a9a5a4ac...2a8a0`. Result `1872300e...5e3c` evaluated all 32 frozen trials
+from one local dataset load and zero provider requests. Every 20-bps path lost;
+the least-negative path had -0.11032 log growth, PF 0.296, and 20.89R drawdown.
+Commit the immutable result before independent selection reconstruction;
+confirmation and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
