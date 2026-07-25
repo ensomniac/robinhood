@@ -72,6 +72,9 @@ outcomes. Preserve and inspect that failure before changing the parser. The only
 permitted recovery raises the parser field limit without changing any archive,
 event semantic, date, partition, identity rule, or capacity threshold, then
 reuses all eight hash-valid archives with zero new provider requests.
+Independent inspection `228596d0...acd81b` has now reproduced the default CSV
+failure, rehashed every archive and required member, rebuilt the exact cached
+byte total, and authorized only that implementation-only zero-request recovery.
 
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;
