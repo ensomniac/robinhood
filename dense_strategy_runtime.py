@@ -184,6 +184,9 @@ OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
 EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
 EARNINGS_PEAD_FAMILY = "earnings-positive-surprise-drift"
 EARNINGS_SEC_REACTION_FAMILY = "earnings-sec-yoy-eps-reaction-drift"
+ACTIVIST_EARNINGS_REACTION_FAMILY = (
+    "activist-issuer-earnings-reaction-continuation"
+)
 VOLATILITY_COMPRESSION_FAMILY = (
     "gap-universe-volatility-compression-breakout"
 )
@@ -215,6 +218,7 @@ SUPPORTED_FAMILIES = {
     EQUITY_GAP_CONTINUATION_FAMILY,
     EARNINGS_PEAD_FAMILY,
     EARNINGS_SEC_REACTION_FAMILY,
+    ACTIVIST_EARNINGS_REACTION_FAMILY,
     VOLATILITY_COMPRESSION_FAMILY,
 }
 PRIMARY_ROUND_TRIP_COST_FRACTION = 0.001
@@ -4874,6 +4878,229 @@ def _earnings_sec_reaction_candidates(
     return candidates
 
 
+def _activist_earnings_reaction_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Evaluate next-open continuation after a completed activist-issuer reaction."""
+
+    calendar = _calendar(dataset)
+    raw_metadata = dataset.get("event_metadata_by_date")
+    if not isinstance(raw_metadata, Mapping) or set(raw_metadata) != set(
+        calendar
+    ):
+        raise DenseStrategyRuntimeError(
+            "activist earnings metadata must bind every account date"
+        )
+    daily = _daily_series(dataset)
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    minimum_gap = float(
+        parameters["minimum_reaction_opening_gap_fraction"]
+    )
+    confirmation = str(parameters["reaction_confirmation"])
+    minimum_close_location = float(parameters["minimum_close_location"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold_sessions = int(parameters["maximum_hold_sessions"])
+    if (
+        minimum_gap not in {0.02, 0.04}
+        or confirmation not in {"close>open", "close>prior_close"}
+        or minimum_close_location not in {0.50, 0.75}
+        or stop_atr not in {1.0, 1.5}
+        or hold_sessions not in {2, 5}
+    ):
+        raise DenseStrategyRuntimeError(
+            "activist earnings parameters escaped the frozen grid"
+        )
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        rows = raw_metadata[decision_date]
+        if not isinstance(rows, list):
+            raise DenseStrategyRuntimeError(
+                f"activist earnings metadata is invalid for {decision_date}"
+            )
+        qualified: list[
+            tuple[float, float, float, str, dict[str, Any], float]
+        ] = []
+        for raw in rows:
+            if not isinstance(raw, Mapping):
+                raise DenseStrategyRuntimeError(
+                    f"activist earnings row is invalid for {decision_date}"
+                )
+            symbol = str(raw.get("symbol", ""))
+            bars = daily.get(symbol)
+            reaction_index = indices.get(symbol, {}).get(decision_date)
+            if bars is None or reaction_index is None or reaction_index < 20:
+                continue
+            if not (
+                raw.get("security_identity_state")
+                == "VERIFIED_ACTIVIST_COMMON_EQUITY"
+                and raw.get("reaction_date") == decision_date
+                and raw.get("sec_form") == "8-K"
+                and raw.get("sec_item") == "2.02"
+                and raw.get("timing") in {"pre_market", "after_market"}
+            ):
+                raise DenseStrategyRuntimeError(
+                    "activist earnings identity or event semantics drifted"
+                )
+            prior_close = float(bars[reaction_index - 1]["close"])
+            reaction = bars[reaction_index]
+            opening = float(reaction["open"])
+            close = float(reaction["close"])
+            gap = opening / prior_close - 1
+            if gap + 1e-12 < minimum_gap:
+                continue
+            if (
+                confirmation == "close>open" and close <= opening
+            ) or (
+                confirmation == "close>prior_close"
+                and close <= prior_close
+            ):
+                continue
+            day_range = float(reaction["high"]) - float(reaction["low"])
+            close_location = (
+                (close - float(reaction["low"])) / day_range
+                if day_range > 0
+                else 0.0
+            )
+            if close_location + 1e-12 < minimum_close_location:
+                continue
+            prior_dollar_volume = statistics.median(
+                float(bar["close"]) * float(bar["volume"])
+                for bar in bars[reaction_index - 20 : reaction_index]
+            )
+            if prior_close < 10 or prior_dollar_volume < 50_000_000:
+                continue
+            atr14 = _atr(bars, reaction_index)
+            if atr14 is None:
+                continue
+            reaction_dollar_volume = close * float(reaction["volume"])
+            qualified.append(
+                (
+                    -gap,
+                    -close_location,
+                    -reaction_dollar_volume,
+                    symbol,
+                    dict(raw),
+                    atr14,
+                )
+            )
+        if not qualified:
+            continue
+        (
+            negative_gap,
+            negative_close_location,
+            negative_reaction_liquidity,
+            symbol,
+            selected,
+            atr14,
+        ) = sorted(qualified)[0]
+        bars = daily[symbol]
+        entry_date = calendar[calendar_index + 1]
+        entry_index = indices[symbol].get(entry_date)
+        signal_id = (
+            f"{entry_date}-{ACTIVIST_EARNINGS_REACTION_FAMILY}-{symbol}"
+        )
+        if entry_index is None:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_open",
+                }
+            )
+            continue
+        expected_dates = calendar[
+            calendar_index + 1 : calendar_index + 1 + hold_sessions
+        ]
+        observed_dates = [
+            str(bar["date"])
+            for bar in bars[entry_index : entry_index + hold_sessions]
+        ]
+        if (
+            len(expected_dates) != hold_sessions
+            or observed_dates != expected_dates
+        ):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "incomplete_holding_bars",
+                }
+            )
+            continue
+        entry_price = float(bars[entry_index]["open"])
+        expected_gross = atr14 / entry_price
+        if not _cost_floor(expected_gross):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "expected_move_below_cost_floor",
+                    "expected_gross_move_fraction": expected_gross,
+                }
+            )
+            continue
+        stop_price = entry_price - stop_atr * atr14
+        if stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        exit_date, exit_price, stop_executed, marks = _earnings_pead_exit(
+            bars,
+            entry_index=entry_index,
+            stop_price=stop_price,
+            hold_sessions=hold_sessions,
+        )
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": entry_date,
+                "decision_date": decision_date,
+                "symbol": symbol,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": -negative_gap,
+                "reaction_opening_gap_fraction": -negative_gap,
+                "reaction_close_location": -negative_close_location,
+                "reaction_dollar_volume": -negative_reaction_liquidity,
+                "accepted_at": selected["accepted_at"],
+                "accession": selected["accession"],
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "exit_date": exit_date,
+                "exit_price": exit_price,
+                "marks": marks,
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+            }
+        )
+    return candidates
+
+
 def build_candidates(
     dataset: Mapping[str, Any],
     family_id: str,
@@ -4959,6 +5186,8 @@ def build_candidates(
         return _earnings_pead_candidates(dataset, parameters)
     if family_id == EARNINGS_SEC_REACTION_FAMILY:
         return _earnings_sec_reaction_candidates(dataset, parameters)
+    if family_id == ACTIVIST_EARNINGS_REACTION_FAMILY:
+        return _activist_earnings_reaction_candidates(dataset, parameters)
     if family_id == VOLATILITY_COMPRESSION_FAMILY:
         return _compression_candidates(dataset, parameters)
     raise DenseStrategyRuntimeError(f"unsupported dense family: {family_id}")

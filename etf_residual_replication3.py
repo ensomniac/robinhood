@@ -69,6 +69,11 @@ V2_DEVELOPMENT_ROOT = (
     / "strategy_tournament/v2/discovery/"
     "liquid-etf-market-residual-reversal-replication-v2/development"
 )
+V2_DEVELOPMENT_INSPECTION_ROOT = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/"
+    "liquid-etf-market-residual-reversal-replication-v2/development-inspection"
+)
 
 
 class EtfResidualReplication3Error(ValueError):
@@ -116,6 +121,32 @@ def _predecessor_graph(
         for record in outcome_exposure.read_index()
         if record["exposure_id"] == V2_EXPOSURE_ID
     ]
+    development_paths = sorted(V2_DEVELOPMENT_ROOT.glob("*.json"))
+    development_boundary_valid = not development_paths
+    if development_paths:
+        inspection_paths = sorted(
+            V2_DEVELOPMENT_INSPECTION_ROOT.glob("*.json")
+        )
+        if len(development_paths) == 1 and len(inspection_paths) == 1:
+            if enforce_commit:
+                strategy_discovery.require_committed(development_paths[0])
+                strategy_discovery.require_committed(inspection_paths[0])
+            development_result = strategy_discovery.load_artifact(
+                development_paths[0],
+                expected_kind="development-search-result",
+            )
+            development_inspection = strategy_discovery.load_artifact(
+                inspection_paths[0],
+                expected_kind="development-search-inspection",
+            )
+            development_boundary_valid = (
+                development_result.get("state") == "DEVELOPMENT_EVALUATED"
+                and development_inspection.get("state") == "REJECTED"
+                and development_inspection.get("result_path")
+                == _repo_path(development_paths[0])
+                and development_inspection.get("result_sha256")
+                == development_result.get("artifact_sha256")
+            )
     if not (
         contract.get("family_id") == v2.FAMILY_ID
         and search.get("family_contract", {}).get("parameter_grid")
@@ -127,7 +158,7 @@ def _predecessor_graph(
         and matches[0]["scope"] == contract["development_scope"]
         and matches[0]["source_path"] == _repo_path(V2_DATA_INSPECTION)
         and matches[0]["source_sha256"] == sha256_file(V2_DATA_INSPECTION)
-        and not list(V2_DEVELOPMENT_ROOT.glob("*.json"))
+        and development_boundary_valid
     ):
         raise EtfResidualReplication3Error(
             "v2 evaluation-failure boundary drifted"

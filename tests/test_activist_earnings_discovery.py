@@ -1,0 +1,120 @@
+from __future__ import annotations
+
+from datetime import date, timedelta
+
+import activist_earnings_discovery as discovery
+import dense_strategy_runtime as runtime
+from learning_experiment import enumerate_trials
+
+
+def _weekdays(start: date, count: int) -> list[str]:
+    result: list[str] = []
+    current = start
+    while len(result) < count:
+        if current.weekday() < 5:
+            result.append(current.isoformat())
+        current += timedelta(days=1)
+    return result
+
+
+def test_sec_utc_timestamp_is_converted_to_eastern() -> None:
+    observed = discovery._parse_timestamp("2024-07-29T20:10:17.000Z")
+    assert observed.astimezone(discovery.NEW_YORK).strftime("%H:%M:%S") == "16:10:17"
+
+
+def test_active_identity_uses_latest_observable_symbol_interval() -> None:
+    intervals = [
+        {
+            "accepted_at": "2022-01-13T15:07:06",
+            "symbol": "WAVD",
+        },
+        {
+            "accepted_at": "2024-08-19T16:38:10",
+            "symbol": "AIFF",
+        },
+    ]
+    assert (
+        discovery._active_identity(intervals, "2024-07-29T20:10:17.000Z")[
+            "symbol"
+        ]
+        == "WAVD"
+    )
+    assert (
+        discovery._active_identity(intervals, "2024-10-29T20:10:17.000Z")[
+            "symbol"
+        ]
+        == "AIFF"
+    )
+
+
+def test_frozen_grid_has_exactly_32_trials() -> None:
+    trials = enumerate_trials(
+        {
+            "maximum_hold_sessions": [2, 5],
+            "minimum_close_location": [0.50, 0.75],
+            "minimum_reaction_opening_gap_fraction": [0.02, 0.04],
+            "reaction_confirmation": ["close>open", "close>prior_close"],
+            "stop_atr14": [1.0, 1.5],
+        }
+    )
+    assert len(trials) == 32
+    assert len({trial["trial_id"] for trial in trials}) == 32
+
+
+def test_runtime_enters_only_after_completed_reaction() -> None:
+    calendar = _weekdays(date(2024, 1, 2), 35)
+    reaction_date = calendar[25]
+    bars = []
+    for index, day in enumerate(calendar):
+        opening = 100.0
+        high = 102.0
+        low = 99.0
+        close = 101.0
+        if index == 25:
+            opening, high, low, close = 104.0, 109.0, 103.0, 108.0
+        elif index > 25:
+            opening, high, low, close = 109.0, 112.0, 107.0, 111.0
+        bars.append(
+            {
+                "date": day,
+                "open": opening,
+                "high": high,
+                "low": low,
+                "close": close,
+                "volume": 1_000_000,
+            }
+        )
+    metadata = {day: [] for day in calendar}
+    metadata[reaction_date] = [
+        {
+            "symbol": "ABC",
+            "security_identity_state": "VERIFIED_ACTIVIST_COMMON_EQUITY",
+            "reaction_date": reaction_date,
+            "sec_form": "8-K",
+            "sec_item": "2.02",
+            "timing": "after_market",
+            "accepted_at": "2024-01-01T21:00:00Z",
+            "accession": "0000000000-24-000001",
+        }
+    ]
+    dataset = {
+        "family_id": runtime.ACTIVIST_EARNINGS_REACTION_FAMILY,
+        "evaluation_dates": calendar,
+        "event_metadata_by_date": metadata,
+        "daily_bars": {"ABC": bars},
+    }
+    candidates = runtime.build_candidates(
+        dataset,
+        runtime.ACTIVIST_EARNINGS_REACTION_FAMILY,
+        {
+            "maximum_hold_sessions": 2,
+            "minimum_close_location": 0.50,
+            "minimum_reaction_opening_gap_fraction": 0.02,
+            "reaction_confirmation": "close>open",
+            "stop_atr14": 1.0,
+        },
+    )
+    assert len(candidates) == 1
+    assert candidates[0]["decision_date"] == reaction_date
+    assert candidates[0]["signal_date"] == calendar[26]
+    assert candidates[0]["outcome"] == "eligible"
