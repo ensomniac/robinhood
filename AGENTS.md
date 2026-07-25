@@ -430,6 +430,12 @@ records, including six exact invalid-OHLCV cases. It used zero retries,
 substitutions, v13 tasks, confirmation requests, strategy metrics, or broker
 actions. Its development scope is indexed; commit and push the compact
 collection and exposure record before independent dataset inspection.
+Inspection `e96c581d...a3e0fe8` independently accepted 182,721 retained daily
+rows, reconciled all 608 requested symbols, validated the six invalid-OHLCV
+whole-symbol classifications, and proved the complete v13 prefix absent.
+Dataset manifest `42c50ced...db84f3` binds the ignored private content to the
+frozen search. Commit and push both artifacts before generic development
+evaluation; confirmation remains sealed.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
