@@ -134,7 +134,11 @@ Alpaca/Massive semantics, declared v1 contamination, and untouched confirmation
 scope. Collection `09f022d0...3143d` completed that plan with nine requests,
 zero failures, zero substitutions, and dataset hash `98e1343c...78fb`; it is
 `COLLECTED_UNINSPECTED`. Commit the compact status, then independently inspect
-the external row-level dataset before evaluation.
+the external row-level dataset before evaluation. Inspection
+`3302318d...9f60c` independently rebuilt all nine tasks, canonical dataset and
+external-file hashes, exact frozen scope, runtime schema, and zero
+substitutions; manifest `d54ac867...5ef3a` is `DATASET_INSPECTED_READY`.
+Commit both before development evaluation.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 102 weekly
 decision dates.
