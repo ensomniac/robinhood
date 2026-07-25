@@ -393,6 +393,17 @@ def _fetch(
         ) from exc
     finally:
         telemetry["request_seconds"] += time.monotonic() - started
+    if response.status_code == 400:
+        telemetry["permanent_missing_responses"] += 1
+        value = {
+            "schema_version": 1,
+            "request_sha256": request["request_sha256"],
+            "symbol": request["symbol"],
+            "status": "PERMANENT_MISSING",
+            "missing_reason": "Yahoo HTTP 400 retained as permanent missing",
+            "rows": [],
+        }
+        return {**value, "task_sha256": _hash(value)}
     if response.status_code == 404:
         return _parse_response(request, {"chart": {"result": None, "error": {}}})
     if response.status_code >= 400:
@@ -468,6 +479,292 @@ def _event_metadata(
     return result
 
 
+def _filtered_scope(
+    scope: Mapping[str, Any], symbols: set[str]
+) -> dict[str, Any]:
+    symbols_by_date = {
+        day: sorted(set(day_symbols) & symbols)
+        for day, day_symbols in scope["symbols_by_date"].items()
+        if set(day_symbols) & symbols
+    }
+    dates = sorted(symbols_by_date)
+    if not dates:
+        raise ActivistEarningsDataError("partial exposure scope is empty")
+    return {
+        "dates": dates,
+        "symbols_by_date": {
+            day: symbols_by_date[day] for day in dates
+        },
+    }
+
+
+def build_failure(
+    contract_path: Path,
+    inspection_path: Path,
+    observed_at: str,
+) -> dict[str, Any]:
+    contract = _load(
+        contract_path, "activist-earnings-development-source-contract"
+    )
+    inspection = _load(
+        inspection_path, "activist-earnings-development-source-inspection"
+    )
+    if not (
+        inspection["state"] == "SOURCE_CONTRACT_INSPECTED_READY"
+        and inspection["contract_sha256"] == contract["artifact_sha256"]
+    ):
+        raise ActivistEarningsDataError("failure source authorization drifted")
+    store = HistoricalDayStore.from_env()
+    task_root = (
+        store.root
+        / PRIVATE_NAMESPACE
+        / contract["artifact_sha256"]
+        / "tasks"
+    )
+    cached_requests: list[dict[str, Any]] = []
+    rows_retained = 0
+    failed_request: Mapping[str, Any] | None = None
+    for ordinal, request in enumerate(contract["requests"], 1):
+        task_path = task_root / f"{request['request_sha256']}.json.gz"
+        if not task_path.is_file():
+            failed_request = request
+            break
+        task = _read_private(task_path)
+        content = {
+            key: item for key, item in task.items() if key != "task_sha256"
+        }
+        if (
+            task.get("request_sha256") != request["request_sha256"]
+            or task.get("task_sha256") != _hash(content)
+        ):
+            raise ActivistEarningsDataError("checkpointed task drifted")
+        rows_retained += len(task["rows"])
+        cached_requests.append(request)
+    if (
+        failed_request is None
+        or failed_request["symbol"] != "GRTX"
+        or len(cached_requests) != 16
+    ):
+        raise ActivistEarningsDataError(
+            "observed HTTP 400 request boundary drifted"
+        )
+    exposed_symbols = {str(request["symbol"]) for request in cached_requests}
+    return {
+        "schema_version": 1,
+        "artifact_kind": "activist-earnings-development-source-failure",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "observed_at": _timestamp(observed_at, "observed_at"),
+        "state": "HTTP_400_SOURCE_POLICY_FAILURE",
+        "contract_path": _relative(contract_path),
+        "contract_sha256": contract["artifact_sha256"],
+        "inspection_path": _relative(inspection_path),
+        "inspection_sha256": inspection["artifact_sha256"],
+        "failed_request": {
+            "ordinal": 17,
+            "symbol": failed_request["symbol"],
+            "request_sha256": failed_request["request_sha256"],
+            "endpoint": failed_request["endpoint"],
+        },
+        "error": {
+            "category": "unregistered_http_status",
+            "http_status": 400,
+            "sanitized_message": "Yahoo request returned HTTP 400",
+        },
+        "partial_exposure_scope": _filtered_scope(
+            contract["development_scope"], exposed_symbols
+        ),
+        "failure_boundary": {
+            "provider_requests": 17,
+            "provider_responses": 17,
+            "tasks_checkpointed": 16,
+            "rows_retained": rows_retained,
+            "symbols_with_retained_rows": sorted(exposed_symbols),
+            "development_prices_retained": True,
+            "strategy_metrics_computed": 0,
+            "winner_selection_executed": False,
+            "confirmation_prices_accessed": False,
+            "broker_actions": 0,
+        },
+        "disposition": {
+            "failed_symbol_retry_permitted": False,
+            "failed_symbol_permanent_missing_registration_permitted": True,
+            "same_contract_resume_after_registration_permitted": True,
+            "later_http_400_is_permanent_missing": True,
+            "substitutions_permitted": 0,
+            "confirmation_access_permitted": False,
+        },
+    }
+
+
+def record_failure(
+    contract_path: Path,
+    inspection_path: Path,
+    observed_at: str,
+) -> tuple[Path, dict[str, Any]]:
+    strategy_discovery.require_committed(contract_path)
+    strategy_discovery.require_committed(inspection_path)
+    path, artifact = _write(
+        build_failure(contract_path, inspection_path, observed_at),
+        DEFAULT_ROOT / "development-source-failure",
+        "source-failure",
+    )
+    outcome_exposure.ensure_record(
+        outcome_exposure.build_record(
+            exposure_id=(
+                f"development-partial-{FAMILY_ID}-"
+                f"{artifact['artifact_sha256'][:16]}"
+            ),
+            campaign_id=CAMPAIGN_ID,
+            lane="development",
+            recorded_at=str(artifact["observed_at"]),
+            source_path=_relative(path),
+            source_sha256=sha256_file(path),
+            scope=artifact["partial_exposure_scope"],
+        )
+    )
+    return path, artifact
+
+
+def inspect_failure(
+    failure_path: Path, inspected_at: str
+) -> tuple[Path, dict[str, Any]]:
+    strategy_discovery.require_committed(failure_path)
+    failure = _load(
+        failure_path, "activist-earnings-development-source-failure"
+    )
+    contract_path = PROJECT_ROOT / str(failure["contract_path"])
+    inspection_path = PROJECT_ROOT / str(failure["inspection_path"])
+    rebuilt = build_failure(
+        contract_path, inspection_path, str(failure["observed_at"])
+    )
+    if {
+        key: item for key, item in failure.items() if key != "artifact_sha256"
+    } != rebuilt:
+        raise ActivistEarningsDataError("source failure rebuild differs")
+    matches = [
+        record
+        for record in outcome_exposure.read_index()
+        if record["source_path"] == _relative(failure_path)
+    ]
+    if not (
+        len(matches) == 1
+        and matches[0]["scope"] == failure["partial_exposure_scope"]
+        and matches[0]["lane"] == "development"
+    ):
+        raise ActivistEarningsDataError(
+            "partial development exposure is not indexed"
+        )
+    payload = {
+        "schema_version": 1,
+        "artifact_kind": "activist-earnings-development-source-failure-inspection",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "inspected_at": _timestamp(inspected_at, "inspected_at"),
+        "state": "HTTP_400_FAILURE_INSPECTED_TERMINAL",
+        "failure_path": _relative(failure_path),
+        "failure_sha256": failure["artifact_sha256"],
+        "checks": {
+            "failure_exactly_rebuilt": True,
+            "failed_request_17_grtx": True,
+            "sixteen_tasks_rebuilt": True,
+            "partial_exposure_indexed": True,
+            "zero_metrics_or_winner": True,
+            "confirmation_closed": True,
+            "failed_symbol_retry_forbidden": True,
+            "permanent_missing_registration_bounded": True,
+            "valid": True,
+        },
+        "failed_request": failure["failed_request"],
+        "permanent_missing_registration_authorized": True,
+        "same_contract_resume_authorized": True,
+        "confirmation_access_permitted": False,
+        "broker_actions": 0,
+    }
+    return _write(
+        payload,
+        DEFAULT_ROOT / "development-source-failure-inspection",
+        "source-failure-inspection",
+    )
+
+
+def register_permanent_missing(
+    failure_inspection_path: Path, registered_at: str
+) -> tuple[Path, dict[str, Any]]:
+    strategy_discovery.require_committed(failure_inspection_path)
+    inspection = _load(
+        failure_inspection_path,
+        "activist-earnings-development-source-failure-inspection",
+    )
+    if not (
+        inspection["state"] == "HTTP_400_FAILURE_INSPECTED_TERMINAL"
+        and inspection["permanent_missing_registration_authorized"] is True
+        and inspection["same_contract_resume_authorized"] is True
+        and inspection["failed_request"]["symbol"] == "GRTX"
+    ):
+        raise ActivistEarningsDataError(
+            "permanent-missing registration is not authorized"
+        )
+    failure_path = PROJECT_ROOT / str(inspection["failure_path"])
+    failure = _load(
+        failure_path, "activist-earnings-development-source-failure"
+    )
+    contract_path = PROJECT_ROOT / str(failure["contract_path"])
+    contract = _load(
+        contract_path, "activist-earnings-development-source-contract"
+    )
+    request = contract["requests"][16]
+    if request["request_sha256"] != inspection["failed_request"]["request_sha256"]:
+        raise ActivistEarningsDataError("failed request binding drifted")
+    task_content = {
+        "schema_version": 1,
+        "request_sha256": request["request_sha256"],
+        "symbol": request["symbol"],
+        "status": "PERMANENT_MISSING",
+        "missing_reason": (
+            "Inspected Yahoo HTTP 400 retained without retry or substitution"
+        ),
+        "rows": [],
+    }
+    task = {**task_content, "task_sha256": _hash(task_content)}
+    store = HistoricalDayStore.from_env()
+    task_path = (
+        store.root
+        / PRIVATE_NAMESPACE
+        / contract["artifact_sha256"]
+        / "tasks"
+        / f"{request['request_sha256']}.json.gz"
+    )
+    if task_path.exists():
+        raise ActivistEarningsDataError(
+            "failed request already has a checkpoint; refusing overwrite"
+        )
+    _write_private(task_path, task)
+    payload = {
+        "schema_version": 1,
+        "artifact_kind": "activist-earnings-permanent-missing-registration",
+        "campaign_id": CAMPAIGN_ID,
+        "family_id": FAMILY_ID,
+        "registered_at": _timestamp(registered_at, "registered_at"),
+        "state": "PERMANENT_MISSING_REGISTERED_READY_TO_RESUME",
+        "failure_inspection_path": _relative(failure_inspection_path),
+        "failure_inspection_sha256": inspection["artifact_sha256"],
+        "request_sha256": request["request_sha256"],
+        "symbol": request["symbol"],
+        "task_sha256": task["task_sha256"],
+        "provider_requests": 0,
+        "retries": 0,
+        "substitutions": 0,
+        "confirmation_prices_accessed": False,
+        "broker_actions": 0,
+    }
+    return _write(
+        payload,
+        DEFAULT_ROOT / "development-permanent-missing-registration",
+        "permanent-missing",
+    )
+
+
 def collect(
     contract_path: Path,
     inspection_path: Path,
@@ -501,6 +798,7 @@ def collect(
         "pacing_wait_seconds": 0.0,
         "cache_hits": 0,
         "failures": 0,
+        "permanent_missing_responses": 0,
     }
     tasks: list[dict[str, Any]] = []
     http = requests.Session()
@@ -531,6 +829,37 @@ def collect(
         contract["requests"]
     ):
         raise ActivistEarningsDataError("request accounting is incomplete")
+    failure_inspections = sorted(
+        (DEFAULT_ROOT / "development-source-failure-inspection").glob(
+            "*.json"
+        )
+    )
+    if failure_inspections:
+        if len(failure_inspections) != 1:
+            raise ActivistEarningsDataError(
+                "source failure inspection count is ambiguous"
+            )
+        failure_inspection = _load(
+            failure_inspections[0],
+            "activist-earnings-development-source-failure-inspection",
+        )
+        if not (
+            failure_inspection["state"]
+            == "HTTP_400_FAILURE_INSPECTED_TERMINAL"
+            and failure_inspection["same_contract_resume_authorized"] is True
+        ):
+            raise ActivistEarningsDataError(
+                "source failure resume authorization drifted"
+            )
+        telemetry["prior_provider_requests"] = 17
+        telemetry["prior_failed_responses"] = 1
+        telemetry["provider_requests_lifetime"] = (
+            17 + telemetry["requests"]
+        )
+    else:
+        telemetry["prior_provider_requests"] = 0
+        telemetry["prior_failed_responses"] = 0
+        telemetry["provider_requests_lifetime"] = telemetry["requests"]
     search_path = PROJECT_ROOT / str(contract["search_path"])
     search = strategy_discovery.load_artifact(
         search_path, expected_kind="frozen-development-search"
@@ -778,6 +1107,16 @@ def _build_parser() -> argparse.ArgumentParser:
     inspect_source = subparsers.add_parser("inspect-contract")
     inspect_source.add_argument("contract", type=Path)
     inspect_source.add_argument("--inspected-at", required=True)
+    failure = subparsers.add_parser("record-failure")
+    failure.add_argument("contract", type=Path)
+    failure.add_argument("inspection", type=Path)
+    failure.add_argument("--observed-at", required=True)
+    inspect_failure_parser = subparsers.add_parser("inspect-failure")
+    inspect_failure_parser.add_argument("failure", type=Path)
+    inspect_failure_parser.add_argument("--inspected-at", required=True)
+    register = subparsers.add_parser("register-permanent-missing")
+    register.add_argument("failure_inspection", type=Path)
+    register.add_argument("--registered-at", required=True)
     collect_parser = subparsers.add_parser("collect")
     collect_parser.add_argument("contract", type=Path)
     collect_parser.add_argument("inspection", type=Path)
@@ -806,6 +1145,36 @@ def main(argv: Sequence[str] | None = None) -> int:
             "authorized_provider_requests": value[
                 "authorized_provider_requests"
             ],
+            "artifact_sha256": value["artifact_sha256"],
+        }
+    elif args.command == "record-failure":
+        path, value = record_failure(
+            args.contract, args.inspection, args.observed_at
+        )
+        result = {
+            "path": _relative(path),
+            "state": value["state"],
+            "failed_request": value["failed_request"],
+            "failure_boundary": value["failure_boundary"],
+            "artifact_sha256": value["artifact_sha256"],
+        }
+    elif args.command == "inspect-failure":
+        path, value = inspect_failure(args.failure, args.inspected_at)
+        result = {
+            "path": _relative(path),
+            "state": value["state"],
+            "checks": value["checks"],
+            "artifact_sha256": value["artifact_sha256"],
+        }
+    elif args.command == "register-permanent-missing":
+        path, value = register_permanent_missing(
+            args.failure_inspection, args.registered_at
+        )
+        result = {
+            "path": _relative(path),
+            "state": value["state"],
+            "symbol": value["symbol"],
+            "provider_requests": value["provider_requests"],
             "artifact_sha256": value["artifact_sha256"],
         }
     elif args.command == "collect":

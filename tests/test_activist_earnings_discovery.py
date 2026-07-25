@@ -168,3 +168,40 @@ def test_yahoo_response_parser_preserves_raw_daily_ohlcv() -> None:
     assert task["task_sha256"] == data._hash(
         {key: value for key, value in task.items() if key != "task_sha256"}
     )
+
+
+def test_partial_scope_keeps_only_accessed_symbols() -> None:
+    assert data._filtered_scope(
+        {
+            "dates": ["2023-01-03", "2023-01-04"],
+            "symbols_by_date": {
+                "2023-01-03": ["ABC", "XYZ"],
+                "2023-01-04": ["XYZ"],
+            },
+        },
+        {"ABC"},
+    ) == {
+        "dates": ["2023-01-03"],
+        "symbols_by_date": {"2023-01-03": ["ABC"]},
+    }
+
+
+def test_prospectively_registered_http_400_is_permanent_missing() -> None:
+    class Response:
+        status_code = 400
+
+    class Session:
+        def get(self, *_args, **_kwargs):
+            return Response()
+
+    telemetry = {
+        "requests": 0,
+        "request_seconds": 0.0,
+        "failures": 0,
+        "permanent_missing_responses": 0,
+    }
+    task = data._fetch(data._request("GRTX"), Session(), telemetry)
+    assert task["status"] == "PERMANENT_MISSING"
+    assert task["rows"] == []
+    assert telemetry["requests"] == 1
+    assert telemetry["permanent_missing_responses"] == 1
