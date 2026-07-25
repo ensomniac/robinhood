@@ -159,8 +159,10 @@ grid, deterministic selection rule, rolling-origin partitions, costs, scopes,
 and committed implementation hashes. Development plan
 `c7a03b29...44bad6` freezes exactly 12 requests: one Massive split-action range
 and 11 raw Yahoo daily symbol ranges from 2008-01-02 through 2012-10-15, with
-no retry or substitution. Commit it, then independently inspect every request
-and binding; access no prices until the inspection is committed.
+no retry or substitution. Inspection `f2a8c75f...2df398` independently rebuilt
+all 12 requests, provider semantics, search and calendar bindings, scopes, and
+zero-outcome boundary in zero requests. Commit it, then collect only those
+exact development tasks; confirmation and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
