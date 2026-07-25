@@ -1,0 +1,71 @@
+{
+  "artifact_kind": "development-search-result",
+  "artifact_sha256": "27b9c7cf5371119bfa70298a031b3b98262b8f58bd62e4644ca4b96b5e532319",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "elapsed_seconds": 0.2852795420913026,
+  "evaluation_binding": {
+    "compression": "gzip",
+    "content_sha256": "b9c82277a3033fc312179efbd0b8d5315bc26f1b2316a4516768f059c9283b77",
+    "file_sha256": "48a3be53f1250aa52dbe366bd163f335bfef1cbc3cd6c56f36e79c7f7b5f48b3",
+    "format": "canonical-json",
+    "kind": "external-development-evaluation",
+    "relative_path": "_derived/strategy_discovery_evaluations/b9c82277a3033fc312179efbd0b8d5315bc26f1b2316a4516768f059c9283b77/evaluation.json.gz",
+    "schema_version": 1,
+    "storage": "LOCAL_HISTORICAL_DATA_ROOT"
+  },
+  "evaluation_summary": {
+    "dataset_manifest": "/Users/ensomniac/trade/robinhood_codex/strategy_tournament/v2/discovery/style-etf-20-day-breakout-continuation/development-dataset/dataset-style-etf-20-day-breakout-continuation-development-632229c0839ac1c8-5fddbf9a23808b673929dea8e47cdb331d066ed1c16cc3a917fb2da522f5a795.json",
+    "experiment_id": "experiment-style-etf-20-day-breakout-continuation-v1",
+    "implementation_sha256": "1b6a52c26a118e0edfeed4777f6fb4d38444cdeb1b39d3cf3d468b4da030de87",
+    "trial_count": 1,
+    "trials": [
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 204,
+          "oof_filled_account_returns": 70,
+          "oof_net_pnl_dollars": 70
+        },
+        "maturity_rows": 204,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 17.443091300725012,
+          "stress_20bps_profit_factor": 0.44394518244285996,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.0796114127994421,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "breadth_sma": 100,
+          "breakout_lookback_sessions": 20,
+          "maximum_hold_sessions": 5,
+          "minimum_breadth_count": 6,
+          "stop_atr14": 1.5,
+          "trend_sma": 200
+        },
+        "trial_accounting_rows": 204,
+        "trial_id": "trial-4b12aa89fa1da991"
+      }
+    ]
+  },
+  "family_id": "style-etf-20-day-breakout-continuation",
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 1,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "search_path": "strategy_tournament/v2/discovery/style-etf-20-day-breakout-continuation/search/style-etf-20-day-breakout-continuation-search-632229c0839ac1c88d5cac8cd8794616a2d6657c46b79e1ae945dcc119268f92.json",
+  "search_sha256": "632229c0839ac1c88d5cac8cd8794616a2d6657c46b79e1ae945dcc119268f92",
+  "state": "DEVELOPMENT_EVALUATED"
+}

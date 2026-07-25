@@ -238,7 +238,12 @@ then materialize and inspect the final search-bound manifest. Status
 zero additional requests or substitutions. Commit it before final independent
 dataset inspection. Inspection `cda66dce...627a8` passed all six checks and
 final manifest `5fddbf9a...f5a795` is `DATASET_INSPECTED_READY`, exactly bound
-to search `632229c0...268f92`. Commit both, then evaluate the sole trial.
+to search `632229c0...268f92`. Development result
+`27b9c7cf...532319` evaluated the sole trial with 70 fills and zero provider
+requests. Its uninspected 20-bps summary is adverse: -7.96% log growth, 0.444
+profit factor, 17.44R drawdown, unstable folds, DSR zero, Holm false, and PBO
+one. Commit it and independently inspect every metric before terminal
+disposition; confirmation remains forbidden.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
