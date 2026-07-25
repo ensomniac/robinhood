@@ -43,9 +43,12 @@ five-session embargo, and 293 untouched confirmation sessions through
 mechanism slot, uses a frozen no-purchase Yahoo raw-OHLCV contract plus Massive
 split actions, and now has an outcome-blind exact family contract
 `c0529b2e...f4d9` plus capacity manifest `e2fd12bb...e3f4`. Freezing accessed
-zero prices or outcomes and made zero provider requests. Commit this predecessor
-state before the generic preflight and search-manifest transitions; price access
-remains forbidden until the collection plan is independently inspected.
+zero prices or outcomes and made zero provider requests. Search `29cbbeed...f23a`
+and collection plan `a1191e85...36ea` are frozen; plan inspection
+`639832cf...e98` passed. Development dataset `56542d01...5d17` was collected
+with five requests and independently rebuilt by inspection `b66d4ca4...b5333`.
+Its compact manifest is `da6f2844...7364`; confirmation remains untouched.
+Commit this inspected predecessor state before running the 32-trial evaluation.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
