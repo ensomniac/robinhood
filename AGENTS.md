@@ -128,7 +128,10 @@ development collection graph before provider access. Plan
 `ab8fcef6...9a07c` now freezes one Massive split request plus eight Alpaca SIP
 raw daily symbol ranges from 2016-01-04 through 2018-12-31, with zero
 substitutions or provider access. Commit and independently inspect it before
-collection.
+collection. Inspection `79444d28...94973` rebuilt the committed search,
+calendar, 748-session warmup/development partition, eight-symbol request graph,
+Alpaca/Massive semantics, declared v1 contamination, and untouched confirmation
+scope. Commit it, then collect only plan `ab8fcef6...9a07c`.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 102 weekly
 decision dates.
