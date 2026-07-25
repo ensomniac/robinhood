@@ -287,6 +287,12 @@ ranking, transport, and zero-outcome boundary and earned
 `SEC_EXPANSION_COLLECTION_PLAN_INSPECTED_READY`. Commit and push it, then
 execute only the 32 frozen SEC archive requests. Market-price, confirmation,
 and broker access remain forbidden.
+The first request returned HTTP 404 because the frozen root contains
+`financial-statement-and-notes-data-sets` while the SEC's official index links
+use `financial-statement-notes-data-sets`. No archive or metadata row was
+retained. The v12 failure recorder and independent inspector bind that exact
+one-request, zero-row boundary and forbid a same-version retry. Commit and test
+them, then record and inspect v12 before freezing a corrected source successor.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
