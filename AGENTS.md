@@ -79,8 +79,11 @@ resolve stop first, and enforce the five-times-cost floor. The proposed
 `6307579b...6d09d` and capacity manifest `8b47eb2a...08964` freeze all 32
 trials, 200 warmup sessions, 1,000 development sessions, five embargo sessions,
 and 500 confirmation sessions through 2014-10-28. They accessed zero prices or
-target outcomes. Commit these exact artifacts before the generic outcome-blind
-preflight; provider access and confirmation remain forbidden.
+target outcomes. Preflight inspection `54f9cc9c...6209b` independently rebuilt
+the family identity, 998-decision capacity, point-in-time boundary, and
+zero-outcome state in zero provider requests. Commit this exact inspection
+before freezing the development search; provider access and confirmation remain
+forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
