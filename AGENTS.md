@@ -250,6 +250,22 @@ survived. The exact family is terminal without confirmation or repair. Preserve
 both its source-failure and evaluated exposure records and continue the next
 materially distinct admissible family.
 
+The stale rolling-batch requirement for one contiguous 480-session untouched
+calendar is not a research pause. Three rolling slots are open, and historical
+successors may use globally disjoint date-symbol or event evidence immediately.
+The active no-calendar-wait lane is
+`earnings-positive-surprise-drift-v12-sec-2012-2019-expansion`, an
+existing-mechanism PEAD replication. It freezes 32 exact SEC Financial
+Statement and Notes quarterly archives, uses 2012-01-01 through 2017-12-15 for
+development, preserves a five-complete-session embargo boundary, and reserves
+2018-01-08 through 2019-12-31 for untouched confirmation. Its capacity graph
+requires same-accession TradingSymbol and common-stock-shares cover evidence,
+forbids current ticker mapping, and carries the 32 previously evaluated PEAD
+trials into cumulative DSR and overfitting accounting. Commit the implementation
+and tests before freezing and independently inspecting the exact metadata
+contract. No archive, market price, forward return, confirmation outcome, or
+broker action may be accessed before that committed inspection.
+
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
 event join produced 153 development pairs across 57 possible entry dates, but

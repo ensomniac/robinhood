@@ -121,6 +121,21 @@ must be observable before the next-session open, every trial and zero day must
 enter selection accounting, and confirmation market data remains closed until
 one exact inspected development winner freezes its power and reserve targets.
 
+That 2010-2011 exact version is now terminal after independent development
+inspection: no trial produced more than seven out-of-fold fills and none passed
+the complete DSR, Holm, PBO, or rolling-fold gates. This is an underpowered
+mechanism test, not authority to repair its evaluated corpus or open its
+confirmation reserve.
+
+The immediate successor is the outcome-clean 2012-2019 SEC expansion. It keeps
+the same causal reaction-confirmed PEAD thesis, freezes all 32 quarterly
+metadata archives before access, uses 2012-2017 for development, preserves the
+full holding-plus-embargo boundary, and seals 2018-2019 for confirmation.
+Same-accession common-equity evidence remains mandatory. The prior 32 evaluated
+trials enter cumulative selection correction. This event-specific,
+date-symbol-disjoint path replaces the stale contiguous-calendar dependency and
+requires no literal future-date wait.
+
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`
 and its independent retirement in
