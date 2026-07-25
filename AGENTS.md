@@ -196,8 +196,11 @@ or outcomes. Preflight `9a979dde...8f034` independently rebuilt the family,
 995-decision capacity, point-in-time boundary, and zero-outcome state in zero
 requests. Search `63a747af...67afea` now freezes all 32 trials, deterministic
 selection, rolling folds, costs, scopes, and implementation hashes. Commit it,
-then freeze and independently inspect the exact development collection plan;
-access no price until both artifacts are committed.
+then freeze and independently inspect the exact development collection plan.
+Plan `591d3825...e79c1c` freezes one Massive split-action range and ten raw
+Yahoo symbol ranges through 2012-10-15, with no retry or substitution. Commit
+it, then independently rebuild the request graph; access no price until the
+inspection is committed.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
