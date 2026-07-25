@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import subprocess
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
 from pathlib import Path
@@ -14,6 +13,7 @@ from typing import Any
 import dense_strategy_runtime as runtime
 import outcome_exposure
 import portfolio_maturity
+import rolling_discovery_authorization
 import sector_etf_gap_drift as artifact_support
 import strategy_discovery
 from historical_store import sha256_file
@@ -144,59 +144,54 @@ def _scope(dates: Sequence[str]) -> dict[str, Any]:
     return {"dates": list(dates), "symbols": list(SYMBOLS)}
 
 
-def _weekly_slots(
-    created_at: str, *, enforce_commit: bool
-) -> list[dict[str, str]]:
-    created = _timestamp(created_at, "created_at")
-    target_week = created.date().isocalendar()[:2]
+def _rolling_slot_authority(*, enforce_commit: bool) -> dict[str, Any]:
+    status_path = rolling_discovery_authorization.DEFAULT_STATUS
     if enforce_commit:
-        result = subprocess.run(
-            ["git", "ls-files", "*.json"],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
+        strategy_discovery.require_committed(status_path)
+    status = rolling_discovery_authorization.load_ready_status(status_path)
+    authorization_path = Path(str(status["authorization_path"]))
+    if not authorization_path.is_absolute():
+        authorization_path = PROJECT_ROOT / authorization_path
+    if enforce_commit:
+        strategy_discovery.require_committed(authorization_path)
+    authorization = rolling_discovery_authorization.load_authorization(
+        authorization_path
+    )
+    if not (
+        status.get("state") == "ROLLING_DISCOVERY_AUTHORIZED"
+        and status.get("activation_policy")
+        == rolling_discovery_authorization.POLICY
+        and status.get("active_family_count") == 0
+        and status.get("available_slot_count") == 3
+        and status.get("provider_access_permitted") is True
+        and status.get("target_outcome_access_permitted") is False
+        and status.get("broker_actions_permitted") is False
+        and authorization.get("maximum_concurrent_active_mechanism_families")
+        == 3
+        and authorization.get("selection_accounting", {}).get(
+            "all_prior_trials_retained"
         )
-        paths = [PROJECT_ROOT / item for item in result.stdout.splitlines()]
-    else:
-        paths = list(
-            (PROJECT_ROOT / "strategy_tournament/v2").rglob("*.json")
+        is True
+        and authorization.get("selection_accounting", {}).get(
+            "all_prior_dispositions_retained"
         )
-    slots: list[dict[str, str]] = []
-    for path in paths:
-        try:
-            value = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        if not (
-            isinstance(value, Mapping)
-            and value.get("new_mechanism_family_slot_consumed") is True
-            and value.get("family_id") != FAMILY_ID
-            and isinstance(value.get("created_at"), str)
-        ):
-            continue
-        try:
-            observed = datetime.fromisoformat(
-                str(value["created_at"]).replace("Z", "+00:00")
-            )
-        except ValueError:
-            continue
-        if observed.date().isocalendar()[:2] != target_week:
-            continue
-        slots.append(
-            {
-                "family_id": str(value["family_id"]),
-                "created_at": str(value["created_at"]),
-                "path": _repo_path(path),
-                "file_sha256": sha256_file(path),
-            }
-        )
-    slots.sort(key=lambda item: (item["created_at"], item["family_id"]))
-    if len(slots) >= 3:
+        is True
+    ):
         raise CrossStyleBreadthDiscoveryError(
-            "the authorized three-new-family ISO-week budget is exhausted"
+            "rolling terminal-replacement authority is not ready"
         )
-    return slots
+    return {
+        "policy": rolling_discovery_authorization.POLICY,
+        "active_family_count_before_freeze": 0,
+        "available_slot_count_before_freeze": 3,
+        "consumed_active_slot": 1,
+        "authorization_path": _repo_path(authorization_path),
+        "authorization_sha256": authorization["authorization_sha256"],
+        "status_path": _repo_path(status_path),
+        "status_file_sha256": sha256_file(status_path),
+        "all_prior_trials_retained": True,
+        "all_prior_dispositions_retained": True,
+    }
 
 
 def _validate_exposure_state(contract: Mapping[str, Any]) -> None:
@@ -215,7 +210,10 @@ def _validate_exposure_state(contract: Mapping[str, Any]) -> None:
 def freeze_contract(
     *, created_at: str, enforce_commit: bool = True
 ) -> tuple[Path, dict[str, Any], Path]:
-    slots = _weekly_slots(created_at, enforce_commit=enforce_commit)
+    _timestamp(created_at, "created_at")
+    rolling_slot = _rolling_slot_authority(
+        enforce_commit=enforce_commit
+    )
     if enforce_commit:
         strategy_discovery.require_committed(Path(__file__).resolve())
     calendar_inspection = _calendar_authority(
@@ -298,8 +296,8 @@ def freeze_contract(
         "research_generation": RESEARCH_GENERATION,
         "successor_id": SUCCESSOR_ID,
         "new_mechanism_family_slot_consumed": True,
-        "weekly_new_family_slot": len(slots) + 1,
-        "weekly_new_family_predecessors": slots,
+        "rolling_active_family_slot": 1,
+        "rolling_slot_authority": rolling_slot,
         "prior_family_attempt_count": 0,
         "mechanism": (
             "Buy liquid U.S. growth exposure only when completed weekly "
@@ -492,7 +490,7 @@ def validate_contract(
         and contract.get("successor_id") == SUCCESSOR_ID
         and contract.get("research_generation") == RESEARCH_GENERATION
         and contract.get("new_mechanism_family_slot_consumed") is True
-        and contract.get("weekly_new_family_slot") in {1, 2, 3}
+        and contract.get("rolling_active_family_slot") == 1
         and len(contract.get("trial_family", [])) == 1
         and contract.get("development_warmup_dates") == warmup
         and contract.get("development_dates") == development
@@ -536,6 +534,12 @@ def validate_contract(
         raise CrossStyleBreadthDiscoveryError(
             "family calendar-inspection binding drifted"
         )
+    if contract.get("rolling_slot_authority") != _rolling_slot_authority(
+        enforce_commit=enforce_commit
+    ):
+        raise CrossStyleBreadthDiscoveryError(
+            "family rolling-slot binding drifted"
+        )
     _validate_exposure_state(contract)
 
 
@@ -557,8 +561,8 @@ def main() -> int:
                 {
                     "path": _repo_path(path),
                     "state": contract["status"],
-                    "weekly_new_family_slot": contract[
-                        "weekly_new_family_slot"
+                    "rolling_active_family_slot": contract[
+                        "rolling_active_family_slot"
                     ],
                     "trial_count": len(contract["trial_family"]),
                     "development_sessions": len(

@@ -180,8 +180,19 @@ def test_contract_freezes_dense_disjoint_historical_capacity(
     )
     monkeypatch.setattr(
         discovery,
-        "_weekly_slots",
-        lambda *_args, **_kwargs: [],
+        "_rolling_slot_authority",
+        lambda *_args, **_kwargs: {
+            "policy": "ROLLING_TERMINAL_REPLACEMENT",
+            "active_family_count_before_freeze": 0,
+            "available_slot_count_before_freeze": 3,
+            "consumed_active_slot": 1,
+            "authorization_path": "rolling.json",
+            "authorization_sha256": "1" * 64,
+            "status_path": "status.json",
+            "status_file_sha256": "2" * 64,
+            "all_prior_trials_retained": True,
+            "all_prior_dispositions_retained": True,
+        },
     )
 
     _path, contract, capacity = discovery.freeze_contract(
@@ -190,7 +201,7 @@ def test_contract_freezes_dense_disjoint_historical_capacity(
     )
 
     assert capacity.is_file()
-    assert contract["weekly_new_family_slot"] == 1
+    assert contract["rolling_active_family_slot"] == 1
     assert contract["new_mechanism_family_slot_consumed"] is True
     assert len(contract["trial_family"]) == 1
     assert len(contract["development_dates"]) == 750

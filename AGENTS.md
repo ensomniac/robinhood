@@ -47,6 +47,11 @@ already-completed 2015-2017 date-symbol pairs for development, a fixed
 five-session embargo, and already-completed 2018-2020 date-symbol pairs for
 untouched confirmation. The implementation opens no outcomes: freeze and
 independently inspect its exact family contract before any provider access.
+Its first freeze attempt correctly failed closed on the superseded ISO-week
+counter; the repaired contract must bind the independently inspected
+`ROLLING_TERMINAL_REPLACEMENT` authority, which retains all prior trials and
+dispositions while limiting the campaign to three concurrent active mechanism
+families.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
