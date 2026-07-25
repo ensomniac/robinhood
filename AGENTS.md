@@ -89,8 +89,11 @@ split-action range and nine raw Yahoo daily symbol ranges from 2008-01-02
 through 2012-10-15. It binds the committed search and contract calendar with no
 retries or substitutions. Inspection `069ff993...41d2e` independently rebuilt
 all ten tasks, provider semantics, scope, hashes, and zero-outcome boundary with
-zero provider requests. Commit the inspection before collection; confirmation
-and broker access remain forbidden.
+zero provider requests. Collection `8c8fbf33...dd357` completed all ten tasks
+in ten requests with zero failures and zero substitutions; external dataset
+`60a85bad...ca2ab` remains outside Git. Commit the compact uninspected status
+before additive data inspection; confirmation and broker access remain
+forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
