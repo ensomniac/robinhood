@@ -81,9 +81,11 @@ trials, 200 warmup sessions, 1,000 development sessions, five embargo sessions,
 and 500 confirmation sessions through 2014-10-28. They accessed zero prices or
 target outcomes. Preflight inspection `54f9cc9c...6209b` independently rebuilt
 the family identity, 998-decision capacity, point-in-time boundary, and
-zero-outcome state in zero provider requests. Commit this exact inspection
-before freezing the development search; provider access and confirmation remain
-forbidden.
+zero-outcome state in zero provider requests. Search `24504e22...1ea5e` now
+binds the committed preflight, complete 32-trial grid, deterministic selection
+rule, rolling-origin partitions, costs, scopes, and implementation hashes.
+Commit this exact search before freezing its provider request graph; provider
+access and confirmation remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
