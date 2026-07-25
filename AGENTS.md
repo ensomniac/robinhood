@@ -118,9 +118,12 @@ through 2020-12-31. It changes no rule or parameter and consumes no new rolling
 mechanism-family slot. Contract `0f690326...af3da` now freezes that exact graph,
 v1 lineage, declared contamination, Alpaca SIP transport, and current
 implementation hashes. Commit it and run zero-outcome preflight before freezing
-search or collection; no successor provider access is yet permitted.
+search or collection. Preflight `adcf86ed...7fefe` independently rebuilt the
+113-decision capacity, point-in-time boundary, family identity, and zero-outcome
+state with zero provider requests. Commit it, then freeze search; no successor
+provider access is yet permitted.
 Confirmation remains forbidden unless the exact inspected development result
-freezes a winner and the dynamic power target fits the reserved 154 weekly
+freezes a winner and the dynamic power target fits the reserved 102 weekly
 decision dates.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
