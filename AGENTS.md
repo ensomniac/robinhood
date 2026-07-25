@@ -212,7 +212,11 @@ topology, and untouched confirmation before it can admit this recovery.
 Inspection `54239178...8da33e` passed every reconstruction and truthfully
 reports prior market-outcome access with
 `INSPECTED_CHECKPOINT_RECOVERY_BOUND`. Commit it, then materialize from the
-retained checkpoints with zero provider requests.
+retained checkpoints with zero provider requests. Recovery status
+`e43071eb...cc3c96b` materialized dataset `8eff5ccb...6a35bb` from nine cache
+hits, preserving the original nine-request telemetry with zero failures or
+substitutions. It remains `COLLECTED_UNINSPECTED`; commit it and independently
+rebuild the external file, rows, scope, and runtime schema before evaluation.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
