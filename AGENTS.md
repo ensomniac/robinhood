@@ -374,6 +374,11 @@ Search `36a9738a...852da7` now freezes that exact committed contract,
 preflight, 32 current trials, 32 prior paths, and zero-outcome state. Commit and
 push it, then run the dedicated v13 search inspector before the first Yahoo
 development request.
+Inspection `52bbde4c...ab64cd` exactly rebuilt the frozen search, 64-trial
+corrections, all 635 request hashes, confirmation symbol disjointness,
+implementation bindings, and globally untouched development and confirmation
+scopes. Commit and push it, then collect only the authorized development graph.
+Confirmation provider access remains forbidden.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
