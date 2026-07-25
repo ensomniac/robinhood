@@ -202,7 +202,11 @@ family identity, and zero-strategy-outcome boundary with zero provider
 requests. Refreshed search `e99d0450...614541` preserves the identical rule,
 dates, symbols, folds, costs, selection, and gates; only the loader
 implementation binding differs. Commit it before freezing zero-request
-checkpoint reuse.
+checkpoint reuse. Recovery plan `6f4c7422...77541e` binds the inspected and
+indexed failure, original plan, refreshed search, and the exact nine retained
+task IDs. It records nine prior requests and authorizes zero additional
+requests, substitutions, strategy changes, confirmation access, or broker
+actions. Commit and independently inspect it before materialization.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
