@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 from collections.abc import Sequence
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -61,6 +62,7 @@ def build_failure(
             "v10 failed collection lineage differs"
         )
     historical_store = store or HistoricalDayStore.from_env()
+    observed = metadata._timestamp(observed_at, "observed_at")
     task_root = (
         historical_store.root
         / collection.PRIVATE_NAMESPACE
@@ -72,8 +74,19 @@ def build_failure(
         raise EarningsSecReactionFailureError(
             "v10 HTTP 400 boundary contains checkpointed tasks"
         )
+    observed_timestamp = datetime.fromisoformat(
+        observed.replace("Z", "+00:00")
+    )
+    records_at_failure = [
+        record
+        for record in outcome_exposure.read_index()
+        if datetime.fromisoformat(
+            str(record["recorded_at"]).replace("Z", "+00:00")
+        )
+        <= observed_timestamp
+    ]
     if outcome_exposure.find_overlaps(
-        contract["development_scope"], outcome_exposure.read_index()
+        contract["development_scope"], records_at_failure
     ):
         raise EarningsSecReactionFailureError(
             "v10 scope was indexed despite retaining no price outcomes"
@@ -90,7 +103,7 @@ def build_failure(
         "family_id": search_source.FAMILY_ID,
         "successor_id": search_source.SUCCESSOR_ID,
         "state": "REACTION_V10_HTTP_400_SOURCE_POLICY_FAILURE",
-        "observed_at": metadata._timestamp(observed_at, "observed_at"),
+        "observed_at": observed,
         "search_path": metadata._repo_path(search_path),
         "search_file_sha256": sha256_file(search_path),
         "search_sha256": search["artifact_sha256"],

@@ -33,6 +33,14 @@ def test_v11_contract_freezes_http_400_before_outcomes(
     monkeypatch.setattr(
         search.metadata, "_repo_path", lambda path: str(path)
     )
+    monkeypatch.setattr(
+        search.outcome_exposure, "read_index", lambda: []
+    )
+    monkeypatch.setattr(
+        search.outcome_exposure,
+        "audit",
+        lambda: {"index_sha256": "a" * 64},
+    )
     selected = search.selection()
     capacity_path, _manifest = freeze_dataset_contract(
         {
