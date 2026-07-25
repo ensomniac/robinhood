@@ -201,6 +201,9 @@ ETF_IBS_REVERSAL_FAMILY = "liquid-equity-etf-ibs-reversal"
 ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY = (
     "country-equity-etf-close-strength-continuation"
 )
+ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY = (
+    "industry-etf-abnormal-volume-continuation"
+)
 ETF_CLOSE_TO_OPEN_FAMILY = "liquid-etf-close-to-open-momentum"
 CLOSE_TO_OPEN_ETF_SYMBOLS = ("QQQ", "IWM", "DIA")
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
@@ -240,6 +243,7 @@ SUPPORTED_FAMILIES = {
     *ETF_OVERSOLD_FAMILIES,
     ETF_IBS_REVERSAL_FAMILY,
     ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
+    ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
@@ -2363,6 +2367,157 @@ def _etf_close_strength_continuation_candidates(
     return candidates
 
 
+def _etf_abnormal_volume_continuation_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    daily = _daily_series(dataset)
+    volume_lookback = int(parameters["volume_lookback_sessions"])
+    volume_multiple_minimum = float(
+        parameters["minimum_volume_multiple"]
+    )
+    advance_floor = float(
+        parameters["minimum_advance_fraction"]
+    )
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    if (
+        volume_lookback not in {20, 60}
+        or volume_multiple_minimum not in {1.5, 2.5}
+        or advance_floor not in {0.01, 0.02}
+        or stop_atr not in {1.0, 1.5}
+        or hold not in {2, 5}
+    ):
+        raise DenseStrategyRuntimeError(
+            "ETF abnormal-volume continuation parameters escaped the frozen grid"
+        )
+    indices = {
+        symbol: {
+            str(bar["date"]): index
+            for index, bar in enumerate(bars)
+        }
+        for symbol, bars in daily.items()
+    }
+    feature_cache = dataset.get("_etf_pullback_feature_cache")
+    if not isinstance(feature_cache, Mapping):
+        feature_cache = _etf_pullback_feature_cache(daily)
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        scored: list[tuple[float, float, str, float]] = []
+        for symbol, bars in daily.items():
+            symbol_index = indices[symbol].get(decision_date)
+            if symbol_index is None or symbol_index < max(
+                volume_lookback, 99, 14, 1
+            ):
+                continue
+            bar = bars[symbol_index]
+            trailing_volume = statistics.fmean(
+                float(item["volume"])
+                for item in bars[
+                    symbol_index
+                    - volume_lookback : symbol_index
+                ]
+            )
+            if trailing_volume <= 0:
+                continue
+            volume_multiple = (
+                float(bar["volume"]) / trailing_volume
+            )
+            features = feature_cache[symbol][decision_date]
+            trend = features["sma100"]
+            atr14 = features["atr14"]
+            advance = features["decline1"]
+            if (
+                trend is None
+                or atr14 is None
+                or advance is None
+                or float(bar["close"]) <= trend
+                or volume_multiple < volume_multiple_minimum
+                or advance < advance_floor
+                or not _cost_floor(advance)
+            ):
+                continue
+            scored.append(
+                (-volume_multiple, -advance, symbol, atr14)
+            )
+        entry_date = calendar[calendar_index + 1]
+        if calendar_index + 1 + hold > len(calendar):
+            continue
+        for rank, (
+            negative_volume_multiple,
+            negative_advance,
+            symbol,
+            atr14,
+        ) in enumerate(sorted(scored), 1):
+            volume_multiple = -negative_volume_multiple
+            advance = -negative_advance
+            bars = daily[symbol]
+            entry_index = indices[symbol].get(entry_date)
+            signal_id = (
+                f"{entry_date}-"
+                f"{ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY}-{symbol}"
+            )
+            if entry_index is None:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": "missing_next_open",
+                    }
+                )
+                continue
+            if entry_index + hold > len(bars):
+                continue
+            exit_dates = {
+                str(item["date"])
+                for item in bars[
+                    entry_index : entry_index + hold
+                ]
+            }
+            expected_dates = set(
+                calendar[
+                    calendar_index + 1 : calendar_index + 1 + hold
+                ]
+            )
+            if exit_dates != expected_dates:
+                candidates.append(
+                    {
+                        "signal_id": signal_id,
+                        "signal_date": entry_date,
+                        "decision_date": decision_date,
+                        "symbol": symbol,
+                        "outcome": "missed_fill",
+                        "rank": rank,
+                        "rejection_reason": (
+                            "incomplete_holding_bars"
+                        ),
+                    }
+                )
+                continue
+            candidate = _daily_candidate(
+                family_id=ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
+                symbol=symbol,
+                decision_date=decision_date,
+                entry_date=entry_date,
+                bars=bars,
+                entry_index=entry_index,
+                stop_atr=stop_atr,
+                atr14=atr14,
+                hold_sessions=hold,
+                rank=rank,
+                score=volume_multiple + advance,
+            )
+            candidate["volume_multiple"] = volume_multiple
+            candidate["one_session_return_fraction"] = advance
+            candidates.append(candidate)
+    return candidates
+
+
 def _etf_cross_sectional_momentum_candidates(
     dataset: Mapping[str, Any], parameters: Mapping[str, Any]
 ) -> list[dict[str, Any]]:
@@ -3695,6 +3850,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             *ETF_OVERSOLD_FAMILIES,
             ETF_IBS_REVERSAL_FAMILY,
             ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
+            ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
         }:
             symbols = dataset.get("symbols")
             if not isinstance(symbols, list) or set(map(str, symbols)) != set(daily):
@@ -3724,6 +3880,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             *ETF_OVERSOLD_FAMILIES,
             ETF_IBS_REVERSAL_FAMILY,
             ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
+            ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
         }:
             prepared["_etf_pullback_feature_cache"] = (
                 _etf_pullback_feature_cache(daily)
@@ -5487,6 +5644,10 @@ def build_candidates(
         return _etf_close_strength_continuation_candidates(
             dataset, parameters
         )
+    if family_id == ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY:
+        return _etf_abnormal_volume_continuation_candidates(
+            dataset, parameters
+        )
     if family_id == ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY:
         return _etf_cross_sectional_momentum_candidates(dataset, parameters)
     if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
@@ -5796,6 +5957,7 @@ def _production_daily_signal(
         *ETF_OVERSOLD_FAMILIES,
         ETF_IBS_REVERSAL_FAMILY,
         ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
+        ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
     }:
         frozen_symbols = frozen_universe.get("symbols")
         observed_symbols = decision_data.get("symbols")
@@ -6452,6 +6614,112 @@ def _production_daily_signal(
                 "rank": 1,
                 "score": close_location + advance,
                 "close_location": close_location,
+                "one_session_return_fraction": advance,
+                "expected_gross_move_fraction": advance,
+                "atr": atr14,
+                "stop_atr_multiple": stop_atr,
+                "holding_trading_days": hold_sessions,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_maximum_hold_close",
+                    "maximum_hold_sessions": hold_sessions,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
+        if family_id == ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY:
+            volume_lookback = int(
+                parameters["volume_lookback_sessions"]
+            )
+            volume_multiple_minimum = float(
+                parameters["minimum_volume_multiple"]
+            )
+            advance_floor = float(
+                parameters["minimum_advance_fraction"]
+            )
+            stop_atr = float(parameters["stop_atr14"])
+            hold_sessions = int(
+                parameters["maximum_hold_sessions"]
+            )
+            if (
+                volume_lookback not in {20, 60}
+                or volume_multiple_minimum not in {1.5, 2.5}
+                or advance_floor not in {0.01, 0.02}
+                or stop_atr not in {1.0, 1.5}
+                or hold_sessions not in {2, 5}
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production ETF abnormal-volume continuation rules "
+                    "escaped the frozen grid"
+                )
+            qualified: list[
+                tuple[float, float, str, float]
+            ] = []
+            for symbol in map(str, frozen_symbols):
+                bars = daily[symbol]
+                symbol_index = indices[symbol].get(decision_date)
+                if symbol_index is None or symbol_index < max(
+                    volume_lookback, 99, 14, 1
+                ):
+                    raise DenseStrategyRuntimeError(
+                        "production ETF abnormal-volume continuation "
+                        "history is incomplete"
+                    )
+                bar = bars[symbol_index]
+                trailing_volume = statistics.fmean(
+                    float(item["volume"])
+                    for item in bars[
+                        symbol_index
+                        - volume_lookback : symbol_index
+                    ]
+                )
+                if trailing_volume <= 0:
+                    continue
+                volume_multiple = (
+                    float(bar["volume"]) / trailing_volume
+                )
+                trend = _sma(bars, symbol_index, 100)
+                atr14 = _atr(bars, symbol_index)
+                advance = (
+                    float(bar["close"])
+                    / float(bars[symbol_index - 1]["close"])
+                    - 1
+                )
+                if (
+                    trend is not None
+                    and atr14 is not None
+                    and float(bar["close"]) > trend
+                    and volume_multiple >= volume_multiple_minimum
+                    and advance >= advance_floor
+                    and _cost_floor(advance)
+                ):
+                    qualified.append(
+                        (
+                            -volume_multiple,
+                            -advance,
+                            symbol,
+                            atr14,
+                        )
+                    )
+            if not qualified:
+                raise DenseStrategyRuntimeError(
+                    "no exact production ETF abnormal-volume continuation "
+                    "signal"
+                )
+            (
+                negative_volume_multiple,
+                negative_advance,
+                symbol,
+                atr14,
+            ) = sorted(qualified)[0]
+            volume_multiple = -negative_volume_multiple
+            advance = -negative_advance
+            return {
+                "symbol": symbol,
+                "rank": 1,
+                "score": volume_multiple + advance,
+                "volume_multiple": volume_multiple,
                 "one_session_return_fraction": advance,
                 "expected_gross_move_fraction": advance,
                 "atr": atr14,
@@ -7917,6 +8185,7 @@ def evaluate_production_signal(
         *ETF_OVERSOLD_FAMILIES,
         ETF_IBS_REVERSAL_FAMILY,
         ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
+        ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
     }:
         return _production_daily_signal(
             decision_data, family_id, parameters, frozen_universe

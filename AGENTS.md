@@ -105,6 +105,18 @@ passed growth, PF, drawdown, rolling folds, DSR, Holm, or neighbor stability.
 Preserve this exact development corpus without repair; its 498-decision
 confirmation reserve remains untouched.
 
+The third and final new mechanism-family slot in the current ISO-week budget
+now advances `industry-etf-abnormal-volume-continuation-v1`. Its prospective
+32-trial grid combines completed volume multiple `{1.5,2.5}` over lookback
+`{20,60}`, one-session advance `{1%,2%}`, stop `{1.0,1.5}×ATR14`, and hold
+`{2,5}` sessions with a fixed SMA100 regime gate. The fixed universe is `IBB`,
+`IGV`, `ITB`, `KBE`, `KRE`, `SMH`, `XHB`, `XME`, and `XOP`. Historical and
+production paths rank the largest completed abnormal-volume shock, enter only
+at the next session open, resolve stop first, and preserve the cost floor. The
+proposed 2008-2014 pairs have zero global outcome overlaps. No contract, price,
+or outcome authority exists until this implementation is committed and the
+exact contract is frozen and independently inspected.
+
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
 development corpora with confirmation still sealed. The unchanged-rule PEAD
