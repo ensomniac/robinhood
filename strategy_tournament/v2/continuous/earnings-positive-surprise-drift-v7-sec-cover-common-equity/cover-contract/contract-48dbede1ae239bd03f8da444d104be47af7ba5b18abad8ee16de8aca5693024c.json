@@ -1,0 +1,166 @@
+{
+  "artifact_kind": "earnings-sec-common-equity-cover-contract",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_thresholds": {
+    "minimum_confirmation_event_dates": 20,
+    "minimum_development_event_dates": 30,
+    "minimum_unique_events": 50
+  },
+  "confirmation_outcomes_accessed": false,
+  "contract_sha256": "48dbede1ae239bd03f8da444d104be47af7ba5b18abad8ee16de8aca5693024c",
+  "cover_identity_semantics": {
+    "as_of_date_not_after_filing_date": true,
+    "as_of_date_not_before_report_period": true,
+    "conflicting_values_on_latest_date": "ambiguous_zero_credit",
+    "coreg": null,
+    "cover_failure_replacement_permitted": false,
+    "current_or_external_identity_mapping_permitted": false,
+    "dimn": 0,
+    "iprx": 0,
+    "latest_eligible_as_of_date_selected": true,
+    "positive_finite_value_required": true,
+    "qtrs": 0,
+    "required_tag": "EntityCommonStockSharesOutstanding",
+    "source": "same accession as-filed SEC XBRL cover fact",
+    "tag_namespace": "dei",
+    "ticker_must_equal_same_accession_provisional_symbol": true,
+    "uom": "shares"
+  },
+  "created_at": "2026-07-25T03:13:00Z",
+  "family_id": "earnings-positive-surprise-drift",
+  "forward_returns_accessed": false,
+  "implementation_hashes": {
+    "earnings_sec_cover_identity.py": "9877e98b764f143ffbdce05f575921bf7ec9157e93613457e2601a35cbbe19ea",
+    "earnings_sec_cover_identity_inspection.py": "bfe463bc6dfc3a368c0e8e11f0b020676c82253fca3ed1ffe8acd90cc0e741ae",
+    "earnings_sec_eps_capacity.py": "1b8900721cbda0060e59b9a6bdd69ff3ff85e058094e7b714ca273734e941435",
+    "earnings_sec_legacy_capacity.py": "6c14cc4a37b1d4af2ca7bf6c964069f87776d9571f5808616de0aba97d6e1970"
+  },
+  "market_prices_accessed": false,
+  "next_transition": {
+    "confirmation_outcome_access_permitted": false,
+    "development_market_data_contract_freeze_permitted": false,
+    "market_price_access_permitted": false
+  },
+  "partitions": {
+    "confirmation": [
+      "2011-01-10",
+      "2011-12-31"
+    ],
+    "development": [
+      "2010-01-01",
+      "2010-12-17"
+    ],
+    "embargo": [
+      "2010-12-18",
+      "2011-01-09"
+    ]
+  },
+  "provider_request_contract": {
+    "additional_provider_requests_permitted": 0,
+    "cache_hits_required": 8,
+    "substitutions_permitted": 0
+  },
+  "schema_version": 1,
+  "source_lineage": {
+    "archive_artifacts": [
+      {
+        "bytes": 27003937,
+        "file_sha256": "81e2fff672cf82a35556167dc07b8c4f776604c1c50abd5383f6e225d709fdba",
+        "quarter": "2010q1",
+        "request_sha256": "c7cf78cbd6680e23572e4e5458af28b9e859d6cf328e44d3d83cad40d688a192",
+        "required_members": {
+          "num.tsv": "num.tsv",
+          "sub.tsv": "sub.tsv",
+          "txt.tsv": "txt.tsv"
+        }
+      },
+      {
+        "bytes": 16438679,
+        "file_sha256": "edbda8b99ee08aed427700a386d9965eb060f30ba79cd48a4e11b4acbcc1d8d2",
+        "quarter": "2010q2",
+        "request_sha256": "384d49abc444bc1ab224ff9ca35f825693a0100aae8d974c73dfe6da07271531",
+        "required_members": {
+          "num.tsv": "num.tsv",
+          "sub.tsv": "sub.tsv",
+          "txt.tsv": "txt.tsv"
+        }
+      },
+      {
+        "bytes": 49329045,
+        "file_sha256": "cbad1448f69a08e2ebc0804e47d293dea2dd0f20dd3aacd09ebbe9854a32a97c",
+        "quarter": "2010q3",
+        "request_sha256": "582fabb2088ae5c4b683377e48c222e9c7df0be689bf4a34accad4d3de8e757f",
+        "required_members": {
+          "num.tsv": "num.tsv",
+          "sub.tsv": "sub.tsv",
+          "txt.tsv": "txt.tsv"
+        }
+      },
+      {
+        "bytes": 54590238,
+        "file_sha256": "7dd996162c62132a75bc0f17af1f6942da12c05a2dd391f9373a06de1353ac74",
+        "quarter": "2010q4",
+        "request_sha256": "79a13b03fd6de720492508f95097fb8279351baa8b0a857ddfae89d5efccdc08",
+        "required_members": {
+          "num.tsv": "num.tsv",
+          "sub.tsv": "sub.tsv",
+          "txt.tsv": "txt.tsv"
+        }
+      },
+      {
+        "bytes": 101902208,
+        "file_sha256": "37c3dd076ebf33a84da362324950a4f3a503dd77f18b28515f7b4e0f1f233a4c",
+        "quarter": "2011q1",
+        "request_sha256": "13f475d35d2cbaac2a2b628a379b06fc1898ea3494094c15a81328c1d928e08b",
+        "required_members": {
+          "num.tsv": "num.tsv",
+          "sub.tsv": "sub.tsv",
+          "txt.tsv": "txt.tsv"
+        }
+      },
+      {
+        "bytes": 59459810,
+        "file_sha256": "2b9873b070d5d945da200f2be361d36443441c86403dd1fe93a95df713a6b720",
+        "quarter": "2011q2",
+        "request_sha256": "fe1153f37f48113aad5e6ce4f7fab8b00cb1891fb1946d433ec87482003001c4",
+        "required_members": {
+          "num.tsv": "num.tsv",
+          "sub.tsv": "sub.tsv",
+          "txt.tsv": "txt.tsv"
+        }
+      },
+      {
+        "bytes": 232795884,
+        "file_sha256": "7e055dd33416fa035c062266e2199bd7ad57d34bfa1384abb00aa25f90691a2b",
+        "quarter": "2011q3",
+        "request_sha256": "bc30c81c720da9addfb8bb39628a888fccddf09b0030963f736ea88649609c45",
+        "required_members": {
+          "num.tsv": "num.tsv",
+          "sub.tsv": "sub.tsv",
+          "txt.tsv": "txt.tsv"
+        }
+      },
+      {
+        "bytes": 271682993,
+        "file_sha256": "88a493994032497cb1a3d6262e43b43a4afc668051575f3775e2cebcc3fdf397",
+        "quarter": "2011q4",
+        "request_sha256": "cbd95a7001ad06a2bcf0b76d982fc041959882df2f2f58a726abdae6b3bb402c",
+        "required_members": {
+          "num.tsv": "num.tsv",
+          "sub.tsv": "sub.tsv",
+          "txt.tsv": "txt.tsv"
+        }
+      }
+    ],
+    "private_provisional_content_sha256": "c93015aef0e41e6bdd13aa6b45277dd804c9e9cd69b638a2549b1ebae62e2786",
+    "private_provisional_file_sha256": "3e1173ebd7a9611083d438eaf49fcda02dd7735c02a4adbe9cfa8a2de13cfba6",
+    "provisional_inspection_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v6-sec-legacy-provisional/provisional-result-inspection/inspection-c52d5dd10afdaabc2adc8046e2df9e5831fc7ee13045d3a9f12c5462c2ae1716.json",
+    "provisional_inspection_sha256": "c52d5dd10afdaabc2adc8046e2df9e5831fc7ee13045d3a9f12c5462c2ae1716",
+    "provisional_result_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v6-sec-legacy-provisional/provisional-result/result-0ddf0a8e1513b8d8227497c0bce0b90c56f6ad4a921b7353398a232de8947a8a.json",
+    "provisional_result_sha256": "0ddf0a8e1513b8d8227497c0bce0b90c56f6ad4a921b7353398a232de8947a8a",
+    "retained_provisional_events": 524
+  },
+  "strategy_metrics_computed": 0,
+  "successor_id": "earnings-positive-surprise-drift-v7-sec-cover-common-equity"
+}
