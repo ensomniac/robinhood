@@ -236,7 +236,9 @@ every recovery, exposure, task, provider, and confirmation check. Commit it,
 then materialize and inspect the final search-bound manifest. Status
 `faa0ee37...473170` materialized the exact dataset with nine cache hits and
 zero additional requests or substitutions. Commit it before final independent
-dataset inspection.
+dataset inspection. Inspection `cda66dce...627a8` passed all six checks and
+final manifest `5fddbf9a...f5a795` is `DATASET_INSPECTED_READY`, exactly bound
+to search `632229c0...268f92`. Commit both, then evaluate the sole trial.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
