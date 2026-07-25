@@ -56,6 +56,12 @@ class StrategyDiscoveryError(RuntimeError):
     """A discovery artifact or transition is incomplete, stale, or unsafe."""
 
 
+def _recorded_now() -> str:
+    """Return the actual UTC time an outcome-exposure record is appended."""
+
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
 def _canonical(value: Any) -> bytes:
     return json.dumps(
         value,
@@ -977,7 +983,7 @@ def inspect_development(
                 ),
                 campaign_id=CAMPAIGN_ID,
                 lane="development",
-                recorded_at=contract["created_at"],
+                recorded_at=_recorded_now(),
                 source_path=_relative(result_path),
                 source_sha256=_file_hash(result_path),
                 scope=contract["development_scope"],
@@ -1734,7 +1740,7 @@ def inspect_confirmation(
                 ),
                 campaign_id=CAMPAIGN_ID,
                 lane="confirmation",
-                recorded_at=winner["recorded_at"],
+                recorded_at=_recorded_now(),
                 source_path=_relative(result_path),
                 source_sha256=_file_hash(result_path),
                 scope=winner["confirmation_scope"],

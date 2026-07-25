@@ -23,6 +23,14 @@ def _dates(start: date, count: int) -> list[str]:
     return [(start + timedelta(days=index)).isoformat() for index in range(count)]
 
 
+def test_outcome_exposure_timestamp_is_actual_append_time():
+    before = datetime.now(UTC)
+    observed = datetime.fromisoformat(discovery._recorded_now().replace("Z", "+00:00"))
+    after = datetime.now(UTC)
+
+    assert before <= observed <= after
+
+
 def family_contract(
     dataset_manifest: Path,
     *,
