@@ -126,8 +126,10 @@ substitution. Inspection `14d9d51a...8c460` independently rebuilt all ten
 tasks and zero-outcome bindings in zero requests. Collection
 `652e7ac2...df5b6` completed all ten requests with zero failures or
 substitutions; external dataset `1870090b...aadac` remains outside Git. Commit
-the compact status before data inspection; confirmation and broker access
-remain forbidden.
+the compact status before data inspection. Inspection `12ba2ff5...1df40`
+rebuilt every task, hash, row, scope, and runtime check and froze 9,000
+instrument-sessions in manifest `f06c16d4...35b0f`. Commit both before local
+evaluation; confirmation and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
