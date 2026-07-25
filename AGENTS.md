@@ -124,7 +124,11 @@ state with zero provider requests. Commit it, then freeze search; no successor
 provider access is yet permitted. Search `5df9cb0b...a9fad` now freezes the
 complete one-trial family, deterministic selection rule, costs, partitions,
 implementation, and falsifiers. Commit it, then freeze and inspect the exact
-development collection graph before provider access.
+development collection graph before provider access. Plan
+`ab8fcef6...9a07c` now freezes one Massive split request plus eight Alpaca SIP
+raw daily symbol ranges from 2016-01-04 through 2018-12-31, with zero
+substitutions or provider access. Commit and independently inspect it before
+collection.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 102 weekly
 decision dates.
