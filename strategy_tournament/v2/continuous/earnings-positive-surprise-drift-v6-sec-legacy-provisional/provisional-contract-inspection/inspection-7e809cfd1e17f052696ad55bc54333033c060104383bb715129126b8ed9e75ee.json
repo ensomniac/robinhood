@@ -1,0 +1,31 @@
+{
+  "artifact_kind": "earnings-sec-legacy-provisional-contract-inspection",
+  "broker_actions": 0,
+  "cached_derivation_permitted": true,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "broker_actions_zero": true,
+    "cover_required_before_prices": true,
+    "eight_cached_archives_bound": true,
+    "exact_rebuild": true,
+    "hash_valid": true,
+    "legacy_encoding_exact": true,
+    "outcome_index_current": true,
+    "outcomes_absent": true,
+    "provisional_only": true,
+    "v5_terminal_bound": true,
+    "zero_provider_requests": true
+  },
+  "contract_file_sha256": "7eb1087b0ab356ff77fb9dd4d4d4ec1a67c3361db47209d64d111ba68f6c60cb",
+  "contract_path": "strategy_tournament/v2/continuous/earnings-positive-surprise-drift-v6-sec-legacy-provisional/provisional-contract/contract-e3a24efff7816782e5bbfd6cb4de00e7d3fd180014f13d7341220dd60e1d8623.json",
+  "contract_sha256": "e3a24efff7816782e5bbfd6cb4de00e7d3fd180014f13d7341220dd60e1d8623",
+  "family_id": "earnings-positive-surprise-drift",
+  "filing_cover_provider_access_permitted": false,
+  "inspected_at": "2026-07-25T02:58:39Z",
+  "inspection_sha256": "7e809cfd1e17f052696ad55bc54333033c060104383bb715129126b8ed9e75ee",
+  "market_price_access_permitted": false,
+  "schema_version": 1,
+  "state": "SEC_LEGACY_CONTRACT_INSPECTED_READY",
+  "successor_id": "earnings-positive-surprise-drift-v6-sec-legacy-provisional",
+  "valid": true
+}

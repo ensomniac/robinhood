@@ -95,6 +95,11 @@ Independent inspection `88198d4e...f6a147` rebuilt all eight archives and
 formally assigned v5 `INSUFFICIENT_SEC_EPS_METADATA_CAPACITY` with zero
 development, embargo, or confirmation events. Its exact source version is
 terminal.
+V6 provisional contract `e3a24eff...1d8623` and inspection
+`7e809cfd...9e75ee` now freeze and validate the observed legacy encodings,
+three-per-accepted-date EPS rank, exact cache, partitions, and zero-access
+boundary. Derive its provisional denominator from cache next; filing covers and
+all market prices remain forbidden.
 
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;
