@@ -110,6 +110,13 @@ only admissible continuation is a new exact source-capacity successor that
 declares prior rows contaminated, preserves the single rule unchanged, freezes
 a new development/confirmation split before access, and includes v1 in
 cumulative selection accounting.
+That successor implementation is
+`cross-style-etf-breadth-continuation-v2`: 200 observed Alpaca warmup sessions,
+113 weekly development decisions from 2016-10-18 through 2018-12-31, five
+embargo sessions, and 102 untouched confirmation decisions from 2019-01-09
+through 2020-12-31. It changes no rule or parameter and consumes no new rolling
+mechanism-family slot. Commit and test the implementation before freezing its
+contract; no successor provider access is yet permitted.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.

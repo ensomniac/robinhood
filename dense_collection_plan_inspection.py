@@ -63,16 +63,27 @@ def _expected_tasks(
     required_dates = list(plan["required_dates"])
     symbols = sorted(map(str, contract["universe"]["symbols"]))
     historical = contract.get("historical_data_contract")
-    if not (
-        isinstance(historical, Mapping)
-        and historical.get("daily_provider") == "massive"
+    if not isinstance(historical, Mapping):
+        raise DenseCollectionPlanInspectionError(
+            "plan lacks a frozen symbol-range data contract"
+        )
+    provider = historical.get("daily_provider")
+    provider_valid = (
+        provider == "massive"
         and historical.get("daily_adjusted") is False
+    ) or (
+        provider == "alpaca"
+        and historical.get("daily_feed") == "sip"
+        and historical.get("daily_adjustment") == "raw"
+    )
+    if not (
+        provider_valid
         and historical.get("daily_request_mode") == "symbol_range"
         and historical.get("split_provider") == "massive"
         and historical.get("provider_substitutions_allowed") is False
     ):
         raise DenseCollectionPlanInspectionError(
-            "plan is not the frozen Massive symbol-range contract"
+            "plan is not a frozen supported symbol-range contract"
         )
     split_task = dense_data_collection._task(
         "split_actions", required_dates[-1]
@@ -94,7 +105,7 @@ def _expected_tasks(
         task = {
             "kind": (
                 "daily_symbol_bars"
-                if recovery
+                if recovery or provider == "alpaca"
                 else "massive_daily_symbol_bars"
             ),
             "date": required_dates[-1],
@@ -184,7 +195,7 @@ def inspect_plan(
             and plan["task_count"] == len(expected_tasks) == 9
         ),
         "provider_semantics_rebuilt": (
-            plan["daily_provider"] == "massive"
+            plan["daily_provider"] in {"massive", "alpaca"}
             and plan["daily_request_mode"] == "symbol_range"
             and plan["providers"]
             == (
@@ -198,7 +209,7 @@ def inspect_plan(
                         "final frozen session"
                     ),
                 ]
-                if recovery
+                if recovery or plan["daily_provider"] == "alpaca"
                 else [
                     (
                         "Massive SIP unadjusted daily bars by frozen "

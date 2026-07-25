@@ -34,6 +34,11 @@ def test_independent_plan_inspection_rebuilds_all_nine_requests(
         "audit",
         lambda: {"index_sha256": "0" * 64},
     )
+    monkeypatch.setattr(
+        inspection.outcome_exposure,
+        "read_index",
+        lambda: [],
+    )
     path, artifact = inspection.inspect_plan(
         PLAN,
         root=tmp_path,
@@ -94,6 +99,11 @@ def test_recovery_plan_inspection_rebuilds_alpaca_source_only_change(
         inspection.outcome_exposure,
         "audit",
         lambda: {"index_sha256": "0" * 64},
+    )
+    monkeypatch.setattr(
+        inspection.outcome_exposure,
+        "read_index",
+        lambda: [],
     )
     recovery_plan, _plan = (
         dense_collection_recovery.freeze_pullback_recovery(
