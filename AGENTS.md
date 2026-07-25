@@ -113,9 +113,11 @@ now advances `industry-etf-abnormal-volume-continuation-v1`. Its prospective
 `IGV`, `ITB`, `KBE`, `KRE`, `SMH`, `XHB`, `XME`, and `XOP`. Historical and
 production paths rank the largest completed abnormal-volume shock, enter only
 at the next session open, resolve stop first, and preserve the cost floor. The
-proposed 2008-2014 pairs have zero global outcome overlaps. No contract, price,
-or outcome authority exists until this implementation is committed and the
-exact contract is frozen and independently inspected.
+proposed 2008-2014 pairs have zero global outcome overlaps. Contract
+`769b8deb...a9159` and capacity `0f7f5264...fc3a1` freeze the complete grid,
+200 warmup, 1,000 development, five embargo, and 500 confirmation sessions.
+They accessed zero prices or outcomes. Commit both before outcome-blind
+preflight; provider, confirmation, and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
