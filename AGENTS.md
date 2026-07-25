@@ -257,7 +257,11 @@ boundary with no provider or broker access. Commit it, then collect only this
 exact development graph. Collection `6610c0d6...7f7a83` completed all ten
 authorized requests with zero failures, zero substitutions, and 1.8 seconds of
 pacing; row-level data remains outside Git. Commit the compact uninspected
-status before independent dataset reconstruction.
+status before independent dataset reconstruction. Inspection
+`6ee2392f...1e963d` rehashed the external file, rebuilt every task and
+canonical row, revalidated the exact scope and runtime schema, and froze all
+9,000 development instrument-sessions in manifest
+`40d0e8ad...57cf6f9`. Commit both artifacts before evaluating all 32 trials.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
