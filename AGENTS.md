@@ -206,7 +206,12 @@ the exact development graph; confirmation remains sealed. Collection
 `4f5f477a...c29364` completed all 11 authorized requests with zero failures,
 zero substitutions, and two seconds of pacing; row-level data remains outside
 Git. Commit the compact uninspected status, then independently rehash and
-rebuild the dataset before any development evaluation.
+rebuild the dataset before any development evaluation. Inspection
+`a639a991...ba5f27` reproduced the external and canonical dataset hashes,
+rebuilt every task, and revalidated the exact scope and runtime schema. Manifest
+`89526a90...3cd38a` freezes 10,000 instrument-sessions across the 1,000
+development dates. Commit both artifacts, then evaluate all 32 frozen trials
+from this manifest with zero provider access.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
