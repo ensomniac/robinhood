@@ -87,8 +87,10 @@ rule, rolling-origin partitions, costs, scopes, and implementation hashes.
 Development plan `135c8362...25114` freezes exactly ten requests: one Massive
 split-action range and nine raw Yahoo daily symbol ranges from 2008-01-02
 through 2012-10-15. It binds the committed search and contract calendar with no
-retries or substitutions. Commit this exact plan before independent inspection;
-provider access and confirmation remain forbidden.
+retries or substitutions. Inspection `069ff993...41d2e` independently rebuilt
+all ten tasks, provider semantics, scope, hashes, and zero-outcome boundary with
+zero provider requests. Commit the inspection before collection; confirmation
+and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
