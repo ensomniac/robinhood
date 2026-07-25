@@ -128,8 +128,11 @@ tasks and zero-outcome bindings in zero requests. Collection
 substitutions; external dataset `1870090b...aadac` remains outside Git. Commit
 the compact status before data inspection. Inspection `12ba2ff5...1df40`
 rebuilt every task, hash, row, scope, and runtime check and froze 9,000
-instrument-sessions in manifest `f06c16d4...35b0f`. Commit both before local
-evaluation; confirmation and broker access remain forbidden.
+instrument-sessions in manifest `f06c16d4...35b0f`. Result
+`829632d0...1864d` evaluated all 32 trials from one dataset load and zero
+requests. Every 20-bps path was negative; the least-negative path had -0.00493
+log growth, PF 0.984, and 18.01R drawdown. Commit it before independent
+inspection; confirmation and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
