@@ -491,6 +491,13 @@ requested dates, private dataset hash `e29c3d0a...41ca1`, and private file hash
 `11d797f8...b44a50` with zero dataset loads, provider requests, outcomes,
 confirmation access, or broker actions. Commit and push both artifacts, then
 rerun all 48 development trials.
+Development result `5acb7f08...8170c0` evaluated all 48 trials in 6.30 seconds
+from one dataset load and zero provider requests. Every 701-session account path
+is complete, with 60-280 filled trades per trial. The compact preliminary
+surface has zero positive 20-bps paths, zero stressed PF at least 1.20, zero
+drawdowns at or below 6R, and zero rolling-fold, DSR, Holm, or PBO survivors;
+the best stressed log growth is still -0.02713. Commit and push the result, then
+independently rebuild selection before any terminal disposition.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
