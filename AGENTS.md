@@ -217,6 +217,9 @@ retained checkpoints with zero provider requests. Recovery status
 hits, preserving the original nine-request telemetry with zero failures or
 substitutions. It remains `COLLECTED_UNINSPECTED`; commit it and independently
 rebuild the external file, rows, scope, and runtime schema before evaluation.
+Inspection `c8c80305...bc361c4` passed all six reconstruction checks and
+manifest `e056363c...eaf6fc1` is `DATASET_INSPECTED_READY`, bound to refreshed
+search `e99d0450...614541`. Commit both before evaluating the one exact trial.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
