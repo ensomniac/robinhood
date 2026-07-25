@@ -389,6 +389,10 @@ date-symbol scope. Commit and test them before recording and inspecting the
 failure. Only after that inspection may a new exact successor permanently
 exclude all 27 exposed symbols, freeze invalid-OHLCV as whole-symbol
 permanent-missing zero credit, and access the remaining 608 symbols.
+Failure record `fb561c85...4747980` now binds the exact 27 attempted requests,
+all 26 retained task hashes, the absent failed task, zero strategy metrics,
+sealed confirmation, and the no-resume boundary. Commit and push it before the
+independent failure inspector writes the exposure index or authorizes v14.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
