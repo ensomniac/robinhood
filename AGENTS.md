@@ -172,7 +172,10 @@ logic, and falsifiers. Development plan `b3b177da...5b8c71` now freezes one
 Massive split range plus eight Alpaca SIP raw daily symbol ranges from
 2018-03-13 through 2019-12-31, covering exactly 200 feature-only warmup
 sessions and 249 development sessions. It records zero requests and no
-substitutions. Commit and independently inspect it before collection.
+substitutions. Independent inspection `d9888737...e14dda` rebuilt every
+authority, calendar, partition, symbol, request, provider, and zero-access
+binding; development and confirmation scopes remain globally untouched. Commit
+it, then collect only the inspected nine-task graph.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
