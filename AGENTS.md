@@ -104,6 +104,12 @@ development-scope outcome exposure. Commit, independently inspect, and index
 that exposure. Inspection `a4e6f82c...4e34f` reconstructed all 4,024 price
 rows, 1,976 missing required symbol-sessions, telemetry, and the full exposure
 scope. Commit it, then index v1. Do not truncate or substitute dates inside v1.
+Exposure record `dense-collection-failure-32f1ed...` now contaminates all
+6,000 frozen 2015-2017 date-symbol pairs and leaves 2018-2020 untouched. The
+only admissible continuation is a new exact source-capacity successor that
+declares prior rows contaminated, preserves the single rule unchanged, freezes
+a new development/confirmation split before access, and includes v1 in
+cumulative selection accounting.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
