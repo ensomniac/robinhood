@@ -223,6 +223,18 @@ drawdown, a negative -0.000933 bootstrap lower bound, and PBO 0.771. Preserve
 this exact corpus without repair; all 495 confirmation decisions remain sealed.
 Continue immediately with another disjoint existing-family replication.
 
+The active lane is now
+`liquid-equity-etf-ibs-reversal-replication-v2`, an unchanged replication of
+the 32-trial internal-bar-strength grid on `IVV`, `RSP`, `VB`, `VBK`, `VBR`,
+`VO`, `VOE`, `VOT`, and `VXF`. Every warmup, development, and confirmation
+pair in the existing 2008-2014 calendar partition is globally untouched. The
+shared runtime now dispatches the exact replication family through the same
+historical and production ranking, next-open entry, ATR protection, stop-first
+ambiguity, and one/two-session exit semantics. The implementation passed 1,547
+tests plus 49 subtests and repository-wide Ruff before any contract or price
+access. Commit and push this implementation boundary, then freeze the exact
+contract and capacity without consuming another new-mechanism slot.
+
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
 development corpora with confirmation still sealed. The unchanged-rule PEAD

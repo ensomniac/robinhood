@@ -240,6 +240,13 @@ ETF_OVERSOLD_FAMILIES = {
     BROAD_ASSET_ETF_OVERSOLD_FAMILY,
 }
 ETF_IBS_REVERSAL_FAMILY = "liquid-equity-etf-ibs-reversal"
+ETF_IBS_REVERSAL_REPLICATION_FAMILY = (
+    "liquid-equity-etf-ibs-reversal-replication-v2"
+)
+ETF_IBS_REVERSAL_FAMILIES = {
+    ETF_IBS_REVERSAL_FAMILY,
+    ETF_IBS_REVERSAL_REPLICATION_FAMILY,
+}
 ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY = (
     "country-equity-etf-close-strength-continuation"
 )
@@ -282,7 +289,7 @@ SUPPORTED_FAMILIES = {
     CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
     STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
     *ETF_OVERSOLD_FAMILIES,
-    ETF_IBS_REVERSAL_FAMILY,
+    *ETF_IBS_REVERSAL_FAMILIES,
     ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
     ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
     ETF_CLOSE_TO_OPEN_FAMILY,
@@ -2142,7 +2149,13 @@ def _high_beta_etf_oversold_candidates(
 def _etf_ibs_reversal_candidates(
     dataset: Mapping[str, Any],
     parameters: Mapping[str, Any],
+    *,
+    family_id: str = ETF_IBS_REVERSAL_FAMILY,
 ) -> list[dict[str, Any]]:
+    if family_id not in ETF_IBS_REVERSAL_FAMILIES:
+        raise DenseStrategyRuntimeError(
+            "ETF IBS reversal family is not authorized"
+        )
     calendar = _calendar(dataset)
     daily = _daily_series(dataset)
     ibs_maximum = float(parameters["internal_bar_strength_maximum"])
@@ -2211,7 +2224,7 @@ def _etf_ibs_reversal_candidates(
         ) in enumerate(sorted(scored), 1):
             bars = daily[symbol]
             entry_index = indices[symbol].get(entry_date)
-            signal_id = f"{entry_date}-{ETF_IBS_REVERSAL_FAMILY}-{symbol}"
+            signal_id = f"{entry_date}-{family_id}-{symbol}"
             if entry_index is None:
                 candidates.append(
                     {
@@ -2248,7 +2261,7 @@ def _etf_ibs_reversal_candidates(
                 )
                 continue
             candidate = _daily_candidate(
-                family_id=ETF_IBS_REVERSAL_FAMILY,
+                family_id=family_id,
                 symbol=symbol,
                 decision_date=decision_date,
                 entry_date=entry_date,
@@ -3922,7 +3935,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
             STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
-            ETF_IBS_REVERSAL_FAMILY,
+            *ETF_IBS_REVERSAL_FAMILIES,
             ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
             ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
         }:
@@ -3952,7 +3965,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             FLIGHT_TO_SAFETY_REPLICATION_V3_FAMILY,
             BREADTH_CAPITULATION_REBOUND_FAMILY,
             *ETF_OVERSOLD_FAMILIES,
-            ETF_IBS_REVERSAL_FAMILY,
+            *ETF_IBS_REVERSAL_FAMILIES,
             ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
             ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
         }:
@@ -5712,8 +5725,10 @@ def build_candidates(
         return _high_beta_etf_oversold_candidates(
             dataset, parameters, family_id=family_id
         )
-    if family_id == ETF_IBS_REVERSAL_FAMILY:
-        return _etf_ibs_reversal_candidates(dataset, parameters)
+    if family_id in ETF_IBS_REVERSAL_FAMILIES:
+        return _etf_ibs_reversal_candidates(
+            dataset, parameters, family_id=family_id
+        )
     if family_id == ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY:
         return _etf_close_strength_continuation_candidates(
             dataset, parameters
@@ -6031,7 +6046,7 @@ def _production_daily_signal(
         CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
         STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
-        ETF_IBS_REVERSAL_FAMILY,
+        *ETF_IBS_REVERSAL_FAMILIES,
         ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
         ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
     }:
@@ -6521,7 +6536,7 @@ def _production_daily_signal(
                     "same_interval_ambiguity": "stop_first",
                 },
             }
-        if family_id == ETF_IBS_REVERSAL_FAMILY:
+        if family_id in ETF_IBS_REVERSAL_FAMILIES:
             ibs_maximum = float(
                 parameters["internal_bar_strength_maximum"]
             )
@@ -8282,7 +8297,7 @@ def evaluate_production_signal(
         CROSS_STYLE_BREADTH_CONTINUATION_FAMILY,
         STYLE_ETF_BREAKOUT_CONTINUATION_FAMILY,
         *ETF_OVERSOLD_FAMILIES,
-        ETF_IBS_REVERSAL_FAMILY,
+        *ETF_IBS_REVERSAL_FAMILIES,
         ETF_CLOSE_STRENGTH_CONTINUATION_FAMILY,
         ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
     }:
