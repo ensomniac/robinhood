@@ -324,6 +324,14 @@ Inspection `b57cc15b...3d016b` independently rebuilt the complete plan and
 passed every lineage, request, transport, derivation, and zero-outcome check.
 Commit and push it, then execute only that metadata graph. Development prices
 and all confirmation outcomes remain forbidden during collection.
+Collection `db4f8d3d...733af9` completed all 16 exact SEC requests with zero
+failure or substitution. Its uninspected compact summary contains 11,076
+provisional events, 1,951 date-ranked events, and 1,444 events retaining the
+same-accession common-stock cover fact; row-level bytes remain only in the
+ignored content-addressed store. Commit and push this uninspected artifact,
+then independently reopen all archives, rebuild every event, apply the global
+exposure index without replacement, and decide capacity. Do not infer capacity
+or open prices from the collection summary.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected
