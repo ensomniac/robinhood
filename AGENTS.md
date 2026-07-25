@@ -349,6 +349,16 @@ changing the estimate. DSR still receives all 64 current-plus-prior trial
 Sharpes, and Holm still receives all 64 one-sided p-values. The prior 32 daily
 return paths, Sharpes, p-values, result hash, inspection hash, and external
 evaluation hash must all be frozen into the v13 search before new price access.
+The v13 search implementation now derives 1,063 development events across 507
+signal dates and 635 symbols. Its confirmation reserve deliberately removes
+every development symbol, leaving 201 events across 118 signal dates and 178
+symbols; this keeps the confirmation warmup date-symbol scope disjoint even
+though its calendar begins in late 2014. Development collection uses exactly
+one frozen Yahoo daily-history request per symbol with zero retries or
+substitutions and permanent-missing zero credit for preregistered 400/404 or
+identity-envelope failures. Commit and push the implementation before freezing
+the family contract, generic preflight, and search. No provider request is
+authorized by implementation alone.
 
 The 2025 earnings-gap-continuation v1 capacity lane is
 `INSUFFICIENT_POWER_CAPACITY` without strategy-return access. Its inspected

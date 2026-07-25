@@ -158,6 +158,12 @@ two 32-trial searches separately, for 64 total trial statistics. This preserves
 selection penalties without treating the prior underpowered corpus's standalone
 PBO as an irreversible veto on independent replication.
 
+The prospective search selection contains 1,063 development events across 507
+signal dates and 635 symbols. To preserve truly untouched confirmation warmup,
+all development symbols are excluded from the reserve, leaving 201 events
+across 118 signal dates and 178 symbols. This is an outcome-blind evidence
+partition rule, not a performance filter.
+
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`
 and its independent retirement in
