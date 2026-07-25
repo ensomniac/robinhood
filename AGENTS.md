@@ -100,6 +100,13 @@ V6 provisional contract `e3a24eff...1d8623` and inspection
 three-per-accepted-date EPS rank, exact cache, partitions, and zero-access
 boundary. Derive its provisional denominator from cache next; filing covers and
 all market prices remain forbidden.
+Result `0ddf0a8e...947a8a` derived 2,000 unique pre-rank events and retained 524
+provisional rows from eight cache hits. Independent inspection
+`c52d5dd1...ae1716` rebuilt them and earned
+`SEC_LEGACY_PROVISIONAL_CAPACITY_READY`: 208 untouched development rows across
+95 dates and 311 untouched confirmation rows across 141 dates, plus five embargo
+rows. Freeze and inspect the exact filing-cover request graph next; the rows are
+not yet proven common equities and price access remains forbidden.
 
 Ryan superseded the weekly activation delay on 2026-07-23. The active discovery
 policy permits at most three concurrently outcome-active mechanism families;
