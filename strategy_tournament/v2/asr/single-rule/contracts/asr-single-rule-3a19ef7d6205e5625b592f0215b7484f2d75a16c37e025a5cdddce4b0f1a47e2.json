@@ -1,0 +1,112 @@
+{
+  "artifact_kind": "outcome-blind-asr-single-rule-capacity-contract",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_disposition": "INSUFFICIENT_POWER_CAPACITY",
+  "confirmation_outcome_access_permitted": false,
+  "contract_sha256": "3a19ef7d6205e5625b592f0215b7484f2d75a16c37e025a5cdddce4b0f1a47e2",
+  "costs_bps_per_side": [
+    5,
+    10,
+    20
+  ],
+  "created_at": "2026-07-25T23:44:41Z",
+  "evidence_policy": {
+    "atr_lookback_sessions": 14,
+    "confirmation_scope": "every warmup, entry, mark, stop, and exit date-symbol pair must be absent from the global outcome-exposure index",
+    "development_allocation": "first 50 chronological daily-ranked disclosure opportunities",
+    "dynamic_confirmation_target": "max(20, ceil(required_total_signals * 0.30))",
+    "dynamic_total_target": "max(50, frozen power target)",
+    "embargo_sessions": 5,
+    "minimum_confirmation_signals": 20,
+    "minimum_development_filled_signals": 50,
+    "requested_warmup_sessions": 20
+  },
+  "family_id": "accelerated-share-repurchase-continuation",
+  "implementation_hashes": {
+    "asr_combined_capacity.py": "d826d4173c97f2576db37e53b4c8b6ad23b2f345408dd7e5a8ead4056fe6d216",
+    "asr_security_identity.py": "e8dc1bd0298af8a91a243ce7eea5fa5d4bac2a1e348b371d6fd6f857cac7363c",
+    "asr_single_rule_preflight.py": "f1addfb4b93ad9b9f91acf95baeb9f978a4a2e8ef9d7da8e7d7ac35f5673c4dc",
+    "asr_tier1_security_identity.py": "c3c2018e593ec54786c923454b3234ad6d91a1edba15e3acc0c87705df64bab6",
+    "outcome_exposure.py": "b3835233e2359d2f033dbb726b898e2d5087f4e01f05a3def2771ddf86d53a4a"
+  },
+  "inventory": {
+    "calendar_hashes": {
+      "historical_batches/challenger_orb_retest_v1/session-calendar-2023-01-through-2026-07.json": "0ef459092d53f8dcf101e9625d5cde6e5614cfca9e8b872c34dbd1d25f938ebb",
+      "historical_batches/continuous_v2/session-calendar-2014-01-through-2022-12.json": "93acba7df20cb39af7aa7d6afbe7bec531dbea6a1e2c67de95fc6052098f1b50"
+    },
+    "calendar_session_count": 3153,
+    "combined_inspection_sha256": "571ce78a9557d91d44454fbfe685f2604a69c2cc9389c7f273bcae8ef2820d82",
+    "combined_result_sha256": "46c369e6692a455d7b1a64eb4785c50b4dffe238b1b524315c349bd23ed3c5f1",
+    "confirmation_candidate_count": 35,
+    "confirmation_candidate_inventory_sha256": "2956c84f7ecb7e1a8a1ad88688da322cd5b575d57cc5887547ae196048e3e9ae",
+    "daily_ranked_inventory_sha256": "f6e6038d1755139e758d88ed8df8e05789609c6f7e3dff4b9c4ac2b0098b7230",
+    "daily_ranked_signal_capacity": 86,
+    "development_candidate_count": 50,
+    "development_entry_date_range": [
+      "2019-05-07",
+      "2022-03-03"
+    ],
+    "development_final_exit_date": "2022-03-10",
+    "development_inventory_sha256": "60777b31b668f2d9b114f55e4ff855c63516596fc96dfec821dc0bbabd0f2c61",
+    "disclosure_inventory_sha256": "bcd047d374d8e57284d209f9b7964fcd357495a960436dc1794a4676374771e5",
+    "embargo_dates": [
+      "2022-03-11",
+      "2022-03-14",
+      "2022-03-15",
+      "2022-03-16",
+      "2022-03-17"
+    ],
+    "independent_disclosure_count": 89,
+    "outcome_exposure_index_sha256": "5e017616b3e6dc961a72795973d897488cf104f7809262f2b0197bc19dd0c91b",
+    "untouched_confirmation_entry_dates": [
+      "2024-06-13",
+      "2024-11-13",
+      "2024-11-22"
+    ],
+    "untouched_confirmation_inventory_sha256": "f6c22b950b3ed0cd624cfa78b5f265fc0cfc96b7819314a484f760cd143ddea1",
+    "untouched_confirmation_signal_capacity": 3,
+    "verified_agreement_count": 185
+  },
+  "market_outcomes_accessed": false,
+  "market_price_access_permitted": false,
+  "market_price_values_accessed": 0,
+  "maturity_effect": "NONE",
+  "new_mechanism_family_slot_consumed": false,
+  "provider_access_permitted": false,
+  "provider_requests": 0,
+  "returns_computed": 0,
+  "schema_version": 1,
+  "selection_mode": "preselected_primary",
+  "single_rule": {
+    "daily_ranking": "highest maximum committed agreement notional, then earliest acceptance timestamp, ticker, and accession",
+    "direction": "long_only",
+    "disclosure_deduplication": "one accession, ticker, and exact acceptance timestamp",
+    "eligible_event": "one independently verified executed ASR disclosure with committed notional, continuing mechanics, exact SEC acceptance time, and one unambiguous U.S.-listed common-equity identity",
+    "entry": "same-session open only when SEC acceptance is strictly before 09:30 ET; otherwise next-session open",
+    "exit": "protective stop or fifth-session close",
+    "expected_gross_move": "completed ATR14 divided by prior close",
+    "maximum_hold_sessions": 5,
+    "maximum_new_entries_per_day": 1,
+    "minimum_expected_gross_move_fraction": 0.005,
+    "minimum_prior_20_session_median_dollar_volume": 50000000,
+    "minimum_prior_close_dollars": 10.0,
+    "missing_or_invalid_data": "missed_trade_no_substitution",
+    "same_interval_ambiguity": "stop_first",
+    "stop": "1.5 completed ATR14 below entry",
+    "stop_atr_multiple": 1.5
+  },
+  "source_disposition": "PRESERVED_LATER_SINGLE_RULE_RESEARCH",
+  "source_lineage": {
+    "combined_inspection_path": "strategy_tournament/v2/asr/combined-capacity/inspections/asr-combined-571ce78a9557d91d44454fbfe685f2604a69c2cc9389c7f273bcae8ef2820d82.json",
+    "combined_inspection_sha256": "571ce78a9557d91d44454fbfe685f2604a69c2cc9389c7f273bcae8ef2820d82",
+    "combined_result_path": "strategy_tournament/v2/asr/combined-capacity/asr-combined-capacity-46c369e6692a455d7b1a64eb4785c50b4dffe238b1b524315c349bd23ed3c5f1.json",
+    "combined_result_sha256": "46c369e6692a455d7b1a64eb4785c50b4dffe238b1b524315c349bd23ed3c5f1"
+  },
+  "state": "ASR_SINGLE_RULE_CAPACITY_PENDING_INSPECTION",
+  "strategy_id": "accelerated-share-repurchase-continuation-single-rule",
+  "strategy_version": "1.0.0",
+  "trial_count": 1,
+  "trial_id": "asr-single-rule-v1",
+  "valid": true
+}
