@@ -1,0 +1,80 @@
+{
+  "access_contract": {
+    "broker_actions_permitted": false,
+    "complete_submission_access_permitted": false,
+    "forward_return_access_permitted": false,
+    "local_document_semantics_before_collection_inspection_permitted": false,
+    "market_price_access_permitted": false,
+    "maturity_effect": "NONE",
+    "provider_access_after_independent_inspection_permitted": true,
+    "provider_access_before_independent_inspection_permitted": false
+  },
+  "artifact_kind": "outcome-blind-asr-tier2a-contract",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "candidate_id": "accelerated-share-repurchase-continuation-v3-no-pagination",
+  "contract_sha256": "8d6329d52263dd2ef5397a8ef73fc74fe8b575820cafe122e9e93aa976eac58c",
+  "document_semantic_candidate_count": null,
+  "implementation_hashes": {
+    "asr_tier2a.py": "e424b80f09a5b86677cf347dc417e38a9b6f094282d75e7462368116cb9b824d",
+    "asr_tier2a_inspection.py": "370625d73e26ac67cc6e6ad5bd279812f000e98d41a62c89b82a6f74f6d5ffb2"
+  },
+  "market_outcomes_accessed": false,
+  "market_price_values_accessed": 0,
+  "private_graph": {
+    "bytes": 143203,
+    "cache_relative_path": "_derived/asr-tier2a-graph/faf8ddc39c4070c5451bb9eec084c03def34ed097416927a1ee299c0fb8c9b57.json.gz",
+    "file_sha256": "7f3adc586a920c43149740d5bdc8d34f76e55fcb8b081fa4759088da3091ff09",
+    "private_graph_sha256": "faf8ddc39c4070c5451bb9eec084c03def34ed097416927a1ee299c0fb8c9b57"
+  },
+  "request_contract": {
+    "candidate_order": "EFTS source CIK order",
+    "endpoint_kind": "exact EFTS-matched filing document",
+    "maximum_attempts_per_candidate": 3,
+    "maximum_source_bytes": 25000000,
+    "minimum_spacing_seconds": 0.15,
+    "provider": "SEC_EDGAR_ARCHIVES",
+    "provider_substitution_permitted": false,
+    "retryable_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "timeout_seconds": 30.0
+  },
+  "returns_computed": 0,
+  "schema_version": 1,
+  "selection_contract": {
+    "candidate_url_count": 1830,
+    "exclude_all_tier1_accessions": true,
+    "required_item": "1.01",
+    "root_forms": [
+      "6-K",
+      "8-K"
+    ],
+    "selected_accession_count": 1273,
+    "selected_hit_count": 1823,
+    "selection_uses_market_outcomes": false,
+    "source_date_or_issuer_substitution_permitted": false
+  },
+  "semantic_contract": {
+    "classifier_contract_sha256": "d8860fea528da0a5397d6b747f64564fad4b07b68cd518c5398fd8faf0ba9a46",
+    "document_candidate_is_not_verified_event": true,
+    "file_date_end_of_day_used_only_for_document_prefilter": true,
+    "same_window_classifier_reused_without_change": true
+  },
+  "staged_contract": {
+    "collect_exact_matched_documents_first": true,
+    "complete_submission_requests_before_document_semantics": false,
+    "qualified_document_requires_later_complete_submission": true,
+    "remaining_items_if_combined_candidates_below_100": [
+      "7.01",
+      "8.01"
+    ]
+  },
+  "strategy_version": "2026-07-24-accelerated-share-repurchase-continuation-v3",
+  "tier_id": "item-1-01-current-report-matched-documents-tier-2a",
+  "verified_event_count": null
+}
