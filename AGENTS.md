@@ -262,6 +262,10 @@ status before independent dataset reconstruction. Inspection
 canonical row, revalidated the exact scope and runtime schema, and froze all
 9,000 development instrument-sessions in manifest
 `40d0e8ad...57cf6f9`. Commit both artifacts before evaluating all 32 trials.
+Result `af24caad...caeb12` completed the exact family in 3.41 seconds from one
+local dataset load, one cache hit, and zero provider requests. Commit it before
+independently rebuilding trial accounting, statistics, power, and deterministic
+selection.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
