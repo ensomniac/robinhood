@@ -194,8 +194,10 @@ implementation before freezing its exact contract. Contract
 500 confirmation sessions with 495 decision dates. They accessed zero prices
 or outcomes. Preflight `9a979dde...8f034` independently rebuilt the family,
 995-decision capacity, point-in-time boundary, and zero-outcome state in zero
-requests. Commit it, then freeze the complete search; access no price before
-the normal collection-plan inspection chain.
+requests. Search `63a747af...67afea` now freezes all 32 trials, deterministic
+selection, rolling folds, costs, scopes, and implementation hashes. Commit it,
+then freeze and independently inspect the exact development collection plan;
+access no price until both artifacts are committed.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
