@@ -165,8 +165,11 @@ zero-outcome boundary in zero requests. Commit it, then collect only those
 exact development tasks. Collection `822a9f24...17ef7d` completed all 12
 requests with zero failures, zero substitutions, and 2.2 seconds of pacing;
 row-level data remains outside Git. Commit the compact uninspected status, then
-independently inspect and register the dataset before evaluation. Confirmation
-and broker access remain forbidden.
+independently inspect and register the dataset before evaluation. Inspection
+`2895b798...379c05` rehashed the external file, rebuilt every task and canonical
+row, revalidated the runtime schema, and froze 11,000 instrument-sessions in
+manifest `e8721060...4a60df`. Commit both compact artifacts, then evaluate all
+32 frozen trials locally. Confirmation and broker access remain forbidden.
 
 The residual-reversal v6 replication, its v7 temporal expansion, and the
 fixed-rule oversold v7 replication are independently `REJECTED` on their exact
