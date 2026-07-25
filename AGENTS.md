@@ -141,8 +141,11 @@ substitutions; manifest `d54ac867...5ef3a` is `DATASET_INSPECTED_READY`.
 Development result `bc63b8dc...b3f47` evaluated the single frozen trial with
 zero provider requests. Its compact uninspected summary is adverse at 20 bps:
 -7.37% log growth, 0.58 profit factor, 16.17R drawdown, no positive-fold
-stability, DSR zero, Holm false, and PBO one. Commit it and independently
-rebuild selection before assigning the terminal v2 disposition.
+stability, DSR zero, Holm false, and PBO one. Independent inspection
+`2a845545...ede24` rebuilt the full trial accounting, metrics, selection, and
+power logic and confirms `REJECTED`: no trial survived. V2 is terminal without
+confirmation or repair; preserve its indexed 4,384-pair development exposure
+and continue the next admissible family.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 102 weekly
 decision dates.
