@@ -85,7 +85,11 @@ symbols, rules, costs, or evidence scopes. Commit and test that implementation
 before freezing the recovery plan. Because the fail-closed collection validator
 is search-bound implementation, refresh only the implementation hashes in the
 family contract, preflight, and search before freezing recovery; all semantic
-fields must compare identical. Do not retry the Massive plan or purchase an
+fields must compare identical. Refreshed contract `275f3ec6...84e01` differs
+from `8da2d2d4...d5fba6` only in the hash of
+`dense_data_collection.py`; every rule, date, symbol, partition, cost, and gate
+is byte-equivalent after removing implementation hashes. Commit it and rebuild
+preflight/search before recovery. Do not retry the Massive plan or purchase an
 entitlement.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
