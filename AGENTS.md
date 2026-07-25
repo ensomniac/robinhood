@@ -60,8 +60,10 @@ the contract and capacity manifest, then run the generic outcome-blind
 preflight. Preflight inspection `370dd244...7b048` independently rebuilt the
 155-decision capacity, family identity, point-in-time boundary, and zero-outcome
 state with zero provider requests. Commit that inspection, then freeze the
-generic development search and its exact data-collection plan; do not collect
-data until both are independently inspected and committed.
+generic development search. Search `ab703111...4497e` now binds the only trial,
+deterministic selection rule, rolling-origin folds, costs, scopes, and current
+implementation hashes. Commit it, then freeze and independently inspect its
+exact data-collection plan; do not collect data until both are committed.
 Confirmation remains forbidden unless the exact inspected development result
 freezes a winner and the dynamic power target fits the reserved 154 weekly
 decision dates.
