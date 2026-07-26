@@ -175,7 +175,7 @@ def inspect_plan(
             key,
             _task(
                 {
-                    "kind": "massive_daily_symbol_bars",
+                    "kind": "yahoo_daily_symbol_bars",
                     "symbol": key[0],
                     "start": key[1],
                     "date": key[2],
@@ -200,7 +200,7 @@ def inspect_plan(
             str(task["date"]),
         ): str(task["task_id"])
         for task in expected_tasks
-        if task["kind"] == "massive_daily_symbol_bars"
+        if task["kind"] == "yahoo_daily_symbol_bars"
     }
     expected_event_task_ids = {
         str(event["event_id"]): task_ids[
@@ -216,6 +216,8 @@ def inspect_plan(
         plan["tasks"] == expected_tasks
         and plan["task_count"] == len(expected_tasks)
         and plan["event_task_ids"] == expected_event_task_ids
+        and plan["permanent_missing_symbol_response"]
+        == "missed_trade"
         and len({row["task_id"] for row in expected_tasks})
         == len(expected_tasks)
     ):
@@ -359,11 +361,24 @@ def inspect_collection(
         )
     observed = _load_external(external_path)
     rebuilt = collection.build_dataset(external_path.parent, plan)
+    permanent_missing_task_ids = sorted(
+        str(task["task_id"])
+        for task in plan["tasks"]
+        if collection._read_gzip(
+            collection._checkpoint_path(external_path.parent, task)
+        ).get("collection_disposition")
+        in collection.PERMANENT_MISSING_DISPOSITIONS
+    )
     if not (
         observed == rebuilt
         and canonical_sha256(rebuilt) == status["dataset_sha256"]
         and rebuilt["evaluation_dates"] == plan["evaluation_dates"]
         and rebuilt["family_id"] == discovery.FAMILY_ID
+        and status["permanent_missing_task_count"]
+        == len(permanent_missing_task_ids)
+        and status["permanent_missing_task_ids"]
+        == permanent_missing_task_ids
+        and status["permanent_missing_semantics"] == "missed_trade"
     ):
         raise Sp500AdditionInspectionError(
             "independent dataset reconstruction differs"
@@ -402,6 +417,12 @@ def inspect_collection(
         "event_count": plan["event_count"],
         "evaluation_dates": plan["evaluation_dates"],
         "provider_telemetry": status["provider_telemetry"],
+        "permanent_missing_task_count": len(
+            permanent_missing_task_ids
+        ),
+        "permanent_missing_task_ids_sha256": canonical_sha256(
+            permanent_missing_task_ids
+        ),
         "collection_started_at": status["collection_started_at"],
         "collection_completed_at": status[
             "collection_completed_at"
@@ -415,6 +436,7 @@ def inspect_collection(
             "runtime_schema_revalidated": True,
             "event_scope_exact": True,
             "missing_rows_retained_without_substitution": True,
+            "permanent_missing_tasks_rebuilt": True,
             "confirmation_after_preregistration": (
                 plan["lane"] != "confirmation" or started
                 > _timestamp(

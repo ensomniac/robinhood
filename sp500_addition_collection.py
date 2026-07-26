@@ -30,7 +30,20 @@ DEFAULT_PUBLIC_ROOT = strategy_discovery.DEFAULT_ROOT
 PLAN_KIND = "sp500-addition-data-plan"
 PLAN_INSPECTION_KIND = "sp500-addition-data-plan-inspection"
 STATUS_KIND = "sp500-addition-data-collection"
-PRIVATE_NAMESPACE = "sp500-addition-v1"
+PRIVATE_NAMESPACE = "sp500-addition-v2-yahoo"
+PERMANENT_MISSING_ERRORS = frozenset(
+    {
+        "Yahoo HTTP 400",
+        "Yahoo HTTP 404",
+        "Yahoo chart result is missing or ambiguous",
+    }
+)
+PERMANENT_MISSING_DISPOSITIONS = frozenset(
+    {
+        "provider_empty_missing",
+        "permanent_symbol_unavailable",
+    }
+)
 
 
 class Sp500AdditionCollectionError(RuntimeError):
@@ -193,7 +206,7 @@ def _plan_components(
             key,
             _task(
                 {
-                    "kind": "massive_daily_symbol_bars",
+                    "kind": "yahoo_daily_symbol_bars",
                     "symbol": key[0],
                     "start": key[1],
                     "date": key[2],
@@ -218,7 +231,7 @@ def _plan_components(
             str(task["date"]),
         ): str(task["task_id"])
         for task in tasks
-        if task["kind"] == "massive_daily_symbol_bars"
+        if task["kind"] == "yahoo_daily_symbol_bars"
     }
     event_task_ids = {
         str(event["event_id"]): task_by_window[
@@ -275,9 +288,10 @@ def freeze_plan(
         "task_count": len(tasks),
         "event_task_ids": event_task_ids,
         "providers": [
-            "Massive SIP unadjusted daily bars by exact event window",
+            "Yahoo Finance unadjusted daily bars by exact event window",
             "Massive point-in-time split actions through the final frozen event window",
         ],
+        "permanent_missing_symbol_response": "missed_trade",
         "source_scope": scope[f"{lane}_scope"],
         "provider_requests_before_plan_freeze": 0,
         "market_outcomes_accessed": False,
@@ -312,6 +326,8 @@ def _load_plan(
         and plan.get("provider_requests_before_plan_freeze") == 0
         and plan.get("market_outcomes_accessed") is False
         and plan.get("substitutions_allowed") is False
+        and plan.get("permanent_missing_symbol_response")
+        == "missed_trade"
         and plan.get("broker_actions") == 0
     ):
         raise Sp500AdditionCollectionError(
@@ -430,6 +446,11 @@ def _checkpoint(
         isinstance(value, Mapping)
         and value.get("task") == dict(task)
         and isinstance(value.get("rows"), list)
+        and value.get("collection_disposition")
+        in {
+            "provider_rows",
+            *PERMANENT_MISSING_DISPOSITIONS,
+        }
         and value.get("rows_sha256")
         == canonical_sha256(value["rows"])
         and all(isinstance(row, Mapping) for row in value["rows"])
@@ -438,6 +459,31 @@ def _checkpoint(
             "private checkpoint binding drifted"
         )
     return [dict(row) for row in value["rows"]]
+
+
+def _provider_rows(
+    client: CollectionBackend,
+    task: Mapping[str, Any],
+) -> tuple[list[dict[str, Any]], str]:
+    try:
+        rows = client.fetch(task)
+    except dense_collection.DenseDataCollectionError as exc:
+        if (
+            task.get("kind") != "yahoo_daily_symbol_bars"
+            or str(exc) not in PERMANENT_MISSING_ERRORS
+        ):
+            raise
+        client.telemetry["failures"] = (
+            int(client.telemetry.get("failures", 0)) + 1
+        )
+        return [], "permanent_symbol_unavailable"
+    if not isinstance(rows, list):
+        raise Sp500AdditionCollectionError(
+            "provider task did not return rows"
+        )
+    if task.get("kind") == "yahoo_daily_symbol_bars" and not rows:
+        return [], "provider_empty_missing"
+    return [dict(row) for row in rows], "provider_rows"
 
 
 def _split_factors(
@@ -560,11 +606,12 @@ def build_dataset(
             for symbol in sorted(bars)
         },
         "source_semantics": {
-            "feed": "Massive SIP unadjusted daily event windows",
+            "feed": "Yahoo Finance unadjusted daily event windows",
             "adjustment": (
                 "raw bars adjusted only by frozen point-in-time split "
                 "actions through the dataset end"
             ),
+            "permanent_missing_symbol_response": "missed_trade",
             "substitution": "forbidden",
         },
     }
@@ -699,11 +746,7 @@ def collect(
                 _checkpoint(checkpoint_path, task)
                 client.telemetry["cache_hits"] += 1
             else:
-                rows = client.fetch(task)
-                if not isinstance(rows, list):
-                    raise Sp500AdditionCollectionError(
-                        "provider task did not return rows"
-                    )
+                rows, disposition = _provider_rows(client, task)
                 _write_gzip(
                     checkpoint_path,
                     {
@@ -711,6 +754,7 @@ def collect(
                         "task": dict(task),
                         "rows": rows,
                         "rows_sha256": canonical_sha256(rows),
+                        "collection_disposition": disposition,
                     },
                     config,
                 )
@@ -736,6 +780,14 @@ def collect(
     relative = str(
         dataset_path.resolve().relative_to(config.root.resolve())
     )
+    permanent_missing_task_ids = sorted(
+        str(task["task_id"])
+        for task in plan["tasks"]
+        if _read_gzip(
+            _checkpoint_path(private_root, task)
+        ).get("collection_disposition")
+        in PERMANENT_MISSING_DISPOSITIONS
+    )
     payload = {
         "schema_version": 1,
         "artifact_kind": STATUS_KIND,
@@ -758,6 +810,11 @@ def collect(
         "provider_telemetry": _combine_telemetry(
             saved["provider_telemetry"], client.telemetry
         ),
+        "permanent_missing_task_count": len(
+            permanent_missing_task_ids
+        ),
+        "permanent_missing_task_ids": permanent_missing_task_ids,
+        "permanent_missing_semantics": "missed_trade",
         "collection_started_at": started_at,
         "collection_completed_at": completed_at,
         "substitutions": 0,
@@ -827,6 +884,7 @@ def main() -> int:
         return 0
     except (
         Sp500AdditionCollectionError,
+        dense_collection.DenseDataCollectionError,
         HistoricalStoreError,
         outcome_exposure.OutcomeExposureError,
         strategy_discovery.StrategyDiscoveryError,

@@ -96,11 +96,12 @@ def _dataset(
             selected["ticker"]: []
         },
         "source_semantics": {
-            "feed": "Massive SIP unadjusted daily event windows",
+            "feed": "Yahoo Finance unadjusted daily event windows",
             "adjustment": (
                 "raw bars adjusted only by frozen point-in-time split "
                 "actions through the dataset end"
             ),
+            "permanent_missing_symbol_response": "missed_trade",
             "substitution": "forbidden",
         },
     }
@@ -222,7 +223,7 @@ def test_collection_build_retains_exact_event_window(
     )
     daily_task = collection._task(
         {
-            "kind": "massive_daily_symbol_bars",
+            "kind": "yahoo_daily_symbol_bars",
             "symbol": "AAA",
             "start": REFERENCE_DATE,
             "date": CALENDAR[4],
@@ -249,9 +250,10 @@ def test_collection_build_retains_exact_event_window(
         collection._checkpoint_path(tmp_path, split_task),
         {
             "schema_version": 1,
-            "task": split_task,
-            "rows": [],
-            "rows_sha256": canonical_sha256([]),
+                "task": split_task,
+                "rows": [],
+                "rows_sha256": canonical_sha256([]),
+                "collection_disposition": "provider_rows",
         },
         config,
     )
@@ -262,9 +264,10 @@ def test_collection_build_retains_exact_event_window(
         collection._checkpoint_path(tmp_path, daily_task),
         {
             "schema_version": 1,
-            "task": daily_task,
-            "rows": raw_rows,
-            "rows_sha256": canonical_sha256(raw_rows),
+                "task": daily_task,
+                "rows": raw_rows,
+                "rows_sha256": canonical_sha256(raw_rows),
+                "collection_disposition": "provider_rows",
         },
         config,
     )
@@ -274,6 +277,37 @@ def test_collection_build_retains_exact_event_window(
     assert dataset["event_metadata_by_entry_date"][CALENDAR[0]] == [
         event
     ]
+
+
+def test_yahoo_permanent_missing_symbol_is_a_missed_trade() -> None:
+    class MissingBackend:
+        telemetry = {
+            "requests": 1,
+            "request_seconds": 0.01,
+            "pacing_wait_seconds": 0.2,
+            "cache_hits": 0,
+            "failures": 0,
+        }
+
+        def fetch(self, _task: dict) -> list[dict]:
+            raise collection.dense_collection.DenseDataCollectionError(
+                "Yahoo HTTP 404"
+            )
+
+        def close(self) -> None:
+            pass
+
+    rows, disposition = collection._provider_rows(
+        MissingBackend(),
+        {
+            "kind": "yahoo_daily_symbol_bars",
+            "symbol": "OLD",
+            "start": REFERENCE_DATE,
+            "date": CALENDAR[4],
+        },
+    )
+    assert rows == []
+    assert disposition == "permanent_symbol_unavailable"
 
 
 def test_plan_inspector_reads_family_from_generic_search_contract(

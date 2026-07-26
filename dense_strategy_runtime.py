@@ -3981,12 +3981,14 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             if not (
                 isinstance(source, Mapping)
                 and source.get("feed")
-                == "Massive SIP unadjusted daily event windows"
+                == "Yahoo Finance unadjusted daily event windows"
                 and source.get("adjustment")
                 == (
                     "raw bars adjusted only by frozen point-in-time split "
                     "actions through the dataset end"
                 )
+                and source.get("permanent_missing_symbol_response")
+                == "missed_trade"
                 and source.get("substitution") == "forbidden"
             ):
                 raise DenseStrategyRuntimeError(
