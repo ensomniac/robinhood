@@ -183,3 +183,56 @@ def test_known_typo_policy_rejects_multiple_replacements() -> None:
             announcement=date(2018, 1, 2),
             normalize_known_official_typo=True,
         )
+
+
+def test_exact_official_multi_class_ticker_requires_frozen_expansion() -> None:
+    raw = _release(
+        """
+        <table>
+          <tr><td>Monday, January 8, 2018</td>
+              <td>S&P SmallCap 600</td><td>Addition</td>
+              <td>Under Armour</td><td>UA/UAA</td></tr>
+        </table>
+        """
+    )
+    with pytest.raises(
+        capacity.SpMidSmallAdditionCapacityError,
+        match="invalid structured ticker UA/UAA",
+    ):
+        capacity.parse_release(
+            raw,
+            source_url=capacity.KNOWN_MULTI_CLASS_SOURCE_URL,
+            listed_date="2018-01-02",
+            expand_known_multi_class_ticker=False,
+        )
+    parsed = capacity.parse_release(
+        raw,
+        source_url=capacity.KNOWN_MULTI_CLASS_SOURCE_URL,
+        listed_date="2018-01-02",
+        expand_known_multi_class_ticker=True,
+    )
+    assert [row["ticker"] for row in parsed["eligible_events"]] == [
+        "UA",
+        "UAA",
+    ]
+
+
+def test_other_multi_class_ticker_remains_fail_closed() -> None:
+    raw = _release(
+        """
+        <table>
+          <tr><td>Monday, January 8, 2018</td>
+              <td>S&P SmallCap 600</td><td>Addition</td>
+              <td>Other Corp</td><td>AAA/BBB</td></tr>
+        </table>
+        """
+    )
+    with pytest.raises(
+        capacity.SpMidSmallAdditionCapacityError,
+        match="invalid structured ticker AAA/BBB",
+    ):
+        capacity.parse_release(
+            raw,
+            source_url=capacity.KNOWN_MULTI_CLASS_SOURCE_URL,
+            listed_date="2018-01-02",
+        )

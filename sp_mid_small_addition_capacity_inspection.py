@@ -22,10 +22,20 @@ class SpMidSmallAdditionCapacityInspectionError(RuntimeError):
 INITIAL_CONTRACT_SHA256 = (
     "64d010d8f9cedfd93293796b8c2b475a27732fadb0288f7a12e53d65c18546a0"
 )
+TYPO_RECOVERY_CONTRACT_SHA256 = capacity.TYPO_RECOVERY_CONTRACT_SHA256
+TYPO_RECOVERY_INSPECTION_SHA256 = (
+    "0602f268b9de530bb2f0592c0db73530f13eefab56f143000fee951ceba3cd49"
+)
 EXPECTED_FAILURE_ORDINAL = 179
 EXPECTED_FAILURE_DATE = "2018-11-26"
 EXPECTED_FAILURE_MESSAGE = (
     "effective date is unparseable: DECMEBER 3, 2018"
+)
+EXPECTED_MULTI_CLASS_FAILURE_ORDINAL = 255
+EXPECTED_MULTI_CLASS_FAILURE_DATE = "2022-06-03"
+EXPECTED_MULTI_CLASS_FAILURE_MESSAGE = (
+    f"{capacity.KNOWN_MULTI_CLASS_SOURCE_URL}: invalid structured ticker "
+    f"{capacity.KNOWN_MULTI_CLASS_SOURCE_TOKEN}"
 )
 
 
@@ -97,6 +107,66 @@ def inspect_contract(
             == "CAPACITY_PARSE_FAILURE_INSPECTED"
             and failure_inspection.get("recovery_permitted") is True
         )
+    multi_class_recovery = contract.get("multi_class_ticker_recovery")
+    multi_class_recovery_valid = multi_class_recovery is None
+    if isinstance(multi_class_recovery, Mapping):
+        multi_failure_inspection_path = (
+            capacity.PROJECT_ROOT
+            / multi_class_recovery["failure_inspection_path"]
+        )
+        strategy_discovery.require_committed(
+            multi_failure_inspection_path
+        )
+        multi_failure_inspection = capacity._load(
+            multi_failure_inspection_path,
+            "sp-mid-small-addition-capacity-failure-inspection",
+        )
+        multi_class_recovery_valid = (
+            multi_class_recovery.get("failure_inspection_sha256")
+            == multi_failure_inspection["artifact_sha256"]
+            and multi_class_recovery.get("failed_contract_sha256")
+            == TYPO_RECOVERY_CONTRACT_SHA256
+            and multi_class_recovery.get("prior_cache_pages_opened")
+            == EXPECTED_MULTI_CLASS_FAILURE_ORDINAL
+            and multi_class_recovery.get("failed_task_ordinal")
+            == EXPECTED_MULTI_CLASS_FAILURE_ORDINAL
+            and multi_class_recovery.get("failed_source_url")
+            == capacity.KNOWN_MULTI_CLASS_SOURCE_URL
+            and multi_class_recovery.get("exact_source_token")
+            == capacity.KNOWN_MULTI_CLASS_SOURCE_TOKEN
+            and multi_class_recovery.get("canonical_tickers")
+            == list(capacity.KNOWN_MULTI_CLASS_TICKERS)
+            and multi_class_recovery.get("field")
+            == "structured ticker cell"
+            and multi_class_recovery.get(
+                "all_tasks_dates_urls_and_bytes_unchanged"
+            )
+            is True
+            and multi_class_recovery.get(
+                "new_provider_requests_permitted"
+            )
+            is False
+            and multi_class_recovery.get("market_outcomes_accessed")
+            is False
+            and multi_failure_inspection.get("state")
+            == "CAPACITY_PARSE_FAILURE_INSPECTED"
+            and multi_failure_inspection.get("recovery_permitted") is True
+            and multi_failure_inspection.get("recovery_policy")
+            == {
+                "exact_source_url": (
+                    capacity.KNOWN_MULTI_CLASS_SOURCE_URL
+                ),
+                "exact_source_token": (
+                    capacity.KNOWN_MULTI_CLASS_SOURCE_TOKEN
+                ),
+                "canonical_tickers": list(
+                    capacity.KNOWN_MULTI_CLASS_TICKERS
+                ),
+                "field": "structured ticker cell",
+                "all_other_invalid_tickers_fail_closed": True,
+                "all_tasks_dates_urls_and_bytes_unchanged": True,
+            }
+        )
     if not (
         contract.get("state") == "SOURCE_REUSE_CONTRACT_FROZEN"
         and contract.get("tasks") == expected_tasks
@@ -113,6 +183,7 @@ def inspect_contract(
         and contract.get("broker_actions_permitted") is False
         and contract.get("market_outcomes_accessed") is False
         and recovery_valid
+        and multi_class_recovery_valid
     ):
         raise SpMidSmallAdditionCapacityInspectionError(
             "source-reuse contract does not independently rebuild"
@@ -141,9 +212,13 @@ def inspect_contract(
             "outcome_exposure_binding_rebuilt": True,
             "zero_access_boundary_rebuilt": True,
             "source_schema_recovery_rebuilt": recovery_valid,
+            "multi_class_ticker_recovery_rebuilt": (
+                multi_class_recovery_valid
+            ),
             "valid": True,
         },
         "source_schema_recovery": recovery,
+        "multi_class_ticker_recovery": multi_class_recovery,
         "cache_page_access_permitted": True,
         "provider_requests": 0,
         "market_price_access_permitted": False,
@@ -184,6 +259,34 @@ def _rebuild_initial_failure(
             return task, int(task["ordinal"]), type(exc).__name__, str(exc)
     raise SpMidSmallAdditionCapacityInspectionError(
         "frozen initial parser no longer reproduces its source failure"
+    )
+
+
+def _rebuild_multi_class_failure(
+    contract: Mapping[str, Any],
+) -> tuple[dict[str, Any], int, str, str]:
+    for task in contract["tasks"]:
+        cache_path = source._source_path(task["cache_relative_path"])
+        raw = source._read_cached(cache_path)
+        if (
+            hashlib.sha256(raw).hexdigest() != task["raw_sha256"]
+            or len(raw) != task["raw_bytes"]
+        ):
+            raise SpMidSmallAdditionCapacityInspectionError(
+                f"source cache drifted: {task['url']}"
+            )
+        try:
+            capacity.parse_release(
+                raw,
+                source_url=task["url"],
+                listed_date=task["listed_date"],
+                normalize_known_official_typo=True,
+                expand_known_multi_class_ticker=False,
+            )
+        except capacity.SpMidSmallAdditionCapacityError as exc:
+            return task, int(task["ordinal"]), type(exc).__name__, str(exc)
+    raise SpMidSmallAdditionCapacityInspectionError(
+        "frozen typo-recovery parser no longer reproduces its source failure"
     )
 
 
@@ -365,6 +468,224 @@ def inspect_failure(
             "canonical_token": "DECEMBER",
             "field": "legacy same-index effective-date heading",
             "maximum_replacements_per_page": 1,
+            "all_tasks_dates_urls_and_bytes_unchanged": True,
+        },
+        "provider_requests": 0,
+        "market_price_access_permitted": False,
+        "target_return_access_permitted": False,
+        "confirmation_access_permitted": False,
+        "broker_actions_permitted": False,
+        "market_outcomes_accessed": False,
+    }
+    return _write_artifact(
+        root=root,
+        lane="capacity-failure-inspection",
+        prefix="sp-mid-small-addition-capacity-failure-inspection",
+        value=result,
+    )
+
+
+def record_multi_class_failure(
+    contract_path: Path,
+    inspection_path: Path,
+    *,
+    recorded_at: str,
+    root: Path = capacity.PUBLIC_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    """Record the exact post-typo-recovery multi-class parse failure."""
+
+    source._timestamp(recorded_at)
+    strategy_discovery.require_committed(contract_path)
+    strategy_discovery.require_committed(inspection_path)
+    contract = capacity._load(
+        contract_path,
+        "sp-mid-small-external-addition-capacity-contract",
+    )
+    predecessor = capacity._load(
+        inspection_path,
+        "sp-mid-small-external-addition-contract-inspection",
+    )
+    if not (
+        contract.get("artifact_sha256")
+        == TYPO_RECOVERY_CONTRACT_SHA256
+        and contract.get("source_schema_recovery") is not None
+        and contract.get("multi_class_ticker_recovery") is None
+        and predecessor.get("artifact_sha256")
+        == TYPO_RECOVERY_INSPECTION_SHA256
+        and predecessor.get("state")
+        == "SOURCE_REUSE_CONTRACT_INSPECTED_READY"
+        and predecessor.get("contract_sha256")
+        == contract["artifact_sha256"]
+        and predecessor.get("cache_page_access_permitted") is True
+    ):
+        raise SpMidSmallAdditionCapacityInspectionError(
+            "multi-class failure predecessor chain drifted"
+        )
+    task, ordinal, failure_type, message = _rebuild_multi_class_failure(
+        contract
+    )
+    if not (
+        ordinal == EXPECTED_MULTI_CLASS_FAILURE_ORDINAL
+        and task["listed_date"] == EXPECTED_MULTI_CLASS_FAILURE_DATE
+        and task["url"] == capacity.KNOWN_MULTI_CLASS_SOURCE_URL
+        and failure_type == "SpMidSmallAdditionCapacityError"
+        and message == EXPECTED_MULTI_CLASS_FAILURE_MESSAGE
+    ):
+        raise SpMidSmallAdditionCapacityInspectionError(
+            "multi-class source-schema failure changed"
+        )
+    result = {
+        "schema_version": 1,
+        "artifact_kind": "sp-mid-small-addition-capacity-failure",
+        "campaign_id": capacity.CAMPAIGN_ID,
+        "family_id": capacity.FAMILY_ID,
+        "successor_id": capacity.SUCCESSOR_ID,
+        "recorded_at": recorded_at,
+        "failure_stage": "STRUCTURED_MULTI_CLASS_TICKER",
+        "state": "CAPACITY_PARSE_FAILED_NO_EVENTS",
+        "failed_contract_path": source._repo_path(contract_path),
+        "failed_contract_sha256": contract["artifact_sha256"],
+        "contract_inspection_path": source._repo_path(inspection_path),
+        "contract_inspection_sha256": predecessor["artifact_sha256"],
+        "cache_pages_opened": ordinal,
+        "failed_task_ordinal": ordinal,
+        "failed_listed_date": task["listed_date"],
+        "failed_source_url": task["url"],
+        "failed_task_id": task["task_id"],
+        "failed_raw_sha256": task["raw_sha256"],
+        "failure_type": failure_type,
+        "failure_message": message,
+        "eligible_events_emitted": 0,
+        "capacity_metrics_emitted": False,
+        "provider_requests": 0,
+        "market_price_requests": 0,
+        "target_returns_accessed": False,
+        "confirmation_accessed": False,
+        "broker_actions": 0,
+        "market_outcomes_accessed": False,
+        "same_contract_resume_permitted": False,
+        "recovery_permitted_before_independent_inspection": False,
+    }
+    return _write_artifact(
+        root=root,
+        lane="capacity-failure",
+        prefix="sp-mid-small-addition-capacity-failure",
+        value=result,
+    )
+
+
+def inspect_multi_class_failure(
+    failure_path: Path,
+    *,
+    inspected_at: str,
+    root: Path = capacity.PUBLIC_ROOT,
+) -> tuple[Path, dict[str, Any]]:
+    """Reproduce and bound the exact multi-class ticker recovery."""
+
+    source._timestamp(inspected_at)
+    strategy_discovery.require_committed(failure_path)
+    failure = capacity._load(
+        failure_path,
+        "sp-mid-small-addition-capacity-failure",
+    )
+    contract_path = capacity.PROJECT_ROOT / failure["failed_contract_path"]
+    inspection_path = (
+        capacity.PROJECT_ROOT / failure["contract_inspection_path"]
+    )
+    strategy_discovery.require_committed(contract_path)
+    strategy_discovery.require_committed(inspection_path)
+    contract = capacity._load(
+        contract_path,
+        "sp-mid-small-external-addition-capacity-contract",
+    )
+    predecessor = capacity._load(
+        inspection_path,
+        "sp-mid-small-external-addition-contract-inspection",
+    )
+    task, ordinal, failure_type, message = _rebuild_multi_class_failure(
+        contract
+    )
+    if not (
+        failure.get("failure_stage")
+        == "STRUCTURED_MULTI_CLASS_TICKER"
+        and failure.get("state") == "CAPACITY_PARSE_FAILED_NO_EVENTS"
+        and failure.get("failed_contract_sha256")
+        == contract["artifact_sha256"]
+        == TYPO_RECOVERY_CONTRACT_SHA256
+        and failure.get("contract_inspection_sha256")
+        == predecessor["artifact_sha256"]
+        == TYPO_RECOVERY_INSPECTION_SHA256
+        and failure.get("cache_pages_opened")
+        == failure.get("failed_task_ordinal")
+        == ordinal
+        == EXPECTED_MULTI_CLASS_FAILURE_ORDINAL
+        and failure.get("failed_listed_date")
+        == task["listed_date"]
+        == EXPECTED_MULTI_CLASS_FAILURE_DATE
+        and failure.get("failed_source_url")
+        == task["url"]
+        == capacity.KNOWN_MULTI_CLASS_SOURCE_URL
+        and failure.get("failed_task_id") == task["task_id"]
+        and failure.get("failed_raw_sha256") == task["raw_sha256"]
+        and failure.get("failure_type")
+        == failure_type
+        == "SpMidSmallAdditionCapacityError"
+        and failure.get("failure_message")
+        == message
+        == EXPECTED_MULTI_CLASS_FAILURE_MESSAGE
+        and failure.get("eligible_events_emitted") == 0
+        and failure.get("capacity_metrics_emitted") is False
+        and failure.get("provider_requests") == 0
+        and failure.get("market_price_requests") == 0
+        and failure.get("target_returns_accessed") is False
+        and failure.get("confirmation_accessed") is False
+        and failure.get("broker_actions") == 0
+        and failure.get("market_outcomes_accessed") is False
+        and failure.get("same_contract_resume_permitted") is False
+    ):
+        raise SpMidSmallAdditionCapacityInspectionError(
+            "multi-class capacity failure does not independently rebuild"
+        )
+    result = {
+        "schema_version": 1,
+        "artifact_kind": (
+            "sp-mid-small-addition-capacity-failure-inspection"
+        ),
+        "campaign_id": capacity.CAMPAIGN_ID,
+        "family_id": capacity.FAMILY_ID,
+        "successor_id": capacity.SUCCESSOR_ID,
+        "inspected_at": inspected_at,
+        "failure_stage": "STRUCTURED_MULTI_CLASS_TICKER",
+        "state": "CAPACITY_PARSE_FAILURE_INSPECTED",
+        "failure_path": source._repo_path(failure_path),
+        "failure_sha256": failure["artifact_sha256"],
+        "failed_contract_path": source._repo_path(contract_path),
+        "failed_contract_sha256": contract["artifact_sha256"],
+        "cache_pages_opened": ordinal,
+        "failed_task_ordinal": ordinal,
+        "failed_listed_date": task["listed_date"],
+        "failed_source_url": task["url"],
+        "failure_type": failure_type,
+        "failure_message": message,
+        "inspection": {
+            "contract_lineage_rebuilt": True,
+            "prior_typo_recovery_rebuilt": True,
+            "all_prior_cache_hashes_rebuilt": True,
+            "exact_failed_task_rebuilt": True,
+            "exact_parser_exception_rebuilt": True,
+            "zero_event_output_rebuilt": True,
+            "zero_provider_outcome_boundary_rebuilt": True,
+            "valid": True,
+        },
+        "recovery_permitted": True,
+        "recovery_policy": {
+            "exact_source_url": capacity.KNOWN_MULTI_CLASS_SOURCE_URL,
+            "exact_source_token": capacity.KNOWN_MULTI_CLASS_SOURCE_TOKEN,
+            "canonical_tickers": list(
+                capacity.KNOWN_MULTI_CLASS_TICKERS
+            ),
+            "field": "structured ticker cell",
+            "all_other_invalid_tickers_fail_closed": True,
             "all_tasks_dates_urls_and_bytes_unchanged": True,
         },
         "provider_requests": 0,
@@ -606,6 +927,13 @@ def _parser() -> argparse.ArgumentParser:
     inspect_failure_parser = sub.add_parser("inspect-failure")
     inspect_failure_parser.add_argument("failure", type=Path)
     inspect_failure_parser.add_argument("--inspected-at", required=True)
+    record_multi_parser = sub.add_parser("record-multi-class-failure")
+    record_multi_parser.add_argument("contract", type=Path)
+    record_multi_parser.add_argument("inspection", type=Path)
+    record_multi_parser.add_argument("--recorded-at", required=True)
+    inspect_multi_parser = sub.add_parser("inspect-multi-class-failure")
+    inspect_multi_parser.add_argument("failure", type=Path)
+    inspect_multi_parser.add_argument("--inspected-at", required=True)
     return parser
 
 
@@ -625,6 +953,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         elif args.command == "inspect-failure":
             path, artifact = inspect_failure(
+                args.failure,
+                inspected_at=args.inspected_at,
+            )
+        elif args.command == "record-multi-class-failure":
+            path, artifact = record_multi_class_failure(
+                args.contract,
+                args.inspection,
+                recorded_at=args.recorded_at,
+            )
+        elif args.command == "inspect-multi-class-failure":
+            path, artifact = inspect_multi_class_failure(
                 args.failure,
                 inspected_at=args.inspected_at,
             )

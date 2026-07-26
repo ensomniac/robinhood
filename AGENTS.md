@@ -670,6 +670,16 @@ implementation and outcome-exposure hashes, partitions, thresholds, transfer
 exclusions, and exact one-token policy. All eleven checks pass in
 `SOURCE_REUSE_CONTRACT_INSPECTED_READY` with zero provider or market access.
 Commit and push it before reparsing the complete cached denominator.
+That reparse advanced to source task 255, official release date 2022-06-03,
+then failed closed because one structured ticker cell contains the two official
+Under Armour share classes as `UA/UAA`. The row appears once as an S&P 500
+deletion and once as an S&P MidCap 400 addition on the same effective date, so
+both `UA` and `UAA` must be reconstructed before the existing cross-index
+transfer exclusion runs. The second recovery controller preserves the
+month-typo recovery lineage and may expand only the exact `UA/UAA` token from
+that exact committed official URL into `UA` and `UAA`; every other slash token,
+URL, invalid ticker, source change, or parser error remains fail-closed. Commit
+and push this controller before recording the exact second zero-event failure.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

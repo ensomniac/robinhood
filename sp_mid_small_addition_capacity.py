@@ -28,6 +28,19 @@ CAMPAIGN_ID = source.CAMPAIGN_ID
 FAMILY_ID = "sp-mid-small-external-index-addition-forced-demand"
 SUCCESSOR_ID = f"{FAMILY_ID}-v1"
 MECHANISM_FAMILY = "external-mid-small-index-addition-forced-demand"
+INITIAL_CONTRACT_SHA256 = (
+    "64d010d8f9cedfd93293796b8c2b475a27732fadb0288f7a12e53d65c18546a0"
+)
+TYPO_RECOVERY_CONTRACT_SHA256 = (
+    "96d6b36dee4d81ff9a7c2c54b8153db2160f14718113cce35ebc0dee4cca9416"
+)
+KNOWN_MULTI_CLASS_SOURCE_URL = (
+    "https://press.spglobal.com/2022-06-03-Keurig-Dr-Pepper,"
+    "-VICI-Properties-and-ON-Semiconductor-Set-to-Join-S-P-500-Others"
+    "-to-Join-S-P-MidCap-400,-and-S-P-SmallCap-600"
+)
+KNOWN_MULTI_CLASS_SOURCE_TOKEN = "UA/UAA"
+KNOWN_MULTI_CLASS_TICKERS = ("UA", "UAA")
 PUBLIC_ROOT = (
     PROJECT_ROOT
     / "strategy_tournament/v2/sp-mid-small-index-addition-capacity"
@@ -192,15 +205,17 @@ def freeze_contract(
             strategy_discovery.require_committed(recovery_inspection_path)
     source._validate_rolling_authority(enforce_commit=enforce_commit)
     recovery: dict[str, Any] | None = None
+    prior_recovery: dict[str, Any] | None = None
+    recovery_kind: str | None = None
     if recovery_inspection_path is not None:
         recovery = _load(
             recovery_inspection_path,
             "sp-mid-small-addition-capacity-failure-inspection",
         )
-        if not (
+        if (
             recovery.get("state") == "CAPACITY_PARSE_FAILURE_INSPECTED"
             and recovery.get("failed_contract_sha256")
-            == "64d010d8f9cedfd93293796b8c2b475a27732fadb0288f7a12e53d65c18546a0"
+            == INITIAL_CONTRACT_SHA256
             and recovery.get("failed_task_ordinal") == 179
             and recovery.get("failed_listed_date") == "2018-11-26"
             and recovery.get("failure_type")
@@ -212,6 +227,59 @@ def freeze_contract(
             and recovery.get("market_outcomes_accessed") is False
             and recovery.get("broker_actions_permitted") is False
         ):
+            recovery_kind = "official_month_typo"
+        elif (
+            recovery.get("state") == "CAPACITY_PARSE_FAILURE_INSPECTED"
+            and recovery.get("failed_contract_sha256")
+            == TYPO_RECOVERY_CONTRACT_SHA256
+            and recovery.get("failed_task_ordinal") == 255
+            and recovery.get("failed_listed_date") == "2022-06-03"
+            and recovery.get("failed_source_url")
+            == KNOWN_MULTI_CLASS_SOURCE_URL
+            and recovery.get("failure_type")
+            == "SpMidSmallAdditionCapacityError"
+            and recovery.get("failure_message")
+            == (
+                f"{KNOWN_MULTI_CLASS_SOURCE_URL}: invalid structured "
+                f"ticker {KNOWN_MULTI_CLASS_SOURCE_TOKEN}"
+            )
+            and recovery.get("recovery_permitted") is True
+            and recovery.get("provider_requests") == 0
+            and recovery.get("market_outcomes_accessed") is False
+            and recovery.get("broker_actions_permitted") is False
+        ):
+            failed_contract_path = (
+                PROJECT_ROOT / recovery["failed_contract_path"]
+            )
+            prior_contract = _load(
+                failed_contract_path,
+                "sp-mid-small-external-addition-capacity-contract",
+            )
+            prior_recovery_value = prior_contract.get(
+                "source_schema_recovery"
+            )
+            if not (
+                prior_contract.get("artifact_sha256")
+                == TYPO_RECOVERY_CONTRACT_SHA256
+                and isinstance(prior_recovery_value, Mapping)
+                and prior_recovery_value.get("failed_contract_sha256")
+                == INITIAL_CONTRACT_SHA256
+                and prior_recovery_value.get("normalization")
+                == {
+                    "exact_source_token": "DECMEBER",
+                    "canonical_token": "DECEMBER",
+                    "field": (
+                        "legacy same-index effective-date heading"
+                    ),
+                    "maximum_replacements_per_page": 1,
+                }
+            ):
+                raise SpMidSmallAdditionCapacityError(
+                    "prior source-schema recovery lineage drifted"
+                )
+            prior_recovery = dict(prior_recovery_value)
+            recovery_kind = "multi_class_ticker"
+        else:
             raise SpMidSmallAdditionCapacityError(
                 "source-schema recovery inspection is not exact and ready"
             )
@@ -302,7 +370,7 @@ def freeze_contract(
         "broker_actions_permitted": False,
         "market_outcomes_accessed": False,
     }
-    if recovery is not None:
+    if recovery_kind == "official_month_typo":
         contract["source_schema_recovery"] = {
             "failure_inspection_path": source._repo_path(
                 recovery_inspection_path
@@ -320,6 +388,30 @@ def freeze_contract(
                 "field": "legacy same-index effective-date heading",
                 "maximum_replacements_per_page": 1,
             },
+            "all_tasks_dates_urls_and_bytes_unchanged": True,
+            "new_provider_requests_permitted": False,
+            "market_outcomes_accessed": False,
+        }
+    elif recovery_kind == "multi_class_ticker":
+        contract["source_schema_recovery"] = prior_recovery
+        contract["multi_class_ticker_recovery"] = {
+            "failure_inspection_path": source._repo_path(
+                recovery_inspection_path
+            ),
+            "failure_inspection_sha256": recovery["artifact_sha256"],
+            "failed_contract_sha256": recovery[
+                "failed_contract_sha256"
+            ],
+            "prior_cache_pages_opened": recovery["cache_pages_opened"],
+            "failed_task_ordinal": recovery["failed_task_ordinal"],
+            "failed_source_url": recovery["failed_source_url"],
+            "exact_source_token": KNOWN_MULTI_CLASS_SOURCE_TOKEN,
+            "canonical_tickers": list(KNOWN_MULTI_CLASS_TICKERS),
+            "field": "structured ticker cell",
+            "semantics": (
+                "expand both official share-class identities before "
+                "same-security cross-index transfer exclusion"
+            ),
             "all_tasks_dates_urls_and_bytes_unchanged": True,
             "new_provider_requests_permitted": False,
             "market_outcomes_accessed": False,
@@ -385,12 +477,33 @@ def _effective_date(
     return source._parse_effective_date(value, announcement=announcement)
 
 
+def _structured_tickers(
+    raw: str,
+    *,
+    source_url: str,
+    expand_known_multi_class_ticker: bool,
+) -> tuple[str, ...]:
+    ticker = raw.upper().replace(" ", "")
+    if re.fullmatch(r"[A-Z][A-Z0-9.-]{0,11}", ticker):
+        return (ticker,)
+    if (
+        expand_known_multi_class_ticker
+        and source_url == KNOWN_MULTI_CLASS_SOURCE_URL
+        and ticker == KNOWN_MULTI_CLASS_SOURCE_TOKEN
+    ):
+        return KNOWN_MULTI_CLASS_TICKERS
+    raise SpMidSmallAdditionCapacityError(
+        f"{source_url}: invalid structured ticker {ticker}"
+    )
+
+
 def parse_release(
     raw: bytes,
     *,
     source_url: str,
     listed_date: str,
     normalize_known_official_typo: bool = True,
+    expand_known_multi_class_ticker: bool = True,
 ) -> dict[str, Any]:
     """Parse all Composite 1500 size-index actions and retain pure additions."""
 
@@ -440,24 +553,29 @@ def parse_release(
                 effective_cell = (
                     segment[0] or inherited_effective_date or ""
                 )
-                ticker = segment[4].upper().replace(" ", "")
-                if not re.fullmatch(r"[A-Z][A-Z0-9.-]{0,11}", ticker):
-                    raise SpMidSmallAdditionCapacityError(
-                        f"{source_url}: invalid structured ticker {ticker}"
-                    )
+                tickers = _structured_tickers(
+                    segment[4],
+                    source_url=source_url,
+                    expand_known_multi_class_ticker=(
+                        expand_known_multi_class_ticker
+                    ),
+                )
                 if effective_cell.casefold() in {
                     "",
                     "tba",
                     "to be announced",
                 }:
-                    ineligible.append(
-                        {
-                            "ticker": ticker,
-                            "index_name": index_name,
-                            "action": action.title(),
-                            "terminal_reason": "MISSING_EFFECTIVE_DATE",
-                        }
-                    )
+                    for ticker in tickers:
+                        ineligible.append(
+                            {
+                                "ticker": ticker,
+                                "index_name": index_name,
+                                "action": action.title(),
+                                "terminal_reason": (
+                                    "MISSING_EFFECTIVE_DATE"
+                                ),
+                            }
+                        )
                     continue
                 effective = _effective_date(
                     effective_cell,
@@ -470,17 +588,18 @@ def parse_release(
                     raise SpMidSmallAdditionCapacityError(
                         f"{source_url}: effective date is not later"
                     )
-                actions.append(
-                    _event(
-                        published=published,
-                        effective=effective,
-                        index_name=index_name,
-                        action=action.title(),
-                        company_name=segment[3],
-                        ticker=ticker,
-                        source_url=source_url,
+                for ticker in tickers:
+                    actions.append(
+                        _event(
+                            published=published,
+                            effective=effective,
+                            index_name=index_name,
+                            action=action.title(),
+                            company_name=segment[3],
+                            ticker=ticker,
+                            source_url=source_url,
+                        )
                     )
-                )
         if not table or not table[0]:
             continue
         heading = re.fullmatch(
