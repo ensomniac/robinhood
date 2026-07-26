@@ -374,8 +374,12 @@ zero-provider/locked-confirmation boundary. It assigns `CAPACITY_READY`. Commit
 and push it before freezing the complete development search. Search
 `bce9dbf6...ca1f95` now freezes all 32 exact trials, matching prior paths,
 implementation hashes, partitions, costs, and deterministic selection rule in
-state `SEARCH_FROZEN`. Commit and push it before any development source contract
-is created.
+state `SEARCH_FROZEN`. Development source contract
+`8dc792ac...195e32` freezes 309 exact Yahoo daily-chart requests from
+2024-01-02 through 2024-09-25, enough for causal warmup and the complete
+development account calendar. It permits zero retries, substitutions, or
+confirmation requests and accessed no provider or outcome. Commit and push it
+before independent source inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
