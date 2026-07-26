@@ -698,6 +698,10 @@ failure while binding current implementation hashes. It permits only the two
 exact source corrections, records zero new provider or market access, and
 retains every capacity threshold and partition. Commit and push it before
 independent contract inspection.
+Inspection `4a810395...178ac4` independently rebuilt all 312 source identities,
+both inspected recovery lineages, current implementation and exposure hashes,
+partitions, thresholds, transfer exclusions, and the zero-market-access
+boundary. Commit and push it before the final complete capacity pass.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
