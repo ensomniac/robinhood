@@ -75,7 +75,12 @@ inventory, 20 explicit exclusions, and 35 untouched confirmation pairs before
 the exact family and capacity contracts may freeze. Inspection
 `95a0caa4...dd3c4` now independently reproduces that pair-clean allocation
 and all calendar/source checks with zero price or broker access. Commit and
-push it before the family freeze.
+push it before the family freeze. Exact one-trial family contract
+`4366bcee...1e00` and capacity manifest `27643e31...c5d77` now bind the
+119-event inventory, 64 development entries, 35 untouched confirmation
+entries, all account-calendar zero days, costs, falsifiers, and production
+implementation hashes with zero provider or outcome access. Commit and push
+both before generic preflight.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
