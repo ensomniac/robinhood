@@ -401,6 +401,10 @@ the failure and exposure record before inspection. Inspection
 checkpoint hashes, the partial exposure record, zero-metric state, and
 retry/substitution prohibitions. All ten checks pass, authorizing only a frozen
 response-schema policy. Commit and push it before policy freeze.
+Policy `7c1c3186...4b2ab0` now freezes the exact unusable-response messages,
+zero-retry bootstrap registration, first-response whole-symbol missed-data
+disposition, zero substitutions, and closed confirmation boundary. It permits
+no resume until independently inspected. Commit and push it before inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
