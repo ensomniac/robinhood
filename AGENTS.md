@@ -70,6 +70,13 @@ Collection `435dacbe...7b2e4` then completed all 28 exact requests from pushed
 commit `ebe946e0`, retaining 299,705,786 bytes outside Git with zero failures,
 retries, substitutions, price access, returns, confirmation, or broker actions.
 Commit the compact telemetry before independently reconstructing event capacity.
+Capacity inspection `22b5ca89...ebd720` independently rehashed all archives
+and rebuilt 2,156,727 non-derivative transaction rows. The strict frozen rules
+retain 51,354 eligible transaction rows and 29,564 normalized issuer-filing
+events across 1,746 filing dates and 4,387 symbols. All nine checks pass and
+the exact version earns `FORM4_CAPACITY_READY`, far above the 100-event fast
+lane floor, with prices, returns, and confirmation still unopened. Commit this
+disposition before freezing development, embargo, and confirmation evidence.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed

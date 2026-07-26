@@ -1,0 +1,62 @@
+{
+  "artifact_kind": "form4-insider-purchase-capacity-inspection",
+  "artifact_sha256": "22b5ca895f3593c82aa2e2cdc5bb5f86f659ccacb8fd1f84007f6d6575ebd720",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "all_archive_hashes_rebuilt": true,
+    "as_filed_semantics_rebuilt": true,
+    "broker_actions_zero": true,
+    "collection_hash_rebuilt": true,
+    "confirmation_absent": true,
+    "contract_hash_rebuilt": true,
+    "exact_archive_graph_rebuilt": true,
+    "forward_returns_absent": true,
+    "market_prices_absent": true
+  },
+  "collection_path": "strategy_tournament/v2/form4_insider_purchase/source-collection/form4-insider-purchase-source-collection-435dacbee449f3b002211bd060cbb7ef1107d65d1ba70f4dd061883a2b97b2e4.json",
+  "collection_sha256": "435dacbee449f3b002211bd060cbb7ef1107d65d1ba70f4dd061883a2b97b2e4",
+  "confirmation_accessed": false,
+  "contract_path": "strategy_tournament/v2/form4_insider_purchase/source-contract/form4-insider-purchase-source-contract-b4b51d2d4bb33f1e36b37ba22eaa7917f6ee4fb835860da02f5dd8bb2960638b.json",
+  "contract_sha256": "b4b51d2d4bb33f1e36b37ba22eaa7917f6ee4fb835860da02f5dd8bb2960638b",
+  "counts": {
+    "eligible_transaction_rows": 51354,
+    "excluded_10b5_1": 91444,
+    "excluded_disposition": 302,
+    "excluded_document_type": 63907,
+    "excluded_filing_lag": 7518,
+    "excluded_footnoted_core_field": 29689,
+    "excluded_indirect": 48634,
+    "excluded_missing_economics": 661,
+    "excluded_owner_relationship": 173618,
+    "excluded_security_title": 13189,
+    "excluded_symbol": 18147,
+    "excluded_transaction_code": 1658264,
+    "nonderivative_transaction_rows": 2156727,
+    "normalized_events": 29564,
+    "reporting_owner_rows": 1556735,
+    "submission_rows": 1424252
+  },
+  "disposition": "ADMIT_DEVELOPMENT_SEARCH",
+  "family_id": "clustered-form4-open-market-purchase-continuation",
+  "formal_capacity": {
+    "minimum_fast_lane_events": 100,
+    "normalized_events": 29564,
+    "unique_filing_dates": 1746,
+    "unique_symbols": 4387
+  },
+  "forward_returns_accessed": false,
+  "inspected_at": "2026-07-25T23:54:46-04:00",
+  "market_prices_accessed": false,
+  "mechanism_family": "insider-open-market-purchase-continuation",
+  "private_event_binding": {
+    "content_sha256": "3662868c51e347723d40ccf75122fe31d6d6e31c6d0003cda951f43d1933d370",
+    "file_sha256": "c2d7c8f16e827b51122a45f1d21de5ffebbb36e6ffb9a16829b161dd2ee77fa5",
+    "format": "json.gz",
+    "relative_path": "_derived/form4_insider_purchase/b4b51d2d4bb33f1e36b37ba22eaa7917f6ee4fb835860da02f5dd8bb2960638b/normalized-events-3662868c51e347723d40ccf75122fe31d6d6e31c6d0003cda951f43d1933d370.json.gz"
+  },
+  "schema_version": 1,
+  "state": "FORM4_CAPACITY_READY",
+  "valid": true,
+  "version_id": "clustered-form4-open-market-purchase-continuation-v1"
+}
