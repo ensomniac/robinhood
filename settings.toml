@@ -4,7 +4,7 @@
 # off:     never send operational email
 # trades:  send only trade_placed, trade_modified, and trade_completed events
 # verbose: also send likely setup, critical safety, and session summary events
-verbosity = "trades"
+verbosity = "verbose"
 
 # Transport settings for the existing server mail sender. The server routes mail
 # to ryan@ensomniac.com; this API does not accept a recipient argument.
