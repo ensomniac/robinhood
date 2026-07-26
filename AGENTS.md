@@ -253,6 +253,15 @@ signal dates, five embargo sessions, and 44 untouched confirmation events on 34
 signal dates. They used zero provider requests and zero market outcomes. Commit
 and push these artifacts before running the generic preflight or freezing the
 development search.
+Generic preflight `9d5ee4da...bc834e7` correctly returned
+`PRESERVED_LATER_SINGLE_RULE`: contract `e6f48e70...2a5cd4` exposed only 85
+unique development signal dates versus the unchanged 100-date fast-lane floor.
+It used one metadata cache hit, zero dataset loads, zero provider requests, and
+zero outcomes. That exact contract cannot freeze a development search. An
+outcome-blind successor may move the development cutoff through 2018, which the
+already-inspected metadata shows has 102 development signal dates while
+preserving the required 20 globally untouched confirmation dates. No strategy
+rule, price outcome, capacity threshold, or confirmation minimum may change.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
