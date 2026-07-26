@@ -164,10 +164,21 @@ def freeze_contract(
     created_at: str,
     root: Path = PUBLIC_ROOT,
     enforce_commit: bool = True,
+    recovery_inspection_path: Path | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     """Freeze the no-request source-reuse graph before parsing new rows."""
 
     source._timestamp(created_at)
+    existing_contracts = sorted(
+        (root / "source-reuse-contract").glob(
+            "sp-mid-small-addition-contract-*.json"
+        )
+    )
+    if existing_contracts and recovery_inspection_path is None:
+        raise SpMidSmallAdditionCapacityError(
+            "initial source-reuse contract already exists; "
+            "an inspected source-schema failure is required"
+        )
     if enforce_commit:
         for path in (
             SOURCE_COLLECTION_PATH,
@@ -177,7 +188,33 @@ def freeze_contract(
             *[PROJECT_ROOT / relative for relative in IMPLEMENTATION_FILES],
         ):
             strategy_discovery.require_committed(path)
+        if recovery_inspection_path is not None:
+            strategy_discovery.require_committed(recovery_inspection_path)
     source._validate_rolling_authority(enforce_commit=enforce_commit)
+    recovery: dict[str, Any] | None = None
+    if recovery_inspection_path is not None:
+        recovery = _load(
+            recovery_inspection_path,
+            "sp-mid-small-addition-capacity-failure-inspection",
+        )
+        if not (
+            recovery.get("state") == "CAPACITY_PARSE_FAILURE_INSPECTED"
+            and recovery.get("failed_contract_sha256")
+            == "64d010d8f9cedfd93293796b8c2b475a27732fadb0288f7a12e53d65c18546a0"
+            and recovery.get("failed_task_ordinal") == 179
+            and recovery.get("failed_listed_date") == "2018-11-26"
+            and recovery.get("failure_type")
+            == "Sp500AdditionCapacityError"
+            and recovery.get("failure_message")
+            == "effective date is unparseable: DECMEBER 3, 2018"
+            and recovery.get("recovery_permitted") is True
+            and recovery.get("provider_requests") == 0
+            and recovery.get("market_outcomes_accessed") is False
+            and recovery.get("broker_actions_permitted") is False
+        ):
+            raise SpMidSmallAdditionCapacityError(
+                "source-schema recovery inspection is not exact and ready"
+            )
     tasks = source_tasks()
     exposure_audit = outcome_exposure.audit()
     contract: dict[str, Any] = {
@@ -265,6 +302,28 @@ def freeze_contract(
         "broker_actions_permitted": False,
         "market_outcomes_accessed": False,
     }
+    if recovery is not None:
+        contract["source_schema_recovery"] = {
+            "failure_inspection_path": source._repo_path(
+                recovery_inspection_path
+            ),
+            "failure_inspection_sha256": recovery["artifact_sha256"],
+            "failed_contract_sha256": recovery[
+                "failed_contract_sha256"
+            ],
+            "prior_cache_pages_opened": recovery["cache_pages_opened"],
+            "failed_task_ordinal": recovery["failed_task_ordinal"],
+            "failed_source_url": recovery["failed_source_url"],
+            "normalization": {
+                "exact_source_token": "DECMEBER",
+                "canonical_token": "DECEMBER",
+                "field": "legacy same-index effective-date heading",
+                "maximum_replacements_per_page": 1,
+            },
+            "all_tasks_dates_urls_and_bytes_unchanged": True,
+            "new_provider_requests_permitted": False,
+            "market_outcomes_accessed": False,
+        }
     contract["artifact_sha256"] = _self_hash(contract)
     path = (
         root
@@ -310,11 +369,28 @@ def _event(
     }
 
 
+def _effective_date(
+    raw: str,
+    *,
+    announcement: date,
+    normalize_known_official_typo: bool,
+) -> date:
+    value = raw
+    if normalize_known_official_typo:
+        if value.count("DECMEBER") > 1:
+            raise SpMidSmallAdditionCapacityError(
+                "official month typo occurs more than once"
+            )
+        value = value.replace("DECMEBER", "DECEMBER")
+    return source._parse_effective_date(value, announcement=announcement)
+
+
 def parse_release(
     raw: bytes,
     *,
     source_url: str,
     listed_date: str,
+    normalize_known_official_typo: bool = True,
 ) -> dict[str, Any]:
     """Parse all Composite 1500 size-index actions and retain pure additions."""
 
@@ -383,9 +459,12 @@ def parse_release(
                         }
                     )
                     continue
-                effective = source._parse_effective_date(
+                effective = _effective_date(
                     effective_cell,
                     announcement=published.date(),
+                    normalize_known_official_typo=(
+                        normalize_known_official_typo
+                    ),
                 )
                 if effective <= published.date():
                     raise SpMidSmallAdditionCapacityError(
@@ -419,9 +498,12 @@ def parse_release(
         effective = (
             None
             if raw_effective.casefold() in {"tba", "to be announced"}
-            else source._parse_effective_date(
+            else _effective_date(
                 raw_effective,
                 announcement=published.date(),
+                normalize_known_official_typo=(
+                    normalize_known_official_typo
+                ),
             )
         )
         if effective is not None and effective <= published.date():
@@ -557,13 +639,23 @@ def _parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     freeze = sub.add_parser("freeze-contract")
     freeze.add_argument("--created-at", required=True)
+    recovery = sub.add_parser("freeze-recovery")
+    recovery.add_argument("failure_inspection", type=Path)
+    recovery.add_argument("--created-at", required=True)
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
-        path, artifact = freeze_contract(created_at=args.created_at)
+        path, artifact = freeze_contract(
+            created_at=args.created_at,
+            recovery_inspection_path=(
+                args.failure_inspection
+                if args.command == "freeze-recovery"
+                else None
+            ),
+        )
     except (
         SpMidSmallAdditionCapacityError,
         strategy_discovery.StrategyDiscoveryError,

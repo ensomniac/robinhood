@@ -632,6 +632,16 @@ and zero-access fields. All ten checks pass in
 the capacity command rehashes and parses any cached page. It authorizes cache
 inspection only; provider, price, return, confirmation, and broker access remain
 forbidden.
+The first authorized capacity parse stopped on source task 179, official release
+date 2018-11-26, because its legacy table heading spells the effective date
+`DECMEBER 3, 2018`. No capacity artifact, eligible event, strategy metric,
+price, return, confirmation outcome, provider request, or broker action was
+produced. The failure/recovery controller preserves the original parser
+behavior for independent reproduction and permits only one exact
+`DECMEBER`-to-`DECEMBER` normalization in that legacy effective-date field.
+Multiple replacements, any other parser error, and every changed task, date,
+URL, byte, rule, threshold, or partition remain fail-closed. Commit and push
+the controller before recording the exact failed boundary.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

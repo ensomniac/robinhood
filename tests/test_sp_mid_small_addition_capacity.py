@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from datetime import date
 from textwrap import dedent
 
+import pytest
+
+import sp500_addition_capacity as source
 import sp_mid_small_addition_capacity as capacity
 
 
@@ -138,3 +142,44 @@ def test_capacity_state_preserves_all_frozen_thresholds() -> None:
         )
         == "RETIRED_INSUFFICIENT_FORMAL_CAPACITY"
     )
+
+
+def test_exact_official_month_typo_requires_frozen_normalization() -> None:
+    raw = _release(
+        """
+        <p>Example Holdings (NASDAQ: EXAM) will join the index.</p>
+        <table>
+          <tr><th>S&P SMALLCAP 600 - DECMEBER 3, 2018</th></tr>
+          <tr><td>ADDED</td><td>Example Holdings</td></tr>
+        </table>
+        """
+    )
+    with pytest.raises(
+        source.Sp500AdditionCapacityError,
+        match="effective date is unparseable: DECMEBER 3, 2018",
+    ):
+        capacity.parse_release(
+            raw,
+            source_url="https://press.spglobal.com/2018-example",
+            listed_date="2018-01-02",
+            normalize_known_official_typo=False,
+        )
+    parsed = capacity.parse_release(
+        raw,
+        source_url="https://press.spglobal.com/2018-example",
+        listed_date="2018-01-02",
+        normalize_known_official_typo=True,
+    )
+    assert parsed["eligible_events"][0]["effective_date"] == "2018-12-03"
+
+
+def test_known_typo_policy_rejects_multiple_replacements() -> None:
+    with pytest.raises(
+        capacity.SpMidSmallAdditionCapacityError,
+        match="official month typo occurs more than once",
+    ):
+        capacity._effective_date(
+            "DECMEBER DECMEBER 3, 2018",
+            announcement=date(2018, 1, 2),
+            normalize_known_official_typo=True,
+        )
