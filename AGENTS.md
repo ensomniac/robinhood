@@ -396,7 +396,11 @@ push the controller before recording the partial exposure. Failure
 164 checkpointed symbols across their frozen source dates to the global
 development exposure index. It authorizes no retry, registration, resume,
 confirmation, or broker action until independently inspected. Commit and push
-the failure and exposure record before inspection.
+the failure and exposure record before inspection. Inspection
+`af5dc694...e3cf14` independently rebuilds the exact LANC boundary, all
+checkpoint hashes, the partial exposure record, zero-metric state, and
+retry/substitution prohibitions. All ten checks pass, authorizing only a frozen
+response-schema policy. Commit and push it before policy freeze.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
