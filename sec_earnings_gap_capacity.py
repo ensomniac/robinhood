@@ -34,6 +34,7 @@ from historical_discovery import (
     _filing_items,
 )
 from historical_store import HistoricalDayStore, sha256_file
+from learning_data import security_master_sha256
 from scanner_replay import load_calendar
 
 
@@ -335,7 +336,7 @@ def build_contract(
         raise SecEarningsGapCapacityError("source pre-entry inspection is not ready")
     if security_attestation.get("security_master", {}).get(
         "sha256"
-    ) != sha256_file(SECURITY_MASTER):
+    ) != security_master_sha256(SECURITY_MASTER):
         raise SecEarningsGapCapacityError(
             "ignored security master differs from its committed attestation"
         )
@@ -369,7 +370,10 @@ def build_contract(
             ),
             "private_inventory_content_sha256": inventory["content_sha256"],
             "security_master_path": _repo_path(SECURITY_MASTER),
-            "security_master_sha256": sha256_file(SECURITY_MASTER),
+            "security_master_file_sha256": sha256_file(SECURITY_MASTER),
+            "security_master_semantic_sha256": security_master_sha256(
+                SECURITY_MASTER
+            ),
             "security_master_attestation_path": _repo_path(
                 SECURITY_MASTER_ATTESTATION
             ),
