@@ -357,6 +357,24 @@ def _calendar(dataset: Mapping[str, Any]) -> list[str]:
     return list(raw)
 
 
+def _signal_dates(dataset: Mapping[str, Any]) -> list[str]:
+    calendar = _calendar(dataset)
+    raw = dataset.get("signal_dates", calendar)
+    if not isinstance(raw, list) or not raw or any(
+        not isinstance(item, str) or not item for item in raw
+    ):
+        raise DenseStrategyRuntimeError("signal_dates must be non-empty text")
+    if raw != sorted(raw) or len(raw) != len(set(raw)):
+        raise DenseStrategyRuntimeError(
+            "signal_dates must be unique and chronological"
+        )
+    if not set(raw).issubset(calendar):
+        raise DenseStrategyRuntimeError(
+            "signal_dates escaped the account calendar"
+        )
+    return list(raw)
+
+
 def _daily_series(dataset: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]:
     prepared = dataset.get("_prepared_daily_bars")
     if isinstance(prepared, dict):
@@ -733,6 +751,7 @@ def _equity_residual_candidates(
             "equity residual dataset family binding is invalid"
         )
     calendar = _calendar(dataset)
+    signal_dates = set(_signal_dates(dataset))
     calendar_positions = {day: index for index, day in enumerate(calendar)}
     daily = _daily_series(dataset)
     universe = dataset.get("universe_by_date")
@@ -952,6 +971,8 @@ def _equity_residual_candidates(
                 continue
             scored.append((z_score, symbol, atr14))
         entry_date = calendar[calendar_index + 1]
+        if entry_date not in signal_dates:
+            continue
         if calendar_index + 1 + hold > len(calendar):
             continue
         for rank, (z_score, symbol, atr14) in enumerate(sorted(scored), 1):
@@ -1098,6 +1119,7 @@ def _etf_pullback_candidates(
     family_id: str = ETF_PULLBACK_FAMILY,
 ) -> list[dict[str, Any]]:
     calendar = _calendar(dataset)
+    signal_dates = set(_signal_dates(dataset))
     daily = _daily_series(dataset)
     expected_replication_symbols = (
         ETF_PULLBACK_REPLICATION_SYMBOLS_BY_FAMILY.get(family_id)
@@ -1146,6 +1168,8 @@ def _etf_pullback_candidates(
                 continue
             scored.append((rsi2, decline, symbol, atr14))
         entry_date = calendar[calendar_index + 1]
+        if entry_date not in signal_dates:
+            continue
         if calendar_index + 1 + hold > len(calendar):
             continue
         for rank, (rsi2, decline, symbol, atr14) in enumerate(sorted(scored), 1):
@@ -3792,6 +3816,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
     if family_id not in SUPPORTED_FAMILIES:
         raise DenseStrategyRuntimeError("dataset family binding is unsupported")
     calendar = _calendar(dataset)
+    _signal_dates(dataset)
     prepared = dict(dataset)
     if family_id == ETF_CLOSE_TO_OPEN_FAMILY:
         daily = _daily_series(dataset)
@@ -4142,7 +4167,7 @@ def _intraday_candidates(
     reclaim_bars = int(parameters["vwap_reclaim_completed_bars"])
     stop_atr = float(parameters["stop_intraday_atr"])
     target_r = float(parameters["target_r"])
-    evaluation_dates = set(calendar)
+    evaluation_dates = set(_signal_dates(dataset))
     histories: dict[str, list[float]] = {}
     candidates: list[dict[str, Any]] = []
     for day in sorted(sessions):

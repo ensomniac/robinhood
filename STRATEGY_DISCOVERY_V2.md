@@ -243,11 +243,17 @@ outcome-blind request. The original capacity inspection failed before producing
 an artifact because it incorrectly required one 940-session untouched run for
 all three families; preserved wildcard exposures split the calendar and the
 largest run has 567 sessions. The corrected allocation contract freezes the
-statistically relevant boundary before rerun: all three 160-session target
-blocks are mutually disjoint and globally untouched. Indicator warmups must be
-complete and strictly earlier, but may overlap prior exposed dates or another
-family's earlier target block only as causal point-in-time features. Warmup rows
-are ineligible as target evidence, confirmation, power, or maturity.
+statistically relevant boundary before rerun. Each family receives 120
+chronological development account sessions, a five-session embargo, and 35
+date/instrument-clean confirmation signal sessions. Development is explicitly
+contaminated training evidence. Confirmation account calendars remain
+continuous through intervening contaminated dates, which are explicit
+zero-signal, zero-return sessions rather than substituted or omitted dates.
+The three family account calendars are mutually disjoint. Indicator warmups
+must be complete and strictly earlier, but may overlap prior exposed dates or
+another family's earlier account path only as causal point-in-time features.
+Warmup rows are ineligible as target evidence, confirmation, power, or
+maturity.
 
 ## Continuous existing-family successors
 

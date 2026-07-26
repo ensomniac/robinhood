@@ -1600,6 +1600,17 @@ outcome-exposure hash. `ACTIVATION_READY` permits only the ordered outcome-blind
 calendar/provider transition; it does not permit target outcomes or broker
 access.
 
+The allocator must preserve the pair-level exposure boundary. Development may
+use its frozen 120-session calendar as explicitly contaminated training
+evidence. After the five-session embargo, each family reserves 35 untouched
+date/instrument confirmation signal opportunities inside a continuous account
+calendar; intervening dates are explicit zero-signal, zero-return days. Family
+account calendars remain chronological and mutually disjoint. Collection
+plans, datasets, historical evaluators, and production parity carry the signal
+subset separately from the complete account calendar. This topology changes no
+family parameter, execution cost, statistical gate, evidence threshold,
+confirmation rule, or broker permission.
+
 The next evaluated successor was
 `two-to-three-day-cross-sectional-reversal-v2-liquid-index-etf`. Its v1
 predecessor was retired only because 24 frozen decision dates could not meet

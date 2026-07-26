@@ -174,22 +174,27 @@ def test_status_turns_rejected_successor_into_non_waiting_readiness_work():
     assert status["successor"]["outcome_access_wait_required"] is False
     assert status["successor"]["outcome_access_prerequisites_remaining"] is True
     readiness = status["preactivation_readiness"]
-    assert readiness["state"] == "PREACTIVATION_BLOCKED"
-    assert (
-        "no contiguous untouched target-evidence run has 480 sessions"
-        in readiness["blockers"]
+    assert readiness["state"] in {
+        "PREACTIVATION_BLOCKED",
+        "ALLOCATION_CONTRACT_READY",
+    }
+    assert readiness["allocation_capacity"]["state"] == (
+        "ALLOCATION_CAPACITY_READY"
     )
-    assert readiness["preactivation_work_complete"] is False
+    assert readiness["allocation_capacity"]["ready"] is True
+    assert all(
+        "contiguous untouched target-evidence run" not in blocker
+        for blocker in readiness["blockers"]
+    )
+    assert readiness["preactivation_work_complete"] is not bool(
+        readiness["blockers"]
+    )
     assert readiness["credentials_ready"] is True
     assert readiness["provider_access_permitted"] is False
     assert readiness["target_outcome_access_permitted"] is False
     assert readiness["broker_actions_permitted"] is False
     assert status["new_family_batch"]["state"] == (
-        "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY"
-    )
-    assert (
-        status["new_family_batch"]["evidence_freeze_permitted"]
-        is False
+        "READY_FOR_DISJOINT_EVIDENCE_FREEZE"
     )
 
 

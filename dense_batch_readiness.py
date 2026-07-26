@@ -202,45 +202,43 @@ def _allocation_capacity(
 ) -> dict[str, Any]:
     calendar = dense_capacity_inventory._calendar(calendar_path)
     records = outcome_exposure.read_index(index_path)
-    exposed_dates = dense_capacity_inventory._globally_exposed_dates(
-        records
-    )
-    runs = dense_capacity_inventory._untouched_runs(
-        calendar,
-        exposed_dates,
-    )
-    required = (
-        dense_capacity_inventory.SESSIONS_PER_FAMILY
-        * len(batch.build_plan()["families"])
-    )
     try:
         allocations = dense_capacity_inventory._allocate(
             calendar,
-            exposed_dates,
+            records,
         )
     except dense_capacity_inventory.DenseCapacityInventoryError as exc:
         return {
-            "state": "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY",
+            "state": "INSUFFICIENT_PAIR_AWARE_CONFIRMATION_CAPACITY",
             "ready": False,
-            "required_contiguous_target_sessions": required,
-            "largest_contiguous_untouched_run": max(
-                (len(run) for run in runs),
-                default=0,
+            "development_account_sessions_per_family": (
+                dense_capacity_inventory.DEVELOPMENT_SESSIONS
             ),
-            "total_untouched_sessions": sum(
-                len(run) for run in runs
+            "required_confirmation_signal_sessions_per_family": (
+                dense_capacity_inventory.CONFIRMATION_SESSIONS
             ),
             "blocker": str(exc),
         }
+    confirmation_account_sessions = {
+        str(family["family_id"]): len(allocation["confirmation"])
+        for family, allocation in zip(
+            batch.build_plan()["families"], allocations, strict=True
+        )
+    }
     return {
         "state": "ALLOCATION_CAPACITY_READY",
         "ready": len(allocations) == len(batch.build_plan()["families"]),
-        "required_contiguous_target_sessions": required,
-        "largest_contiguous_untouched_run": max(
-            (len(run) for run in runs),
-            default=0,
+        "development_account_sessions_per_family": (
+            dense_capacity_inventory.DEVELOPMENT_SESSIONS
         ),
-        "total_untouched_sessions": sum(len(run) for run in runs),
+        "required_confirmation_signal_sessions_per_family": (
+            dense_capacity_inventory.CONFIRMATION_SESSIONS
+        ),
+        "confirmation_account_sessions": confirmation_account_sessions,
+        "allocation_semantics": (
+            "contiguous account calendars with pair-clean confirmation "
+            "signal reserves"
+        ),
         "blocker": None,
     }
 

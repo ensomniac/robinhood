@@ -104,8 +104,15 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
         assert len(family["development_warmup_dates"]) == expected_warmup
         assert len(family["confirmation_warmup_dates"]) == expected_warmup
         assert len(family["development_dates"]) == capacity.DEVELOPMENT_SESSIONS
+        assert family["development_signal_dates"] == family["development_dates"]
         assert len(family["embargo_dates"]) == capacity.EMBARGO_SESSIONS
         assert len(family["confirmation_dates"]) == capacity.CONFIRMATION_SESSIONS
+        assert len(family["confirmation_signal_dates"]) == (
+            capacity.CONFIRMATION_SESSIONS
+        )
+        assert family["confirmation_signal_capacity"] == (
+            capacity.CONFIRMATION_SESSIONS
+        )
         all_dates.extend(
             family["development_dates"]
             + family["embargo_dates"]
@@ -133,7 +140,12 @@ def test_capacity_allocation_freezes_three_contiguous_disjoint_blocks(
     assert status["state"] == "THREE_FAMILY_CONTRACTS_FROZEN"
 
 
-def test_known_outcome_date_splits_runs_and_can_make_capacity_insufficient(tmp_path):
+def test_known_outcome_date_becomes_zero_signal_day_without_blocking_batch(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(capacity, "PROJECT_ROOT", tmp_path)
+    family_contracts = __import__("dense_family_contracts")
+    monkeypatch.setattr(family_contracts, "PROJECT_ROOT", tmp_path)
     calendar = _calendar(tmp_path, count=1_000)
     index = tmp_path / "exposure.jsonl"
     rows = json.loads(calendar.read_text(encoding="utf-8"))
@@ -144,16 +156,57 @@ def test_known_outcome_date_splits_runs_and_can_make_capacity_insufficient(tmp_p
             lane="legacy",
             recorded_at="2026-07-22T19:00:00-04:00",
             source_path="test",
+                source_sha256="a" * 64,
+                scope={
+                    "dates": [rows[325]["date"]],
+                    "symbols": ["*"],
+                },
+            ),
+            index,
+        )
+
+    _path, inventory = capacity.build_inventory(
+        as_of=batch.ACTIVATION_NOT_BEFORE,
+        actual_today=batch.ACTIVATION_NOT_BEFORE,
+        created_at="2026-07-23T08:00:00-04:00",
+        calendar_path=calendar,
+        index_path=index,
+        output_root=tmp_path / "output",
+    )
+
+    equity = inventory["families"][0]
+    assert rows[325]["date"] in equity["confirmation_dates"]
+    assert rows[325]["date"] not in equity["confirmation_signal_dates"]
+    assert len(equity["confirmation_signal_dates"]) == 35
+    assert len(equity["confirmation_dates"]) == 36
+
+
+def test_pair_aware_capacity_fails_closed_when_confirmation_reserve_is_absent(
+    tmp_path,
+):
+    calendar = _calendar(tmp_path, count=700)
+    index = tmp_path / "exposure.jsonl"
+    rows = json.loads(calendar.read_text(encoding="utf-8"))
+    outcome_exposure.append_record(
+        outcome_exposure.build_record(
+            exposure_id="exhaust-confirmation",
+            campaign_id="legacy",
+            lane="legacy",
+            recorded_at="2026-07-22T19:00:00-04:00",
+            source_path="test",
             source_sha256="a" * 64,
             scope={
-                "dates": [rows[400]["date"], rows[800]["date"]],
+                "dates": [row["date"] for row in rows[325:]],
                 "symbols": ["*"],
             },
         ),
         index,
     )
 
-    with pytest.raises(capacity.DenseCapacityInventoryError, match="contiguous"):
+    with pytest.raises(
+        capacity.DenseCapacityInventoryError,
+        match="pair-clean confirmation signal sessions",
+    ):
         capacity.build_inventory(
             as_of=batch.ACTIVATION_NOT_BEFORE,
             actual_today=batch.ACTIVATION_NOT_BEFORE,

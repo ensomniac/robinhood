@@ -902,11 +902,11 @@ def build_status(
         and preactivation_readiness.get("allocation_capacity", {}).get(
             "state"
         )
-        == "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY"
+        == "INSUFFICIENT_PAIR_AWARE_CONFIRMATION_CAPACITY"
     ):
         new_family_batch = {
             **new_family_batch,
-            "state": "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY",
+            "state": "INSUFFICIENT_PAIR_AWARE_CONFIRMATION_CAPACITY",
             "evidence_freeze_permitted": False,
             "blockers": list(
                 preactivation_readiness.get("blockers", [])

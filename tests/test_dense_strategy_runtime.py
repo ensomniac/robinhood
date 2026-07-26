@@ -110,6 +110,40 @@ def test_pullback_uses_only_completed_decision_bar_and_enters_next_open():
     assert candidate["exit_date"] <= evaluation_dates[3]
 
 
+def test_pullback_signal_reserve_keeps_intervening_account_days_as_zero_days():
+    days = _days(230)
+    closes = [100 + 0.2 * index for index in range(230)]
+    closes[217:221] = [143.4, 142.0, 140.0, 138.0]
+    bars = [_daily_bar(day, close) for day, close in zip(days, closes, strict=True)]
+    evaluation_dates = days[220:229]
+    dataset = {
+        "family_id": runtime.ETF_PULLBACK_FAMILY,
+        "evaluation_dates": evaluation_dates,
+        "signal_dates": [evaluation_dates[-1]],
+        "daily_bars": {"SPY": bars},
+    }
+    parameters = {
+        "trend_sma": 100,
+        "rsi2_maximum": 10,
+        "three_session_decline_fraction": 0.02,
+        "stop_atr14": 1.0,
+        "maximum_hold_sessions": 3,
+    }
+
+    candidates = runtime.build_candidates(
+        dataset, runtime.ETF_PULLBACK_FAMILY, parameters
+    )
+
+    assert all(
+        candidate["signal_date"] == evaluation_dates[-1]
+        for candidate in candidates
+    )
+    assert not any(
+        candidate["signal_date"] == evaluation_dates[1]
+        for candidate in candidates
+    )
+
+
 def test_pullback_replication_preserves_exact_family_and_universe_identity():
     days = _days(230)
     closes = [100 + 0.2 * index for index in range(230)]

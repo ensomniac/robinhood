@@ -1,4 +1,4 @@
-"""Freeze and inspect causal warmup plus disjoint target-date allocation."""
+"""Freeze and inspect causal account calendars plus pair-clean confirmation."""
 
 from __future__ import annotations
 
@@ -110,13 +110,18 @@ def freeze_contract(
         "outcome_exposure_index_sha256": exposure["index_sha256"],
         "family_order": [item["family_id"] for item in plan["families"]],
         "allocation_semantics": {
-            "target_sessions_per_family": (
-                dense_capacity_inventory.SESSIONS_PER_FAMILY
+            "development_account_sessions_per_family": (
+                dense_capacity_inventory.DEVELOPMENT_SESSIONS
             ),
-            "target_blocks_mutually_disjoint": True,
-            "target_dates_globally_untouched": True,
-            "target_blocks_from_one_latest_contiguous_untouched_run": True,
-            "warmup_immediately_precedes_each_target_block": True,
+            "confirmation_signal_sessions_per_family": (
+                dense_capacity_inventory.CONFIRMATION_SESSIONS
+            ),
+            "family_account_calendars_mutually_disjoint": True,
+            "development_may_use_contaminated_training_history": True,
+            "confirmation_signal_pairs_untouched": True,
+            "confirmation_account_calendar_includes_zero_signal_days": True,
+            "allocation_is_deterministic_forward_chronological": True,
+            "warmup_immediately_precedes_each_account_calendar": True,
             "warmup_point_in_time_features_only": True,
             "warmup_target_outcomes_eligible": False,
             "warmup_prior_exposure_allowed": True,
@@ -124,14 +129,16 @@ def freeze_contract(
             "date_substitution_after_inspection_allowed": False,
         },
         "predecessor_failure": {
-            "state": "INSUFFICIENT_SINGLE_RUN_FOR_DISJOINT_WARMUPS",
-            "required_sessions": 940,
-            "largest_untouched_run": 567,
+            "state": "OVERCONSERVATIVE_DATE_LEVEL_CONTAMINATION",
+            "false_requirement": (
+                "one globally untouched contiguous date run for both "
+                "development and confirmation"
+            ),
             "target_outcomes_accessed": False,
             "strategy_metrics_accessed": False,
             "repair_scope": (
-                "Allocation topology only; no family rule, parameter, cost, "
-                "target date, or selection gate changed."
+                "Allocation topology and signal-date plumbing only; no family "
+                "rule, parameter, cost, statistical, or promotion gate changed."
             ),
         },
         "implementation_hashes": _implementation_hashes(),
@@ -200,39 +207,71 @@ def inspect(
         raise DenseCalendarAllocationError("calendar bytes drifted")
     calendar = dense_capacity_inventory._calendar(calendar_path)
     records = outcome_exposure.read_index(index_path)
-    exposed = dense_capacity_inventory._globally_exposed_dates(records)
-    allocations = dense_capacity_inventory._allocate(calendar, exposed)
+    exposed = dense_capacity_inventory._exposed_symbols_by_date(records)
+    allocations = dense_capacity_inventory._allocate(calendar, records)
     plan = batch.build_plan()
     if len(allocations) != len(plan["families"]) or len(allocations) != 3:
         raise DenseCalendarAllocationError("allocation family count differs")
-    target_dates: list[str] = []
-    warmup_dates: list[str] = []
+    account_dates: list[str] = []
+    development_warmup_dates: list[str] = []
+    confirmation_warmup_dates: list[str] = []
+    confirmation_signal_dates: list[str] = []
     family_counts: dict[str, dict[str, int]] = {}
     for family, allocation in zip(plan["families"], allocations, strict=True):
         family_id = str(family["family_id"])
-        warmup = allocation["warmup"]
-        evidence = allocation["evidence"]
+        development_warmup = allocation["development_warmup"]
+        development = allocation["development"]
+        embargo = allocation["embargo"]
+        confirmation_warmup = allocation["confirmation_warmup"]
+        confirmation = allocation["confirmation"]
+        confirmation_signals = allocation["confirmation_signals"]
         expected_warmup = dense_capacity_inventory.FAMILY_WARMUP_SESSIONS[
             family_id
         ]
         if not (
-            len(warmup) == expected_warmup
-            and len(evidence) == dense_capacity_inventory.SESSIONS_PER_FAMILY
-            and max(warmup) < min(evidence)
-            and not set(evidence).intersection(exposed)
+            len(development_warmup) == expected_warmup
+            and len(confirmation_warmup) == expected_warmup
+            and len(development)
+            == dense_capacity_inventory.DEVELOPMENT_SESSIONS
+            and len(embargo) == dense_capacity_inventory.EMBARGO_SESSIONS
+            and len(confirmation_signals)
+            == dense_capacity_inventory.CONFIRMATION_SESSIONS
+            and set(confirmation_signals).issubset(confirmation)
+            and max(development_warmup) < min(development)
+            and max(development) < min(embargo) < min(confirmation)
+            and confirmation_warmup[-1] == embargo[-1]
+            and all(
+                dense_capacity_inventory._confirmation_date_eligible(
+                    family, day, exposed
+                )
+                for day in confirmation_signals
+            )
         ):
             raise DenseCalendarAllocationError(
                 f"causal allocation differs for {family_id}"
             )
-        warmup_dates.extend(warmup)
-        target_dates.extend(evidence)
+        scope = dense_capacity_inventory._scope(family, confirmation_signals)
+        outcome_exposure.assert_untouched(scope, records)
+        development_warmup_dates.extend(development_warmup)
+        confirmation_warmup_dates.extend(confirmation_warmup)
+        account_dates.extend([*development, *embargo, *confirmation])
+        confirmation_signal_dates.extend(confirmation_signals)
         family_counts[family_id] = {
-            "warmup_sessions": len(warmup),
-            "target_sessions": len(evidence),
+            "development_warmup_sessions": len(development_warmup),
+            "development_account_sessions": len(development),
+            "embargo_sessions": len(embargo),
+            "confirmation_warmup_sessions": len(confirmation_warmup),
+            "confirmation_account_sessions": len(confirmation),
+            "untouched_confirmation_signal_sessions": len(
+                confirmation_signals
+            ),
+            "confirmation_zero_signal_sessions": (
+                len(confirmation) - len(confirmation_signals)
+            ),
         }
-    if len(target_dates) != len(set(target_dates)):
+    if len(account_dates) != len(set(account_dates)):
         raise DenseCalendarAllocationError(
-            "family target evidence dates overlap"
+            "family account-calendar dates overlap"
         )
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
@@ -253,16 +292,23 @@ def inspect(
             "outcome_exposure_index_sha256"
         ],
         "family_counts": family_counts,
-        "untouched_target_sessions": len(target_dates),
-        "warmup_observations": len(warmup_dates),
-        "unique_warmup_sessions": len(set(warmup_dates)),
+        "untouched_confirmation_signal_sessions": len(
+            confirmation_signal_dates
+        ),
+        "development_warmup_observations": len(development_warmup_dates),
+        "confirmation_warmup_observations": len(confirmation_warmup_dates),
+        "unique_warmup_sessions": len(
+            set(development_warmup_dates + confirmation_warmup_dates)
+        ),
         "checks": {
             "calendar_hash_rebuilt": True,
-            "three_target_blocks_rebuilt": True,
-            "target_blocks_mutually_disjoint": True,
-            "target_dates_globally_untouched": True,
+            "three_account_paths_rebuilt": True,
+            "family_account_calendars_mutually_disjoint": True,
+            "development_training_contamination_allowed": True,
+            "confirmation_signal_pairs_untouched": True,
+            "confirmation_zero_signal_days_explicit": True,
             "warmups_complete_and_causal": True,
-            "warmups_excluded_from_target_evidence": True,
+            "warmups_excluded_from_signal_evidence": True,
             "implementation_hashes_rebuilt": True,
             "target_outcomes_absent": True,
         },

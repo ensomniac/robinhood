@@ -521,7 +521,9 @@ def test_frozen_search_derives_exact_warmup_and_request_plan(
             - (60 if family_id == runtime.INTRADAY_ETF_FAMILY else 200): 375
         ],
         "development_dates": days[250:370],
+        "development_signal_dates": days[250:370:2],
         "confirmation_dates": days[375:410],
+        "confirmation_signal_dates": days[375:410:2],
         "universe": {"symbols": symbols} if symbols else {"security_type": "COMMON"},
     }
     search_path, _search = strategy_discovery._write_artifact(
@@ -547,6 +549,7 @@ def test_frozen_search_derives_exact_warmup_and_request_plan(
     assert plan["task_count"] == expected_tasks
     assert plan["required_dates"][0] == days[50 if family_id != runtime.INTRADAY_ETF_FAMILY else 190]
     assert plan["evaluation_dates"] == days[250:370]
+    assert plan["signal_dates"] == days[250:370:2]
     assert plan["provider_requests_before_plan_freeze"] == 0
 
 

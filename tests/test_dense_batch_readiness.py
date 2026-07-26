@@ -12,21 +12,25 @@ def test_rolling_readiness_resolves_exact_committed_boundary():
         require_credentials=False,
     )
 
-    assert status["state"] == "PREACTIVATION_BLOCKED"
+    assert status["state"] == "ALLOCATION_CONTRACT_READY"
     assert status["activation_permitted"] is True
-    assert status["preactivation_work_complete"] is False
-    assert status["blockers"] == [
-        "no contiguous untouched target-evidence run has 480 sessions"
-    ]
+    assert status["preactivation_work_complete"] is True
+    assert status["blockers"] == []
     assert status["allocation_capacity"] == {
-        "blocker": (
-            "no contiguous untouched target-evidence run has 480 sessions"
+        "allocation_semantics": (
+            "contiguous account calendars with pair-clean confirmation "
+            "signal reserves"
         ),
-        "largest_contiguous_untouched_run": 15,
-        "ready": False,
-        "required_contiguous_target_sessions": 480,
-        "state": "INSUFFICIENT_GLOBAL_UNTOUCHED_CAPACITY",
-        "total_untouched_sessions": 212,
+        "blocker": None,
+        "confirmation_account_sessions": {
+            "intraday-index-etf-opening-reversal": 99,
+            "liquid-equity-market-residual-reversal": 365,
+            "liquid-etf-trend-pullback-cost-floor": 185,
+        },
+        "development_account_sessions_per_family": 120,
+        "ready": True,
+        "required_confirmation_signal_sessions_per_family": 35,
+        "state": "ALLOCATION_CAPACITY_READY",
     }
     assert status["calendar_boundary"]["output_state"] == (
         "COLLECTED_READY_FOR_ALLOCATION_CONTRACT"
@@ -50,13 +54,14 @@ def test_readiness_advances_to_allocation_contract_after_collection():
         require_credentials=False,
     )
 
-    assert status["state"] == "PREACTIVATION_BLOCKED"
+    assert status["state"] == "ALLOCATION_CONTRACT_READY"
     assert status["activation_permitted"] is True
     assert status["target_outcome_access_permitted"] is False
     assert status["remaining_transition_order"] == [
-        "preserve the insufficient-capacity disposition without target outcomes",
-        "continue already-authorized existing-family replication",
+        "freeze and inspect the causal allocation contract",
+        "freeze disjoint family evidence and exact family contracts",
+        "collect development inputs only from committed exact contracts",
     ]
-    assert status["next_commands"] == [
-        "python3 oversold_replication_discovery.py status"
-    ]
+    assert status["next_commands"][0].startswith(
+        "python3 dense_calendar_allocation.py freeze "
+    )

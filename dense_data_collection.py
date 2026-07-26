@@ -369,6 +369,18 @@ def freeze_plan(
     ):
         raise DenseDataCollectionError("collection calendar drifted from capacity freeze")
     evaluation_dates = list(contract[f"{lane}_dates"])
+    signal_dates = list(
+        contract.get(f"{lane}_signal_dates", evaluation_dates)
+    )
+    if (
+        not signal_dates
+        or signal_dates != sorted(signal_dates)
+        or len(signal_dates) != len(set(signal_dates))
+        or not set(signal_dates).issubset(evaluation_dates)
+    ):
+        raise DenseDataCollectionError(
+            "frozen signal dates escaped the account calendar"
+        )
     family_id = str(contract["family_id"])
     intraday = family_id in runtime.INTRADAY_ETF_FAMILIES
     warmup = INTRADAY_WARMUP_SESSIONS if intraday else DAILY_WARMUP_SESSIONS
@@ -508,6 +520,7 @@ def freeze_plan(
         "calendar_path": _repo_path(calendar_path),
         "calendar_sha256": calendar_hash,
         "evaluation_dates": evaluation_dates,
+        "signal_dates": signal_dates,
         "required_dates": required_dates,
         "warmup_sessions": warmup,
         "symbols": symbols,
@@ -631,6 +644,19 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         and plan.get("task_count", 0) > 0
     ):
         raise DenseDataCollectionError("collection plan authority drifted")
+    signal_dates = plan.get("signal_dates", plan.get("evaluation_dates"))
+    evaluation_dates = plan.get("evaluation_dates")
+    if (
+        not isinstance(signal_dates, list)
+        or not signal_dates
+        or signal_dates != sorted(signal_dates)
+        or len(signal_dates) != len(set(signal_dates))
+        or not isinstance(evaluation_dates, list)
+        or not set(signal_dates).issubset(evaluation_dates)
+    ):
+        raise DenseDataCollectionError(
+            "collection signal dates escaped the account calendar"
+        )
     recovery_failure_path = plan.get("recovery_failure_path")
     recovery_adjustment = plan.get("adjustment_semantics")
     recovery_declared = (
@@ -777,6 +803,8 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 and plan.get("tasks") == source_plan.get("tasks")
                 and plan.get("evaluation_dates")
                 == source_plan.get("evaluation_dates")
+                and plan.get("signal_dates")
+                == source_plan.get("signal_dates")
                 and plan.get("required_dates")
                 == source_plan.get("required_dates")
                 and plan.get("symbols") == source_plan.get("symbols")
@@ -810,6 +838,8 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 and plan.get("tasks") == source_plan.get("tasks")
                 and plan.get("evaluation_dates")
                 == source_plan.get("evaluation_dates")
+                and plan.get("signal_dates")
+                == source_plan.get("signal_dates")
                 and plan.get("required_dates")
                 == source_plan.get("required_dates")
                 and plan.get("symbols") == source_plan.get("symbols")
@@ -1645,6 +1675,9 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
             "schema_version": 1,
             "family_id": family_id,
             "evaluation_dates": list(plan["evaluation_dates"]),
+            "signal_dates": list(
+                plan.get("signal_dates", plan["evaluation_dates"])
+            ),
             "symbols": list(plan["symbols"]),
             "regular_session_minutes_by_date": {
                 day: 390 for day in plan["required_dates"]
@@ -1756,6 +1789,9 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
         "schema_version": 1,
         "family_id": family_id,
         "evaluation_dates": list(plan["evaluation_dates"]),
+        "signal_dates": list(
+            plan.get("signal_dates", plan["evaluation_dates"])
+        ),
         "daily_bars": bars,
         "source_semantics": {
             "feed": successor_feed,
@@ -2030,6 +2066,9 @@ def collect(
         "plan_sha256": plan["artifact_sha256"],
         "binding_sha256": plan["binding_sha256"],
         "evaluation_dates": plan["evaluation_dates"],
+        "signal_dates": plan.get(
+            "signal_dates", plan["evaluation_dates"]
+        ),
         "task_count": plan["task_count"],
         "completed_tasks": completed,
         "external_relative_path": relative,

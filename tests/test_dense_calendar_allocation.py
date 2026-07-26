@@ -84,10 +84,17 @@ def test_allocation_contract_separates_target_evidence_from_causal_warmup(
     assert contract["allocation_semantics"][
         "warmup_target_outcomes_eligible"
     ] is False
+    assert contract["allocation_semantics"][
+        "development_may_use_contaminated_training_history"
+    ] is True
+    assert contract["allocation_semantics"][
+        "confirmation_signal_pairs_untouched"
+    ] is True
     assert inspection_path.is_file()
     assert inspected["state"] == "CALENDAR_ALLOCATION_INSPECTED_READY"
-    assert inspected["untouched_target_sessions"] == 480
-    assert inspected["warmup_observations"] == 460
+    assert inspected["untouched_confirmation_signal_sessions"] == 105
+    assert inspected["development_warmup_observations"] == 460
+    assert inspected["confirmation_warmup_observations"] == 460
     assert all(inspected["checks"].values())
     assert inspected["target_outcomes_accessed"] is False
     assert strategy_discovery._file_hash(calendar_path) == contract[
@@ -100,22 +107,30 @@ def test_allocator_uses_disjoint_targets_but_allows_causal_warmup_overlap():
         (date(2020, 1, 2) + timedelta(days=index)).isoformat()
         for index in range(1_000)
     ]
-    allocations = dense_capacity_inventory._allocate(calendar, set())
+    allocations = dense_capacity_inventory._allocate(calendar, [])
     targets = [
         day
         for item in allocations
         for day in item["evidence"]
     ]
-    warmups = [
+    development_warmups = [
         day
         for item in allocations
-        for day in item["warmup"]
+        for day in item["development_warmup"]
+    ]
+    confirmation_signals = [
+        day
+        for item in allocations
+        for day in item["confirmation_signals"]
     ]
 
     assert len(targets) == len(set(targets)) == 480
-    assert len(warmups) == 460
-    assert len(set(warmups)) < len(warmups)
+    assert len(development_warmups) == 460
+    assert len(set(development_warmups)) < len(development_warmups)
+    assert len(confirmation_signals) == len(set(confirmation_signals)) == 105
     assert all(
-        max(item["warmup"]) < min(item["evidence"])
+        max(item["development_warmup"]) < min(item["development"])
+        and item["confirmation_warmup"][-1] == item["embargo"][-1]
+        and set(item["confirmation_signals"]).issubset(item["confirmation"])
         for item in allocations
     )

@@ -1,4 +1,4 @@
-"""Allocate the W31 dense batch on contiguous, globally untouched sessions."""
+"""Allocate the dense batch without mistaking pair exposure for date exposure."""
 
 from __future__ import annotations
 
@@ -101,6 +101,34 @@ def _globally_exposed_dates(
     }
 
 
+def _exposed_symbols_by_date(
+    records: Sequence[Mapping[str, Any]],
+) -> dict[str, set[str]]:
+    exposed: dict[str, set[str]] = {}
+    for record in records:
+        for day, symbol in outcome_exposure.scope_pairs(record["scope"]):
+            exposed.setdefault(day, set()).add(symbol)
+    return exposed
+
+
+def _confirmation_date_eligible(
+    family: Mapping[str, Any],
+    day: str,
+    exposed_symbols_by_date: Mapping[str, set[str]],
+) -> bool:
+    """Return whether the family's exact confirmation pair set is untouched."""
+
+    exposed = exposed_symbols_by_date.get(day, set())
+    symbols = family["universe"].get("symbols")
+    if symbols is None:
+        # The equity universe is point-in-time and dynamic, so a date is
+        # conservatively eligible only when no prior outcome exposure exists
+        # for any symbol on that date.
+        return not exposed
+    frozen_symbols = set(map(str, symbols))
+    return "*" not in exposed and frozen_symbols.isdisjoint(exposed)
+
+
 def _untouched_runs(
     calendar: Sequence[str], exposed_dates: set[str]
 ) -> list[list[str]]:
@@ -119,35 +147,78 @@ def _untouched_runs(
 
 
 def _allocate(
-    calendar: Sequence[str], exposed_dates: set[str]
+    calendar: Sequence[str], records: Sequence[Mapping[str, Any]]
 ) -> list[dict[str, list[str]]]:
+    """Allocate chronological account paths and pair-clean signal reserves.
+
+    Development is explicitly contaminated training evidence. Confirmation
+    account calendars stay contiguous, including zero-signal sessions, while
+    only preregistered date/instrument pairs can generate confirmation signals.
+    Family account-calendar spans are mutually disjoint and are allocated
+    deterministically from the earliest feasible session.
+    """
+
     plan = batch.build_plan()
-    required = SESSIONS_PER_FAMILY * len(plan["families"])
-    candidates = [
-        run
-        for run in _untouched_runs(calendar, exposed_dates)
-        if len(run) >= required
-    ]
-    if not candidates:
-        raise DenseCapacityInventoryError(
-            f"no contiguous untouched target-evidence run has {required} sessions"
-        )
-    selected = candidates[-1][-required:]
-    calendar_index = {day: index for index, day in enumerate(calendar)}
+    exposed = _exposed_symbols_by_date(records)
     allocated: list[dict[str, list[str]]] = []
-    cursor = 0
+    cursor = max(FAMILY_WARMUP_SESSIONS.values())
     for family in plan["families"]:
         family_id = str(family["family_id"])
         warmup_count = FAMILY_WARMUP_SESSIONS[family_id]
-        evidence = selected[cursor : cursor + SESSIONS_PER_FAMILY]
-        cursor += SESSIONS_PER_FAMILY
-        evidence_start = calendar_index[evidence[0]]
-        warmup = list(calendar[evidence_start - warmup_count : evidence_start])
-        if len(warmup) != warmup_count:
+        development_start = max(cursor, warmup_count)
+        development_end = development_start + DEVELOPMENT_SESSIONS
+        embargo_end = development_end + EMBARGO_SESSIONS
+        if embargo_end >= len(calendar):
+            raise DenseCapacityInventoryError(
+                f"{family_id} lacks development and embargo calendar capacity"
+            )
+        development = list(calendar[development_start:development_end])
+        embargo = list(calendar[development_end:embargo_end])
+        confirmation_signals: list[str] = []
+        confirmation_end = embargo_end
+        while (
+            confirmation_end < len(calendar)
+            and len(confirmation_signals) < CONFIRMATION_SESSIONS
+        ):
+            day = calendar[confirmation_end]
+            if _confirmation_date_eligible(family, day, exposed):
+                confirmation_signals.append(day)
+            confirmation_end += 1
+        if len(confirmation_signals) != CONFIRMATION_SESSIONS:
+            raise DenseCapacityInventoryError(
+                f"{family_id} has only {len(confirmation_signals)} of "
+                f"{CONFIRMATION_SESSIONS} required pair-clean confirmation "
+                "signal sessions"
+            )
+        confirmation = list(calendar[embargo_end:confirmation_end])
+        development_warmup = list(
+            calendar[development_start - warmup_count : development_start]
+        )
+        confirmation_warmup = list(
+            calendar[embargo_end - warmup_count : embargo_end]
+        )
+        if (
+            len(development_warmup) != warmup_count
+            or len(confirmation_warmup) != warmup_count
+        ):
             raise DenseCapacityInventoryError(
                 f"{family_id} lacks complete causal indicator warmup"
             )
-        allocated.append({"warmup": warmup, "evidence": evidence})
+        allocated.append(
+            {
+                "development_warmup": development_warmup,
+                "development": development,
+                "embargo": embargo,
+                "confirmation_warmup": confirmation_warmup,
+                "confirmation": confirmation,
+                "confirmation_signals": confirmation_signals,
+                "evidence": [*development, *embargo, *confirmation],
+                # Retain the legacy key as a compatibility alias for callers
+                # that only need the development warmup.
+                "warmup": development_warmup,
+            }
+        )
+        cursor = confirmation_end
     return allocated
 
 
@@ -284,23 +355,27 @@ def build_inventory(
     records = outcome_exposure.read_index(index_path)
     exposure_audit = outcome_exposure.audit(index_path)
     calendar_inspection_path = _calendar_inspection(calendar_path, index_path)
-    blocks = _allocate(_calendar(calendar_path), _globally_exposed_dates(records))
+    blocks = _allocate(_calendar(calendar_path), records)
     plan = batch.build_plan()
     families: list[dict[str, Any]] = []
     for family, allocation in zip(plan["families"], blocks, strict=True):
-        warmup = allocation["warmup"]
-        block = allocation["evidence"]
-        development = block[:DEVELOPMENT_SESSIONS]
-        embargo = block[
-            DEVELOPMENT_SESSIONS : DEVELOPMENT_SESSIONS + EMBARGO_SESSIONS
-        ]
-        confirmation = block[-CONFIRMATION_SESSIONS:]
-        confirmation_start = len(warmup) + DEVELOPMENT_SESSIONS + EMBARGO_SESSIONS
-        combined = [*warmup, *block]
-        confirmation_warmup = combined[
-            confirmation_start
-            - FAMILY_WARMUP_SESSIONS[str(family["family_id"])]: confirmation_start
-        ]
+        development_warmup = allocation["development_warmup"]
+        development = allocation["development"]
+        embargo = allocation["embargo"]
+        confirmation_warmup = allocation["confirmation_warmup"]
+        confirmation = allocation["confirmation"]
+        confirmation_signals = allocation["confirmation_signals"]
+        development_signals = list(development)
+        combined = list(
+            dict.fromkeys(
+                [
+                    *development_warmup,
+                    *development,
+                    *embargo,
+                    *confirmation,
+                ]
+            )
+        )
         capacity_manifest = _capacity_manifest(
             family,
             combined,
@@ -313,13 +388,16 @@ def build_inventory(
             {
                 "family_id": family["family_id"],
                 "capacity_manifest": _repo_path(capacity_manifest),
-                "development_warmup_dates": warmup,
+                "development_warmup_dates": development_warmup,
                 "confirmation_warmup_dates": confirmation_warmup,
                 "development_dates": development,
+                "development_signal_dates": development_signals,
                 "embargo_dates": embargo,
                 "confirmation_dates": confirmation,
-                "development_scope": _scope(family, development),
-                "confirmation_scope": _scope(family, confirmation),
+                "confirmation_signal_dates": confirmation_signals,
+                "confirmation_signal_capacity": len(confirmation_signals),
+                "development_scope": _scope(family, development_signals),
+                "confirmation_scope": _scope(family, confirmation_signals),
                 "warmup_contract": {
                     "point_in_time_features_only": True,
                     "target_outcomes_eligible": False,

@@ -210,18 +210,40 @@ def _validate_inventory(
                 f"{family_id} lacks 100 outcome-blind capacity observations"
             )
         development_dates = family.get("development_dates")
+        development_signal_dates = family.get(
+            "development_signal_dates", development_dates
+        )
         development_warmup_dates = family.get("development_warmup_dates")
         confirmation_warmup_dates = family.get("confirmation_warmup_dates")
         embargo_dates = family.get("embargo_dates")
         confirmation_dates = family.get("confirmation_dates")
+        confirmation_signal_dates = family.get(
+            "confirmation_signal_dates", confirmation_dates
+        )
         for values, name in (
             (development_warmup_dates, "development_warmup_dates"),
             (confirmation_warmup_dates, "confirmation_warmup_dates"),
             (development_dates, "development_dates"),
+            (development_signal_dates, "development_signal_dates"),
             (embargo_dates, "embargo_dates"),
             (confirmation_dates, "confirmation_dates"),
+            (confirmation_signal_dates, "confirmation_signal_dates"),
         ):
             strategy_discovery._date_list(values, name)
+        if not (
+            set(development_signal_dates).issubset(development_dates)
+            and set(confirmation_signal_dates).issubset(confirmation_dates)
+        ):
+            raise DenseFamilyContractError(
+                f"{family_id} signal dates escaped their account calendar"
+            )
+        confirmation_signal_capacity = family.get(
+            "confirmation_signal_capacity", len(confirmation_signal_dates)
+        )
+        if confirmation_signal_capacity != len(confirmation_signal_dates):
+            raise DenseFamilyContractError(
+                f"{family_id} confirmation signal capacity drifted"
+            )
         if len(embargo_dates) < 5:
             raise DenseFamilyContractError(f"{family_id} needs a five-session embargo")
         expected_warmup = 60 if family_id == "intraday-index-etf-opening-reversal" else 200
@@ -248,9 +270,9 @@ def _validate_inventory(
         confirmation_scope = outcome_exposure.validate_scope(
             family.get("confirmation_scope")
         )
-        if development_scope["dates"] != development_dates:
+        if development_scope["dates"] != development_signal_dates:
             raise DenseFamilyContractError("development exposure scope dates drifted")
-        if confirmation_scope["dates"] != confirmation_dates:
+        if confirmation_scope["dates"] != confirmation_signal_dates:
             raise DenseFamilyContractError("confirmation exposure scope dates drifted")
         if family.get("warmup_contract") != {
             "point_in_time_features_only": True,
@@ -268,6 +290,9 @@ def _validate_inventory(
         development_scopes.append(development_scope)
         confirmation_scopes.append(confirmation_scope)
         family["capacity_manifest"] = str(path)
+        family["development_signal_dates"] = development_signal_dates
+        family["confirmation_signal_dates"] = confirmation_signal_dates
+        family["confirmation_signal_capacity"] = confirmation_signal_capacity
         family["outcome_exposure_index_sha256"] = inventory[
             "outcome_exposure_index_sha256"
         ]
@@ -365,10 +390,15 @@ def _contract(
             "from the retired disclosure and legacy ORB mechanisms."
         ),
         "development_dates": list(family["development_dates"]),
+        "development_signal_dates": list(family["development_signal_dates"]),
         "development_warmup_dates": list(family["development_warmup_dates"]),
         "confirmation_warmup_dates": list(family["confirmation_warmup_dates"]),
         "embargo_dates": list(family["embargo_dates"]),
         "confirmation_dates": list(family["confirmation_dates"]),
+        "confirmation_signal_dates": list(family["confirmation_signal_dates"]),
+        "confirmation_signal_capacity": family[
+            "confirmation_signal_capacity"
+        ],
         "development_scope": dict(family["development_scope"]),
         "confirmation_scope": dict(family["confirmation_scope"]),
         "outcome_exposure_index_sha256": family["outcome_exposure_index_sha256"],
