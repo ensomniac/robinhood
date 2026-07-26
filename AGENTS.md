@@ -313,6 +313,12 @@ manifest field `contract_sha256`. Its uncommitted output artifacts were removed.
 `manifest_sha256`, requires its own committed file before collection inspection,
 and binds that controller hash into the inspection artifact. Commit, push, and
 focused-test this correction before rerunning inspection.
+Inspection `6ebfe416...fa626` independently rebuilt all 146 task dispositions,
+the 145-event observation scope, 94 permanent missing legacy-symbol windows, the
+external file hash, and canonical dataset hash `ebcd996b...56a3ba`. All eight
+checks pass. Dataset manifest `71583dfa...ccf8ce5` exposes exactly 102
+development signal dates and is `DATASET_INSPECTED_READY`; commit and push both
+artifacts before any trial reads outcomes.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
