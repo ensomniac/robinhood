@@ -108,7 +108,11 @@ computed. Development result `edef6de3...a4cd` evaluated the sole trial over
 provider requests. Its uninspected 20-bps path has -0.06433 log growth, 0.482
 profit factor, 13.21R drawdown, no positive rolling folds, DSR 0, Holm false,
 and PBO 1.00. Commit it before independent reconstruction; if reproduced, the
-exact family is terminal and confirmation stays closed.
+exact family is terminal and confirmation stays closed. Inspection
+`1241f3bb...a1c80` independently reproduces all 1,949 account rows, 61 fills,
+the -0.001483 one-sided 90% lower mean, every statistic, and the deterministic
+selection rejection. The exact version is `REJECTED`; its 35 confirmation
+pairs remain untouched and no repair may reuse this corpus.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
