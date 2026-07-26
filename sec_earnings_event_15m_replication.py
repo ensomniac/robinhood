@@ -282,14 +282,10 @@ def build_capacity_scope(
     confirmation_signal_dates = sorted(
         {str(row["signal_date"]) for row in confirmation}
     )
-    if len(development_signal_dates) < 50:
-        raise SecEarningsReplicationError(
-            "data-complete development capacity is below 50 signal dates"
-        )
-    if len(confirmation_signal_dates) < 20:
-        raise SecEarningsReplicationError(
-            "data-complete confirmation capacity is below 20 signal dates"
-        )
+    capacity_ready = (
+        len(development_signal_dates) >= 50
+        and len(confirmation_signal_dates) >= 20
+    )
     development_scope = _input_scope(development)
     confirmation_scope = _input_scope(confirmation)
     outcome_exposure.assert_untouched(
@@ -310,7 +306,11 @@ def build_capacity_scope(
         "artifact_kind": "sec-earnings-event-15m-replication-scope",
         "campaign_id": CAMPAIGN_ID,
         "family_id": FAMILY_ID,
-        "state": "DATA_COMPLETE_CAPACITY_READY",
+        "state": (
+            "DATA_COMPLETE_CAPACITY_READY"
+            if capacity_ready
+            else "RETIRED_INSUFFICIENT_CAPACITY"
+        ),
         "development_dates": development_dates,
         "development_signal_dates": development_signal_dates,
         "development_event_pairs": len(development),
@@ -353,6 +353,24 @@ def build_capacity_scope(
             "index_sha256"
         ],
     }
+
+
+def freeze_capacity(
+    *,
+    root: Path = DEFAULT_ROOT,
+    store: HistoricalDayStore | None = None,
+    enforce_commit: bool = True,
+) -> tuple[Path, dict[str, Any]]:
+    source = store or HistoricalDayStore.from_env()
+    payload = build_capacity_scope(
+        store=source,
+        enforce_commit=enforce_commit,
+    )
+    return strategy_discovery._write_artifact(
+        payload,
+        root / SUCCESSOR_ID / "event-scope",
+        "sec-earnings-event-15m-replication-scope",
+    )
 
 
 def _load_private_scope(
@@ -465,15 +483,18 @@ def freeze_family(
     if enforce_commit:
         for relative in implementation_files:
             strategy_discovery.require_committed(PROJECT_ROOT / relative)
-    scope_payload = build_capacity_scope(
+    scope_path, scope = freeze_capacity(
+        root=root,
         store=source,
         enforce_commit=enforce_commit,
     )
-    scope_path, scope = strategy_discovery._write_artifact(
-        scope_payload,
-        root / SUCCESSOR_ID / "event-scope",
-        "sec-earnings-event-15m-replication-scope",
-    )
+    if scope["state"] != "DATA_COMPLETE_CAPACITY_READY":
+        raise SecEarningsReplicationError(
+            "replication retired with "
+            f"{len(scope['development_signal_dates'])} development and "
+            f"{len(scope['confirmation_signal_dates'])} confirmation "
+            "data-complete signal dates"
+        )
     capacity_path, _capacity = freeze_dataset_contract(
         {
             "schema_version": 1,
@@ -908,6 +929,7 @@ def publish_development(
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("freeze-capacity")
     freeze = sub.add_parser("freeze-family")
     freeze.add_argument("--created-at", required=True)
     publish = sub.add_parser("publish-development")
@@ -919,11 +941,32 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
-        if args.command == "freeze-family":
+        if args.command == "freeze-capacity":
+            path, scope = freeze_capacity()
+            result: Mapping[str, Any] = {
+                "path": _repo_path(path),
+                "state": scope["state"],
+                "development_event_pairs": scope[
+                    "development_event_pairs"
+                ],
+                "development_signal_dates": len(
+                    scope["development_signal_dates"]
+                ),
+                "confirmation_event_pairs": scope[
+                    "confirmation_event_pairs"
+                ],
+                "confirmation_signal_dates": len(
+                    scope["confirmation_signal_dates"]
+                ),
+                "market_price_values_computed": scope[
+                    "market_price_values_computed"
+                ],
+            }
+        elif args.command == "freeze-family":
             path, contract, capacity, scope = freeze_family(
                 created_at=args.created_at
             )
-            result: Mapping[str, Any] = {
+            result = {
                 "path": _repo_path(path),
                 "capacity_manifest": _repo_path(capacity),
                 "event_scope": _repo_path(scope),
