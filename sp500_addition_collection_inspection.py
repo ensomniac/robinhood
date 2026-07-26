@@ -87,7 +87,7 @@ def _authority_contract(
     if not (
         authority["artifact_sha256"] == plan["authority_sha256"]
         and expected_binding == plan["binding_sha256"]
-        and authority["family_id"] == discovery.FAMILY_ID
+        and contract["family_id"] == discovery.FAMILY_ID
     ):
         raise Sp500AdditionInspectionError(
             "plan authority binding drifted"

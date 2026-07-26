@@ -6,6 +6,7 @@ import pytest
 
 import dense_strategy_runtime as runtime
 import sp500_addition_collection as collection
+import sp500_addition_collection_inspection as collection_inspection
 import sp500_addition_discovery as discovery
 import sp500_addition_plugin as plugin
 from historical_store import HistoricalStoreConfig, canonical_sha256
@@ -273,6 +274,38 @@ def test_collection_build_retains_exact_event_window(
     assert dataset["event_metadata_by_entry_date"][CALENDAR[0]] == [
         event
     ]
+
+
+def test_plan_inspector_reads_family_from_generic_search_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    artifact_sha256 = "a" * 64
+    search = {
+        "artifact_kind": "frozen-development-search",
+        "artifact_sha256": artifact_sha256,
+        "family_contract": {
+            "family_id": runtime.SP500_ADDITION_FORCED_DEMAND_FAMILY,
+        },
+    }
+    monkeypatch.setattr(
+        collection_inspection.strategy_discovery,
+        "load_artifact",
+        lambda *_args, **_kwargs: search,
+    )
+    authority, contract = collection_inspection._authority_contract(
+        {
+            "authority_path": "search.json",
+            "authority_sha256": artifact_sha256,
+            "binding_sha256": artifact_sha256,
+            "lane": "development",
+        },
+        enforce_commit=False,
+    )
+    assert authority == search
+    assert (
+        contract["family_id"]
+        == runtime.SP500_ADDITION_FORCED_DEMAND_FAMILY
+    )
 
 
 def test_production_uses_frozen_rank_gap_stop_and_next_open() -> None:
