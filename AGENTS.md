@@ -103,6 +103,10 @@ symbols from 2017-11-01 warmup through 2022-12-23, independently rebuilds the
 request graph before access, resumes only hash-valid tasks, registers the full
 date/symbol price graph as contaminated development, and writes row data only
 to the ignored content-addressed store. Confirmation requests remain zero.
+Development source contract `45eaeda6...5187b` now freezes all 2,589 requests,
+1,296 exchange-session source dates, controller hashes, pacing, no-retry,
+no-substitution, and full contamination scope with prices still unopened.
+Commit and push it before independent source-contract inspection.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
