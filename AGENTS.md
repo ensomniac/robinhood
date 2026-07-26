@@ -553,7 +553,9 @@ split-action rows were accessed, while the `^VIX` task failed with no accepted
 row. Inspection `febe82cc...5c8268a` independently rebuilt all eleven checks,
 including checkpoint counts, telemetry, the SPLV-only exposure scope, absent
 completion/metrics/confirmation, zero substitutions, and zero broker actions.
-Commit and push the inspection before indexing the exact exposure.
+Exposure record `630c8bbe...0c3664` now reserves the exact 1,200-date SPLV
+scope from the failed plan; it does not claim `^VIX` access. Commit and push
+the index before freezing recovery.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
