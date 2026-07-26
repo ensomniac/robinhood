@@ -209,6 +209,15 @@ returns per trial. Fifteen trials have positive 20-bps log growth and eight
 reach 1.20 stressed PF, but zero have positive rolling folds, DSR at least
 0.90, Holm rejection, or PBO at most 0.50. No winner or terminal disposition is
 authorized until the committed external evaluation is independently rebuilt.
+Inspection `7dcf07cf...f9d299` independently rebuilt all 32 trials, daily and
+filled-trade accounting, stationary bootstraps, neighbor stability, DSR, Holm,
+PBO, power, and deterministic selection. All seven inspection checks pass and
+all 32 trials are `REJECTED`; no trial survived. Zero trials have positive
+rolling folds, DSR reaches at most 0.3580 versus 0.90, and zero Holm-adjusted
+nulls are rejected. Thirteen pass neighbor stability, fifteen have positive
+20-bps growth, eight pass stressed PF, and all pass PBO, but no intersection
+satisfies the frozen gates. This exact family version is terminal on its
+evaluated corpus, confirmation remains closed, and no repair may reuse it.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
