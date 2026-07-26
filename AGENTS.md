@@ -379,7 +379,11 @@ state `SEARCH_FROZEN`. Development source contract
 2024-01-02 through 2024-09-25, enough for causal warmup and the complete
 development account calendar. It permits zero retries, substitutions, or
 confirmation requests and accessed no provider or outcome. Commit and push it
-before independent source inspection.
+before independent source inspection. Inspection `ea8c6dc6...6a142f`
+independently rebuilds the inventory, all 309 request hashes, controller hashes,
+full source scope, empty task namespace, and untouched confirmation reserve.
+All checks pass and only development provider access is authorized. Commit and
+push it before collection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
