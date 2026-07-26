@@ -407,7 +407,14 @@ disposition, zero substitutions, and closed confirmation boundary. It permits
 no resume until independently inspected. Inspection
 `41c48bfd...b0d5a4` independently rebuilds the complete lineage and all eleven
 policy checks pass. It authorizes only the exact resumable development graph;
-commit and push it before resuming provider access.
+commit and push it before resuming provider access. Resume
+`0c724ac3...0b34d5` completes all 309 exact tasks using 164 cache hits, 144 new
+first-attempt requests, and one no-retry LANC permanent-missing checkpoint.
+There were zero new structural failures, retries, substitutions, confirmation
+accesses, or broker actions. Collection `841ed088...08a818` retains 50,110 rows
+for 278 complete symbols, 31 exact permanent-missing symbols, and all 424 event
+records. The full source scope is indexed. Commit and push both artifacts and
+the exposure record before dataset inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
