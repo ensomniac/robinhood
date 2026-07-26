@@ -270,6 +270,13 @@ signal dates. All 32 strategy trials, causal rules, execution assumptions,
 costs, selection gates, and production semantics are unchanged. Focused tests
 rebuild the complete observation scopes and pass. Run the full repository gate,
 commit, and push this successor implementation before creating its artifacts.
+Validated successor commit `8aa15823` now binds contract
+`f7a2c922...dddc44`, event scope `8b9d2453...aa69c9`, and capacity manifest
+`00ab4a0d...143f95`. These content-addressed artifacts freeze 32 trials, 145
+development events on 102 signal dates, five embargo sessions, and 26 untouched
+confirmation events on 20 signal dates, with zero provider requests and zero
+market outcomes. Commit and push them before running their new generic
+preflight.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
