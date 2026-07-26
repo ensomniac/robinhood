@@ -306,6 +306,13 @@ accesses, and zero broker actions. All 1,300 symbol-date observation pairs are
 now appended to the global development exposure index. The dataset is
 `COLLECTED_UNINSPECTED`; commit and push the status and exposure record before
 independent dataset reconstruction.
+The first dataset-inspection invocation completed reconstruction but failed
+closed while rendering its CLI summary because it requested nonexistent
+manifest field `contract_sha256`. Its uncommitted output artifacts were removed.
+`sp500_deletion_collection_inspection.py` now reports the actual
+`manifest_sha256`, requires its own committed file before collection inspection,
+and binds that controller hash into the inspection artifact. Commit, push, and
+focused-test this correction before rerunning inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
