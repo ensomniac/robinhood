@@ -664,6 +664,12 @@ normalization. It records the prior 179-page metadata access but zero new cache
 rows, provider requests, prices, returns, confirmation outcomes, or broker
 actions before this freeze. Commit and push it before independent recovery-
 contract inspection.
+Inspection `0602f268...3cd49` independently rebuilt the recovery contract,
+failure lineage, all 312 unchanged task identities and source hashes, current
+implementation and outcome-exposure hashes, partitions, thresholds, transfer
+exclusions, and exact one-token policy. All eleven checks pass in
+`SOURCE_REUSE_CONTRACT_INSPECTED_READY` with zero provider or market access.
+Commit and push it before reparsing the complete cached denominator.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
