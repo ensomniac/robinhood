@@ -186,7 +186,6 @@ def _source_authorities(*, enforce_commit: bool) -> list[dict[str, str]]:
     )
     if enforce_commit:
         strategy_discovery.require_committed(DENSE_CALENDAR_COLLECTION)
-        strategy_discovery.require_committed(dense_capacity_inventory.DEFAULT_CALENDAR)
     dense = strategy_discovery.load_artifact(
         DENSE_CALENDAR_COLLECTION,
         expected_kind=dense_session_calendar.COLLECTION_KIND,
