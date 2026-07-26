@@ -293,6 +293,11 @@ point-in-time split-action task cover 145 events on 102 possible signal dates.
 The plan binds the search, event scope, controller hashes, missing-as-missed
 semantics, zero substitutions, and zero provider requests before freeze. Commit
 and push it before independent plan inspection or provider access.
+Plan inspection `b0fdebea...b17635e` independently rebuilt all 146 task hashes,
+145 event mappings, complete observation windows, source scope, authority and
+controller bindings, and the zero-outcome boundary. All nine checks pass with
+zero provider requests. Commit and push it before executing the frozen
+development collection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
