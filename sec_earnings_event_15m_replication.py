@@ -366,6 +366,19 @@ def freeze_capacity(
         store=source,
         enforce_commit=enforce_commit,
     )
+    if payload["state"] == "RETIRED_INSUFFICIENT_CAPACITY":
+        for field in (
+            "development_target_scope",
+            "development_scope",
+            "confirmation_target_scope",
+            "confirmation_scope",
+        ):
+            exact = payload.pop(field)
+            payload[f"{field}_summary"] = {
+                "date_count": len(exact["dates"]),
+                "pair_count": len(outcome_exposure.scope_pairs(exact)),
+                "scope_sha256": canonical_sha256(exact),
+            }
     return strategy_discovery._write_artifact(
         payload,
         root / SUCCESSOR_ID / "event-scope",
