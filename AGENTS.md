@@ -526,7 +526,12 @@ Massive split-action graph plus one zero-retry Yahoo symbol-range request each
 for `SPLV` and `^VIX`. It binds search `98b61656`, all 200 warmup and 1,000
 development account sessions, raw-OHLC semantics, pacing, and no substitutions
 with zero provider access. Commit and push it before independent plan
-inspection.
+inspection. The first inspection invocation failed closed before provider
+access because the metadata-only inspector's exact-family allowlist predated
+this new runtime family. The allowlist now includes only the exact VIX-shock
+family addition, with a regression test; no contract, task, date, source, rule,
+or evidence gate changed. Commit and push this integration before retrying the
+same committed plan inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

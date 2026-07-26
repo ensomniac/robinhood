@@ -7,6 +7,7 @@ import cross_style_breadth_successor as successor
 import dense_collection_recovery
 import dense_collection_plan_inspection as inspection
 import dense_data_collection
+import dense_strategy_runtime as runtime
 import outcome_exposure
 
 
@@ -44,6 +45,13 @@ YAHOO_RECOVERY_FAILURE_INSPECTION = (
     "collection-failure-inspection-"
     "5fba3464fae7bab79e050a9ad73c6e5c1d9d5a81300fe4ebb1977eff4dd72fbc.json"
 )
+
+
+def test_vix_shock_family_is_supported_by_independent_inspector():
+    assert (
+        runtime.VIX_SHOCK_REBOUND_FAMILY
+        in inspection.SUPPORTED_FAMILIES
+    )
 
 
 def test_independent_plan_inspection_rebuilds_all_nine_requests(
