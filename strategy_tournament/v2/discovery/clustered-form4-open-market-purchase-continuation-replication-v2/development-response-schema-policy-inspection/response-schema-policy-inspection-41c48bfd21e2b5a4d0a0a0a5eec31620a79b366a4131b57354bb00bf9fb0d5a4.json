@@ -1,0 +1,29 @@
+{
+  "artifact_kind": "form4-replication-response-schema-resume-policy-inspection",
+  "artifact_sha256": "41c48bfd21e2b5a4d0a0a0a5eec31620a79b366a4131b57354bb00bf9fb0d5a4",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "bootstrap_retry_forbidden": true,
+    "checkpoint_boundary_rebuilt": true,
+    "confirmation_closed": true,
+    "exact_exception_type_bounded": true,
+    "exact_response_messages_bounded": true,
+    "failure_inspection_rebuilt": true,
+    "later_retries_forbidden": true,
+    "policy_exactly_rebuilt": true,
+    "substitutions_forbidden": true,
+    "valid": true,
+    "zero_metrics_or_winner": true
+  },
+  "confirmation_access_permitted": false,
+  "contract_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation-replication-v2/development-source-contract/source-contract-8dc792ac9bd674785a3189690552885c5bc1395d9a0ea48d2af2899a25195e32.json",
+  "contract_sha256": "8dc792ac9bd674785a3189690552885c5bc1395d9a0ea48d2af2899a25195e32",
+  "family_id": "clustered-form4-open-market-purchase-continuation-replication-v2",
+  "inspected_at": "2026-07-26T11:33:00Z",
+  "policy_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation-replication-v2/development-response-schema-policy/response-schema-policy-7c1c3186d47fcc3d1bf1901a1aa833de7ab57f2a7280f01305e18093bd4b2ab0.json",
+  "policy_sha256": "7c1c3186d47fcc3d1bf1901a1aa833de7ab57f2a7280f01305e18093bd4b2ab0",
+  "resume_provider_access_authorized": true,
+  "schema_version": 1,
+  "state": "RESPONSE_SCHEMA_POLICY_INSPECTED_READY"
+}
