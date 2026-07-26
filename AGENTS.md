@@ -547,7 +547,10 @@ be recorded and indexed before any response-schema recovery. Do not retry,
 substitute a symbol, or alter strategy rules. Recovery may reuse the two
 completed checkpoints and request only the unchanged feature symbol after an
 exact response-schema policy is frozen, committed, and independently
-inspected.
+inspected. Failure artifact `90363424...49772a9d` fixes the state as
+`COLLECTION_FAILED_NO_STRATEGY_METRICS`: 1,209 SPLV rows and 5,426
+split-action rows were accessed, while the `^VIX` task failed with no accepted
+row. Commit and push this record before independent failure inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
