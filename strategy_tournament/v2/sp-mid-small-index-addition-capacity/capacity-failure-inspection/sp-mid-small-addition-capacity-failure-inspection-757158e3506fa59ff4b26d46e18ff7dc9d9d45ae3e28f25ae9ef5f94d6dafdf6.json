@@ -1,0 +1,42 @@
+{
+  "artifact_kind": "sp-mid-small-addition-capacity-failure-inspection",
+  "artifact_sha256": "757158e3506fa59ff4b26d46e18ff7dc9d9d45ae3e28f25ae9ef5f94d6dafdf6",
+  "broker_actions_permitted": false,
+  "cache_pages_opened": 179,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "failed_contract_sha256": "64d010d8f9cedfd93293796b8c2b475a27732fadb0288f7a12e53d65c18546a0",
+  "failed_listed_date": "2018-11-26",
+  "failed_source_url": "https://press.spglobal.com/2018-11-26-Lamb-Weston-Holdings-Maxim-Integrated-Products-and-Diamondback-Energy-Set-to-Join-S-P-500-Others-to-Join-S-P-MidCap-400-and-S-P-SmallCap-600",
+  "failed_task_ordinal": 179,
+  "failure_message": "effective date is unparseable: DECMEBER 3, 2018",
+  "failure_path": "strategy_tournament/v2/sp-mid-small-index-addition-capacity/capacity-failure/sp-mid-small-addition-capacity-failure-fdddc5659793d1ec5d0b766321ecfc0db884a6be199b9a2b41aed99a5c82d1e3.json",
+  "failure_sha256": "fdddc5659793d1ec5d0b766321ecfc0db884a6be199b9a2b41aed99a5c82d1e3",
+  "failure_type": "Sp500AdditionCapacityError",
+  "family_id": "sp-mid-small-external-index-addition-forced-demand",
+  "inspected_at": "2026-07-26T15:55:00Z",
+  "inspection": {
+    "all_prior_cache_hashes_rebuilt": true,
+    "contract_lineage_rebuilt": true,
+    "exact_failed_task_rebuilt": true,
+    "exact_parser_exception_rebuilt": true,
+    "valid": true,
+    "zero_event_output_rebuilt": true,
+    "zero_provider_outcome_boundary_rebuilt": true
+  },
+  "market_outcomes_accessed": false,
+  "market_price_access_permitted": false,
+  "provider_requests": 0,
+  "recovery_permitted": true,
+  "recovery_policy": {
+    "all_tasks_dates_urls_and_bytes_unchanged": true,
+    "canonical_token": "DECEMBER",
+    "exact_source_token": "DECMEBER",
+    "field": "legacy same-index effective-date heading",
+    "maximum_replacements_per_page": 1
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_PARSE_FAILURE_INSPECTED",
+  "successor_id": "sp-mid-small-external-index-addition-forced-demand-v1",
+  "target_return_access_permitted": false
+}

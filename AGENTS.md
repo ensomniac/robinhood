@@ -649,6 +649,14 @@ events, zero capacity metrics, zero provider or market-price requests, sealed
 confirmation, and zero broker actions. It forbids same-contract resume and
 authorizes no recovery until independently inspected. Commit and push it before
 that inspection.
+Inspection `757158e3...dafdf6` independently rehashed every page through task
+179, reproduced the frozen original parser exception, and rebuilt the complete
+zero-event, zero-capacity-metric, zero-provider, zero-price, closed-confirmation,
+and zero-broker boundary. All seven checks pass in
+`CAPACITY_PARSE_FAILURE_INSPECTED`. It authorizes only one exact normalization
+of `DECMEBER` to `DECEMBER` in the unchanged legacy effective-date heading.
+Commit and push it before freezing the implementation-refreshed recovery
+contract.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
