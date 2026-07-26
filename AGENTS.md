@@ -195,6 +195,13 @@ record `5e2e679b...09951` binds lifetime request telemetry and the exact policy.
 The full source graph is indexed as contaminated development, while confirmation
 prices, strategy metrics, winner selection, and broker actions remain zero.
 Commit and push the collection boundary before independent dataset inspection.
+Inspection `143e266a...ffc0f4` independently rebuilt the collection artifact,
+private file and content hashes, 1,929,930-row accounting, 7,049-event metadata,
+search binding, complete exposure record, and absent confirmation prices. All
+nine checks pass. Dataset manifest `8df5ab70...cdff4c` is
+`DATASET_INSPECTED_READY` development-only evidence for search
+`cee07890...6f9761`. Commit and push both before any strategy metric is
+computed.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
