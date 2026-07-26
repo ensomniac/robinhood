@@ -624,6 +624,14 @@ unchanged 50/100-total, 30-development, and 20-confirmation signal-date floors.
 It records zero provider requests, zero cache-row access, zero market outcomes,
 and zero broker authority. Commit and push it before independent contract
 inspection; no cached release page may be opened by the new parser first.
+Inspection `4ba79d9a...3a3db` independently rebuilt every one of the 312 source
+task identities, prior source artifacts, implementation hashes, partitions,
+capacity thresholds, current outcome-exposure binding, transfer exclusions,
+and zero-access fields. All ten checks pass in
+`SOURCE_REUSE_CONTRACT_INSPECTED_READY`. Commit and push the inspection before
+the capacity command rehashes and parses any cached page. It authorizes cache
+inspection only; provider, price, return, confirmation, and broker access remain
+forbidden.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
