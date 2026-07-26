@@ -202,6 +202,13 @@ nine checks pass. Dataset manifest `8df5ab70...cdff4c` is
 `DATASET_INSPECTED_READY` development-only evidence for search
 `cee07890...6f9761`. Commit and push both before any strategy metric is
 computed.
+Development result `dd368331...aad830` evaluated all 32 frozen trials in
+37.47 seconds from one local dataset load with zero provider requests. The
+uninspected summary accounts for 1,210 daily rows per trial and 21-99 filled
+returns per trial. Fifteen trials have positive 20-bps log growth and eight
+reach 1.20 stressed PF, but zero have positive rolling folds, DSR at least
+0.90, Holm rejection, or PBO at most 0.50. No winner or terminal disposition is
+authorized until the committed external evaluation is independently rebuilt.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
