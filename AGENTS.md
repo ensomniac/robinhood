@@ -345,6 +345,12 @@ causal warmup sessions, the five-session embargoes, 105 untouched confirmation
 signal sessions, and every zero-signal confirmation day. All ten checks pass
 with zero market-price or target-outcome access. Commit and push this inspection
 before freezing the three exact family evidence contracts.
+Capacity inventory `fc1a8fda...5aa839` now materializes the inspected topology
+into three exact capacity manifests. Each family has 120 development sessions,
+five embargo sessions, and 35 pair-clean confirmation signal sessions; warmup
+and zero-signal account calendars remain separate. No provider, outcome, or
+broker access occurred. Commit and push all four artifacts before freezing the
+family contracts.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
