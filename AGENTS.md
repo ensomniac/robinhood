@@ -597,7 +597,12 @@ provider requests. It produced only seven filled OOF trades; 20-bps log growth
 is -0.006794, PF is 0.513, rolling folds fail, DSR probability is zero, Holm
 does not reject, and PBO is 1.0. Confirmation remains sealed. Commit and push
 the adverse result before independent terminal inspection; do not repair this
-rule on its evaluated corpus.
+rule on its evaluated corpus. Inspection `e8ecbea6...6863a3` independently
+rebuilt all 955 account rows, seven fills, five rolling folds, bootstrap,
+multiple-testing gates, and deterministic selection. It assigns terminal
+`REJECTED`; the one-sided 90% 20-bps lower bound is -0.002210 per filled
+trade, stressed growth and PF fail, and confirmation remains sealed. Preserve
+the exact corpus and advance a distinct mechanism immediately.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
