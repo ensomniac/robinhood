@@ -139,6 +139,13 @@ this exact parser error rather than repeating one artifact cycle per symbol.
 Second inspection `9db36d0a...0bec6e` exactly rebuilt the CATC boundary,
 438 checkpoints, expanded partial exposure, zero-metric state, and closed
 confirmation. Commit and push it before freezing the repeated-failure policy.
+`insider_purchase_data_resume.py` implements the narrow policy transition. It
+requires both inspected failures, checkpoints the already-observed CATC defect
+without a retry, and thereafter catches only the exact
+`ActivistEarningsDataError("Yahoo returned invalid OHLCV")` from a request's
+first response. That request becomes permanent missing; every other exception
+still fails closed. The policy and controller hashes must freeze, commit, and
+pass independent inspection before resume.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed

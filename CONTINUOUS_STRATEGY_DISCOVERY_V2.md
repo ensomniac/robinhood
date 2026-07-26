@@ -515,6 +515,14 @@ only the failed request as permanent missing. It never retries, substitutes,
 or repairs provider rows. The original committed request graph then resumes
 from hash-valid tasks.
 
+After two independently inspected occurrences of the exact same invalid-OHLCV
+parser exception, a separate class-policy controller may be frozen. It must
+checkpoint the already-observed second failure without another request and may
+convert only the exact same exception on a later request's first response to
+permanent missing. All other exceptions still stop collection. This policy
+does not retry, substitute, repair, compute a strategy metric, or access
+confirmation, and it must be committed and independently inspected first.
+
 ## Parallel lanes
 
 The residual-equity implementation is now used only for the existing
