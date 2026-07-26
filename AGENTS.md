@@ -226,7 +226,12 @@ announcement dates, expanding one explicit dual-class row into 270 tradable
 ticker-events, with zero new provider or market-price requests.
 `sp500_deletion_capacity.py` implements deletion-only
 parsing and independent reconstruction without changing the terminal addition
-family. Commit and test it before creating any capacity artifact.
+family. Capacity artifact `ae4fb685...a3258a` is
+`CAPACITY_READY_FAST_LANE_UNINSPECTED`: it binds all 312 cached official pages,
+270 tradable ticker-events on 184 announcement dates, zero provider requests,
+zero market-price access, and controller commit `f1349beb`. It cannot authorize
+development until committed and independently rebuilt by the inspection
+command.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
