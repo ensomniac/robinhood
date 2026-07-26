@@ -83,6 +83,89 @@ def _zero_access_status() -> dict[str, Any]:
     }
 
 
+def _zero_access_supersession(
+    observed: Mapping[str, Any],
+    *,
+    status_path: Path,
+) -> dict[str, Any]:
+    plan = batch.build_plan()
+    expected_families = {
+        str(item["family_id"]) for item in plan["families"]
+    }
+    hashes = observed.get("family_contract_sha256")
+    if not (
+        observed.get("schema_version") == SCHEMA_VERSION
+        and observed.get("campaign_id") == batch.CAMPAIGN_ID
+        and observed.get("research_batch_id") == batch.TARGET_BATCH_ID
+        and observed.get("activation_policy") == plan["activation_policy"]
+        and observed.get("rolling_authorization_sha256")
+        == plan["rolling_authorization_sha256"]
+        and observed.get("state") == "THREE_FAMILY_CONTRACTS_FROZEN"
+        and observed.get("family_contracts_frozen") == 3
+        and isinstance(hashes, Mapping)
+        and set(map(str, hashes)) == expected_families
+        and all(
+            isinstance(value, str) and len(value) == 64
+            for value in hashes.values()
+        )
+        and isinstance(observed.get("inventory_sha256"), str)
+        and len(str(observed["inventory_sha256"])) == 64
+        and isinstance(
+            observed.get("outcome_exposure_index_sha256"), str
+        )
+        and len(str(observed["outcome_exposure_index_sha256"])) == 64
+        and observed.get("provider_access_permitted") is False
+        and observed.get("outcome_access_permitted") is False
+        and observed.get("broker_actions_permitted") is False
+        and observed.get("valid") is True
+    ):
+        raise DenseFamilyContractError(
+            "rolling-batch status is not the exact authorized zero-access "
+            "predecessor"
+        )
+    discovery_root = status_path.parent.parent / "discovery"
+    forbidden_directories = (
+        "search",
+        "development-collection-plan",
+        "development-collection",
+        "development",
+        "development-inspection",
+        "winner",
+        "confirmation",
+        "confirmation-inspection",
+        "shadow-queue",
+    )
+    forbidden: list[str] = []
+    for family_id in sorted(expected_families):
+        family_root = discovery_root / family_id
+        for directory in forbidden_directories:
+            target = family_root / directory
+            if target.is_dir() and any(target.glob("*.json")):
+                forbidden.append(
+                    target.relative_to(status_path.parent.parent).as_posix()
+                )
+    if forbidden:
+        raise DenseFamilyContractError(
+            "zero-access contract supersession found search or outcome "
+            f"artifacts: {forbidden}"
+        )
+    return {
+        "state": str(observed["state"]),
+        "inventory_sha256": str(observed["inventory_sha256"]),
+        "outcome_exposure_index_sha256": str(
+            observed["outcome_exposure_index_sha256"]
+        ),
+        "family_contract_sha256": {
+            str(key): str(value)
+            for key, value in sorted(hashes.items())
+        },
+        "preflight_only_verified": True,
+        "provider_access_permitted": False,
+        "outcome_access_permitted": False,
+        "broker_actions_permitted": False,
+    }
+
+
 def _validate_status_transition(
     path: Path,
     target: Mapping[str, Any],
@@ -99,7 +182,20 @@ def _validate_status_transition(
     observed = _read(path)
     if observed == target:
         return
-    if observed != _zero_access_status():
+    if observed == _zero_access_status():
+        if enforce_commit:
+            try:
+                strategy_discovery.require_committed(path)
+            except strategy_discovery.StrategyDiscoveryError as exc:
+                raise DenseFamilyContractError(
+                    f"W31 waiting status is not committed: {exc}"
+                ) from exc
+        return
+    expected_supersession = _zero_access_supersession(
+        observed,
+        status_path=path,
+    )
+    if target.get("superseded_zero_access_status") != expected_supersession:
         raise DenseFamilyContractError(
             "rolling-batch status is not the exact authorized zero-access predecessor"
         )
@@ -501,6 +597,22 @@ def freeze_batch(
         "broker_actions_permitted": False,
         "valid": True,
     }
+    if status_path.exists():
+        observed_status = _read(status_path)
+        comparable_observed = {
+            key: value
+            for key, value in observed_status.items()
+            if key != "superseded_zero_access_status"
+        }
+        if comparable_observed == status:
+            status = dict(observed_status)
+        elif observed_status != _zero_access_status():
+            status["superseded_zero_access_status"] = (
+                _zero_access_supersession(
+                    observed_status,
+                    status_path=status_path,
+                )
+            )
     _validate_status_transition(
         status_path,
         status,

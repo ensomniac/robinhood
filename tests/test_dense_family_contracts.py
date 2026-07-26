@@ -270,6 +270,112 @@ def test_batch_freeze_rejects_unauthorized_status_transition_without_writes(
     assert not output_root.exists()
 
 
+def test_batch_refreeze_supersedes_only_preflight_zero_access_status(
+    tmp_path,
+):
+    index = tmp_path / "exposure.jsonl"
+    status_path = tmp_path / "next_batch" / "status.json"
+    first_inventory = _inventory(tmp_path, index)
+    _paths, first_status = contracts.freeze_batch(
+        first_inventory,
+        as_of=date(2026, 7, 23),
+        actual_today=date(2026, 7, 23),
+        index_path=index,
+        output_root=tmp_path / "contracts",
+        status_path=status_path,
+        enforce_commit=False,
+    )
+    outcome_exposure.append_record(
+        outcome_exposure.build_record(
+            exposure_id="unrelated-development-exposure",
+            campaign_id="test",
+            lane="development",
+            recorded_at="2026-07-23T09:00:00-04:00",
+            source_path="tests/source.json",
+            source_sha256="b" * 64,
+            scope={"dates": ["1999-01-04"], "symbols": ["TEST"]},
+        ),
+        index,
+    )
+    second_inventory = _inventory(tmp_path, index)
+
+    _paths, second_status = contracts.freeze_batch(
+        second_inventory,
+        as_of=date(2026, 7, 23),
+        actual_today=date(2026, 7, 23),
+        index_path=index,
+        output_root=tmp_path / "contracts",
+        status_path=status_path,
+        enforce_commit=False,
+    )
+
+    assert second_status["inventory_sha256"] != first_status["inventory_sha256"]
+    assert second_status["superseded_zero_access_status"] == {
+        "state": "THREE_FAMILY_CONTRACTS_FROZEN",
+        "inventory_sha256": first_status["inventory_sha256"],
+        "outcome_exposure_index_sha256": first_status[
+            "outcome_exposure_index_sha256"
+        ],
+        "family_contract_sha256": first_status[
+            "family_contract_sha256"
+        ],
+        "preflight_only_verified": True,
+        "provider_access_permitted": False,
+        "outcome_access_permitted": False,
+        "broker_actions_permitted": False,
+    }
+
+
+def test_batch_refreeze_rejects_status_after_search_artifact(tmp_path):
+    index = tmp_path / "exposure.jsonl"
+    status_path = tmp_path / "next_batch" / "status.json"
+    first_inventory = _inventory(tmp_path, index)
+    contracts.freeze_batch(
+        first_inventory,
+        as_of=date(2026, 7, 23),
+        actual_today=date(2026, 7, 23),
+        index_path=index,
+        output_root=tmp_path / "contracts",
+        status_path=status_path,
+        enforce_commit=False,
+    )
+    search = (
+        tmp_path
+        / "discovery"
+        / "liquid-equity-market-residual-reversal"
+        / "search"
+    )
+    search.mkdir(parents=True)
+    (search / "result.json").write_text("{}\n", encoding="utf-8")
+    outcome_exposure.append_record(
+        outcome_exposure.build_record(
+            exposure_id="new-development-exposure",
+            campaign_id="test",
+            lane="development",
+            recorded_at="2026-07-23T09:00:00-04:00",
+            source_path="tests/source.json",
+            source_sha256="c" * 64,
+            scope={"dates": ["1999-01-05"], "symbols": ["TEST"]},
+        ),
+        index,
+    )
+    second_inventory = _inventory(tmp_path, index)
+
+    with pytest.raises(
+        contracts.DenseFamilyContractError,
+        match="search or outcome artifacts",
+    ):
+        contracts.freeze_batch(
+            second_inventory,
+            as_of=date(2026, 7, 23),
+            actual_today=date(2026, 7, 23),
+            index_path=index,
+            output_root=tmp_path / "contracts",
+            status_path=status_path,
+            enforce_commit=False,
+        )
+
+
 def test_batch_freeze_requires_committed_inventory_after_authorization(
     tmp_path, monkeypatch
 ):
