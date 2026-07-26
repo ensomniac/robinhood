@@ -368,7 +368,10 @@ Capacity manifest `432b743e...277893` and family contract
 `84ab93bc...0e74bb` now freeze that exact lineage, partition, unchanged grid,
 cumulative selection accounting, provider boundary, and confirmation reserve.
 Both were created with zero price, outcome, confirmation, or broker access.
-Commit and push them before generic preflight.
+Generic preflight `eb22f294...865edf` independently verifies all 633 frozen
+events, exact family/experiment/date bindings, point-in-time evidence, and the
+zero-provider/locked-confirmation boundary. It assigns `CAPACITY_READY`. Commit
+and push it before freezing the complete development search.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
