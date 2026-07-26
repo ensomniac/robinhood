@@ -692,6 +692,12 @@ multi-class ticker exception and zero-event boundary. It authorizes only the
 exact committed-URL expansion of `UA/UAA` into `UA` and `UAA`, with every other
 invalid ticker fail-closed. Commit and push it before freezing the final
 implementation-refreshed source contract.
+Final recovery contract `e1fe1ba0...742ff3` preserves the original 312 source
+identities, the inspected month correction, and the inspected share-class
+failure while binding current implementation hashes. It permits only the two
+exact source corrections, records zero new provider or market access, and
+retains every capacity threshold and partition. Commit and push it before
+independent contract inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
