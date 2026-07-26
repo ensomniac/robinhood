@@ -532,6 +532,12 @@ this new runtime family. The allowlist now includes only the exact VIX-shock
 family addition, with a regression test; no contract, task, date, source, rule,
 or evidence gate changed. Commit and push this integration before retrying the
 same committed plan inspection.
+Inspection `4333a11c...129f05` independently rebuilt search authority,
+calendar hash, all 1,200 required dates, the exact three task IDs, symbol
+ordering, Yahoo and split-action semantics, and untouched development and
+confirmation scopes. Every check passes in
+`COLLECTION_PLAN_INSPECTED_READY` with zero provider or outcome access. Commit
+and push it before executing those three development tasks.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
