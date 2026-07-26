@@ -391,7 +391,12 @@ controller freezes this exact boundary, requires independent failure and policy
 inspections, checkpoints `LANC` as whole-symbol permanent missing without
 another request, and allows only the five already-bounded structural response
 classes to receive the same first-response missed-data disposition. Commit and
-push the controller before recording the partial exposure.
+push the controller before recording the partial exposure. Failure
+`1ec304a3...4b1819` now records the exact 165th-request boundary and appends all
+164 checkpointed symbols across their frozen source dates to the global
+development exposure index. It authorizes no retry, registration, resume,
+confirmation, or broker action until independently inspected. Commit and push
+the failure and exposure record before inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
