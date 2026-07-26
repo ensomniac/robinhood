@@ -431,7 +431,10 @@ evaluation attempt. Refresh inspection `9ecd5f36...5cb863` independently proves
 there is no development result, no changed semantic field, and only the
 declared implementation hashes changed; refreshed contract
 `773c64e0...047ece` remains confirmation-closed. Commit and push both before
-freezing the replacement search.
+freezing the replacement search. Refreshed preflight
+`0a2271c3...13fe64` revalidates all 633 frozen events and the current
+implementation binding as `CAPACITY_READY`, with zero provider or outcome
+access. Commit and push it before replacement search freeze.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
