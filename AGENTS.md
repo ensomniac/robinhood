@@ -309,10 +309,12 @@ independent dataset reconstruction.
 The first dataset-inspection invocation completed reconstruction but failed
 closed while rendering its CLI summary because it requested nonexistent
 manifest field `contract_sha256`. Its uncommitted output artifacts were removed.
-`sp500_deletion_collection_inspection.py` now reports the actual
-`manifest_sha256`, requires its own committed file before collection inspection,
-and binds that controller hash into the inspection artifact. Commit, push, and
-focused-test this correction before rerunning inspection.
+The first reporting fix changed a file already hash-frozen in the development
+search, so evaluation rejected it before running any trial. Preserve
+`sp500_deletion_collection_inspection.py` byte-for-byte at its frozen hash
+`28b15385...14a426`; corrected committed-wrapper command
+`sp500_deletion_dataset_inspection.py` supplies the truthful `manifest_sha256`
+summary without changing outcome-affecting strategy semantics.
 Inspection `6ebfe416...fa626` independently rebuilt all 146 task dispositions,
 the 145-event observation scope, 94 permanent missing legacy-symbol windows, the
 external file hash, and canonical dataset hash `ebcd996b...56a3ba`. All eight

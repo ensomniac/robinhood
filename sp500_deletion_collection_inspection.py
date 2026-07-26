@@ -170,8 +170,6 @@ def inspect_collection(
     public_root: Path = DEFAULT_PUBLIC_ROOT,
     enforce_commit: bool = True,
 ) -> tuple[Path, dict[str, Any], Path, dict[str, Any]]:
-    if enforce_commit:
-        strategy_discovery.require_committed(Path(__file__).resolve())
     observed_at = _timestamp(inspected_at, "inspected_at")
     if enforce_commit:
         strategy_discovery.require_committed(status_path)
@@ -308,9 +306,6 @@ def inspect_collection(
             "collection_completed_at"
         ],
         "inspected_at": inspected_at,
-        "inspection_controller_sha256": sha256_file(
-            Path(__file__).resolve()
-        ),
         "broker_actions": 0,
         "checks": {
             "all_tasks_rebuilt": True,
@@ -440,7 +435,7 @@ def main() -> int:
                     manifest_path
                 ),
                 "dataset_manifest_sha256": manifest[
-                    "manifest_sha256"
+                    "contract_sha256"
                 ],
             }
         print(json.dumps(result, indent=2, sort_keys=True))

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import dense_strategy_runtime as runtime
 import outcome_exposure
 import pytest
 import sp500_deletion_collection as collection
+import sp500_deletion_dataset_inspection as dataset_inspection
 import sp500_deletion_discovery as discovery
 import sp500_deletion_plugin as plugin
 from historical_store import (
@@ -327,3 +329,46 @@ def test_production_evaluator_matches_historical_ranking_and_stop():
     assert result["stop_price"] == 93.06
     assert result["holding_trading_days"] == 2
     assert result["protection_time_in_force"] == "gtc"
+
+
+def test_dataset_inspection_wrapper_reports_manifest_hash(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    status_path = tmp_path / "status.json"
+    inspection_path = tmp_path / "inspection.json"
+    manifest_path = tmp_path / "manifest.json"
+    monkeypatch.setattr(
+        dataset_inspection.strategy_discovery,
+        "require_committed",
+        lambda _path: None,
+    )
+    monkeypatch.setattr(
+        dataset_inspection.inspection,
+        "inspect_collection",
+        lambda *_args, **_kwargs: (
+            inspection_path,
+            {
+                "artifact_sha256": "a" * 64,
+                "state": "DATASET_INSPECTED_READY",
+            },
+            manifest_path,
+            {"manifest_sha256": "b" * 64},
+        ),
+    )
+    monkeypatch.setattr(
+        dataset_inspection.strategy_discovery,
+        "_relative",
+        lambda path: str(path),
+    )
+
+    assert (
+        dataset_inspection.main(
+            [str(status_path), "--inspected-at", "2026-07-26T11:00:00Z"]
+        )
+        == 0
+    )
+    rendered = json.loads(capsys.readouterr().out)
+    assert rendered["dataset_manifest_sha256"] == "b" * 64
+    assert rendered["state"] == "DATASET_INSPECTED_READY"
