@@ -668,7 +668,7 @@ def publish_development(
     )
     contract = search["family_contract"]
     if not (
-        search.get("family_id") == FAMILY_ID
+        contract.get("family_id") == FAMILY_ID
         and len(contract.get("trial_family", [])) == 16
         and contract.get("confirmation_outcomes_accessed") is False
     ):
