@@ -59,7 +59,9 @@ It excludes an affirmative `AFF10B5ONE` marker when the source provides one,
 uses the next exchange-session open as the earliest later strategy entry, and
 forbids all price, return, confirmation, and broker access during capacity
 work. Freeze, commit, and independently inspect the source contract before any
-of the 28 SEC archive requests.
+of the 28 SEC archive requests. Contract `b4b51d2d...60638b` now binds the
+committed controller, all exact source URLs, capacity dispositions, and the
+closed outcome boundary. Commit and push it before independent inspection.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
