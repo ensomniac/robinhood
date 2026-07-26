@@ -281,6 +281,13 @@ EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
 SEC_EARNINGS_GAP_15M_FAMILY = (
     "sec-filed-earnings-gap-continuation-event-first-15m"
 )
+SEC_EARNINGS_GAP_15M_REPLICATION_FAMILY = (
+    "sec-filed-earnings-gap-continuation-event-first-15m-replication-v2"
+)
+SEC_EARNINGS_GAP_15M_FAMILIES = {
+    SEC_EARNINGS_GAP_15M_FAMILY,
+    SEC_EARNINGS_GAP_15M_REPLICATION_FAMILY,
+}
 EARNINGS_PEAD_FAMILY = "earnings-positive-surprise-drift"
 EARNINGS_SEC_REACTION_FAMILY = "earnings-sec-yoy-eps-reaction-drift"
 ACTIVIST_EARNINGS_REACTION_FAMILY = (
@@ -339,7 +346,7 @@ SUPPORTED_FAMILIES = {
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
-    SEC_EARNINGS_GAP_15M_FAMILY,
+    *SEC_EARNINGS_GAP_15M_FAMILIES,
     EARNINGS_PEAD_FAMILY,
     EARNINGS_SEC_REACTION_FAMILY,
     ACTIVIST_EARNINGS_REACTION_FAMILY,
@@ -4314,7 +4321,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
     calendar = _calendar(dataset)
     _signal_dates(dataset)
     prepared = dict(dataset)
-    if family_id == SEC_EARNINGS_GAP_15M_FAMILY:
+    if family_id in SEC_EARNINGS_GAP_15M_FAMILIES:
         sessions = _fifteen_minute_sessions(dataset)
         raw_events = dataset.get("event_metadata_by_date")
         blocked = dataset.get("blocked_dates", [])
@@ -5596,7 +5603,10 @@ def _sec_earnings_gap_15m_exit(
 
 
 def _sec_earnings_gap_15m_candidates(
-    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+    *,
+    family_id: str = SEC_EARNINGS_GAP_15M_FAMILY,
 ) -> list[dict[str, Any]]:
     """Build event-first SEC earnings continuation candidates.
 
@@ -5649,7 +5659,7 @@ def _sec_earnings_gap_15m_candidates(
             candidates.append(
                 {
                     "signal_id": (
-                        f"{day}-{SEC_EARNINGS_GAP_15M_FAMILY}-DATA"
+                        f"{day}-{family_id}-DATA"
                     ),
                     "signal_date": day,
                     "decision_date": day,
@@ -5701,7 +5711,7 @@ def _sec_earnings_gap_15m_candidates(
             continue
         _, _, _, symbol, event_id, selected = sorted(qualified)[0]
         signal_id = (
-            f"{day}-{SEC_EARNINGS_GAP_15M_FAMILY}-{symbol}-{event_id[:12]}"
+            f"{day}-{family_id}-{symbol}-{event_id[:12]}"
         )
         bars = sessions.get(day, {}).get(symbol)
         if bars is None:
@@ -7350,8 +7360,12 @@ def build_candidates(
         return _oversold_candidates(dataset, parameters)
     if family_id == EQUITY_GAP_CONTINUATION_FAMILY:
         return _gap_continuation_candidates(dataset, parameters)
-    if family_id == SEC_EARNINGS_GAP_15M_FAMILY:
-        return _sec_earnings_gap_15m_candidates(dataset, parameters)
+    if family_id in SEC_EARNINGS_GAP_15M_FAMILIES:
+        return _sec_earnings_gap_15m_candidates(
+            dataset,
+            parameters,
+            family_id=family_id,
+        )
     if family_id == EARNINGS_PEAD_FAMILY:
         return _earnings_pead_candidates(dataset, parameters)
     if family_id == EARNINGS_SEC_REACTION_FAMILY:
