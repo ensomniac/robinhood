@@ -175,6 +175,11 @@ scope in the global exposure index. The recorded exception is exactly `Yahoo
 identity, timezone, or quote arrays drifted`; retry, registration, substitution,
 metrics, confirmation access, and broker actions remain closed until independent
 failure inspection.
+Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
+all 538 checkpoints, the expanded exposure record, the exact exception, and
+every closed-state constraint. All ten checks pass, authorizing only a frozen
+and independently inspected response-schema policy before any further provider
+access.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed

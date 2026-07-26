@@ -1,0 +1,32 @@
+{
+  "artifact_kind": "form4-purchase-development-resume-schema-failure-inspection",
+  "artifact_sha256": "43df0eaabac408185113f895e56165bb7401b587654ec99cf12470a539f288f6",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "checkpointed_tasks_rebuilt": true,
+    "confirmation_closed": true,
+    "exact_exception_recorded": true,
+    "failed_request_boundary_rebuilt": true,
+    "failure_exactly_rebuilt": true,
+    "partial_exposure_indexed": true,
+    "retry_forbidden": true,
+    "substitutions_forbidden": true,
+    "valid": true,
+    "zero_metrics_or_winner": true
+  },
+  "confirmation_access_permitted": false,
+  "failed_request": {
+    "endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/CLNS",
+    "ordinal": 539,
+    "request_sha256": "92fbfc598c59c4ad2d079e0f67548c1702e13ebe6d15db568f55b0c36766da91",
+    "symbol": "CLNS"
+  },
+  "failure_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation/development-resume-schema-failure/resume-schema-failure-153813c025b7aeef7564ac80d686201dd5025d1de5ab34ed5716c1fe70083601.json",
+  "failure_sha256": "153813c025b7aeef7564ac80d686201dd5025d1de5ab34ed5716c1fe70083601",
+  "family_id": "clustered-form4-open-market-purchase-continuation",
+  "inspected_at": "2026-07-26T06:07:45Z",
+  "schema_policy_freeze_authorized": true,
+  "schema_version": 1,
+  "state": "RESPONSE_SCHEMA_FAILURE_INSPECTED_TERMINAL"
+}
