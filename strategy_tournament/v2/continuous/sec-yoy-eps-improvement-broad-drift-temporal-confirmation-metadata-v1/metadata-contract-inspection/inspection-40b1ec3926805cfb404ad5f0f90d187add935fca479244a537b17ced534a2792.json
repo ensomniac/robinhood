@@ -1,0 +1,28 @@
+{
+  "artifact_kind": "sec-broad-pead-temporal-metadata-contract-inspection",
+  "authorized_provider_requests": 8,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "contract_hash_valid": true,
+    "contract_rebuilt_exactly": true,
+    "corrected_official_root": true,
+    "exact_eight_archives": true,
+    "exact_rule_no_alternatives": true,
+    "reserve_preregistered": true,
+    "zero_price_outcome_or_broker": true,
+    "zero_retry_or_substitution": true
+  },
+  "contract_file_sha256": "2d69576441c51930b2e8228a384463e903e4c5036411815b59cfe76e718d379e",
+  "contract_path": "strategy_tournament/v2/continuous/sec-yoy-eps-improvement-broad-drift-temporal-confirmation-metadata-v1/metadata-contract/contract-52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e.json",
+  "contract_sha256": "52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e",
+  "family_id": "sec-yoy-eps-improvement-broad-drift",
+  "inspected_at": "2026-07-26T01:43:00-04:00",
+  "inspection_sha256": "40b1ec3926805cfb404ad5f0f90d187add935fca479244a537b17ced534a2792",
+  "market_price_access_authorized": false,
+  "metadata_collection_authorized": true,
+  "schema_version": 1,
+  "state": "TEMPORAL_METADATA_CONTRACT_INSPECTED_READY",
+  "successor_id": "sec-yoy-eps-improvement-broad-drift-temporal-confirmation-metadata-v1",
+  "valid": true
+}
