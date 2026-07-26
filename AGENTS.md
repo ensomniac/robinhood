@@ -563,6 +563,11 @@ Chicago timestamp-to-date conversion. It permits no retry, symbol
 substitution, strategy-rule change, confirmation access, or broker action.
 The recovery plan and its refreshed implementation-bound search must still be
 frozen, committed, and independently inspected before that single request.
+Implementation refresh inspection `2766622b...67cde8` proves that only
+`dense_data_collection.py` and `dense_collection_plan_inspection.py` hashes
+changed, the semantic contract is identical, no development evaluation exists,
+and no new outcome was accessed. Its refreshed contract is
+`40b5e263...957928`. Commit and push both before a new preflight.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

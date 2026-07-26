@@ -1,0 +1,63 @@
+{
+  "artifact_kind": "implementation-refresh-inspection",
+  "artifact_sha256": "2766622b1dad563796ca3a6c127c71a6697f24b6c3d7c40fcef1e957c767cde8",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "changed_implementation_files": [
+    "dense_collection_plan_inspection.py",
+    "dense_data_collection.py"
+  ],
+  "confirmation_access_permitted": false,
+  "family_id": "vix-shock-low-volatility-equity-rebound",
+  "inspection": {
+    "current_implementation_hashes_rebuilt": true,
+    "development_result_absence_rebuilt": true,
+    "outcome_blind_preflight_rebuilt": true,
+    "semantic_contract_equality_rebuilt": true,
+    "source_contract_binding_rebuilt": true,
+    "source_search_hash_valid": true,
+    "valid": true
+  },
+  "only_implementation_hashes_changed": true,
+  "original_implementation_hashes": {
+    "dense_collection_plan_inspection.py": "be7cb0a9c2284930f0512c8cba59d453a93e24a311b50362c9795f0a9793b982",
+    "dense_data_collection.py": "9417923b857ccde62464643918efea77f7687f0cd89fcaf4ee5211484ec6f110",
+    "dense_data_collection_inspection.py": "ad16aa6f2e47f2c4704e9a754a724bcdb1dca9028528c2bef3fa822784c539c5",
+    "dense_strategy_plugin.py": "e2668f6253e50e0b4ab6fddf1caacfa9e4ec0c300d8b44ca9a057968d45b4ee8",
+    "dense_strategy_runtime.py": "647e00e6ef1b80202488ecd3d788df41949878e34739e51d970f4d4a0428c546",
+    "learning_experiment.py": "0870d5077ab3dd813403b8b77d8d9435ef6a8f292cc6c9e027a34bd7c0fb4d16",
+    "learning_statistics.py": "6104e6b76a889a3678c074477c16f7566aa0a5102d6d2502178827af1c8fc077",
+    "outcome_exposure.py": "b3835233e2359d2f033dbb726b898e2d5087f4e01f05a3def2771ddf86d53a4a",
+    "portfolio_config.toml": "b048636e497b7d89d025cef797845e88c2301a861e9a067a9db5ae6f9722ecac",
+    "portfolio_maturity.py": "a58a0af718abe42a2d8f8f0260bcf7fa7202052514ec917f92792cc24c0e85fe",
+    "rolling_discovery_authorization.py": "855684f94a34632e3e9402aba5579a4150fe95453c8ee0d353473322274d06d9",
+    "strategy_discovery.py": "1e6a49f4ca188ed955e0b6e66589d5feecd4b3cd7f3470ef931284b29424b5ee",
+    "vix_shock_rebound.py": "b174d4b25791d4c79a997e99f01df088672129f5a3a85846a519d632afa19b37"
+  },
+  "refreshed_contract_path": "strategy_tournament/v2/continuous/vix-shock-low-volatility-equity-rebound-v1/family-contract/contract-40b5e263025552c51fc25c1a4ba53b6e02bc7734747f6be476da4cfa01957928.json",
+  "refreshed_contract_sha256": "5c59e84a847971ac76a9706a40c0febdc118b6712f411a81b78d68792352290b",
+  "refreshed_implementation_hashes": {
+    "dense_collection_plan_inspection.py": "d3cde9f392bf45ededab6d8942f774234764458a95b189c0f8825c8fbeacbac7",
+    "dense_data_collection.py": "720c880db985f84e95ea626868b373c316fc9cf5b59318888b81ad6a7bae7661",
+    "dense_data_collection_inspection.py": "ad16aa6f2e47f2c4704e9a754a724bcdb1dca9028528c2bef3fa822784c539c5",
+    "dense_strategy_plugin.py": "e2668f6253e50e0b4ab6fddf1caacfa9e4ec0c300d8b44ca9a057968d45b4ee8",
+    "dense_strategy_runtime.py": "647e00e6ef1b80202488ecd3d788df41949878e34739e51d970f4d4a0428c546",
+    "learning_experiment.py": "0870d5077ab3dd813403b8b77d8d9435ef6a8f292cc6c9e027a34bd7c0fb4d16",
+    "learning_statistics.py": "6104e6b76a889a3678c074477c16f7566aa0a5102d6d2502178827af1c8fc077",
+    "outcome_exposure.py": "b3835233e2359d2f033dbb726b898e2d5087f4e01f05a3def2771ddf86d53a4a",
+    "portfolio_config.toml": "b048636e497b7d89d025cef797845e88c2301a861e9a067a9db5ae6f9722ecac",
+    "portfolio_maturity.py": "a58a0af718abe42a2d8f8f0260bcf7fa7202052514ec917f92792cc24c0e85fe",
+    "rolling_discovery_authorization.py": "855684f94a34632e3e9402aba5579a4150fe95453c8ee0d353473322274d06d9",
+    "strategy_discovery.py": "1e6a49f4ca188ed955e0b6e66589d5feecd4b3cd7f3470ef931284b29424b5ee",
+    "vix_shock_rebound.py": "b174d4b25791d4c79a997e99f01df088672129f5a3a85846a519d632afa19b37"
+  },
+  "schema_version": 1,
+  "semantic_contract_sha256": "208ddadb9c731d46cca5980c80eacbad0b08b1cd838e62b1be1ca4cce6d47faf",
+  "source_contract_path": "strategy_tournament/v2/continuous/vix-shock-low-volatility-equity-rebound-v1/family-contract/contract-50b550921b592bf480255bc9266e01d94a263e1b0a092a89d23190958cd89913.json",
+  "source_contract_sha256": "a263271ceaeea63b4509a244ccf7d80c77aba03bb8e5ddb9a2554dcf471404ce",
+  "source_development_evaluations": 0,
+  "source_search_path": "strategy_tournament/v2/discovery/vix-shock-low-volatility-equity-rebound/search/vix-shock-low-volatility-equity-rebound-search-98b61656f33bbd0c8d2cc17988a7cefce46b3d7890f601059300cf300abe67c0.json",
+  "source_search_sha256": "98b61656f33bbd0c8d2cc17988a7cefce46b3d7890f601059300cf300abe67c0",
+  "state": "IMPLEMENTATION_REFRESH_INSPECTED",
+  "strategy_outcomes_accessed": false
+}
