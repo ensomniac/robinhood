@@ -1,0 +1,54 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "f935cb46fc4f3cc301cb654516b593505b9eeca88ac38bbdb1b8becba9d12baf",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.03377204097341746,
+  "family_contract_path": "strategy_tournament/v2/continuous/vix-shock-low-volatility-equity-rebound-v1/family-contract/contract-50b550921b592bf480255bc9266e01d94a263e1b0a092a89d23190958cd89913.json",
+  "family_contract_sha256": "a263271ceaeea63b4509a244ccf7d80c77aba03bb8e5ddb9a2554dcf471404ce",
+  "family_id": "vix-shock-low-volatility-equity-rebound",
+  "implementation_sha256": "b2caa0abe54d11dacd2deff791b8df945b94c76e699ee9e0d0274d91659d98ed",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "dates_bound": true,
+      "development_lane": true,
+      "family_bound": true,
+      "point_in_time": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 994
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "50b550921b592bf480255bc9266e01d94a263e1b0a092a89d23190958cd89913",
+  "verified_capacity": 994
+}

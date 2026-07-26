@@ -509,6 +509,12 @@ complete SPLV/`^VIX` scopes, Yahoo zero-retry symbol-range plan, 5/10/20-bps
 costs, account simulator, selection rule, and implementation hashes with zero
 provider requests or price access. Commit and push both artifacts before the
 generic outcome-blind preflight.
+Generic preflight `f935cb46...d12baf` independently reloads the committed
+contract, calendar-only capacity, 1,000 development dates, 494 confirmation
+signal dates, current implementation hashes, and point-in-time zero-outcome
+boundary. It assigns `CAPACITY_READY` without opening the external dataset or
+making a provider request. Commit and push it before freezing the one-trial
+development search.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
