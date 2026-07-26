@@ -642,6 +642,13 @@ behavior for independent reproduction and permits only one exact
 Multiple replacements, any other parser error, and every changed task, date,
 URL, byte, rule, threshold, or partition remain fail-closed. Commit and push
 the controller before recording the exact failed boundary.
+Failure artifact `fdddc565...2d1e3` now records the committed contract and
+inspection lineage, all 179 cache pages opened through the failure, exact task
+ID, raw hash, official URL, date, exception type and message, zero emitted
+events, zero capacity metrics, zero provider or market-price requests, sealed
+confirmation, and zero broker actions. It forbids same-contract resume and
+authorizes no recovery until independently inspected. Commit and push it before
+that inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
