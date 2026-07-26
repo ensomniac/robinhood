@@ -87,7 +87,11 @@ boundary. It earns `CAPACITY_READY` with no external dataset open or provider
 request. Search `7e682b09...3986c` now freezes the sole canonical trial,
 rolling-origin account dates, complete implementation hashes, costs, and
 deterministic selection rule with outcomes still unopened. Commit and push it
-before any development price request graph is frozen.
+before any development price request graph is frozen. Development collection
+plan `82831678...298e4` now freezes the exact SCHB Yahoo symbol-range request,
+calendar hash, development/warmup dates, split-action request, zero retries,
+and zero substitutions. Commit and push it before independent plan
+reconstruction and provider access.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
