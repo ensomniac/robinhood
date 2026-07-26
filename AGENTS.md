@@ -154,6 +154,20 @@ Inspection `f6c2cade...951d9d` independently rebuilt the policy, both failure
 records, the checkpoint boundary, closed confirmation, zero-metric state, and
 every no-retry/no-substitution constraint. All ten checks pass. Commit and push
 the inspection before resuming the unchanged 2,589-request graph.
+That resume checkpointed 100 additional exact tasks before frozen request 539,
+`CLNS`, failed closed on the distinct parser exception `Yahoo identity,
+timezone, or quote arrays drifted`. No retry occurred. The new
+`insider_purchase_data_resume_schema.py` controller preserves the prior policy
+and defines an outcome-blind whole-symbol missing disposition only for five
+explicit unusable-response parser messages. Network, HTTP, JSON, storage, and
+all other errors still fail closed. Commit and test this controller before
+recording the CLNS failure and expanded partial exposure.
+The expanded outcome index also exposed two stale tests: dense readiness
+asserted obsolete exact reserve counts, and the S&P addition partition required
+45 untouched events even after new pair contamination. Readiness now enforces
+the frozen 35-session floor for every family, while S&P preserves its exact
+development inventory and requires at least the frozen 20 untouched confirmation
+signal dates. It never reclassifies an exposed pair as untouched.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed

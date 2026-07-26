@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 
 import dense_strategy_runtime as runtime
+import outcome_exposure
+import sp500_addition_capacity
 import sp500_addition_collection as collection
 import sp500_addition_collection_inspection as collection_inspection
 import sp500_addition_discovery as discovery
@@ -127,8 +129,18 @@ def test_outcome_blind_partition_uses_all_clean_post_2018_capacity() -> None:
     assert len(scope["development_signal_dates"]) == 100
     assert len(scope["causal_ineligible_events"]) == 5
     assert len(scope["embargo_dates"]) == 5
-    assert len(scope["confirmation_events"]) == 45
-    assert len(scope["confirmation_signal_dates"]) == 31
+    assert (
+        len(scope["confirmation_events"])
+        + len(scope["excluded_confirmation_events"])
+        == 120
+    )
+    assert (
+        len(scope["confirmation_signal_dates"])
+        >= sp500_addition_capacity.MINIMUM_CONFIRMATION_SIGNAL_DATES
+    )
+    outcome_exposure.assert_untouched(
+        scope["confirmation_scope"], outcome_exposure.read_index()
+    )
     assert scope["development_dates"][-1] == "2019-01-04"
     assert scope["embargo_dates"] == [
         "2019-01-07",

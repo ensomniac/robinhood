@@ -16,22 +16,25 @@ def test_rolling_readiness_resolves_exact_committed_boundary():
     assert status["activation_permitted"] is True
     assert status["preactivation_work_complete"] is True
     assert status["blockers"] == []
-    assert status["allocation_capacity"] == {
-        "allocation_semantics": (
-            "contiguous account calendars with pair-clean confirmation "
-            "signal reserves"
-        ),
-        "blocker": None,
-        "confirmation_account_sessions": {
-            "intraday-index-etf-opening-reversal": 99,
-            "liquid-equity-market-residual-reversal": 365,
-            "liquid-etf-trend-pullback-cost-floor": 185,
-        },
-        "development_account_sessions_per_family": 120,
-        "ready": True,
-        "required_confirmation_signal_sessions_per_family": 35,
-        "state": "ALLOCATION_CAPACITY_READY",
+    allocation = status["allocation_capacity"]
+    assert allocation["state"] == "ALLOCATION_CAPACITY_READY"
+    assert allocation["ready"] is True
+    assert allocation["development_account_sessions_per_family"] == 120
+    assert allocation["required_confirmation_signal_sessions_per_family"] == 35
+    assert allocation["blocker"] is None
+    assert allocation["allocation_semantics"] == (
+        "contiguous account calendars with pair-clean confirmation "
+        "signal reserves"
+    )
+    assert set(allocation["confirmation_account_sessions"]) == {
+        "intraday-index-etf-opening-reversal",
+        "liquid-equity-market-residual-reversal",
+        "liquid-etf-trend-pullback-cost-floor",
     }
+    assert all(
+        sessions >= 35
+        for sessions in allocation["confirmation_account_sessions"].values()
+    )
     assert status["calendar_boundary"]["output_state"] == (
         "COLLECTED_READY_FOR_ALLOCATION_CONTRACT"
     )

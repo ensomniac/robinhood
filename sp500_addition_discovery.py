@@ -18,6 +18,7 @@ from typing import Any
 import dense_strategy_runtime as runtime
 import outcome_exposure
 import portfolio_maturity
+import sp500_addition_capacity
 import strategy_discovery
 from historical_store import canonical_sha256, sha256_file
 from learning_data import freeze_dataset_contract
@@ -379,11 +380,16 @@ def _partition(
     if not (
         len(development) == 144
         and len({row["entry_date"] for row in development}) == 100
-        and len(confirmation) == 45
-        and len({row["entry_date"] for row in confirmation}) == 31
     ):
         raise Sp500AdditionDiscoveryError(
-            "outcome-blind S&P event capacity drifted"
+            "outcome-blind S&P development capacity drifted"
+        )
+    if (
+        len({row["entry_date"] for row in confirmation})
+        < sp500_addition_capacity.MINIMUM_CONFIRMATION_SIGNAL_DATES
+    ):
+        raise Sp500AdditionDiscoveryError(
+            "S&P untouched confirmation capacity is below the frozen floor"
         )
     positions = {day: index for index, day in enumerate(calendar)}
     development_start = min(
