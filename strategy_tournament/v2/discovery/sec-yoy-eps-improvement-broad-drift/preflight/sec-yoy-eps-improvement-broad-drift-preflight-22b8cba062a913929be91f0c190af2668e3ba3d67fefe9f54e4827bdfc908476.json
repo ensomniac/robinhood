@@ -1,0 +1,54 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "22b8cba062a913929be91f0c190af2668e3ba3d67fefe9f54e4827bdfc908476",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.03300637495703995,
+  "family_contract_path": "strategy_tournament/v2/continuous/sec-yoy-eps-improvement-broad-drift-v1/family-contract/contract-b590af4400bf1fbafb325c344fadd34a5a76aa71521e16df3976ab06fac1424d.json",
+  "family_contract_sha256": "93e2a452b95111689a4001c060f0c3a6f820f7c65c87f19dc45f54f5e93bb6e7",
+  "family_id": "sec-yoy-eps-improvement-broad-drift",
+  "implementation_sha256": "c380a397f5a3e541a33a0a967b8861034d87af62ef2d7ff46e9c4b9664183b40",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "dates_bound": true,
+      "development_lane": true,
+      "family_bound": true,
+      "point_in_time": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 1019
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "b590af4400bf1fbafb325c344fadd34a5a76aa71521e16df3976ab06fac1424d",
+  "verified_capacity": 1019
+}
