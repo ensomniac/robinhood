@@ -334,6 +334,12 @@ stressed profit factor, fold stability, DSR, Holm, neighbor stability, or the
 complete selection-aware gate set; the highest lower bootstrap bound is
 negative and rebuilt family PBO is 0.5714. Confirmation remains untouched. This
 exact family may not be repaired on its evaluated corpus.
+The next three historical families no longer have a calendar blocker.
+Allocation contract `9539adb2...913b95` now freezes three mutually disjoint,
+forward-chronological 120-session development account calendars, five-session
+embargoes, and 35 pair-clean confirmation signal sessions per family against
+the current global exposure index. It accessed zero market prices or target
+outcomes. Commit and push it before independent allocation reconstruction.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
