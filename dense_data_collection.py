@@ -168,8 +168,12 @@ def _write_external(path: Path, value: Any, config: HistoricalStoreConfig) -> No
         temporary.unlink(missing_ok=True)
 
 
-def _calendar(path: Path) -> list[str]:
-    return dense_capacity_inventory._calendar(path)
+def _calendar(
+    path: Path, *, include_early_closes: bool = False
+) -> list[str]:
+    return dense_capacity_inventory._calendar(
+        path, include_early_closes=include_early_closes
+    )
 
 
 def _authority(
@@ -398,7 +402,16 @@ def freeze_plan(
     warmup_dates = list(contract[f"{lane}_warmup_dates"])
     if len(warmup_dates) != warmup:
         raise DenseDataCollectionError("frozen family warmup count drifted")
-    required_dates = _required_dates(evaluation_dates, _calendar(calendar_path), warmup)
+    required_dates = _required_dates(
+        evaluation_dates,
+        _calendar(
+            calendar_path,
+            include_early_closes=(
+                family_id == runtime.PREHOLIDAY_EQUITY_DRIFT_FAMILY
+            ),
+        ),
+        warmup,
+    )
     if required_dates != [*warmup_dates, *evaluation_dates]:
         raise DenseDataCollectionError("frozen family warmup dates drifted")
     if intraday:

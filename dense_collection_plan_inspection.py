@@ -310,7 +310,13 @@ def inspect_plan(
     calendar_path = PROJECT_ROOT / str(plan["calendar_path"])
     if enforce_commit:
         strategy_discovery.require_committed(calendar_path)
-    calendar = dense_data_collection._calendar(calendar_path)
+    calendar = dense_data_collection._calendar(
+        calendar_path,
+        include_early_closes=(
+            plan["family_id"]
+            == runtime.PREHOLIDAY_EQUITY_DRIFT_FAMILY
+        ),
+    )
     lane = str(plan["lane"])
     evaluation_dates = list(contract[f"{lane}_dates"])
     warmup_dates = list(contract[f"{lane}_warmup_dates"])

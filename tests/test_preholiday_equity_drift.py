@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -82,6 +83,45 @@ def test_preholiday_inventory_is_dense_scheduled_and_outcome_clean():
         "2025-01-08",
     }.isdisjoint(item["signal_date"] for item in events)
     assert family.SYMBOLS == ["IWV"]
+
+
+def test_preholiday_collection_calendar_retains_early_closes(tmp_path):
+    calendar_path = tmp_path / "calendar.json"
+    calendar_path.write_text(
+        json.dumps(
+            [
+                {
+                    "date": "2024-07-02",
+                    "open_et": "09:30",
+                    "close_et": "16:00",
+                },
+                {
+                    "date": "2024-07-03",
+                    "open_et": "09:30",
+                    "close_et": "13:00",
+                },
+                {
+                    "date": "2024-07-05",
+                    "open_et": "09:30",
+                    "close_et": "16:00",
+                },
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    assert collection._calendar(calendar_path) == [
+        "2024-07-02",
+        "2024-07-05",
+    ]
+    assert collection._calendar(
+        calendar_path, include_early_closes=True
+    ) == [
+        "2024-07-02",
+        "2024-07-03",
+        "2024-07-05",
+    ]
 
 
 def test_preholiday_runtime_enters_open_and_exits_same_session_close():

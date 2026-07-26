@@ -66,7 +66,9 @@ def _repo_path(path: Path) -> str:
         return str(path.resolve())
 
 
-def _calendar(path: Path) -> list[str]:
+def _calendar(
+    path: Path, *, include_early_closes: bool = False
+) -> list[str]:
     raw = _read(path)
     if not isinstance(raw, list) or not raw:
         raise DenseCapacityInventoryError("calendar must be a non-empty array")
@@ -81,7 +83,15 @@ def _calendar(path: Path) -> list[str]:
             date.fromisoformat(day)
         except ValueError as exc:
             raise DenseCapacityInventoryError("calendar date is invalid") from exc
-        if row.get("open_et") != "09:30" or row.get("close_et") != "16:00":
+        valid_closes = (
+            {"13:00", "16:00"}
+            if include_early_closes
+            else {"16:00"}
+        )
+        if (
+            row.get("open_et") != "09:30"
+            or row.get("close_et") not in valid_closes
+        ):
             continue
         dates.append(day)
     if dates != sorted(dates) or len(dates) != len(set(dates)):
