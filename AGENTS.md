@@ -371,7 +371,11 @@ Both were created with zero price, outcome, confirmation, or broker access.
 Generic preflight `eb22f294...865edf` independently verifies all 633 frozen
 events, exact family/experiment/date bindings, point-in-time evidence, and the
 zero-provider/locked-confirmation boundary. It assigns `CAPACITY_READY`. Commit
-and push it before freezing the complete development search.
+and push it before freezing the complete development search. Search
+`bce9dbf6...ca1f95` now freezes all 32 exact trials, matching prior paths,
+implementation hashes, partitions, costs, and deterministic selection rule in
+state `SEARCH_FROZEN`. Commit and push it before any development source contract
+is created.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
