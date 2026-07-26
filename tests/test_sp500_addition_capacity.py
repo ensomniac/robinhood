@@ -30,6 +30,34 @@ RELEASE = b"""
 </body></html>
 """
 
+RELEASE_WITH_INHERITED_DATE = b"""
+<html><body>
+<table>
+<tr><th>Effective Date</th><th>Index Name</th><th>Action</th><th>Company Name</th><th>Ticker</th><th>GICS Sector</th></tr>
+<tr><td>Mar 22, 2021</td><td>S&amp;P 500</td><td>Addition</td><td>NXP Semiconductors</td><td>NXPI</td><td>Information Technology</td></tr>
+<tr><td></td><td>S&amp;P 500</td><td>Addition</td><td>Penn National Gaming</td><td>PENN</td><td>Consumer Discretionary</td></tr>
+</table>
+<!-- ITEMDATE: 2021-03-12 19:10:00 EST -->
+</body></html>
+"""
+
+LEGACY_RELEASE = b"""
+<html><body>
+<p>Hilton Worldwide Holdings Inc. (NYSE: HLT) will replace Yahoo.</p>
+<p>Align Technology Inc. (NASD: ALGN) and ANSYS Inc. (NASD: ANSS)
+will replace other constituents.</p>
+<table>
+<tr><th>S&amp;P 500 INDEX - June 19, 2017</th></tr>
+<tr><th></th><th>COMPANY</th><th>GICS ECONOMIC SECTOR</th></tr>
+<tr><td>ADDED</td><td>Hilton Worldwide</td><td>Consumer Discretionary</td></tr>
+<tr><td></td><td>Align Technology</td><td>Health Care</td></tr>
+<tr><td></td><td>ANSYS</td><td>Information Technology</td></tr>
+<tr><td>DELETED</td><td>Yahoo!</td><td>Information Technology</td></tr>
+</table>
+<!-- ITEMDATE: 2017-06-09 18:16:00 EDT -->
+</body></html>
+"""
+
 
 def _write_artifact(path: Path, value: dict) -> Path:
     value["artifact_sha256"] = capacity._self_hash(value)
@@ -102,6 +130,94 @@ def test_release_parser_extracts_only_structured_sp500_additions() -> None:
             "source_url": "https://press.spglobal.com/2020-10-01-example",
         }
     ]
+
+
+def test_release_parser_inherits_blank_effective_date_within_table() -> None:
+    parsed = capacity.parse_release(
+        RELEASE_WITH_INHERITED_DATE,
+        source_url="https://press.spglobal.com/2021-03-12-example",
+        listed_date="2021-03-12",
+    )
+    assert [
+        (row["ticker"], row["effective_date"])
+        for row in parsed["eligible_events"]
+    ] == [("NXPI", "2021-03-22"), ("PENN", "2021-03-22")]
+
+
+def test_release_parser_links_legacy_summary_rows_to_inline_tickers() -> None:
+    parsed = capacity.parse_release(
+        LEGACY_RELEASE,
+        source_url="https://press.spglobal.com/2017-06-09-example",
+        listed_date="2017-06-09",
+    )
+    assert [
+        (row["company_name"], row["ticker"], row["effective_date"])
+        for row in parsed["eligible_events"]
+    ] == [
+        ("Align Technology", "ALGN", "2017-06-19"),
+        ("ANSYS", "ANSS", "2017-06-19"),
+        ("Hilton Worldwide", "HLT", "2017-06-19"),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("raw_date", "expected"),
+    [
+        ("23-Sep-24", "2024-09-23"),
+        ("Sept 30, 2024", "2024-09-30"),
+        ("Sept. 22, 2025", "2025-09-22"),
+        ("Friday, November 1, 2024", "2024-11-01"),
+    ],
+)
+def test_release_parser_normalizes_official_date_spellings(
+    raw_date: str, expected: str
+) -> None:
+    raw = RELEASE.replace(
+        b"October 7, 2020", raw_date.encode()
+    ).replace(
+        b"2020-10-01 19:06:00 EDT",
+        b"2020-01-01 19:06:00 EST",
+    )
+    parsed = capacity.parse_release(
+        raw,
+        source_url="https://press.spglobal.com/2020-01-01-example",
+        listed_date="2020-01-01",
+    )
+    assert parsed["eligible_events"][0]["effective_date"] == expected
+
+
+def test_release_parser_retains_tba_effective_date_as_ineligible() -> None:
+    raw = RELEASE.replace(b"October 7, 2020", b"TBA")
+    parsed = capacity.parse_release(
+        raw,
+        source_url="https://press.spglobal.com/2020-10-01-example",
+        listed_date="2020-10-01",
+    )
+    assert parsed["eligible_events"] == []
+    assert parsed["terminal_reason"] == "MISSING_EFFECTIVE_DATE"
+    assert parsed["ineligible_structured_rows"] == [
+        {
+            "ticker": "POOL",
+            "raw_effective_date": "TBA",
+            "terminal_reason": "MISSING_EFFECTIVE_DATE",
+        }
+    ]
+
+
+def test_release_parser_retains_unlinked_legacy_company_as_ineligible() -> None:
+    raw = LEGACY_RELEASE.replace(
+        b"<td>Hilton Worldwide</td>", b"<td>Renamed Company</td>"
+    )
+    parsed = capacity.parse_release(
+        raw,
+        source_url="https://press.spglobal.com/2017-06-09-example",
+        listed_date="2017-06-09",
+    )
+    assert any(
+        row["company_name"] == "Renamed Company"
+        and row["terminal_reason"] == "UNRESOLVED_TICKER_IDENTITY"
+        for row in parsed["ineligible_structured_rows"]
+    )
 
 
 def test_release_parser_preserves_irrelevant_page() -> None:

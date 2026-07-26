@@ -652,8 +652,30 @@ def freeze_page_contract(
             "eligible_index": "S&P 500",
             "eligible_action": "Addition",
             "publication_timestamp_source": "HTML ITEMDATE comment",
-            "effective_date_source": "structured release summary table",
-            "ticker_source": "structured release summary table",
+            "source_schema_variants": [
+                {
+                    "schema": "modern_structured_row",
+                    "effective_date_source": (
+                        "structured Effective Date cell with same-table "
+                        "rowspan inheritance"
+                    ),
+                    "ticker_source": "structured Ticker cell",
+                },
+                {
+                    "schema": "legacy_summary_and_inline_identity",
+                    "effective_date_source": (
+                        "S&P 500 summary-table heading"
+                    ),
+                    "company_source": (
+                        "ADDED rows in the same S&P 500 summary table"
+                    ),
+                    "ticker_source": (
+                        "nearest official inline exchange-ticker identity "
+                        "for the exact summary-table company"
+                    ),
+                },
+            ],
+            "unknown_effective_date": "ineligible_preserve_denominator",
             "same_day_entry_permitted": False,
             "candidate_entry": (
                 "first complete regular session after the publication date"
@@ -816,6 +838,8 @@ class _ReleaseParser(HTMLParser):
         self._current_table: list[list[str]] | None = None
         self._current_row: list[str] | None = None
         self._current_cell: list[str] | None = None
+        self._ignored_depth = 0
+        self.visible_chunks: list[str] = []
 
     def handle_comment(self, data: str) -> None:
         match = re.search(r"ITEMDATE:\s*(.*?)\s*$", data)
@@ -830,6 +854,11 @@ class _ReleaseParser(HTMLParser):
         self, tag: str, attrs: list[tuple[str, str | None]]
     ) -> None:
         del attrs
+        if tag in {"script", "style"}:
+            self._ignored_depth += 1
+            return
+        if self._ignored_depth:
+            return
         if tag == "table":
             if self._table_depth == 0:
                 self._current_table = []
@@ -840,10 +869,17 @@ class _ReleaseParser(HTMLParser):
             self._current_cell = []
 
     def handle_data(self, data: str) -> None:
+        if not self._ignored_depth:
+            self.visible_chunks.append(data)
         if self._current_cell is not None:
             self._current_cell.append(data)
 
     def handle_endtag(self, tag: str) -> None:
+        if tag in {"script", "style"} and self._ignored_depth:
+            self._ignored_depth -= 1
+            return
+        if self._ignored_depth:
+            return
         if tag in {"td", "th"} and self._current_cell is not None:
             assert self._current_row is not None
             value = re.sub(r"\s+", " ", "".join(self._current_cell)).strip()
@@ -874,15 +910,25 @@ def _parse_itemdate(raw: str) -> datetime:
 
 
 def _parse_effective_date(raw: str, *, announcement: date) -> date:
-    cleaned = re.sub(r"\s+", " ", raw).strip().replace("Sept.", "Sep")
+    cleaned = re.sub(r"\s+", " ", raw).strip()
+    cleaned = re.sub(r"\bSept(?=[ .])", "Sep", cleaned)
     cleaned = re.sub(r"\b([A-Z][a-z]{2})\.", r"\1", cleaned)
-    formats = ("%B %d, %Y", "%b %d, %Y", "%B %d", "%b %d")
+    formats = (
+        "%A, %B %d, %Y",
+        "%A, %b %d, %Y",
+        "%B %d, %Y",
+        "%b %d, %Y",
+        "%d-%b-%y",
+        "%d-%b-%Y",
+        "%B %d",
+        "%b %d",
+    )
     for fmt in formats:
         try:
             parsed = datetime.strptime(cleaned, fmt).date()
         except ValueError:
             continue
-        if "%Y" not in fmt:
+        if "%Y" not in fmt and "%y" not in fmt:
             year = announcement.year
             if parsed.month < announcement.month - 6:
                 year += 1
@@ -891,6 +937,45 @@ def _parse_effective_date(raw: str, *, announcement: date) -> date:
     raise Sp500AdditionCapacityError(
         f"effective date is unparseable: {raw}"
     )
+
+
+_EXCHANGE_TICKER_RE = re.compile(
+    r"\((?:NYSE|NASDAQ|NASD|AMEX|BATS|OTC(?:QX|QB)?)\s*:\s*"
+    r"([A-Z][A-Z0-9.-]{0,11})\)"
+)
+
+
+def _legacy_company_ticker(
+    company: str, visible_text: str
+) -> str | None:
+    tokens = re.findall(r"[A-Za-z0-9]+", company)
+    if len(tokens) >= 2 and tokens[-2].casefold() == "class":
+        tokens = tokens[:-2]
+    elif tokens and re.fullmatch(r"[ABC]", tokens[-1], re.IGNORECASE):
+        tokens = tokens[:-1]
+    if not tokens:
+        return None
+    company_pattern = re.compile(
+        r"\b" + r"\W+".join(map(re.escape, tokens)) + r"\b",
+        re.IGNORECASE,
+    )
+    candidates: list[tuple[int, str]] = []
+    for company_match in company_pattern.finditer(visible_text):
+        tail = visible_text[company_match.end() : company_match.end() + 120]
+        ticker_match = _EXCHANGE_TICKER_RE.search(tail)
+        if ticker_match is not None:
+            candidates.append((ticker_match.start(), ticker_match.group(1)))
+    if not candidates:
+        return None
+    minimum_distance = min(distance for distance, _ticker in candidates)
+    nearest = {
+        ticker
+        for distance, ticker in candidates
+        if distance == minimum_distance
+    }
+    if len(nearest) != 1:
+        return None
+    return next(iter(nearest))
 
 
 def parse_release(
@@ -909,6 +994,7 @@ def parse_release(
             "source_url": source_url,
             "listed_date": listed_date,
             "eligible_events": [],
+            "ineligible_structured_rows": [],
             "terminal_reason": "MISSING_PUBLICATION_TIMESTAMP",
         }
     published = _parse_itemdate(parser.itemdate)
@@ -917,7 +1003,12 @@ def parse_release(
             f"{source_url}: listing date and ITEMDATE differ"
         )
     events: list[dict[str, Any]] = []
+    ineligible_rows: list[dict[str, str]] = []
+    visible_text = re.sub(
+        r"\s+", " ", " ".join(parser.visible_chunks)
+    ).strip()
     for table in parser.tables:
+        inherited_effective_date: str | None = None
         for row in table:
             normalized = [
                 value.replace("®", "").replace("\xa0", " ").strip()
@@ -925,6 +1016,8 @@ def parse_release(
             ]
             if len(normalized) < 5:
                 continue
+            if normalized[0]:
+                inherited_effective_date = normalized[0]
             for offset in range(0, len(normalized) - 4):
                 segment = normalized[offset : offset + 6]
                 if (
@@ -932,14 +1025,32 @@ def parse_release(
                     and segment[1] == "S&P 500"
                     and segment[2].casefold() == "addition"
                 ):
-                    effective = _parse_effective_date(
-                        segment[0], announcement=published.date()
+                    effective_cell = (
+                        segment[0] or inherited_effective_date or ""
                     )
                     ticker = segment[4].upper().replace(" ", "")
                     if not re.fullmatch(r"[A-Z][A-Z0-9.-]{0,11}", ticker):
                         raise Sp500AdditionCapacityError(
                             f"{source_url}: invalid structured ticker {ticker}"
                         )
+                    if effective_cell.casefold() in {
+                        "",
+                        "tba",
+                        "to be announced",
+                    }:
+                        ineligible_rows.append(
+                            {
+                                "ticker": ticker,
+                                "raw_effective_date": effective_cell,
+                                "terminal_reason": (
+                                    "MISSING_EFFECTIVE_DATE"
+                                ),
+                            }
+                        )
+                        continue
+                    effective = _parse_effective_date(
+                        effective_cell, announcement=published.date()
+                    )
                     if effective <= published.date():
                         raise Sp500AdditionCapacityError(
                             f"{source_url}: effective date is not later"
@@ -956,6 +1067,75 @@ def parse_release(
                             "source_url": source_url,
                         }
                     )
+        if not table or not table[0]:
+            continue
+        legacy_heading = re.fullmatch(
+            r"S&P 500(?: INDEX)?\s*[\-\u2013]\s*(.+)",
+            re.sub(r"\s+", " ", table[0][0]).strip(),
+            re.IGNORECASE,
+        )
+        if legacy_heading is None:
+            continue
+        raw_effective = legacy_heading.group(1).strip()
+        effective: date | None
+        if raw_effective.casefold() in {"tba", "to be announced"}:
+            effective = None
+        else:
+            effective = _parse_effective_date(
+                raw_effective, announcement=published.date()
+            )
+            if effective <= published.date():
+                raise Sp500AdditionCapacityError(
+                    f"{source_url}: effective date is not later"
+                )
+        action: str | None = None
+        for row in table[1:]:
+            if len(row) < 2:
+                continue
+            row_action = row[0].strip().upper()
+            if row_action in {"ADDED", "DELETED"}:
+                action = row_action
+            company = row[1].strip()
+            if (
+                action != "ADDED"
+                or not company
+                or company.casefold() == "company"
+            ):
+                continue
+            ticker = _legacy_company_ticker(company, visible_text)
+            if ticker is None:
+                ineligible_rows.append(
+                    {
+                        "company_name": company,
+                        "ticker": "",
+                        "raw_effective_date": raw_effective,
+                        "terminal_reason": (
+                            "UNRESOLVED_TICKER_IDENTITY"
+                        ),
+                    }
+                )
+                continue
+            if effective is None:
+                ineligible_rows.append(
+                    {
+                        "ticker": ticker,
+                        "raw_effective_date": raw_effective,
+                        "terminal_reason": "MISSING_EFFECTIVE_DATE",
+                    }
+                )
+                continue
+            events.append(
+                {
+                    "announcement_at": published.isoformat(),
+                    "announcement_date": published.date().isoformat(),
+                    "effective_date": effective.isoformat(),
+                    "index_name": "S&P 500",
+                    "action": "Addition",
+                    "company_name": company,
+                    "ticker": ticker,
+                    "source_url": source_url,
+                }
+            )
     unique = {
         (event["ticker"], event["effective_date"]): event for event in events
     }
@@ -965,10 +1145,25 @@ def parse_release(
         "listed_date": listed_date,
         "publication_timestamp": published.isoformat(),
         "eligible_events": retained,
+        "ineligible_structured_rows": ineligible_rows,
         "terminal_reason": (
             "ELIGIBLE_SP500_ADDITION"
             if retained
-            else "NO_STRUCTURED_SP500_ADDITION"
+            else (
+                (
+                    ineligible_rows[0]["terminal_reason"]
+                    if len(
+                        {
+                            row["terminal_reason"]
+                            for row in ineligible_rows
+                        }
+                    )
+                    == 1
+                    else "INELIGIBLE_STRUCTURED_ROWS"
+                )
+                if ineligible_rows
+                else "NO_STRUCTURED_SP500_ADDITION"
+            )
         ),
     }
 

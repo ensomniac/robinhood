@@ -409,6 +409,9 @@ def inspect_page_collection(
                 "title": task["title"],
                 "terminal_reason": parsed["terminal_reason"],
                 "eligible_event_count": len(parsed["eligible_events"]),
+                "ineligible_structured_row_count": len(
+                    parsed["ineligible_structured_rows"]
+                ),
             }
         )
         total_bytes += len(raw)
