@@ -298,6 +298,14 @@ Plan inspection `b0fdebea...b17635e` independently rebuilt all 146 task hashes,
 controller bindings, and the zero-outcome boundary. All nine checks pass with
 zero provider requests. Commit and push it before executing the frozen
 development collection.
+Development collection `1589f2a5...114118` completed all 146 logical tasks:
+147 underlying provider requests, 41.38 seconds of pacing, 7.24 seconds of
+request time, zero cache hits, and 94 unavailable legacy-symbol windows retained
+as whole-event missed trades. There were zero substitutions, zero confirmation
+accesses, and zero broker actions. All 1,300 symbol-date observation pairs are
+now appended to the global development exposure index. The dataset is
+`COLLECTED_UNINSPECTED`; commit and push the status and exposure record before
+independent dataset reconstruction.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
