@@ -119,6 +119,10 @@ metric, winner selection, confirmation access, or broker action occurred.
 `insider_purchase_data_recovery.py` records the exact partial exposure,
 independently inspects that boundary, and may register only that failed request
 as permanent missing before same-contract resume.
+Failure artifact `baeed6b9...e2da07` now binds request 145, 144
+checkpointed tasks, 98,304 retained daily rows, and the complete 1,296-date by
+144-symbol partial exposure; the global outcome index contains that exact
+development scope. Commit and push both before independent failure inspection.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
