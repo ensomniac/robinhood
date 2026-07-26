@@ -1,0 +1,54 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "eecd2c46ac7e685ee2e492b4f48513ddd2f35f3252e2aaedc4a81002dfb19467",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.03600212500896305,
+  "family_contract_path": "strategy_tournament/v2/continuous/fomc-preannouncement-equity-drift-v1/family-contract/contract-4366bcee19743434cbd3809099f216a1e433e1621884de8b1d13646405ed1e00.json",
+  "family_contract_sha256": "7a4c5fb1ed5c5d938dc298ed211ff9c1ffdc4374d9eb693c88781c9050ff7a6c",
+  "family_id": "fomc-preannouncement-equity-drift",
+  "implementation_sha256": "8ad008067415e630fa582d43f689d81f003e81076bfeac3960441b682a2c7e1a",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "dates_bound": true,
+      "development_lane": true,
+      "family_bound": true,
+      "point_in_time": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 119
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "4366bcee19743434cbd3809099f216a1e433e1621884de8b1d13646405ed1e00",
+  "verified_capacity": 119
+}

@@ -80,7 +80,11 @@ push it before the family freeze. Exact one-trial family contract
 119-event inventory, 64 development entries, 35 untouched confirmation
 entries, all account-calendar zero days, costs, falsifiers, and production
 implementation hashes with zero provider or outcome access. Commit and push
-both before generic preflight.
+both before generic preflight. Generic preflight `eecd2c46...19467`
+independently rebuilds 119 verified observations, the fast-lane threshold,
+point-in-time inputs, current implementation hashes, and the zero-outcome
+boundary. It earns `CAPACITY_READY` with no external dataset open or provider
+request. Commit and push it before freezing the exact development search.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
