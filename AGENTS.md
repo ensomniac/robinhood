@@ -66,6 +66,10 @@ Inspection `886230a1...cb7948` rebuilt the contract, controller hash, complete
 28-request graph, empty private namespace, and closed outcome boundary. All
 checks pass, so only the exact SEC bulk archives are authorized after this
 inspection is committed and pushed.
+Collection `435dacbe...7b2e4` then completed all 28 exact requests from pushed
+commit `ebe946e0`, retaining 299,705,786 bytes outside Git with zero failures,
+retries, substitutions, price access, returns, confirmation, or broker actions.
+Commit the compact telemetry before independently reconstructing event capacity.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
