@@ -452,6 +452,9 @@ private binding, and zero-access boundary. Commit and push it before inspection.
 Inspection `e02c4ed1...62254b` independently rebuilds both rebound artifacts and
 all eleven checks pass with zero private-row access. Commit and push it before
 running the dataset-bound contract through preflight and final search freeze.
+Dataset-bound preflight `5e34336b...5abfa7` revalidates all 633 frozen events,
+current implementation hashes, and exact manifest binding as `CAPACITY_READY`
+without opening outcomes. Commit and push it before final search freeze.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
