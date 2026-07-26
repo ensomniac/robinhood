@@ -186,6 +186,15 @@ Inspection `2687d6b9...18cacd` independently rebuilt the response-schema
 policy, failure evidence, checkpoint boundary, controller hashes, five-message
 allowlist, and every closed-state constraint. All eleven checks pass. Commit
 and push the inspection before resuming the unchanged request graph.
+The response-schema resume completed all 2,589 frozen tasks with 2,050 new
+first-attempt requests, 538 cache hits, no retries, no failures, 55 provider
+permanent-missing responses, and 18 exact-policy structural misses. Collection
+`ccafaaf1...d02dfe` retains 1,929,930 daily rows for 1,668 complete symbols;
+921 symbols are whole-symbol permanent missing and contribute no trade. Resume
+record `5e2e679b...09951` binds lifetime request telemetry and the exact policy.
+The full source graph is indexed as contaminated development, while confirmation
+prices, strategy metrics, winner selection, and broker actions remain zero.
+Commit and push the collection boundary before independent dataset inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

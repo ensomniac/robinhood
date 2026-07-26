@@ -1,0 +1,60 @@
+{
+  "artifact_kind": "form4-purchase-development-schema-resume",
+  "artifact_sha256": "5e2e679b34893736530ccb559a512c4936a047648813fa08f6161a02bfe09951",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "collected_at": "2026-07-26T06:10:29Z",
+  "collection_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation/development-collection/development-collection-ccafaaf11f55ba9693b72b88268f30d3a1aef24456a64ea0ff6cbe5b46d02dfe.json",
+  "collection_sha256": "ccafaaf11f55ba9693b72b88268f30d3a1aef24456a64ea0ff6cbe5b46d02dfe",
+  "confirmation_prices_accessed": false,
+  "family_id": "clustered-form4-open-market-purchase-continuation",
+  "inspection_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation/development-resume-schema-policy-inspection/resume-schema-policy-inspection-2687d6b950c72235b652a8f4a26e943e691560b30bd58e5f18d136809118cacd.json",
+  "inspection_sha256": "2687d6b950c72235b652a8f4a26e943e691560b30bd58e5f18d136809118cacd",
+  "policy_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation/development-resume-schema-policy/resume-schema-policy-35cf2a20e7d69c4cea443d9091efb78ee6f4d0b720acab9e19daeb7dc101c913.json",
+  "policy_sha256": "35cf2a20e7d69c4cea443d9091efb78ee6f4d0b720acab9e19daeb7dc101c913",
+  "provider_telemetry": {
+    "bootstrap_permanent_missing": [
+      "CLNS"
+    ],
+    "cache_hits": 538,
+    "failures": 0,
+    "pacing_wait_seconds": 409.7999999999853,
+    "permanent_missing_responses": 55,
+    "prior_provider_requests": 539,
+    "provider_requests_lifetime": 2589,
+    "request_seconds": 106.93198653380387,
+    "requests": 2050,
+    "structural_permanent_missing": {
+      "Yahoo OHLCV arrays are incomplete": [],
+      "Yahoo dates are not unique and chronological": [],
+      "Yahoo identity, timezone, or quote arrays drifted": [
+        "CUBA",
+        "FSIC",
+        "HCN",
+        "LANC",
+        "LGF.B",
+        "NYSE",
+        "OAKS",
+        "PAH",
+        "PQE",
+        "RSO",
+        "TCMI",
+        "TPIC",
+        "VRX"
+      ],
+      "Yahoo returned ambiguous chart results": [],
+      "Yahoo returned invalid OHLCV": [
+        "HUBB",
+        "LGIQ",
+        "MPO",
+        "SITC",
+        "XDSL"
+      ]
+    }
+  },
+  "published_commit": "8fae2a7274feb47be7465e13ffec880614d4748a",
+  "schema_version": 1,
+  "state": "SCHEMA_RESUME_COMPLETED",
+  "strategy_metrics_computed": 0,
+  "total_tasks": 2589
+}

@@ -1,0 +1,42 @@
+{
+  "artifact_kind": "form4-purchase-development-collection",
+  "artifact_sha256": "ccafaaf11f55ba9693b72b88268f30d3a1aef24456a64ea0ff6cbe5b46d02dfe",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "collected_at": "2026-07-26T06:10:29Z",
+  "confirmation_prices_accessed": false,
+  "contract_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation/development-source-contract/source-contract-45eaeda6f8304e8c523d61c676f976417741d59babe7172c6df77703d395187b.json",
+  "contract_sha256": "45eaeda6f8304e8c523d61c676f976417741d59babe7172c6df77703d395187b",
+  "event_count": 7049,
+  "family_id": "clustered-form4-open-market-purchase-continuation",
+  "inspection_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation/development-source-contract-inspection/source-inspection-9635cff681ff95316b1d20290249c484f757a417f63fc8e8104a5e975fa6f1ce.json",
+  "inspection_sha256": "9635cff681ff95316b1d20290249c484f757a417f63fc8e8104a5e975fa6f1ce",
+  "private_dataset": {
+    "compression": "gzip",
+    "content_sha256": "c2d259984d9a57dac4bdd6dce093fd7f2dffc7f5e00364ddc92492b6846110fe",
+    "file_sha256": "c337ec204830bdfb1d5273e22082af1fb173e2a20201b49bde67c9f9007dd2e0",
+    "format": "canonical-json",
+    "relative_path": "_derived/form4_insider_purchase_data/45eaeda6f8304e8c523d61c676f976417741d59babe7172c6df77703d395187b/c2d259984d9a57dac4bdd6dce093fd7f2dffc7f5e00364ddc92492b6846110fe/development.json.gz",
+    "storage": "LOCAL_HISTORICAL_DATA_ROOT"
+  },
+  "provider_telemetry": {
+    "cache_hits": 2589,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "permanent_missing_responses": 0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "published_commit": "8fae2a7274feb47be7465e13ffec880614d4748a",
+  "retries": 0,
+  "row_count": 1929930,
+  "schema_version": 1,
+  "search_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation/search/clustered-form4-open-market-purchase-continuation-search-cee07890c907bb09f2c7f78a0707adfccd48bc433e1f048fc532fa1e0d6f9761.json",
+  "search_sha256": "cee07890c907bb09f2c7f78a0707adfccd48bc433e1f048fc532fa1e0d6f9761",
+  "state": "DEVELOPMENT_COLLECTED_UNINSPECTED",
+  "strategy_metrics_computed": 0,
+  "substitutions": 0,
+  "symbols_complete": 1668,
+  "symbols_permanently_missing": 921,
+  "symbols_requested": 2589
+}
