@@ -175,6 +175,13 @@ scope in the global exposure index. The recorded exception is exactly `Yahoo
 identity, timezone, or quote arrays drifted`; retry, registration, substitution,
 metrics, confirmation access, and broker actions remain closed until independent
 failure inspection.
+Response-schema policy `35cf2a20...01c913` freezes the inspected CLNS
+boundary and exactly five parser messages representing ambiguous identity,
+timezone, quote-array, OHLCV, or chronology payloads. Only those exact
+`ActivistEarningsDataError` responses become whole-symbol permanent missing
+after the first response. CLNS receives no retry; all other errors fail closed,
+and substitutions and confirmation access remain forbidden. Commit and push
+the policy before independent inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
