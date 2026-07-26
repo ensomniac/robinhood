@@ -127,6 +127,9 @@ Failure inspection `0bfe05c9...a7e0ee` exactly rebuilt the checkpoint boundary,
 partial exposure, zero-metric state, closed confirmation, and no-retry rule.
 All checks pass, authorizing only a zero-request permanent-missing checkpoint
 for ANDV before same-contract resume.
+Registration `e01bce1f...595ffd` now checkpoints ANDV as permanent missing with
+zero provider requests, retries, substitutions, confirmation access, or broker
+actions. Commit and push it before resuming the original 2,589-request graph.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
