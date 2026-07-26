@@ -119,10 +119,10 @@ def test_partition_uses_complete_observation_scope_and_clean_reserve():
     scope, capacity = discovery._partition(enforce_commit=False)
 
     assert capacity["state"] == "CAPACITY_READY_FAST_LANE"
-    assert len(scope["development_events"]) == 114
-    assert len(scope["development_signal_dates"]) == 85
-    assert len(scope["confirmation_events"]) == 44
-    assert len(scope["confirmation_signal_dates"]) == 34
+    assert len(scope["development_events"]) == 145
+    assert len(scope["development_signal_dates"]) == 102
+    assert len(scope["confirmation_events"]) == 26
+    assert len(scope["confirmation_signal_dates"]) == 20
     assert len(scope["causal_ineligible_events"]) == 5
     assert len(scope["embargo_dates"]) == 5
     assert all(
@@ -162,7 +162,7 @@ def test_family_freezes_exact_32_trial_search_without_outcomes(
     assert scope.exists()
     assert len(contract["trial_family"]) == 32
     assert contract["selection_mode"] == "development_search"
-    assert contract["confirmation_signal_capacity"] == 34
+    assert contract["confirmation_signal_capacity"] == 20
     assert contract["historical_data_contract"][
         "market_price_access_before_search_freeze"
     ] is False

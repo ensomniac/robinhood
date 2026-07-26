@@ -262,6 +262,14 @@ outcome-blind successor may move the development cutoff through 2018, which the
 already-inspected metadata shows has 102 development signal dates while
 preserving the required 20 globally untouched confirmation dates. No strategy
 rule, price outcome, capacity threshold, or confirmation minimum may change.
+Successor implementation
+`sp500-deletion-forced-selling-rebound-v2-fast-lane` now makes only that
+outcome-blind partition change: 145 development events on 102 signal dates,
+five embargo sessions, and 26 untouched confirmation events on exactly 20
+signal dates. All 32 strategy trials, causal rules, execution assumptions,
+costs, selection gates, and production semantics are unchanged. Focused tests
+rebuild the complete observation scopes and pass. Run the full repository gate,
+commit, and push this successor implementation before creating its artifacts.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
