@@ -1,0 +1,49 @@
+{
+  "artifact_kind": "sp-mid-small-addition-capacity-failure-inspection",
+  "artifact_sha256": "326a18d36a28f11bd964f30d92455e4e48abb1f24f2fe452d71217e9b0a433e8",
+  "broker_actions_permitted": false,
+  "cache_pages_opened": 255,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "failed_contract_path": "strategy_tournament/v2/sp-mid-small-index-addition-capacity/source-reuse-contract/sp-mid-small-addition-contract-96d6b36dee4d81ff9a7c2c54b8153db2160f14718113cce35ebc0dee4cca9416.json",
+  "failed_contract_sha256": "96d6b36dee4d81ff9a7c2c54b8153db2160f14718113cce35ebc0dee4cca9416",
+  "failed_listed_date": "2022-06-03",
+  "failed_source_url": "https://press.spglobal.com/2022-06-03-Keurig-Dr-Pepper,-VICI-Properties-and-ON-Semiconductor-Set-to-Join-S-P-500-Others-to-Join-S-P-MidCap-400,-and-S-P-SmallCap-600",
+  "failed_task_ordinal": 255,
+  "failure_message": "https://press.spglobal.com/2022-06-03-Keurig-Dr-Pepper,-VICI-Properties-and-ON-Semiconductor-Set-to-Join-S-P-500-Others-to-Join-S-P-MidCap-400,-and-S-P-SmallCap-600: invalid structured ticker UA/UAA",
+  "failure_path": "strategy_tournament/v2/sp-mid-small-index-addition-capacity/capacity-failure/sp-mid-small-addition-capacity-failure-63e13456663bfca5c8d9dbacabe05a3d7b6de930daf10be97f692c736b64e65b.json",
+  "failure_sha256": "63e13456663bfca5c8d9dbacabe05a3d7b6de930daf10be97f692c736b64e65b",
+  "failure_stage": "STRUCTURED_MULTI_CLASS_TICKER",
+  "failure_type": "SpMidSmallAdditionCapacityError",
+  "family_id": "sp-mid-small-external-index-addition-forced-demand",
+  "inspected_at": "2026-07-26T16:05:00Z",
+  "inspection": {
+    "all_prior_cache_hashes_rebuilt": true,
+    "contract_lineage_rebuilt": true,
+    "exact_failed_task_rebuilt": true,
+    "exact_parser_exception_rebuilt": true,
+    "prior_typo_recovery_rebuilt": true,
+    "valid": true,
+    "zero_event_output_rebuilt": true,
+    "zero_provider_outcome_boundary_rebuilt": true
+  },
+  "market_outcomes_accessed": false,
+  "market_price_access_permitted": false,
+  "provider_requests": 0,
+  "recovery_permitted": true,
+  "recovery_policy": {
+    "all_other_invalid_tickers_fail_closed": true,
+    "all_tasks_dates_urls_and_bytes_unchanged": true,
+    "canonical_tickers": [
+      "UA",
+      "UAA"
+    ],
+    "exact_source_token": "UA/UAA",
+    "exact_source_url": "https://press.spglobal.com/2022-06-03-Keurig-Dr-Pepper,-VICI-Properties-and-ON-Semiconductor-Set-to-Join-S-P-500-Others-to-Join-S-P-MidCap-400,-and-S-P-SmallCap-600",
+    "field": "structured ticker cell"
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_PARSE_FAILURE_INSPECTED",
+  "successor_id": "sp-mid-small-external-index-addition-forced-demand-v1",
+  "target_return_access_permitted": false
+}

@@ -686,6 +686,12 @@ hash, URL, date, exception, and closed access boundary. It emitted no event set
 or capacity metric, made no provider or price request, accessed no return or
 confirmation outcome, and took no broker action. Commit and push it before
 independent failure inspection; same-contract resume remains forbidden.
+Inspection `326a18d3...a433e8` independently rehashed every page through task
+255, rebuilt the prior month-token recovery, and reproduced the exact
+multi-class ticker exception and zero-event boundary. It authorizes only the
+exact committed-URL expansion of `UA/UAA` into `UA` and `UAA`, with every other
+invalid ticker fail-closed. Commit and push it before freezing the final
+implementation-refreshed source contract.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
