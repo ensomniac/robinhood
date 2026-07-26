@@ -702,6 +702,16 @@ Inspection `4a810395...178ac4` independently rebuilt all 312 source identities,
 both inspected recovery lineages, current implementation and exposure hashes,
 partitions, thresholds, transfer exclusions, and the zero-market-access
 boundary. Commit and push it before the final complete capacity pass.
+The final pass stopped on a third distinct official schema exception at task
+283, listed 2024-03-01: effective date `Mar.18, 2024` is outside the frozen
+parser. Per the explicit campaign hard stop, exact version
+`sp-mid-small-external-index-addition-forced-demand-v1` is
+`RETIRED_SOURCE_SCHEMA_HARD_STOP`; no further parser repair, capacity claim,
+price access, or reuse on this corpus is permitted. Terminal artifact
+`42228dc1...28a9c6` records zero emitted events, zero capacity metrics, zero
+provider or market-price requests, closed returns and confirmation, and zero
+broker actions. The released research slot must advance a machine-readable-data
+family directly toward development.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
