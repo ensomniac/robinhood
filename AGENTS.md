@@ -221,9 +221,10 @@ evaluated corpus, confirmation remains closed, and no repair may reuse it.
 The next distinct causal lane is S&P 500 deletion forced-selling rebound:
 index trackers must sell deletions by the rebalance close, and the long-only
 candidate begins only after that forced flow culminates. The already-inspected
-official S&P release cache contains 269 resolvable deletions across 184
-announcement dates, including 119 events after 2018, with zero new provider or
-market-price requests. `sp500_deletion_capacity.py` implements deletion-only
+official S&P release cache contains 269 resolvable deletion rows across 184
+announcement dates, expanding one explicit dual-class row into 270 tradable
+ticker-events, with zero new provider or market-price requests.
+`sp500_deletion_capacity.py` implements deletion-only
 parsing and independent reconstruction without changing the terminal addition
 family. Commit and test it before creating any capacity artifact.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,

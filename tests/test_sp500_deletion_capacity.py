@@ -31,6 +31,17 @@ LEGACY_RELEASE = b"""
 """
 
 
+DUAL_CLASS_RELEASE = b"""
+<html><body>
+<table>
+<tr><th>Effective Date</th><th>Index Name</th><th>Action</th><th>Company Name</th><th>Ticker</th><th>GICS Sector</th></tr>
+<tr><td>June 21, 2022</td><td>S&amp;P 500</td><td>Deletion</td><td>Under Armour</td><td>UA/UAA</td><td>Consumer Discretionary</td></tr>
+</table>
+<!-- ITEMDATE: 2022-06-03 17:15:00 EDT -->
+</body></html>
+"""
+
+
 def test_parser_extracts_only_structured_sp500_deletions():
     parsed = capacity.parse_release(
         STRUCTURED_RELEASE,
@@ -50,6 +61,22 @@ def test_parser_extracts_only_structured_sp500_deletions():
             "ticker": "KSS",
             "source_url": "https://press.spglobal.com/2020-10-01-example",
         }
+    ]
+
+
+def test_parser_expands_explicit_dual_class_deletion_tickers():
+    parsed = capacity.parse_release(
+        DUAL_CLASS_RELEASE,
+        source_url="https://press.spglobal.com/2022-06-03-example",
+        listed_date="2022-06-03",
+    )
+
+    assert [
+        (row["company_name"], row["ticker"], row["effective_date"])
+        for row in parsed["eligible_events"]
+    ] == [
+        ("Under Armour", "UA", "2022-06-21"),
+        ("Under Armour", "UAA", "2022-06-21"),
     ]
 
 

@@ -84,6 +84,31 @@ def _event(
     }
 
 
+def _structured_tickers(
+    raw_ticker: str, *, source_url: str
+) -> tuple[str, ...]:
+    """Normalize one official cell, including explicit dual-class tickers."""
+
+    tickers = tuple(
+        ticker.upper().replace(" ", "")
+        for ticker in raw_ticker.split("/")
+        if ticker.strip()
+    )
+    if (
+        not tickers
+        or len(tickers) > 2
+        or any(
+            re.fullmatch(r"[A-Z][A-Z0-9.-]{0,11}", ticker) is None
+            for ticker in tickers
+        )
+        or len(set(tickers)) != len(tickers)
+    ):
+        raise Sp500DeletionCapacityError(
+            f"{source_url}: invalid structured ticker {raw_ticker}"
+        )
+    return tickers
+
+
 def parse_release(
     raw: bytes,
     *,
@@ -135,22 +160,21 @@ def parse_release(
                 effective_cell = (
                     segment[0] or inherited_effective_date or ""
                 )
-                ticker = segment[4].upper().replace(" ", "")
-                if not re.fullmatch(r"[A-Z][A-Z0-9.-]{0,11}", ticker):
-                    raise Sp500DeletionCapacityError(
-                        f"{source_url}: invalid structured ticker {ticker}"
-                    )
+                tickers = _structured_tickers(
+                    segment[4], source_url=source_url
+                )
                 if effective_cell.casefold() in {
                     "",
                     "tba",
                     "to be announced",
                 }:
-                    ineligible_rows.append(
+                    ineligible_rows.extend(
                         {
                             "ticker": ticker,
                             "raw_effective_date": effective_cell,
                             "terminal_reason": "MISSING_EFFECTIVE_DATE",
                         }
+                        for ticker in tickers
                     )
                     continue
                 effective = source._parse_effective_date(
@@ -160,7 +184,7 @@ def parse_release(
                     raise Sp500DeletionCapacityError(
                         f"{source_url}: effective date is not later"
                     )
-                events.append(
+                events.extend(
                     _event(
                         published=published,
                         effective=effective,
@@ -168,6 +192,7 @@ def parse_release(
                         ticker=ticker,
                         source_url=source_url,
                     )
+                    for ticker in tickers
                 )
         if not table or not table[0]:
             continue
