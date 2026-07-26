@@ -1,0 +1,125 @@
+{
+  "archives": [
+    {
+      "bytes": 508544155,
+      "cache_hit": false,
+      "cache_relative_path": "_derived/sec_broad_pead_temporal_metadata/52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e/archives/0c0aa775cff29a411461277b86800a84c7a851caeee1f8037a96347e2568fda3.zip",
+      "etag": null,
+      "file_sha256": "4b57ef7617913452e82e7a3e5b6ef0cf3f4909a131b129ee94902feebb964383",
+      "last_modified": "Tue, 22 Dec 2020 17:27:22 GMT",
+      "quarter": "2018q1",
+      "request_sha256": "0c0aa775cff29a411461277b86800a84c7a851caeee1f8037a96347e2568fda3"
+    },
+    {
+      "bytes": 403177151,
+      "cache_hit": false,
+      "cache_relative_path": "_derived/sec_broad_pead_temporal_metadata/52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e/archives/ec0c9493780829196a0a480e3d4e8daec2e83b9dd07441644cc26f186e27139c.zip",
+      "etag": null,
+      "file_sha256": "7be91293067ff3e07c184877aadbdb5d019a405b9ad04efb5512ac82d6e52897",
+      "last_modified": "Tue, 22 Dec 2020 17:15:26 GMT",
+      "quarter": "2018q2",
+      "request_sha256": "ec0c9493780829196a0a480e3d4e8daec2e83b9dd07441644cc26f186e27139c"
+    },
+    {
+      "bytes": 335574469,
+      "cache_hit": false,
+      "cache_relative_path": "_derived/sec_broad_pead_temporal_metadata/52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e/archives/7eb872e63af9036f7d03b71ca32ee053b4a5fd162a3c1d58888ca5ff93afa378.zip",
+      "etag": null,
+      "file_sha256": "2b93ffebe259e70ff48ef844cdf77e02cfe3b7c33fc10a363bc558112ad88d00",
+      "last_modified": "Tue, 22 Dec 2020 16:59:36 GMT",
+      "quarter": "2018q3",
+      "request_sha256": "7eb872e63af9036f7d03b71ca32ee053b4a5fd162a3c1d58888ca5ff93afa378"
+    },
+    {
+      "bytes": 346368043,
+      "cache_hit": false,
+      "cache_relative_path": "_derived/sec_broad_pead_temporal_metadata/52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e/archives/8635ca3ace57660b70af07180832e9ac8f1f3f6a3ea22b5f4b077aad0161d0f3.zip",
+      "etag": null,
+      "file_sha256": "75ee3eaca383450682d9b453690c4c0749a9988666e118a51c62536eb8ff180e",
+      "last_modified": "Tue, 22 Dec 2020 16:51:42 GMT",
+      "quarter": "2018q4",
+      "request_sha256": "8635ca3ace57660b70af07180832e9ac8f1f3f6a3ea22b5f4b077aad0161d0f3"
+    },
+    {
+      "bytes": 517888347,
+      "cache_hit": false,
+      "cache_relative_path": "_derived/sec_broad_pead_temporal_metadata/52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e/archives/be6f7cf152748f75bac79935e5bd94ea08ad4135b498cc6a70c7a87c20f0623a.zip",
+      "etag": null,
+      "file_sha256": "b1a2003700c8086039c1f3f43b15a880f3e0fd749ae1531fa8eb495a6f9f1dfb",
+      "last_modified": "Tue, 15 Jun 2021 21:10:17 GMT",
+      "quarter": "2019q1",
+      "request_sha256": "be6f7cf152748f75bac79935e5bd94ea08ad4135b498cc6a70c7a87c20f0623a"
+    },
+    {
+      "bytes": 401444846,
+      "cache_hit": false,
+      "cache_relative_path": "_derived/sec_broad_pead_temporal_metadata/52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e/archives/53a38533027d5644dd4ae62442c2d2aefd5f9f6ef1cda85c2d0921d64dfa36de.zip",
+      "etag": null,
+      "file_sha256": "92fa99a05eb6eb41f40a310dc21136c82b24f63a904564cb446500e0564945d8",
+      "last_modified": "Tue, 22 Dec 2020 16:31:19 GMT",
+      "quarter": "2019q2",
+      "request_sha256": "53a38533027d5644dd4ae62442c2d2aefd5f9f6ef1cda85c2d0921d64dfa36de"
+    },
+    {
+      "bytes": 328686563,
+      "cache_hit": false,
+      "cache_relative_path": "_derived/sec_broad_pead_temporal_metadata/52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e/archives/e69f1c868edd93a188af9e7716a9facb69e1be566055c767f09a9da41c313b26.zip",
+      "etag": null,
+      "file_sha256": "7f18a4d02d6e6829729738883b59d1c4d1c795eef39f6dd5fc49ded409b579db",
+      "last_modified": "Tue, 22 Dec 2020 16:21:07 GMT",
+      "quarter": "2019q3",
+      "request_sha256": "e69f1c868edd93a188af9e7716a9facb69e1be566055c767f09a9da41c313b26"
+    },
+    {
+      "bytes": 344265202,
+      "cache_hit": false,
+      "cache_relative_path": "_derived/sec_broad_pead_temporal_metadata/52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e/archives/0602158df90afe0a357dabbe673d390aba69f4b977744532691e427a62aaa3d0.zip",
+      "etag": null,
+      "file_sha256": "819a8b8ed35e31724299659bd842cadea39be994133ce6bb4d5302e1d30ffdf1",
+      "last_modified": "Tue, 22 Dec 2020 16:10:22 GMT",
+      "quarter": "2019q4",
+      "request_sha256": "0602158df90afe0a357dabbe673d390aba69f4b977744532691e427a62aaa3d0"
+    }
+  ],
+  "artifact_kind": "sec-broad-pead-temporal-metadata-collection",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "collected_at": "2026-07-26T01:45:00-04:00",
+  "collection_sha256": "f60ae0e021ffd5593508fc06a84dfea63be61cd9fa9404b38030a118f07658ff",
+  "confirmation_outcomes_accessed": false,
+  "contract_file_sha256": "2d69576441c51930b2e8228a384463e903e4c5036411815b59cfe76e718d379e",
+  "contract_path": "strategy_tournament/v2/continuous/sec-yoy-eps-improvement-broad-drift-temporal-confirmation-metadata-v1/metadata-contract/contract-52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e.json",
+  "contract_sha256": "52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e",
+  "derivation_summary": {
+    "NO_ELIGIBLE_COMMON_STOCK_SHARES_FACT": 342,
+    "VERIFIED_COMMON_EQUITY_COVER_FACT": 747,
+    "duplicate_event_rows_zero_credit": 0,
+    "provisional_event_rows": 8931,
+    "ranked_event_rows": 1089,
+    "verified_common_equity_events": 747
+  },
+  "family_id": "sec-yoy-eps-improvement-broad-drift",
+  "forward_returns_accessed": false,
+  "inspection_file_sha256": "cf218cc653adbe73da134cba9db44ef8ad72aa78709b8d2cfc5914754e05a341",
+  "inspection_path": "strategy_tournament/v2/continuous/sec-yoy-eps-improvement-broad-drift-temporal-confirmation-metadata-v1/metadata-contract-inspection/inspection-40b1ec3926805cfb404ad5f0f90d187add935fca479244a537b17ced534a2792.json",
+  "inspection_sha256": "40b1ec3926805cfb404ad5f0f90d187add935fca479244a537b17ced534a2792",
+  "market_prices_accessed": false,
+  "private_artifact": {
+    "cache_relative_path": "_derived/sec_broad_pead_temporal_metadata/52a03060d276e7f34aaee744df01fb3b335ab12b159f5c5b05ee15d8e4280b1e/metadata.json.gz",
+    "content_sha256": "f4e941aa1760431fde90bfa9a9573b85bc78d542e5f2056b8566d15382e79ff6",
+    "file_sha256": "629ea4763b034735a737d2ee4060b7135c1badb11c1bba74f024b2c9e2ed3cb6"
+  },
+  "provider_telemetry": {
+    "cache_hits": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 1.4,
+    "request_seconds": 53.116202583070844,
+    "requests": 8
+  },
+  "retries": 0,
+  "schema_version": 1,
+  "state": "TEMPORAL_METADATA_COLLECTED_UNINSPECTED",
+  "strategy_metrics_computed": 0,
+  "substitutions": 0,
+  "successor_id": "sec-yoy-eps-improvement-broad-drift-temporal-confirmation-metadata-v1"
+}
