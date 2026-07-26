@@ -1,0 +1,61 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "b653c2ac68df3d68743a22e44bbba3d7b60974776253a6c11949f8213b56c88d",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "replication_confirmation_signal_dates": 46,
+    "replication_development_events": 424,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.20256904198322445,
+  "family_contract_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation-replication-v2/family-contract/contract-dd5404f007ea88c00d56fb2564f0ef30fdc9bbb0654d6dd964c1a15315ef319d.json",
+  "family_contract_sha256": "d31f76a17701e4e26a6059b212d731670cf057ab4a09cb0bce1a6b72ded5ba0a",
+  "family_id": "clustered-form4-open-market-purchase-continuation-replication-v2",
+  "implementation_sha256": "c9bfce2f97be0e6d629185159806ffd12bfd371af74ba201faf8c62deeba41cf",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "confirmation_dates_bound": true,
+      "confirmation_locked": true,
+      "dates_bound": true,
+      "development_lane": true,
+      "experiment_bound": true,
+      "external_inputs_closed": true,
+      "family_bound": true,
+      "point_in_time": true,
+      "zero_provider_requests": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 0,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 633
+  },
+  "provider_telemetry": {
+    "cache_hits": 0,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "dd5404f007ea88c00d56fb2564f0ef30fdc9bbb0654d6dd964c1a15315ef319d",
+  "verified_capacity": 633
+}

@@ -466,7 +466,9 @@ implementation hash is identical, and opens no rows. Commit and push the
 controller before creating the path-bound contract. Contract
 `dd5404f0...ef319d` now binds the resolved spelling and proves the same file
 identity with no semantic, row, provider, confirmation, or broker change.
-Commit and push it before generic preflight.
+Commit and push it before generic preflight. Preflight
+`b653c2ac...b56c88d` revalidates the exact path-bound contract as
+`CAPACITY_READY` with zero outcomes. Commit and push it before search freeze.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
