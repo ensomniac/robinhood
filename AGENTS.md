@@ -581,7 +581,13 @@ independent plan inspection; provider access remains closed. Inspection
 `4c5c64c1...2183b8d` independently passes all twelve lineage, calendar,
 request-graph, source-policy, partial-exposure, implementation, and
 confirmation checks in `COLLECTION_PLAN_INSPECTED_READY`. Commit and push it
-before executing the single request.
+before executing the single request. Collection `1a37a872...555e2f`
+successfully reused both checkpoints and completed the single new `^VIX`
+request: telemetry moved from five to six requests, cache hits increased to
+two, the original one-failure baseline remained unchanged, and substitutions
+and broker actions stayed zero. The assembled dataset is
+`COLLECTED_UNINSPECTED`; commit and push the status before independent data
+inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
