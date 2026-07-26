@@ -1,0 +1,54 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "04f7015a1b85db582f3eebc35fee58ea62323df351a531b339d5379045240926",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.04830812499858439,
+  "family_contract_path": "strategy_tournament/v2/continuous/cross-asset-flight-to-safety-equity-rebound-replication-v4-country-etfs/family-contract/contract-a15d76ca148b30285c2a78d3945b759c3322b1ee1c52809609bb3fe7d4c3b9d9.json",
+  "family_contract_sha256": "743ba14f8f2ad9e2c40368532561feb8da2e4b04c25a2a28c49b75b7e4314a76",
+  "family_id": "cross-asset-flight-to-safety-equity-rebound-replication-v4-country-etfs",
+  "implementation_sha256": "22abdafbcc06a4ae3ced4ed71c799974260427ce96cd705b807198695f02676b",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "dates_bound": true,
+      "development_lane": true,
+      "family_bound": true,
+      "point_in_time": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 995
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "a15d76ca148b30285c2a78d3945b759c3322b1ee1c52809609bb3fe7d4c3b9d9",
+  "verified_capacity": 995
+}
