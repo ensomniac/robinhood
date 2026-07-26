@@ -218,6 +218,14 @@ nulls are rejected. Thirteen pass neighbor stability, fifteen have positive
 20-bps growth, eight pass stressed PF, and all pass PBO, but no intersection
 satisfies the frozen gates. This exact family version is terminal on its
 evaluated corpus, confirmation remains closed, and no repair may reuse it.
+The next distinct causal lane is S&P 500 deletion forced-selling rebound:
+index trackers must sell deletions by the rebalance close, and the long-only
+candidate begins only after that forced flow culminates. The already-inspected
+official S&P release cache contains 269 resolvable deletions across 184
+announcement dates, including 119 events after 2018, with zero new provider or
+market-price requests. `sp500_deletion_capacity.py` implements deletion-only
+parsing and independent reconstruction without changing the terminal addition
+family. Commit and test it before creating any capacity artifact.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
