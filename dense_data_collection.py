@@ -82,6 +82,7 @@ FIXED_DAILY_ETF_FAMILIES = {
     *runtime.ETF_PULLBACK_FAMILIES,
     runtime.VIX_SHOCK_REBOUND_FAMILY,
     runtime.FOMC_PREANNOUNCEMENT_FAMILY,
+    runtime.PREHOLIDAY_EQUITY_DRIFT_FAMILY,
     *runtime.SECTOR_ETF_ROTATION_FAMILIES,
     runtime.SECTOR_ETF_GAP_DRIFT_FAMILY,
     runtime.FLIGHT_TO_SAFETY_REBOUND_FAMILY,
@@ -389,6 +390,10 @@ def freeze_plan(
         )
     family_id = str(contract["family_id"])
     intraday = family_id in runtime.INTRADAY_ETF_FAMILIES
+    sparse_preholiday_confirmation = (
+        lane == "confirmation"
+        and family_id == runtime.PREHOLIDAY_EQUITY_DRIFT_FAMILY
+    )
     warmup = INTRADAY_WARMUP_SESSIONS if intraday else DAILY_WARMUP_SESSIONS
     warmup_dates = list(contract[f"{lane}_warmup_dates"])
     if len(warmup_dates) != warmup:
@@ -425,6 +430,51 @@ def freeze_plan(
                 for symbol in symbols
             ]
             providers = ["Alpaca SIP raw-adjustment minute bars"]
+    elif sparse_preholiday_confirmation:
+        symbols = sorted(map(str, contract["universe"].get("symbols", [])))
+        if symbols != [runtime.PREHOLIDAY_EQUITY_DRIFT_SYMBOL]:
+            raise DenseDataCollectionError(
+                "pre-holiday confirmation universe drifted"
+            )
+        if not (
+            isinstance(historical_data_contract, Mapping)
+            and historical_data_contract.get("daily_provider") == "yahoo"
+            and historical_data_contract.get("daily_request_mode")
+            == "symbol_range"
+            and historical_data_contract.get("confirmation_request_mode")
+            == "exact_signal_dates_only"
+            and historical_data_contract.get("daily_adjustment")
+            == YAHOO_SOURCE_RECOVERY_ADJUSTMENT
+            and historical_data_contract.get("split_provider") == "massive"
+            and historical_data_contract.get("no_purchase_required") is True
+            and historical_data_contract.get("retries_permitted") == 0
+        ):
+            raise DenseDataCollectionError(
+                "pre-holiday sparse confirmation data contract drifted"
+            )
+        split_task = _task("split_actions", required_dates[-1])
+        split_task["start"] = required_dates[0]
+        split_task["task_id"] = canonical_sha256(
+            {
+                key: value
+                for key, value in split_task.items()
+                if key != "task_id"
+            }
+        )
+        tasks = [split_task]
+        for day in signal_dates:
+            task = {
+                "kind": "yahoo_daily_symbol_bars",
+                "date": day,
+                "start": day,
+                "symbol": runtime.PREHOLIDAY_EQUITY_DRIFT_SYMBOL,
+            }
+            task["task_id"] = canonical_sha256(task)
+            tasks.append(task)
+        providers = [
+            "Yahoo Finance exact frozen IWV signal-day raw daily OHLCV",
+            "Massive point-in-time split actions through the final frozen session",
+        ]
     elif existing_successor or fixed_symbol_range:
         symbols = sorted(map(str, contract["universe"].get("symbols", [])))
         if not symbols:
@@ -568,6 +618,9 @@ def freeze_plan(
             )
             else None
         ),
+        "sparse_confirmation_outcome_access": (
+            sparse_preholiday_confirmation
+        ),
         "intraday_missing_session_policy": (
             contract.get("historical_data_contract", {}).get(
                 "minute_missing_session_policy"
@@ -668,6 +721,33 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         raise DenseDataCollectionError(
             "collection signal dates escaped the account calendar"
         )
+    if plan.get("sparse_confirmation_outcome_access") is True:
+        tasks = plan.get("tasks", [])
+        expected_daily = [
+            {
+                "kind": "yahoo_daily_symbol_bars",
+                "date": day,
+                "start": day,
+                "symbol": runtime.PREHOLIDAY_EQUITY_DRIFT_SYMBOL,
+            }
+            for day in signal_dates
+        ]
+        expected_daily = [
+            {**task, "task_id": canonical_sha256(task)}
+            for task in expected_daily
+        ]
+        if not (
+            plan.get("lane") == "confirmation"
+            and plan.get("family_id")
+            == runtime.PREHOLIDAY_EQUITY_DRIFT_FAMILY
+            and isinstance(tasks, list)
+            and len(tasks) == len(expected_daily) + 1
+            and tasks[0].get("kind") == "split_actions"
+            and tasks[1:] == expected_daily
+        ):
+            raise DenseDataCollectionError(
+                "sparse confirmation task topology drifted"
+            )
     recovery_failure_path = plan.get("recovery_failure_path")
     recovery_adjustment = plan.get("adjustment_semantics")
     recovery_declared = (
@@ -1809,9 +1889,14 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
     daily = _daily_rows(checkpoint_root, plan)
     if family_id in FIXED_DAILY_ETF_FAMILIES:
         symbols = set(map(str, plan["symbols"]))
+        coverage_dates = (
+            list(plan["signal_dates"])
+            if plan.get("sparse_confirmation_outcome_access") is True
+            else list(plan["required_dates"])
+        )
         missing = [
             (day, symbol)
-            for day in plan["required_dates"]
+            for day in coverage_dates
             for symbol in symbols
             if symbol not in daily.get(day, {})
         ]
@@ -1836,7 +1921,7 @@ def build_dataset(checkpoint_root: Path, plan: Mapping[str, Any]) -> dict[str, A
                 split_factors.get(symbol, []),
             )
             for day in plan["required_dates"]
-            if symbol in daily[day]
+            if symbol in daily.get(day, {})
         ]
         if rows:
             bars[symbol] = rows

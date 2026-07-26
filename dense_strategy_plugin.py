@@ -500,7 +500,10 @@ def evaluate_production(
         raise DenseStrategyPluginError("live operational fact schema drifted")
     try:
         entry = float(quote["ask"])
-        if winner["family_id"] == runtime.FOMC_PREANNOUNCEMENT_FAMILY:
+        if winner["family_id"] in {
+            runtime.FOMC_PREANNOUNCEMENT_FAMILY,
+            runtime.PREHOLIDAY_EQUITY_DRIFT_FAMILY,
+        }:
             stop = entry * (1 - float(signal["stop_fraction"]))
         else:
             stop = entry - float(signal["stop_atr_multiple"]) * float(

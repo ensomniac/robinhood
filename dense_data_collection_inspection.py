@@ -121,6 +121,16 @@ def inspect(
     if canonical_sha256(rebuilt) != status.get("dataset_sha256") or observed != rebuilt:
         raise DenseDataInspectionError("independent dataset reconstruction differs")
     runtime.prepare_dataset(rebuilt)
+    if plan.get("sparse_confirmation_outcome_access") is True:
+        observed_bar_dates = {
+            str(row["date"])
+            for rows in rebuilt["daily_bars"].values()
+            for row in rows
+        }
+        if observed_bar_dates != set(plan["signal_dates"]):
+            raise DenseDataInspectionError(
+                "sparse confirmation accessed non-signal outcome bars"
+            )
     capacity = _formal_capacity(rebuilt)
     if capacity < 100:
         raise DenseDataInspectionError("formal runtime capacity is below 100")
@@ -145,6 +155,10 @@ def inspect(
             "runtime_schema_revalidated": True,
             "frozen_scope_exact": True,
             "substitutions_zero": True,
+            "sparse_confirmation_scope_exact": (
+                plan.get("sparse_confirmation_outcome_access") is not True
+                or observed_bar_dates == set(plan["signal_dates"])
+            ),
         },
         "provider_telemetry": status["provider_telemetry"],
         "collection_started_at": status["collection_started_at"],

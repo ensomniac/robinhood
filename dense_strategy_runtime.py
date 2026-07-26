@@ -166,6 +166,8 @@ VIX_SHOCK_REBOUND_TARGET_SYMBOL = "SPLV"
 VIX_SHOCK_REBOUND_FEATURE_SYMBOL = "^VIX"
 FOMC_PREANNOUNCEMENT_FAMILY = "fomc-preannouncement-equity-drift"
 FOMC_PREANNOUNCEMENT_SYMBOL = "SCHB"
+PREHOLIDAY_EQUITY_DRIFT_FAMILY = "preholiday-equity-drift"
+PREHOLIDAY_EQUITY_DRIFT_SYMBOL = "IWV"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
 LIQUID_EQUITY_MOMENTUM_FAMILY = "liquid-equity-cross-sectional-momentum"
 ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
@@ -311,6 +313,7 @@ SUPPORTED_FAMILIES = {
     SPY_RSI2_PULLBACK_FAMILY,
     VIX_SHOCK_REBOUND_FAMILY,
     FOMC_PREANNOUNCEMENT_FAMILY,
+    PREHOLIDAY_EQUITY_DRIFT_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
     LIQUID_EQUITY_MOMENTUM_FAMILY,
     ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
@@ -1787,6 +1790,117 @@ def _fomc_preannouncement_candidates(
                     entry_date: entry_price,
                     fomc_date: exit_price,
                 },
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+                "expected_gross_move_fraction": expected_gross,
+            }
+        )
+    return candidates
+
+
+def _preholiday_equity_drift_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Evaluate the sole preregistered pre-holiday open-to-close rule."""
+
+    calendar = _calendar(dataset)
+    signal_dates = set(_signal_dates(dataset))
+    daily = _daily_series(dataset)
+    if (
+        set(map(str, dataset.get("symbols", [])))
+        != {PREHOLIDAY_EQUITY_DRIFT_SYMBOL}
+        or set(daily) != {PREHOLIDAY_EQUITY_DRIFT_SYMBOL}
+    ):
+        raise DenseStrategyRuntimeError(
+            "pre-holiday data must contain only IWV"
+        )
+    expected_parameters = {
+        "expected_gross_move_fraction": 0.005,
+        "stop_fraction": 0.015,
+        "maximum_hold_sessions": 1,
+        "entry_timing": "scheduled_preholiday_session_open",
+        "exit_timing": "same_session_close",
+    }
+    normalized_parameters = {
+        "expected_gross_move_fraction": float(
+            parameters["expected_gross_move_fraction"]
+        ),
+        "stop_fraction": float(parameters["stop_fraction"]),
+        "maximum_hold_sessions": int(parameters["maximum_hold_sessions"]),
+        "entry_timing": str(parameters["entry_timing"]),
+        "exit_timing": str(parameters["exit_timing"]),
+    }
+    if normalized_parameters != expected_parameters:
+        raise DenseStrategyRuntimeError(
+            "pre-holiday parameters drifted from the preregistered rule"
+        )
+    expected_gross = normalized_parameters["expected_gross_move_fraction"]
+    if not _cost_floor(expected_gross):
+        raise DenseStrategyRuntimeError(
+            "pre-holiday expected movement violates the cost floor"
+        )
+    bars = daily[PREHOLIDAY_EQUITY_DRIFT_SYMBOL]
+    bars_by_date = {str(bar["date"]): bar for bar in bars}
+    positions = {day: index for index, day in enumerate(calendar)}
+    candidates: list[dict[str, Any]] = []
+    for signal_date in sorted(signal_dates):
+        signal_id = (
+            f"{signal_date}-{PREHOLIDAY_EQUITY_DRIFT_FAMILY}-"
+            f"{PREHOLIDAY_EQUITY_DRIFT_SYMBOL}"
+        )
+        calendar_index = positions.get(signal_date)
+        bar = bars_by_date.get(signal_date)
+        if calendar_index is None or calendar_index == 0 or bar is None:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": signal_date,
+                    "decision_date": (
+                        calendar[calendar_index - 1]
+                        if calendar_index is not None and calendar_index > 0
+                        else signal_date
+                    ),
+                    "symbol": PREHOLIDAY_EQUITY_DRIFT_SYMBOL,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_preholiday_session_bar",
+                }
+            )
+            continue
+        entry_price = float(bar["open"])
+        stop_price = entry_price * (
+            1 - normalized_parameters["stop_fraction"]
+        )
+        if entry_price <= 0 or stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": signal_date,
+                    "decision_date": calendar[calendar_index - 1],
+                    "symbol": PREHOLIDAY_EQUITY_DRIFT_SYMBOL,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        stop_executed = float(bar["low"]) <= stop_price
+        exit_price = stop_price if stop_executed else float(bar["close"])
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": signal_date,
+                "decision_date": calendar[calendar_index - 1],
+                "symbol": PREHOLIDAY_EQUITY_DRIFT_SYMBOL,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": expected_gross,
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "exit_date": signal_date,
+                "exit_price": exit_price,
+                "marks": {signal_date: exit_price},
                 "stop_executed": stop_executed,
                 "planned_stop_distance": entry_price - stop_price,
                 "expected_gross_move_fraction": expected_gross,
@@ -4481,6 +4595,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             SPY_RSI2_PULLBACK_FAMILY,
             VIX_SHOCK_REBOUND_FAMILY,
             FOMC_PREANNOUNCEMENT_FAMILY,
+            PREHOLIDAY_EQUITY_DRIFT_FAMILY,
             ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
             ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
             ETF_HIGH_CONTINUATION_FAMILY,
@@ -4506,8 +4621,13 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                     "ETF pullback data does not match its frozen symbol universe"
                 )
             evaluation_dates = set(_calendar(dataset))
+            required_bar_dates = (
+                set(_signal_dates(dataset))
+                if family_id == PREHOLIDAY_EQUITY_DRIFT_FAMILY
+                else evaluation_dates
+            )
             if any(
-                not evaluation_dates.issubset(
+                not required_bar_dates.issubset(
                     {str(bar["date"]) for bar in symbol_bars}
                 )
                 for symbol_bars in daily.values()
@@ -4521,6 +4641,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             SPY_RSI2_PULLBACK_FAMILY,
             VIX_SHOCK_REBOUND_FAMILY,
             FOMC_PREANNOUNCEMENT_FAMILY,
+            PREHOLIDAY_EQUITY_DRIFT_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
@@ -6852,6 +6973,8 @@ def build_candidates(
         return _vix_shock_rebound_candidates(dataset, parameters)
     if family_id == FOMC_PREANNOUNCEMENT_FAMILY:
         return _fomc_preannouncement_candidates(dataset, parameters)
+    if family_id == PREHOLIDAY_EQUITY_DRIFT_FAMILY:
+        return _preholiday_equity_drift_candidates(dataset, parameters)
     if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
         return _sector_etf_gap_drift_candidates(dataset, parameters)
     if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY:
@@ -7055,6 +7178,13 @@ def _production_daily_signal(
         expected.add("exchange_calendar_dates")
     if family_id == FOMC_PREANNOUNCEMENT_FAMILY:
         expected.add("scheduled_fomc_decision_date")
+    if family_id == PREHOLIDAY_EQUITY_DRIFT_FAMILY:
+        expected.update(
+            {
+                "scheduled_preholiday_session_date",
+                "scheduled_close_et",
+            }
+        )
     if set(decision_data) != expected or decision_data.get("family_id") != family_id:
         raise DenseStrategyRuntimeError("production daily decision-data schema drifted")
     decision_date = decision_data.get("decision_date")
@@ -7216,6 +7346,7 @@ def _production_daily_signal(
         *ETF_PULLBACK_FAMILIES,
         SPY_RSI2_PULLBACK_FAMILY,
         FOMC_PREANNOUNCEMENT_FAMILY,
+        PREHOLIDAY_EQUITY_DRIFT_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,
@@ -7323,6 +7454,67 @@ def _production_daily_signal(
                 "exit_plan": {
                     "type": "stop_or_scheduled_fomc_session_close",
                     "scheduled_exit_date": next_session_date,
+                    "maximum_hold_sessions": 1,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
+        if family_id == PREHOLIDAY_EQUITY_DRIFT_FAMILY:
+            expected_parameters = {
+                "expected_gross_move_fraction": 0.005,
+                "stop_fraction": 0.015,
+                "maximum_hold_sessions": 1,
+                "entry_timing": "scheduled_preholiday_session_open",
+                "exit_timing": "same_session_close",
+            }
+            normalized_parameters = {
+                "expected_gross_move_fraction": float(
+                    parameters["expected_gross_move_fraction"]
+                ),
+                "stop_fraction": float(parameters["stop_fraction"]),
+                "maximum_hold_sessions": int(
+                    parameters["maximum_hold_sessions"]
+                ),
+                "entry_timing": str(parameters["entry_timing"]),
+                "exit_timing": str(parameters["exit_timing"]),
+            }
+            scheduled_close = decision_data["scheduled_close_et"]
+            if (
+                frozen_symbols != [PREHOLIDAY_EQUITY_DRIFT_SYMBOL]
+                or normalized_parameters != expected_parameters
+                or decision_data["scheduled_preholiday_session_date"]
+                != next_session_date
+                or scheduled_close not in {"13:00", "16:00"}
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production pre-holiday schedule or exact rules drifted"
+                )
+            if not _cost_floor(
+                normalized_parameters["expected_gross_move_fraction"]
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production pre-holiday cost floor is closed"
+                )
+            return {
+                "symbol": PREHOLIDAY_EQUITY_DRIFT_SYMBOL,
+                "rank": 1,
+                "score": normalized_parameters[
+                    "expected_gross_move_fraction"
+                ],
+                "expected_gross_move_fraction": normalized_parameters[
+                    "expected_gross_move_fraction"
+                ],
+                "stop_fraction": normalized_parameters["stop_fraction"],
+                "holding_trading_days": 1,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "scheduled_preholiday_session_date": next_session_date,
+                "scheduled_close_et": scheduled_close,
+                "entry_timing": "scheduled_preholiday_session_open",
+                "overnight_hold": False,
+                "exit_plan": {
+                    "type": "stop_or_scheduled_preholiday_session_close",
+                    "scheduled_exit_date": next_session_date,
+                    "scheduled_exit_time_et": scheduled_close,
                     "maximum_hold_sessions": 1,
                     "same_interval_ambiguity": "stop_first",
                 },
@@ -9539,6 +9731,7 @@ def evaluate_production_signal(
         *ETF_PULLBACK_FAMILIES,
         SPY_RSI2_PULLBACK_FAMILY,
         FOMC_PREANNOUNCEMENT_FAMILY,
+        PREHOLIDAY_EQUITY_DRIFT_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,

@@ -32,6 +32,7 @@ SUPPORTED_FAMILIES = {
     runtime.ETF_ABNORMAL_VOLUME_CONTINUATION_FAMILY,
     runtime.VIX_SHOCK_REBOUND_FAMILY,
     runtime.FOMC_PREANNOUNCEMENT_FAMILY,
+    runtime.PREHOLIDAY_EQUITY_DRIFT_FAMILY,
 }
 
 
@@ -117,6 +118,29 @@ def _expected_tasks(
         }
     )
     tasks = [split_task]
+    if plan.get("sparse_confirmation_outcome_access") is True:
+        if not (
+            plan.get("lane") == "confirmation"
+            and plan.get("family_id")
+            == runtime.PREHOLIDAY_EQUITY_DRIFT_FAMILY
+            and provider == "yahoo"
+            and historical.get("confirmation_request_mode")
+            == "exact_signal_dates_only"
+            and symbols == [runtime.PREHOLIDAY_EQUITY_DRIFT_SYMBOL]
+        ):
+            raise DenseCollectionPlanInspectionError(
+                "sparse confirmation semantics drifted"
+            )
+        for day in plan["signal_dates"]:
+            task = {
+                "kind": "yahoo_daily_symbol_bars",
+                "date": day,
+                "start": day,
+                "symbol": runtime.PREHOLIDAY_EQUITY_DRIFT_SYMBOL,
+            }
+            task["task_id"] = dense_data_collection.canonical_sha256(task)
+            tasks.append(task)
+        return tasks
     recovery_adjustment = plan.get("adjustment_semantics")
     for symbol in symbols:
         if (
