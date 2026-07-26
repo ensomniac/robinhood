@@ -327,6 +327,13 @@ trials have positive 20-bps log growth; none reaches 1.20 stressed profit
 factor, rolling-fold stability, DSR, or Holm gates, and family PBO is 1.00.
 Commit and push the complete result, then independently rebuild selection before
 assigning the exact family disposition.
+Inspection `94551365...5b58d7` independently rebuilt every account row,
+stationary-bootstrap sample, multiple-testing statistic, neighbor relation, and
+selection gate. It assigns terminal state `REJECTED`: zero of 32 trials passes
+stressed profit factor, fold stability, DSR, Holm, neighbor stability, or the
+complete selection-aware gate set; the highest lower bootstrap bound is
+negative and rebuilt family PBO is 0.5714. Confirmation remains untouched. This
+exact family may not be repaired on its evaluated corpus.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
