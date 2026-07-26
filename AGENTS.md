@@ -168,6 +168,13 @@ asserted obsolete exact reserve counts, and the S&P addition partition required
 the frozen 35-session floor for every family, while S&P preserves its exact
 development inventory and requires at least the frozen 20 untouched confirmation
 signal dates. It never reclassifies an exposed pair as untouched.
+Failure `153813c0...083601` now binds frozen request 539 for `CLNS`, 538
+checkpointed tasks, 393,842 retained daily rows, 539 lifetime provider
+responses, and the expanded 1,296-session by 538-symbol partial development
+scope in the global exposure index. The recorded exception is exactly `Yahoo
+identity, timezone, or quote arrays drifted`; retry, registration, substitution,
+metrics, confirmation access, and broker actions remain closed until independent
+failure inspection.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
