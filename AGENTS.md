@@ -657,6 +657,13 @@ and zero-broker boundary. All seven checks pass in
 of `DECMEBER` to `DECEMBER` in the unchanged legacy effective-date heading.
 Commit and push it before freezing the implementation-refreshed recovery
 contract.
+Recovery contract `96d6b36d...a9416` now binds inspection `757158e3`, the
+original failed contract, all unchanged 312 task identities and source bytes,
+current implementation hashes, and exactly one permitted month-token
+normalization. It records the prior 179-page metadata access but zero new cache
+rows, provider requests, prices, returns, confirmation outcomes, or broker
+actions before this freeze. Commit and push it before independent recovery-
+contract inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
