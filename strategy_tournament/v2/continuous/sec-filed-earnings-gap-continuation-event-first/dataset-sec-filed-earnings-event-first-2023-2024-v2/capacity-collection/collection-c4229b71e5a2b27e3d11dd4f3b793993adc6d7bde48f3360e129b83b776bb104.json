@@ -1,0 +1,50 @@
+{
+  "archive": {
+    "bytes": 1553601999,
+    "members": 983888,
+    "primary_cik_files": 978573,
+    "sha256": "cb4fa9b945ae3364cc66f92ee0bfe4237c140d7ef3884504df2030985bf17df5"
+  },
+  "artifact_kind": "sec-earnings-full-inventory-recovery-collection",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "collected_at": "2026-07-26T19:18:40+00:00",
+  "collection_sha256": "c4229b71e5a2b27e3d11dd4f3b793993adc6d7bde48f3360e129b83b776bb104",
+  "confirmation_outcomes_accessed": false,
+  "confirmation_signal_days": 202,
+  "contract_inspection_path": "strategy_tournament/v2/continuous/sec-filed-earnings-gap-continuation-event-first/dataset-sec-filed-earnings-event-first-2023-2024-v2/recovery-contract-inspection/inspection-0abfc82df5c67e003dd67316dde67b5c2110d30fdbe56da091d21f1c69eee639.json",
+  "contract_inspection_sha256": "0abfc82df5c67e003dd67316dde67b5c2110d30fdbe56da091d21f1c69eee639",
+  "contract_path": "strategy_tournament/v2/continuous/sec-filed-earnings-gap-continuation-event-first/dataset-sec-filed-earnings-event-first-2023-2024-v2/recovery-contract/contract-d4c2797d4ff8c5b6c6c7f2d65ab9cf7b5bbac6a76503a0922ad4f4c9208d146f.json",
+  "contract_sha256": "d4c2797d4ff8c5b6c6c7f2d65ab9cf7b5bbac6a76503a0922ad4f4c9208d146f",
+  "dataset_id": "dataset-sec-filed-earnings-event-first-2023-2024-v2",
+  "development_signal_days": 230,
+  "embargo_signal_days": 5,
+  "family_id": "sec-filed-earnings-gap-continuation-event-first",
+  "filing_documents_accessed": false,
+  "forward_returns_accessed": false,
+  "market_prices_accessed": false,
+  "private_inventory_content_sha256": "74d04e451bfe4c78c62792faf9655bfdedb4f1407bee4dcb362ab18883b00470",
+  "private_inventory_file_sha256": "29494c2efddb53ed1c6f2bb249ac5128e1687ad8a73b364179438241d27ed2b5",
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "failures": 0,
+    "local_derivation_seconds": 65.0585813340731,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "reason_counts": {
+    "CONFIRMATION_PAIR_EXPOSED_ZERO_CREDIT": 2959,
+    "CONFIRMATION_PAIR_RETAINED": 11088,
+    "DEVELOPMENT_PAIR_RETAINED": 13799,
+    "EMBARGO_PAIR_RETAINED": 147,
+    "MISSING_PRIMARY_CIK_FILE": 1,
+    "NO_POINT_IN_TIME_COMMON_LISTING": 793
+  },
+  "retained_event_pairs": 25034,
+  "schema_version": 1,
+  "source_cik_count": 5109,
+  "source_file_count": 5210,
+  "state": "EVENT_FIRST_CAPACITY_RECOVERED_AWAITING_INSPECTION",
+  "strategy_metrics_computed": 0,
+  "total_creditable_signal_days": 432
+}
