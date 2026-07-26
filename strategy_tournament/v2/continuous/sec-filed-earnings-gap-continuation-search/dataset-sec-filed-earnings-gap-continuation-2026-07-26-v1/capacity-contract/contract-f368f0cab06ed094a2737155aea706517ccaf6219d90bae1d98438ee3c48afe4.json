@@ -1,0 +1,118 @@
+{
+  "artifact_kind": "sec-earnings-gap-capacity-contract",
+  "authorized_sec_submission_requests": 568,
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_thresholds": {
+    "embargo_signal_days_receive_zero_credit": true,
+    "minimum_confirmation_signal_days": 20,
+    "minimum_development_signal_days": 30,
+    "minimum_total_signal_days": 50,
+    "signal_unit": "distinct date with at least one eligible candidate"
+  },
+  "confirmation_outcomes_accessed": false,
+  "contract_sha256": "f368f0cab06ed094a2737155aea706517ccaf6219d90bae1d98438ee3c48afe4",
+  "created_at": "2026-07-26T18:44:04+00:00",
+  "dataset_id": "dataset-sec-filed-earnings-gap-continuation-2026-07-26-v1",
+  "family_id": "sec-filed-earnings-gap-continuation-search",
+  "forward_returns_accessed": false,
+  "future_search_contract": {
+    "confirmation_cannot_influence_selection": true,
+    "maximum_hold_sessions": 1,
+    "one_entry_per_family_per_day": true,
+    "parameter_grid": {
+      "breakout_volume_multiple": [
+        1.5,
+        2.5
+      ],
+      "maximum_structural_stop_fraction": [
+        0.03,
+        0.04
+      ],
+      "minimum_gap_fraction": [
+        0.02,
+        0.04
+      ],
+      "opening_range_minutes": [
+        5
+      ],
+      "signal_cutoff_minutes": [
+        60,
+        120
+      ],
+      "target_r": [
+        1.5,
+        2.0
+      ]
+    },
+    "selection_mode": "development_search",
+    "trial_count": 32
+  },
+  "implementation_hashes": {
+    "historical_discovery.py": "7e4e605d17a8b499307a59fa519ac2c647aeef18b11d28754fb5e6c287a464d0",
+    "sec_earnings_gap_capacity.py": "2fbe4d2461420efa37c7b2c2e0cfd5b9bf04e4b2553805434c03904faaea3dcc",
+    "sec_earnings_gap_capacity_inspection.py": "224f330b8ba40b965484c815ca0570879e46c4072e7c12feaee28c78c54865d6"
+  },
+  "market_prices_accessed": false,
+  "point_in_time_identity": {
+    "cik_source": "frozen security-master source.cik",
+    "fallbacks_permitted": false,
+    "mapped_candidate_pairs": 2320,
+    "mapped_pairs_by_partition": {
+      "confirmation": 778,
+      "development": 1474,
+      "embargo": 68
+    },
+    "match": [
+      "instrument_id",
+      "symbol"
+    ],
+    "private_plan_content_sha256": "332758bd10fe9476a71a56b6dff49532c1a2b0ed5eaac5d943afed4fee8d73a3",
+    "private_plan_file_sha256": "4663385e032031ef8db9f3a152b9eeb85b5845a851ec6caed26761ac8418f9bf",
+    "signal_date_must_be_in_observed_dates": true,
+    "symbols_and_ciks_public": false,
+    "unique_ciks": 568,
+    "unmatched_candidate_pairs": 14
+  },
+  "provider_requests_executed": 0,
+  "schema_version": 1,
+  "sec_event_semantics": {
+    "acceptance_timestamp_required": true,
+    "accession_required": true,
+    "amendments_permitted": false,
+    "excluded_items": [
+      "3.02"
+    ],
+    "filing_documents_accessed": false,
+    "forms": [
+      "8-K"
+    ],
+    "historical_submission_files_must_be_followed": true,
+    "primary_document_required": true,
+    "required_items": [
+      "2.02"
+    ],
+    "source": "SEC EDGAR submissions JSON",
+    "window_end": "signal_session_09:25:00_ET_inclusive",
+    "window_start": "previous_regular_session_16:00:00_ET_exclusive"
+  },
+  "source_binding": {
+    "calendar_path": "historical_batches/challenger_orb_retest_v1/session-calendar-2023-01-through-2026-07.json",
+    "calendar_sha256": "0ef459092d53f8dcf101e9625d5cde6e5614cfca9e8b872c34dbd1d25f938ebb",
+    "preentry_contract_file_sha256": "f19dcef02316601c1c2bfaf177205011b4de4e2a789d5de5b4d923c953907710",
+    "preentry_contract_path": "strategy_tournament/v2/gap_protection_successor/dataset-equity-gap-protection-continuation-2026-07-24-v2/preentry-contract/gap-protection-preentry-contract-b2c223bcfe81f92a96882b7974774d424b96f45c32bd89e0e02dae44305ad6d1.json",
+    "preentry_inspection_file_sha256": "e23ddf2e59b03991b4f08b8d1dd3ab2701ef502a30ade5c999f5bcb40032a844",
+    "preentry_inspection_path": "strategy_tournament/v2/gap_protection_successor/dataset-equity-gap-protection-continuation-2026-07-24-v2/preentry-inspection/gap-protection-preentry-inspection-b82ec51a28d5852538fc1e518d5136dd7ea0060222529f60d0e4a1352e7d6a7c.json",
+    "preentry_summary_file_sha256": "8c9ada230210f65414b1078c5fd5d82d87ae0cd02998aa55a911aaba2403ddbb",
+    "preentry_summary_path": "strategy_tournament/v2/gap_protection_successor/dataset-equity-gap-protection-continuation-2026-07-24-v2/preentry-summary/gap-protection-preentry-summary-f22b4392e65ea0c3983982481c9b08a59927180b83b51326f4cb5e14794c1218.json",
+    "private_inventory_content_sha256": "0b509c3bbdc1a19cd99bc7124dbc729ccf15ecbc6dd10af0f7ce0fd898f066c0",
+    "private_inventory_file_sha256": "83081cbba34f103773d7f4ba4bd80aee4964a5d4636c2ced236ebdc1127e2052",
+    "security_master_attestation_path": "historical_batches/challenger_orb_retest_v1/security-master-source.json",
+    "security_master_attestation_sha256": "c1183f468d6d871ac46dc18c20bebd2b72347111b1c5ac4d3b761056d4577ce6",
+    "security_master_file_sha256": "aba3e53ef9dfb5f67729f0ce5293185e7181841cff5557f668b89baacb15d589",
+    "security_master_path": "learning/security_masters/security-master-b9dac192763decf4d8a5fd7b843f261b65554918ad77a3b6984872a5aa393158.jsonl.gz",
+    "security_master_semantic_sha256": "b9dac192763decf4d8a5fd7b843f261b65554918ad77a3b6984872a5aa393158"
+  },
+  "state": "OUTCOME_BLIND_CAPACITY_FROZEN",
+  "strategy_metrics_computed": 0
+}
