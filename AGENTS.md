@@ -321,6 +321,12 @@ external file hash, and canonical dataset hash `ebcd996b...56a3ba`. All eight
 checks pass. Dataset manifest `71583dfa...ccf8ce5` exposes exactly 102
 development signal dates and is `DATASET_INSPECTED_READY`; commit and push both
 artifacts before any trial reads outcomes.
+Development result `55aa5acc...c3a8a5e` evaluated all 32 frozen trials in 2.44
+seconds from one local dataset load with zero provider requests. Only four
+trials have positive 20-bps log growth; none reaches 1.20 stressed profit
+factor, rolling-fold stability, DSR, or Holm gates, and family PBO is 1.00.
+Commit and push the complete result, then independently rebuild selection before
+assigning the exact family disposition.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
