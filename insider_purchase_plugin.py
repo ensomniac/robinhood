@@ -112,7 +112,7 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
         "confirmation_locked": capacity.get("confirmation_access_permitted")
         is False,
         "zero_provider_requests": capacity.get("provider_requests") == 0,
-        "market_prices_absent": capacity.get("market_prices_accessed") is False,
+        "external_inputs_closed": capacity.get("market_prices_accessed") is False,
         "confirmation_dates_bound": counts.get("confirmation_entry_dates")
         == contract.get("confirmation_signal_capacity"),
     }
