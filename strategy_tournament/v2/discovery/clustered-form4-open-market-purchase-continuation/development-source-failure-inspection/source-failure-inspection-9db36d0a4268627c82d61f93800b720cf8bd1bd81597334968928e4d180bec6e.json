@@ -1,0 +1,32 @@
+{
+  "artifact_kind": "form4-purchase-development-source-failure-inspection",
+  "artifact_sha256": "9db36d0a4268627c82d61f93800b720cf8bd1bd81597334968928e4d180bec6e",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "checkpointed_tasks_rebuilt": true,
+    "confirmation_closed": true,
+    "failed_request_boundary_rebuilt": true,
+    "failed_symbol_retry_forbidden": true,
+    "failure_exactly_rebuilt": true,
+    "partial_exposure_indexed": true,
+    "permanent_missing_registration_bounded": true,
+    "valid": true,
+    "zero_metrics_or_winner": true
+  },
+  "confirmation_access_permitted": false,
+  "failed_request": {
+    "endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/CATC",
+    "ordinal": 439,
+    "request_sha256": "c97b0a8b234aad87e5eb41074e884227280e760fe204900447e0d4fa133e7b5d",
+    "symbol": "CATC"
+  },
+  "failure_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation/development-source-failure/source-failure-2e6ac0ebe6579994c4e8f24fe09222e452cbb441abdbec739e226a980f112a50.json",
+  "failure_sha256": "2e6ac0ebe6579994c4e8f24fe09222e452cbb441abdbec739e226a980f112a50",
+  "family_id": "clustered-form4-open-market-purchase-continuation",
+  "inspected_at": "2026-07-26T05:18:15Z",
+  "permanent_missing_registration_authorized": true,
+  "same_contract_resume_authorized": true,
+  "schema_version": 1,
+  "state": "INVALID_OHLCV_FAILURE_INSPECTED_TERMINAL"
+}

@@ -136,6 +136,9 @@ failure class recurred at request 439, `CATC`, hash
 and the expanded partial exposure with metrics and confirmation still closed.
 After its independent inspection, freeze a narrow repeated-failure policy for
 this exact parser error rather than repeating one artifact cycle per symbol.
+Second inspection `9db36d0a...0bec6e` exactly rebuilt the CATC boundary,
+438 checkpoints, expanded partial exposure, zero-metric state, and closed
+confirmation. Commit and push it before freezing the repeated-failure policy.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
