@@ -427,7 +427,11 @@ The search controller also ignores only this family's own append-only
 development exposure when rebuilding its pre-outcome partition. Focused tests
 pass. Commit and push these integration-only changes, then use
 `strategy_discovery.py refresh-implementation` before any new search or
-evaluation attempt.
+evaluation attempt. Refresh inspection `9ecd5f36...5cb863` independently proves
+there is no development result, no changed semantic field, and only the
+declared implementation hashes changed; refreshed contract
+`773c64e0...047ece` remains confirmation-closed. Commit and push both before
+freezing the replacement search.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

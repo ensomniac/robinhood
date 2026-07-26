@@ -1,0 +1,57 @@
+{
+  "artifact_kind": "implementation-refresh-inspection",
+  "artifact_sha256": "9ecd5f36fff29c2e061c395a14b5f3dbaf685a4c31d5df55c9cace59615cb863",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "changed_implementation_files": [
+    "dense_strategy_runtime.py",
+    "insider_purchase_replication_search.py"
+  ],
+  "confirmation_access_permitted": false,
+  "family_id": "clustered-form4-open-market-purchase-continuation-replication-v2",
+  "inspection": {
+    "current_implementation_hashes_rebuilt": true,
+    "development_result_absence_rebuilt": true,
+    "outcome_blind_preflight_rebuilt": true,
+    "semantic_contract_equality_rebuilt": true,
+    "source_contract_binding_rebuilt": true,
+    "source_search_hash_valid": true,
+    "valid": true
+  },
+  "only_implementation_hashes_changed": true,
+  "original_implementation_hashes": {
+    "dense_strategy_runtime.py": "639bc9bc1ad0063a0de12cd529e0afd1c1db45403911e654f5f6bc375067c7f4",
+    "insider_purchase_data.py": "14726e76281418b6d13a59e19399028e29c8f8dd8ce2813d5415f5cbac7e877b",
+    "insider_purchase_plugin.py": "7cc48ec773043a1d4b37a2b6883d165a963c952ca22a2d726c54bd4d88ffed71",
+    "insider_purchase_replication_search.py": "fd840545688d32a827b9969b2b6f493b00bdcf4f56824f7f197bed7df203b7ab",
+    "learning_experiment.py": "0870d5077ab3dd813403b8b77d8d9435ef6a8f292cc6c9e027a34bd7c0fb4d16",
+    "learning_statistics.py": "6104e6b76a889a3678c074477c16f7566aa0a5102d6d2502178827af1c8fc077",
+    "outcome_exposure.py": "b3835233e2359d2f033dbb726b898e2d5087f4e01f05a3def2771ddf86d53a4a",
+    "portfolio_config.toml": "b048636e497b7d89d025cef797845e88c2301a861e9a067a9db5ae6f9722ecac",
+    "portfolio_maturity.py": "a58a0af718abe42a2d8f8f0260bcf7fa7202052514ec917f92792cc24c0e85fe",
+    "strategy_discovery.py": "1e6a49f4ca188ed955e0b6e66589d5feecd4b3cd7f3470ef931284b29424b5ee"
+  },
+  "refreshed_contract_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation-replication-v2/family-contract/contract-773c64e02a13ba2e99b1cbd2e197190723cbd7c3c2e5d9c695697dda28047ece.json",
+  "refreshed_contract_sha256": "2ea571f2b518ed69526943497ebef6f543b18cb372edcd07de53da0d818fe872",
+  "refreshed_implementation_hashes": {
+    "dense_strategy_runtime.py": "3977081440d56526c60e5f1324b41dffe3a270abaa91a8f9f3dee8a7ad60e2a0",
+    "insider_purchase_data.py": "14726e76281418b6d13a59e19399028e29c8f8dd8ce2813d5415f5cbac7e877b",
+    "insider_purchase_plugin.py": "7cc48ec773043a1d4b37a2b6883d165a963c952ca22a2d726c54bd4d88ffed71",
+    "insider_purchase_replication_search.py": "b5674d320c58b0bc6c5983c1a0d2bd397c37590f639ea0a2873e1f035191e5d2",
+    "learning_experiment.py": "0870d5077ab3dd813403b8b77d8d9435ef6a8f292cc6c9e027a34bd7c0fb4d16",
+    "learning_statistics.py": "6104e6b76a889a3678c074477c16f7566aa0a5102d6d2502178827af1c8fc077",
+    "outcome_exposure.py": "b3835233e2359d2f033dbb726b898e2d5087f4e01f05a3def2771ddf86d53a4a",
+    "portfolio_config.toml": "b048636e497b7d89d025cef797845e88c2301a861e9a067a9db5ae6f9722ecac",
+    "portfolio_maturity.py": "a58a0af718abe42a2d8f8f0260bcf7fa7202052514ec917f92792cc24c0e85fe",
+    "strategy_discovery.py": "1e6a49f4ca188ed955e0b6e66589d5feecd4b3cd7f3470ef931284b29424b5ee"
+  },
+  "schema_version": 1,
+  "semantic_contract_sha256": "03f935f4c8c5ea213c900b692d263a580e2810769fad529fe61d108c0929041f",
+  "source_contract_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation-replication-v2/family-contract/contract-84ab93bcfc630a005e945d0bed7455ca565e26d255664c3945f61c3f710e74bb.json",
+  "source_contract_sha256": "55ec7dffa9d5b38b4de616750534bda86b99ca81f33e67a76722de3e5c6b1eed",
+  "source_development_evaluations": 0,
+  "source_search_path": "strategy_tournament/v2/discovery/clustered-form4-open-market-purchase-continuation-replication-v2/search/clustered-form4-open-market-purchase-continuation-replication-v2-search-bce9dbf6a640f44a040d696810bd6ac85cafd84d2530dacd0244bf911fca1f95.json",
+  "source_search_sha256": "bce9dbf6a640f44a040d696810bd6ac85cafd84d2530dacd0244bf911fca1f95",
+  "state": "IMPLEMENTATION_REFRESH_INSPECTED",
+  "strategy_outcomes_accessed": false
+}
