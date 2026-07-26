@@ -45,6 +45,22 @@ through 2013-12-31 confirmation partition remains untouched.
 The continuous existing-family queue is exhausted and rolling authorization
 `bedfb0ea...5e5585` currently releases three replacement slots.
 
+The current replacement lane is
+`fomc-preannouncement-equity-drift-v1`, a single-rule SCHB test on the
+scheduled pre-FOMC close-to-close interval. The official 2011-2025 regular
+meeting inventory contains 119 decision sessions: 64 are frozen for
+development, five 2019 exchange sessions form the embargo, and 55 remain
+reserved for confirmation. Unscheduled actions, cancelled meetings, notation
+votes, alternative symbols, and parameter search are excluded. Historical
+entry is the final regular-session close before the scheduled decision; exit
+is the decision-session close or a gap-aware, stop-first 1.5% stop. The
+expected 0.50% gross movement clears exactly five times the primary 10-bps
+round-trip cost. The runtime, Yahoo symbol-range collection path, and
+closing-interval production evaluator are implemented, but no SCHB market
+price may be accessed until the merged 2009-2025 exchange calendar is built,
+committed, independently inspected, and the exact family contract is frozen
+and committed.
+
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
 remain outcome-blind infrastructure, but they cannot reactivate those failed

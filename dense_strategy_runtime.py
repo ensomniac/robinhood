@@ -164,6 +164,8 @@ SPY_RSI2_PULLBACK_FAMILY = "spy-rsi2-trend-pullback"
 VIX_SHOCK_REBOUND_FAMILY = "vix-shock-low-volatility-equity-rebound"
 VIX_SHOCK_REBOUND_TARGET_SYMBOL = "SPLV"
 VIX_SHOCK_REBOUND_FEATURE_SYMBOL = "^VIX"
+FOMC_PREANNOUNCEMENT_FAMILY = "fomc-preannouncement-equity-drift"
+FOMC_PREANNOUNCEMENT_SYMBOL = "SCHB"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
 LIQUID_EQUITY_MOMENTUM_FAMILY = "liquid-equity-cross-sectional-momentum"
 ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
@@ -308,6 +310,7 @@ SUPPORTED_FAMILIES = {
     *ETF_PULLBACK_FAMILIES,
     SPY_RSI2_PULLBACK_FAMILY,
     VIX_SHOCK_REBOUND_FAMILY,
+    FOMC_PREANNOUNCEMENT_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
     LIQUID_EQUITY_MOMENTUM_FAMILY,
     ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
@@ -1660,6 +1663,134 @@ def _vix_shock_rebound_candidates(
         )
         blocked_through_entry_index = (
             entry_calendar_index + cooldown - 1
+        )
+    return candidates
+
+
+def _fomc_preannouncement_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Evaluate the sole preregistered prior-close to FOMC-close rule."""
+
+    calendar = _calendar(dataset)
+    signal_dates = set(_signal_dates(dataset))
+    daily = _daily_series(dataset)
+    if (
+        set(map(str, dataset.get("symbols", [])))
+        != {FOMC_PREANNOUNCEMENT_SYMBOL}
+        or set(daily) != {FOMC_PREANNOUNCEMENT_SYMBOL}
+    ):
+        raise DenseStrategyRuntimeError(
+            "pre-FOMC data must contain only SCHB"
+        )
+    expected_parameters = {
+        "expected_gross_move_fraction": 0.005,
+        "stop_fraction": 0.015,
+        "maximum_hold_sessions": 1,
+        "entry_timing": "prior_session_close",
+        "exit_timing": "decision_session_close",
+    }
+    normalized_parameters = {
+        "expected_gross_move_fraction": float(
+            parameters["expected_gross_move_fraction"]
+        ),
+        "stop_fraction": float(parameters["stop_fraction"]),
+        "maximum_hold_sessions": int(parameters["maximum_hold_sessions"]),
+        "entry_timing": str(parameters["entry_timing"]),
+        "exit_timing": str(parameters["exit_timing"]),
+    }
+    if normalized_parameters != expected_parameters:
+        raise DenseStrategyRuntimeError(
+            "pre-FOMC parameters drifted from the preregistered rule"
+        )
+    expected_gross = normalized_parameters["expected_gross_move_fraction"]
+    if not _cost_floor(expected_gross):
+        raise DenseStrategyRuntimeError(
+            "pre-FOMC expected movement violates the cost floor"
+        )
+    bars = daily[FOMC_PREANNOUNCEMENT_SYMBOL]
+    indices = {str(bar["date"]): index for index, bar in enumerate(bars)}
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, entry_date in enumerate(calendar[:-1]):
+        if entry_date not in signal_dates:
+            continue
+        fomc_date = calendar[calendar_index + 1]
+        signal_id = (
+            f"{entry_date}-{FOMC_PREANNOUNCEMENT_FAMILY}-"
+            f"{FOMC_PREANNOUNCEMENT_SYMBOL}"
+        )
+        entry_index = indices.get(entry_date)
+        exit_index = indices.get(fomc_date)
+        if (
+            entry_index is None
+            or exit_index is None
+            or exit_index != entry_index + 1
+        ):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": entry_date,
+                    "fomc_decision_date": fomc_date,
+                    "symbol": FOMC_PREANNOUNCEMENT_SYMBOL,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "incomplete_entry_or_decision_bar",
+                }
+            )
+            continue
+        entry_price = float(bars[entry_index]["close"])
+        stop_price = entry_price * (
+            1 - normalized_parameters["stop_fraction"]
+        )
+        if entry_price <= 0 or stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": entry_date,
+                    "fomc_decision_date": fomc_date,
+                    "symbol": FOMC_PREANNOUNCEMENT_SYMBOL,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        exit_bar = bars[exit_index]
+        opening = float(exit_bar["open"])
+        stop_executed = False
+        if opening <= stop_price:
+            exit_price = opening
+            stop_executed = True
+        elif float(exit_bar["low"]) <= stop_price:
+            exit_price = stop_price
+            stop_executed = True
+        else:
+            exit_price = float(exit_bar["close"])
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": entry_date,
+                "decision_date": entry_date,
+                "fomc_decision_date": fomc_date,
+                "symbol": FOMC_PREANNOUNCEMENT_SYMBOL,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": expected_gross,
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "exit_date": fomc_date,
+                "exit_price": exit_price,
+                "marks": {
+                    entry_date: entry_price,
+                    fomc_date: exit_price,
+                },
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+                "expected_gross_move_fraction": expected_gross,
+            }
         )
     return candidates
 
@@ -4349,6 +4480,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             *ETF_PULLBACK_FAMILIES,
             SPY_RSI2_PULLBACK_FAMILY,
             VIX_SHOCK_REBOUND_FAMILY,
+            FOMC_PREANNOUNCEMENT_FAMILY,
             ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
             ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
             ETF_HIGH_CONTINUATION_FAMILY,
@@ -4388,6 +4520,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             *ETF_PULLBACK_FAMILIES,
             SPY_RSI2_PULLBACK_FAMILY,
             VIX_SHOCK_REBOUND_FAMILY,
+            FOMC_PREANNOUNCEMENT_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
@@ -6717,6 +6850,8 @@ def build_candidates(
         return _spy_rsi2_pullback_candidates(dataset, parameters)
     if family_id == VIX_SHOCK_REBOUND_FAMILY:
         return _vix_shock_rebound_candidates(dataset, parameters)
+    if family_id == FOMC_PREANNOUNCEMENT_FAMILY:
+        return _fomc_preannouncement_candidates(dataset, parameters)
     if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
         return _sector_etf_gap_drift_candidates(dataset, parameters)
     if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY:
@@ -6918,6 +7053,8 @@ def _production_daily_signal(
         expected.add("symbols")
     if family_id == ETF_TURN_OF_MONTH_FAMILY:
         expected.add("exchange_calendar_dates")
+    if family_id == FOMC_PREANNOUNCEMENT_FAMILY:
+        expected.add("scheduled_fomc_decision_date")
     if set(decision_data) != expected or decision_data.get("family_id") != family_id:
         raise DenseStrategyRuntimeError("production daily decision-data schema drifted")
     decision_date = decision_data.get("decision_date")
@@ -7078,6 +7215,7 @@ def _production_daily_signal(
         ETF_RESIDUAL_REPLICATION_V4_FAMILY,
         *ETF_PULLBACK_FAMILIES,
         SPY_RSI2_PULLBACK_FAMILY,
+        FOMC_PREANNOUNCEMENT_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,
@@ -7124,6 +7262,71 @@ def _production_daily_signal(
             raise DenseStrategyRuntimeError(
                 "production ETF pullback replication universe escaped the frozen rules"
             )
+        if family_id == FOMC_PREANNOUNCEMENT_FAMILY:
+            expected_parameters = {
+                "expected_gross_move_fraction": 0.005,
+                "stop_fraction": 0.015,
+                "maximum_hold_sessions": 1,
+                "entry_timing": "prior_session_close",
+                "exit_timing": "decision_session_close",
+            }
+            normalized_parameters = {
+                "expected_gross_move_fraction": float(
+                    parameters["expected_gross_move_fraction"]
+                ),
+                "stop_fraction": float(parameters["stop_fraction"]),
+                "maximum_hold_sessions": int(
+                    parameters["maximum_hold_sessions"]
+                ),
+                "entry_timing": str(parameters["entry_timing"]),
+                "exit_timing": str(parameters["exit_timing"]),
+            }
+            if (
+                frozen_symbols != [FOMC_PREANNOUNCEMENT_SYMBOL]
+                or normalized_parameters != expected_parameters
+                or decision_data["scheduled_fomc_decision_date"]
+                != next_session_date
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production pre-FOMC schedule or exact rules drifted"
+                )
+            if not _cost_floor(
+                normalized_parameters["expected_gross_move_fraction"]
+            ):
+                raise DenseStrategyRuntimeError(
+                    "production pre-FOMC cost floor is closed"
+                )
+            bars = daily[FOMC_PREANNOUNCEMENT_SYMBOL]
+            symbol_index = indices[FOMC_PREANNOUNCEMENT_SYMBOL].get(
+                decision_date
+            )
+            if symbol_index is None:
+                raise DenseStrategyRuntimeError(
+                    "production pre-FOMC entry close is unavailable"
+                )
+            return {
+                "symbol": FOMC_PREANNOUNCEMENT_SYMBOL,
+                "rank": 1,
+                "score": normalized_parameters[
+                    "expected_gross_move_fraction"
+                ],
+                "expected_gross_move_fraction": normalized_parameters[
+                    "expected_gross_move_fraction"
+                ],
+                "stop_fraction": normalized_parameters["stop_fraction"],
+                "holding_trading_days": 1,
+                "decision_date": decision_date,
+                "next_session_date": next_session_date,
+                "scheduled_fomc_decision_date": next_session_date,
+                "entry_timing": "prior_session_close",
+                "overnight_hold": True,
+                "exit_plan": {
+                    "type": "stop_or_scheduled_fomc_session_close",
+                    "scheduled_exit_date": next_session_date,
+                    "maximum_hold_sessions": 1,
+                    "same_interval_ambiguity": "stop_first",
+                },
+            }
         if family_id == CROSS_STYLE_BREADTH_CONTINUATION_FAMILY:
             normalized_parameters = {
                 "breadth_sma": int(parameters["breadth_sma"]),
@@ -9335,6 +9538,7 @@ def evaluate_production_signal(
         LIQUID_EQUITY_MOMENTUM_FAMILY,
         *ETF_PULLBACK_FAMILIES,
         SPY_RSI2_PULLBACK_FAMILY,
+        FOMC_PREANNOUNCEMENT_FAMILY,
         ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
         ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
         ETF_HIGH_CONTINUATION_FAMILY,

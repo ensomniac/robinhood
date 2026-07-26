@@ -441,6 +441,29 @@ def evaluate_production(
             raise DenseStrategyPluginError(
                 "quote is not from the next observable intraday interval"
             )
+    elif winner["family_id"] == runtime.FOMC_PREANNOUNCEMENT_FAMILY:
+        try:
+            entry_session = datetime.fromisoformat(
+                str(signal["decision_date"])
+            ).date()
+        except ValueError as exc:
+            raise DenseStrategyPluginError(
+                "pre-FOMC entry session date is invalid"
+            ) from exc
+        local_quote = quote_observed.astimezone(MARKET_TIME_ZONE)
+        closing_window = datetime.combine(
+            entry_session,
+            time(hour=15, minute=59),
+            tzinfo=MARKET_TIME_ZONE,
+        )
+        if (
+            local_quote.date() != entry_session
+            or local_quote < closing_window
+            or local_quote >= closing_window + timedelta(minutes=1)
+        ):
+            raise DenseStrategyPluginError(
+                "pre-FOMC quote is not from the frozen closing interval"
+            )
     else:
         try:
             next_session = datetime.fromisoformat(
@@ -477,7 +500,12 @@ def evaluate_production(
         raise DenseStrategyPluginError("live operational fact schema drifted")
     try:
         entry = float(quote["ask"])
-        stop = entry - float(signal["stop_atr_multiple"]) * float(signal["atr"])
+        if winner["family_id"] == runtime.FOMC_PREANNOUNCEMENT_FAMILY:
+            stop = entry * (1 - float(signal["stop_fraction"]))
+        else:
+            stop = entry - float(signal["stop_atr_multiple"]) * float(
+                signal["atr"]
+            )
     except (TypeError, ValueError) as exc:
         raise DenseStrategyPluginError("live stop inputs are invalid") from exc
     if entry <= 0 or stop <= 0 or stop >= entry:
