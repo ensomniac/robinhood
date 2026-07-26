@@ -383,7 +383,15 @@ before independent source inspection. Inspection `ea8c6dc6...6a142f`
 independently rebuilds the inventory, all 309 request hashes, controller hashes,
 full source scope, empty task namespace, and untouched confirmation reserve.
 All checks pass and only development provider access is authorized. Commit and
-push it before collection.
+push it before collection. Collection checkpointed 164 exact tasks and 27,146
+rows, then failed closed on first-attempt request 165 for `LANC`, hash
+`e41bf8bc...cbf01`, with exact error `Yahoo identity, timezone, or quote arrays
+drifted`. No retry or substitution occurred. The additive replication recovery
+controller freezes this exact boundary, requires independent failure and policy
+inspections, checkpoints `LANC` as whole-symbol permanent missing without
+another request, and allows only the five already-bounded structural response
+classes to receive the same first-response missed-data disposition. Commit and
+push the controller before recording the partial exposure.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
