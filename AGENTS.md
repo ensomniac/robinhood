@@ -123,6 +123,10 @@ Failure artifact `baeed6b9...e2da07` now binds request 145, 144
 checkpointed tasks, 98,304 retained daily rows, and the complete 1,296-date by
 144-symbol partial exposure; the global outcome index contains that exact
 development scope. Commit and push both before independent failure inspection.
+Failure inspection `0bfe05c9...a7e0ee` exactly rebuilt the checkpoint boundary,
+partial exposure, zero-metric state, closed confirmation, and no-retry rule.
+All checks pass, authorizing only a zero-request permanent-missing checkpoint
+for ANDV before same-contract resume.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
