@@ -161,6 +161,9 @@ ETF_PULLBACK_REPLICATION_SYMBOLS_BY_FAMILY = {
     ),
 }
 SPY_RSI2_PULLBACK_FAMILY = "spy-rsi2-trend-pullback"
+VIX_SHOCK_REBOUND_FAMILY = "vix-shock-low-volatility-equity-rebound"
+VIX_SHOCK_REBOUND_TARGET_SYMBOL = "SPLV"
+VIX_SHOCK_REBOUND_FEATURE_SYMBOL = "^VIX"
 ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY = "liquid-etf-cross-sectional-momentum"
 LIQUID_EQUITY_MOMENTUM_FAMILY = "liquid-equity-cross-sectional-momentum"
 ETF_CROSS_SECTIONAL_REVERSAL_FAMILY = "liquid-etf-cross-sectional-reversal"
@@ -304,6 +307,7 @@ SUPPORTED_FAMILIES = {
     *INTRADAY_ETF_FAMILIES,
     *ETF_PULLBACK_FAMILIES,
     SPY_RSI2_PULLBACK_FAMILY,
+    VIX_SHOCK_REBOUND_FAMILY,
     ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
     LIQUID_EQUITY_MOMENTUM_FAMILY,
     ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
@@ -1428,6 +1432,234 @@ def _spy_rsi2_pullback_candidates(
                 "expected_gross_move_fraction": expected_gross,
                 "mean_reversion_reference_price": mean_reversion_reference,
             }
+        )
+    return candidates
+
+
+def _vix_shock_rebound_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Evaluate the sole preregistered VIX-shock SPLV rebound rule."""
+
+    calendar = _calendar(dataset)
+    signal_dates = set(_signal_dates(dataset))
+    daily = _daily_series(dataset)
+    expected_symbols = {
+        VIX_SHOCK_REBOUND_TARGET_SYMBOL,
+        VIX_SHOCK_REBOUND_FEATURE_SYMBOL,
+    }
+    if set(map(str, dataset.get("symbols", []))) != expected_symbols or set(
+        daily
+    ) != expected_symbols:
+        raise DenseStrategyRuntimeError(
+            "VIX-shock rebound data must contain only SPLV and ^VIX"
+        )
+    expected_parameters = {
+        "vix_close_minimum": 25.0,
+        "minimum_three_session_decline_fraction": 0.015,
+        "mean_reversion_sma": 5,
+        "stop_atr14": 1.5,
+        "maximum_hold_sessions": 5,
+        "cooldown_sessions": 5,
+    }
+    normalized_parameters = {
+        "vix_close_minimum": float(parameters["vix_close_minimum"]),
+        "minimum_three_session_decline_fraction": float(
+            parameters["minimum_three_session_decline_fraction"]
+        ),
+        "mean_reversion_sma": int(parameters["mean_reversion_sma"]),
+        "stop_atr14": float(parameters["stop_atr14"]),
+        "maximum_hold_sessions": int(parameters["maximum_hold_sessions"]),
+        "cooldown_sessions": int(parameters["cooldown_sessions"]),
+    }
+    if normalized_parameters != expected_parameters:
+        raise DenseStrategyRuntimeError(
+            "VIX-shock rebound parameters drifted from the preregistered rule"
+        )
+    target = daily[VIX_SHOCK_REBOUND_TARGET_SYMBOL]
+    vix = daily[VIX_SHOCK_REBOUND_FEATURE_SYMBOL]
+    target_indices = {
+        str(bar["date"]): index for index, bar in enumerate(target)
+    }
+    vix_by_date = {str(bar["date"]): bar for bar in vix}
+    feature_cache = dataset.get("_etf_pullback_feature_cache")
+    if not isinstance(feature_cache, Mapping):
+        feature_cache = _etf_pullback_feature_cache(daily)
+    target_features = feature_cache[VIX_SHOCK_REBOUND_TARGET_SYMBOL]
+    hold = normalized_parameters["maximum_hold_sessions"]
+    cooldown = normalized_parameters["cooldown_sessions"]
+    blocked_through_entry_index = -1
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar[:-1]):
+        entry_calendar_index = calendar_index + 1
+        entry_date = calendar[entry_calendar_index]
+        if (
+            entry_date not in signal_dates
+            or entry_calendar_index <= blocked_through_entry_index
+        ):
+            continue
+        decision_index = target_indices.get(decision_date)
+        vix_bar = vix_by_date.get(decision_date)
+        if decision_index is None or decision_index < 14 or vix_bar is None:
+            continue
+        prior_index = decision_index - 3
+        if prior_index < 0:
+            continue
+        decline = (
+            float(target[decision_index]["close"])
+            / float(target[prior_index]["close"])
+            - 1
+        )
+        if (
+            float(vix_bar["close"])
+            < normalized_parameters["vix_close_minimum"]
+            or decline
+            > -normalized_parameters[
+                "minimum_three_session_decline_fraction"
+            ]
+        ):
+            continue
+        signal_id = (
+            f"{entry_date}-{VIX_SHOCK_REBOUND_FAMILY}-"
+            f"{VIX_SHOCK_REBOUND_TARGET_SYMBOL}"
+        )
+        entry_index = target_indices.get(entry_date)
+        if entry_index is None:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": VIX_SHOCK_REBOUND_TARGET_SYMBOL,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_open",
+                }
+            )
+            continue
+        expected_dates = calendar[
+            entry_calendar_index : entry_calendar_index + hold
+        ]
+        observed_dates = [
+            str(item["date"])
+            for item in target[entry_index : entry_index + hold]
+        ]
+        if len(expected_dates) != hold or observed_dates != expected_dates:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": VIX_SHOCK_REBOUND_TARGET_SYMBOL,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "incomplete_holding_bars",
+                }
+            )
+            continue
+        atr14 = target_features[decision_date]["atr14"]
+        recovery_reference = _sma(
+            target,
+            decision_index,
+            normalized_parameters["mean_reversion_sma"],
+        )
+        if atr14 is None or recovery_reference is None:
+            continue
+        entry_price = float(target[entry_index]["open"])
+        expected_gross = recovery_reference / entry_price - 1
+        if not _cost_floor(expected_gross):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": VIX_SHOCK_REBOUND_TARGET_SYMBOL,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "expected_move_below_cost_floor",
+                    "expected_gross_move_fraction": expected_gross,
+                }
+            )
+            continue
+        stop_price = (
+            entry_price
+            - normalized_parameters["stop_atr14"] * float(atr14)
+        )
+        if stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": entry_date,
+                    "decision_date": decision_date,
+                    "symbol": VIX_SHOCK_REBOUND_TARGET_SYMBOL,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        exit_index = entry_index + hold - 1
+        exit_price = float(target[exit_index]["close"])
+        stop_executed = False
+        for index in range(entry_index, entry_index + hold):
+            bar = target[index]
+            opening = float(bar["open"])
+            if opening <= stop_price:
+                exit_index = index
+                exit_price = opening
+                stop_executed = True
+                break
+            if float(bar["low"]) <= stop_price:
+                exit_index = index
+                exit_price = stop_price
+                stop_executed = True
+                break
+            exit_sma = _sma(
+                target,
+                index,
+                normalized_parameters["mean_reversion_sma"],
+            )
+            if exit_sma is None:
+                raise DenseStrategyRuntimeError(
+                    "VIX-shock rebound exit SMA is unavailable"
+                )
+            if float(bar["close"]) >= exit_sma:
+                exit_index = index
+                exit_price = float(bar["close"])
+                break
+        marks = {
+            str(target[index]["date"]): (
+                exit_price
+                if index == exit_index
+                else float(target[index]["close"])
+            )
+            for index in range(entry_index, exit_index + 1)
+        }
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": entry_date,
+                "decision_date": decision_date,
+                "symbol": VIX_SHOCK_REBOUND_TARGET_SYMBOL,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": float(vix_bar["close"]),
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "exit_date": str(target[exit_index]["date"]),
+                "exit_price": exit_price,
+                "marks": marks,
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+                "expected_gross_move_fraction": expected_gross,
+                "mean_reversion_reference_price": recovery_reference,
+                "vix_close": float(vix_bar["close"]),
+                "three_session_return_fraction": decline,
+            }
+        )
+        blocked_through_entry_index = (
+            entry_calendar_index + cooldown - 1
         )
     return candidates
 
@@ -4116,6 +4348,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         if family_id in {
             *ETF_PULLBACK_FAMILIES,
             SPY_RSI2_PULLBACK_FAMILY,
+            VIX_SHOCK_REBOUND_FAMILY,
             ETF_CROSS_SECTIONAL_MOMENTUM_FAMILY,
             ETF_CROSS_SECTIONAL_REVERSAL_FAMILY,
             ETF_HIGH_CONTINUATION_FAMILY,
@@ -4154,6 +4387,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
         if family_id in {
             *ETF_PULLBACK_FAMILIES,
             SPY_RSI2_PULLBACK_FAMILY,
+            VIX_SHOCK_REBOUND_FAMILY,
             SECTOR_ETF_GAP_DRIFT_FAMILY,
             FLIGHT_TO_SAFETY_REBOUND_FAMILY,
             FLIGHT_TO_SAFETY_REPLICATION_FAMILY,
@@ -6481,6 +6715,8 @@ def build_candidates(
         )
     if family_id == SPY_RSI2_PULLBACK_FAMILY:
         return _spy_rsi2_pullback_candidates(dataset, parameters)
+    if family_id == VIX_SHOCK_REBOUND_FAMILY:
+        return _vix_shock_rebound_candidates(dataset, parameters)
     if family_id == SECTOR_ETF_GAP_DRIFT_FAMILY:
         return _sector_etf_gap_drift_candidates(dataset, parameters)
     if family_id == FLIGHT_TO_SAFETY_REBOUND_FAMILY:

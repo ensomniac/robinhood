@@ -489,6 +489,18 @@ family's own finalized development exposure, in addition to its partial and
 source records, when reconstructing this closed lineage; a focused regression
 test proves that this administrative exposure record cannot make the immutable
 partition disappear while every other family's exposure remains authoritative.
+The ASR later-single-rule lane is not an available fallback: its already-frozen
+inspection `5830772b...f0e7b` found only three globally untouched confirmation
+opportunities versus the mandatory twenty. The next no-wait lane therefore
+uses one active rolling slot for the genuinely distinct
+`vix-shock-low-volatility-equity-rebound-v1` family. It has one exact rule and
+no parameter alternatives: completed VIX close at least 25, completed SPLV
+three-session decline at least 1.5%, next-open entry only when SMA5 recovery
+room clears the cost floor, 1.5 ATR14 stop, SMA5/fifth-close exit, and a
+five-session entry cooldown. Its 2014-2020 SPLV and `^VIX` date-symbol graph is
+currently absent from the outcome-exposure index. Freeze the exact family,
+development, five-session embargo, and confirmation reserve before the first
+price request; confirmation and broker access remain forbidden.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
