@@ -44,8 +44,9 @@ def _event(day: str, *, accepted: str) -> dict[str, float | str]:
 
 def _parameters() -> dict[str, float | int]:
     return {
-        "minimum_yoy_eps_change_ratio": 0.25,
+        "minimum_yoy_eps_change_ratio": 0.0,
         "minimum_opening_gap_fraction": 0.0,
+        "security_trend_gate": "price>SMA200",
         "stop_atr14": 1.0,
         "maximum_hold_sessions": 2,
     }

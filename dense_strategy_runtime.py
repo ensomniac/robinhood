@@ -6448,11 +6448,13 @@ def _sec_broad_pead_candidates(
         parameters["minimum_yoy_eps_change_ratio"]
     )
     minimum_gap = float(parameters["minimum_opening_gap_fraction"])
+    trend_gate = str(parameters["security_trend_gate"])
     stop_atr = float(parameters["stop_atr14"])
     hold_sessions = int(parameters["maximum_hold_sessions"])
     if (
-        minimum_eps_change not in {0.0, 0.25}
+        minimum_eps_change != 0.0
         or minimum_gap not in {-0.02, 0.0}
+        or trend_gate not in {"price>SMA100", "price>SMA200"}
         or stop_atr not in {1.0, 1.5}
         or hold_sessions not in {2, 5}
     ):
@@ -6477,7 +6479,14 @@ def _sec_broad_pead_candidates(
             symbol = str(raw.get("symbol", ""))
             bars = daily.get(symbol)
             entry_index = indices.get(symbol, {}).get(decision_date)
-            if bars is None or entry_index is None or entry_index < 200:
+            trend_sessions = (
+                100 if trend_gate == "price>SMA100" else 200
+            )
+            if (
+                bars is None
+                or entry_index is None
+                or entry_index < trend_sessions
+            ):
                 continue
             if (
                 raw.get("security_identity_state")
@@ -6494,8 +6503,10 @@ def _sec_broad_pead_candidates(
             if eps_change + 1e-12 < minimum_eps_change:
                 continue
             prior_close = float(bars[entry_index - 1]["close"])
-            prior_sma200 = _sma(bars, entry_index - 1, 200)
-            if prior_sma200 is None or prior_close <= prior_sma200:
+            prior_trend = _sma(
+                bars, entry_index - 1, trend_sessions
+            )
+            if prior_trend is None or prior_close <= prior_trend:
                 continue
             entry_price = float(bars[entry_index]["open"])
             gap = entry_price / prior_close - 1
@@ -10284,11 +10295,13 @@ def _production_sec_broad_pead_signal(
         parameters["minimum_yoy_eps_change_ratio"]
     )
     minimum_gap = float(parameters["minimum_opening_gap_fraction"])
+    trend_gate = str(parameters["security_trend_gate"])
     stop_atr = float(parameters["stop_atr14"])
     hold = int(parameters["maximum_hold_sessions"])
     if (
-        minimum_eps_change not in {0.0, 0.25}
+        minimum_eps_change != 0.0
         or minimum_gap not in {-0.02, 0.0}
+        or trend_gate not in {"price>SMA100", "price>SMA200"}
         or stop_atr not in {1.0, 1.5}
         or hold not in {2, 5}
     ):
@@ -10335,9 +10348,12 @@ def _production_sec_broad_pead_signal(
                 "production broad SEC PEAD event uses an excluded symbol"
             )
         bars = daily.get(symbol)
+        trend_sessions = (
+            100 if trend_gate == "price>SMA100" else 200
+        )
         if (
             bars is None
-            or len(bars) < 200
+            or len(bars) < trend_sessions
             or str(bars[-1]["date"]) != previous_session
         ):
             continue
@@ -10356,7 +10372,7 @@ def _production_sec_broad_pead_signal(
         if eps_change + 1e-12 < minimum_eps_change:
             continue
         prior_close = float(bars[-1]["close"])
-        trend = _sma(bars, len(bars) - 1, 200)
+        trend = _sma(bars, len(bars) - 1, trend_sessions)
         opening = float(event["opening_price"])
         if (
             trend is None
