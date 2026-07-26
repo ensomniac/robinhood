@@ -107,6 +107,11 @@ Development source contract `45eaeda6...5187b` now freezes all 2,589 requests,
 1,296 exchange-session source dates, controller hashes, pacing, no-retry,
 no-substitution, and full contamination scope with prices still unopened.
 Commit and push it before independent source-contract inspection.
+Inspection `9635cff6...a6f1ce` independently rebuilt all 2,589 requests,
+controller hashes, event inventory, search binding, full contamination scope,
+untouched confirmation, and the empty task namespace. All checks pass; only
+the frozen development requests are authorized after this inspection is
+committed and pushed.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
