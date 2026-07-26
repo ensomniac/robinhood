@@ -520,6 +520,13 @@ trial, five rolling-origin OOF folds, costs, partitions, confirmation reserve,
 and implementation binding in state `SEARCH_FROZEN`. It contains no outcomes
 and permits no confirmation or broker access. Commit and push it before
 freezing the development-only Yahoo request graph.
+Development collection plan `2118fc4c...5d1d8a0` freezes exactly three
+requests over the inspected 2014-01-02 through 2018-10-09 required range: one
+Massive split-action graph plus one zero-retry Yahoo symbol-range request each
+for `SPLV` and `^VIX`. It binds search `98b61656`, all 200 warmup and 1,000
+development account sessions, raw-OHLC semantics, pacing, and no substitutions
+with zero provider access. Commit and push it before independent plan
+inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
