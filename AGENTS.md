@@ -94,7 +94,12 @@ and zero substitutions. Commit and push it before independent plan
 reconstruction and provider access. Inspection `11430817...b3bf7`
 independently rebuilds both exact tasks, all dates, search/calendar bindings,
 controller hashes, and the zero-outcome boundary. All checks pass with zero
-provider or broker actions. Commit and push it before collection.
+provider or broker actions. Development collection `40871589...13356`
+completed the inspected graph with three underlying requests, zero failures,
+12.59 seconds of pacing, and 0.28 seconds of request time. Dataset hash
+`26d0b68c...4b07b` is stored outside Git; confirmation and broker actions
+remain closed. Commit the compact collection boundary before independent
+dataset inspection.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
