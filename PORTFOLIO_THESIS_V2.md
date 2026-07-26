@@ -164,6 +164,35 @@ all development symbols are excluded from the reserve, leaving 201 events
 across 118 signal dates and 178 symbols. This is an outcome-blind evidence
 partition rule, not a performance filter.
 
+The reaction-confirmed 2012-2014 expansion and its exact broad-reaction
+successors are now terminal. The broad first-observable-open SEC EPS-improvement
+successor then evaluated 16 prospectively frozen trials on the already
+contaminated v14 graph while carrying 33 prior broad-PEAD trials into DSR and
+Holm correction. Four trials retained positive 20-bps log growth, so this was
+not an all-negative result. The strongest complete path used a minus-two-percent
+opening-gap floor, own-security SMA200 trend, 1.5 ATR14 stop, and five-session
+hold. Across 64 fills it produced 0.045905 stressed log growth, 1.487748 stressed
+profit factor, a positive 0.00009184 one-sided stationary-bootstrap lower mean
+account return, and 0.028571 PBO.
+
+That exact path still failed promotion. Its stressed drawdown was 6.025537R
+against the immutable 6R ceiling, its last two of five rolling-origin folds were
+slightly negative, and cumulative 49-attempt DSR and Holm gates did not reject
+the null. Independent inspection `0a02505e...50bde` therefore rejected the
+whole 16-trial family and keeps all 2015 price outcomes closed. Do not alter a
+threshold, stop, hold, trend gate, or cost assumption on the evaluated
+2012-2014 corpus.
+
+The shortest defensible next step is one exact temporal replication, not
+another parameter search. Freeze the exact near-survivor above before opening
+any 2015 price, reclassify the still-unopened 2015 reserve as explicitly
+contaminated successor development without substitutions, and carry every 49
+prior attempt into the selection-aware statistics. Preregister a separate,
+globally untouched historical confirmation reserve outside that 2015 scope
+before collection. If the exact 2015 replication is not independently stable
+and positive after costs, retire the broad SEC earnings-drift mechanism rather
+than repair it again.
+
 The machine evidence is the frozen development result in
 `research_results/2026-07-22-schedule-13d-activist-continuation-v1-development-019156b846d39a1c46712443c9bc4fb5e98441a01b53b3361580cbfb4ece03cc.json`
 and its independent retirement in
