@@ -570,7 +570,9 @@ and no new outcome was accessed. Its refreshed contract is
 `40b5e263...957928`. Refreshed preflight `4d5c63da...d84609a`
 independently assigns `CAPACITY_READY` from the unchanged frozen capacity and
 calendar with zero price, return, confirmation, provider, or broker access.
-Commit and push it before freezing the refreshed search.
+Refreshed search `16001b2e...3cac19` now seals the same sole trial, dates,
+costs, partitions, and selection rule under the current implementation hashes.
+Commit and push it before freezing the one-request recovery plan.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
