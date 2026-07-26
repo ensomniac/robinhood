@@ -81,7 +81,12 @@ disposition before freezing development, embargo, and confirmation evidence.
 it clusters every filing observable before the same symbol's next full-session
 open, reserves confirmation symbol/date pairs through the maximum five-session
 exit, and freezes the exact 32-trial notional, owner-count, prior-return,
-ATR-stop, and hold grid before any market-price access.
+ATR-stop, and hold grid before any market-price access. Contract
+`044198c2...90f6ce` and capacity manifest `3d94b4ae...a681ef` now bind 7,049
+development clusters, the five-session embargo, and 668 pair-clean
+confirmation clusters across 154 possible entry dates. Prices, returns,
+confirmation, and broker actions remain unopened. Commit and push these
+artifacts before the generic discovery preflight.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed

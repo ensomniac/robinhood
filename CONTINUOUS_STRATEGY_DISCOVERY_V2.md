@@ -490,6 +490,12 @@ distinct reporting owners `{1,2}` by maximum prior 20-session return
 `{-5%,0%}` by stop `{1.5,2.0} ATR14` by hold `{3,5}` sessions. Only after the
 contract, generic preflight, and search are committed may development prices be
 collected; confirmation prices remain forbidden until an exact winner freezes.
+Frozen contract `044198c2...90f6ce` and capacity manifest
+`3d94b4ae...a681ef` make those boundaries authoritative: 7,049 development
+clusters, five embargo sessions, and 668 globally pair-clean confirmation
+clusters across 154 entry dates. They attest zero price, return, confirmation,
+or broker access and must be committed before the generic preflight can add
+implementation hashes and authorize the search freeze.
 
 ## Parallel lanes
 
