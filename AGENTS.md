@@ -103,7 +103,12 @@ dataset inspection. Inspection `41fcb8bd...e5c54` independently rebuilds the
 collection, external hashes, adjusted SCHB bars, exact search binding, and
 runtime schema. Dataset manifest `49bd5acf...15933b` is
 `DATASET_INSPECTED_READY`. Commit and push both before any strategy return is
-computed.
+computed. Development result `edef6de3...a4cd` evaluated the sole trial over
+1,949 rolling-origin OOF account days with 61 fills in 0.17 seconds and zero
+provider requests. Its uninspected 20-bps path has -0.06433 log growth, 0.482
+profit factor, 13.21R drawdown, no positive rolling folds, DSR 0, Holm false,
+and PBO 1.00. Commit it before independent reconstruction; if reproduced, the
+exact family is terminal and confirmation stays closed.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts

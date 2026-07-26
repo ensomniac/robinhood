@@ -1,0 +1,70 @@
+{
+  "artifact_kind": "development-search-result",
+  "artifact_sha256": "edef6de3acda95331ec04890e4efd060a78baf015ecbe90816f36aba77ffa4cd",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "elapsed_seconds": 0.16560337494593114,
+  "evaluation_binding": {
+    "compression": "gzip",
+    "content_sha256": "0bee8e3f6a5312f0a9c0287dcd6263f04919767f3cfa107b70294c1803f8f2af",
+    "file_sha256": "26d2f22d60cde88d9d10a43fe38a4362cf2183bb8edc57546eaf08e94f845aef",
+    "format": "canonical-json",
+    "kind": "external-development-evaluation",
+    "relative_path": "_derived/strategy_discovery_evaluations/0bee8e3f6a5312f0a9c0287dcd6263f04919767f3cfa107b70294c1803f8f2af/evaluation.json.gz",
+    "schema_version": 1,
+    "storage": "LOCAL_HISTORICAL_DATA_ROOT"
+  },
+  "evaluation_summary": {
+    "dataset_manifest": "/Users/ensomniac/trade/robinhood_codex/strategy_tournament/v2/discovery/fomc-preannouncement-equity-drift/development-dataset/dataset-fomc-preannouncement-equity-drift-development-7e682b0914628c2b-49bd5acf0d78a3abf4c67ac9de269a4936c2062d0c5a681c8b6ab1e2ee15933b.json",
+    "experiment_id": "experiment-fomc-preannouncement-equity-drift-v1",
+    "implementation_sha256": "8ad008067415e630fa582d43f689d81f003e81076bfeac3960441b682a2c7e1a",
+    "trial_count": 1,
+    "trials": [
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 1949,
+          "oof_filled_account_returns": 61,
+          "oof_net_pnl_dollars": 61
+        },
+        "maturity_rows": 1949,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 13.210924172262061,
+          "stress_20bps_profit_factor": 0.48160840849587977,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.06433335106214681,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "entry_timing": "prior_session_close",
+          "exit_timing": "decision_session_close",
+          "expected_gross_move_fraction": 0.005,
+          "maximum_hold_sessions": 1,
+          "stop_fraction": 0.015
+        },
+        "trial_accounting_rows": 1949,
+        "trial_id": "trial-601be0d1850ec702"
+      }
+    ]
+  },
+  "family_id": "fomc-preannouncement-equity-drift",
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 1,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "search_path": "strategy_tournament/v2/discovery/fomc-preannouncement-equity-drift/search/fomc-preannouncement-equity-drift-search-7e682b0914628c2b789a50c5e0b512335c0caf6b19e2b50b84bc9a99e013986c.json",
+  "search_sha256": "7e682b0914628c2b789a50c5e0b512335c0caf6b19e2b50b84bc9a99e013986c",
+  "state": "DEVELOPMENT_EVALUATED"
+}
