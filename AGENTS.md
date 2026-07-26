@@ -437,7 +437,12 @@ implementation binding as `CAPACITY_READY`, with zero provider or outcome
 access. Replacement search `c137ebdb...f2d28d` now freezes the same 32 trials
 and current implementation hashes. Commit and push it before rebinding the
 already-inspected dataset metadata to this exact search; no provider access or
-new row data is needed.
+new row data is needed. `insider_purchase_dataset_rebind.py` performs that
+transition by proving the source and replacement semantic contracts are
+identical after implementation hashes are removed, copying only the inspected
+manifest metadata, and creating an exact dataset-bound contract. It never opens
+private rows or permits provider, confirmation, or broker access. Commit and
+push the controller before running it.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
