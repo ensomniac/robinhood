@@ -276,6 +276,9 @@ EARNINGS_SEC_REACTION_FAMILY = "earnings-sec-yoy-eps-reaction-drift"
 ACTIVIST_EARNINGS_REACTION_FAMILY = (
     "activist-issuer-earnings-reaction-continuation"
 )
+SP500_ADDITION_FORCED_DEMAND_FAMILY = (
+    "sp500-index-addition-forced-demand"
+)
 VOLATILITY_COMPRESSION_FAMILY = (
     "gap-universe-volatility-compression-breakout"
 )
@@ -313,6 +316,7 @@ SUPPORTED_FAMILIES = {
     EARNINGS_PEAD_FAMILY,
     EARNINGS_SEC_REACTION_FAMILY,
     ACTIVIST_EARNINGS_REACTION_FAMILY,
+    SP500_ADDITION_FORCED_DEMAND_FAMILY,
     VOLATILITY_COMPRESSION_FAMILY,
 }
 PRIMARY_ROUND_TRIP_COST_FRACTION = 0.001
@@ -3903,6 +3907,95 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             )
     else:
         daily = _daily_series(dataset)
+        if family_id == SP500_ADDITION_FORCED_DEMAND_FAMILY:
+            raw_events = dataset.get("event_metadata_by_entry_date")
+            if not isinstance(raw_events, Mapping) or set(raw_events) != set(
+                calendar
+            ):
+                raise DenseStrategyRuntimeError(
+                    "S&P addition metadata must bind every account date"
+                )
+            seen_event_ids: set[str] = set()
+            for entry_date in calendar:
+                rows = raw_events[entry_date]
+                if not isinstance(rows, list):
+                    raise DenseStrategyRuntimeError(
+                        f"S&P addition metadata is invalid for {entry_date}"
+                    )
+                observed_order: list[tuple[int, str, str]] = []
+                for row in rows:
+                    if not isinstance(row, Mapping) or set(row) != {
+                        "action",
+                        "announcement_at",
+                        "announcement_date",
+                        "company_name",
+                        "effective_date",
+                        "entry_date",
+                        "event_id",
+                        "holding_dates",
+                        "index_name",
+                        "pre_effective_date",
+                        "reference_date",
+                        "sessions_to_effective",
+                        "source_url",
+                        "ticker",
+                    }:
+                        raise DenseStrategyRuntimeError(
+                            f"S&P addition event schema drifted for {entry_date}"
+                        )
+                    event_id = row["event_id"]
+                    ticker = row["ticker"]
+                    holding_dates = row["holding_dates"]
+                    sessions_to_effective = row["sessions_to_effective"]
+                    if (
+                        not isinstance(event_id, str)
+                        or not event_id
+                        or event_id in seen_event_ids
+                        or not isinstance(ticker, str)
+                        or not ticker
+                        or ticker != ticker.upper()
+                        or row["entry_date"] != entry_date
+                        or row["action"] != "Addition"
+                        or row["index_name"] != "S&P 500"
+                        or not isinstance(holding_dates, list)
+                        or len(holding_dates) != 5
+                        or holding_dates[0] != entry_date
+                        or holding_dates != sorted(holding_dates)
+                        or len(holding_dates) != len(set(holding_dates))
+                        or isinstance(sessions_to_effective, bool)
+                        or not isinstance(sessions_to_effective, int)
+                        or sessions_to_effective < 1
+                    ):
+                        raise DenseStrategyRuntimeError(
+                            f"S&P addition event is invalid for {entry_date}"
+                        )
+                    seen_event_ids.add(event_id)
+                    observed_order.append(
+                        (-sessions_to_effective, ticker, event_id)
+                    )
+                if observed_order != sorted(observed_order):
+                    raise DenseStrategyRuntimeError(
+                        f"S&P addition ranks drifted for {entry_date}"
+                    )
+            source = dataset.get("source_semantics")
+            if not (
+                isinstance(source, Mapping)
+                and source.get("feed")
+                == "Massive SIP unadjusted daily event windows"
+                and source.get("adjustment")
+                == (
+                    "raw bars adjusted only by frozen point-in-time split "
+                    "actions through the dataset end"
+                )
+                and source.get("substitution") == "forbidden"
+            ):
+                raise DenseStrategyRuntimeError(
+                    "S&P addition source semantics are incomplete"
+                )
+            prepared["_sp500_addition_event_cache"] = {
+                day: [dict(row) for row in raw_events[day]]
+                for day in calendar
+            }
         if family_id == LIQUID_EQUITY_MOMENTUM_FAMILY:
             universe = dataset.get("universe_by_date")
             identities = dataset.get("universe_identity_by_date")
@@ -5671,6 +5764,201 @@ def _activist_earnings_reaction_candidates(
     return candidates
 
 
+def _sp500_addition_exit(
+    bars_by_date: Mapping[str, Mapping[str, Any]],
+    *,
+    holding_dates: Sequence[str],
+    stop_price: float,
+    maximum_hold_sessions: int,
+    pre_effective_date: str,
+    exit_mode: str,
+) -> tuple[str, float, bool, dict[str, float]]:
+    exit_dates = list(holding_dates[:maximum_hold_sessions])
+    if (
+        exit_mode == "pre_effective_or_maximum_hold"
+        and pre_effective_date in exit_dates
+    ):
+        exit_dates = exit_dates[: exit_dates.index(pre_effective_date) + 1]
+    marks: dict[str, float] = {}
+    for day in exit_dates:
+        bar = bars_by_date[day]
+        if float(bar["low"]) <= stop_price:
+            exit_price = min(float(bar["open"]), stop_price)
+            marks[day] = exit_price
+            return day, exit_price, True, marks
+        marks[day] = float(bar["close"])
+    final_date = exit_dates[-1]
+    return (
+        final_date,
+        float(bars_by_date[final_date]["close"]),
+        False,
+        marks,
+    )
+
+
+def _sp500_addition_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    cached = dataset.get("_sp500_addition_event_cache")
+    raw_events = (
+        cached
+        if isinstance(cached, Mapping)
+        else dataset.get("event_metadata_by_entry_date")
+    )
+    if not isinstance(raw_events, Mapping) or set(raw_events) != set(calendar):
+        raise DenseStrategyRuntimeError(
+            "S&P addition metadata must bind every account date"
+        )
+    maximum_gap = float(
+        parameters["maximum_positive_announcement_gap_fraction"]
+    )
+    minimum_lead = int(parameters["minimum_sessions_to_effective"])
+    stop_buffer = float(parameters["stop_buffer_below_reference_close"])
+    hold_sessions = int(parameters["maximum_hold_sessions"])
+    exit_mode = str(parameters["exit_mode"])
+    if (
+        maximum_gap not in {0.02, 0.04}
+        or minimum_lead not in {2, 4}
+        or stop_buffer not in {0.0, 0.01}
+        or hold_sessions not in {2, 5}
+        or exit_mode
+        not in {"maximum_hold", "pre_effective_or_maximum_hold"}
+    ):
+        raise DenseStrategyRuntimeError(
+            "S&P addition trial parameters escaped the frozen grid"
+        )
+    daily = _daily_series(dataset)
+    bars_by_symbol = {
+        symbol: {str(bar["date"]): bar for bar in bars}
+        for symbol, bars in daily.items()
+    }
+    candidates: list[dict[str, Any]] = []
+    for entry_date in calendar:
+        rows = raw_events[entry_date]
+        if not isinstance(rows, list):
+            raise DenseStrategyRuntimeError(
+                f"S&P addition metadata is invalid for {entry_date}"
+            )
+        for rank, raw in enumerate(rows, 1):
+            if not isinstance(raw, Mapping):
+                raise DenseStrategyRuntimeError(
+                    f"S&P addition event is invalid for {entry_date}"
+                )
+            event = dict(raw)
+            event_id = str(event["event_id"])
+            symbol = str(event["ticker"])
+            signal_id = (
+                f"{entry_date}-{SP500_ADDITION_FORCED_DEMAND_FAMILY}-"
+                f"{event_id[:16]}"
+            )
+            common = {
+                "signal_id": signal_id,
+                "signal_date": entry_date,
+                "decision_date": str(event["announcement_date"]),
+                "symbol": symbol,
+                "event_id": event_id,
+                "rank": rank,
+                "score": int(event["sessions_to_effective"]),
+                "sessions_to_effective": int(
+                    event["sessions_to_effective"]
+                ),
+                "effective_date": str(event["effective_date"]),
+                "pre_effective_date": str(event["pre_effective_date"]),
+                "source_url": str(event["source_url"]),
+            }
+            if int(event["sessions_to_effective"]) < minimum_lead:
+                candidates.append(
+                    {
+                        **common,
+                        "outcome": "rejected",
+                        "rejection_reason": "insufficient_effective_date_lead",
+                    }
+                )
+                continue
+            bars = bars_by_symbol.get(symbol, {})
+            required_dates = [
+                str(event["reference_date"]),
+                *map(str, event["holding_dates"]),
+            ]
+            if any(day not in bars for day in required_dates):
+                candidates.append(
+                    {
+                        **common,
+                        "outcome": "missed_fill",
+                        "rejection_reason": "incomplete_event_window",
+                    }
+                )
+                continue
+            reference_close = float(
+                bars[str(event["reference_date"])]["close"]
+            )
+            entry_price = float(bars[entry_date]["open"])
+            entry_gap = entry_price / reference_close - 1
+            if entry_gap > maximum_gap + 1e-12:
+                candidates.append(
+                    {
+                        **common,
+                        "outcome": "rejected",
+                        "rejection_reason": "announcement_gap_above_maximum",
+                        "entry_gap_fraction": entry_gap,
+                    }
+                )
+                continue
+            expected_gross = maximum_gap - max(entry_gap, 0.0)
+            if not _cost_floor(expected_gross):
+                candidates.append(
+                    {
+                        **common,
+                        "outcome": "rejected",
+                        "rejection_reason": "expected_move_below_cost_floor",
+                        "entry_gap_fraction": entry_gap,
+                        "expected_gross_move_fraction": expected_gross,
+                    }
+                )
+                continue
+            stop_price = reference_close * (1 - stop_buffer)
+            if stop_price <= 0 or stop_price >= entry_price:
+                candidates.append(
+                    {
+                        **common,
+                        "outcome": "missed_fill",
+                        "rejection_reason": "invalid_structural_stop",
+                        "entry_gap_fraction": entry_gap,
+                        "reference_close": reference_close,
+                    }
+                )
+                continue
+            exit_date, exit_price, stop_executed, marks = (
+                _sp500_addition_exit(
+                    bars,
+                    holding_dates=list(map(str, event["holding_dates"])),
+                    stop_price=stop_price,
+                    maximum_hold_sessions=hold_sessions,
+                    pre_effective_date=str(event["pre_effective_date"]),
+                    exit_mode=exit_mode,
+                )
+            )
+            candidates.append(
+                {
+                    **common,
+                    "outcome": "eligible",
+                    "entry_price": entry_price,
+                    "stop_price": stop_price,
+                    "exit_date": exit_date,
+                    "exit_price": exit_price,
+                    "marks": marks,
+                    "stop_executed": stop_executed,
+                    "planned_stop_distance": entry_price - stop_price,
+                    "entry_gap_fraction": entry_gap,
+                    "reference_close": reference_close,
+                    "expected_gross_move_fraction": expected_gross,
+                }
+            )
+    return candidates
+
+
 def build_candidates(
     dataset: Mapping[str, Any],
     family_id: str,
@@ -5787,6 +6075,8 @@ def build_candidates(
         return _earnings_sec_reaction_candidates(dataset, parameters)
     if family_id == ACTIVIST_EARNINGS_REACTION_FAMILY:
         return _activist_earnings_reaction_candidates(dataset, parameters)
+    if family_id == SP500_ADDITION_FORCED_DEMAND_FAMILY:
+        return _sp500_addition_candidates(dataset, parameters)
     if family_id == VOLATILITY_COMPRESSION_FAMILY:
         return _compression_candidates(dataset, parameters)
     raise DenseStrategyRuntimeError(f"unsupported dense family: {family_id}")
