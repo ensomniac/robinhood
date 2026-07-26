@@ -72,7 +72,10 @@ five-session embargo. A subsequent family-freeze attempt failed closed before
 writing because 20 confirmation entry dates carried wildcard exposure from
 older research. The corrected inspector must bind the unchanged 55-date
 inventory, 20 explicit exclusions, and 35 untouched confirmation pairs before
-the exact family and capacity contracts may freeze.
+the exact family and capacity contracts may freeze. Inspection
+`95a0caa4...dd3c4` now independently reproduces that pair-clean allocation
+and all calendar/source checks with zero price or broker access. Commit and
+push it before the family freeze.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
