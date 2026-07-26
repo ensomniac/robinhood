@@ -99,7 +99,11 @@ completed the inspected graph with three underlying requests, zero failures,
 12.59 seconds of pacing, and 0.28 seconds of request time. Dataset hash
 `26d0b68c...4b07b` is stored outside Git; confirmation and broker actions
 remain closed. Commit the compact collection boundary before independent
-dataset inspection.
+dataset inspection. Inspection `41fcb8bd...e5c54` independently rebuilds the
+collection, external hashes, adjusted SCHB bars, exact search binding, and
+runtime schema. Dataset manifest `49bd5acf...15933b` is
+`DATASET_INSPECTED_READY`. Commit and push both before any strategy return is
+computed.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
