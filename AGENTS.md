@@ -150,6 +150,10 @@ Resume policy `c33ff834...68e834` now freezes the two inspected failures,
 the 438-task checkpoint boundary, the exact exception type and message, and the
 zero-retry, zero-substitution disposition. Commit and push it before independent
 policy inspection; provider access remains closed until that inspection passes.
+Inspection `f6c2cade...951d9d` independently rebuilt the policy, both failure
+records, the checkpoint boundary, closed confirmation, zero-metric state, and
+every no-retry/no-substitution constraint. All ten checks pass. Commit and push
+the inspection before resuming the unchanged 2,589-request graph.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
