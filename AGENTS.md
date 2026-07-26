@@ -457,6 +457,13 @@ current implementation hashes, and exact manifest binding as `CAPACITY_READY`
 without opening outcomes. Final search `625dcc3e...73e235` now freezes the
 current code, identical 32 trials, cumulative prior paths, and exact rebound
 dataset manifest. Commit and push it before evaluation.
+The evaluation invocation produced no artifact because the controller compared
+the repo-relative explicit manifest string with the plugin's resolved absolute
+spelling and rejected them as a substitution. No metric was returned or
+inspected. `insider_purchase_dataset_path_binding.py` freezes only the resolved
+spelling of that same committed file, proves every other contract field and
+implementation hash is identical, and opens no rows. Commit and push the
+controller before creating the path-bound contract.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
