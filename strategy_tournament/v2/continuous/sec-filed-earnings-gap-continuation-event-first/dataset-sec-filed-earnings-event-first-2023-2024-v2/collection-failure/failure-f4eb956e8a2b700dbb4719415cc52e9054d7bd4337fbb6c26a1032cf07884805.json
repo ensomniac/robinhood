@@ -1,0 +1,52 @@
+{
+  "artifact_kind": "sec-earnings-full-inventory-performance-failure",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_outcomes_accessed": false,
+  "contract_inspection_path": "strategy_tournament/v2/continuous/sec-filed-earnings-gap-continuation-event-first/dataset-sec-filed-earnings-event-first-2023-2024-v1/capacity-contract-inspection/inspection-84c9500e28d46077d41c54a3127dfdd7945c77a01c14436e54e00415d8f644b5.json",
+  "contract_inspection_sha256": "84c9500e28d46077d41c54a3127dfdd7945c77a01c14436e54e00415d8f644b5",
+  "contract_path": "strategy_tournament/v2/continuous/sec-filed-earnings-gap-continuation-event-first/dataset-sec-filed-earnings-event-first-2023-2024-v1/capacity-contract/contract-319a78ec1c2fac291a9463bed424bde7e9137fe157119d56c487205822bb13ea.json",
+  "contract_sha256": "319a78ec1c2fac291a9463bed424bde7e9137fe157119d56c487205822bb13ea",
+  "dataset_id": "dataset-sec-filed-earnings-event-first-2023-2024-v1",
+  "failed_at": "2026-07-26T19:16:10+00:00",
+  "failure": {
+    "implementation": "outcome_exposure.find_overlaps called once per proposed event",
+    "private_inventory_written": false,
+    "provider_transport_complete": true,
+    "public_collection_written": false,
+    "root_cause": "each call re-expanded and sorted the complete global exposure scope, producing redundant work proportional to event count times 6.27 million exposed pairs",
+    "stage": "local_event_derivation"
+  },
+  "failure_sha256": "f4eb956e8a2b700dbb4719415cc52e9054d7bd4337fbb6c26a1032cf07884805",
+  "family_id": "sec-filed-earnings-gap-continuation-event-first",
+  "filing_documents_accessed": false,
+  "forward_returns_accessed": false,
+  "market_prices_accessed": false,
+  "outcome_exposure_audit": {
+    "baseline_complete": true,
+    "exposed_pairs": 6270506,
+    "index_sha256": "940c4cacecac4194f5ee539766e74790aff9ac4b2f4f057e0aa987e909d8c8bc",
+    "records": 86,
+    "valid": true
+  },
+  "provider_metadata_archive_accessed": true,
+  "provider_requests_executed": 1,
+  "retained_archive": {
+    "bytes": 1553601999,
+    "members": 983888,
+    "primary_cik_files": 978573,
+    "sha256": "cb4fa9b945ae3364cc66f92ee0bfe4237c140d7ef3884504df2030985bf17df5"
+  },
+  "schema_version": 1,
+  "state": "OVERLAP_EXPANSION_PERFORMANCE_FAILURE",
+  "strategy_metrics_computed": 0,
+  "successor_authority": {
+    "additional_provider_requests_permitted": 0,
+    "only_permitted_change": "direct membership checks against normalized exposure records",
+    "same_archive_bytes_required": true,
+    "same_capacity_thresholds_required": true,
+    "same_event_semantics_required": true,
+    "same_partitions_required": true,
+    "same_selection_accounting_required": true
+  }
+}

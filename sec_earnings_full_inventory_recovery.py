@@ -591,8 +591,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "path": v1._repo_path(path),
                     "state": value["state"],
                     "sha256": value.get("collection_sha256")
-                    or value.get("contract_sha256")
-                    or value.get("failure_sha256"),
+                    or value.get("failure_sha256")
+                    or value.get("contract_sha256"),
                     "market_prices_accessed": False,
                     "broker_actions": 0,
                 },
