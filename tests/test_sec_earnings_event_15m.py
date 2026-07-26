@@ -158,3 +158,23 @@ def test_sec_earnings_invalid_bullish_flag_fails_closed():
         match="bullish flag",
     ):
         runtime.prepare_dataset(dataset)
+
+
+def test_generic_search_contract_is_read_from_family_contract_key(
+):
+    search = {
+        "family_contract": {
+            "family_id": runtime.SEC_EARNINGS_GAP_15M_FAMILY,
+            "historical_data_contract": {
+                "market_price_access_before_search_freeze": False
+            },
+            "event_scope_path": "event-scope.json",
+        }
+    }
+
+    assert family._search_contract(search) == search["family_contract"]
+    with pytest.raises(
+        family.SecEarningsEvent15mError,
+        match="not the frozen SEC earnings family",
+    ):
+        family._search_contract({"contract": search["family_contract"]})

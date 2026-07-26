@@ -47,6 +47,9 @@ SUCCESSOR_ID = FAMILY_ID
 SUPERSEDED_EXPANDED_CONTRACT_SHA256 = (
     "7cfc05ae201a533a621a53dce8206bb41b79d7f7c112da16df7735d306c21bfd"
 )
+SUPERSEDED_ADAPTER_CONTRACT_SHA256 = (
+    "13914994fb7ad1627a154c61b88328c617a17726a530d2d178d97164731371f1"
+)
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/discovery"
 CAPACITY_INSPECTION = (
     PROJECT_ROOT
@@ -663,6 +666,9 @@ def freeze_family(
         "supersedes_contract_sha256": (
             SUPERSEDED_EXPANDED_CONTRACT_SHA256
         ),
+        "superseded_adapter_contract_sha256": (
+            SUPERSEDED_ADAPTER_CONTRACT_SHA256
+        ),
         "supersession_reason": (
             "The same outcome-blind event graph and rules are republished "
             "with row-level events in the ignored content-addressed store; "
@@ -813,6 +819,22 @@ def _deduplicate_events(
     return dict(result)
 
 
+def _search_contract(search: Mapping[str, Any]) -> dict[str, Any]:
+    contract = search.get("family_contract")
+    if not (
+        isinstance(contract, Mapping)
+        and contract.get("family_id") == FAMILY_ID
+        and contract.get("historical_data_contract", {}).get(
+            "market_price_access_before_search_freeze"
+        )
+        is False
+    ):
+        raise SecEarningsEvent15mError(
+            "development search is not the frozen SEC earnings family"
+        )
+    return dict(contract)
+
+
 def build_development_dataset(
     *,
     search_path: Path,
@@ -828,18 +850,7 @@ def build_development_dataset(
         search_path,
         expected_kind="frozen-development-search",
     )
-    contract = search.get("contract")
-    if not (
-        isinstance(contract, Mapping)
-        and contract.get("family_id") == FAMILY_ID
-        and contract.get("historical_data_contract", {}).get(
-            "market_price_access_before_search_freeze"
-        )
-        is False
-    ):
-        raise SecEarningsEvent15mError(
-            "development search is not the frozen SEC earnings family"
-        )
+    contract = _search_contract(search)
     scope_path = PROJECT_ROOT / str(contract["event_scope_path"])
     if enforce_commit:
         strategy_discovery.require_committed(scope_path)
@@ -1019,8 +1030,8 @@ def publish_development(
                 "development_search_sha256": search["artifact_sha256"],
                 "evidence_paths": [
                     _repo_path(search_path),
-                    str(search["family_contract_path"]),
-                    str(search["contract"]["event_scope_path"]),
+                    str(search["preflight_path"]),
+                    str(search["family_contract"]["event_scope_path"]),
                     _repo_path(CAPACITY_INSPECTION),
                     _repo_path(CAPACITY_COLLECTION),
                     _repo_path(CALENDAR_PATH),
