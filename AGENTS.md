@@ -468,7 +468,9 @@ controller before creating the path-bound contract. Contract
 identity with no semantic, row, provider, confirmation, or broker change.
 Commit and push it before generic preflight. Preflight
 `b653c2ac...b56c88d` revalidates the exact path-bound contract as
-`CAPACITY_READY` with zero outcomes. Commit and push it before search freeze.
+`CAPACITY_READY` with zero outcomes. Search `f205aaec...183f0b` freezes that
+exact path spelling and otherwise identical search. Commit and push it before
+evaluation.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
