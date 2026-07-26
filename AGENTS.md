@@ -616,6 +616,14 @@ capacity implementation makes zero provider requests, opens no price or return,
 and preserves every missing timestamp, effective date, ticker identity,
 transfer, irrelevant page, and duplicate in the denominator. Freeze and commit
 the source-reuse contract before the new parser opens any cached page.
+Contract `64d010d8...546a0` now freezes all 312 exact cache paths, raw hashes,
+byte counts, official URLs, the prior collection and inspection lineage,
+current implementation hashes, current global outcome-exposure hash, the
+2010-2018 development and 2019-2025 confirmation capacity partitions, and the
+unchanged 50/100-total, 30-development, and 20-confirmation signal-date floors.
+It records zero provider requests, zero cache-row access, zero market outcomes,
+and zero broker authority. Commit and push it before independent contract
+inspection; no cached release page may be opened by the new parser first.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
