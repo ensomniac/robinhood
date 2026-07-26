@@ -1,0 +1,25 @@
+{
+  "artifact_kind": "form4-insider-purchase-source-contract-inspection",
+  "artifact_sha256": "886230a1bdc382011110e71a425226f86442c59a970cae989a86553608cb7948",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "artifact_hash_rebuilt": true,
+    "exact_28_quarter_request_graph": true,
+    "exact_contract_rebuilt": true,
+    "implementation_hash_rebuilt": true,
+    "outcome_boundary_closed": true,
+    "source_outputs_absent": true
+  },
+  "confirmation_accessed": false,
+  "contract_path": "strategy_tournament/v2/form4_insider_purchase/source-contract/form4-insider-purchase-source-contract-b4b51d2d4bb33f1e36b37ba22eaa7917f6ee4fb835860da02f5dd8bb2960638b.json",
+  "contract_sha256": "b4b51d2d4bb33f1e36b37ba22eaa7917f6ee4fb835860da02f5dd8bb2960638b",
+  "family_id": "clustered-form4-open-market-purchase-continuation",
+  "forward_returns_accessed": false,
+  "inspected_at": "2026-07-25T23:52:51-04:00",
+  "market_prices_accessed": false,
+  "provider_access_permitted": true,
+  "schema_version": 1,
+  "state": "FORM4_SOURCE_CONTRACT_INSPECTED_READY",
+  "valid": true
+}
