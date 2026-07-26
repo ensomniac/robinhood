@@ -1175,6 +1175,103 @@ def test_failed_massive_symbol_task_has_exact_outcome_blind_failure_code(
     assert failure["data_outcomes_accessed"] is False
 
 
+def test_partial_vix_feature_failure_records_only_completed_splv_scope(
+    tmp_path,
+):
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    required_dates = ["2024-01-02", "2024-01-03"]
+    tasks = [
+        {
+            "kind": "split_actions",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+        },
+        {
+            "kind": "yahoo_daily_symbol_bars",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+            "symbol": runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL,
+        },
+        {
+            "kind": "yahoo_daily_symbol_bars",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+            "symbol": runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL,
+        },
+    ]
+    for task in tasks:
+        task["task_id"] = canonical_sha256(task)
+    plan = {
+        "artifact_sha256": "f" * 64,
+        "family_id": runtime.VIX_SHOCK_REBOUND_FAMILY,
+        "lane": "development",
+        "required_dates": required_dates,
+        "evaluation_dates": required_dates,
+        "symbols": [
+            runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL,
+            runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL,
+        ],
+        "task_count": len(tasks),
+        "tasks": tasks,
+    }
+    root = (
+        config.root
+        / "dense-v2"
+        / plan["family_id"]
+        / plan["lane"]
+        / plan["artifact_sha256"]
+    )
+    for task, rows in (
+        (tasks[0], []),
+        (
+            tasks[1],
+            [
+                {
+                    "symbol": runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL,
+                    "date": day,
+                    "open": 100.0,
+                    "high": 101.0,
+                    "low": 99.0,
+                    "close": 100.5,
+                    "volume": 1_000,
+                }
+                for day in required_dates
+            ],
+        ),
+    ):
+        collection._write_external(
+            collection._checkpoint_path(root, task),
+            {
+                "schema_version": 1,
+                "task": task,
+                "rows": rows,
+                "rows_sha256": canonical_sha256(rows),
+            },
+            config,
+        )
+
+    facts = recovery._failure_facts(
+        plan,
+        root,
+        {"failures": 1},
+    )
+
+    assert (
+        facts["failure_code"]
+        == recovery.PARTIAL_YAHOO_FEATURE_FAILURE
+    )
+    assert facts["completed_tasks"] == 2
+    assert facts["market_price_rows_accessed"] == 2
+    assert facts["data_outcomes_accessed"] is True
+    assert facts["exposure_scope"] == {
+        "dates": required_dates,
+        "symbols": ["SPLV"],
+    }
+    assert (
+        facts["failure_details"]["failed_feature_symbol"] == "^VIX"
+    )
+
+
 class DailyRangeBackend:
     def __init__(self, dates):
         self.dates = dates

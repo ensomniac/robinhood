@@ -538,6 +538,16 @@ ordering, Yahoo and split-action semantics, and untouched development and
 confirmation scopes. Every check passes in
 `COLLECTION_PLAN_INSPECTED_READY` with zero provider or outcome access. Commit
 and push it before executing those three development tasks.
+The exact collection then completed the split-action task and the frozen SPLV
+range but failed closed on the first `^VIX` request because Yahoo's returned
+identity/timezone metadata did not satisfy the frozen parser. No `^VIX` row,
+strategy metric, trial result, confirmation datum, or broker action was
+accepted. SPLV development outcomes have nevertheless been accessed and must
+be recorded and indexed before any response-schema recovery. Do not retry,
+substitute a symbol, or alter strategy rules. Recovery may reuse the two
+completed checkpoints and request only the unchanged feature symbol after an
+exact response-schema policy is frozen, committed, and independently
+inspected.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

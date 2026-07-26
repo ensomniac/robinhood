@@ -30,6 +30,9 @@ GROUPED_DAILY_FAILURE = "GROUPED_DAILY_TASK_FAILED_BEFORE_PRICE_ACCESS"
 MASSIVE_DAILY_SYMBOL_FAILURE = (
     "MASSIVE_DAILY_SYMBOL_TASK_FAILED_BEFORE_PRICE_ACCESS"
 )
+PARTIAL_YAHOO_FEATURE_FAILURE = (
+    "PARTIAL_FIXED_DAILY_YAHOO_FEATURE_TASK_FAILURE"
+)
 INCOMPLETE_INTRADAY = "INCOMPLETE_SIP_REGULAR_SESSION"
 INCOMPLETE_INTRADAY_RANGE = "INCOMPLETE_SIP_RANGE_REGULAR_SESSION"
 EMPTY_MISSED_DATE_REPRESENTATION = (
@@ -284,6 +287,54 @@ def _failure_facts(
                 "failed_task_kind": failed_kind,
                 "price_tasks_completed": 0,
                 "provider_failures": failures,
+            },
+        }
+    if (
+        plan.get("family_id") == runtime.VIX_SHOCK_REBOUND_FAMILY
+        and int(plan.get("task_count", 0)) == 3
+        and completed == 2
+        and market_price_tasks_completed == 1
+        and failures >= 1
+        and failed_kind == "yahoo_daily_symbol_bars"
+        and plan["tasks"][1].get("kind")
+        == "yahoo_daily_symbol_bars"
+        and plan["tasks"][1].get("symbol")
+        == runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL
+        and plan["tasks"][2].get("kind")
+        == "yahoo_daily_symbol_bars"
+        and plan["tasks"][2].get("symbol")
+        == runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL
+    ):
+        return {
+            "failure_code": PARTIAL_YAHOO_FEATURE_FAILURE,
+            "completed_tasks": 2,
+            "market_price_rows_accessed": rows_accessed,
+            "evaluation_tasks_completed": evaluation_tasks_completed,
+            "data_outcomes_accessed": True,
+            "exposure_scope": {
+                "dates": list(plan["required_dates"]),
+                "symbols": [
+                    runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL
+                ],
+            },
+            "failure_details": {
+                "completed_metadata_task_kind": "split_actions",
+                "corporate_action_rows_accessed": (
+                    corporate_action_rows_accessed
+                ),
+                "completed_price_task_kind": (
+                    "yahoo_daily_symbol_bars"
+                ),
+                "completed_price_symbol": (
+                    runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL
+                ),
+                "completed_price_rows": rows_accessed,
+                "failed_task_kind": "yahoo_daily_symbol_bars",
+                "failed_feature_symbol": (
+                    runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL
+                ),
+                "provider_failures": failures,
+                "substituted_symbols": 0,
             },
         }
     if (
