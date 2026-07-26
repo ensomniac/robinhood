@@ -446,7 +446,9 @@ push the controller before running it. Rebound manifest
 `7bb79035...6e4e77a` and dataset-bound contract
 `fd4720c2...0f110a` now record that exact metadata transition with zero private
 row, provider, confirmation, or broker access. They remain uninspected; commit
-and push both before independent reconstruction.
+and push both before independent reconstruction. The additive inspection
+controller independently rebuilds both artifacts, the semantic identity, exact
+private binding, and zero-access boundary. Commit and push it before inspection.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
