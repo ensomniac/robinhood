@@ -146,6 +146,10 @@ without a retry, and thereafter catches only the exact
 first response. That request becomes permanent missing; every other exception
 still fails closed. The policy and controller hashes must freeze, commit, and
 pass independent inspection before resume.
+Resume policy `c33ff834...68e834` now freezes the two inspected failures,
+the 438-task checkpoint boundary, the exact exception type and message, and the
+zero-retry, zero-substitution disposition. Commit and push it before independent
+policy inspection; provider access remains closed until that inspection passes.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
