@@ -320,7 +320,6 @@ def build_contract(
         SOURCE_PREENTRY_CONTRACT,
         SOURCE_PREENTRY_SUMMARY,
         SOURCE_PREENTRY_INSPECTION,
-        SECURITY_MASTER,
         SECURITY_MASTER_ATTESTATION,
         CALENDAR_PATH,
     )
@@ -328,11 +327,18 @@ def build_contract(
         for path in inputs:
             strategy_discovery.require_committed(path)
     source_inspection = _read_json(SOURCE_PREENTRY_INSPECTION)
+    security_attestation = _read_json(SECURITY_MASTER_ATTESTATION)
     if not (
         source_inspection.get("state") == "PREENTRY_INSPECTED_READY"
         and source_inspection.get("valid") is True
     ):
         raise SecEarningsGapCapacityError("source pre-entry inspection is not ready")
+    if security_attestation.get("security_master", {}).get(
+        "sha256"
+    ) != sha256_file(SECURITY_MASTER):
+        raise SecEarningsGapCapacityError(
+            "ignored security master differs from its committed attestation"
+        )
     inventory = _source_inventory(historical)
     plan = build_request_plan(inventory, _security_rows())
     counts = _partition_counts(plan)
