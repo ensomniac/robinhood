@@ -97,6 +97,12 @@ Search `cee07890...6f9761` now freezes all 32 trials, the deterministic
 selection rule, implementation hashes, partitions, costs, scopes, and
 falsifiers with outcomes still unopened and broker actions forbidden. Commit
 and push it before freezing any development-provider request graph.
+`insider_purchase_data.py` is the development-only provider controller. It
+freezes one exact Yahoo daily-chart request per 2,589 as-filed development
+symbols from 2017-11-01 warmup through 2022-12-23, independently rebuilds the
+request graph before access, resumes only hash-valid tasks, registers the full
+date/symbol price graph as contaminated development, and writes row data only
+to the ignored content-addressed store. Confirmation requests remain zero.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed

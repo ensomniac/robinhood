@@ -497,6 +497,16 @@ clusters across 154 entry dates. They attest zero price, return, confirmation,
 or broker access and must be committed before the generic preflight can add
 implementation hashes and authorize the search freeze.
 
+The development-data controller freezes one exact Yahoo daily-chart request
+for each of the 2,589 as-filed development symbols. It requests unadjusted
+OHLCV from 2017-11-01 for prior-20-session and ATR14 warmup through the frozen
+2022-12-23 account-calendar end, permits no retries or substitutions, and
+retains missing symbols as missed-trade inputs. The full requested
+date-by-symbol graph—not only filled trades—is appended to the global exposure
+index as contaminated development. Collection requires an independently
+inspected request contract and a clean pushed HEAD. Confirmation requests stay
+forbidden until exact-winner preregistration.
+
 ## Parallel lanes
 
 The residual-equity implementation is now used only for the existing
