@@ -42,8 +42,8 @@ CALENDAR_PATHS = (
         "session-calendar-2014-01-through-2022-12.json"
     ),
     Path(
-        "historical_batches/dense_v2/"
-        "session-calendar-2020-01-through-2026-07.json"
+        "historical_batches/challenger_orb_retest_v1/"
+        "session-calendar-2023-01-through-2026-07.json"
     ),
 )
 DEVELOPMENT_START = "2018-01-02"
