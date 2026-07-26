@@ -208,6 +208,7 @@ def selection() -> dict[str, Any]:
     _manifest, inventory = _prior_capacity_inventory()
     all_records = outcome_exposure.read_index()
     self_development_prefixes = (
+        f"development-{FAMILY_ID}-",
         f"development-partial-{FAMILY_ID}-",
         f"development-source-{FAMILY_ID}-",
     )

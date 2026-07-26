@@ -1,6 +1,6 @@
 # Robinhood Codex Trading Context
 
-Research refreshed: 2026-07-25
+Research refreshed: 2026-07-26
 
 Strategy version: `2026-07-15-orb-v3`
 
@@ -477,6 +477,18 @@ from one dataset load with zero provider requests. Eight trials have positive
 rolling-fold stability, DSR, Holm, or cumulative PBO. The highest-growth trial
 has only 11 fills, 0.595% stressed log growth, 1.484 profit factor, and 2.12R
 drawdown. Commit and push the result before independent disposition.
+Inspection `bee11f48...dd1c` independently rebuilt every account row, all 32
+trial records, the cumulative 64-path DSR, Holm, and PBO corrections, parameter
+neighbors, and deterministic selection. It assigns terminal state `REJECTED`:
+zero trials pass rolling-fold stability, DSR, Holm, or PBO; only two pass
+neighbor stability, eight retain positive 20-bps growth, and four retain
+stressed profit factor 1.20. Confirmation remains sealed. This unchanged Form 4
+replication closes the mechanism lane and may not be repaired or replicated
+again in response to these outcomes. The partition controller now excludes the
+family's own finalized development exposure, in addition to its partial and
+source records, when reconstructing this closed lineage; a focused regression
+test proves that this administrative exposure record cannot make the immutable
+partition disappear while every other family's exposure remains authoritative.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

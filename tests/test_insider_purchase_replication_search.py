@@ -1,5 +1,6 @@
 import insider_purchase_replication_search as replication
 import dense_strategy_runtime as runtime
+import outcome_exposure
 import strategy_discovery
 
 
@@ -14,6 +15,26 @@ def test_replication_partition_is_dense_disjoint_and_immediate():
     assert selected["development_dates"][-1] < selected["embargo_dates"][0]
     assert selected["embargo_dates"][-1] < selected["confirmation_dates"][0]
     assert selected["contaminated_events_removed_without_replacement"] == 0
+
+
+def test_replication_partition_ignores_only_its_own_development_exposure(
+    monkeypatch,
+):
+    records = outcome_exposure.read_index()
+    own = [
+        row
+        for row in records
+        if row["exposure_id"].startswith(
+            f"development-{replication.FAMILY_ID}-"
+        )
+    ]
+    assert len(own) == 1
+
+    monkeypatch.setattr(outcome_exposure, "read_index", lambda: own)
+    selected = replication.selection()
+
+    assert len(selected["development_events"]) == 424
+    assert len(selected["confirmation_events"]) == 209
 
 
 def test_replication_retains_every_prior_trial_path():
