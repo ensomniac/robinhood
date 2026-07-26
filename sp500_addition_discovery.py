@@ -492,7 +492,8 @@ def freeze_family(
             "requested_dates": scope["development_dates"],
             "dataset_payload": {
                 "lane": "development",
-                "claim_scope": "OUTCOME_BLIND_CAPACITY_ONLY",
+                "claim_scope": "DEVELOPMENT_ONLY",
+                "evidence_phase": "OUTCOME_BLIND_CAPACITY_ONLY",
                 "inspected": True,
                 "point_in_time_evidence": True,
                 "evidence_paths": [
