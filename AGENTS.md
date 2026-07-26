@@ -515,6 +515,11 @@ signal dates, current implementation hashes, and point-in-time zero-outcome
 boundary. It assigns `CAPACITY_READY` without opening the external dataset or
 making a provider request. Commit and push it before freezing the one-trial
 development search.
+Search `98b61656...be67c0` now freezes that committed contract, exact sole
+trial, five rolling-origin OOF folds, costs, partitions, confirmation reserve,
+and implementation binding in state `SEARCH_FROZEN`. It contains no outcomes
+and permits no confirmation or broker access. Commit and push it before
+freezing the development-only Yahoo request graph.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
