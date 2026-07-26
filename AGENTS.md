@@ -91,7 +91,10 @@ before any development price request graph is frozen. Development collection
 plan `82831678...298e4` now freezes the exact SCHB Yahoo symbol-range request,
 calendar hash, development/warmup dates, split-action request, zero retries,
 and zero substitutions. Commit and push it before independent plan
-reconstruction and provider access.
+reconstruction and provider access. Inspection `11430817...b3bf7`
+independently rebuilds both exact tasks, all dates, search/calendar bindings,
+controller hashes, and the zero-outcome boundary. All checks pass with zero
+provider or broker actions. Commit and push it before collection.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
