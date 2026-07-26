@@ -1,0 +1,59 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "4f6a3a84b6f9faa2844d5c2f425468784ffece62d51244c4b3f3b626d07bafec",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.15712012501899153,
+  "family_contract_path": "strategy_tournament/v2/form4_insider_purchase/family/contract/contract-044198c27db72e3991c5d51e83ba31a2b3b7f7371c77449e81f736fae190f6ce.json",
+  "family_contract_sha256": "d15cc203272653a1caf1dd479f2ede592a02ff601c54c79f4ce88566b48d95cd",
+  "family_id": "clustered-form4-open-market-purchase-continuation",
+  "implementation_sha256": "2b4f979c25b9333887888db16d19bf7eb34407cbc322788684f374da12878c86",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "confirmation_dates_bound": true,
+      "confirmation_locked": true,
+      "dates_bound": true,
+      "development_lane": true,
+      "experiment_bound": true,
+      "external_inputs_closed": true,
+      "family_bound": true,
+      "point_in_time": true,
+      "zero_provider_requests": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 0,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 7717
+  },
+  "provider_telemetry": {
+    "cache_hits": 0,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "d8c66265118c605844564bd29ee50b7173bc0f60a1fc4271378d898cf10d644c",
+  "verified_capacity": 7717
+}

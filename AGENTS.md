@@ -87,6 +87,12 @@ development clusters, the five-session embargo, and 668 pair-clean
 confirmation clusters across 154 possible entry dates. Prices, returns,
 confirmation, and broker actions remain unopened. Commit and push these
 artifacts before the generic discovery preflight.
+Generic preflight `4f6a3a84...7bafec` independently rebuilt the family,
+point-in-time, zero-outcome, and capacity boundaries, bound the current
+committed implementation hashes, and verified 7,717 total development plus
+reserved-confirmation clusters. It earns `CAPACITY_READY` with outcomes
+unopened and broker actions forbidden. Commit and push it before freezing the
+complete development search.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
