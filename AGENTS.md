@@ -414,7 +414,12 @@ There were zero new structural failures, retries, substitutions, confirmation
 accesses, or broker actions. Collection `841ed088...08a818` retains 50,110 rows
 for 278 complete symbols, 31 exact permanent-missing symbols, and all 424 event
 records. The full source scope is indexed. Commit and push both artifacts and
-the exposure record before dataset inspection.
+the exposure record before dataset inspection. Inspection
+`ec55dd3c...979247` independently rebuilds the collection, private dataset,
+event metadata, every row and missing-symbol disposition, and the complete
+source exposure record. All checks pass; dataset manifest
+`55c94ade...0e037a` is `DATASET_INSPECTED_READY`. Commit and push both before
+local 32-trial evaluation.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
