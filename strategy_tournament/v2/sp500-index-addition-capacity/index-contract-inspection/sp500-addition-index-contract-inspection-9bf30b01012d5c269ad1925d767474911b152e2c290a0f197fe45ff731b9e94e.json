@@ -1,0 +1,30 @@
+{
+  "archive_index_access_permitted": true,
+  "artifact_kind": "sp500-addition-index-contract-inspection",
+  "artifact_sha256": "9bf30b01012d5c269ad1925d767474911b152e2c290a0f197fe45ff731b9e94e",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "contract_path": "strategy_tournament/v2/sp500-index-addition-capacity/index-contract/sp500-addition-index-contract-3a099c6d107f699380382b61e56b31f5d6ac192ff21fcfe44c40bc619b41e65f.json",
+  "contract_sha256": "3a099c6d107f699380382b61e56b31f5d6ac192ff21fcfe44c40bc619b41e65f",
+  "family_id": "sp500-index-addition-forced-demand",
+  "inspected_at": "2026-07-26T00:48:06Z",
+  "inspection": {
+    "complete_denominator_rebuilt": true,
+    "implementation_hashes_rebuilt": true,
+    "provider_semantics_rebuilt": true,
+    "rolling_slot_authority_rebuilt": true,
+    "single_page_capacity_rebuilt": true,
+    "sixteen_year_queries_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "market_outcomes_accessed": false,
+  "market_price_access_permitted": false,
+  "provider_requests": 0,
+  "release_page_access_permitted": false,
+  "schema_version": 1,
+  "state": "INDEX_QUERY_CONTRACT_INSPECTED_READY",
+  "successor_id": "sp500-index-addition-forced-demand-v1",
+  "target_return_access_permitted": false
+}
