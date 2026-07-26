@@ -290,6 +290,7 @@ SEC_EARNINGS_GAP_15M_FAMILIES = {
 }
 EARNINGS_PEAD_FAMILY = "earnings-positive-surprise-drift"
 EARNINGS_SEC_REACTION_FAMILY = "earnings-sec-yoy-eps-reaction-drift"
+SEC_BROAD_PEAD_FAMILY = "sec-yoy-eps-improvement-broad-drift"
 ACTIVIST_EARNINGS_REACTION_FAMILY = (
     "activist-issuer-earnings-reaction-continuation"
 )
@@ -349,6 +350,7 @@ SUPPORTED_FAMILIES = {
     *SEC_EARNINGS_GAP_15M_FAMILIES,
     EARNINGS_PEAD_FAMILY,
     EARNINGS_SEC_REACTION_FAMILY,
+    SEC_BROAD_PEAD_FAMILY,
     ACTIVIST_EARNINGS_REACTION_FAMILY,
     *INSIDER_PURCHASE_FAMILIES,
     SP500_ADDITION_FORCED_DEMAND_FAMILY,
@@ -6423,6 +6425,213 @@ def _earnings_sec_reaction_candidates(
     return candidates
 
 
+def _sec_broad_pead_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Enter the first observable open after a positive SEC EPS filing."""
+
+    calendar = _calendar(dataset)
+    raw_metadata = dataset.get("event_metadata_by_date")
+    if not isinstance(raw_metadata, Mapping) or set(raw_metadata) != set(
+        calendar
+    ):
+        raise DenseStrategyRuntimeError(
+            "broad SEC PEAD metadata must bind every account date"
+        )
+    daily = _daily_series(dataset)
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    minimum_eps_change = float(
+        parameters["minimum_yoy_eps_change_ratio"]
+    )
+    minimum_gap = float(parameters["minimum_opening_gap_fraction"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold_sessions = int(parameters["maximum_hold_sessions"])
+    if (
+        minimum_eps_change not in {0.0, 0.25}
+        or minimum_gap not in {-0.02, 0.0}
+        or stop_atr not in {1.0, 1.5}
+        or hold_sessions not in {2, 5}
+    ):
+        raise DenseStrategyRuntimeError(
+            "broad SEC PEAD parameters escaped the frozen grid"
+        )
+    candidates: list[dict[str, Any]] = []
+    for calendar_index, decision_date in enumerate(calendar):
+        rows = raw_metadata[decision_date]
+        if not isinstance(rows, list):
+            raise DenseStrategyRuntimeError(
+                f"broad SEC PEAD metadata is invalid for {decision_date}"
+            )
+        qualified: list[
+            tuple[float, float, str, dict[str, Any], float]
+        ] = []
+        for raw in rows:
+            if not isinstance(raw, Mapping):
+                raise DenseStrategyRuntimeError(
+                    f"broad SEC PEAD row is invalid for {decision_date}"
+                )
+            symbol = str(raw.get("symbol", ""))
+            bars = daily.get(symbol)
+            entry_index = indices.get(symbol, {}).get(decision_date)
+            if bars is None or entry_index is None or entry_index < 200:
+                continue
+            if (
+                raw.get("security_identity_state")
+                != "VERIFIED_COMMON_EQUITY_COVER_FACT"
+                or raw.get("reaction_date") != decision_date
+                or not _sec_event_observable_at_open(
+                    raw, decision_date=decision_date
+                )
+            ):
+                raise DenseStrategyRuntimeError(
+                    "broad SEC PEAD identity or observation date drifted"
+                )
+            eps_change = float(raw["eps_change_ratio"])
+            if eps_change + 1e-12 < minimum_eps_change:
+                continue
+            prior_close = float(bars[entry_index - 1]["close"])
+            prior_sma200 = _sma(bars, entry_index - 1, 200)
+            if prior_sma200 is None or prior_close <= prior_sma200:
+                continue
+            entry_price = float(bars[entry_index]["open"])
+            gap = entry_price / prior_close - 1
+            if gap + 1e-12 < minimum_gap:
+                continue
+            prior_dollar_volume = statistics.median(
+                float(bar["close"]) * float(bar["volume"])
+                for bar in bars[entry_index - 20 : entry_index]
+            )
+            if prior_close < 10 or prior_dollar_volume < 50_000_000:
+                continue
+            atr14 = _atr(bars, entry_index - 1)
+            if atr14 is None:
+                continue
+            qualified.append(
+                (
+                    -eps_change,
+                    -prior_dollar_volume,
+                    symbol,
+                    dict(raw),
+                    atr14,
+                )
+            )
+        if not qualified:
+            continue
+        (
+            negative_eps_change,
+            negative_liquidity,
+            symbol,
+            selected,
+            atr14,
+        ) = sorted(qualified)[0]
+        bars = daily[symbol]
+        entry_index = indices[symbol][decision_date]
+        signal_id = f"{decision_date}-{SEC_BROAD_PEAD_FAMILY}-{symbol}"
+        expected_dates = calendar[
+            calendar_index : calendar_index + hold_sessions
+        ]
+        observed_dates = [
+            str(bar["date"])
+            for bar in bars[entry_index : entry_index + hold_sessions]
+        ]
+        if (
+            len(expected_dates) != hold_sessions
+            or observed_dates != expected_dates
+        ):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": decision_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "incomplete_holding_bars",
+                }
+            )
+            continue
+        entry_price = float(bars[entry_index]["open"])
+        expected_gross = atr14 / entry_price
+        if not _cost_floor(expected_gross):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": decision_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "expected_move_below_cost_floor",
+                    "expected_gross_move_fraction": expected_gross,
+                }
+            )
+            continue
+        stop_price = entry_price - stop_atr * atr14
+        if stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": decision_date,
+                    "decision_date": decision_date,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        exit_date, exit_price, stop_executed, marks = _earnings_pead_exit(
+            bars,
+            entry_index=entry_index,
+            stop_price=stop_price,
+            hold_sessions=hold_sessions,
+        )
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": decision_date,
+                "decision_date": decision_date,
+                "symbol": symbol,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": -negative_eps_change,
+                "eps_change_ratio": -negative_eps_change,
+                "prior_median_dollar_volume": -negative_liquidity,
+                "accepted": selected["accepted"],
+                "report_period": selected["report_period"],
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "exit_date": exit_date,
+                "exit_price": exit_price,
+                "marks": marks,
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+                "expected_gross_move_fraction": expected_gross,
+            }
+        )
+    return candidates
+
+
+def _sec_event_observable_at_open(
+    event: Mapping[str, Any], *, decision_date: str
+) -> bool:
+    """Confirm the filing existed before the frozen 09:25 ET cutoff."""
+
+    try:
+        accepted = datetime.fromisoformat(str(event["accepted"]))
+        accepted_date = date.fromisoformat(str(event["accepted_date"]))
+        decision_day = date.fromisoformat(decision_date)
+    except (KeyError, TypeError, ValueError):
+        return False
+    if accepted.date() != accepted_date or accepted_date > decision_day:
+        return False
+    return accepted_date < decision_day or accepted.time() < time(9, 25)
+
+
 def _activist_earnings_reaction_candidates(
     dataset: Mapping[str, Any],
     parameters: Mapping[str, Any],
@@ -7370,6 +7579,8 @@ def build_candidates(
         return _earnings_pead_candidates(dataset, parameters)
     if family_id == EARNINGS_SEC_REACTION_FAMILY:
         return _earnings_sec_reaction_candidates(dataset, parameters)
+    if family_id == SEC_BROAD_PEAD_FAMILY:
+        return _sec_broad_pead_candidates(dataset, parameters)
     if family_id == ACTIVIST_EARNINGS_REACTION_FAMILY:
         return _activist_earnings_reaction_candidates(dataset, parameters)
     if family_id in INSIDER_PURCHASE_FAMILIES:
@@ -10010,6 +10221,191 @@ def _production_earnings_sec_reaction_signal(
     }
 
 
+def _production_sec_broad_pead_signal(
+    decision_data: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+    frozen_universe: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected = {
+        "family_id",
+        "decision_date",
+        "previous_session_date",
+        "calendar_dates",
+        "daily_history_complete",
+        "event_inventory_complete",
+        "daily_bars",
+        "events",
+    }
+    if (
+        set(decision_data) != expected
+        or decision_data.get("family_id") != SEC_BROAD_PEAD_FAMILY
+        or decision_data.get("daily_history_complete") is not True
+        or decision_data.get("event_inventory_complete") is not True
+    ):
+        raise DenseStrategyRuntimeError(
+            "production broad SEC PEAD decision-data schema drifted"
+        )
+    decision_date = str(decision_data["decision_date"])
+    previous_session = str(decision_data["previous_session_date"])
+    calendar_dates = decision_data["calendar_dates"]
+    if not (
+        isinstance(calendar_dates, list)
+        and calendar_dates
+        and calendar_dates == sorted(set(calendar_dates))
+        and calendar_dates[-1] == previous_session
+        and previous_session < decision_date
+    ):
+        raise DenseStrategyRuntimeError(
+            "production broad SEC PEAD calendar is incomplete"
+        )
+    try:
+        decision_day = date.fromisoformat(decision_date)
+        prior_day = date.fromisoformat(previous_session)
+    except ValueError as exc:
+        raise DenseStrategyRuntimeError(
+            "production broad SEC PEAD dates are invalid"
+        ) from exc
+    if not 1 <= (decision_day - prior_day).days <= 4:
+        raise DenseStrategyRuntimeError(
+            "production broad SEC PEAD sessions are not adjacent"
+        )
+    excluded = frozen_universe.get("excluded_symbols")
+    if (
+        frozen_universe.get("point_in_time") is not True
+        or frozen_universe.get("security_type")
+        != "SEC same-accession verified common equity"
+        or not isinstance(excluded, list)
+        or excluded != sorted(set(map(str, excluded)))
+    ):
+        raise DenseStrategyRuntimeError(
+            "production broad SEC PEAD universe drifted"
+        )
+    minimum_eps_change = float(
+        parameters["minimum_yoy_eps_change_ratio"]
+    )
+    minimum_gap = float(parameters["minimum_opening_gap_fraction"])
+    stop_atr = float(parameters["stop_atr14"])
+    hold = int(parameters["maximum_hold_sessions"])
+    if (
+        minimum_eps_change not in {0.0, 0.25}
+        or minimum_gap not in {-0.02, 0.0}
+        or stop_atr not in {1.0, 1.5}
+        or hold not in {2, 5}
+    ):
+        raise DenseStrategyRuntimeError(
+            "production broad SEC PEAD parameters escaped the grid"
+        )
+    daily = _daily_series(decision_data)
+    if any(
+        str(bar["date"]) > previous_session
+        for bars in daily.values()
+        for bar in bars
+    ):
+        raise DenseStrategyRuntimeError(
+            "production broad SEC PEAD history contains current/future bars"
+        )
+    events = decision_data["events"]
+    if not isinstance(events, list):
+        raise DenseStrategyRuntimeError(
+            "production broad SEC PEAD events are invalid"
+        )
+    event_fields = {
+        "adsh",
+        "symbol",
+        "accepted",
+        "accepted_date",
+        "report_period",
+        "reaction_date",
+        "current_eps",
+        "prior_eps",
+        "eps_change",
+        "eps_change_ratio",
+        "security_identity_state",
+        "opening_price",
+    }
+    qualified: list[tuple[float, float, str, float, float]] = []
+    for event in events:
+        if not isinstance(event, Mapping) or set(event) != event_fields:
+            raise DenseStrategyRuntimeError(
+                "production broad SEC PEAD event fields drifted"
+            )
+        symbol = str(event["symbol"])
+        if symbol in excluded:
+            raise DenseStrategyRuntimeError(
+                "production broad SEC PEAD event uses an excluded symbol"
+            )
+        bars = daily.get(symbol)
+        if (
+            bars is None
+            or len(bars) < 200
+            or str(bars[-1]["date"]) != previous_session
+        ):
+            continue
+        if (
+            event["security_identity_state"]
+            != "VERIFIED_COMMON_EQUITY_COVER_FACT"
+            or event["reaction_date"] != decision_date
+            or not _sec_event_observable_at_open(
+                event, decision_date=decision_date
+            )
+        ):
+            raise DenseStrategyRuntimeError(
+                "production broad SEC PEAD identity or timestamp drifted"
+            )
+        eps_change = float(event["eps_change_ratio"])
+        if eps_change + 1e-12 < minimum_eps_change:
+            continue
+        prior_close = float(bars[-1]["close"])
+        trend = _sma(bars, len(bars) - 1, 200)
+        opening = float(event["opening_price"])
+        if (
+            trend is None
+            or prior_close <= trend
+            or opening <= 0
+            or opening / prior_close - 1 + 1e-12 < minimum_gap
+        ):
+            continue
+        prior_liquidity = statistics.median(
+            float(bar["close"]) * float(bar["volume"])
+            for bar in bars[-20:]
+        )
+        atr14 = _atr(bars, len(bars) - 1)
+        if (
+            prior_close < 10
+            or prior_liquidity < 50_000_000
+            or atr14 is None
+            or not _cost_floor(atr14 / opening)
+        ):
+            continue
+        qualified.append(
+            (-eps_change, -prior_liquidity, symbol, atr14, opening)
+        )
+    if not qualified:
+        raise DenseStrategyRuntimeError(
+            "no exact production broad SEC PEAD signal"
+        )
+    negative_eps, _negative_liquidity, symbol, atr14, opening = sorted(
+        qualified
+    )[0]
+    return {
+        "symbol": symbol,
+        "rank": 1,
+        "score": -negative_eps,
+        "expected_gross_move_fraction": atr14 / opening,
+        "atr": atr14,
+        "stop_atr_multiple": stop_atr,
+        "holding_trading_days": hold,
+        "decision_date": decision_date,
+        "next_session_date": decision_date,
+        "overnight_hold": hold > 1,
+        "exit_plan": {
+            "type": "stop_or_maximum_hold_close",
+            "maximum_hold_sessions": hold,
+            "same_interval_ambiguity": "stop_first",
+        },
+    }
+
+
 def evaluate_production_signal(
     decision_data: Mapping[str, Any],
     *,
@@ -10032,6 +10428,10 @@ def evaluate_production_signal(
         )
     if family_id == EARNINGS_SEC_REACTION_FAMILY:
         return _production_earnings_sec_reaction_signal(
+            decision_data, parameters, frozen_universe
+        )
+    if family_id == SEC_BROAD_PEAD_FAMILY:
+        return _production_sec_broad_pead_signal(
             decision_data, parameters, frozen_universe
         )
     if family_id in {
