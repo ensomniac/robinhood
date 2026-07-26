@@ -587,7 +587,11 @@ request: telemetry moved from five to six requests, cache hits increased to
 two, the original one-failure baseline remained unchanged, and substitutions
 and broker actions stayed zero. The assembled dataset is
 `COLLECTED_UNINSPECTED`; commit and push the status before independent data
-inspection.
+inspection. Inspection `7fff34b8...595334` rehashes the external file and
+canonical dataset, rebuilds all three tasks and the exact frozen scope,
+revalidates the runtime schema, and confirms zero substitutions. All six
+checks pass, producing development runtime manifest `ae7bfdf0...7803ba` in
+`DATASET_INSPECTED_READY`. Commit and push both before development evaluation.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
