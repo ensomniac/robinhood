@@ -339,7 +339,7 @@ def freeze_index_contract(
 
 _SEARCH_COUNT_RE = re.compile(
     r'<div class="wd_search_count">Your search returned\s+'
-    r"([0-9,]+)\s+results?</div>",
+    r"([0-9,]+|no)\s+results?</div>",
     re.IGNORECASE,
 )
 _SEARCH_ROW_RE = re.compile(
@@ -360,7 +360,10 @@ def parse_archive_index(
         raise Sp500AdditionCapacityError(
             f"{expected_year}: archive result count is missing"
         )
-    result_count = int(count_match.group(1).replace(",", ""))
+    raw_count = count_match.group(1).casefold()
+    result_count = (
+        0 if raw_count == "no" else int(raw_count.replace(",", ""))
+    )
     if result_count > ARCHIVE_PAGE_SIZE:
         raise Sp500AdditionCapacityError(
             f"{expected_year}: frozen single-page query would truncate results"

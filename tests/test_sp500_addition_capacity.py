@@ -63,6 +63,11 @@ def test_parse_archive_index_retains_exact_denominator() -> None:
     ).hexdigest()
 
 
+def test_parse_archive_index_accepts_explicit_zero_result_page() -> None:
+    raw = b'<div class="wd_search_count">Your search returned no results</div>'
+    assert capacity.parse_archive_index(raw, expected_year=2010) == (0, [])
+
+
 def test_archive_parser_rejects_truncated_query() -> None:
     raw = LISTING.replace(b"2 results", b"101 results")
     with pytest.raises(capacity.Sp500AdditionCapacityError, match="truncate"):
