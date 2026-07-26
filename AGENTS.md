@@ -287,6 +287,12 @@ contract, preflight, 32 trials, implementation hashes, disjoint scopes, costs,
 and deterministic selection rule. Confirmation and broker actions remain
 closed. Commit and push the search before constructing its exact development
 price plan.
+Development plan `0ea3e0da...130923e` is
+`COLLECTION_PLAN_FROZEN`: 145 exact Yahoo observation-window tasks plus one
+point-in-time split-action task cover 145 events on 102 possible signal dates.
+The plan binds the search, event scope, controller hashes, missing-as-missed
+semantics, zero substitutions, and zero provider requests before freeze. Commit
+and push it before independent plan inspection or provider access.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
