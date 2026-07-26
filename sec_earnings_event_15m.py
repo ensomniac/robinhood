@@ -44,6 +44,9 @@ FAMILY_ID = runtime.SEC_EARNINGS_GAP_15M_FAMILY
 MECHANISM_FAMILY = "sec-filed-earnings-gap-continuation"
 STRATEGY_ID = FAMILY_ID
 SUCCESSOR_ID = FAMILY_ID
+SUPERSEDED_EXPANDED_CONTRACT_SHA256 = (
+    "7cfc05ae201a533a621a53dce8206bb41b79d7f7c112da16df7735d306c21bfd"
+)
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/discovery"
 CAPACITY_INSPECTION = (
     PROJECT_ROOT
@@ -137,6 +140,29 @@ def _write_gzip(path: Path, value: Mapping[str, Any]) -> None:
     finally:
         if temporary.exists():
             temporary.unlink()
+
+
+def _read_gzip(path: Path) -> dict[str, Any]:
+    try:
+        with gzip.open(path, "rt", encoding="utf-8") as source:
+            value = json.load(source)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SecEarningsEvent15mError(
+            f"cannot read private scope {path}: {exc}"
+        ) from exc
+    if not isinstance(value, dict):
+        raise SecEarningsEvent15mError("private scope must be an object")
+    return value
+
+
+def _private_scope_path(store: HistoricalDayStore) -> Path:
+    return (
+        store.root
+        / "_derived"
+        / "sec_earnings_event_15m"
+        / FAMILY_ID
+        / "event-scope.json.gz"
+    )
 
 
 def _read_inventory(
@@ -286,11 +312,10 @@ def _scope(
         retained_confirmation.append(event)
     partitions["confirmation"] = retained_confirmation
 
-    def build_scope(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    def build_target_scope(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         symbols_by_date: dict[str, set[str]] = defaultdict(set)
         for row in rows:
-            for day in row["observation_dates"]:
-                symbols_by_date[str(day)].add(str(row["symbol"]))
+            symbols_by_date[str(row["signal_date"])].add(str(row["symbol"]))
         dates = sorted(symbols_by_date)
         return {
             "dates": dates,
@@ -311,10 +336,25 @@ def _scope(
         raise SecEarningsEvent15mError(
             "untouched confirmation capacity fell below 30 signal dates"
         )
-    confirmation_scope = build_scope(confirmation_events)
+    confirmation_scope = build_target_scope(confirmation_events)
     outcome_exposure.assert_untouched(
         confirmation_scope,
         outcome_exposure.read_index(),
+    )
+    private_scope = {
+        "schema_version": 1,
+        "family_id": FAMILY_ID,
+        "development_events": development_events,
+        "confirmation_events": confirmation_events,
+        "confirmation_events_removed_for_lookback_exposure": (
+            removed_confirmation
+        ),
+    }
+    private_scope["content_sha256"] = canonical_sha256(private_scope)
+    private_path = _private_scope_path(source)
+    _write_gzip(private_path, private_scope)
+    private_relative_path = str(
+        private_path.resolve().relative_to(source.root.resolve())
     )
     return {
         "schema_version": 1,
@@ -324,16 +364,24 @@ def _scope(
         "state": "EVENT_SCOPE_FROZEN_OUTCOME_BLIND",
         "development_dates": development_dates,
         "development_signal_dates": development_signal_dates,
-        "development_events": development_events,
-        "development_scope": build_scope(development_events),
+        "development_event_pairs": len(development_events),
+        "development_events_sha256": canonical_sha256(development_events),
+        "development_scope": build_target_scope(development_events),
         "embargo_dates": list(EMBARGO_DATES),
         "confirmation_dates": confirmation_dates,
         "confirmation_signal_dates": confirmation_signal_dates,
-        "confirmation_events": confirmation_events,
+        "confirmation_event_pairs": len(confirmation_events),
+        "confirmation_events_sha256": canonical_sha256(confirmation_events),
         "confirmation_events_removed_for_lookback_exposure": (
             removed_confirmation
         ),
         "confirmation_scope": confirmation_scope,
+        "private_scope": {
+            "format": "json.gz",
+            "external_relative_path": private_relative_path,
+            "external_file_sha256": sha256_file(private_path),
+            "content_sha256": private_scope["content_sha256"],
+        },
         "event_inventory_content_sha256": inventory["content_sha256"],
         "event_inventory_file_sha256": sha256_file(
             inventory_source._private_inventory_path(source)
@@ -346,6 +394,42 @@ def _scope(
         "confirmation_outcomes_accessed": False,
         "broker_actions": 0,
     }
+
+
+def _load_private_scope(
+    store: HistoricalDayStore,
+    public_scope: Mapping[str, Any],
+) -> dict[str, Any]:
+    binding = public_scope.get("private_scope")
+    if not isinstance(binding, Mapping):
+        raise SecEarningsEvent15mError("public scope lacks private binding")
+    relative = Path(str(binding.get("external_relative_path", "")))
+    if relative.is_absolute() or ".." in relative.parts:
+        raise SecEarningsEvent15mError("private scope path is unsafe")
+    path = (store.root / relative).resolve()
+    if store.root.resolve() not in path.parents:
+        raise SecEarningsEvent15mError("private scope escaped the historical store")
+    value = _read_gzip(path)
+    content = dict(value)
+    supplied = content.pop("content_sha256", None)
+    if not (
+        binding.get("format") == "json.gz"
+        and path.is_file()
+        and sha256_file(path) == binding.get("external_file_sha256")
+        and supplied == canonical_sha256(content)
+        and supplied == binding.get("content_sha256")
+        and value.get("family_id") == FAMILY_ID
+        and canonical_sha256(value.get("development_events"))
+        == public_scope.get("development_events_sha256")
+        and canonical_sha256(value.get("confirmation_events"))
+        == public_scope.get("confirmation_events_sha256")
+        and len(value.get("development_events", []))
+        == public_scope.get("development_event_pairs")
+        and len(value.get("confirmation_events", []))
+        == public_scope.get("confirmation_event_pairs")
+    ):
+        raise SecEarningsEvent15mError("private scope binding drifted")
+    return value
 
 
 def freeze_family(
@@ -402,12 +486,12 @@ def freeze_family(
                     "formal_capacity": len(
                         scope["development_signal_dates"]
                     ),
-                    "development_event_pairs": len(
-                        scope["development_events"]
-                    ),
-                    "confirmation_event_pairs": len(
-                        scope["confirmation_events"]
-                    ),
+                    "development_event_pairs": scope[
+                        "development_event_pairs"
+                    ],
+                    "confirmation_event_pairs": scope[
+                        "confirmation_event_pairs"
+                    ],
                     "confirmation_signal_capacity": len(
                         scope["confirmation_signal_dates"]
                     ),
@@ -576,6 +660,15 @@ def freeze_family(
         "event_scope_sha256": scope["artifact_sha256"],
         "prior_generic_gap_trials_preserved": 96,
         "prior_selection_trial_count": 0,
+        "supersedes_contract_sha256": (
+            SUPERSEDED_EXPANDED_CONTRACT_SHA256
+        ),
+        "supersession_reason": (
+            "The same outcome-blind event graph and rules are republished "
+            "with row-level events in the ignored content-addressed store; "
+            "the expanded predecessor remains immutable Git history but is "
+            "not an active discovery predecessor."
+        ),
     }
     validated = strategy_discovery._validate_family_contract(contract)
     digest = hashlib.sha256(
@@ -756,7 +849,8 @@ def build_development_dataset(
     )
     if scope["artifact_sha256"] != contract["event_scope_sha256"]:
         raise SecEarningsEvent15mError("event scope drifted after search freeze")
-    events = _deduplicate_events(scope["development_events"])
+    private_scope = _load_private_scope(source, scope)
+    events = _deduplicate_events(private_scope["development_events"])
     calendar = list(contract["development_dates"])
     full_calendar = load_calendar(CALENDAR_PATH)
     positions = {day: index for index, day in enumerate(full_calendar)}
