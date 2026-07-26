@@ -276,6 +276,9 @@ EARNINGS_SEC_REACTION_FAMILY = "earnings-sec-yoy-eps-reaction-drift"
 ACTIVIST_EARNINGS_REACTION_FAMILY = (
     "activist-issuer-earnings-reaction-continuation"
 )
+INSIDER_PURCHASE_CONTINUATION_FAMILY = (
+    "clustered-form4-open-market-purchase-continuation"
+)
 SP500_ADDITION_FORCED_DEMAND_FAMILY = (
     "sp500-index-addition-forced-demand"
 )
@@ -316,6 +319,7 @@ SUPPORTED_FAMILIES = {
     EARNINGS_PEAD_FAMILY,
     EARNINGS_SEC_REACTION_FAMILY,
     ACTIVIST_EARNINGS_REACTION_FAMILY,
+    INSIDER_PURCHASE_CONTINUATION_FAMILY,
     SP500_ADDITION_FORCED_DEMAND_FAMILY,
     VOLATILITY_COMPRESSION_FAMILY,
 }
@@ -5793,6 +5797,205 @@ def _activist_earnings_reaction_candidates(
     return candidates
 
 
+def _insider_purchase_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Evaluate next-open continuation after observable Form 4 purchases."""
+
+    calendar = _calendar(dataset)
+    signal_dates = set(_signal_dates(dataset))
+    calendar_positions = {day: index for index, day in enumerate(calendar)}
+    raw_metadata = dataset.get("event_metadata_by_date")
+    if not isinstance(raw_metadata, Mapping) or set(raw_metadata) != set(calendar):
+        raise DenseStrategyRuntimeError(
+            "Form 4 metadata must bind every account date"
+        )
+    daily = _daily_series(dataset)
+    indices = {
+        symbol: {str(bar["date"]): index for index, bar in enumerate(bars)}
+        for symbol, bars in daily.items()
+    }
+    minimum_notional = float(parameters["minimum_purchase_notional"])
+    minimum_owners = int(parameters["minimum_distinct_reporting_owners"])
+    maximum_prior_return = float(
+        parameters["maximum_prior_20_session_return_fraction"]
+    )
+    stop_atr = float(parameters["stop_atr14"])
+    hold_sessions = int(parameters["maximum_hold_sessions"])
+    if (
+        minimum_notional not in {50_000.0, 250_000.0}
+        or minimum_owners not in {1, 2}
+        or maximum_prior_return not in {-0.05, 0.0}
+        or stop_atr not in {1.5, 2.0}
+        or hold_sessions not in {3, 5}
+    ):
+        raise DenseStrategyRuntimeError(
+            "Form 4 purchase parameters escaped the frozen grid"
+        )
+    candidates: list[dict[str, Any]] = []
+    for entry_date in calendar:
+        if entry_date not in signal_dates:
+            continue
+        rows = raw_metadata[entry_date]
+        if not isinstance(rows, list):
+            raise DenseStrategyRuntimeError(
+                f"Form 4 metadata is invalid for {entry_date}"
+            )
+        ranked: list[
+            tuple[int, float, float, str, dict[str, Any], float, int]
+        ] = []
+        unresolved: list[tuple[int, float, str, dict[str, Any], str]] = []
+        for raw in rows:
+            if not isinstance(raw, Mapping):
+                raise DenseStrategyRuntimeError(
+                    f"Form 4 event row is invalid for {entry_date}"
+                )
+            symbol = str(raw.get("symbol", ""))
+            if not (
+                raw.get("entry_date") == entry_date
+                and raw.get("event_semantics")
+                == "ORIGINAL_FORM4_DIRECT_OPEN_MARKET_PURCHASE"
+                and str(raw.get("filing_date", "")) < entry_date
+            ):
+                raise DenseStrategyRuntimeError(
+                    "Form 4 event identity or timing semantics drifted"
+                )
+            notional = float(raw["purchase_notional"])
+            owners = int(raw["distinct_reporting_owners"])
+            if notional < minimum_notional or owners < minimum_owners:
+                continue
+            bars = daily.get(symbol)
+            entry_index = indices.get(symbol, {}).get(entry_date)
+            if bars is None or entry_index is None or entry_index < 20:
+                unresolved.append(
+                    (
+                        -owners,
+                        -notional,
+                        symbol,
+                        dict(raw),
+                        "missing_required_history_or_entry_open",
+                    )
+                )
+                continue
+            prior = bars[entry_index - 20 : entry_index]
+            if len(prior) != 20:
+                continue
+            prior_close = float(prior[-1]["close"])
+            median_dollar_volume = statistics.median(
+                float(bar["close"]) * float(bar["volume"]) for bar in prior
+            )
+            prior_return = prior_close / float(prior[0]["close"]) - 1
+            if (
+                prior_close < 10
+                or median_dollar_volume < 50_000_000
+                or prior_return > maximum_prior_return + 1e-12
+            ):
+                continue
+            atr14 = _atr(bars, entry_index - 1)
+            if atr14 is None:
+                continue
+            calendar_index = calendar_positions[entry_date]
+            expected_dates = calendar[
+                calendar_index : calendar_index + hold_sessions
+            ]
+            observed_dates = [
+                str(bar["date"])
+                for bar in bars[entry_index : entry_index + hold_sessions]
+            ]
+            if (
+                len(expected_dates) != hold_sessions
+                or observed_dates != expected_dates
+            ):
+                unresolved.append(
+                    (
+                        -owners,
+                        -notional,
+                        symbol,
+                        dict(raw),
+                        "incomplete_holding_bars",
+                    )
+                )
+                continue
+            entry_price = float(bars[entry_index]["open"])
+            if not _cost_floor(atr14 / entry_price):
+                continue
+            ranked.append(
+                (
+                    -owners,
+                    -notional,
+                    prior_return,
+                    symbol,
+                    dict(raw),
+                    atr14,
+                    entry_index,
+                )
+            )
+        if unresolved:
+            (
+                _negative_owners,
+                _negative_notional,
+                symbol,
+                selected,
+                reason,
+            ) = sorted(unresolved)[0]
+            candidates.append(
+                {
+                    "signal_id": (
+                        f"{entry_date}-"
+                        f"{INSIDER_PURCHASE_CONTINUATION_FAMILY}-{symbol}"
+                    ),
+                    "signal_date": entry_date,
+                    "decision_date": selected["filing_date"],
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": reason,
+                }
+            )
+            continue
+        if not ranked:
+            continue
+        (
+            _negative_owners,
+            negative_notional,
+            prior_return,
+            symbol,
+            selected,
+            atr14,
+            entry_index,
+        ) = sorted(ranked)[0]
+        candidate = _daily_candidate(
+            family_id=INSIDER_PURCHASE_CONTINUATION_FAMILY,
+            symbol=symbol,
+            decision_date=str(selected["filing_date"]),
+            entry_date=entry_date,
+            bars=daily[symbol],
+            entry_index=entry_index,
+            stop_atr=stop_atr,
+            atr14=atr14,
+            hold_sessions=hold_sessions,
+            rank=1,
+            score=-negative_notional,
+        )
+        candidate.update(
+            {
+                "filing_date": selected["filing_date"],
+                "issuer_cik": selected["issuer_cik"],
+                "purchase_notional": selected["purchase_notional"],
+                "distinct_reporting_owners": selected[
+                    "distinct_reporting_owners"
+                ],
+                "prior_20_session_return_fraction": prior_return,
+                "expected_gross_move_fraction": (
+                    atr14 / float(daily[symbol][entry_index]["open"])
+                ),
+            }
+        )
+        candidates.append(candidate)
+    return candidates
+
+
 def _sp500_addition_exit(
     bars_by_date: Mapping[str, Mapping[str, Any]],
     *,
@@ -6104,6 +6307,8 @@ def build_candidates(
         return _earnings_sec_reaction_candidates(dataset, parameters)
     if family_id == ACTIVIST_EARNINGS_REACTION_FAMILY:
         return _activist_earnings_reaction_candidates(dataset, parameters)
+    if family_id == INSIDER_PURCHASE_CONTINUATION_FAMILY:
+        return _insider_purchase_candidates(dataset, parameters)
     if family_id == SP500_ADDITION_FORCED_DEMAND_FAMILY:
         return _sp500_addition_candidates(dataset, parameters)
     if family_id == VOLATILITY_COMPRESSION_FAMILY:

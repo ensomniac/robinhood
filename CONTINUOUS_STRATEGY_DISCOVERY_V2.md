@@ -479,6 +479,18 @@ research; fewer than 50 retires the family for formal capacity. Development,
 embargo, confirmation, costs, selection corrections, and exact production
 semantics still freeze only after this outcome-blind capacity gate.
 
+Capacity inspection `22b5ca89...ebd720` admitted 29,564 normalized events.
+The separate `insider_purchase_discovery.py` transition implements the family
+freeze without opening market data. It aggregates filings observable before
+the same symbol's next open, applies a frozen $50,000 capacity floor, uses
+2018-2022 as development, inserts a five-session year-boundary embargo, and
+reserves 2023-2024 confirmation at exact symbol/session-pair granularity through
+the maximum exit. Its 32 trials are purchase notional `{50000,250000}` by
+distinct reporting owners `{1,2}` by maximum prior 20-session return
+`{-5%,0%}` by stop `{1.5,2.0} ATR14` by hold `{3,5}` sessions. Only after the
+contract, generic preflight, and search are committed may development prices be
+collected; confirmation prices remain forbidden until an exact winner freezes.
+
 ## Parallel lanes
 
 The residual-equity implementation is now used only for the existing

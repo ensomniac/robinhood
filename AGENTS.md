@@ -77,6 +77,11 @@ events across 1,746 filing dates and 4,387 symbols. All nine checks pass and
 the exact version earns `FORM4_CAPACITY_READY`, far above the 100-event fast
 lane floor, with prices, returns, and confirmation still unopened. Commit this
 disposition before freezing development, embargo, and confirmation evidence.
+`insider_purchase_discovery.py` implements that next outcome-blind transition:
+it clusters every filing observable before the same symbol's next full-session
+open, reserves confirmation symbol/date pairs through the maximum five-session
+exit, and freezes the exact 32-trial notional, owner-count, prior-return,
+ATR-stop, and hold grid before any market-price access.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
