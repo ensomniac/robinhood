@@ -182,6 +182,10 @@ timezone, quote-array, OHLCV, or chronology payloads. Only those exact
 after the first response. CLNS receives no retry; all other errors fail closed,
 and substitutions and confirmation access remain forbidden. Commit and push
 the policy before independent inspection.
+Inspection `2687d6b9...18cacd` independently rebuilt the response-schema
+policy, failure evidence, checkpoint boundary, controller hashes, five-message
+allowlist, and every closed-state constraint. All eleven checks pass. Commit
+and push the inspection before resuming the unchanged request graph.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
