@@ -1,0 +1,70 @@
+{
+  "artifact_kind": "development-search-result",
+  "artifact_sha256": "ecc5e4eb8e366f4b220ed8a8910e685c89b1762a9ffbbd0cf88266ed2c9bf962",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "elapsed_seconds": 0.21331725001800805,
+  "evaluation_binding": {
+    "compression": "gzip",
+    "content_sha256": "1ee4d0bbc03627969e33521a10481b28d4a1100a88405a5d23c5388c29f0eaab",
+    "file_sha256": "db58253d8d24ba938cbcefe0929762ade7192d742d9e738553c12ff735903944",
+    "format": "canonical-json",
+    "kind": "external-development-evaluation",
+    "relative_path": "_derived/strategy_discovery_evaluations/1ee4d0bbc03627969e33521a10481b28d4a1100a88405a5d23c5388c29f0eaab/evaluation.json.gz",
+    "schema_version": 1,
+    "storage": "LOCAL_HISTORICAL_DATA_ROOT"
+  },
+  "evaluation_summary": {
+    "dataset_manifest": "/Users/ensomniac/trade/robinhood_codex/strategy_tournament/v2/discovery/preholiday-equity-drift/development-dataset/dataset-preholiday-equity-drift-development-ee5dbb5ba248f7ec-c5257657599d826f63dadf0c1aa19d0010997ce2594ec293e5ecf055ca5ab494.json",
+    "experiment_id": "experiment-preholiday-equity-drift-v1",
+    "implementation_sha256": "bf43ddb2dc98a99e69dbad7a3980364abb5c50f0091b1bf6479add7c54b53fa8",
+    "trial_count": 1,
+    "trials": [
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 2219,
+          "oof_filled_account_returns": 77,
+          "oof_net_pnl_dollars": 77
+        },
+        "maturity_rows": 2219,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 15.695664555968468,
+          "stress_20bps_profit_factor": 0.22370126698734133,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.08172897830720674,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "entry_timing": "scheduled_preholiday_session_open",
+          "exit_timing": "same_session_close",
+          "expected_gross_move_fraction": 0.005,
+          "maximum_hold_sessions": 1,
+          "stop_fraction": 0.015
+        },
+        "trial_accounting_rows": 2219,
+        "trial_id": "trial-56be64c99b7e6a49"
+      }
+    ]
+  },
+  "family_id": "preholiday-equity-drift",
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 1,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "search_path": "strategy_tournament/v2/discovery/preholiday-equity-drift/search/preholiday-equity-drift-search-ee5dbb5ba248f7ec0941cda45725aa4f7905295df841db5e61d4224c5b63aba7.json",
+  "search_sha256": "ee5dbb5ba248f7ec0941cda45725aa4f7905295df841db5e61d4224c5b63aba7",
+  "state": "DEVELOPMENT_EVALUATED"
+}
