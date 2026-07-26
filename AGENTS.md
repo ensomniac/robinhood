@@ -340,6 +340,11 @@ forward-chronological 120-session development account calendars, five-session
 embargoes, and 35 pair-clean confirmation signal sessions per family against
 the current global exposure index. It accessed zero market prices or target
 outcomes. Commit and push it before independent allocation reconstruction.
+Inspection `841b32d6...954b3b3` rebuilt all three account paths, 745 unique
+causal warmup sessions, the five-session embargoes, 105 untouched confirmation
+signal sessions, and every zero-signal confirmation day. All ten checks pass
+with zero market-price or target-outcome access. Commit and push this inspection
+before freezing the three exact family evidence contracts.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
