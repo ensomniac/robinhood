@@ -1,0 +1,38 @@
+{
+  "artifact_kind": "fomc-preannouncement-calendar-lineage",
+  "artifact_sha256": "68abe969b98ad62ca7cb30e2b6a3c8dbe94bfee5ffb2fdac9a0e64a5fa5feafd",
+  "broker_actions": 0,
+  "calendar_path": "historical_batches/fomc_preannouncement/session-calendar-2009-01-through-2025-12.json",
+  "calendar_sha256": "1cc1f38288e0fc5a7a7d683bee7754a6f3b1aecd376eb31711e515e0aa84fc46",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "created_at": "2026-07-26T17:20:00Z",
+  "first_session": "2009-01-02",
+  "last_session": "2025-12-31",
+  "market_prices_accessed": false,
+  "merge_semantics": "unique full 09:30-16:00 sessions only",
+  "provider_requests_added": 0,
+  "schema_version": 1,
+  "sessions": 4240,
+  "source_authorities": [
+    {
+      "authority_path": "strategy_tournament/v2/continuous/broad-etf-trend-pullback-v3-pre2016-broad-etf-replication/calendar/data-inspection/etf-pullback-replication-calendar-data-inspection-0c2a450169662291decd3dd2d1563361138ebf32fba602ac8eb90e70bebce707.json",
+      "authority_sha256": "0c2a450169662291decd3dd2d1563361138ebf32fba602ac8eb90e70bebce707",
+      "calendar_path": "historical_batches/etf_pullback_replication/session-calendar-2008-01-through-2015-12.json",
+      "calendar_sha256": "28c9370594afc019834ec449155d88ba56bca8430e8c223a3d7a1b49180695be"
+    },
+    {
+      "authority_path": "strategy_tournament/v2/continuous/broad-etf-trend-pullback-v2-cost-floor/calendar/data-inspection/continuous-successor-calendar-data-inspection-f4da078f7a8b857d42b727efc543ec766b15f34d3f2d54d526e5f326a72e42b8.json",
+      "authority_sha256": "f4da078f7a8b857d42b727efc543ec766b15f34d3f2d54d526e5f326a72e42b8",
+      "calendar_path": "historical_batches/continuous_v2/session-calendar-2014-01-through-2022-12.json",
+      "calendar_sha256": "93acba7df20cb39af7aa7d6afbe7bec531dbea6a1e2c67de95fc6052098f1b50"
+    },
+    {
+      "authority_path": "strategy_tournament/v2/calendar/collection/dense-session-calendar-collection-95b4cba195ad5d472d397a64e38f4ea9f025efa3bf58d232f966c3b5d5213a05.json",
+      "authority_sha256": "95b4cba195ad5d472d397a64e38f4ea9f025efa3bf58d232f966c3b5d5213a05",
+      "calendar_path": "historical_batches/dense_v2/session-calendar-2020-01-through-2026-07.json",
+      "calendar_sha256": "01b25b1b8192fe8fb9f416d6e8a229a23f80dec1013673049c8e7726252c64d4"
+    }
+  ],
+  "state": "CALENDAR_MERGED_UNINSPECTED",
+  "target_outcomes_accessed": false
+}

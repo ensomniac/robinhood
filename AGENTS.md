@@ -59,7 +59,10 @@ round-trip cost. The runtime, Yahoo symbol-range collection path, and
 closing-interval production evaluator are implemented, but no SCHB market
 price may be accessed until the merged 2009-2025 exchange calendar is built,
 committed, independently inspected, and the exact family contract is frozen
-and committed.
+and committed. Calendar lineage `68abe969...feafd` now binds 4,240 unique
+full sessions from 2009-01-02 through 2025-12-31 to the three exact source
+hashes with zero added provider, price, outcome, or broker access. Commit and
+push the lineage and merged calendar before independent reconstruction.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
