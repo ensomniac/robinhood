@@ -577,7 +577,11 @@ Recovery plan `1d08be38...abef83b` binds that search, inspected failure
 indexed SPLV exposure. It reuses only task IDs `66ccfa49...` and
 `18a5c5f7...`, and authorizes only new task `e4d9970d...` for unchanged
 `^VIX` with the exact Chicago response policy. Commit and push it before
-independent plan inspection; provider access remains closed.
+independent plan inspection; provider access remains closed. Inspection
+`4c5c64c1...2183b8d` independently passes all twelve lineage, calendar,
+request-graph, source-policy, partial-exposure, implementation, and
+confirmation checks in `COLLECTION_PLAN_INSPECTED_READY`. Commit and push it
+before executing the single request.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
