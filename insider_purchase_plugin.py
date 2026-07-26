@@ -12,7 +12,7 @@ from typing import Any
 import dense_strategy_runtime as runtime
 import portfolio_maturity
 from historical_store import HistoricalDayStore, canonical_sha256
-from insider_purchase_discovery import EXPERIMENT_ID, FAMILY_ID
+from insider_purchase_discovery import FAMILY_ID
 from learning_data import LearningDataError, load_frozen_dataset_contract
 
 
@@ -24,6 +24,17 @@ DEFAULT_DISCOVERY_ROOT = (
 
 class InsiderPurchasePluginError(RuntimeError):
     """A frozen Form 4 family input or production fact is incomplete."""
+
+
+def _family_id(value: Mapping[str, Any]) -> str:
+    family_id = value.get("family_id")
+    if not isinstance(family_id, str) or not family_id:
+        raise InsiderPurchasePluginError("frozen Form 4 family_id is missing")
+    return family_id
+
+
+def _discovery_root(family_id: str) -> Path:
+    return PROJECT_ROOT / "strategy_tournament/v2/discovery" / family_id
 
 
 def _path(value: Any) -> Path:
@@ -90,6 +101,8 @@ def _account_policy() -> dict[str, Any]:
 
 
 def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
+    family_id = _family_id(contract)
+    experiment_id = contract.get("experiment_id")
     manifest_path = _path(contract.get("capacity_manifest"))
     _require_committed(manifest_path)
     manifest = _manifest(manifest_path)
@@ -104,8 +117,8 @@ def preflight(contract: Mapping[str, Any]) -> dict[str, Any]:
         raise InsiderPurchasePluginError("Form 4 capacity counts are missing")
     checks = {
         "development_lane": payload.get("lane") == "development",
-        "family_bound": capacity.get("family_id") == FAMILY_ID,
-        "experiment_bound": capacity.get("experiment_id") == EXPERIMENT_ID,
+        "family_bound": capacity.get("family_id") == family_id,
+        "experiment_bound": capacity.get("experiment_id") == experiment_id,
         "dates_bound": manifest.get("requested_dates")
         == contract.get("development_dates"),
         "point_in_time": payload.get("point_in_time_evidence") is True,
@@ -161,6 +174,7 @@ def _single_manifest(directory: Path) -> Path:
 def _load_bound_dataset(
     manifest_path: Path,
     *,
+    family_id: str,
     lane: str,
     expected_dates: Sequence[str],
     preregistration_sha256: str | None = None,
@@ -175,7 +189,7 @@ def _load_bound_dataset(
         and payload.get("lane") == lane
         and payload.get("inspected") is True
         and payload.get("point_in_time_evidence") is True
-        and binding.get("family_id") == FAMILY_ID
+        and binding.get("family_id") == family_id
         and binding.get("sample_phase") == lane
     ):
         raise InsiderPurchasePluginError("runtime dataset scope drifted")
@@ -189,7 +203,7 @@ def _load_bound_dataset(
         )
     dataset = _load_private_dataset(binding["private_dataset"])
     if (
-        dataset.get("family_id") != FAMILY_ID
+        dataset.get("family_id") != family_id
         or dataset.get("evaluation_dates") != list(expected_dates)
         or dataset.get("sample_phase") != lane
     ):
@@ -201,15 +215,18 @@ def evaluate_development(
     contract: Mapping[str, Any],
     trials: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
+    family_id = _family_id(contract)
+    discovery_root = _discovery_root(family_id)
     raw_manifest = contract.get("dataset_manifest")
     manifest_path = (
         _path(raw_manifest)
         if raw_manifest
-        else _single_manifest(DEFAULT_DISCOVERY_ROOT / "development-dataset")
+        else _single_manifest(discovery_root / "development-dataset")
     )
     dataset = runtime.prepare_dataset(
         _load_bound_dataset(
             manifest_path,
+            family_id=family_id,
             lane="development",
             expected_dates=contract["development_dates"],
         )
@@ -219,7 +236,7 @@ def evaluate_development(
         "trials": [
             runtime.evaluate_trial(
                 dataset,
-                family_id=FAMILY_ID,
+                family_id=family_id,
                 trial_id=str(trial["trial_id"]),
                 parameters=trial["parameters"],
                 account_policy=_account_policy(),
@@ -232,12 +249,15 @@ def evaluate_development(
 
 
 def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
+    family_id = _family_id(winner)
+    discovery_root = _discovery_root(family_id)
     manifest_path = _single_manifest(
-        DEFAULT_DISCOVERY_ROOT / "confirmation-dataset"
+        discovery_root / "confirmation-dataset"
     )
     dataset = runtime.prepare_dataset(
         _load_bound_dataset(
             manifest_path,
+            family_id=family_id,
             lane="confirmation",
             expected_dates=winner["confirmation_dates"],
             preregistration_sha256=str(winner["rules_hash"]),
@@ -245,7 +265,7 @@ def evaluate_confirmation(winner: Mapping[str, Any]) -> dict[str, Any]:
     )
     exact = runtime.evaluate_trial(
         dataset,
-        family_id=FAMILY_ID,
+        family_id=family_id,
         trial_id=str(winner["exact_rules"]["selected_trial_id"]),
         parameters=winner["exact_rules"]["parameters"],
         account_policy=_account_policy(),

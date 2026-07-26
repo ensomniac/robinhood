@@ -334,12 +334,15 @@ stressed profit factor, fold stability, DSR, Holm, neighbor stability, or the
 complete selection-aware gate set; the highest lower bootstrap bound is
 negative and rebuilt family PBO is 0.5714. Confirmation remains untouched. This
 exact family may not be repaired on its evaluated corpus.
-The next three historical families no longer have a calendar blocker.
-Allocation contract `9539adb2...913b95` now freezes three mutually disjoint,
-forward-chronological 120-session development account calendars, five-session
-embargoes, and 35 pair-clean confirmation signal sessions per family against
-the current global exposure index. It accessed zero market prices or target
-outcomes. Commit and push it before independent allocation reconstruction.
+The dense-calendar infrastructure is non-authorizing. Allocation contract
+`9539adb2...913b95` froze three mutually disjoint, forward-chronological
+120-session development account calendars, five-session embargoes, and 35
+pair-clean confirmation signal sessions per family against the current global
+exposure index, with zero market-price or target-outcome access. The subsequent
+family-freeze transition correctly failed before writing because immutable
+rolling-batch status already binds those same three family IDs to terminal prior
+versions. Do not overwrite that status or use these calendar artifacts to replay
+the terminal families.
 Inspection `841b32d6...954b3b3` rebuilt all three account paths, 745 unique
 causal warmup sessions, the five-session embargoes, 105 untouched confirmation
 signal sessions, and every zero-signal confirmation day. All ten checks pass
@@ -349,8 +352,18 @@ Capacity inventory `fc1a8fda...5aa839` now materializes the inspected topology
 into three exact capacity manifests. Each family has 120 development sessions,
 five embargo sessions, and 35 pair-clean confirmation signal sessions; warmup
 and zero-signal account calendars remain separate. No provider, outcome, or
-broker access occurred. Commit and push all four artifacts before freezing the
-family contracts.
+broker access occurred. These artifacts are retained as auditable,
+outcome-blind infrastructure only; they cannot authorize family contracts for
+the already-terminal family IDs.
+The immediate historical lane is instead
+`clustered-form4-open-market-purchase-continuation-replication-v2`. It preserves
+the rejected v1 family's exact 32-rule grid, carries all 32 adverse prior paths
+into cumulative 64-trial DSR, Holm, and PBO correction, and consumes no new
+mechanism-family slot. The predecessor's never-opened reserve supplies 424
+pair-clean development events across 94 signal dates, followed by five complete
+embargo sessions and 209 untouched confirmation events across 46 signal dates.
+The sparse 2023 reserve segment is discarded outcome-blind; no parameters,
+market prices, or returns were used to choose the 2024 partition.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

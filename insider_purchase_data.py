@@ -62,6 +62,32 @@ def _relative(path: Path) -> str:
     return str(path.resolve().relative_to(PROJECT_ROOT.resolve()))
 
 
+def _discovery_root(family_id: str) -> Path:
+    return PROJECT_ROOT / "strategy_tournament/v2/discovery" / family_id
+
+
+def _family_id(value: Mapping[str, Any]) -> str:
+    family_id = value.get("family_id")
+    if not isinstance(family_id, str) or not family_id:
+        raise InsiderPurchaseDataError("frozen Form 4 family_id is missing")
+    return family_id
+
+
+def _source_bounds(contract: Mapping[str, Any]) -> tuple[str, str]:
+    start = str(contract.get("source_history_start", REQUEST_START))
+    end = str(
+        contract.get(
+            "source_history_end",
+            max(contract.get("development_dates", [REQUEST_END])),
+        )
+    )
+    if not start or not end or start > min(contract["development_dates"]) or (
+        end < max(contract["development_dates"])
+    ):
+        raise InsiderPurchaseDataError("frozen source-history bounds are invalid")
+    return start, end
+
+
 def _timestamp(value: str, field: str) -> str:
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -151,6 +177,7 @@ def _require_pushed_head() -> str:
 
 
 def _private_inventory(contract: Mapping[str, Any]) -> dict[str, Any]:
+    family_id = _family_id(contract)
     manifest_path = PROJECT_ROOT / str(contract["capacity_manifest"])
     strategy_discovery.require_committed(manifest_path)
     manifest = load_frozen_dataset_contract(manifest_path)
@@ -171,35 +198,42 @@ def _private_inventory(contract: Mapping[str, Any]) -> dict[str, Any]:
     if (
         not isinstance(value, dict)
         or canonical_sha256(value) != binding.get("content_sha256")
-        or value.get("family_id") != FAMILY_ID
+        or value.get("family_id") != family_id
     ):
         raise InsiderPurchaseDataError("private family inventory content drifted")
     return value
 
 
-def _request(symbol: str) -> dict[str, Any]:
+def _request(
+    symbol: str, *, start: str = REQUEST_START, end: str = REQUEST_END
+) -> dict[str, Any]:
     value = {
         "method": "GET",
         "endpoint": ENDPOINT_TEMPLATE.format(symbol=quote(symbol, safe="")),
         "parameters": {
-            "period1": _period(REQUEST_START),
-            "period2": _exclusive_period(REQUEST_END),
+            "period1": _period(start),
+            "period2": _exclusive_period(end),
             "interval": "1d",
             "events": "history",
             "includeAdjustedClose": "true",
         },
         "symbol": symbol,
-        "start": REQUEST_START,
-        "end": REQUEST_END,
+        "start": start,
+        "end": end,
     }
     return {**value, "request_sha256": _hash(value)}
 
 
-def _source_scope(symbols: Sequence[str]) -> dict[str, Any]:
+def _source_scope(
+    symbols: Sequence[str],
+    *,
+    start: str = REQUEST_START,
+    end: str = REQUEST_END,
+) -> dict[str, Any]:
     dates = [
         day
         for day in family._load_calendar()
-        if REQUEST_START <= day <= REQUEST_END
+        if start <= day <= end
     ]
     return outcome_exposure.validate_scope(
         {"dates": dates, "symbols": list(symbols)}
@@ -222,14 +256,19 @@ def build_contract(search_path: Path, created_at: str) -> dict[str, Any]:
     if search.get("state") != "SEARCH_FROZEN":
         raise InsiderPurchaseDataError("development search is not frozen")
     contract = search["family_contract"]
+    family_id = _family_id(contract)
     inventory = _private_inventory(contract)
     events = inventory["development_events"]
     symbols = sorted({str(row["symbol"]) for row in events})
+    source_start, source_end = _source_bounds(contract)
     if not (
-        contract["family_id"] == FAMILY_ID
-        and len(contract["trial_family"]) == 32
-        and len(events) == 7049
-        and len(symbols) == 2589
+        len(contract["trial_family"]) == 32
+        and events
+        and symbols
+        and all(
+            str(row.get("entry_date", "")) in contract["development_signal_dates"]
+            for row in events
+        )
     ):
         raise InsiderPurchaseDataError(
             "frozen search or development inventory drifted"
@@ -237,12 +276,15 @@ def build_contract(search_path: Path, created_at: str) -> dict[str, Any]:
     outcome_exposure.assert_untouched(
         contract["confirmation_scope"], outcome_exposure.read_index()
     )
-    requests_ = [_request(symbol) for symbol in symbols]
+    requests_ = [
+        _request(symbol, start=source_start, end=source_end)
+        for symbol in symbols
+    ]
     return {
         "schema_version": 1,
         "artifact_kind": "form4-purchase-development-source-contract",
         "campaign_id": CAMPAIGN_ID,
-        "family_id": FAMILY_ID,
+        "family_id": family_id,
         "created_at": _timestamp(created_at, "created_at"),
         "state": "SOURCE_CONTRACT_FROZEN",
         "search_path": _relative(search_path),
@@ -250,7 +292,9 @@ def build_contract(search_path: Path, created_at: str) -> dict[str, Any]:
         "development_dates": contract["development_dates"],
         "development_signal_dates": contract["development_signal_dates"],
         "development_scope": contract["development_scope"],
-        "source_scope": _source_scope(symbols),
+        "source_scope": _source_scope(
+            symbols, start=source_start, end=source_end
+        ),
         "confirmation_scope": contract["confirmation_scope"],
         "event_inventory_content_sha256": canonical_sha256(inventory),
         "development_event_count": len(events),
@@ -278,8 +322,8 @@ def build_contract(search_path: Path, created_at: str) -> dict[str, Any]:
             "null_rows": "omitted_as_missing_sessions",
             "missing_symbol_or_session": "missed_trade_never_substitute",
             "development_prices_only": True,
-            "warmup_start": REQUEST_START,
-            "evaluation_end": REQUEST_END,
+            "warmup_start": source_start,
+            "evaluation_end": source_end,
         },
         "market_prices_accessed": False,
         "strategy_metrics_computed": 0,
@@ -292,9 +336,14 @@ def freeze_contract(
     search_path: Path, created_at: str
 ) -> tuple[Path, dict[str, Any]]:
     strategy_discovery.require_committed(search_path)
+    family_id = _family_id(
+        strategy_discovery.load_artifact(
+            search_path, expected_kind="frozen-development-search"
+        )["family_contract"]
+    )
     return _write(
         build_contract(search_path, created_at),
-        DEFAULT_ROOT / "development-source-contract",
+        _discovery_root(family_id) / "development-source-contract",
         "source-contract",
     )
 
@@ -306,6 +355,7 @@ def inspect_contract(
     contract = _load(
         contract_path, "form4-purchase-development-source-contract"
     )
+    family_id = _family_id(contract)
     search_path = PROJECT_ROOT / str(contract["search_path"])
     strategy_discovery.require_committed(search_path)
     rebuilt = build_contract(search_path, str(contract["created_at"]))
@@ -329,7 +379,7 @@ def inspect_contract(
         "schema_version": 1,
         "artifact_kind": "form4-purchase-development-source-inspection",
         "campaign_id": CAMPAIGN_ID,
-        "family_id": FAMILY_ID,
+        "family_id": family_id,
         "inspected_at": _timestamp(inspected_at, "inspected_at"),
         "state": "SOURCE_CONTRACT_INSPECTED_READY",
         "contract_path": _relative(contract_path),
@@ -357,7 +407,8 @@ def inspect_contract(
     }
     return _write(
         payload,
-        DEFAULT_ROOT / "development-source-contract-inspection",
+        _discovery_root(family_id)
+        / "development-source-contract-inspection",
         "source-inspection",
     )
 
@@ -413,6 +464,7 @@ def collect(
     contract = _load(
         contract_path, "form4-purchase-development-source-contract"
     )
+    family_id = _family_id(contract)
     inspection = _load(
         inspection_path, "form4-purchase-development-source-inspection"
     )
@@ -485,7 +537,7 @@ def collect(
     }
     dataset = {
         "schema_version": 1,
-        "family_id": FAMILY_ID,
+        "family_id": family_id,
         "sample_phase": "development",
         "evaluation_dates": contract["development_dates"],
         "signal_dates": contract["development_signal_dates"],
@@ -515,7 +567,7 @@ def collect(
         "schema_version": 1,
         "artifact_kind": "form4-purchase-development-collection",
         "campaign_id": CAMPAIGN_ID,
-        "family_id": FAMILY_ID,
+        "family_id": family_id,
         "collected_at": _timestamp(collected_at, "collected_at"),
         "state": "DEVELOPMENT_COLLECTED_UNINSPECTED",
         "published_commit": published_commit,
@@ -549,13 +601,13 @@ def collect(
     }
     path, artifact = _write(
         payload,
-        DEFAULT_ROOT / "development-collection",
+        _discovery_root(family_id) / "development-collection",
         "development-collection",
     )
     outcome_exposure.ensure_record(
         outcome_exposure.build_record(
             exposure_id=(
-                f"development-source-{FAMILY_ID}-"
+                f"development-source-{family_id}-"
                 f"{artifact['artifact_sha256'][:16]}"
             ),
             campaign_id=CAMPAIGN_ID,
@@ -593,13 +645,14 @@ def inspect_collection(
         search_path, expected_kind="frozen-development-search"
     )
     contract = search["family_contract"]
+    family_id = _family_id(contract)
     inventory = _private_inventory(contract)
     expected_metadata = _event_metadata(
         inventory, contract["development_dates"]
     )
     bars = dataset.get("daily_bars")
     if not (
-        dataset.get("family_id") == FAMILY_ID
+        dataset.get("family_id") == family_id
         and dataset.get("sample_phase") == "development"
         and dataset.get("evaluation_dates") == contract["development_dates"]
         and dataset.get("signal_dates") == contract["development_signal_dates"]
@@ -640,7 +693,7 @@ def inspect_collection(
         "schema_version": 1,
         "artifact_kind": "form4-purchase-development-collection-inspection",
         "campaign_id": CAMPAIGN_ID,
-        "family_id": FAMILY_ID,
+        "family_id": family_id,
         "inspected_at": _timestamp(inspected_at, "inspected_at"),
         "state": "DATASET_INSPECTED_READY",
         "collection_path": _relative(collection_path),
@@ -672,13 +725,14 @@ def inspect_collection(
     }
     inspection_path, inspection = _write(
         payload,
-        DEFAULT_ROOT / "development-collection-inspection",
+        _discovery_root(family_id)
+        / "development-collection-inspection",
         "development-inspection",
     )
     manifest = {
         "schema_version": 1,
         "dataset_id": (
-            f"dataset-{FAMILY_ID}-development-"
+            f"dataset-{family_id}-development-"
             f"{collection['search_sha256'][:16]}"
         ),
         "registered_at": inspected_at,
@@ -696,7 +750,7 @@ def inspect_collection(
             "point_in_time_evidence": True,
             "development_search_sha256": collection["search_sha256"],
             "form4_purchase_runtime": {
-                "family_id": FAMILY_ID,
+                "family_id": family_id,
                 "sample_phase": "development",
                 "private_dataset": private,
                 "collection_inspection_sha256": inspection[
@@ -707,7 +761,7 @@ def inspect_collection(
         },
     }
     manifest_path, _manifest = freeze_dataset_contract(
-        manifest, DEFAULT_ROOT / "development-dataset"
+        manifest, _discovery_root(family_id) / "development-dataset"
     )
     return inspection_path, manifest_path, inspection
 
