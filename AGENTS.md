@@ -603,6 +603,19 @@ multiple-testing gates, and deterministic selection. It assigns terminal
 `REJECTED`; the one-sided 90% 20-bps lower bound is -0.002210 per filled
 trade, stressed growth and PF fail, and confirmation remains sealed. Preserve
 the exact corpus and advance a distinct mechanism immediately.
+The next outcome-blind lane is
+`sp-mid-small-external-index-addition-forced-demand-v1`. It tests a stricter
+forced-flow mechanism than the rejected S&P 500 addition family: only additions
+to the S&P MidCap 400 or SmallCap 600 with no same-ticker, same-effective-date
+deletion from another S&P Composite 1500 size index are eligible. This removes
+ambiguous 500/400/600 transfers whose tracker buying and selling offset each
+other. The 312 official S&P release pages already retained by the independently
+inspected S&P 500 capacity campaign may be reused only after a new exact
+cache-identity contract and independent inspection are committed. The new
+capacity implementation makes zero provider requests, opens no price or return,
+and preserves every missing timestamp, effective date, ticker identity,
+transfer, irrelevant page, and duplicate in the denominator. Freeze and commit
+the source-reuse contract before the new parser opens any cached page.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
