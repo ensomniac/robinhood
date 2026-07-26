@@ -52,6 +52,16 @@ def _parameters() -> dict[str, float | int]:
     }
 
 
+def _temporal_parameters() -> dict[str, float | int]:
+    return {
+        "minimum_yoy_eps_change_ratio": 0.0,
+        "minimum_opening_gap_fraction": -0.02,
+        "security_trend_gate": "price>SMA200",
+        "stop_atr14": 1.5,
+        "maximum_hold_sessions": 5,
+    }
+
+
 def test_broad_sec_pead_enters_first_observable_open() -> None:
     days = _days(212)
     entry_index = 205
@@ -184,4 +194,44 @@ def test_broad_sec_pead_production_rebuilds_same_rank() -> None:
             family_id=runtime.SEC_BROAD_PEAD_FAMILY,
             parameters=_parameters(),
             frozen_universe=universe,
+        )
+
+
+def test_temporal_broad_sec_pead_has_exact_isolated_rule() -> None:
+    days = _days(212)
+    entry_index = 205
+    bars = [
+        _bar(day, 100.0 + index * 0.05)
+        for index, day in enumerate(days)
+    ]
+    evaluation = days[entry_index : entry_index + 5]
+    metadata = {day: [] for day in evaluation}
+    metadata[evaluation[0]] = [
+        _event(evaluation[0], accepted=f"{evaluation[0]} 08:00:00")
+    ]
+    dataset = runtime.prepare_dataset(
+        {
+            "family_id": runtime.SEC_BROAD_PEAD_TEMPORAL_FAMILY,
+            "evaluation_dates": evaluation,
+            "event_metadata_by_date": metadata,
+            "daily_bars": {"EDGE": bars},
+        }
+    )
+
+    candidates = runtime.build_candidates(
+        dataset,
+        runtime.SEC_BROAD_PEAD_TEMPORAL_FAMILY,
+        _temporal_parameters(),
+    )
+
+    assert len(candidates) == 1
+    assert runtime.SEC_BROAD_PEAD_TEMPORAL_FAMILY in candidates[0]["signal_id"]
+    with pytest.raises(
+        runtime.DenseStrategyRuntimeError,
+        match="escaped the exact rule",
+    ):
+        runtime.build_candidates(
+            dataset,
+            runtime.SEC_BROAD_PEAD_TEMPORAL_FAMILY,
+            _parameters(),
         )

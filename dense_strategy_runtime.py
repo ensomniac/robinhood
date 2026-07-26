@@ -291,6 +291,13 @@ SEC_EARNINGS_GAP_15M_FAMILIES = {
 EARNINGS_PEAD_FAMILY = "earnings-positive-surprise-drift"
 EARNINGS_SEC_REACTION_FAMILY = "earnings-sec-yoy-eps-reaction-drift"
 SEC_BROAD_PEAD_FAMILY = "sec-yoy-eps-improvement-broad-drift"
+SEC_BROAD_PEAD_TEMPORAL_FAMILY = (
+    "sec-yoy-eps-improvement-broad-drift-temporal-replication"
+)
+SEC_BROAD_PEAD_FAMILIES = {
+    SEC_BROAD_PEAD_FAMILY,
+    SEC_BROAD_PEAD_TEMPORAL_FAMILY,
+}
 ACTIVIST_EARNINGS_REACTION_FAMILY = (
     "activist-issuer-earnings-reaction-continuation"
 )
@@ -350,7 +357,7 @@ SUPPORTED_FAMILIES = {
     *SEC_EARNINGS_GAP_15M_FAMILIES,
     EARNINGS_PEAD_FAMILY,
     EARNINGS_SEC_REACTION_FAMILY,
-    SEC_BROAD_PEAD_FAMILY,
+    *SEC_BROAD_PEAD_FAMILIES,
     ACTIVIST_EARNINGS_REACTION_FAMILY,
     *INSIDER_PURCHASE_FAMILIES,
     SP500_ADDITION_FORCED_DEMAND_FAMILY,
@@ -6428,6 +6435,8 @@ def _earnings_sec_reaction_candidates(
 def _sec_broad_pead_candidates(
     dataset: Mapping[str, Any],
     parameters: Mapping[str, Any],
+    *,
+    family_id: str = SEC_BROAD_PEAD_FAMILY,
 ) -> list[dict[str, Any]]:
     """Enter the first observable open after a positive SEC EPS filing."""
 
@@ -6451,6 +6460,10 @@ def _sec_broad_pead_candidates(
     trend_gate = str(parameters["security_trend_gate"])
     stop_atr = float(parameters["stop_atr14"])
     hold_sessions = int(parameters["maximum_hold_sessions"])
+    if family_id not in SEC_BROAD_PEAD_FAMILIES:
+        raise DenseStrategyRuntimeError(
+            "broad SEC PEAD family binding is unsupported"
+        )
     if (
         minimum_eps_change != 0.0
         or minimum_gap not in {-0.02, 0.0}
@@ -6460,6 +6473,16 @@ def _sec_broad_pead_candidates(
     ):
         raise DenseStrategyRuntimeError(
             "broad SEC PEAD parameters escaped the frozen grid"
+        )
+    if family_id == SEC_BROAD_PEAD_TEMPORAL_FAMILY and parameters != {
+        "maximum_hold_sessions": 5,
+        "minimum_opening_gap_fraction": -0.02,
+        "minimum_yoy_eps_change_ratio": 0.0,
+        "security_trend_gate": "price>SMA200",
+        "stop_atr14": 1.5,
+    }:
+        raise DenseStrategyRuntimeError(
+            "temporal broad SEC PEAD parameters escaped the exact rule"
         )
     candidates: list[dict[str, Any]] = []
     for calendar_index, decision_date in enumerate(calendar):
@@ -6541,7 +6564,7 @@ def _sec_broad_pead_candidates(
         ) = sorted(qualified)[0]
         bars = daily[symbol]
         entry_index = indices[symbol][decision_date]
-        signal_id = f"{decision_date}-{SEC_BROAD_PEAD_FAMILY}-{symbol}"
+        signal_id = f"{decision_date}-{family_id}-{symbol}"
         expected_dates = calendar[
             calendar_index : calendar_index + hold_sessions
         ]
@@ -7590,8 +7613,10 @@ def build_candidates(
         return _earnings_pead_candidates(dataset, parameters)
     if family_id == EARNINGS_SEC_REACTION_FAMILY:
         return _earnings_sec_reaction_candidates(dataset, parameters)
-    if family_id == SEC_BROAD_PEAD_FAMILY:
-        return _sec_broad_pead_candidates(dataset, parameters)
+    if family_id in SEC_BROAD_PEAD_FAMILIES:
+        return _sec_broad_pead_candidates(
+            dataset, parameters, family_id=family_id
+        )
     if family_id == ACTIVIST_EARNINGS_REACTION_FAMILY:
         return _activist_earnings_reaction_candidates(dataset, parameters)
     if family_id in INSIDER_PURCHASE_FAMILIES:
@@ -10236,6 +10261,8 @@ def _production_sec_broad_pead_signal(
     decision_data: Mapping[str, Any],
     parameters: Mapping[str, Any],
     frozen_universe: Mapping[str, Any],
+    *,
+    family_id: str = SEC_BROAD_PEAD_FAMILY,
 ) -> dict[str, Any]:
     expected = {
         "family_id",
@@ -10249,7 +10276,7 @@ def _production_sec_broad_pead_signal(
     }
     if (
         set(decision_data) != expected
-        or decision_data.get("family_id") != SEC_BROAD_PEAD_FAMILY
+        or decision_data.get("family_id") != family_id
         or decision_data.get("daily_history_complete") is not True
         or decision_data.get("event_inventory_complete") is not True
     ):
@@ -10298,6 +10325,10 @@ def _production_sec_broad_pead_signal(
     trend_gate = str(parameters["security_trend_gate"])
     stop_atr = float(parameters["stop_atr14"])
     hold = int(parameters["maximum_hold_sessions"])
+    if family_id not in SEC_BROAD_PEAD_FAMILIES:
+        raise DenseStrategyRuntimeError(
+            "production broad SEC PEAD family binding is unsupported"
+        )
     if (
         minimum_eps_change != 0.0
         or minimum_gap not in {-0.02, 0.0}
@@ -10307,6 +10338,16 @@ def _production_sec_broad_pead_signal(
     ):
         raise DenseStrategyRuntimeError(
             "production broad SEC PEAD parameters escaped the grid"
+        )
+    if family_id == SEC_BROAD_PEAD_TEMPORAL_FAMILY and parameters != {
+        "maximum_hold_sessions": 5,
+        "minimum_opening_gap_fraction": -0.02,
+        "minimum_yoy_eps_change_ratio": 0.0,
+        "security_trend_gate": "price>SMA200",
+        "stop_atr14": 1.5,
+    }:
+        raise DenseStrategyRuntimeError(
+            "production temporal broad SEC PEAD rule drifted"
         )
     daily = _daily_series(decision_data)
     if any(
@@ -10446,9 +10487,12 @@ def evaluate_production_signal(
         return _production_earnings_sec_reaction_signal(
             decision_data, parameters, frozen_universe
         )
-    if family_id == SEC_BROAD_PEAD_FAMILY:
+    if family_id in SEC_BROAD_PEAD_FAMILIES:
         return _production_sec_broad_pead_signal(
-            decision_data, parameters, frozen_universe
+            decision_data,
+            parameters,
+            frozen_universe,
+            family_id=family_id,
         )
     if family_id in {
         *EQUITY_RESIDUAL_FAMILIES,
