@@ -43,8 +43,25 @@ through 2012-10-15 is adverse history and may not be repaired; its 2012-10-23
 through 2013-12-31 confirmation partition remains untouched.
 
 The continuous existing-family queue is exhausted and rolling authorization
-`bedfb0ea...5e5585` currently releases three replacement slots. The active
-historical lane is a genuinely distinct new mechanism,
+`bedfb0ea...5e5585` currently releases three replacement slots.
+
+The dense rolling-batch-1 status correctly refuses to overwrite its three
+terminal exact family versions. The pair-aware calendar and capacity artifacts
+remain outcome-blind infrastructure, but they cannot reactivate those failed
+IDs. Historical discovery therefore proceeds without a calendar wait through
+the distinct `clustered-form4-open-market-purchase-continuation-v1` capacity
+lane. `insider_purchase_capacity.py` freezes the exact 2018-Q1 through 2024-Q4
+SEC Insider Transactions bulk archives and accepts only original Form 4,
+non-derivative transaction-code-P acquisitions of unfootnoted common equity,
+positive disclosed shares and price, direct ownership, officer/director
+reporting owners, and a maximum four-calendar-day transaction-to-filing lag.
+It excludes an affirmative `AFF10B5ONE` marker when the source provides one,
+uses the next exchange-session open as the earliest later strategy entry, and
+forbids all price, return, confirmation, and broker access during capacity
+work. Freeze, commit, and independently inspect the source contract before any
+of the 28 SEC archive requests.
+
+The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
 internal bar strength `{0.1,0.2}`, one-session decline `{0.5%,1.0%}`,
 trend SMA `{100,200}`, stop `{1.0,1.5}×ATR14`, and hold `{1,2}` sessions.

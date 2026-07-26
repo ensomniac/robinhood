@@ -452,6 +452,33 @@ for calendar collection, independent inspection, capacity allocation, contract
 freeze, and development-data freeze. Its readiness state never grants target
 outcome or broker access.
 
+## Form 4 rolling replacement
+
+The committed rolling-batch-1 status is terminal for its three exact family
+IDs and must not be overwritten. Pair-aware allocation removes the artificial
+calendar wait but does not revive a rejected version. A released rolling slot
+therefore advances the genuinely distinct
+`clustered-form4-open-market-purchase-continuation-v1` source-capacity lane.
+
+The lane uses the SEC's official quarterly Insider Transactions Data Sets from
+2018-Q1 through 2024-Q4. Before any download it freezes all 28 archive URLs,
+the as-filed join keys, and strict event semantics: original Form 4 only,
+non-derivative transaction code `P`, acquired common equity, positive shares
+and per-share price, direct ownership, officer or director ownership, no
+footnote on a core economic field, and at most four calendar days between the
+transaction and filing. An affirmative `AFF10B5ONE` value is excluded when the
+archive supplies that field. Filing date is the public timestamp surface; no
+future strategy may enter before the next complete exchange-session open.
+
+`insider_purchase_capacity.py` writes only compact contracts, inspections, and
+telemetry to Git. The quarterly ZIPs and normalized row-level events remain in
+the ignored content-addressed store. Capacity inspection accesses no market
+price or forward return. At least 100 normalized issuer-filing events admits a
+separately frozen development search; 50-99 preserves later single-rule
+research; fewer than 50 retires the family for formal capacity. Development,
+embargo, confirmation, costs, selection corrections, and exact production
+semantics still freeze only after this outcome-blind capacity gate.
+
 ## Parallel lanes
 
 The residual-equity implementation is now used only for the existing
