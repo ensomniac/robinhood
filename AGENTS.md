@@ -434,7 +434,10 @@ declared implementation hashes changed; refreshed contract
 freezing the replacement search. Refreshed preflight
 `0a2271c3...13fe64` revalidates all 633 frozen events and the current
 implementation binding as `CAPACITY_READY`, with zero provider or outcome
-access. Commit and push it before replacement search freeze.
+access. Replacement search `c137ebdb...f2d28d` now freezes the same 32 trials
+and current implementation hashes. Commit and push it before rebinding the
+already-inspected dataset metadata to this exact search; no provider access or
+new row data is needed.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
