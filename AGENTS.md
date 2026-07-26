@@ -463,7 +463,10 @@ spelling and rejected them as a substitution. No metric was returned or
 inspected. `insider_purchase_dataset_path_binding.py` freezes only the resolved
 spelling of that same committed file, proves every other contract field and
 implementation hash is identical, and opens no rows. Commit and push the
-controller before creating the path-bound contract.
+controller before creating the path-bound contract. Contract
+`dd5404f0...ef319d` now binds the resolved spelling and proves the same file
+identity with no semantic, row, provider, confirmation, or broker change.
+Commit and push it before generic preflight.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
