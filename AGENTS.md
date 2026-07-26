@@ -680,6 +680,12 @@ month-typo recovery lineage and may expand only the exact `UA/UAA` token from
 that exact committed official URL into `UA` and `UAA`; every other slash token,
 URL, invalid ticker, source change, or parser error remains fail-closed. Commit
 and push this controller before recording the exact second zero-event failure.
+Failure `63e13456...4e65b` now binds the committed typo-recovery contract,
+inspection, all 255 cache pages through the exact `UA/UAA` row, task ID, raw
+hash, URL, date, exception, and closed access boundary. It emitted no event set
+or capacity metric, made no provider or price request, accessed no return or
+confirmation outcome, and took no broker action. Commit and push it before
+independent failure inspection; same-contract resume remains forbidden.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
