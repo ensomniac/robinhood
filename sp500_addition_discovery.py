@@ -49,6 +49,12 @@ CALENDAR_PATHS = (
     / "historical_batches/dense_v2/"
     "session-calendar-2020-01-through-2026-07.json",
 )
+DENSE_CALENDAR_INSPECTION = (
+    PROJECT_ROOT
+    / "strategy_tournament/v2/calendar/allocation/inspection/"
+    "dense-calendar-allocation-inspection-"
+    "5920eedbba8149183cfdfe4dd5ea2468def96316fa1701803958a22348667c50.json"
+)
 DEVELOPMENT_EVENT_END = "2018-12-31"
 CONFIRMATION_EVENT_END = "2025-12-31"
 MAXIMUM_HOLD_SESSIONS = 5
@@ -78,9 +84,15 @@ def _calendar(
 ) -> tuple[list[str], dict[str, Any]]:
     by_date: dict[str, dict[str, str]] = {}
     hashes: dict[str, str] = {}
+    authorities: dict[str, str] = {}
     for path in CALENDAR_PATHS:
         if enforce_commit:
-            strategy_discovery.require_committed(path)
+            if path == CALENDAR_PATHS[-1]:
+                strategy_discovery.require_committed(
+                    DENSE_CALENDAR_INSPECTION
+                )
+            else:
+                strategy_discovery.require_committed(path)
         try:
             rows = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
@@ -92,6 +104,30 @@ def _calendar(
                 f"calendar is invalid: {path}"
             )
         hashes[_repo_path(path)] = sha256_file(path)
+        if path == CALENDAR_PATHS[-1]:
+            inspection = strategy_discovery.load_artifact(
+                DENSE_CALENDAR_INSPECTION,
+                expected_kind="dense-calendar-allocation-inspection",
+            )
+            checks = inspection.get("checks")
+            if not (
+                inspection.get("state")
+                == "CALENDAR_ALLOCATION_INSPECTED_READY"
+                and inspection.get("calendar_path") == _repo_path(path)
+                and inspection.get("calendar_sha256")
+                == hashes[_repo_path(path)]
+                and isinstance(checks, Mapping)
+                and checks
+                and all(checks.values())
+                and inspection.get("market_prices_accessed") is False
+                and inspection.get("target_outcomes_accessed") is False
+            ):
+                raise Sp500AdditionDiscoveryError(
+                    "ignored dense calendar lacks a valid committed inspection"
+                )
+            authorities[_repo_path(path)] = _repo_path(
+                DENSE_CALENDAR_INSPECTION
+            )
         for row in rows:
             if (
                 not isinstance(row, Mapping)
@@ -121,6 +157,7 @@ def _calendar(
         )
     return dates, {
         "paths": hashes,
+        "committed_authorities": authorities,
         "merged_session_count": len(dates),
         "merged_start": dates[0],
         "merged_end": dates[-1],
@@ -462,6 +499,7 @@ def freeze_family(
                     _repo_path(CAPACITY_INSPECTION),
                     _repo_path(scope_path),
                     "strategy_tournament/v2/OUTCOME_EXPOSURE_INDEX.jsonl",
+                    _repo_path(DENSE_CALENDAR_INSPECTION),
                     *map(_repo_path, CALENDAR_PATHS),
                 ],
                 "dense_capacity": {
