@@ -93,6 +93,10 @@ committed implementation hashes, and verified 7,717 total development plus
 reserved-confirmation clusters. It earns `CAPACITY_READY` with outcomes
 unopened and broker actions forbidden. Commit and push it before freezing the
 complete development search.
+Search `cee07890...6f9761` now freezes all 32 trials, the deterministic
+selection rule, implementation hashes, partitions, costs, scopes, and
+falsifiers with outcomes still unopened and broker actions forbidden. Commit
+and push it before freezing any development-provider request graph.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
