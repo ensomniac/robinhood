@@ -1,4 +1,5 @@
 import insider_purchase_replication_search as replication
+import dense_strategy_runtime as runtime
 import strategy_discovery
 
 
@@ -44,3 +45,12 @@ def test_replication_contract_preserves_grid_and_cumulative_correction():
     assert len(contract["prior_trial_daily_returns_by_id"]) == 32
     assert contract["new_mechanism_family_slot_consumed"] is False
     assert contract["confirmation_signal_capacity"] == 46
+
+
+def test_replication_uses_the_exact_form4_runtime_semantics():
+    assert (
+        runtime.INSIDER_PURCHASE_REPLICATION_FAMILY
+        == replication.FAMILY_ID
+    )
+    assert replication.FAMILY_ID in runtime.INSIDER_PURCHASE_FAMILIES
+    assert replication.FAMILY_ID in runtime.SUPPORTED_FAMILIES

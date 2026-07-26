@@ -206,7 +206,18 @@ def _pair_clean(
 
 def selection() -> dict[str, Any]:
     _manifest, inventory = _prior_capacity_inventory()
-    records = outcome_exposure.read_index()
+    all_records = outcome_exposure.read_index()
+    self_development_prefixes = (
+        f"development-partial-{FAMILY_ID}-",
+        f"development-source-{FAMILY_ID}-",
+    )
+    records = [
+        record
+        for record in all_records
+        if not str(record["exposure_id"]).startswith(
+            self_development_prefixes
+        )
+    ]
     clean, contaminated = _pair_clean(
         inventory["confirmation_events"], records
     )

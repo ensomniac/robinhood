@@ -419,7 +419,15 @@ the exposure record before dataset inspection. Inspection
 event metadata, every row and missing-symbol disposition, and the complete
 source exposure record. All checks pass; dataset manifest
 `55c94ade...0e037a` is `DATASET_INSPECTED_READY`. Commit and push both before
-local 32-trial evaluation.
+local 32-trial evaluation. The first evaluation invocation failed before any
+trial or metric because the shared runtime did not yet recognize the successor
+family ID; it wrote no result. The implementation now adds that ID to the exact
+existing Form 4 candidate path and preserves family-specific signal identity.
+The search controller also ignores only this family's own append-only
+development exposure when rebuilding its pre-outcome partition. Focused tests
+pass. Commit and push these integration-only changes, then use
+`strategy_discovery.py refresh-implementation` before any new search or
+evaluation attempt.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

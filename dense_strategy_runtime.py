@@ -279,6 +279,13 @@ ACTIVIST_EARNINGS_REACTION_FAMILY = (
 INSIDER_PURCHASE_CONTINUATION_FAMILY = (
     "clustered-form4-open-market-purchase-continuation"
 )
+INSIDER_PURCHASE_REPLICATION_FAMILY = (
+    "clustered-form4-open-market-purchase-continuation-replication-v2"
+)
+INSIDER_PURCHASE_FAMILIES = {
+    INSIDER_PURCHASE_CONTINUATION_FAMILY,
+    INSIDER_PURCHASE_REPLICATION_FAMILY,
+}
 SP500_ADDITION_FORCED_DEMAND_FAMILY = (
     "sp500-index-addition-forced-demand"
 )
@@ -322,7 +329,7 @@ SUPPORTED_FAMILIES = {
     EARNINGS_PEAD_FAMILY,
     EARNINGS_SEC_REACTION_FAMILY,
     ACTIVIST_EARNINGS_REACTION_FAMILY,
-    INSIDER_PURCHASE_CONTINUATION_FAMILY,
+    *INSIDER_PURCHASE_FAMILIES,
     SP500_ADDITION_FORCED_DEMAND_FAMILY,
     SP500_DELETION_FORCED_SELLING_FAMILY,
     VOLATILITY_COMPRESSION_FAMILY,
@@ -5847,6 +5854,8 @@ def _activist_earnings_reaction_candidates(
 def _insider_purchase_candidates(
     dataset: Mapping[str, Any],
     parameters: Mapping[str, Any],
+    *,
+    family_id: str = INSIDER_PURCHASE_CONTINUATION_FAMILY,
 ) -> list[dict[str, Any]]:
     """Evaluate next-open continuation after observable Form 4 purchases."""
 
@@ -5990,7 +5999,7 @@ def _insider_purchase_candidates(
                 {
                     "signal_id": (
                         f"{entry_date}-"
-                        f"{INSIDER_PURCHASE_CONTINUATION_FAMILY}-{symbol}"
+                        f"{family_id}-{symbol}"
                     ),
                     "signal_date": entry_date,
                     "decision_date": selected["filing_date"],
@@ -6013,7 +6022,7 @@ def _insider_purchase_candidates(
             entry_index,
         ) = sorted(ranked)[0]
         candidate = _daily_candidate(
-            family_id=INSIDER_PURCHASE_CONTINUATION_FAMILY,
+            family_id=family_id,
             symbol=symbol,
             decision_date=str(selected["filing_date"]),
             entry_date=entry_date,
@@ -6556,8 +6565,10 @@ def build_candidates(
         return _earnings_sec_reaction_candidates(dataset, parameters)
     if family_id == ACTIVIST_EARNINGS_REACTION_FAMILY:
         return _activist_earnings_reaction_candidates(dataset, parameters)
-    if family_id == INSIDER_PURCHASE_CONTINUATION_FAMILY:
-        return _insider_purchase_candidates(dataset, parameters)
+    if family_id in INSIDER_PURCHASE_FAMILIES:
+        return _insider_purchase_candidates(
+            dataset, parameters, family_id=family_id
+        )
     if family_id == SP500_ADDITION_FORCED_DEMAND_FAMILY:
         return _sp500_addition_candidates(dataset, parameters)
     if family_id == SP500_DELETION_FORCED_SELLING_FAMILY:
