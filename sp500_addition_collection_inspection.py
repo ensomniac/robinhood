@@ -218,6 +218,7 @@ def inspect_plan(
         and plan["event_task_ids"] == expected_event_task_ids
         and plan["permanent_missing_symbol_response"]
         == "missed_trade"
+        and plan["invalid_daily_response"] == "missed_trade"
         and len({row["task_id"] for row in expected_tasks})
         == len(expected_tasks)
     ):

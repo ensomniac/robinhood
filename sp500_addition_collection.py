@@ -30,12 +30,16 @@ DEFAULT_PUBLIC_ROOT = strategy_discovery.DEFAULT_ROOT
 PLAN_KIND = "sp500-addition-data-plan"
 PLAN_INSPECTION_KIND = "sp500-addition-data-plan-inspection"
 STATUS_KIND = "sp500-addition-data-collection"
-PRIVATE_NAMESPACE = "sp500-addition-v2-yahoo"
+PRIVATE_NAMESPACE = "sp500-addition-v3-yahoo-invalid-as-missed"
 PERMANENT_MISSING_ERRORS = frozenset(
     {
         "Yahoo HTTP 400",
         "Yahoo HTTP 404",
         "Yahoo chart result is missing or ambiguous",
+        "Yahoo dates are not unique and chronological",
+        "Yahoo identity, timezone, or quote arrays drifted",
+        "Yahoo OHLCV arrays are incomplete",
+        "Yahoo returned an invalid OHLCV row",
     }
 )
 PERMANENT_MISSING_DISPOSITIONS = frozenset(
@@ -292,6 +296,7 @@ def freeze_plan(
             "Massive point-in-time split actions through the final frozen event window",
         ],
         "permanent_missing_symbol_response": "missed_trade",
+        "invalid_daily_response": "missed_trade",
         "source_scope": scope[f"{lane}_scope"],
         "provider_requests_before_plan_freeze": 0,
         "market_outcomes_accessed": False,
@@ -328,6 +333,7 @@ def _load_plan(
         and plan.get("substitutions_allowed") is False
         and plan.get("permanent_missing_symbol_response")
         == "missed_trade"
+        and plan.get("invalid_daily_response") == "missed_trade"
         and plan.get("broker_actions") == 0
     ):
         raise Sp500AdditionCollectionError(
@@ -612,6 +618,7 @@ def build_dataset(
                 "actions through the dataset end"
             ),
             "permanent_missing_symbol_response": "missed_trade",
+            "invalid_daily_response": "missed_trade",
             "substitution": "forbidden",
         },
     }

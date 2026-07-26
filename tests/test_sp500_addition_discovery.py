@@ -102,6 +102,7 @@ def _dataset(
                 "actions through the dataset end"
             ),
             "permanent_missing_symbol_response": "missed_trade",
+            "invalid_daily_response": "missed_trade",
             "substitution": "forbidden",
         },
     }
@@ -279,7 +280,19 @@ def test_collection_build_retains_exact_event_window(
     ]
 
 
-def test_yahoo_permanent_missing_symbol_is_a_missed_trade() -> None:
+@pytest.mark.parametrize(
+    "provider_error",
+    [
+        "Yahoo HTTP 404",
+        "Yahoo identity, timezone, or quote arrays drifted",
+        "Yahoo OHLCV arrays are incomplete",
+        "Yahoo returned an invalid OHLCV row",
+        "Yahoo dates are not unique and chronological",
+    ],
+)
+def test_yahoo_invalid_or_missing_data_is_a_missed_trade(
+    provider_error: str,
+) -> None:
     class MissingBackend:
         telemetry = {
             "requests": 1,
@@ -291,7 +304,7 @@ def test_yahoo_permanent_missing_symbol_is_a_missed_trade() -> None:
 
         def fetch(self, _task: dict) -> list[dict]:
             raise collection.dense_collection.DenseDataCollectionError(
-                "Yahoo HTTP 404"
+                provider_error
             )
 
         def close(self) -> None:

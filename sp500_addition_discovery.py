@@ -29,7 +29,9 @@ CAMPAIGN_ID = portfolio_maturity.V2_CAMPAIGN_ID
 FAMILY_ID = runtime.SP500_ADDITION_FORCED_DEMAND_FAMILY
 MECHANISM_FAMILY = "sp500-index-addition-forced-demand"
 STRATEGY_ID = "sp500-index-addition-forced-demand"
-SUCCESSOR_ID = "sp500-index-addition-forced-demand-v2-yahoo"
+SUCCESSOR_ID = (
+    "sp500-index-addition-forced-demand-v3-yahoo-invalid-as-missed"
+)
 DEFAULT_ROOT = PROJECT_ROOT / "strategy_tournament/v2/discovery"
 CAPACITY_INSPECTION = (
     PROJECT_ROOT
@@ -678,6 +680,7 @@ def freeze_family(
             "daily_provider": "yahoo",
             "daily_adjusted": False,
             "daily_request_mode": "exact_event_window",
+            "invalid_daily_response": "missed_trade",
             "permanent_missing_symbol_response": "missed_trade",
             "split_provider": "massive",
             "substitutions_allowed": False,

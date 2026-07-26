@@ -3989,6 +3989,8 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                 )
                 and source.get("permanent_missing_symbol_response")
                 == "missed_trade"
+                and source.get("invalid_daily_response")
+                == "missed_trade"
                 and source.get("substitution") == "forbidden"
             ):
                 raise DenseStrategyRuntimeError(
