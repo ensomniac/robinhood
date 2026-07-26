@@ -49,9 +49,12 @@ The current replacement lane is
 `fomc-preannouncement-equity-drift-v1`, a single-rule SCHB test on the
 scheduled pre-FOMC close-to-close interval. The official 2011-2025 regular
 meeting inventory contains 119 decision sessions: 64 are frozen for
-development, five 2019 exchange sessions form the embargo, and 55 remain
-reserved for confirmation. Unscheduled actions, cancelled meetings, notation
-votes, alternative symbols, and parameter search are excluded. Historical
+development, five 2019 exchange sessions form the embargo, and the later
+inventory contains 55 scheduled entries. Twenty of those entry dates have
+pre-existing wildcard outcome exposure, so they remain explicit zero-signal
+account days and cannot count as confirmation; the remaining 35 exact SCHB
+pairs are untouched and reserved. Unscheduled actions, cancelled meetings,
+notation votes, alternative symbols, and parameter search are excluded. Historical
 entry is the final regular-session close before the scheduled decision; exit
 is the decision-session close or a gap-aware, stop-first 1.5% stop. The
 expected 0.50% gross movement clears exactly five times the primary 10-bps
@@ -64,9 +67,12 @@ full sessions from 2009-01-02 through 2025-12-31 to the three exact source
 hashes with zero added provider, price, outcome, or broker access. Commit and
 push the lineage and merged calendar before independent reconstruction.
 Inspection `77ffe1e6...0c394` independently rebuilt all rows, hashes, source
-authorities, decision-session membership, 64/55 capacities, and the
-five-session embargo. All checks pass with no price or broker access. Commit
-and push it before freezing the exact family and capacity contracts.
+authorities, decision-session membership, the 64/55 raw inventory, and the
+five-session embargo. A subsequent family-freeze attempt failed closed before
+writing because 20 confirmation entry dates carried wildcard exposure from
+older research. The corrected inspector must bind the unchanged 55-date
+inventory, 20 explicit exclusions, and 35 untouched confirmation pairs before
+the exact family and capacity contracts may freeze.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts

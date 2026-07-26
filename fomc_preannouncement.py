@@ -7,6 +7,7 @@ import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -302,6 +303,8 @@ def _calendar_inspection(
             value.get("state") == "CALENDAR_INSPECTED_READY"
             and value.get("calendar_path") == _repo_path(CALENDAR_PATH)
             and value.get("calendar_sha256") == expected_hash
+            and value.get("untouched_confirmation_signal_capacity")
+            == len(partitions()["confirmation_signal_dates"])
             and all(value.get("checks", {}).values())
             and value.get("market_prices_accessed") is False
             and value.get("target_outcomes_accessed") is False
@@ -326,6 +329,30 @@ def decision_dates() -> list[str]:
     ]
 
 
+@lru_cache(maxsize=8)
+def _exposed_schb_entry_dates(index_sha256: str) -> frozenset[str]:
+    if index_sha256 != sha256_file(outcome_exposure.DEFAULT_INDEX):
+        raise FomcPreannouncementError("outcome-exposure index hash drifted")
+    exposed: set[str] = set()
+    for record in outcome_exposure.read_index():
+        scope = record["scope"]
+        dates = set(scope["dates"])
+        if "symbols" in scope:
+            if "*" in scope["symbols"] or runtime.FOMC_PREANNOUNCEMENT_SYMBOL in scope[
+                "symbols"
+            ]:
+                exposed.update(dates)
+            continue
+        exposed.update(
+            day
+            for day in dates
+            if "*" in scope["symbols_by_date"][day]
+            or runtime.FOMC_PREANNOUNCEMENT_SYMBOL
+            in scope["symbols_by_date"][day]
+        )
+    return frozenset(exposed)
+
+
 def partitions() -> dict[str, list[str]]:
     rows = merge_calendar_rows()
     calendar = [row["date"] for row in rows]
@@ -347,8 +374,17 @@ def partitions() -> dict[str, list[str]]:
     if any(day not in positions for day in decision_dates()):
         raise FomcPreannouncementError("an FOMC decision date is not a full session")
     development_signals = [calendar[positions[day] - 1] for day in development_decisions]
-    confirmation_signals = [
+    confirmation_inventory_signals = [
         calendar[positions[day] - 1] for day in confirmation_decisions
+    ]
+    exposed_dates = _exposed_schb_entry_dates(
+        sha256_file(outcome_exposure.DEFAULT_INDEX)
+    )
+    confirmation_signals = [
+        day for day in confirmation_inventory_signals if day not in exposed_dates
+    ]
+    confirmation_excluded = [
+        day for day in confirmation_inventory_signals if day in exposed_dates
     ]
     warmup_start = positions[development[0]] - WARMUP_SESSIONS
     development_warmup = calendar[warmup_start : positions[development[0]]]
@@ -360,9 +396,13 @@ def partitions() -> dict[str, list[str]]:
         and len(development_signals) == 64
         and len(embargo) == EMBARGO_SESSIONS
         and len(confirmation_warmup) == WARMUP_SESSIONS
-        and len(confirmation_signals) == 55
+        and len(confirmation_inventory_signals) == 55
+        and len(confirmation_signals) == 35
+        and len(confirmation_excluded) == 20
         and set(development_signals).issubset(development)
         and set(confirmation_signals).issubset(confirmation)
+        and set(confirmation_excluded).issubset(confirmation)
+        and not set(confirmation_signals) & set(confirmation_excluded)
         and development[-1] < embargo[0] < confirmation[0]
     ):
         raise FomcPreannouncementError("fixed FOMC evidence partitions drifted")
@@ -373,6 +413,8 @@ def partitions() -> dict[str, list[str]]:
         "embargo_dates": embargo,
         "confirmation_warmup_dates": confirmation_warmup,
         "confirmation_dates": confirmation,
+        "confirmation_inventory_signal_dates": confirmation_inventory_signals,
+        "confirmation_excluded_exposed_signal_dates": confirmation_excluded,
         "confirmation_signal_dates": confirmation_signals,
     }
 
@@ -674,7 +716,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 "formal_capacity": len(decision_dates()),
                 "development_signal_capacity": 64,
-                "confirmation_signal_capacity": 55,
+                "confirmation_signal_inventory": 55,
+                "confirmation_signal_capacity": 35,
                 "provider_requests_added": 0,
                 "market_prices_accessed": False,
                 "broker_actions": 0,

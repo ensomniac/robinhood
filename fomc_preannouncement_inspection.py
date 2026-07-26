@@ -100,7 +100,18 @@ def inspect(
         "chronological_unique_sessions": dates == sorted(set(dates)),
         "decision_dates_are_sessions": set(decisions).issubset(dates),
         "development_capacity_64": len(split["development_signal_dates"]) == 64,
-        "confirmation_capacity_55": len(split["confirmation_signal_dates"]) == 55,
+        "scheduled_confirmation_inventory_55": len(
+            split["confirmation_inventory_signal_dates"]
+        )
+        == 55,
+        "untouched_confirmation_capacity_35": len(
+            split["confirmation_signal_dates"]
+        )
+        == 35,
+        "contaminated_confirmation_entries_excluded_20": len(
+            split["confirmation_excluded_exposed_signal_dates"]
+        )
+        == 20,
         "five_session_embargo": len(split["embargo_dates"]) == 5,
         "zero_price_access": lineage.get("market_prices_accessed") is False
         and lineage.get("target_outcomes_accessed") is False,
@@ -123,7 +134,8 @@ def inspect(
         "first_session": dates[0],
         "last_session": dates[-1],
         "development_signal_capacity": 64,
-        "confirmation_signal_capacity": 55,
+        "scheduled_confirmation_signal_inventory": 55,
+        "untouched_confirmation_signal_capacity": 35,
         "checks": checks,
         "provider_requests_added": 0,
         "market_prices_accessed": False,
@@ -154,7 +166,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "development_signal_capacity"
                     ],
                     "confirmation_signal_capacity": value[
-                        "confirmation_signal_capacity"
+                        "untouched_confirmation_signal_capacity"
                     ],
                     "market_prices_accessed": False,
                     "broker_actions": 0,

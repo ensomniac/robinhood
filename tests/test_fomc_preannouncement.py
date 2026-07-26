@@ -66,7 +66,9 @@ def test_fomc_inventory_is_fixed_dense_and_partitioned_before_outcomes():
 
     assert len(family.decision_dates()) == 119
     assert len(split["development_signal_dates"]) == 64
-    assert len(split["confirmation_signal_dates"]) == 55
+    assert len(split["confirmation_inventory_signal_dates"]) == 55
+    assert len(split["confirmation_signal_dates"]) == 35
+    assert len(split["confirmation_excluded_exposed_signal_dates"]) == 20
     assert len(split["embargo_dates"]) == 5
     assert split["development_dates"][-1] < split["embargo_dates"][0]
     assert split["embargo_dates"][-1] < split["confirmation_dates"][0]
