@@ -45,6 +45,23 @@ YAHOO_RECOVERY_FAILURE_INSPECTION = (
     "collection-failure-inspection-"
     "5fba3464fae7bab79e050a9ad73c6e5c1d9d5a81300fe4ebb1977eff4dd72fbc.json"
 )
+VIX_PARTIAL_FAILURE = (
+    inspection.PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/"
+    "vix-shock-low-volatility-equity-rebound/"
+    "development-collection-failure/"
+    "vix-shock-low-volatility-equity-rebound-development-collection-"
+    "failure-90363424c1c2b61b9038045add8751517cd49b38416f8460dead30"
+    "ff49772a9d.json"
+)
+VIX_SEARCH = (
+    inspection.PROJECT_ROOT
+    / "strategy_tournament/v2/discovery/"
+    "vix-shock-low-volatility-equity-rebound/search/"
+    "vix-shock-low-volatility-equity-rebound-search-"
+    "98b61656f33bbd0c8d2cc17988a7cefce46b3d7890f601059300cf300"
+    "abe67c0.json"
+)
 
 
 def test_vix_shock_family_is_supported_by_independent_inspector():
@@ -52,6 +69,35 @@ def test_vix_shock_family_is_supported_by_independent_inspector():
         runtime.VIX_SHOCK_REBOUND_FAMILY
         in inspection.SUPPORTED_FAMILIES
     )
+
+
+def test_vix_recovery_binds_only_its_inspected_partial_exposure():
+    failure = json.loads(VIX_PARTIAL_FAILURE.read_text(encoding="utf-8"))
+    search = json.loads(VIX_SEARCH.read_text(encoding="utf-8"))
+    records = [
+        record
+        for record in outcome_exposure.read_index()
+        if record["exposure_id"]
+        == f"dense-collection-failure-{failure['artifact_sha256'][:20]}"
+    ]
+    assert len(records) == 1
+
+    state = inspection._development_outcome_state(
+        {
+            "recovery_kind": (
+                dense_data_collection.VIX_FEATURE_SCHEMA_RECOVERY
+            ),
+            "recovery_failure_path": str(
+                VIX_PARTIAL_FAILURE.relative_to(inspection.PROJECT_ROOT)
+            ),
+            "recovery_failure_sha256": failure["artifact_sha256"],
+        },
+        search["family_contract"],
+        records,
+        enforce_commit=False,
+    )
+
+    assert state == "INSPECTED_PARTIAL_SOURCE_RECOVERY_BOUND"
 
 
 def test_independent_plan_inspection_rebuilds_all_nine_requests(

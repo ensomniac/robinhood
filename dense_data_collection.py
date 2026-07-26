@@ -15,6 +15,7 @@ from collections.abc import Callable, Mapping, Sequence
 from datetime import date, datetime, time as wall_time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Protocol
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -65,6 +66,9 @@ INTRADAY_CHECKPOINT_REUSE_RECOVERY = (
 )
 FIXED_ETF_CHECKPOINT_REUSE_RECOVERY = (
     "fixed-etf-dataset-registration-checkpoint-reuse"
+)
+VIX_FEATURE_SCHEMA_RECOVERY = (
+    "vix-feature-timezone-schema-partial-checkpoint-reuse"
 )
 DAILY_WARMUP_SESSIONS = 200
 INTRADAY_WARMUP_SESSIONS = runtime.STANDARDIZATION_LOOKBACK
@@ -625,8 +629,13 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         plan.get("recovery_kind")
         == FIXED_ETF_CHECKPOINT_REUSE_RECOVERY
     )
+    vix_feature_schema_recovery = (
+        plan.get("recovery_kind") == VIX_FEATURE_SCHEMA_RECOVERY
+    )
     checkpoint_recovery = (
-        intraday_recovery or fixed_etf_checkpoint_recovery
+        intraday_recovery
+        or fixed_etf_checkpoint_recovery
+        or vix_feature_schema_recovery
     )
     if not (
         plan.get("state") == "COLLECTION_PLAN_FROZEN"
@@ -848,6 +857,85 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
                 raise DenseDataCollectionError(
                     "fixed-ETF checkpoint-reuse recovery drifted"
                 )
+        elif vix_feature_schema_recovery:
+            assert source_plan is not None
+            source_tasks = list(source_plan.get("tasks", []))
+            recovery_tasks = list(plan.get("tasks", []))
+            reused_task_ids = plan.get("reused_checkpoint_task_ids")
+            new_request_task_ids = plan.get("new_request_task_ids")
+            response_policy = plan.get("response_schema_policy")
+            expected_feature_task = {
+                "kind": "yahoo_daily_symbol_bars",
+                "start": plan["required_dates"][0],
+                "date": plan["required_dates"][-1],
+                "symbol": runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL,
+                "expected_exchange_timezone_name": "America/Chicago",
+            }
+            expected_feature_task["task_id"] = canonical_sha256(
+                expected_feature_task
+            )
+            if not (
+                recovery_adjustment is None
+                and plan.get("family_id")
+                == runtime.VIX_SHOCK_REBOUND_FAMILY
+                and plan.get("lane") == "development"
+                and failure.get("failure_code")
+                == "PARTIAL_FIXED_DAILY_YAHOO_FEATURE_TASK_FAILURE"
+                and failure.get("data_outcomes_accessed") is True
+                and failure.get("strategy_metrics_accessed") is False
+                and failure.get("completed_tasks") == 2
+                and failure.get("task_count") == 3
+                and failure.get("exposure_scope")
+                == {
+                    "dates": plan.get("required_dates"),
+                    "symbols": [
+                        runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL
+                    ],
+                }
+                and plan.get("market_outcomes_accessed") is True
+                and plan.get("strategy_metrics_accessed_before_recovery")
+                is False
+                and plan.get("checkpoint_source_plan_sha256")
+                == source_plan["artifact_sha256"]
+                == failure["plan_sha256"]
+                and plan.get("provider_requests_already_completed")
+                == failure.get("provider_telemetry", {}).get("requests")
+                and plan.get("additional_provider_requests_authorized")
+                == 1
+                and recovery_tasks[:2] == source_tasks[:2]
+                and recovery_tasks[2:] == [expected_feature_task]
+                and reused_task_ids
+                == [task["task_id"] for task in source_tasks[:2]]
+                and new_request_task_ids
+                == [expected_feature_task["task_id"]]
+                and plan.get("evaluation_dates")
+                == source_plan.get("evaluation_dates")
+                and plan.get("signal_dates")
+                == source_plan.get("signal_dates")
+                and plan.get("required_dates")
+                == source_plan.get("required_dates")
+                and plan.get("symbols") == source_plan.get("symbols")
+                and response_policy
+                == {
+                    "feature_symbol": (
+                        runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL
+                    ),
+                    "expected_meta_symbol": (
+                        runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL
+                    ),
+                    "expected_exchange_timezone_name": (
+                        "America/Chicago"
+                    ),
+                    "timestamp_date_timezone": "America/Chicago",
+                    "target_checkpoint_symbol": (
+                        runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL
+                    ),
+                    "symbol_substitution_allowed": False,
+                }
+            ):
+                raise DenseDataCollectionError(
+                    "VIX feature-schema recovery drifted"
+                )
         else:
             source_recovery_valid = (
                 (
@@ -931,6 +1019,18 @@ def _validate_plan(path: Path, *, enforce_commit: bool) -> dict[str, Any]:
         for item in plan["tasks"]
     ):
         raise DenseDataCollectionError("collection task IDs are incomplete or invalid")
+    timezone_tasks = [
+        task
+        for task in plan["tasks"]
+        if "expected_exchange_timezone_name" in task
+    ]
+    if (
+        (vix_feature_schema_recovery and len(timezone_tasks) != 1)
+        or (not vix_feature_schema_recovery and timezone_tasks)
+    ):
+        raise DenseDataCollectionError(
+            "task-specific exchange timezone escaped its recovery"
+        )
     if recovery_adjustment in {
         RECOVERY_ADJUSTMENT,
         MASSIVE_SOURCE_RECOVERY_ADJUSTMENT,
@@ -1204,11 +1304,17 @@ class ProviderBackend:
                 if isinstance(quotes, list) and quotes
                 else None
             )
+            expected_exchange_timezone = str(
+                task.get(
+                    "expected_exchange_timezone_name",
+                    "America/New_York",
+                )
+            )
             if not (
                 isinstance(meta, Mapping)
                 and str(meta.get("symbol", "")).upper() == symbol
                 and meta.get("exchangeTimezoneName")
-                == "America/New_York"
+                == expected_exchange_timezone
                 and isinstance(timestamps, list)
                 and isinstance(quote, Mapping)
             ):
@@ -1236,7 +1342,7 @@ class ProviderBackend:
                     datetime.fromtimestamp(
                         int(raw_timestamp), timezone.utc
                     )
-                    .astimezone(EASTERN)
+                    .astimezone(ZoneInfo(expected_exchange_timezone))
                     .date()
                     .isoformat()
                 )
@@ -1839,6 +1945,7 @@ def _materialize_checkpoint_recovery_checkpoints(
     if plan.get("recovery_kind") not in {
         INTRADAY_CHECKPOINT_REUSE_RECOVERY,
         FIXED_ETF_CHECKPOINT_REUSE_RECOVERY,
+        VIX_FEATURE_SCHEMA_RECOVERY,
     }:
         return
     source_plan_path = (
@@ -1859,9 +1966,26 @@ def _materialize_checkpoint_recovery_checkpoints(
         source_root / "collection-telemetry.json",
         str(source_plan["artifact_sha256"]),
     )
-    for task in plan["tasks"]:
-        source_path = _checkpoint_path(source_root, task)
-        source_rows = _load_checkpoint(source_path, task)
+    source_tasks_by_id = {
+        str(task["task_id"]): task for task in source_plan["tasks"]
+    }
+    reused_task_ids = (
+        list(plan.get("reused_checkpoint_task_ids", []))
+        if plan.get("recovery_kind") == VIX_FEATURE_SCHEMA_RECOVERY
+        else [str(task["task_id"]) for task in plan["tasks"]]
+    )
+    recovery_tasks_by_id = {
+        str(task["task_id"]): task for task in plan["tasks"]
+    }
+    for task_id in reused_task_ids:
+        source_task = source_tasks_by_id.get(str(task_id))
+        task = recovery_tasks_by_id.get(str(task_id))
+        if source_task is None or task is None or source_task != task:
+            raise DenseDataCollectionError(
+                "recovery checkpoint task binding drifted"
+            )
+        source_path = _checkpoint_path(source_root, source_task)
+        source_rows = _load_checkpoint(source_path, source_task)
         destination = _checkpoint_path(private_root, task)
         if destination.exists():
             destination_rows = _load_checkpoint(destination, task)
@@ -1988,7 +2112,22 @@ def collect(
                     raise DenseDataCollectionError(
                         "checkpoint recovery forbids an additional provider request"
                     )
+                if (
+                    plan.get("recovery_kind")
+                    == VIX_FEATURE_SCHEMA_RECOVERY
+                    and task["task_id"]
+                    not in plan.get("new_request_task_ids", [])
+                ):
+                    raise DenseDataCollectionError(
+                        "VIX recovery request escaped its frozen feature task"
+                    )
                 attempts = 0
+                maximum_attempts = (
+                    1
+                    if plan.get("recovery_kind")
+                    == VIX_FEATURE_SCHEMA_RECOVERY
+                    else MAX_TASK_ATTEMPTS
+                )
                 while True:
                     attempts += 1
                     try:
@@ -1999,7 +2138,7 @@ def collect(
                         retryable = isinstance(exc, HistoricalProviderError) and bool(
                             exc.retryable
                         )
-                        if retryable and attempts < MAX_TASK_ATTEMPTS:
+                        if retryable and attempts < maximum_attempts:
                             exponential = min(
                                 INITIAL_RETRY_DELAY_SECONDS * (2 ** (attempts - 1)),
                                 MAX_RETRY_DELAY_SECONDS,
@@ -2018,7 +2157,7 @@ def collect(
                             ),
                             config=config,
                         )
-                        if not retryable or attempts >= MAX_TASK_ATTEMPTS:
+                        if not retryable or attempts >= maximum_attempts:
                             raise
                         retry_sleeper(delay)
                 if not isinstance(rows, list):

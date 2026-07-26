@@ -1321,6 +1321,201 @@ def freeze_fixed_etf_registration_recovery(
     )
 
 
+def freeze_vix_feature_schema_recovery(
+    failure_inspection_path: Path,
+    *,
+    search_path: Path,
+    as_of: date | None = None,
+    actual_today: date | None = None,
+    public_root: Path = DEFAULT_PUBLIC_ROOT,
+    enforce_commit: bool = True,
+) -> tuple[Path, dict[str, Any]]:
+    """Reuse SPLV and split checkpoints, then request only unchanged ^VIX."""
+
+    failure_path, failure, failure_inspection = _load_inspected_failure(
+        failure_inspection_path,
+        enforce_commit=enforce_commit,
+    )
+    expected_scope = {
+        "dates": list(failure.get("exposure_scope", {}).get("dates", [])),
+        "symbols": [runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL],
+    }
+    if not (
+        failure.get("family_id") == runtime.VIX_SHOCK_REBOUND_FAMILY
+        and failure.get("lane") == "development"
+        and failure.get("failure_code") == PARTIAL_YAHOO_FEATURE_FAILURE
+        and failure.get("data_outcomes_accessed") is True
+        and failure.get("strategy_metrics_accessed") is False
+        and failure.get("completed_tasks") == 2
+        and failure.get("task_count") == 3
+        and failure.get("exposure_scope") == expected_scope
+        and _failure_exposure_is_indexed(failure)
+    ):
+        raise DenseCollectionRecoveryError(
+            "VIX recovery lacks the inspected, indexed partial-source failure"
+        )
+    original_plan_path = PROJECT_ROOT / str(failure["plan_path"])
+    original_plan = collection._validate_plan(
+        original_plan_path,
+        enforce_commit=enforce_commit,
+    )
+    if enforce_commit:
+        strategy_discovery.require_committed(search_path)
+    refreshed_search = strategy_discovery.load_artifact(
+        search_path,
+        expected_kind="frozen-development-search",
+    )
+    original_search_path = (
+        PROJECT_ROOT / str(original_plan["authority_path"])
+    )
+    if enforce_commit:
+        strategy_discovery.require_committed(original_search_path)
+    original_search = strategy_discovery.load_artifact(
+        original_search_path,
+        expected_kind="frozen-development-search",
+    )
+    original_contract = copy.deepcopy(original_search["family_contract"])
+    refreshed_contract = copy.deepcopy(refreshed_search["family_contract"])
+    original_contract.pop("implementation_hashes", None)
+    refreshed_contract.pop("implementation_hashes", None)
+    if not (
+        original_plan["artifact_sha256"] == failure["plan_sha256"]
+        and original_contract == refreshed_contract
+        and refreshed_search.get("state") == "SEARCH_FROZEN"
+        and refreshed_search["family_contract"]["family_id"]
+        == runtime.VIX_SHOCK_REBOUND_FAMILY
+    ):
+        raise DenseCollectionRecoveryError(
+            "refreshed VIX search changed frozen strategy semantics"
+        )
+    strategy_discovery._assert_implementation_current(
+        refreshed_search["family_contract"],
+        enforce_commit=enforce_commit,
+    )
+    today = actual_today or date.today()
+    current = as_of or today
+    if current > today:
+        raise DenseCollectionRecoveryError(
+            "VIX recovery as_of cannot be future-dated"
+        )
+    original_tasks = list(original_plan["tasks"])
+    if not (
+        len(original_tasks) == 3
+        and original_tasks[0].get("kind") == "split_actions"
+        and original_tasks[1].get("kind") == "yahoo_daily_symbol_bars"
+        and original_tasks[1].get("symbol")
+        == runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL
+        and original_tasks[2].get("kind") == "yahoo_daily_symbol_bars"
+        and original_tasks[2].get("symbol")
+        == runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL
+    ):
+        raise DenseCollectionRecoveryError(
+            "original VIX task topology drifted"
+        )
+    feature_task = {
+        key: value
+        for key, value in original_tasks[2].items()
+        if key != "task_id"
+    }
+    feature_task["expected_exchange_timezone_name"] = "America/Chicago"
+    feature_task["task_id"] = canonical_sha256(feature_task)
+    tasks = [copy.deepcopy(original_tasks[0]), copy.deepcopy(original_tasks[1])]
+    tasks.append(feature_task)
+    response_policy = {
+        "feature_symbol": runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL,
+        "expected_meta_symbol": runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL,
+        "expected_exchange_timezone_name": "America/Chicago",
+        "timestamp_date_timezone": "America/Chicago",
+        "target_checkpoint_symbol": (
+            runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL
+        ),
+        "symbol_substitution_allowed": False,
+    }
+    payload = {
+        key: value
+        for key, value in original_plan.items()
+        if key not in {"artifact_sha256", "as_of"}
+    }
+    payload.update(
+        {
+            "authority_path": collection._repo_path(search_path),
+            "authority_sha256": refreshed_search["artifact_sha256"],
+            "binding_sha256": refreshed_search["artifact_sha256"],
+            "as_of": current.isoformat(),
+            "tasks": tasks,
+            "task_count": len(tasks),
+            "source_request_semantics": {
+                **dict(original_plan["source_request_semantics"]),
+                "exchange_timezone_by_symbol": {
+                    runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL: (
+                        "America/New_York"
+                    ),
+                    runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL: (
+                        "America/Chicago"
+                    ),
+                },
+                "exchange_timezone": None,
+            },
+            "response_schema_policy": response_policy,
+            "recovery_kind": collection.VIX_FEATURE_SCHEMA_RECOVERY,
+            "recovery_failure_path": collection._repo_path(failure_path),
+            "recovery_failure_sha256": failure["artifact_sha256"],
+            "recovery_failure_inspection_path": collection._repo_path(
+                failure_inspection_path
+            ),
+            "recovery_failure_inspection_sha256": failure_inspection[
+                "artifact_sha256"
+            ],
+            "supersedes_plan_sha256": original_plan["artifact_sha256"],
+            "checkpoint_source_plan_path": collection._repo_path(
+                original_plan_path
+            ),
+            "checkpoint_source_plan_sha256": original_plan[
+                "artifact_sha256"
+            ],
+            "reused_checkpoint_task_ids": [
+                task["task_id"] for task in original_tasks[:2]
+            ],
+            "new_request_task_ids": [feature_task["task_id"]],
+            "recovery_search_refresh": {
+                "original_search_sha256": original_search[
+                    "artifact_sha256"
+                ],
+                "refreshed_search_path": collection._repo_path(search_path),
+                "refreshed_search_sha256": refreshed_search[
+                    "artifact_sha256"
+                ],
+                "semantic_contract_sha256": canonical_sha256(
+                    refreshed_contract
+                ),
+                "only_implementation_hashes_changed": True,
+            },
+            "recovery_implementation_hashes": _implementation_hashes(
+                enforce_commit=enforce_commit
+            ),
+            "provider_requests_before_plan_freeze": 0,
+            "provider_requests_already_completed": int(
+                failure["provider_telemetry"]["requests"]
+            ),
+            "additional_provider_requests_authorized": 1,
+            "market_outcomes_accessed": True,
+            "strategy_metrics_accessed_before_recovery": False,
+            "substitutions_allowed": False,
+            "broker_actions": 0,
+        }
+    )
+    return strategy_discovery._write_artifact(
+        payload,
+        public_root
+        / runtime.VIX_SHOCK_REBOUND_FAMILY
+        / "development-collection-plan",
+        (
+            f"{runtime.VIX_SHOCK_REBOUND_FAMILY}"
+            "-development-collection-plan"
+        ),
+    )
+
+
 def index_failure_exposure(
     failure_inspection_path: Path,
     *,
@@ -1388,6 +1583,12 @@ def _parser() -> argparse.ArgumentParser:
     fixed_etf_checkpoint.add_argument(
         "--search", type=Path, required=True
     )
+    vix_feature = subparsers.add_parser(
+        "freeze-vix-feature-schema-recovery"
+    )
+    vix_feature.add_argument("artifact", type=Path)
+    vix_feature.add_argument("--as-of", type=date.fromisoformat)
+    vix_feature.add_argument("--search", type=Path, required=True)
     exposure = subparsers.add_parser("index-exposure")
     exposure.add_argument("artifact", type=Path)
     exposure.add_argument(
@@ -1457,6 +1658,22 @@ def main() -> int:
             }
         elif args.command == "freeze-fixed-etf-registration-recovery":
             path, artifact = freeze_fixed_etf_registration_recovery(
+                args.artifact,
+                search_path=args.search,
+                as_of=args.as_of,
+                public_root=args.public_root,
+            )
+            result = {
+                "written": collection._repo_path(path),
+                "artifact_sha256": artifact["artifact_sha256"],
+                "state": artifact["state"],
+                "task_count": artifact["task_count"],
+                "additional_provider_requests_authorized": artifact[
+                    "additional_provider_requests_authorized"
+                ],
+            }
+        elif args.command == "freeze-vix-feature-schema-recovery":
+            path, artifact = freeze_vix_feature_schema_recovery(
                 args.artifact,
                 search_path=args.search,
                 as_of=args.as_of,

@@ -555,7 +555,14 @@ including checkpoint counts, telemetry, the SPLV-only exposure scope, absent
 completion/metrics/confirmation, zero substitutions, and zero broker actions.
 Exposure record `630c8bbe...0c3664` now reserves the exact 1,200-date SPLV
 scope from the failed plan; it does not claim `^VIX` access. Commit and push
-the index before freezing recovery.
+the index before freezing recovery. The bounded recovery implementation now
+supports one exact exception: for this family and inspected failure only, reuse
+the committed split/SPLV checkpoints and request unchanged `^VIX` once while
+requiring Yahoo meta symbol `^VIX`, exchange timezone `America/Chicago`, and
+Chicago timestamp-to-date conversion. It permits no retry, symbol
+substitution, strategy-rule change, confirmation access, or broker action.
+The recovery plan and its refreshed implementation-bound search must still be
+frozen, committed, and independently inspected before that single request.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

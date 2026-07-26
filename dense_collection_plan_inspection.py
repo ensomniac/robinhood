@@ -144,6 +144,14 @@ def _expected_tasks(
             "start": required_dates[0],
             "symbol": symbol,
         }
+        if (
+            plan.get("recovery_kind")
+            == dense_data_collection.VIX_FEATURE_SCHEMA_RECOVERY
+            and symbol == runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL
+        ):
+            task["expected_exchange_timezone_name"] = (
+                "America/Chicago"
+            )
         task["task_id"] = dense_data_collection.canonical_sha256(task)
         tasks.append(task)
     return tasks
@@ -156,11 +164,15 @@ def _development_outcome_state(
     *,
     enforce_commit: bool,
 ) -> str:
-    checkpoint_recovery = (
+    fixed_checkpoint_recovery = (
         plan.get("recovery_kind")
         == dense_data_collection.FIXED_ETF_CHECKPOINT_REUSE_RECOVERY
     )
-    if checkpoint_recovery:
+    vix_feature_recovery = (
+        plan.get("recovery_kind")
+        == dense_data_collection.VIX_FEATURE_SCHEMA_RECOVERY
+    )
+    if fixed_checkpoint_recovery or vix_feature_recovery:
         failure_path = PROJECT_ROOT / str(
             plan.get("recovery_failure_path", "")
         )
@@ -182,24 +194,31 @@ def _development_outcome_state(
             for record in records
             if record.get("exposure_id") == expected_id
         ]
+        expected_scope = (
+            contract["development_scope"]
+            if fixed_checkpoint_recovery
+            else failure.get("exposure_scope")
+        )
         if not (
             failure.get("artifact_sha256")
             == plan.get("recovery_failure_sha256")
-            and failure.get("exposure_scope")
-            == contract["development_scope"]
+            and failure.get("exposure_scope") == expected_scope
             and failure.get("strategy_metrics_accessed") is False
             and len(matching) == 1
             and matching[0].get("source_sha256")
             == failure["artifact_sha256"]
-            and matching[0].get("scope")
-            == contract["development_scope"]
+            and matching[0].get("scope") == expected_scope
             and {item.get("exposure_id") for item in overlaps}
             == {expected_id}
         ):
             raise DenseCollectionPlanInspectionError(
                 "checkpoint recovery is not bound to its sole inspected exposure"
             )
-        return "INSPECTED_CHECKPOINT_RECOVERY_BOUND"
+        return (
+            "INSPECTED_CHECKPOINT_RECOVERY_BOUND"
+            if fixed_checkpoint_recovery
+            else "INSPECTED_PARTIAL_SOURCE_RECOVERY_BOUND"
+        )
     declared_contamination = (
         contract.get("research_generation") == "existing_family_successor"
         and contract.get("partitions", {}).get(
@@ -276,7 +295,11 @@ def inspect_plan(
         dense_data_collection.DAILY_WARMUP_SESSIONS,
     )
     expected_tasks = _expected_tasks(plan, contract)
-    recovery = plan.get("adjustment_semantics") in {
+    checkpoint_recovery = plan.get("recovery_kind") in {
+        dense_data_collection.FIXED_ETF_CHECKPOINT_REUSE_RECOVERY,
+        dense_data_collection.VIX_FEATURE_SCHEMA_RECOVERY,
+    }
+    recovery = checkpoint_recovery or plan.get("adjustment_semantics") in {
         dense_data_collection.RECOVERY_ADJUSTMENT,
         dense_data_collection.MASSIVE_SOURCE_RECOVERY_ADJUSTMENT,
         dense_data_collection.YAHOO_SOURCE_RECOVERY_ADJUSTMENT,
@@ -291,9 +314,13 @@ def inspect_plan(
     outcome_exposure.assert_untouched(
         contract["confirmation_scope"], records
     )
-    checkpoint_recovery = (
+    fixed_checkpoint_recovery = (
         plan.get("recovery_kind")
         == dense_data_collection.FIXED_ETF_CHECKPOINT_REUSE_RECOVERY
+    )
+    vix_feature_recovery = (
+        plan.get("recovery_kind")
+        == dense_data_collection.VIX_FEATURE_SCHEMA_RECOVERY
     )
     source_failure: Mapping[str, Any] | None = None
     source_failure_inspection: Mapping[str, Any] | None = None
@@ -400,7 +427,25 @@ def inspect_plan(
                     "include_adjusted_close": True,
                     "raw_ohlc_used": True,
                     "dividend_adjusted_close_used": False,
-                    "exchange_timezone": "America/New_York",
+                    "exchange_timezone": (
+                        None
+                        if vix_feature_recovery
+                        else "America/New_York"
+                    ),
+                    **(
+                        {
+                            "exchange_timezone_by_symbol": {
+                                runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL: (
+                                    "America/New_York"
+                                ),
+                                runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL: (
+                                    "America/Chicago"
+                                ),
+                            }
+                        }
+                        if vix_feature_recovery
+                        else {}
+                    ),
                     "requests_per_symbol": 1,
                     "pace_seconds": (
                         dense_data_collection.YAHOO_PACE_SECONDS
@@ -420,9 +465,49 @@ def inspect_plan(
                 )
                 and plan.get("supersedes_plan_sha256")
                 == plan.get("checkpoint_source_plan_sha256")
-                and plan.get("provider_requests_already_completed") == 9
-                and plan.get("additional_provider_requests_authorized")
-                == 0
+                and (
+                    (
+                        fixed_checkpoint_recovery
+                        and plan.get(
+                            "provider_requests_already_completed"
+                        )
+                        == 9
+                        and plan.get(
+                            "additional_provider_requests_authorized"
+                        )
+                        == 0
+                    )
+                    or (
+                        vix_feature_recovery
+                        and plan.get(
+                            "provider_requests_already_completed"
+                        )
+                        == 5
+                        and plan.get(
+                            "additional_provider_requests_authorized"
+                        )
+                        == 1
+                        and plan.get("response_schema_policy")
+                        == {
+                            "feature_symbol": (
+                                runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL
+                            ),
+                            "expected_meta_symbol": (
+                                runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL
+                            ),
+                            "expected_exchange_timezone_name": (
+                                "America/Chicago"
+                            ),
+                            "timestamp_date_timezone": (
+                                "America/Chicago"
+                            ),
+                            "target_checkpoint_symbol": (
+                                runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL
+                            ),
+                            "symbol_substitution_allowed": False,
+                        }
+                    )
+                )
             )
             if checkpoint_recovery
             else (
@@ -454,7 +539,7 @@ def inspect_plan(
                     and plan.get(
                         "additional_provider_requests_authorized"
                     )
-                    == 0
+                    == (1 if vix_feature_recovery else 0)
                 )
                 if checkpoint_recovery
                 else plan["market_outcomes_accessed"] is False
@@ -468,6 +553,7 @@ def inspect_plan(
                 "SELF_DEVELOPMENT_EXPOSURE_BOUND",
                 "DECLARED_CONTAMINATION_BOUND",
                 "INSPECTED_CHECKPOINT_RECOVERY_BOUND",
+                "INSPECTED_PARTIAL_SOURCE_RECOVERY_BOUND",
             }
         ),
         "confirmation_scope_untouched": True,

@@ -159,6 +159,81 @@ def test_yahoo_daily_backend_validates_identity_and_raw_ohlcv():
     assert request["params"]["includeAdjustedClose"] == "true"
 
 
+def test_yahoo_vix_recovery_uses_exact_frozen_chicago_timezone():
+    class Response:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {
+                "chart": {
+                    "error": None,
+                    "result": [
+                        {
+                            "meta": {
+                                "symbol": "^VIX",
+                                "exchangeTimezoneName": (
+                                    "America/Chicago"
+                                ),
+                            },
+                            "timestamp": [1_577_974_200],
+                            "indicators": {
+                                "quote": [
+                                    {
+                                        "open": [14.0],
+                                        "high": [15.0],
+                                        "low": [13.5],
+                                        "close": [14.5],
+                                        "volume": [0],
+                                    }
+                                ]
+                            },
+                        }
+                    ],
+                }
+            }
+
+    class Session:
+        def get(self, *_args, **_kwargs):
+            return Response()
+
+    backend = collection.ProviderBackend.__new__(
+        collection.ProviderBackend
+    )
+    backend._yahoo_session = Session()
+    backend._paced_sleep = lambda _seconds: None
+    task = {
+        "kind": "yahoo_daily_symbol_bars",
+        "symbol": "^VIX",
+        "start": "2020-01-02",
+        "date": "2020-01-02",
+        "expected_exchange_timezone_name": "America/Chicago",
+    }
+
+    rows = backend.fetch(task)
+
+    assert rows == [
+        {
+            "symbol": "^VIX",
+            "date": "2020-01-02",
+            "open": 14.0,
+            "high": 15.0,
+            "low": 13.5,
+            "close": 14.5,
+            "volume": 0,
+            "count": 0,
+            "wap": 0,
+        }
+    ]
+    with pytest.raises(
+        collection.DenseDataCollectionError,
+        match="identity, timezone, or quote arrays drifted",
+    ):
+        backend.fetch({key: value for key, value in task.items() if key != (
+            "expected_exchange_timezone_name"
+        )})
+
+
 def _dates(count):
     start = date(2024, 1, 2)
     return [(start + timedelta(days=index)).isoformat() for index in range(count)]
@@ -1270,6 +1345,323 @@ def test_partial_vix_feature_failure_records_only_completed_splv_scope(
     assert (
         facts["failure_details"]["failed_feature_symbol"] == "^VIX"
     )
+
+
+def test_vix_schema_recovery_reuses_only_completed_checkpoints(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(collection, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(strategy_discovery, "PROJECT_ROOT", tmp_path)
+    required_dates = ["2024-01-02", "2024-01-03"]
+    calendar_path = tmp_path / "calendar.json"
+    calendar_path.write_text("[]\n", encoding="utf-8")
+    source_tasks = [
+        {
+            "kind": "split_actions",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+        },
+        {
+            "kind": "yahoo_daily_symbol_bars",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+            "symbol": runtime.VIX_SHOCK_REBOUND_TARGET_SYMBOL,
+        },
+        {
+            "kind": "yahoo_daily_symbol_bars",
+            "start": required_dates[0],
+            "date": required_dates[-1],
+            "symbol": runtime.VIX_SHOCK_REBOUND_FEATURE_SYMBOL,
+        },
+    ]
+    for task in source_tasks:
+        task["task_id"] = canonical_sha256(task)
+    source_path, source_plan = strategy_discovery._write_artifact(
+        {
+            "schema_version": 1,
+            "artifact_kind": collection.PLAN_KIND,
+            "campaign_id": "multi-strategy-portfolio-validation-v2",
+            "state": "COLLECTION_PLAN_FROZEN",
+            "family_id": runtime.VIX_SHOCK_REBOUND_FAMILY,
+            "lane": "development",
+            "authority_path": "search/original.json",
+            "authority_sha256": "a" * 64,
+            "binding_sha256": "a" * 64,
+            "calendar_path": str(calendar_path.relative_to(tmp_path)),
+            "calendar_sha256": collection._file_hash(calendar_path),
+            "evaluation_dates": required_dates,
+            "signal_dates": required_dates,
+            "required_dates": required_dates,
+            "symbols": ["SPLV", "^VIX"],
+            "tasks": source_tasks,
+            "task_count": 3,
+            "provider_requests_before_plan_freeze": 0,
+            "market_outcomes_accessed": False,
+            "substitutions_allowed": False,
+            "broker_actions": 0,
+        },
+        tmp_path / "source",
+        "source-plan",
+    )
+    failure_path, failure = strategy_discovery._write_artifact(
+        {
+            "schema_version": 1,
+            "artifact_kind": recovery.FAILURE_KIND,
+            "state": recovery.FAILURE_STATE,
+            "family_id": runtime.VIX_SHOCK_REBOUND_FAMILY,
+            "lane": "development",
+            "plan_path": str(source_path.relative_to(tmp_path)),
+            "plan_sha256": source_plan["artifact_sha256"],
+            "failure_code": recovery.PARTIAL_YAHOO_FEATURE_FAILURE,
+            "data_outcomes_accessed": True,
+            "strategy_metrics_accessed": False,
+            "confirmation_outcomes_accessed": False,
+            "completed_tasks": 2,
+            "task_count": 3,
+            "exposure_scope": {
+                "dates": required_dates,
+                "symbols": ["SPLV"],
+            },
+            "provider_telemetry": {
+                "requests": 5,
+                "request_seconds": 1.0,
+                "pacing_wait_seconds": 2.0,
+                "cache_hits": 0,
+                "failures": 1,
+            },
+        },
+        tmp_path / "failures",
+        "failure",
+    )
+    inspection_path, inspection_artifact = (
+        strategy_discovery._write_artifact(
+            {
+                "schema_version": 1,
+                "artifact_kind": (
+                    recovery_inspection.INSPECTION_KIND
+                ),
+                "state": recovery_inspection.INSPECTION_STATE,
+                "failure_sha256": failure["artifact_sha256"],
+                "plan_sha256": source_plan["artifact_sha256"],
+                "checks": {"all": True},
+            },
+            tmp_path / "inspections",
+            "inspection",
+        )
+    )
+    original_search_path, original_search = (
+        strategy_discovery._write_artifact(
+            {
+                "schema_version": 1,
+                "artifact_kind": "frozen-development-search",
+                "state": "SEARCH_FROZEN",
+                "family_contract": {"family_id": (
+                    runtime.VIX_SHOCK_REBOUND_FAMILY
+                )},
+            },
+            tmp_path / "search",
+            "original",
+        )
+    )
+    refreshed_search_path, refreshed_search = (
+        strategy_discovery._write_artifact(
+            {
+                "schema_version": 1,
+                "artifact_kind": "frozen-development-search",
+                "state": "SEARCH_FROZEN",
+                "family_contract": {"family_id": (
+                    runtime.VIX_SHOCK_REBOUND_FAMILY
+                )},
+            },
+            tmp_path / "search",
+            "refreshed",
+        )
+    )
+    source_plan["authority_path"] = str(
+        original_search_path.relative_to(tmp_path)
+    )
+    source_plan["authority_sha256"] = original_search["artifact_sha256"]
+    source_plan.pop("artifact_sha256")
+    source_path, source_plan = strategy_discovery._write_artifact(
+        source_plan,
+        tmp_path / "source-rebound",
+        "source-plan",
+    )
+    failure["plan_path"] = str(source_path.relative_to(tmp_path))
+    failure["plan_sha256"] = source_plan["artifact_sha256"]
+    failure.pop("artifact_sha256")
+    failure_path, failure = strategy_discovery._write_artifact(
+        failure,
+        tmp_path / "failure-rebound",
+        "failure",
+    )
+    inspection_artifact.update(
+        {
+            "failure_path": str(failure_path.relative_to(tmp_path)),
+            "failure_sha256": failure["artifact_sha256"],
+            "plan_sha256": source_plan["artifact_sha256"],
+        }
+    )
+    inspection_artifact.pop("artifact_sha256")
+    inspection_path, inspection_artifact = (
+        strategy_discovery._write_artifact(
+            inspection_artifact,
+            tmp_path / "inspection-rebound",
+            "inspection",
+        )
+    )
+    feature_task = {
+        key: value
+        for key, value in source_tasks[2].items()
+        if key != "task_id"
+    }
+    feature_task["expected_exchange_timezone_name"] = "America/Chicago"
+    feature_task["task_id"] = canonical_sha256(feature_task)
+    recovery_path, recovery_plan = strategy_discovery._write_artifact(
+        {
+            **{
+                key: value
+                for key, value in source_plan.items()
+                if key != "artifact_sha256"
+            },
+            "authority_path": str(
+                refreshed_search_path.relative_to(tmp_path)
+            ),
+            "authority_sha256": refreshed_search["artifact_sha256"],
+            "binding_sha256": refreshed_search["artifact_sha256"],
+            "tasks": [*source_tasks[:2], feature_task],
+            "recovery_kind": collection.VIX_FEATURE_SCHEMA_RECOVERY,
+            "recovery_failure_path": str(
+                failure_path.relative_to(tmp_path)
+            ),
+            "recovery_failure_sha256": failure["artifact_sha256"],
+            "recovery_failure_inspection_path": str(
+                inspection_path.relative_to(tmp_path)
+            ),
+            "recovery_failure_inspection_sha256": (
+                inspection_artifact["artifact_sha256"]
+            ),
+            "supersedes_plan_sha256": source_plan["artifact_sha256"],
+            "checkpoint_source_plan_path": str(
+                source_path.relative_to(tmp_path)
+            ),
+            "checkpoint_source_plan_sha256": (
+                source_plan["artifact_sha256"]
+            ),
+            "recovery_search_refresh": {
+                "original_search_sha256": original_search[
+                    "artifact_sha256"
+                ],
+                "refreshed_search_path": str(
+                    refreshed_search_path.relative_to(tmp_path)
+                ),
+                "refreshed_search_sha256": refreshed_search[
+                    "artifact_sha256"
+                ],
+                "semantic_contract_sha256": canonical_sha256(
+                    {"family_id": runtime.VIX_SHOCK_REBOUND_FAMILY}
+                ),
+                "only_implementation_hashes_changed": True,
+            },
+            "recovery_implementation_hashes": {
+                "dense_collection_recovery.py": "a" * 64,
+                "dense_collection_recovery_inspection.py": "b" * 64,
+                "dense_data_collection.py": "c" * 64,
+            },
+            "reused_checkpoint_task_ids": [
+                task["task_id"] for task in source_tasks[:2]
+            ],
+            "new_request_task_ids": [feature_task["task_id"]],
+            "response_schema_policy": {
+                "feature_symbol": "^VIX",
+                "expected_meta_symbol": "^VIX",
+                "expected_exchange_timezone_name": "America/Chicago",
+                "timestamp_date_timezone": "America/Chicago",
+                "target_checkpoint_symbol": "SPLV",
+                "symbol_substitution_allowed": False,
+            },
+            "provider_requests_already_completed": 5,
+            "additional_provider_requests_authorized": 1,
+            "market_outcomes_accessed": True,
+            "strategy_metrics_accessed_before_recovery": False,
+        },
+        tmp_path / "recovery",
+        "recovery-plan",
+    )
+    validated = collection._validate_plan(
+        recovery_path,
+        enforce_commit=False,
+    )
+    assert validated["new_request_task_ids"] == [
+        feature_task["task_id"]
+    ]
+    config = HistoricalStoreConfig(tmp_path / "store", min_free_bytes=0)
+    source_root = (
+        config.root
+        / "dense-v2"
+        / source_plan["family_id"]
+        / source_plan["lane"]
+        / source_plan["artifact_sha256"]
+    )
+    for task, rows in (
+        (source_tasks[0], []),
+        (
+            source_tasks[1],
+            [
+                {
+                    "symbol": "SPLV",
+                    "date": required_dates[0],
+                    "open": 100.0,
+                    "high": 101.0,
+                    "low": 99.0,
+                    "close": 100.5,
+                    "volume": 1000,
+                }
+            ],
+        ),
+    ):
+        collection._write_external(
+            collection._checkpoint_path(source_root, task),
+            {
+                "schema_version": 1,
+                "task": task,
+                "rows": rows,
+                "rows_sha256": canonical_sha256(rows),
+            },
+            config,
+        )
+    collection._write_telemetry_state(
+        source_root / "collection-telemetry.json",
+        plan_sha256=source_plan["artifact_sha256"],
+        collection_started_at="2026-07-26T12:31:00Z",
+        telemetry=failure["provider_telemetry"],
+        config=config,
+    )
+    recovery_root = (
+        config.root
+        / "dense-v2"
+        / recovery_plan["family_id"]
+        / recovery_plan["lane"]
+        / recovery_plan["artifact_sha256"]
+    )
+
+    collection._materialize_checkpoint_recovery_checkpoints(
+        config=config,
+        plan=recovery_plan,
+        private_root=recovery_root,
+        enforce_commit=False,
+    )
+
+    assert collection._checkpoint_path(
+        recovery_root, source_tasks[0]
+    ).exists()
+    assert collection._checkpoint_path(
+        recovery_root, source_tasks[1]
+    ).exists()
+    assert not collection._checkpoint_path(
+        recovery_root, feature_task
+    ).exists()
 
 
 class DailyRangeBackend:

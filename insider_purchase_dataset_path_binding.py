@@ -62,6 +62,9 @@ def build_contract(search_path: Path) -> dict[str, Any]:
             contract
         )
     )
+    validated["implementation_hashes"] = copy.deepcopy(
+        search["family_contract"]["implementation_hashes"]
+    )
     original = strategy_discovery._contract_without_implementation_hashes(
         search["family_contract"]
     )
