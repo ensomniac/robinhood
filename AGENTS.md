@@ -246,6 +246,13 @@ hold is included in the exposure scope. The shared historical/production
 runtime, production evaluator, exact-window collector, and separate plan/dataset
 inspector are implemented and focused-green, but no search artifact may be
 created until this complete implementation is committed and pushed.
+Validated commit `8a0ac664` now binds contract `e6f48e70...2a5cd4`, event scope
+`50b56082...985185`, and capacity manifest `4cb8dca4...f999d4`. The exact
+outcome-blind artifacts freeze all 32 trials, 114 development events on 85
+signal dates, five embargo sessions, and 44 untouched confirmation events on 34
+signal dates. They used zero provider requests and zero market outcomes. Commit
+and push these artifacts before running the generic preflight or freezing the
+development search.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
