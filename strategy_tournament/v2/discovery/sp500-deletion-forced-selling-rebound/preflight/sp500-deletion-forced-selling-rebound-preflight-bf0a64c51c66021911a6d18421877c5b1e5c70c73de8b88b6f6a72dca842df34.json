@@ -1,0 +1,54 @@
+{
+  "artifact_kind": "discovery-preflight-inspection",
+  "artifact_sha256": "bf0a64c51c66021911a6d18421877c5b1e5c70c73de8b88b6f6a72dca842df34",
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_policy": {
+    "fast_lane_at": 100,
+    "retire_below": 50
+  },
+  "elapsed_seconds": 0.028226875001564622,
+  "family_contract_path": "strategy_tournament/v2/discovery/sp500-deletion-forced-selling-rebound-v2-fast-lane/family-contract/contract-f7a2c922b7bc88778c9b104967426607ab424233d8833723dc59be54eadddc44.json",
+  "family_contract_sha256": "07bd9a422d58cb377f80147ee2e24a4ae6584148605637646fef254b43766f0a",
+  "family_id": "sp500-deletion-forced-selling-rebound",
+  "implementation_sha256": "1a9b92c11aa121e0ba1a45942929b628a3e16ab4d5e6209e615a4de498e182ec",
+  "inspection": {
+    "capacity_threshold_rebuilt": true,
+    "family_identity_rebuilt": true,
+    "point_in_time_boundary_rebuilt": true,
+    "valid": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "outcomes_accessed": false,
+  "point_in_time_complete": true,
+  "preflight_details": {
+    "external_dataset_opened": false,
+    "metadata_checks": {
+      "dates_bound": true,
+      "development_lane": true,
+      "family_bound": true,
+      "point_in_time": true
+    },
+    "point_in_time_complete": true,
+    "provider_telemetry": {
+      "cache_hits": 1,
+      "dataset_loads": 0,
+      "failures": 0,
+      "pacing_wait_seconds": 0.0,
+      "request_seconds": 0.0,
+      "requests": 0
+    },
+    "verified_capacity": 102
+  },
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 0,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "state": "CAPACITY_READY",
+  "validated_contract_sha256": "f7a2c922b7bc88778c9b104967426607ab424233d8833723dc59be54eadddc44",
+  "verified_capacity": 102
+}

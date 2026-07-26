@@ -277,6 +277,11 @@ development events on 102 signal dates, five embargo sessions, and 26 untouched
 confirmation events on 20 signal dates, with zero provider requests and zero
 market outcomes. Commit and push them before running their new generic
 preflight.
+Successor preflight `bf0a64c5...842df34` independently rebuilt the contract and
+returned `CAPACITY_READY` from 102 unique development signal dates. It used one
+metadata cache hit, zero dataset loads, zero provider requests, zero failures,
+and zero outcomes. Commit and push it before freezing the complete development
+search; price collection remains closed.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
