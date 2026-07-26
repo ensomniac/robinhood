@@ -234,6 +234,18 @@ identities, deduplication, zero provider requests, and zero market-price access.
 The family is `CAPACITY_READY_FAST_LANE`; the next action is to freeze the exact
 32-trial outcome-blind search and its disjoint development/confirmation scopes
 before accessing any historical market outcome.
+The deletion implementation now uses the completed announcement-to-rebalance
+decline, enters only at the effective-session open, ranks by the largest
+observable decline, uses the completed pre-effective close as its structural
+stop reference, and exits stop-first after at most two or five sessions. Its
+five binary axes produce exactly 32 trials. The proposed outcome-blind partition
+uses 114 development events on 85 entry dates through 2017, a five-session
+embargo, and 44 globally untouched events on 34 confirmation dates beginning in
+2018. Every price date from the pre-announcement reference through the maximum
+hold is included in the exposure scope. The shared historical/production
+runtime, production evaluator, exact-window collector, and separate plan/dataset
+inspector are implemented and focused-green, but no search artifact may be
+created until this complete implementation is committed and pushed.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen

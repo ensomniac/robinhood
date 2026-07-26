@@ -282,6 +282,9 @@ INSIDER_PURCHASE_CONTINUATION_FAMILY = (
 SP500_ADDITION_FORCED_DEMAND_FAMILY = (
     "sp500-index-addition-forced-demand"
 )
+SP500_DELETION_FORCED_SELLING_FAMILY = (
+    "sp500-deletion-forced-selling-rebound"
+)
 VOLATILITY_COMPRESSION_FAMILY = (
     "gap-universe-volatility-compression-breakout"
 )
@@ -321,6 +324,7 @@ SUPPORTED_FAMILIES = {
     ACTIVIST_EARNINGS_REACTION_FAMILY,
     INSIDER_PURCHASE_CONTINUATION_FAMILY,
     SP500_ADDITION_FORCED_DEMAND_FAMILY,
+    SP500_DELETION_FORCED_SELLING_FAMILY,
     VOLATILITY_COMPRESSION_FAMILY,
 }
 PRIMARY_ROUND_TRIP_COST_FRACTION = 0.001
@@ -3936,46 +3940,64 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
             )
     else:
         daily = _daily_series(dataset)
-        if family_id == SP500_ADDITION_FORCED_DEMAND_FAMILY:
+        if family_id in {
+            SP500_ADDITION_FORCED_DEMAND_FAMILY,
+            SP500_DELETION_FORCED_SELLING_FAMILY,
+        }:
+            is_deletion = (
+                family_id == SP500_DELETION_FORCED_SELLING_FAMILY
+            )
+            label = "deletion" if is_deletion else "addition"
+            expected_action = "Deletion" if is_deletion else "Addition"
+            expected_fields = {
+                "action",
+                "announcement_at",
+                "announcement_date",
+                "company_name",
+                "effective_date",
+                "entry_date",
+                "event_id",
+                "holding_dates",
+                "index_name",
+                "pre_effective_date",
+                "reference_date",
+                "sessions_to_effective",
+                "source_url",
+                "ticker",
+            }
+            if is_deletion:
+                expected_fields.update(
+                    {"flow_start_date", "observation_dates"}
+                )
             raw_events = dataset.get("event_metadata_by_entry_date")
             if not isinstance(raw_events, Mapping) or set(raw_events) != set(
                 calendar
             ):
                 raise DenseStrategyRuntimeError(
-                    "S&P addition metadata must bind every account date"
+                    f"S&P {label} metadata must bind every account date"
                 )
             seen_event_ids: set[str] = set()
             for entry_date in calendar:
                 rows = raw_events[entry_date]
                 if not isinstance(rows, list):
                     raise DenseStrategyRuntimeError(
-                        f"S&P addition metadata is invalid for {entry_date}"
+                        f"S&P {label} metadata is invalid for {entry_date}"
                     )
                 observed_order: list[tuple[int, str, str]] = []
                 for row in rows:
-                    if not isinstance(row, Mapping) or set(row) != {
-                        "action",
-                        "announcement_at",
-                        "announcement_date",
-                        "company_name",
-                        "effective_date",
-                        "entry_date",
-                        "event_id",
-                        "holding_dates",
-                        "index_name",
-                        "pre_effective_date",
-                        "reference_date",
-                        "sessions_to_effective",
-                        "source_url",
-                        "ticker",
-                    }:
+                    if (
+                        not isinstance(row, Mapping)
+                        or set(row) != expected_fields
+                    ):
                         raise DenseStrategyRuntimeError(
-                            f"S&P addition event schema drifted for {entry_date}"
+                            f"S&P {label} event schema drifted for "
+                            f"{entry_date}"
                         )
                     event_id = row["event_id"]
                     ticker = row["ticker"]
                     holding_dates = row["holding_dates"]
                     sessions_to_effective = row["sessions_to_effective"]
+                    observation_dates = row.get("observation_dates")
                     if (
                         not isinstance(event_id, str)
                         or not event_id
@@ -3984,7 +4006,7 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                         or not ticker
                         or ticker != ticker.upper()
                         or row["entry_date"] != entry_date
-                        or row["action"] != "Addition"
+                        or row["action"] != expected_action
                         or row["index_name"] != "S&P 500"
                         or not isinstance(holding_dates, list)
                         or len(holding_dates) != 5
@@ -3994,9 +4016,28 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                         or isinstance(sessions_to_effective, bool)
                         or not isinstance(sessions_to_effective, int)
                         or sessions_to_effective < 1
+                        or (
+                            is_deletion
+                            and (
+                                not isinstance(observation_dates, list)
+                                or len(observation_dates) < 6
+                                or observation_dates
+                                != sorted(observation_dates)
+                                or len(observation_dates)
+                                != len(set(observation_dates))
+                                or observation_dates[0]
+                                != row["reference_date"]
+                                or observation_dates[-5:]
+                                != holding_dates
+                                or row["flow_start_date"]
+                                not in observation_dates
+                                or row["pre_effective_date"]
+                                not in observation_dates
+                            )
+                        )
                     ):
                         raise DenseStrategyRuntimeError(
-                            f"S&P addition event is invalid for {entry_date}"
+                            f"S&P {label} event is invalid for {entry_date}"
                         )
                     seen_event_ids.add(event_id)
                     observed_order.append(
@@ -4004,7 +4045,8 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                     )
                 if observed_order != sorted(observed_order):
                     raise DenseStrategyRuntimeError(
-                        f"S&P addition ranks drifted for {entry_date}"
+                        f"S&P {label} metadata ranks drifted for "
+                        f"{entry_date}"
                     )
             source = dataset.get("source_semantics")
             if not (
@@ -4023,9 +4065,14 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
                 and source.get("substitution") == "forbidden"
             ):
                 raise DenseStrategyRuntimeError(
-                    "S&P addition source semantics are incomplete"
+                    f"S&P {label} source semantics are incomplete"
                 )
-            prepared["_sp500_addition_event_cache"] = {
+            cache_key = (
+                "_sp500_deletion_event_cache"
+                if is_deletion
+                else "_sp500_addition_event_cache"
+            )
+            prepared[cache_key] = {
                 day: [dict(row) for row in raw_events[day]]
                 for day in calendar
             }
@@ -6191,6 +6238,208 @@ def _sp500_addition_candidates(
     return candidates
 
 
+def _sp500_deletion_candidates(
+    dataset: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    calendar = _calendar(dataset)
+    cached = dataset.get("_sp500_deletion_event_cache")
+    raw_events = (
+        cached
+        if isinstance(cached, Mapping)
+        else dataset.get("event_metadata_by_entry_date")
+    )
+    if not isinstance(raw_events, Mapping) or set(raw_events) != set(calendar):
+        raise DenseStrategyRuntimeError(
+            "S&P deletion metadata must bind every account date"
+        )
+    minimum_decline = float(
+        parameters["minimum_pre_effective_decline_fraction"]
+    )
+    maximum_gap = float(
+        parameters["maximum_positive_effective_gap_fraction"]
+    )
+    minimum_lead = int(parameters["minimum_sessions_to_effective"])
+    stop_buffer = float(
+        parameters["stop_buffer_below_pre_effective_close"]
+    )
+    hold_sessions = int(parameters["maximum_hold_sessions"])
+    if (
+        minimum_decline not in {0.02, 0.05}
+        or maximum_gap not in {0.02, 0.04}
+        or minimum_lead not in {2, 4}
+        or stop_buffer not in {0.0, 0.01}
+        or hold_sessions not in {2, 5}
+    ):
+        raise DenseStrategyRuntimeError(
+            "S&P deletion trial parameters escaped the frozen grid"
+        )
+    daily = _daily_series(dataset)
+    bars_by_symbol = {
+        symbol: {str(bar["date"]): bar for bar in bars}
+        for symbol, bars in daily.items()
+    }
+    candidates: list[dict[str, Any]] = []
+    for entry_date in calendar:
+        rows = raw_events[entry_date]
+        if not isinstance(rows, list):
+            raise DenseStrategyRuntimeError(
+                f"S&P deletion metadata is invalid for {entry_date}"
+            )
+        daily_candidates: list[dict[str, Any]] = []
+        for raw in rows:
+            if not isinstance(raw, Mapping):
+                raise DenseStrategyRuntimeError(
+                    f"S&P deletion event is invalid for {entry_date}"
+                )
+            event = dict(raw)
+            event_id = str(event["event_id"])
+            symbol = str(event["ticker"])
+            signal_id = (
+                f"{entry_date}-{SP500_DELETION_FORCED_SELLING_FAMILY}-"
+                f"{event_id[:16]}"
+            )
+            common = {
+                "signal_id": signal_id,
+                "signal_date": entry_date,
+                "decision_date": str(event["pre_effective_date"]),
+                "symbol": symbol,
+                "event_id": event_id,
+                "sessions_to_effective": int(
+                    event["sessions_to_effective"]
+                ),
+                "effective_date": str(event["effective_date"]),
+                "pre_effective_date": str(event["pre_effective_date"]),
+                "source_url": str(event["source_url"]),
+            }
+            bars = bars_by_symbol.get(symbol, {})
+            required_dates = list(map(str, event["observation_dates"]))
+            if any(day not in bars for day in required_dates):
+                daily_candidates.append(
+                    {
+                        **common,
+                        "outcome": "missed_fill",
+                        "rejection_reason": "incomplete_event_window",
+                        "_rank_key": (
+                            1,
+                            -int(event["sessions_to_effective"]),
+                            symbol,
+                            event_id,
+                        ),
+                    }
+                )
+                continue
+            reference_close = float(
+                bars[str(event["reference_date"])]["close"]
+            )
+            pre_effective_close = float(
+                bars[str(event["pre_effective_date"])]["close"]
+            )
+            decline = 1 - pre_effective_close / reference_close
+            rank_key = (
+                0,
+                -decline,
+                -int(event["sessions_to_effective"]),
+                symbol,
+                event_id,
+            )
+            observed = {
+                **common,
+                "forced_selling_decline_fraction": decline,
+                "reference_close": reference_close,
+                "pre_effective_close": pre_effective_close,
+                "_rank_key": rank_key,
+            }
+            if int(event["sessions_to_effective"]) < minimum_lead:
+                daily_candidates.append(
+                    {
+                        **observed,
+                        "outcome": "rejected",
+                        "rejection_reason": "insufficient_forced_selling_window",
+                    }
+                )
+                continue
+            if decline + 1e-12 < minimum_decline:
+                daily_candidates.append(
+                    {
+                        **observed,
+                        "outcome": "rejected",
+                        "rejection_reason": "forced_selling_decline_below_minimum",
+                    }
+                )
+                continue
+            entry_price = float(bars[entry_date]["open"])
+            entry_gap = entry_price / pre_effective_close - 1
+            observed["entry_gap_fraction"] = entry_gap
+            if entry_gap > maximum_gap + 1e-12:
+                daily_candidates.append(
+                    {
+                        **observed,
+                        "outcome": "rejected",
+                        "rejection_reason": "effective_gap_above_maximum",
+                    }
+                )
+                continue
+            expected_gross = decline - max(entry_gap, 0.0)
+            observed["expected_gross_move_fraction"] = expected_gross
+            if not _cost_floor(expected_gross):
+                daily_candidates.append(
+                    {
+                        **observed,
+                        "outcome": "rejected",
+                        "rejection_reason": "expected_move_below_cost_floor",
+                    }
+                )
+                continue
+            stop_price = pre_effective_close * (1 - stop_buffer)
+            if stop_price <= 0 or stop_price >= entry_price:
+                daily_candidates.append(
+                    {
+                        **observed,
+                        "outcome": "missed_fill",
+                        "rejection_reason": "invalid_structural_stop",
+                    }
+                )
+                continue
+            exit_date, exit_price, stop_executed, marks = (
+                _sp500_addition_exit(
+                    bars,
+                    holding_dates=list(map(str, event["holding_dates"])),
+                    stop_price=stop_price,
+                    maximum_hold_sessions=hold_sessions,
+                    pre_effective_date="",
+                    exit_mode="maximum_hold",
+                )
+            )
+            daily_candidates.append(
+                {
+                    **observed,
+                    "outcome": "eligible",
+                    "entry_price": entry_price,
+                    "stop_price": stop_price,
+                    "exit_date": exit_date,
+                    "exit_price": exit_price,
+                    "marks": marks,
+                    "stop_executed": stop_executed,
+                    "planned_stop_distance": entry_price - stop_price,
+                }
+            )
+        for rank, candidate in enumerate(
+            sorted(
+                daily_candidates,
+                key=lambda row: row["_rank_key"],
+            ),
+            1,
+        ):
+            candidate["rank"] = rank
+            candidate["score"] = float(
+                candidate.get("forced_selling_decline_fraction", 0.0)
+            )
+            candidate.pop("_rank_key")
+            candidates.append(candidate)
+    return candidates
+
+
 def build_candidates(
     dataset: Mapping[str, Any],
     family_id: str,
@@ -6311,6 +6560,8 @@ def build_candidates(
         return _insider_purchase_candidates(dataset, parameters)
     if family_id == SP500_ADDITION_FORCED_DEMAND_FAMILY:
         return _sp500_addition_candidates(dataset, parameters)
+    if family_id == SP500_DELETION_FORCED_SELLING_FAMILY:
+        return _sp500_deletion_candidates(dataset, parameters)
     if family_id == VOLATILITY_COMPRESSION_FAMILY:
         return _compression_candidates(dataset, parameters)
     raise DenseStrategyRuntimeError(f"unsupported dense family: {family_id}")
