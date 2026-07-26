@@ -1,0 +1,144 @@
+{
+  "additional_provider_requests_permitted": 0,
+  "artifact_kind": "sec-earnings-full-inventory-recovery-contract",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "capacity_thresholds": {
+    "minimum_confirmation_signal_days": 30,
+    "minimum_development_signal_days": 50,
+    "minimum_total_signal_days": 100,
+    "signal_unit": "distinct signal date"
+  },
+  "confirmation_outcomes_accessed": false,
+  "contract_sha256": "d4c2797d4ff8c5b6c6c7f2d65ab9cf7b5bbac6a76503a0922ad4f4c9208d146f",
+  "created_at": "2026-07-26T19:17:23+00:00",
+  "dataset_id": "dataset-sec-filed-earnings-event-first-2023-2024-v2",
+  "event_semantics": {
+    "acceptance_timestamp_required": true,
+    "accession_required": true,
+    "amendments_permitted": false,
+    "duplicate_accession_receives_zero_credit": true,
+    "excluded_items": [
+      "3.02"
+    ],
+    "filing_documents_accessed": false,
+    "forms": [
+      "8-K"
+    ],
+    "primary_document_required": true,
+    "required_items": [
+      "2.02"
+    ],
+    "signal_window_end": "signal_regular_session_09:25:00_ET_inclusive",
+    "signal_window_start": "previous_regular_session_16:00:00_ET_exclusive"
+  },
+  "family_id": "sec-filed-earnings-gap-continuation-event-first",
+  "forward_returns_accessed": false,
+  "future_search": {
+    "confirmation_cannot_influence_selection": true,
+    "cumulative_selection_trial_count": 128,
+    "current_trial_count": 32,
+    "maximum_hold_sessions": 1,
+    "parameter_grid": {
+      "breakout_volume_multiple": [
+        1.5,
+        2.5
+      ],
+      "maximum_structural_stop_fraction": [
+        0.03,
+        0.04
+      ],
+      "minimum_gap_fraction": [
+        0.02,
+        0.04
+      ],
+      "opening_range_minutes": [
+        5
+      ],
+      "signal_cutoff_minutes": [
+        60,
+        120
+      ],
+      "target_r": [
+        1.5,
+        2.0
+      ]
+    },
+    "prior_selection_trials": 96,
+    "selection_mode": "development_search"
+  },
+  "implementation_hashes": {
+    "outcome_exposure.py": "b3835233e2359d2f033dbb726b898e2d5087f4e01f05a3def2771ddf86d53a4a",
+    "sec_earnings_full_inventory.py": "6daaed9508bcdeffa90693a69fea0fb4666068707b51a8e420fcc6a96c64a150",
+    "sec_earnings_full_inventory_recovery.py": "cd02e5b023ff47eb893d013ac7923ffb6b36d509a9097a1bfdf712b9d97a3290",
+    "sec_earnings_full_inventory_recovery_inspection.py": "dbe00f2ad8230d1fa9745f9a4bef02fefafef8e62c16069f195233d338df5057"
+  },
+  "market_prices_accessed": false,
+  "partitions": {
+    "confirmation": [
+      "2024-01-09",
+      "2024-12-31"
+    ],
+    "confirmation_pair_overlap_with_global_index": "zero_credit",
+    "development": [
+      "2023-01-03",
+      "2023-12-29"
+    ],
+    "development_may_be_explicitly_contaminated_training": true,
+    "embargo_dates": [
+      "2024-01-02",
+      "2024-01-03",
+      "2024-01-04",
+      "2024-01-05",
+      "2024-01-08"
+    ],
+    "outcome_exposure_index_sha256": "940c4cacecac4194f5ee539766e74790aff9ac4b2f4f057e0aa987e909d8c8bc"
+  },
+  "point_in_time_universe": {
+    "cik_must_match": true,
+    "current_ticker_fallback_permitted": false,
+    "fallback_identity_permitted": false,
+    "identity_source": "Massive composite FIGI security master",
+    "multiple_valid_common_share_classes": "retain each distinct composite FIGI listing",
+    "security_type": "COMMON",
+    "signal_date_must_be_within_valid_from_and_valid_to": true
+  },
+  "provider_request": {
+    "archive_semantics": "official nightly public EDGAR filing history for all filers",
+    "documentation": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+    "hash_valid_cache_resume_permitted": true,
+    "method": "GET",
+    "ordinal": 0,
+    "retries_permitted": 0,
+    "substitutions_permitted": 0,
+    "timeout_seconds": 900.0,
+    "url": "https://www.sec.gov/Archives/edgar/daily-index/bulkdata/submissions.zip"
+  },
+  "recovery_implementation": {
+    "cartesian_scope_membership": "require exact date then exact symbol or wildcard",
+    "normalized_records_validated_once": true,
+    "scope_pair_materialization_per_event": false,
+    "semantic_change_permitted": false,
+    "symbols_by_date_membership": "lookup exact signal date then exact symbol or wildcard"
+  },
+  "retained_archive": {
+    "bytes": 1553601999,
+    "members": 983888,
+    "primary_cik_files": 978573,
+    "sha256": "cb4fa9b945ae3364cc66f92ee0bfe4237c140d7ef3884504df2030985bf17df5"
+  },
+  "schema_version": 1,
+  "state": "OVERLAP_RECOVERY_CONTRACT_FROZEN",
+  "strategy_metrics_computed": 0,
+  "v1_lineage": {
+    "contract_file_sha256": "4c5c11f3769871bf8c9d2dea5d5e7dd67d6a4f7b9db5b9bebeed55341b22ba4c",
+    "contract_inspection_file_sha256": "3c7e7fb60b02d13ce570020712eb1c0cdd2b81f7fab42991db5bf082d91338e9",
+    "contract_inspection_path": "strategy_tournament/v2/continuous/sec-filed-earnings-gap-continuation-event-first/dataset-sec-filed-earnings-event-first-2023-2024-v1/capacity-contract-inspection/inspection-84c9500e28d46077d41c54a3127dfdd7945c77a01c14436e54e00415d8f644b5.json",
+    "contract_inspection_sha256": "84c9500e28d46077d41c54a3127dfdd7945c77a01c14436e54e00415d8f644b5",
+    "contract_path": "strategy_tournament/v2/continuous/sec-filed-earnings-gap-continuation-event-first/dataset-sec-filed-earnings-event-first-2023-2024-v1/capacity-contract/contract-319a78ec1c2fac291a9463bed424bde7e9137fe157119d56c487205822bb13ea.json",
+    "contract_sha256": "319a78ec1c2fac291a9463bed424bde7e9137fe157119d56c487205822bb13ea",
+    "failure_inspection_file_sha256": "1a9f613a55ed3c33b7d9e0792aa54eb9f1318ad98e642a638e260d0cf5c661e7",
+    "failure_inspection_path": "strategy_tournament/v2/continuous/sec-filed-earnings-gap-continuation-event-first/dataset-sec-filed-earnings-event-first-2023-2024-v2/collection-failure-inspection/inspection-431ecb9ed39d2ce44e51241d5581bba1f73545fb115a43baec7b08e31a92df88.json",
+    "failure_inspection_sha256": "431ecb9ed39d2ce44e51241d5581bba1f73545fb115a43baec7b08e31a92df88"
+  }
+}
