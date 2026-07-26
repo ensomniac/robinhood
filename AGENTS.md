@@ -572,7 +572,12 @@ independently assigns `CAPACITY_READY` from the unchanged frozen capacity and
 calendar with zero price, return, confirmation, provider, or broker access.
 Refreshed search `16001b2e...3cac19` now seals the same sole trial, dates,
 costs, partitions, and selection rule under the current implementation hashes.
-Commit and push it before freezing the one-request recovery plan.
+Recovery plan `1d08be38...abef83b` binds that search, inspected failure
+`90363424...49772a9d`, inspection `febe82cc...5c8268a`, and the globally
+indexed SPLV exposure. It reuses only task IDs `66ccfa49...` and
+`18a5c5f7...`, and authorizes only new task `e4d9970d...` for unchanged
+`^VIX` with the exact Chicago response policy. Commit and push it before
+independent plan inspection; provider access remains closed.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
