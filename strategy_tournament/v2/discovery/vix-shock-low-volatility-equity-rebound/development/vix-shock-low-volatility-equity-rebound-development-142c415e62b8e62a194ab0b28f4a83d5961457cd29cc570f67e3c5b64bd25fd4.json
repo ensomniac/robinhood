@@ -1,0 +1,71 @@
+{
+  "artifact_kind": "development-search-result",
+  "artifact_sha256": "142c415e62b8e62a194ab0b28f4a83d5961457cd29cc570f67e3c5b64bd25fd4",
+  "broker_actions_permitted": false,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "confirmation_access_permitted": false,
+  "elapsed_seconds": 0.14605341595597565,
+  "evaluation_binding": {
+    "compression": "gzip",
+    "content_sha256": "436c6b57465a93859b2ba1a9f61f27f29b7753d7b5a27cfea6764e04afb348a4",
+    "file_sha256": "425ab85ebb175afb25879bef93cd31038518b9add28c8ca5f5c1f00ad68e9754",
+    "format": "canonical-json",
+    "kind": "external-development-evaluation",
+    "relative_path": "_derived/strategy_discovery_evaluations/436c6b57465a93859b2ba1a9f61f27f29b7753d7b5a27cfea6764e04afb348a4/evaluation.json.gz",
+    "schema_version": 1,
+    "storage": "LOCAL_HISTORICAL_DATA_ROOT"
+  },
+  "evaluation_summary": {
+    "dataset_manifest": "/Users/ensomniac/trade/robinhood_codex/strategy_tournament/v2/discovery/vix-shock-low-volatility-equity-rebound/development-dataset/dataset-vix-shock-low-volatility-equity-rebound-development-16001b2e44e228c5-ae7bfdf0a8764775423f692bf65da59f5901dcc9590d0c075f1cf907577803ba.json",
+    "experiment_id": "experiment-vix-shock-low-volatility-equity-rebound-v1",
+    "implementation_sha256": "10f3b4c5ca3e1bae5958afcce6607592de91433f7f16a83980187b2d745ad557",
+    "trial_count": 1,
+    "trials": [
+      {
+        "evidence_array_lengths": {
+          "oof_daily_account_returns": 955,
+          "oof_filled_account_returns": 7,
+          "oof_net_pnl_dollars": 7
+        },
+        "maturity_rows": 955,
+        "metrics": {
+          "deflated_sharpe_probability": 0.0,
+          "holm_reject_null": false,
+          "pbo_probability": 1.0,
+          "risk_fraction": 0.005,
+          "rolling_folds_positive": false,
+          "rules_complete": true,
+          "stress_20bps_bootstrap_lower_mean_account_return": 0.0,
+          "stress_20bps_maximum_drawdown_r": 2.426811449135613,
+          "stress_20bps_profit_factor": 0.5130413899492933,
+          "stress_20bps_profit_factor_is_infinite": false,
+          "stress_20bps_total_log_growth": -0.006794224803093564,
+          "trial_accounting_complete": true
+        },
+        "parameters": {
+          "cooldown_sessions": 5,
+          "maximum_hold_sessions": 5,
+          "mean_reversion_sma": 5,
+          "minimum_three_session_decline_fraction": 0.015,
+          "stop_atr14": 1.5,
+          "vix_close_minimum": 25.0
+        },
+        "trial_accounting_rows": 955,
+        "trial_id": "trial-23cc41647a71530d"
+      }
+    ]
+  },
+  "family_id": "vix-shock-low-volatility-equity-rebound",
+  "provider_telemetry": {
+    "cache_hits": 1,
+    "dataset_loads": 1,
+    "failures": 0,
+    "pacing_wait_seconds": 0.0,
+    "request_seconds": 0.0,
+    "requests": 0
+  },
+  "schema_version": 1,
+  "search_path": "strategy_tournament/v2/discovery/vix-shock-low-volatility-equity-rebound/search/vix-shock-low-volatility-equity-rebound-search-16001b2e44e228c59c6b70e61ec91c6c1686aa51e003cc01e03ba1663b3cac19.json",
+  "search_sha256": "16001b2e44e228c59c6b70e61ec91c6c1686aa51e003cc01e03ba1663b3cac19",
+  "state": "DEVELOPMENT_EVALUATED"
+}

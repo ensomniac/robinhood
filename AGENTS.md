@@ -591,7 +591,13 @@ inspection. Inspection `7fff34b8...595334` rehashes the external file and
 canonical dataset, rebuilds all three tasks and the exact frozen scope,
 revalidates the runtime schema, and confirms zero substitutions. All six
 checks pass, producing development runtime manifest `ae7bfdf0...7803ba` in
-`DATASET_INSPECTED_READY`. Commit and push both before development evaluation.
+`DATASET_INSPECTED_READY`. Development result `142c415e...bd25fd4`
+evaluated the sole rule locally in 0.146 seconds with one dataset load and zero
+provider requests. It produced only seven filled OOF trades; 20-bps log growth
+is -0.006794, PF is 0.513, rolling folds fail, DSR probability is zero, Holm
+does not reject, and PBO is 1.0. Confirmation remains sealed. Commit and push
+the adverse result before independent terminal inspection; do not repair this
+rule on its evaluated corpus.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
