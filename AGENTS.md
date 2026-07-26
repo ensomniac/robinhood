@@ -471,6 +471,12 @@ Commit and push it before generic preflight. Preflight
 `CAPACITY_READY` with zero outcomes. Search `f205aaec...183f0b` freezes that
 exact path spelling and otherwise identical search. Commit and push it before
 evaluation.
+Development result `99746467...52d944` evaluated all 32 trials in 1.09 seconds
+from one dataset load with zero provider requests. Eight trials have positive
+20-bps growth and four reach stressed profit factor 1.20, but none passes
+rolling-fold stability, DSR, Holm, or cumulative PBO. The highest-growth trial
+has only 11 fills, 0.595% stressed log growth, 1.484 profit factor, and 2.12R
+drawdown. Commit and push the result before independent disposition.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
