@@ -364,6 +364,11 @@ pair-clean development events across 94 signal dates, followed by five complete
 embargo sessions and 209 untouched confirmation events across 46 signal dates.
 The sparse 2023 reserve segment is discarded outcome-blind; no parameters,
 market prices, or returns were used to choose the 2024 partition.
+Capacity manifest `432b743e...277893` and family contract
+`84ab93bc...0e74bb` now freeze that exact lineage, partition, unchanged grid,
+cumulative selection accounting, provider boundary, and confirmation reserve.
+Both were created with zero price, outcome, confirmation, or broker access.
+Commit and push them before generic preflight.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
