@@ -130,6 +130,12 @@ for ANDV before same-contract resume.
 Registration `e01bce1f...595ffd` now checkpoints ANDV as permanent missing with
 zero provider requests, retries, substitutions, confirmation access, or broker
 actions. Commit and push it before resuming the original 2,589-request graph.
+The unchanged resume reached 438 checkpoints before the same invalid-OHLCV
+failure class recurred at request 439, `CATC`, hash
+`c97b0a8b...33e7b5d`. Failure `2e6ac0eb...112a50` records 320,706 retained rows
+and the expanded partial exposure with metrics and confirmation still closed.
+After its independent inspection, freeze a narrow repeated-failure policy for
+this exact parser error rather than repeating one artifact cycle per symbol.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed
