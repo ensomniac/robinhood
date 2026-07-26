@@ -282,6 +282,11 @@ returned `CAPACITY_READY` from 102 unique development signal dates. It used one
 metadata cache hit, zero dataset loads, zero provider requests, zero failures,
 and zero outcomes. Commit and push it before freezing the complete development
 search; price collection remains closed.
+Search `f82c59b3...072cc78` is now `SEARCH_FROZEN` and binds the successor
+contract, preflight, 32 trials, implementation hashes, disjoint scopes, costs,
+and deterministic selection rule. Confirmation and broker actions remain
+closed. Commit and push the search before constructing its exact development
+price plan.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
