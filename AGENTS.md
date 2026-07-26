@@ -112,6 +112,13 @@ controller hashes, event inventory, search binding, full contamination scope,
 untouched confirmation, and the empty task namespace. All checks pass; only
 the frozen development requests are authorized after this inspection is
 committed and pushed.
+The first authorized collection attempt checkpointed 144 exact symbol tasks
+and then failed closed on structurally invalid Yahoo OHLCV for frozen request
+145, symbol `ANDV`, request hash `0dc2af0b...e84785`. No retry, substitution,
+metric, winner selection, confirmation access, or broker action occurred.
+`insider_purchase_data_recovery.py` records the exact partial exposure,
+independently inspects that boundary, and may register only that failed request
+as permanent missing before same-contract resume.
 
 The previously recorded historical lane was a genuinely distinct new mechanism,
 `liquid-equity-etf-ibs-reversal-v1`. Its 32-trial grid combines completed

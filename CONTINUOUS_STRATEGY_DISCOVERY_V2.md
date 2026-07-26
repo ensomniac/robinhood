@@ -507,6 +507,14 @@ index as contaminated development. Collection requires an independently
 inspected request contract and a clean pushed HEAD. Confirmation requests stay
 forbidden until exact-winner preregistration.
 
+If a frozen Yahoo response is structurally unusable, collection stops before
+checkpointing that request. The separate recovery controller must identify the
+first incomplete request, record every already checkpointed symbol as actual
+development exposure, earn an independent failure inspection, and register
+only the failed request as permanent missing. It never retries, substitutes,
+or repairs provider rows. The original committed request graph then resumes
+from hash-valid tasks.
+
 ## Parallel lanes
 
 The residual-equity implementation is now used only for the existing
