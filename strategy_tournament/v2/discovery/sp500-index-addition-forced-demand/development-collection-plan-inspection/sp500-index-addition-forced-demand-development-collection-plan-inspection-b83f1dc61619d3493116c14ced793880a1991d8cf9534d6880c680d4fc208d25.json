@@ -1,0 +1,31 @@
+{
+  "artifact_kind": "sp500-addition-data-plan-inspection",
+  "artifact_sha256": "b83f1dc61619d3493116c14ced793880a1991d8cf9534d6880c680d4fc208d25",
+  "authority_sha256": "c4a8253edadb5123f65a851fc926590c1c0a8162500348d664c64d9ca818f9ed",
+  "broker_actions": 0,
+  "campaign_id": "multi-strategy-portfolio-validation-v2",
+  "checks": {
+    "authority_hash_rebuilt": true,
+    "event_scope_hash_rebuilt": true,
+    "event_task_mapping_rebuilt": true,
+    "event_window_dates_rebuilt": true,
+    "source_scope_rebuilt": true,
+    "substitutions_forbidden": true,
+    "task_hashes_rebuilt": true,
+    "zero_outcome_boundary_rebuilt": true
+  },
+  "confirmation_accessed": false,
+  "event_count": 144,
+  "event_scope_sha256": "a4881166c5e088feb447f11f7100eea8e482ce770aa6ba03e9ee3d964fa8f522",
+  "family_id": "sp500-index-addition-forced-demand",
+  "inspected_at": "2026-07-26T02:12:57Z",
+  "lane": "development",
+  "market_outcomes_accessed": false,
+  "plan_path": "strategy_tournament/v2/discovery/sp500-index-addition-forced-demand/development-collection-plan/sp500-index-addition-forced-demand-development-collection-plan-889d677d638559081643c7812f14b5692d2cce2fc41502623edea8d549183d17.json",
+  "plan_sha256": "889d677d638559081643c7812f14b5692d2cce2fc41502623edea8d549183d17",
+  "provider_requests": 0,
+  "schema_version": 1,
+  "signal_date_capacity": 100,
+  "state": "COLLECTION_PLAN_INSPECTED",
+  "task_count": 145
+}
