@@ -63,6 +63,10 @@ and committed. Calendar lineage `68abe969...feafd` now binds 4,240 unique
 full sessions from 2009-01-02 through 2025-12-31 to the three exact source
 hashes with zero added provider, price, outcome, or broker access. Commit and
 push the lineage and merged calendar before independent reconstruction.
+Inspection `77ffe1e6...0c394` independently rebuilt all rows, hashes, source
+authorities, decision-session membership, 64/55 capacities, and the
+five-session embargo. All checks pass with no price or broker access. Commit
+and push it before freezing the exact family and capacity contracts.
 
 The dense rolling-batch-1 status correctly refuses to overwrite its three
 terminal exact family versions. The pair-aware calendar and capacity artifacts
