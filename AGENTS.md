@@ -501,6 +501,14 @@ five-session entry cooldown. Its 2014-2020 SPLV and `^VIX` date-symbol graph is
 currently absent from the outcome-exposure index. Freeze the exact family,
 development, five-session embargo, and confirmation reserve before the first
 price request; confirmation and broker access remain forbidden.
+Capacity manifest `281b7095...3e872` and family contract
+`50b55092...d89913` now freeze one exact trial, 1,000 development account
+sessions, five embargo sessions, and 494 still-untouched confirmation signal
+dates. The contract binds the inspected calendar, rolling authorization,
+complete SPLV/`^VIX` scopes, Yahoo zero-retry symbol-range plan, 5/10/20-bps
+costs, account simulator, selection rule, and implementation hashes with zero
+provider requests or price access. Commit and push both artifacts before the
+generic outcome-blind preflight.
 Inspection `43df0eaa...f288f6` independently rebuilt the CLNS failure,
 all 538 checkpoints, the expanded exposure record, the exact exception, and
 every closed-state constraint. All ten checks pass, authorizing only a frozen
