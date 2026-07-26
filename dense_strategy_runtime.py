@@ -278,6 +278,9 @@ ETF_CLOSE_TO_OPEN_FAMILY = "liquid-etf-close-to-open-momentum"
 CLOSE_TO_OPEN_ETF_SYMBOLS = ("QQQ", "IWM", "DIA")
 OVERSOLD_REVERSAL_FAMILY = "gap-universe-oversold-reversal"
 EQUITY_GAP_CONTINUATION_FAMILY = "equity-gap-continuation-development-search"
+SEC_EARNINGS_GAP_15M_FAMILY = (
+    "sec-filed-earnings-gap-continuation-event-first-15m"
+)
 EARNINGS_PEAD_FAMILY = "earnings-positive-surprise-drift"
 EARNINGS_SEC_REACTION_FAMILY = "earnings-sec-yoy-eps-reaction-drift"
 ACTIVIST_EARNINGS_REACTION_FAMILY = (
@@ -336,6 +339,7 @@ SUPPORTED_FAMILIES = {
     ETF_CLOSE_TO_OPEN_FAMILY,
     OVERSOLD_REVERSAL_FAMILY,
     EQUITY_GAP_CONTINUATION_FAMILY,
+    SEC_EARNINGS_GAP_15M_FAMILY,
     EARNINGS_PEAD_FAMILY,
     EARNINGS_SEC_REACTION_FAMILY,
     ACTIVIST_EARNINGS_REACTION_FAMILY,
@@ -4310,7 +4314,70 @@ def prepare_dataset(dataset: Mapping[str, Any]) -> dict[str, Any]:
     calendar = _calendar(dataset)
     _signal_dates(dataset)
     prepared = dict(dataset)
-    if family_id == ETF_CLOSE_TO_OPEN_FAMILY:
+    if family_id == SEC_EARNINGS_GAP_15M_FAMILY:
+        sessions = _fifteen_minute_sessions(dataset)
+        raw_events = dataset.get("event_metadata_by_date")
+        blocked = dataset.get("blocked_dates", [])
+        if (
+            not isinstance(raw_events, Mapping)
+            or set(raw_events) != set(calendar)
+            or not isinstance(blocked, list)
+            or blocked != sorted(set(map(str, blocked)))
+            or not set(sessions).issubset(set(calendar))
+        ):
+            raise DenseStrategyRuntimeError(
+                "SEC earnings-gap dataset scope is incomplete"
+            )
+        for day, rows in raw_events.items():
+            if not isinstance(rows, list):
+                raise DenseStrategyRuntimeError(
+                    f"SEC earnings-gap metadata is invalid for {day}"
+                )
+            symbols = []
+            for row in rows:
+                required = {
+                    "accepted_at",
+                    "event_id",
+                    "gap_fraction",
+                    "instrument_id",
+                    "opening_bullish",
+                    "opening_close_location",
+                    "opening_volume_ratio",
+                    "prior_close",
+                    "prior_median_dollar_volume",
+                    "symbol",
+                }
+                if not isinstance(row, Mapping) or set(row) != required:
+                    raise DenseStrategyRuntimeError(
+                        f"SEC earnings-gap metadata fields drifted for {day}"
+                    )
+                symbol = str(row["symbol"])
+                symbols.append(symbol)
+                for field in (
+                    "gap_fraction",
+                    "opening_close_location",
+                    "opening_volume_ratio",
+                    "prior_close",
+                    "prior_median_dollar_volume",
+                ):
+                    _number(
+                        row[field],
+                        f"event_metadata_by_date.{day}.{symbol}.{field}",
+                    )
+                if not isinstance(row["opening_bullish"], bool):
+                    raise DenseStrategyRuntimeError(
+                        f"SEC earnings-gap bullish flag is invalid for {day} {symbol}"
+                    )
+            if symbols != sorted(set(symbols)):
+                raise DenseStrategyRuntimeError(
+                    f"SEC earnings-gap symbols are not canonical for {day}"
+                )
+            if not set(sessions.get(day, {})).issubset(set(symbols)):
+                raise DenseStrategyRuntimeError(
+                    f"SEC earnings-gap bars escaped the event universe for {day}"
+                )
+        prepared["_prepared_fifteen_minute_bars"] = sessions
+    elif family_id == ETF_CLOSE_TO_OPEN_FAMILY:
         daily = _daily_series(dataset)
         sessions = _fifteen_minute_sessions(dataset)
         symbols = dataset.get("symbols")
@@ -5485,6 +5552,236 @@ def _gap_continuation_candidates(
                 "gap_fraction": gap_fraction,
                 "volume_multiple": volume_multiple,
                 "trigger_index": int(selected["trigger_index"]),
+                "entry_price": entry_price,
+                "stop_price": stop_price,
+                "target_price": target_price,
+                "exit_date": day,
+                "exit_price": exit_price,
+                "marks": {day: exit_price},
+                "stop_executed": stop_executed,
+                "planned_stop_distance": entry_price - stop_price,
+            }
+        )
+    return candidates
+
+
+def _sec_earnings_gap_15m_exit(
+    bars: Sequence[Mapping[str, Any]],
+    *,
+    stop_price: float,
+    target_price: float,
+) -> tuple[float, bool]:
+    """Resolve a same-session 15-minute exit without using the entry bar."""
+
+    if len(bars) != 26:
+        raise DenseStrategyRuntimeError(
+            "SEC earnings-gap input needs 26 complete regular-session bars"
+        )
+    # The 09:45 bar is the first interval after the 09:45 entry.  The
+    # 15:45 bar open is the deterministic safe-cutoff exit, so its later
+    # high/low/close can never influence the result.
+    for bar in bars[1:25]:
+        opening = float(bar["open"])
+        if opening <= stop_price:
+            return opening, True
+        if opening >= target_price:
+            return opening, False
+        touched_stop = float(bar["low"]) <= stop_price
+        touched_target = float(bar["high"]) >= target_price
+        if touched_stop:
+            return stop_price, True
+        if touched_target:
+            return target_price, False
+    return float(bars[25]["open"]), False
+
+
+def _sec_earnings_gap_15m_candidates(
+    dataset: Mapping[str, Any], parameters: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    """Build event-first SEC earnings continuation candidates.
+
+    All filing, identity, liquidity, gap, and opening-bar features are frozen
+    in the development dataset after the search contract is committed.  This
+    runtime applies only the declared grid thresholds and exact 09:45 entry,
+    structural protection, ranking, and 15:45 cutoff semantics.
+    """
+
+    calendar = _calendar(dataset)
+    signal_dates = set(_signal_dates(dataset))
+    sessions = _fifteen_minute_sessions(dataset)
+    raw_events = dataset.get("event_metadata_by_date")
+    raw_blocked = dataset.get("blocked_dates", [])
+    if (
+        not isinstance(raw_events, Mapping)
+        or set(raw_events) != set(calendar)
+        or not isinstance(raw_blocked, list)
+        or raw_blocked != sorted(set(map(str, raw_blocked)))
+        or not set(raw_blocked).issubset(signal_dates)
+    ):
+        raise DenseStrategyRuntimeError(
+            "SEC earnings-gap event or blocked-date scope is invalid"
+        )
+    blocked_dates = set(map(str, raw_blocked))
+    minimum_gap = float(parameters["minimum_gap_fraction"])
+    minimum_close_location = float(
+        parameters["minimum_opening_close_location"]
+    )
+    minimum_volume_ratio = float(
+        parameters["minimum_opening_volume_ratio"]
+    )
+    stop_cap = float(parameters["maximum_structural_stop_fraction"])
+    target_r = float(parameters["target_r"])
+    if (
+        minimum_gap not in {0.02, 0.04}
+        or minimum_close_location not in {0.5, 0.75}
+        or minimum_volume_ratio not in {1.5, 2.5}
+        or stop_cap not in {0.03, 0.04}
+        or target_r not in {1.5, 2.0}
+    ):
+        raise DenseStrategyRuntimeError(
+            "SEC earnings-gap parameters escaped the frozen grid"
+        )
+    candidates: list[dict[str, Any]] = []
+    for day in calendar:
+        if day not in signal_dates:
+            continue
+        if day in blocked_dates:
+            candidates.append(
+                {
+                    "signal_id": (
+                        f"{day}-{SEC_EARNINGS_GAP_15M_FAMILY}-DATA"
+                    ),
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": "DATA",
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "incomplete_frozen_event_denominator",
+                }
+            )
+            continue
+        qualified: list[
+            tuple[float, float, float, str, str, Mapping[str, Any]]
+        ] = []
+        rows = raw_events[day]
+        if not isinstance(rows, list):
+            raise DenseStrategyRuntimeError(
+                f"SEC earnings-gap events are invalid for {day}"
+            )
+        for row in rows:
+            if not isinstance(row, Mapping):
+                raise DenseStrategyRuntimeError(
+                    f"SEC earnings-gap event is invalid for {day}"
+                )
+            symbol = str(row["symbol"])
+            gap_fraction = float(row["gap_fraction"])
+            close_location = float(row["opening_close_location"])
+            volume_ratio = float(row["opening_volume_ratio"])
+            prior_dollar_volume = float(row["prior_median_dollar_volume"])
+            if (
+                float(row["prior_close"]) < 10
+                or prior_dollar_volume < 50_000_000
+                or gap_fraction + 1e-12 < minimum_gap
+                or close_location + 1e-12 < minimum_close_location
+                or volume_ratio + 1e-12 < minimum_volume_ratio
+                or row["opening_bullish"] is not True
+            ):
+                continue
+            qualified.append(
+                (
+                    -gap_fraction,
+                    -volume_ratio,
+                    -prior_dollar_volume,
+                    symbol,
+                    str(row["event_id"]),
+                    row,
+                )
+            )
+        if not qualified:
+            continue
+        _, _, _, symbol, event_id, selected = sorted(qualified)[0]
+        signal_id = (
+            f"{day}-{SEC_EARNINGS_GAP_15M_FAMILY}-{symbol}-{event_id[:12]}"
+        )
+        bars = sessions.get(day, {}).get(symbol)
+        if bars is None:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "missed_fill",
+                    "rank": 1,
+                    "rejection_reason": "missing_next_observable_bar",
+                }
+            )
+            continue
+        entry_price = float(bars[1]["open"])
+        stop_price = float(bars[0]["low"])
+        if stop_price <= 0 or stop_price >= entry_price:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "invalid_structural_stop",
+                }
+            )
+            continue
+        stop_fraction = (entry_price - stop_price) / entry_price
+        if stop_fraction > stop_cap + 1e-12:
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "structural_stop_exceeds_protection_cap",
+                }
+            )
+            continue
+        target_price = entry_price + target_r * (entry_price - stop_price)
+        if not _cost_floor((target_price - entry_price) / entry_price):
+            candidates.append(
+                {
+                    "signal_id": signal_id,
+                    "signal_date": day,
+                    "decision_date": day,
+                    "symbol": symbol,
+                    "outcome": "rejected",
+                    "rank": 1,
+                    "rejection_reason": "expected_move_below_cost_floor",
+                }
+            )
+            continue
+        exit_price, stop_executed = _sec_earnings_gap_15m_exit(
+            bars,
+            stop_price=stop_price,
+            target_price=target_price,
+        )
+        candidates.append(
+            {
+                "signal_id": signal_id,
+                "signal_date": day,
+                "decision_date": day,
+                "symbol": symbol,
+                "outcome": "eligible",
+                "rank": 1,
+                "score": (
+                    float(selected["gap_fraction"])
+                    + float(selected["opening_volume_ratio"])
+                ),
+                "event_id": event_id,
+                "gap_fraction": float(selected["gap_fraction"]),
+                "opening_volume_ratio": float(
+                    selected["opening_volume_ratio"]
+                ),
                 "entry_price": entry_price,
                 "stop_price": stop_price,
                 "target_price": target_price,
@@ -7053,6 +7350,8 @@ def build_candidates(
         return _oversold_candidates(dataset, parameters)
     if family_id == EQUITY_GAP_CONTINUATION_FAMILY:
         return _gap_continuation_candidates(dataset, parameters)
+    if family_id == SEC_EARNINGS_GAP_15M_FAMILY:
+        return _sec_earnings_gap_15m_candidates(dataset, parameters)
     if family_id == EARNINGS_PEAD_FAMILY:
         return _earnings_pead_candidates(dataset, parameters)
     if family_id == EARNINGS_SEC_REACTION_FAMILY:
