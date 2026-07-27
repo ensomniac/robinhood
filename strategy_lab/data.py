@@ -434,112 +434,113 @@ class HistoricalCatalog:
                     results.extend(pool.map(parse_history_task, group, chunksize=16))
                 ready = [item for item in results if isinstance(item, RawObservation)]
                 errors = [item for item in results if isinstance(item, RejectedFile)]
-                with self.database.transaction():
+                inspected_at = utc_now()
+                ready_observations = [
+                    {
+                        "symbol": item.symbol,
+                        "session_date": item.session_date,
+                        "security_type": item.security_type,
+                        "open": item.open,
+                        "high": item.high,
+                        "low": item.low,
+                        "close": item.close,
+                        "volume": item.volume,
+                        "opening_return_30m": item.opening_return_30m,
+                        "opening_range_pct_30m": item.opening_range_pct_30m,
+                        "intraday_entry_price": item.intraday_entry_price,
+                        "intraday_future_high": item.intraday_future_high,
+                        "intraday_future_low": item.intraday_future_low,
+                        "intraday_exit_price": item.intraday_exit_price,
+                        "daily_complete": item.daily_complete,
+                        "intraday_complete": item.intraday_complete,
+                        "provider": item.provider,
+                        "source_identity": item.source_identity,
+                        "source_path": item.path,
+                    }
+                    for item in ready
+                ]
+                ready_files = [
+                    {
+                        "path": item.path,
+                        "symbol": item.symbol,
+                        "session_date": item.session_date,
+                        "size_bytes": item.size_bytes,
+                        "modified_ns": item.modified_ns,
+                        "content_identity": item.source_identity,
+                        "disposition": item.disposition,
+                        "inspected_at": inspected_at,
+                    }
+                    for item in ready
+                ]
+                rejected_files = [
+                    {
+                        "path": item.path,
+                        "symbol": item.symbol,
+                        "session_date": item.session_date,
+                        "size_bytes": item.size_bytes,
+                        "modified_ns": item.modified_ns,
+                        "content_identity": item.content_identity,
+                        "disposition": item.disposition,
+                        "inspected_at": inspected_at,
+                    }
+                    for item in errors
+                ]
+                if ready or errors:
+                    import pyarrow as pa
+
+                    connection = self.database.connection
                     if ready:
-                        self.database.connection.executemany(
-                            """
-                            INSERT INTO observations VALUES (
-                                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-                            )
-                            ON CONFLICT(symbol, session_date) DO UPDATE SET
-                                security_type=excluded.security_type,
-                                open=excluded.open,
-                                high=excluded.high,
-                                low=excluded.low,
-                                close=excluded.close,
-                                volume=excluded.volume,
-                                opening_return_30m=excluded.opening_return_30m,
-                                opening_range_pct_30m=excluded.opening_range_pct_30m,
-                                intraday_entry_price=excluded.intraday_entry_price,
-                                intraday_future_high=excluded.intraday_future_high,
-                                intraday_future_low=excluded.intraday_future_low,
-                                intraday_exit_price=excluded.intraday_exit_price,
-                                daily_complete=excluded.daily_complete,
-                                intraday_complete=excluded.intraday_complete,
-                                provider=excluded.provider,
-                                source_identity=excluded.source_identity,
-                                source_path=excluded.source_path
-                            """,
-                            [
-                                [
-                                    item.symbol,
-                                    item.session_date,
-                                    item.security_type,
-                                    item.open,
-                                    item.high,
-                                    item.low,
-                                    item.close,
-                                    item.volume,
-                                    item.opening_return_30m,
-                                    item.opening_range_pct_30m,
-                                    item.intraday_entry_price,
-                                    item.intraday_future_high,
-                                    item.intraday_future_low,
-                                    item.intraday_exit_price,
-                                    item.daily_complete,
-                                    item.intraday_complete,
-                                    item.provider,
-                                    item.source_identity,
-                                    item.path,
-                                ]
-                                for item in ready
-                            ],
+                        connection.register(
+                            "_strategy_lab_ready_observations",
+                            pa.Table.from_pylist(ready_observations),
                         )
-                        self.database.connection.executemany(
-                            """
-                            INSERT INTO raw_files VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                            ON CONFLICT(path) DO UPDATE SET
-                                size_bytes=excluded.size_bytes,
-                                modified_ns=excluded.modified_ns,
-                                content_identity=excluded.content_identity,
-                                disposition=excluded.disposition,
-                                inspected_at=excluded.inspected_at
-                            """,
-                            [
-                                [
-                                    item.path,
-                                    item.symbol,
-                                    item.session_date,
-                                    item.size_bytes,
-                                    item.modified_ns,
-                                    item.source_identity,
-                                    item.disposition,
-                                    utc_now(),
-                                ]
-                                for item in ready
-                            ],
+                        connection.register(
+                            "_strategy_lab_ready_files",
+                            pa.Table.from_pylist(ready_files),
                         )
                     if errors:
-                        self.database.connection.executemany(
-                            "DELETE FROM observations WHERE source_path = ?",
-                            [[item.path] for item in errors],
+                        connection.register(
+                            "_strategy_lab_rejected_files",
+                            pa.Table.from_pylist(rejected_files),
                         )
-                        self.database.connection.executemany(
-                            """
-                            INSERT INTO raw_files VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                            ON CONFLICT(path) DO UPDATE SET
-                                symbol=excluded.symbol,
-                                session_date=excluded.session_date,
-                                size_bytes=excluded.size_bytes,
-                                modified_ns=excluded.modified_ns,
-                                content_identity=excluded.content_identity,
-                                disposition=excluded.disposition,
-                                inspected_at=excluded.inspected_at
-                            """,
-                            [
-                                [
-                                    item.path,
-                                    item.symbol,
-                                    item.session_date,
-                                    item.size_bytes,
-                                    item.modified_ns,
-                                    item.content_identity,
-                                    item.disposition,
-                                    utc_now(),
-                                ]
-                                for item in errors
-                            ],
-                        )
+                    try:
+                        with self.database.transaction():
+                            if ready:
+                                connection.execute(
+                                    """
+                                    INSERT OR REPLACE INTO observations BY NAME
+                                    SELECT * FROM _strategy_lab_ready_observations
+                                    """
+                                )
+                                connection.execute(
+                                    """
+                                    INSERT OR REPLACE INTO raw_files BY NAME
+                                    SELECT * FROM _strategy_lab_ready_files
+                                    """
+                                )
+                            if errors:
+                                connection.execute(
+                                    """
+                                    DELETE FROM observations
+                                    USING _strategy_lab_rejected_files
+                                    WHERE observations.source_path =
+                                          _strategy_lab_rejected_files.path
+                                    """
+                                )
+                                connection.execute(
+                                    """
+                                    INSERT OR REPLACE INTO raw_files BY NAME
+                                    SELECT * FROM _strategy_lab_rejected_files
+                                    """
+                                )
+                    finally:
+                        if ready:
+                            connection.unregister(
+                                "_strategy_lab_ready_observations"
+                            )
+                            connection.unregister("_strategy_lab_ready_files")
+                        if errors:
+                            connection.unregister("_strategy_lab_rejected_files")
                 parsed += len(ready)
                 failed += len(errors)
                 for item in errors[: max(0, 50 - len(failures))]:

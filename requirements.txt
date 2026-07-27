@@ -6,4 +6,5 @@ protobuf==5.29.3
 pypdf>=6,<7
 python-dotenv>=1.2.2,<2
 pytz>=2026.1
+pyarrow>=23,<24
 requests>=2.32,<3
