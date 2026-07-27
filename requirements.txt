@@ -1,5 +1,8 @@
 cryptography>=49,<50
+duckdb>=1.5,<2
+openai>=2.48,<3
 protobuf==5.29.3
 pypdf>=6,<7
 python-dotenv>=1.2.2,<2
+pytz>=2026.1
 requests>=2.32,<3

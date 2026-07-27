@@ -18,6 +18,28 @@ This is not investment advice, a recommendation to trade, or a claim that any
 strategy will be profitable. Active trading is high risk, margin can amplify
 losses, and automated execution can fail in ways that matter financially.
 
+## Primary Operator Path: Strategy Lab
+
+The repository now has one compact primary discovery path:
+[Strategy Lab](STRATEGY_LAB.md). It incrementally catalogs the immutable local
+historical store, builds a content-hashed feature mart, tests 50–500 new
+declarative strategy configurations each weekday, and exposes the complete
+rejection/promotion funnel in a native SmartSioux dashboard.
+
+```sh
+python3 strategy_lab.py status
+python3 strategy_lab.py data sync
+python3 strategy_lab.py run daily
+python3 strategy_lab.py scheduler status
+```
+
+The initial real-data smoke tested 50 unique configurations and rejected all
+50. That is the intended behavior: no strategy advances unless frozen
+development, locked holdout, prospective paper, and exact pilot gates are
+actually earned. The prior repository is preserved at
+`legacy-pre-strategy-lab-2026-07-26`; its evidence remains authoritative
+history, while Strategy Lab is the primary operating and observability surface.
+
 ## What This Is
 
 - A public record of an automated active-trading workflow.

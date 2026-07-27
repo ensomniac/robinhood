@@ -2,6 +2,23 @@
 
 Research refreshed: 2026-07-26
 
+Strategy Lab v1 is the primary discovery and operator path. Its compact
+contract is in `STRATEGY_LAB.md`; run `python3 strategy_lab.py status` before
+opening older campaign-specific controllers. It tests 50-500 new declarative,
+semantically deduplicated configurations per weekday against the immutable
+local archive, uses frozen development plus locked holdout and prospective
+paper gates, and publishes redacted signed state to the native SmartSioux
+Strategy Lab tab. All research paths forbid broker access. SmartSioux commands
+are typed, expiring, replay-protected, and Ryan-only. Live remains disabled
+unless explicitly configured and still requires an exact armed `PILOT_READY`
+rules hash plus every existing repository, maturity, risk, broker, and
+platform-confirmation gate.
+
+The pre-revamp tree is preserved at annotated tag
+`legacy-pre-strategy-lab-2026-07-26`. The detailed family records below remain
+authoritative adverse evidence and contamination history; they must not be
+deleted, rewritten, or used to repair a rejected exact version.
+
 Strategy version: `2026-07-15-orb-v3`
 
 ORB v3 maturity: `UNVALIDATED` until its frozen promotion rules are met.
