@@ -5,11 +5,12 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from strategy_lab.contracts import StrategySpec
+from strategy_lab.contracts import CandidateState, StrategySpec
 from strategy_lab.data import HistoricalCatalog
 from strategy_lab.database import LabDatabase
 from strategy_lab.engine import BacktestEngine
 from strategy_lab.statistics import family_adjustment, one_sided_wilson_lower
+from strategy_lab.validation import GateDecision, persist_evaluation
 
 from tests.strategy_lab_helpers import make_test_config, populate_observations
 
@@ -39,6 +40,53 @@ def daily_spec(*, strategy_id: str, stop: float = 0.01, hold: int = 1) -> Strate
 
 
 class StrategyLabEngineTests(unittest.TestCase):
+    def test_evaluation_trades_are_bulk_persisted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = make_test_config(Path(directory), sessions=24)
+            with LabDatabase(config) as database:
+                populate_observations(database, sessions=24)
+                HistoricalCatalog(config, database).build_feature_mart()
+                spec = daily_spec(strategy_id="strategy-bulk-persist-test")
+                database.register_spec(spec)
+                evaluation = BacktestEngine(config, database).evaluate(
+                    spec,
+                    phase="development",
+                    cumulative_trial_count=1,
+                )
+                metrics = dict(evaluation.metrics)
+                metrics.update(
+                    {
+                        "probability_backtest_overfit": 1.0,
+                        "holm_pass": False,
+                        "neighbor_stability": False,
+                    }
+                )
+                persist_evaluation(
+                    database,
+                    spec,
+                    "run-bulk-persist-test",
+                    evaluation,
+                    GateDecision(
+                        state=CandidateState.REJECTED,
+                        failures=("test_rejection",),
+                        metrics=metrics,
+                    ),
+                )
+                self.assertEqual(
+                    database.connection.execute(
+                        "SELECT count(*) FROM trades WHERE run_id=?",
+                        ["run-bulk-persist-test"],
+                    ).fetchone()[0],
+                    len(evaluation.trades),
+                )
+                self.assertEqual(
+                    database.connection.execute(
+                        "SELECT count(*) FROM experiment_results WHERE run_id=?",
+                        ["run-bulk-persist-test"],
+                    ).fetchone()[0],
+                    1,
+                )
+
     def test_stop_first_and_exact_replay_use_the_shared_engine(self):
         with tempfile.TemporaryDirectory() as directory:
             config = make_test_config(Path(directory), sessions=24)

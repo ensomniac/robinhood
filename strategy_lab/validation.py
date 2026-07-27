@@ -6,6 +6,8 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
+import pyarrow as pa
+
 from .config import LabConfig
 from .contracts import CandidateState, StrategySpec
 from .database import LabDatabase, utc_now
@@ -111,71 +113,81 @@ def persist_evaluation(
     decision: GateDecision,
 ) -> None:
     metrics = decision.metrics
-    with database.transaction():
-        database.connection.execute(
-            """
-            INSERT INTO experiment_results VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-            )
-            """,
-            [
-                run_id,
-                spec.strategy_id,
-                spec.rules_sha256,
-                spec.family_id,
-                evaluation.phase,
-                str(decision.state),
-                int(metrics["trade_count"]),
-                float(metrics["total_log_growth"]),
-                float(metrics["profit_factor"]),
-                float(metrics["stressed_profit_factor"]),
-                float(metrics["win_rate"]),
-                float(metrics["win_rate_lower_bound"]),
-                float(metrics["bootstrap_lower_expectancy"]),
-                float(metrics["maximum_drawdown_r"]),
-                float(metrics["deflated_sharpe_probability"]),
-                float(metrics["probability_backtest_overfit"]),
-                bool(metrics["holm_pass"]),
-                bool(metrics["neighbor_stability"]),
-                json.dumps(list(decision.failures), separators=(",", ":")),
-                json.dumps(metrics, sort_keys=True, separators=(",", ":")),
-                utc_now(),
-            ],
+    connection = database.connection
+    trade_relation = "_strategy_lab_evaluation_trades"
+    if evaluation.trades:
+        connection.register(
+            trade_relation,
+            pa.Table.from_pylist(
+                [
+                    {
+                        "run_id": run_id,
+                        "strategy_id": spec.strategy_id,
+                        "phase": evaluation.phase,
+                        "signal_date": trade.signal_date,
+                        "entry_date": trade.entry_date,
+                        "exit_date": trade.exit_date,
+                        "symbol": trade.symbol,
+                        "entry_price": trade.entry_price,
+                        "exit_price": trade.exit_price,
+                        "exit_reason": trade.exit_reason,
+                        "gross_return": trade.gross_return,
+                        "net_return": trade.net_return,
+                        "return_r": trade.return_r,
+                        "notional_fraction": trade.notional_fraction,
+                        "rank_value": trade.rank_value,
+                    }
+                    for trade in evaluation.trades
+                ]
+            ),
         )
-        if evaluation.trades:
-            database.connection.executemany(
+    try:
+        with database.transaction():
+            connection.execute(
                 """
-                INSERT INTO trades VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                INSERT INTO experiment_results VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """,
                 [
-                    [
-                        run_id,
-                        spec.strategy_id,
-                        evaluation.phase,
-                        trade.signal_date,
-                        trade.entry_date,
-                        trade.exit_date,
-                        trade.symbol,
-                        trade.entry_price,
-                        trade.exit_price,
-                        trade.exit_reason,
-                        trade.gross_return,
-                        trade.net_return,
-                        trade.return_r,
-                        trade.notional_fraction,
-                        trade.rank_value,
-                    ]
-                    for trade in evaluation.trades
+                    run_id,
+                    spec.strategy_id,
+                    spec.rules_sha256,
+                    spec.family_id,
+                    evaluation.phase,
+                    str(decision.state),
+                    int(metrics["trade_count"]),
+                    float(metrics["total_log_growth"]),
+                    float(metrics["profit_factor"]),
+                    float(metrics["stressed_profit_factor"]),
+                    float(metrics["win_rate"]),
+                    float(metrics["win_rate_lower_bound"]),
+                    float(metrics["bootstrap_lower_expectancy"]),
+                    float(metrics["maximum_drawdown_r"]),
+                    float(metrics["deflated_sharpe_probability"]),
+                    float(metrics["probability_backtest_overfit"]),
+                    bool(metrics["holm_pass"]),
+                    bool(metrics["neighbor_stability"]),
+                    json.dumps(list(decision.failures), separators=(",", ":")),
+                    json.dumps(metrics, sort_keys=True, separators=(",", ":")),
+                    utc_now(),
                 ],
             )
-        database.upsert_candidate(
-            spec,
-            state=decision.state,
-            reason="passed all gates"
-            if decision.passed
-            else ", ".join(decision.failures),
-            development_run_id=run_id if evaluation.phase == "development" else None,
-            holdout_run_id=run_id if evaluation.phase == "holdout" else None,
-        )
+            if evaluation.trades:
+                connection.execute(
+                    f"INSERT INTO trades BY NAME SELECT * FROM {trade_relation}"
+                )
+            database.upsert_candidate(
+                spec,
+                state=decision.state,
+                reason="passed all gates"
+                if decision.passed
+                else ", ".join(decision.failures),
+                development_run_id=run_id
+                if evaluation.phase == "development"
+                else None,
+                holdout_run_id=run_id if evaluation.phase == "holdout" else None,
+            )
+    finally:
+        if evaluation.trades:
+            connection.unregister(trade_relation)

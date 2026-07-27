@@ -57,6 +57,19 @@ def _catalog_progress_publisher(
     return publish
 
 
+def _research_progress_publisher(
+    config: Any,
+    database: LabDatabase,
+) -> Any:
+    client = SmartSiouxClient(config)
+
+    def publish(_run_id: str) -> None:
+        if client.configured():
+            client.publish(build_and_write_snapshot(config, database))
+
+    return publish
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Observable declarative strategy discovery and validation"
@@ -234,6 +247,7 @@ def execute_database_command(
                 research_date=args.date,
                 target=args.target,
                 allow_dirty=args.allow_dirty,
+                progress_callback=_research_progress_publisher(config, database),
             )
         elif args.run_command == "scheduled":
             if database.get_metadata("scheduler_paused") == "true":
@@ -243,17 +257,13 @@ def execute_database_command(
                 catalog = HistoricalCatalog(config, database).sync(
                     progress_callback=progress
                 )
-                client = SmartSiouxClient(config)
-
-                def publish_progress(_run_id: str) -> None:
-                    if client.configured():
-                        client.publish(build_and_write_snapshot(config, database))
-
                 result = {
                     "status": "COMPLETED",
                     "catalog": catalog,
                     "research": runner.run_daily(
-                        progress_callback=publish_progress,
+                        progress_callback=_research_progress_publisher(
+                            config, database
+                        ),
                     ),
                 }
         else:

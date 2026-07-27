@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from strategy_lab.bridge import BridgeError, BridgeWorker, sign_payload, verify_envelope
+from strategy_lab.cli import _research_progress_publisher
 from strategy_lab.contracts import CandidateState, StrategySpec
 from strategy_lab.database import LabDatabase
 from strategy_lab.live import CodexMCPExecutor, LiveBridgeError
@@ -39,6 +40,23 @@ def candidate_spec() -> StrategySpec:
 
 
 class StrategyLabBridgeTests(unittest.TestCase):
+    def test_manual_research_progress_uses_signed_dashboard_publisher(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = make_test_config(Path(directory))
+            with LabDatabase(config) as database:
+                snapshot = {"schema_version": 1, "run": {"status": "RUNNING"}}
+                with (
+                    patch("strategy_lab.cli.SmartSiouxClient") as client_type,
+                    patch(
+                        "strategy_lab.cli.build_and_write_snapshot",
+                        return_value=snapshot,
+                    ),
+                ):
+                    client_type.return_value.configured.return_value = True
+                    publish = _research_progress_publisher(config, database)
+                    publish("daily-test")
+                    client_type.return_value.publish.assert_called_once_with(snapshot)
+
     def test_signed_envelope_detects_tampering_and_staleness(self):
         secret = "test-secret"
         timestamp = datetime.now(UTC).isoformat()
