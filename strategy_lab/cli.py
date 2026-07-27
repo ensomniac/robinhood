@@ -6,6 +6,7 @@ import argparse
 import json
 from datetime import date
 from pathlib import Path
+from time import monotonic
 from typing import Any
 
 from dotenv import load_dotenv
@@ -36,6 +37,24 @@ def _symbols(value: str | None) -> list[str] | None:
     if not result:
         raise argparse.ArgumentTypeError("symbols cannot be empty")
     return result
+
+
+def _catalog_progress_publisher(
+    config: Any,
+    database: LabDatabase,
+) -> Any:
+    client = SmartSiouxClient(config)
+    last_publish = 0.0
+
+    def publish(progress: dict[str, Any]) -> None:
+        nonlocal last_publish
+        now = monotonic()
+        terminal = progress["status"] in {"BUILDING_FEATURES", "READY"}
+        if client.configured() and (terminal or now - last_publish >= 10):
+            client.publish(build_and_write_snapshot(config, database))
+            last_publish = now
+
+    return publish
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -206,6 +225,7 @@ def execute_database_command(
             symbols=_symbols(args.symbols),
             maximum_symbols=args.maximum_symbols,
             rebuild_features=not args.no_feature_rebuild,
+            progress_callback=_catalog_progress_publisher(config, database),
         )
     elif args.command == "run":
         runner = StrategyLabRunner(config, database)
@@ -219,7 +239,10 @@ def execute_database_command(
             if database.get_metadata("scheduler_paused") == "true":
                 result = {"status": "PAUSED"}
             else:
-                catalog = HistoricalCatalog(config, database).sync()
+                progress = _catalog_progress_publisher(config, database)
+                catalog = HistoricalCatalog(config, database).sync(
+                    progress_callback=progress
+                )
                 client = SmartSiouxClient(config)
 
                 def publish_progress(_run_id: str) -> None:

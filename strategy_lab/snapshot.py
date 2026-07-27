@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import platform
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -30,6 +31,13 @@ def _rows(
 
 def build_snapshot(config: LabConfig, database: LabDatabase) -> dict[str, Any]:
     data_version = database.latest_data_version()
+    raw_catalog_progress = database.get_metadata("catalog_progress")
+    try:
+        catalog_progress = (
+            json.loads(raw_catalog_progress) if raw_catalog_progress else None
+        )
+    except json.JSONDecodeError:
+        catalog_progress = None
     run_counts = _rows(
         database,
         """
@@ -141,6 +149,7 @@ def build_snapshot(config: LabConfig, database: LabDatabase) -> dict[str, Any]:
         "worker": {
             "paused": database.get_metadata("scheduler_paused") == "true",
             "last_command_poll": database.get_metadata("last_command_poll"),
+            "catalog_progress": catalog_progress,
             "live_enabled": os.getenv(
                 str(config.section("bridge")["live_enabled_env"]), ""
             )

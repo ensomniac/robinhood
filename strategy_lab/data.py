@@ -7,11 +7,13 @@ import json
 import math
 import os
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Any, Iterator, Sequence
+from typing import Any, Callable, Iterator, Sequence, TypeVar
+
+import orjson
 
 from learning_data import load_security_master
 
@@ -25,6 +27,7 @@ class DataError(RuntimeError):
 
 
 PROVIDER_PRIORITY = {"ibkr": 0, "massive": 1, "alpaca": 2}
+ChunkValue = TypeVar("ChunkValue")
 
 
 @dataclass(frozen=True)
@@ -78,6 +81,24 @@ def rejected_file(path: Path, symbol: str, error: Exception) -> RejectedFile:
         disposition="REJECTED_" + type(error).__name__.upper(),
         error=str(error),
     )
+
+
+def parse_history_task(
+    task: tuple[str, str, str | None],
+) -> RawObservation | RejectedFile:
+    """Parse one immutable file in a process-safe worker boundary."""
+    raw_path, symbol, security_type = task
+    path = Path(raw_path)
+    if security_type is None:
+        return rejected_file(
+            path,
+            symbol,
+            DataError("point-in-time security identity is unavailable"),
+        )
+    try:
+        return parse_history_file(path, security_type)
+    except Exception as exc:  # one bad file cannot discard the committed batch
+        return rejected_file(path, symbol, exc)
 
 
 def _number(value: Any, field: str, *, positive: bool = False) -> float:
@@ -173,9 +194,9 @@ def _aggregate_intraday(
 def parse_history_file(path: Path, security_type: str) -> RawObservation:
     stat = path.stat()
     try:
-        with gzip.open(path, "rt", encoding="utf-8") as source:
-            payload = json.load(source)
-    except (OSError, json.JSONDecodeError) as exc:
+        with gzip.open(path, "rb") as source:
+            payload = orjson.loads(source.read())
+    except (OSError, orjson.JSONDecodeError) as exc:
         raise DataError(f"cannot read canonical history {path}: {exc}") from exc
     if not isinstance(payload, dict):
         raise DataError(f"canonical history must contain an object: {path}")
@@ -309,7 +330,7 @@ def _security_type(records: Sequence[dict[str, Any]], session_date: str) -> str 
     return next(iter(stable_types)) if len(stable_types) == 1 else None
 
 
-def _chunks(values: Sequence[Path], size: int) -> Iterator[Sequence[Path]]:
+def _chunks(values: Sequence[ChunkValue], size: int) -> Iterator[Sequence[ChunkValue]]:
     for offset in range(0, len(values), size):
         yield values[offset : offset + size]
 
@@ -346,6 +367,7 @@ class HistoricalCatalog:
         symbols: Sequence[str] | None = None,
         maximum_symbols: int | None = None,
         rebuild_features: bool = True,
+        progress_callback: Callable[[dict[str, Any]], None] | None = None,
     ) -> dict[str, Any]:
         entries = self._eligible_directories(symbols)
         if maximum_symbols is not None:
@@ -357,43 +379,59 @@ class HistoricalCatalog:
         failures: list[dict[str, str]] = []
         started_at = utc_now()
 
-        for symbol, directory, records in entries:
-            paths = sorted(directory.glob("[0-9][0-9][0-9][0-9]/*.json.gz"))
-            existing_rows = self.database.connection.execute(
-                "SELECT path, size_bytes, modified_ns FROM raw_files WHERE symbol = ?",
-                [symbol],
-            ).fetchall()
-            existing = {
-                str(path): (int(size), int(mtime))
-                for path, size, mtime in existing_rows
+        def publish(status: str, completed_symbols: int) -> None:
+            progress = {
+                "status": status,
+                "started_at": started_at,
+                "updated_at": utc_now(),
+                "symbols_completed": completed_symbols,
+                "symbols_total": len(entries),
+                "files_parsed": parsed,
+                "files_unchanged": skipped,
+                "files_rejected": failed,
+                "provider_requests": 0,
+                "broker_actions": 0,
             }
-            pending: list[Path] = []
-            for path in paths:
-                stat = path.stat()
-                if existing.get(str(path)) == (stat.st_size, stat.st_mtime_ns):
-                    skipped += 1
-                else:
-                    pending.append(path)
+            self.database.set_metadata(
+                "catalog_progress",
+                json.dumps(progress, sort_keys=True, separators=(",", ":")),
+            )
+            if progress_callback:
+                progress_callback(progress)
 
-            def parse(path: Path) -> RawObservation | RejectedFile:
-                session = path.name[:-8]
-                security_type = _security_type(records, session)
-                if security_type is None:
-                    return rejected_file(
-                        path,
+        publish("SYNCING", 0)
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            for completed_symbols, (symbol, directory, records) in enumerate(
+                entries, 1
+            ):
+                paths = sorted(directory.glob("[0-9][0-9][0-9][0-9]/*.json.gz"))
+                existing_rows = self.database.connection.execute(
+                    "SELECT path, size_bytes, modified_ns FROM raw_files WHERE symbol = ?",
+                    [symbol],
+                ).fetchall()
+                existing = {
+                    str(path): (int(size), int(mtime))
+                    for path, size, mtime in existing_rows
+                }
+                pending: list[Path] = []
+                for path in paths:
+                    stat = path.stat()
+                    if existing.get(str(path)) == (stat.st_size, stat.st_mtime_ns):
+                        skipped += 1
+                    else:
+                        pending.append(path)
+
+                tasks = [
+                    (
+                        str(path),
                         symbol,
-                        DataError("point-in-time security identity is unavailable"),
+                        _security_type(records, path.name[:-8]),
                     )
-                try:
-                    return parse_history_file(path, security_type)
-                except (
-                    Exception
-                ) as exc:  # fail one file without losing the batch boundary
-                    return rejected_file(path, symbol, exc)
-
-            for group in _chunks(pending, 1000):
-                with ThreadPoolExecutor(max_workers=workers) as pool:
-                    results = list(pool.map(parse, group))
+                    for path in pending
+                ]
+                results: list[RawObservation | RejectedFile] = []
+                for group in _chunks(tasks, 1000):
+                    results.extend(pool.map(parse_history_task, group, chunksize=16))
                 ready = [item for item in results if isinstance(item, RawObservation)]
                 errors = [item for item in results if isinstance(item, RejectedFile)]
                 with self.database.transaction():
@@ -506,8 +544,11 @@ class HistoricalCatalog:
                 failed += len(errors)
                 for item in errors[: max(0, 50 - len(failures))]:
                     failures.append({"path": item.path, "error": item.error})
+                publish("SYNCING", completed_symbols)
 
+        publish("BUILDING_FEATURES" if rebuild_features else "READY", len(entries))
         feature = self.build_feature_mart() if rebuild_features else None
+        publish("READY", len(entries))
         return {
             "status": "READY" if failed == 0 else "READY_WITH_FILE_REJECTIONS",
             "started_at": started_at,
