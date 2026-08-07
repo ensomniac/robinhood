@@ -2,3 +2,4 @@
 set -eu
 
 python3 progress_history.py check-staged
+python3 learning_loop.py audit >/dev/null

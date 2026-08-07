@@ -1,4 +1,4 @@
-"""Append-only global date/instrument outcome-exposure index for v2 research."""
+"""Audit and extend the immutable global date/instrument exposure history."""
 
 from __future__ import annotations
 
@@ -13,11 +13,17 @@ from typing import Any
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DEFAULT_INDEX = PROJECT_ROOT / "strategy_tournament/v2/OUTCOME_EXPOSURE_INDEX.jsonl"
+DEFAULT_INDEX = PROJECT_ROOT / "history" / "OUTCOME_EXPOSURE_INDEX.jsonl"
 BASELINE_EXPOSURE_ID = "baseline-portfolio-signals-v1"
 BASELINE_EXPOSURE_IDS = {
     BASELINE_EXPOSURE_ID,
     "baseline-strategy-signals-v1",
+}
+BASELINE_SOURCE_PATHS = {
+    "SIGNALS.jsonl": PROJECT_ROOT / "history" / "legacy" / "SIGNALS.jsonl",
+    "PORTFOLIO_SIGNALS.jsonl": (
+        PROJECT_ROOT / "history" / "legacy" / "PORTFOLIO_SIGNALS.jsonl"
+    ),
 }
 SCHEMA_VERSION = 1
 LANES = {"development", "confirmation", "shadow", "live", "legacy"}
@@ -283,7 +289,10 @@ def audit(path: Path = DEFAULT_INDEX) -> dict[str, Any]:
         if set(baselines) != BASELINE_EXPOSURE_IDS:
             raise OutcomeExposureError("global exposure index lacks its legacy baseline")
         for baseline in baselines.values():
-            source = PROJECT_ROOT / str(baseline["source_path"])
+            source_path = str(baseline["source_path"])
+            source = BASELINE_SOURCE_PATHS.get(
+                source_path, PROJECT_ROOT / source_path
+            )
             line_count = baseline.get("source_line_count")
             if not source.is_file() or not isinstance(line_count, int):
                 raise OutcomeExposureError(

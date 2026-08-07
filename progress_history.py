@@ -17,11 +17,17 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_HISTORY_PATH = PROJECT_ROOT / "progress" / "HISTORY.jsonl"
 ENTRY_ID_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]*$")
-MEANINGFUL_EXEMPT_PREFIXES = ("progress/", ".githooks/", "tests/", "trades/")
-MEANINGFUL_EXEMPT_FILES = {
-    "LICENSE",
-    "SIGNALS.jsonl",
-    "TRADES.md",
+MEANINGFUL_EXEMPT_PREFIXES = ("progress/", ".githooks/", "tests/")
+MEANINGFUL_EXEMPT_FILES = {"LICENSE"}
+IMMUTABLE_HISTORY_FILES = {
+    "history/PRE_RESET_CANONICAL_AUDIT.json",
+    "history/PRE_RESET_MANIFEST.json",
+    "history/legacy/PORTFOLIO_SIGNALS.jsonl",
+    "history/legacy/SIGNALS.jsonl",
+}
+APPEND_ONLY_HISTORY_FILES = {
+    "history/OUTCOME_EXPOSURE_INDEX.jsonl",
+    "progress/HISTORY.jsonl",
 }
 
 
@@ -151,8 +157,8 @@ def staged_paths() -> list[str]:
     ]
 
 
-def staged_history_changes() -> tuple[int, int]:
-    output = _git("diff", "--cached", "--numstat", "--", "progress/HISTORY.jsonl")
+def staged_file_changes(path: str) -> tuple[int, int]:
+    output = _git("diff", "--cached", "--numstat", "--", path)
     if not output.strip():
         return 0, 0
     fields = output.split()
@@ -161,17 +167,35 @@ def staged_history_changes() -> tuple[int, int]:
     return additions, deletions
 
 
+def check_protected_history() -> dict[str, Any]:
+    changed_immutable = sorted(
+        path
+        for path in IMMUTABLE_HISTORY_FILES
+        if _git("diff", "--cached", "--name-only", "--", path).strip()
+    )
+    if changed_immutable:
+        raise ProgressHistoryError(
+            f"frozen preservation files cannot change: {changed_immutable}"
+        )
+    append_only = {}
+    for path in sorted(APPEND_ONLY_HISTORY_FILES):
+        additions, deletions = staged_file_changes(path)
+        if deletions:
+            raise ProgressHistoryError(
+                f"{path} is append-only; existing records cannot be modified or deleted"
+            )
+        append_only[path] = {"additions": additions, "deletions": deletions}
+    return {"immutable_changes": changed_immutable, "append_only": append_only}
+
+
 def check_staged_contribution() -> dict[str, Any]:
     load_history()
     changed = staged_paths()
     required = contribution_required(changed)
     bypassed = os.environ.get("PROGRESS_SKIP") == "1"
-    additions, deletions = staged_history_changes()
-    if deletions:
-        raise ProgressHistoryError(
-            "progress/HISTORY.jsonl is append-only; existing records cannot be "
-            "modified or deleted"
-        )
+    protected = check_protected_history()
+    additions = protected["append_only"]["progress/HISTORY.jsonl"]["additions"]
+    deletions = protected["append_only"]["progress/HISTORY.jsonl"]["deletions"]
     if required and not bypassed and additions < 1:
         raise ProgressHistoryError(
             "substantive staged changes need a new progress/HISTORY.jsonl entry; "
@@ -183,6 +207,7 @@ def check_staged_contribution() -> dict[str, Any]:
         "meaningful_change": required,
         "history_additions": additions,
         "history_deletions": deletions,
+        "protected_history": protected,
         "bypassed": bypassed,
         "staged_paths": changed,
     }

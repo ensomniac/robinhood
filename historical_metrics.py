@@ -1,4 +1,4 @@
-"""Provider-neutral metrics shared by historical preflight and bundle assembly."""
+"""Provider-neutral descriptive metrics for historical data-quality workflows."""
 
 from __future__ import annotations
 

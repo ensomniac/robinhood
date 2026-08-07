@@ -1117,8 +1117,8 @@ class AlpacaHistoricalClient:
     ) -> list[dict[str, Any]]:
         """Return time-bounded Benzinga articles supplied by Alpaca.
 
-        This is discovery evidence only. Callers must not equate an article
-        returned here with the strategy's verified-primary-catalyst gate.
+        This is a raw historical-data interface. Callers must preserve article
+        timestamps, source provenance, and the distinction from issuer evidence.
         """
 
         normalized_symbols = sorted(

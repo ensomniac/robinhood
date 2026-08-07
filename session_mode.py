@@ -1,9 +1,4 @@
-"""Select an explicit operating mode for a new agentic trading session.
-
-Mode selection is declarative.  It does not fetch broker data, place orders,
-start a replay, or apply a strategy proposal.  The selected workflow must still
-run every mode-specific safety and confirmation check in ``AGENTS.md``.
-"""
+"""Select a clean-slate operating mode; every mode forbids broker mutations."""
 
 from __future__ import annotations
 
@@ -29,44 +24,43 @@ class SessionMode:
 
 MODES = (
     SessionMode(
-        key="live",
-        label="Live trading",
-        description="Current-day research and authorized real-money equity execution.",
-        broker_actions_allowed=True,
-        next_step="Run encryption, lifecycle, ledger, account, order, maturity, and session-guard checks before discovery.",
+        key="data",
+        label="Historical data",
+        description="Inspect, fetch, refresh, or migrate canonical historical data.",
+        broker_actions_allowed=False,
+        next_step=(
+            "Select an exact data command, verify LOCAL_HISTORICAL_DATA_ROOT, "
+            "and preserve provider provenance."
+        ),
     ),
     SessionMode(
-        key="shadow",
-        label="Shadow trading",
-        description="Current-day market research and simulated decisions with no live orders.",
+        key="account",
+        label="Read-only account",
+        description="Inspect sanitized account state without orders or mutations.",
         broker_actions_allowed=False,
-        next_step="Create today's shadow session context and run the normal discovery/evaluation loop without order tools.",
+        next_step=(
+            "Discover accounts at runtime, require one unambiguous "
+            "agentic_allowed account, and persist no identifier."
+        ),
     ),
     SessionMode(
-        key="historical",
-        label="Historical learning",
-        description="Random unarchived-day point-in-time replay with no broker actions.",
+        key="history",
+        label="Preserved history",
+        description="Audit compact ledgers or inspect the archived repository tree.",
         broker_actions_allowed=False,
-        next_step="Ask how many days to simulate, collect and validate replay bundles, then run historical_learning.py.",
-    ),
-    SessionMode(
-        key="review",
-        label="Strategy review",
-        description="Read-only evidence report and cadence-gated change proposal.",
-        broker_actions_allowed=False,
-        next_step="Run strategy_learning.py report; write a proposal only when cadence gates pass.",
+        next_step=(
+            "Run outcome_exposure.py audit and use the archive tag in a separate "
+            "read-only worktree when detailed legacy evidence is needed."
+        ),
     ),
     SessionMode(
         key="learning",
-        label="Edit / learning loop",
-        description=(
-            "Bounded repository learning and engineering improvement with no "
-            "broker actions or automatic strategy activation."
-        ),
+        label="Neutral learning",
+        description="Bounded engineering and data-quality work with no strategy.",
         broker_actions_allowed=False,
         next_step=(
-            "Run learning_loop.py audit and learning_cadence.py run; resume one "
-            "registered bounded objective and record its result."
+            "Run learning_loop.py inspect, validate a bounded prompt, and verify "
+            "the result with explicit acceptance checks."
         ),
     ),
 )
@@ -92,7 +86,7 @@ def select_mode(value: str | int) -> SessionMode:
 
 
 def prompt_for_mode() -> SessionMode:
-    print("Select the agentic session mode:")
+    print("Select the clean-slate session mode:")
     for index, mode in enumerate(MODES, 1):
         print(f"  {index}. {mode.label} — {mode.description}")
     while True:
@@ -123,13 +117,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     try:
         if args.list:
-            result = {"modes": [asdict(mode) for mode in MODES]}
+            result = {
+                "modes": [asdict(mode) for mode in MODES],
+                "live_trading_enabled": False,
+            }
         else:
             selected = select_mode(args.mode) if args.mode else prompt_for_mode()
             result = {
                 "selected": asdict(selected),
                 "selection_only": True,
-                "safety_checks_still_required": True,
+                "live_trading_enabled": False,
             }
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0

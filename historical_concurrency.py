@@ -1,10 +1,9 @@
 """Small deterministic concurrency primitives for historical collection.
 
-Historical work is I/O-bound, but its inputs are ranked and its failure order is
-part of the evidence contract.  This module overlaps only a bounded batch at a
-time and yields outcomes in input order.  Completion order therefore never
-changes which candidate is accepted, which failure is reported first, or which
-date is built.
+Historical work is I/O-bound, while its input and failure order can be part of a
+frozen data contract. This module overlaps only a bounded batch at a time and
+yields outcomes in input order. Completion order therefore never changes which
+task is reported first or which checkpoint is committed next.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Fast authenticated encryption for identifiers stored in public context files."""
+"""Authenticated encryption for exact identifiers in sanitized public context."""
 
 from __future__ import annotations
 
@@ -458,10 +458,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(decrypted.value)
                 return 0
             elif args.command == "audit":
-                paths = args.paths or [
-                    PROJECT_ROOT / "TRADES.md",
-                    PROJECT_ROOT / "trades",
-                ]
+                paths = args.paths or [PROJECT_ROOT / "history"]
                 audit = audit_context_files(paths, cipher)
                 result = {
                     "checked_files": audit.checked_files,

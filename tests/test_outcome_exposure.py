@@ -78,3 +78,14 @@ def test_append_only_index_detects_mutation_and_duplicates(tmp_path):
     path.write_text(json.dumps(value) + "\n", encoding="utf-8")
     with pytest.raises(exposure.OutcomeExposureError, match="hash is invalid"):
         exposure.audit(path)
+
+
+def test_preserved_default_index_revalidates_legacy_sources():
+    result = exposure.audit()
+
+    assert result["valid"] is True
+    assert result["baseline_complete"] is True
+    assert result["records"] == 88
+    assert result["index_sha256"] == (
+        "d393e2c7e20164cc66200afcdc38180f9bc40e705365db5b41f34705aff95db4"
+    )
