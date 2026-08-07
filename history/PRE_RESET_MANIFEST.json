@@ -1,0 +1,110 @@
+{
+  "archive": {
+    "source_branch": "1.0.0",
+    "source_head": "6c835cb35aeb04d5098f8b5c58ffd187cad6d0c3",
+    "source_remote_head": "6c835cb35aeb04d5098f8b5c58ffd187cad6d0c3",
+    "tag": "legacy-pre-clean-slate-2026-08-07",
+    "tracked_files_before_preservation_commit": 3642
+  },
+  "canonical_store_audit": {
+    "audit_sha256": "50cbcf9ce6ec8d1ab0cd59ec6f5aecae44c0bc5e1f367def7020ca5730254e66",
+    "contexts": 124537,
+    "datasets": 13746815,
+    "dates": 1234,
+    "errors": 0,
+    "files": 4664104,
+    "path": "history/PRE_RESET_CANONICAL_AUDIT.json",
+    "providers": {
+      "alpaca": 13525498,
+      "ibkr": 221296,
+      "massive": 1,
+      "replay_bundle": 20
+    },
+    "symbols": 8165,
+    "valid": true
+  },
+  "compact_public_history": {
+    "account_history": {
+      "path": "history/ACCOUNT_HISTORY.md",
+      "sha256": "aac74bcd07f852346cf59d0500733cbc2e1b8747408d9b8c93b50b0933fe2610"
+    },
+    "outcome_exposure_index": {
+      "baseline_complete": true,
+      "exposed_pairs": 6767616,
+      "path": "history/OUTCOME_EXPOSURE_INDEX.jsonl",
+      "records": 88,
+      "sha256": "d393e2c7e20164cc66200afcdc38180f9bc40e705365db5b41f34705aff95db4"
+    },
+    "portfolio_signals": {
+      "lines": 232,
+      "path": "history/legacy/PORTFOLIO_SIGNALS.jsonl",
+      "sha256": "5661ab39a26767e0646c39995a1496f97761384f5fb2e8c72b9d6b6c7fd8f5a7"
+    },
+    "progress_entries_before_preservation_commit": 1699,
+    "strategy_signals": {
+      "lines": 1166,
+      "path": "history/legacy/SIGNALS.jsonl",
+      "sha256": "6fd0ae96796851f23c86797a58452b08ab3f641aab43f81507d84c08dd2fb2f4"
+    }
+  },
+  "historical_data_policy": {
+    "canonical_root": "$LOCAL_HISTORICAL_DATA_ROOT",
+    "data_deleted": false,
+    "data_moved": false,
+    "ignored_roots_retained_in_place": [
+      "historical_data/",
+      "historical_batches/dense_v2/",
+      "learning/SECURITY_MASTER.jsonl",
+      "learning/security_masters/",
+      "learning_runs/",
+      "research_runs/"
+    ]
+  },
+  "kind": "robinhood_codex_pre_clean_slate_manifest",
+  "private_inventory": {
+    "canonical_strategy_lab_catalog": {
+      "bytes": 8754441745,
+      "dispositions": {
+        "READY": 4068086,
+        "REJECTED_DATAERROR": 1434
+      },
+      "note": "This is the Strategy Lab catalog subset; the independent canonical store audit covers every current day document.",
+      "path": "_archive/pre-clean-slate-2026-08-07/canonical-catalog.csv.gz",
+      "records": 4069520,
+      "sha256": "96d5bd8d6a906ed0b7b66ce344a9d7faad5651a5c02294e2801ea97c25d53db2"
+    },
+    "retained_artifacts": {
+      "path": "_archive/pre-clean-slate-2026-08-07/retained-artifacts.jsonl.gz",
+      "records": 117666,
+      "sha256": "2d0a23b221f039baebce0de9d2d97e9ba3f66f32d487ec40bc4aca50c65ded72"
+    },
+    "root": "$LOCAL_HISTORICAL_DATA_ROOT",
+    "summary": {
+      "path": "_archive/pre-clean-slate-2026-08-07/summary.json",
+      "sha256": "042a37225d2ff0c4c7e55f74b8835ce1ccd1d98f285d9b837264aa780303b679"
+    }
+  },
+  "reset_date": "2026-08-07",
+  "scheduler_boundary": {
+    "broker_actions_authorized": false,
+    "jobs": {
+      "com.ensomniac.strategy-lab-bridge": {
+        "loaded": false,
+        "plist_exists": false
+      },
+      "com.ensomniac.strategy-lab-daily": {
+        "loaded": false,
+        "plist_exists": false
+      }
+    },
+    "strategy_lab_writer_processes": 0
+  },
+  "schema_version": 1,
+  "secret_policy": {
+    "bridge_hmac_secret": "metadata_only",
+    "env_contents_copied": false,
+    "env_contents_hashed": false,
+    "env_permissions": "0600",
+    "private_identifiers_persisted": false
+  }
+}

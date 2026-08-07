@@ -1,0 +1,21 @@
+{
+  "audited_at": "2026-08-07T22:24:28.184890+00:00",
+  "contexts": 124537,
+  "datasets": 13746815,
+  "dates": 1234,
+  "elapsed_seconds": 237.18811316700885,
+  "errors": [],
+  "files": 4664104,
+  "kind": "robinhood_codex_parallel_canonical_audit",
+  "providers": {
+    "alpaca": 13525498,
+    "ibkr": 221296,
+    "massive": 1,
+    "replay_bundle": 20
+  },
+  "root": "/Users/ensomniac/trade/historical_data",
+  "schema_version": 1,
+  "symbols": 8165,
+  "valid": true,
+  "workers": 12
+}
